@@ -1,7 +1,7 @@
 <!-- output table info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{tableDescr}}</span>
   <div v-if="(tableNote !== '')">{{tableNote}}</div>
   <div v-if="(exprDescr !== '' || exprNote || '' !== '')">
@@ -10,27 +10,27 @@
     <div>{{exprNote}}</div>
   </div>
   <br/>
-  <div class="note-table">
+  <div class="note-table mono">
     <div class="note-row">
-      <span class="note-cell mono">Name:</span><span class="note-cell mono">{{tableName}}</span>
+      <span class="note-cell">Name:</span><span class="note-cell">{{tableName}}</span>
     </div>
     <div v-if="tableSize.rank !== 0" class="note-row">
-      <span class="note-cell mono">Dimensions:</span><span class="note-cell mono">{{tableSize.dimSize}}</span>
+      <span class="note-cell">Dimensions:</span><span class="note-cell">{{tableSize.dimSize}}</span>
     </div>
     <div v-else class="note-row">
-      <span class="note-cell mono">Rank:</span><span class="note-cell mono">{{tableSize.rank}}</span>
+      <span class="note-cell">Rank:</span><span class="note-cell">{{tableSize.rank}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Expressions:</span><span class="note-cell mono">{{tableSize.exprCount}}</span>
+      <span class="note-cell">Expressions:</span><span class="note-cell">{{tableSize.exprCount}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Accumulators:</span><span class="note-cell mono">{{tableSize.accCount}}</span>
+      <span class="note-cell">Accumulators:</span><span class="note-cell">{{tableSize.accCount}}</span>
     </div>
     <div v-if="isSubCount" class="note-row">
-      <span class="note-cell mono">SubValues:</span><span class="note-cell mono">{{subCount}}</span>
+      <span class="note-cell">SubValues:</span><span class="note-cell">{{subCount}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{tableDigest}}</span>
+      <span class="note-cell">Digest:</span><span class="note-cell">{{tableDigest}}</span>
     </div>
   </div>
 </om-mcw-dialog>

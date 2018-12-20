@@ -39,7 +39,7 @@ export default {
     this.mdcDrawer = MDCDrawer.attachTo(this.$el)
   },
   beforeDestroy () {
-    this.mdcDrawer.destroy()
+    if (this.mdcDrawer !== void 0) this.mdcDrawer.destroy()
   }
 }
 </script>

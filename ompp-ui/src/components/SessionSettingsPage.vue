@@ -4,50 +4,50 @@
     <div class="set-table">
 
       <div class="set-table-row">
-        <span class="set-table-cell">
-          <om-mcw-button @click="doUiLangClear()" unelevated class="clear-button" alt="Clear language" title="Clear language">
-            <i class="material-icons mdc-button__icon">clear</i>
-          </om-mcw-button>
+        <span class="set-table-cell set-table-first-col">
+          <om-mcw-icon-button @click="doUiLangClear()" class="clear-icon-button" alt="Clear language" title="Clear language">
+            <i class="material-icons">clear</i>
+          </om-mcw-icon-button>
         </span>
         <span class="set-table-cell">Language:</span>
         <span class="set-table-cell medium-wt">{{ uiLangTitle }}</span>
       </div>
 
       <div class="set-table-row">
-        <span class="set-table-cell">
-          <om-mcw-button @click="doModelListClear()" unelevated class="clear-button" alt="Clear model list" title="Clear model list">
-            <i class="material-icons mdc-button__icon">clear</i>
-          </om-mcw-button>
+        <span class="set-table-cell set-table-first-col">
+          <om-mcw-icon-button @click="doModelListClear()" class="clear-icon-button" alt="Clear model list" title="Clear model list">
+            <i class="material-icons">clear</i>
+          </om-mcw-icon-button>
         </span>
         <span class="set-table-cell">Models list:</span>
         <span class="set-table-cell medium-wt">{{ modelCount }} model(s)</span>
       </div>
 
       <div class="set-table-row">
-        <span class="set-table-cell">
-          <om-mcw-button @click="doModelClear()" unelevated class="clear-button" alt="Clear model" title="Clear model">
-            <i class="material-icons mdc-button__icon">clear</i>
-          </om-mcw-button>
+        <span class="set-table-cell set-table-first-col">
+          <om-mcw-icon-button @click="doModelClear()" class="clear-icon-button" alt="Clear model" title="Clear model">
+            <i class="material-icons">clear</i>
+          </om-mcw-icon-button>
         </span>
         <span class="set-table-cell">Current model:</span>
         <span class="set-table-cell medium-wt">{{ modelTitle }}</span>
       </div>
 
       <div class="set-table-row">
-        <span class="set-table-cell">
-          <om-mcw-button @click="doRunClear()" unelevated class="clear-button" alt="Clear model run list" title="Clear model run list">
-            <i class="material-icons mdc-button__icon">clear</i>
-          </om-mcw-button>
+        <span class="set-table-cell set-table-first-col">
+          <om-mcw-icon-button @click="doRunClear()" class="clear-icon-button" alt="Clear model run list" title="Clear model run list">
+            <i class="material-icons">clear</i>
+          </om-mcw-icon-button>
         </span>
         <span class="set-table-cell">Model run results:</span>
         <span class="set-table-cell medium-wt">{{ runCount }}</span>
       </div>
 
       <div class="set-table-row">
-        <span class="set-table-cell">
-          <om-mcw-button @click="doWsClear()" unelevated class="clear-button" alt="Clear model workset list" title="Clear model workset list">
-            <i class="material-icons mdc-button__icon">clear</i>
-          </om-mcw-button>
+        <span class="set-table-cell set-table-first-col">
+          <om-mcw-icon-button @click="doWsClear()" class="clear-icon-button" alt="Clear model workset list" title="Clear model workset list">
+            <i class="material-icons">clear</i>
+          </om-mcw-icon-button>
         </span>
         <span class="set-table-cell">Sets of input parameters:</span>
         <span class="set-table-cell medium-wt">{{ worksetCount }}</span>
@@ -79,7 +79,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import { GET, SET } from '@/store'
 import * as Mdf from '@/modelCommon'
-import OmMcwButton from '@/om-mcw/OmMcwButton'
+import OmMcwIconButton from '@/om-mcw/OmMcwIconButton'
 
 export default {
   props: {
@@ -127,6 +127,10 @@ export default {
     doRunClear () { this.setEmptyRunTextList() },
     doWsClear () { this.setEmptyWorksetTextList() },
 
+    langToggle (isOn) {
+      console.log('langToggle', isOn)
+    },
+
     ...mapActions({
       setUiLang: SET.UI_LANG,
       setTheModel: SET.THE_MODEL,
@@ -137,34 +141,31 @@ export default {
     })
   },
 
-  components: { OmMcwButton }
+  components: { OmMcwIconButton }
 }
 </script>
 
 <!-- local scope css: this component only -->
 <style lang="scss" scoped>
-
-  .clear-button {
-    border: 0;
-    padding: 0 0 0 .5rem;
-    min-width: 1rem;
-  }
-  :not(:disabled).clear-button {
-    background-color: var(--mdc-theme-primary);
-  }
+  @import "@material/theme/mdc-theme";
 
   .set-table {
     display: table;
     padding-top: 0.5rem;
   }
-
   .set-table-row {
     display: table-row;
   }
-
   .set-table-cell {
     display: table-cell;
-    padding-right: 0.5rem;
-    padding-top: 0.5rem;
+    &:not(:first-child) {
+      padding-right: 0.5rem;
+    }
+  }
+  .set-table-first-col {
+    background: rgba(0, 0, 0, 0.05);
+    &:hover {
+      background-color: transparent;
+    }
   }
 </style>

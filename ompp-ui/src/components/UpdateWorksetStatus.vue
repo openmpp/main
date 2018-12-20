@@ -9,8 +9,8 @@
 
 <script>
 import axios from 'axios'
-import { mapGetters } from 'vuex'
-import { GET } from '@/store'
+import { mapGetters, mapActions } from 'vuex'
+import { GET, SET } from '@/store'
 
 export default {
   props: {
@@ -47,14 +47,19 @@ export default {
       this.msgLoad = 'Updating workset...'
       this.$emit('wait')
 
-      let u = this.omppServerUrl +
+      const u = this.omppServerUrl +
         '/api/model/' + (this.modelDigest || '') +
         '/workset/' + (this.worksetName || '') +
         '/readonly/' + (!this.enableEdit).toString()
       try {
-        const response = await axios.post(u, { }, { responseType: 'text' })
+        const response = await axios.post(u)
         const rsp = response.data
-        if ((rsp || '') !== '') console.log('Server reply:', rsp)
+        // expected workserRow json, it must be same name as workset requested
+        if (rsp && rsp.hasOwnProperty('Name') && rsp.hasOwnProperty('IsReadonly')) {
+          if ((rsp.Name || '') === (this.worksetName || '_EMPTY_NAME_')) {
+            this.setWorksetStatus(rsp) // update current workset status in store
+          }
+        }
         this.loadDone = true
       } catch (e) {
         this.msgLoad = '<Server offline or no model input set not found>'
@@ -62,7 +67,11 @@ export default {
       }
       this.loadWait = false
       this.$emit('done', this.loadDone)
-    }
+    },
+
+    ...mapActions({
+      setWorksetStatus: SET.THE_WORKSET_STATUS
+    })
   },
 
   mounted () {

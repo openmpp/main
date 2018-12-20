@@ -1,26 +1,38 @@
 <!-- model run info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{runDescr}}</span>
-  <div>{{runNote}}</div>
-  <div class="note-table">
+  <div v-if="runNote">{{runNote}}</div>
+  <div class="note-table mono">
     <div class="note-row">
-      <span class="note-cell mono">Run name:</span><span class="note-cell mono">{{runName}}</span>
+      <span class="note-cell">Run name:</span><span class="note-cell">{{runName}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Status:</span><span class="note-cell mono">{{statusDescr}}</span>
+      <span class="note-cell">Status:</span><span class="note-cell">{{statusDescr}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Sub-values:</span>
-      <span class="note-cell mono">{{subCount}}<span v-if="!isSucess">&nbsp;&nbsp;completed:&nbsp;{{subCompleted}}</span></span>
+      <span class="note-cell">Sub-values:</span>
+      <span class="note-cell">{{subCount}}</span>
+    </div>
+    <div v-if="!isSucess" class="note-row">
+      <span class="note-cell">Sub-values completed:</span>
+      <span class="note-cell">{{subCompleted}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Time:</span>
-      <span class="note-cell mono">{{createdDt}} - {{lastDt}}<span v-if="timeDt"> = {{timeDt}}</span></span>
+      <span class="note-cell">Started:</span>
+      <span class="note-cell">{{createdDt}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{runDigest}}</span>
+      <span class="note-cell">Completed:</span>
+      <span class="note-cell">{{lastDt}}</span>
+    </div>
+    <div v-if="timeDt" class="note-row">
+      <span class="note-cell">Duration:</span>
+      <span class="note-cell">{{timeDt}}</span>
+    </div>
+    <div v-if="runDigest" class="note-row">
+      <span class="note-cell">Digest:</span><span class="note-cell">{{runDigest}}</span>
     </div>
   </div>
 </om-mcw-dialog>

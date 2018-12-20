@@ -36,7 +36,7 @@ export default {
     this.mdcMenu.quickOpen = this.quickOpen
   },
   beforeDestroy () {
-    this.mdcMenu.destroy()
+    if (this.mdcMenu !== void 0) this.mdcMenu.destroy()
   }
 }
 </script>

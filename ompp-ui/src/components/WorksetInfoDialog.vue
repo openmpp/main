@@ -1,24 +1,24 @@
 <!-- model workset info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{wsDescr}}</span>
-  <div>{{wsNote}}</div>
-  <div class="note-table">
+  <div v-if="wsNote">{{wsNote}}</div>
+  <div class="note-table mono">
     <div class="note-row">
-      <span class="note-cell mono">Name:</span><span class="note-cell mono">{{wsName}}</span>
+      <span class="note-cell">Name:</span><span class="note-cell">{{wsName}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Read only:</span><span class="note-cell mono">{{isRo}}</span>
+      <span class="note-cell">Read only:</span><span class="note-cell">{{isRo}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Updated:</span><span class="note-cell mono">{{lastDt}}</span>
+      <span class="note-cell">Updated:</span><span class="note-cell">{{lastDt}}</span>
     </div>
     <div v-if="isBaseRun" class="note-row">
-      <span class="note-cell mono">Base run:</span><span class="note-cell mono">{{baseRunDigest}}</span>
+      <span class="note-cell">Base run:</span><span class="note-cell">{{baseRunDigest}}</span>
     </div>
     <div v-if="!isBaseRun && paramCount > 0" class="note-row">
-      <span class="note-cell mono">Parameters:</span><span class="note-cell mono">{{paramCount}}</span>
+      <span class="note-cell">Parameters:</span><span class="note-cell">{{paramCount}}</span>
     </div>
   </div>
 </om-mcw-dialog>

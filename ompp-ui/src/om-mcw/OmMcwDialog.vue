@@ -91,7 +91,7 @@ export default {
     this.mdcDialog = MDCDialog.attachTo(this.$el)
   },
   beforeDestroy () {
-    this.mdcDialog.destroy()
+    if (this.mdcDialog !== void 0) this.mdcDialog.destroy()
   }
 }
 </script>

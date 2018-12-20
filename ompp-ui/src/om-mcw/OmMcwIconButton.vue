@@ -1,25 +1,23 @@
-<!-- Material Components Web simple wrapper for MDCButton with ripple effect -->
+<!-- Material Components Web simple wrapper for MDCIconButton with ripple effect -->
 <template>
 
-<button class="mdc-button" :disabled="disabled" @click="doClick">
+<button class="mdc-icon-button" :disabled="disabled" @click="doClick">
   <slot></slot>
 </button>
 
 </template>
 
 <script>
+import { MDCIconButtonToggle } from '@material/icon-button'
 import { MDCRipple } from '@material/ripple'
 
 export default {
   props: {
-    disabled: Boolean,
-    raised: Boolean,
-    unelevated: Boolean,
-    outlined: Boolean,
-    dense: Boolean
+    disabled: Boolean
   },
   data () {
     return {
+      mdcIconButton: void 0,
       mdcRipple: void 0
     }
   },
@@ -31,15 +29,18 @@ export default {
   },
 
   mounted () {
+    this.mdcIconButton = MDCIconButtonToggle.attachTo(this.$el)
     this.mdcRipple = MDCRipple.attachTo(this.$el)
+    this.mdcRipple.unbounded = true
   },
   beforeDestroy () {
     if (this.mdcRipple !== void 0) this.mdcRipple.destroy()
+    if (this.mdcIconButton !== void 0) this.mdcIconButton.destroy()
   }
 }
 </script>
 
 <!-- import MDC styles -->
 <style lang="scss">
-  @import '@material/button/mdc-button';
+  @import '@material/icon-button/mdc-icon-button';
 </style>

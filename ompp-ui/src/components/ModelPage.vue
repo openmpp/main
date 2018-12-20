@@ -68,40 +68,46 @@
       <refresh-model
         :digest="digest"
         :refresh-tickle="refreshTickle"
-        @done="doneModelLoad" @wait="()=>{}">
+        @done="doneModelLoad"
+        @wait="()=>{}">
       </refresh-model>
       <refresh-run v-if="(runDigest || '') !== ''"
         :model-digest="digest"
         :run-digest="runDigest"
         :refresh-tickle="refreshTickle"
         :refresh-run-tickle="refreshRunTickle"
-        @done="doneRunLoad" @wait="()=>{}">
+        @done="doneRunLoad"
+        @wait="()=>{}">
       </refresh-run>
       <refresh-run-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
         :refresh-run-list-tickle="refreshRunListTickle"
-        @done="doneRunListLoad" @wait="()=>{}">
+        @done="doneRunListLoad"
+        @wait="()=>{}">
       </refresh-run-list>
       <refresh-workset v-if="(wsName || '') !== ''"
         :model-digest="digest"
         :workset-name="wsName"
         :refresh-tickle="refreshTickle"
         :refresh-ws-tickle="refreshWsTickle"
-        @done="doneWsLoad" @wait="()=>{}">
+        @done="doneWsLoad"
+        @wait="()=>{}">
       </refresh-workset>
       <refresh-workset-list
         :digest="digest"
         :refresh-tickle="refreshTickle"
         :refresh-ws-list-tickle="refreshWsListTickle"
-        @done="doneWsListLoad" @wait="()=>{}">
+        @done="doneWsListLoad"
+        @wait="()=>{}">
       </refresh-workset-list>
       <update-workset-status v-if="(wsName || '') !== ''"
         :model-digest="digest"
         :workset-name="wsName"
         :enable-edit="!isWsEdit"
         :save-ws-status-tickle="saveWsStatusTickle"
-        @done="doneWsStatusUpdate" @wait="()=>{}">
+        @done="doneWsStatusUpdate"
+        @wait="()=>{}">
       </update-workset-status>
     </span>
 
@@ -135,9 +141,8 @@
       <div>
         <om-mcw-button
           @click="doModelRun"
-          :raised="true"
           :disabled="isWsEdit"
-          class="panel-item"
+          class="panel-item mdc-button--raised"
           :alt="'Run the model with input set ' + wsName"
           :title="'Run the model with input set ' + wsName">
           <i class="material-icons mdc-button__icon">directions_run</i>Run the model</om-mcw-button>
@@ -424,8 +429,8 @@ export default {
         this.loadWsDone = true // do not refresh workset: workset list empty
       }
     },
-    doneWsStatusUpdate () {
-      this.refreshWsTickle = !this.refreshWsTickle // refersh current workset
+    doneWsStatusUpdate (isSuccess) {
+      // this.refreshWsTickle = !this.refreshWsTickle // refersh current workset
     },
 
     // run selected from the list: reload run info

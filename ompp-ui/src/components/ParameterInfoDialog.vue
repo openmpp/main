@@ -1,28 +1,28 @@
 <!-- parameter info dialog -->
 <template>
 
-<om-mcw-dialog :id="id" ref="noteDlg" class="note-dlg" :scrollable="true" acceptText="OK">
+<om-mcw-dialog :id="id" ref="noteDlg" :scrollable="true" acceptText="OK">
   <span slot="header">{{paramDescr}}</span>
   <div v-if="(paramNote !== '')">{{paramNote}}</div>
   <br/>
-  <div class="note-table">
+  <div class="note-table mono">
     <div class="note-row">
-      <span class="note-cell mono">Name:</span><span class="note-cell mono">{{paramName}}</span>
+      <span class="note-cell">Name:</span><span class="note-cell">{{paramName}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Type:</span><span class="note-cell mono">{{typeTitle}}</span>
+      <span class="note-cell">Type:</span><span class="note-cell">{{typeTitle}}</span>
     </div>
     <div v-if="paramSize.rank !== 0" class="note-row">
-      <span class="note-cell mono">Dimensions:</span><span class="note-cell mono">{{paramSize.dimSize}}</span>
+      <span class="note-cell">Dimensions:</span><span class="note-cell">{{paramSize.dimSize}}</span>
     </div>
     <div v-else class="note-row">
-      <span class="note-cell mono">Rank:</span><span class="note-cell mono">{{paramSize.rank}}</span>
+      <span class="note-cell">Rank:</span><span class="note-cell">{{paramSize.rank}}</span>
     </div>
     <div v-if="isSubCount" class="note-row">
-      <span class="note-cell mono">SubValues:</span><span class="note-cell mono">{{subCount}}</span>
+      <span class="note-cell">SubValues:</span><span class="note-cell">{{subCount}}</span>
     </div>
     <div class="note-row">
-      <span class="note-cell mono">Digest:</span><span class="note-cell mono">{{paramDigest}}</span>
+      <span class="note-cell">Digest:</span><span class="note-cell">{{paramDigest}}</span>
     </div>
   </div>
 </om-mcw-dialog>

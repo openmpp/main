@@ -32,6 +32,7 @@ export const SET = {
   EMPTY_RUN_TEXT_LIST: 'setEmptyRunTextList',
   THE_WORKSET_TEXT: 'setWorksetText',
   THE_WORKSET_TEXT_BY_IDX: 'setWorksetTextByIdx',
+  THE_WORKSET_STATUS: 'setWorksetStatus',
   WORKSET_TEXT_LIST: 'setWorksetTextList',
   EMPTY_WORKSET_TEXT_LIST: 'setEmptyWorksetTextList'
 }
@@ -51,6 +52,7 @@ const UPDATE = {
   THE_WORKSET_TEXT: 'updWorksetText',
   THE_WORKSET_TEXT_ON_NEW: 'updWorksetTextOnNew',
   THE_WORKSET_TEXT_BY_IDX: 'updWorksetTextByIdx',
+  THE_WORKSET_STATUS: 'updWorksetStatus',
   WORKSET_TEXT_LIST: 'updWorksetTextList',
   WORKSET_TEXT_LIST_ON_NEW: 'updWorksetTextListOnNew'
 }
@@ -264,6 +266,15 @@ const mutations = {
     state.theWorksetText = JSON.parse(JSON.stringify(state.worksetTextList[0]))
   },
 
+  // update current workset status: if name the same as current set name then set readonly status and update date-time
+  [UPDATE.THE_WORKSET_STATUS] (state, ws) {
+    if (!Mdf.isWorksetStatus(ws)) return
+    if ((ws.Name || '') === state.theWorksetText.Name) {
+      state.theWorksetText.IsReadonly = !!ws.IsReadonly
+      state.theWorksetText.UpdateDateTime = (ws.UpdateDateTime || '')
+    }
+  },
+
   // assign new value to workset list, if (wtl) is a model run list
   [UPDATE.WORKSET_TEXT_LIST] (state, wtl) {
     if (Mdf.isWorksetTextList(wtl)) state.worksetTextList = wtl
@@ -347,6 +358,11 @@ const actions = {
   // set current workset by index in workset list or empty if index out of range
   [SET.THE_WORKSET_TEXT_BY_IDX] ({ commit, dispatch }, idx) {
     commit(UPDATE.THE_WORKSET_TEXT_BY_IDX, idx)
+  },
+
+  // set current workset status: set readonly status and update date-time
+  [SET.THE_WORKSET_STATUS] ({ commit, dispatch }, ws) {
+    commit(UPDATE.THE_WORKSET_STATUS, ws)
   },
 
   [SET.WORKSET_TEXT_LIST] ({ commit, dispatch }, wl) {
