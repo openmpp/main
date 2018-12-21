@@ -63,10 +63,10 @@ OM_EVENT_LOOP_HANDLER RunModelHandler;
 OM_SHUTDOWN_HANDLER ModelShutdownHandler;
 
 /** model thread function */
-static bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl);
+static ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl);
 
 // run modeling threads to calculate sub-values
-static bool runModelThreads(int i_runId, RunController * i_runCtrl);
+static ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl);
 
 // exchange between root and child modeling processes and modeling threads, sleep if no child activity
 static void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl);
@@ -137,6 +137,8 @@ int main(int argc, char ** argv)
             if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
 
             // run the model until modeling task completed
+            ExitStatus e = ExitStatus::FAIL;
+
             while (!theModelRunState->isShutdownOrExit()) {
 
                 // create next run id: find model input data set
@@ -151,8 +153,8 @@ int main(int argc, char ** argv)
                 RunInitHandler(runCtrl.get());
 
                 // do the modeling: run modeling threads to calculate sub-values
-                bool isRunOk = runModelThreads(runId, runCtrl.get());
-                if (!isRunOk) {
+                e = runModelThreads(runId, runCtrl.get());
+                if (e != ExitStatus::OK) {
                     theModelRunState->updateStatus(ModelStatus::error); // initiate process exit by error
                     break;
                 }
@@ -163,62 +165,68 @@ int main(int argc, char ** argv)
 
             // if model completed OK at local process then wait for all child to be completed and do final cleanup
             // else shutdown process with error
-            if (!theModelRunState->isError()) {
+            if (e == ExitStatus::OK && !theModelRunState->isError()) {
                 runCtrl->shutdownWaitAll();
             }
             else {
-                runCtrl->shutdownOnExit(ModelStatus::error);    // shutdown modeling process on error
+                runCtrl->shutdownOnExit(ModelStatus::error);
+                return (int)(e != ExitStatus::OK ? e : ExitStatus::FAIL);
             }
+        }
+        catch (SimulationException & ex) {
+            theLog->logErr(ex, "Simulation error");
+            return (int)ExitStatus::SIMULATION_ERROR;
         }
         catch (ModelException & ex) {
             theLog->logErr(ex, "Model error");
-            return EXIT_FAILURE;
+            return (int)ExitStatus::MODEL_ERROR;
         }
         catch (DbException & ex) {
             theLog->logErr(ex, "DB error");
-            return EXIT_FAILURE;
+            return (int)ExitStatus::DB_ERROR;
         }
         catch (MsgException & ex) {
             theLog->logErr(ex, "Messaging error");
-            return EXIT_FAILURE;
+            return (int)ExitStatus::MSG_ERROR;
         }
         catch (HelperException & ex) {
             theLog->logErr(ex, "Helper error");
-            return EXIT_FAILURE;
+            return (int)ExitStatus::HELPER_ERROR;
         }
         catch (exception & ex) {
             theLog->logErr(ex);
-            return EXIT_FAILURE;
+            return (int)ExitStatus::FAIL;
         }
         catch (...) {    // exit with failure on unhandled exception
             theLog->logMsg("FAILED", OM_FILE_LINE);
-            return EXIT_FAILURE;
+            return (int)ExitStatus::FAIL;
         }
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, "Messaging error");
-        return EXIT_FAILURE;
+        return (int)ExitStatus::MSG_ERROR;
     }
     catch(HelperException & ex) {
         theLog->logErr(ex, "Helper error");
-        return EXIT_FAILURE;
+        return (int)ExitStatus::HELPER_ERROR;
     }
     catch(exception & ex) {
         theLog->logErr(ex);
-        return EXIT_FAILURE;
+        return (int)ExitStatus::FAIL;
     }
     catch(...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
-        return EXIT_FAILURE;
+        return (int)ExitStatus::FAIL;
     }
 
     theLog->logMsg("Done.");
-    return EXIT_SUCCESS;
+    return (int)ExitStatus::OK;
 }
 
 /** model thread function */
-bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl)
+ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl)
 {
+    ExitStatus err = ExitStatus::FAIL;
     try {
 #ifdef _DEBUG
         theLog->logFormatted("Sub-value %d", i_subId);
@@ -239,42 +247,46 @@ bool modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i
         ModelShutdownHandler(model.get());
         i_runCtrl->runStateStore().updateStatus(i_runId, i_subId, ModelStatus::done, true);
 
-        return true;    // model sub-value completed OK
+        return ExitStatus::OK;      // model sub-value completed OK
     }
-    catch (SimulationException & ex) {      // simulation failed for that sub-value, continue modeling
+    catch (SimulationException & ex) {
         theLog->logErr(ex, "Simulation error");
-        i_runCtrl->runStateStore().updateStatus(i_runId, i_subId, ModelStatus::error, true);
-        return true;    // return OK to continue modeling
+        err = ExitStatus::SIMULATION_ERROR;
     }
     catch (ModelException & ex) {
         theLog->logErr(ex, "Model error");
+        err = ExitStatus::MODEL_ERROR;
     }
     catch (DbException & ex) {
         theLog->logErr(ex, "DB error");
+        err = ExitStatus::DB_ERROR;
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, "Messaging error");
+        err = ExitStatus::MSG_ERROR;
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, "Helper error");
+        err = ExitStatus::HELPER_ERROR;
     }
     catch (exception & ex) {
         theLog->logErr(ex);
+        err = ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
-        return false;
+        err = ExitStatus::FAIL;
     }
 
     // modeling thread failed, initiate shutdown of modeling process
     i_runCtrl->runStateStore().updateStatus(i_runId, i_subId, ModelStatus::error, true);
-    return false;
+    return err;
 }
 
 // run modeling threads to calculate sub-values
-bool runModelThreads(int i_runId, RunController * i_runCtrl)
+ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl)
 {
-    list<future<bool>> modelFutureLst;     // modeling threads
+    list<future<ExitStatus>> modelFutureLst;    // modeling threads
 
     int nextSub = 0;
     while (nextSub < i_runCtrl->selfSubCount || modelFutureLst.size() > 0) {
@@ -305,8 +317,9 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
             isAnyCompleted = true;
 
             // modeling completed: get result success or error
-            if (!mfIt->get()) {
-                return false;   // exit with error to initiate shutdown of modeling process
+            ExitStatus e = mfIt->get();
+            if (e != ExitStatus::OK) {
+                return e;   // exit with error to initiate shutdown of modeling process
             }
             mfIt = modelFutureLst.erase(mfIt);  // remove thread from the list
         }
@@ -317,9 +330,8 @@ bool runModelThreads(int i_runId, RunController * i_runCtrl)
         }
     }
 
-    // for all sub-values model run completed OK or with error if SimulationException raised
-    // return OK to continue modeling
-    return true;
+    // all process sub-values completed OK
+    return ExitStatus::OK;
 }
 
 // exchange between root and child modeling processes and modeling threads, sleep if no child activity

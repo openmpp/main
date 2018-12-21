@@ -15,6 +15,31 @@ using namespace std;
 
 namespace openm
 {
+    /** model exit status */
+    enum class ExitStatus : int
+    {
+        /** completed successfully */
+        OK = 0,
+
+        /** unknown error */
+        FAIL = 1,
+
+        /** helper exception: low level error from openM++ runtime */
+        HELPER_ERROR = 4,
+
+        /** messaging exception: message passing (MPI) error */
+        MSG_ERROR = 8,
+
+        /** database exception: database error from openM++ runtime or database vendor */
+        DB_ERROR = 12,
+
+        /** model exception: top level error from openM++ runtime */
+        MODEL_ERROR = 16,
+
+        /** simulation exception raised in model code */
+        SIMULATION_ERROR = 32
+    };
+
     /** modeling job status */
     enum class ModelStatus : int
     {
