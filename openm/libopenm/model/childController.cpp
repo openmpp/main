@@ -172,7 +172,6 @@ int ChildController::nextRun(void)
     msgExec->bcastInt(groupDef.groupOne, &runId);
 
     theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit
-
     return runId;
 }
 

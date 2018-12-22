@@ -528,6 +528,8 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 /** impelementation of model process shutdown if exiting without completion. */
 void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
+    updateRunState(i_dbExec, runStateStore().saveUpdated(true)); // update run status for all sub-values
+
     ModelStatus mStatus = theModelRunState->updateStatus(i_status);     // set model status
 
     // update run status and task status in database
@@ -562,7 +564,7 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
         // for all sub-values where status is in-progress set to final (error) status
         i_dbExec->update(
             "UPDATE run_progress SET"
-            " status = " + toQuoted(RunState::toRunStatus(mStatus)) + "," +
+            " status = " + (!RunState::isError(mStatus) ? toQuoted(RunStatus::exit) : toQuoted(RunStatus::error)) + "," +
             " update_dt = " + toQuoted(sDt) +
             " WHERE run_id = " + to_string(i_runId) +
             " AND status IN (" + toQuoted(RunStatus::init) + ", " + toQuoted(RunStatus::progress) + ")"
@@ -794,7 +796,9 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
             " update_dt = " + sUpd + "," +
             " progress_count = " + sPc + "," +
             " progress_value = " + sPv +
-            " WHERE run_id = " + sRunId + " AND sub_id = " + sSubId
+            " WHERE run_id = " + sRunId +
+            " AND sub_id = " + sSubId +
+            " AND status IN('i', 'p', 'w')"
         );
         i_dbExec->update(
             "INSERT INTO run_progress" \

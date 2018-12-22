@@ -174,7 +174,7 @@ ModelStatus RunStateHolder::updateStatus(int i_runId, int i_subId, ModelStatus i
     if (auto it = stateMap.find(pair(i_runId, i_subId)); it != stateMap.end()) {
 
         ModelStatus mStatus = it->second.setStatus(i_status);
-        updateStateMap[pair(it->first.first, it->first.second)] = it->second;
+        updateStateMap[pair(i_runId, i_subId)] = it->second;
 
         if (i_isFinalUpdate) {
             stateMap.erase(it); // this final status update, keep only updated status
@@ -191,7 +191,7 @@ bool RunStateHolder::updateProgress(int i_runId, int i_subId, int i_count, doubl
 
     if (auto it = stateMap.find(pair(i_runId, i_subId)); it != stateMap.end()) {
         it->second.setProgress(i_count, i_value);
-        updateStateMap[pair(it->first.first, it->first.second)] = it->second;
+        updateStateMap[pair(i_runId, i_subId)] = it->second;
         return true;
     }
     return false;

@@ -391,6 +391,7 @@ void RootController::shutdownOnExit(ModelStatus i_status)
 void RootController::shutdownWaitAll(void) 
 {
     // receive outstanding run results
+    long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     bool isAnyToRecv = true;
     do {
         bool isReceived = receiveSubValues();  // receive outstanding sub-values
@@ -403,12 +404,22 @@ void RootController::shutdownWaitAll(void)
 
         // no data received: if any accumulators outstanding then sleep before try again
         if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
+
+        // stop receive attempts if model status is error
+        if (theModelRunState->isError() && --nErrExchange <= 0) break;
     }
     while (isAnyToRecv);
 
+    // if model state is error then do one attempt to wait send and shutdown model with error
+    if (theModelRunState->isError()) {
+        msgExec->waitSendAll(true);
+        shutdownOnExit(ModelStatus::error);                         // do shutdown on error
+        throw ModelException("error in child modeiling process");   // exit from root process with error
+    }
+
     // wait for send completion, if any outstanding
     msgExec->waitSendAll();
-   
+
     // send "done" signal to all child processes
     int zeroRunId = 0;
     ModelStatus mStatus = ModelStatus::done;
@@ -441,6 +452,7 @@ void RootController::shutdownWaitAll(void)
 void RootController::shutdownRun(int i_runId) 
 {
     // receive outstanding sub-values for that run id
+    long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     bool isAnyToRecv = true;
     do {
         bool isReceived = receiveSubValues();  // receive outstanding sub-values
@@ -453,15 +465,21 @@ void RootController::shutdownRun(int i_runId)
 
         // no data received: if any accumulators outstanding then sleep before try again
         if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
+
+        // stop receive attempts if model status is error
+        if (theModelRunState->isError() && --nErrExchange <= 0) break;
     }
     while (isAnyToRecv);
 
     // wait for send completion, if any outstanding
-    msgExec->waitSendAll();
+    // if model state is error then do only one attempt to wait send
+    msgExec->waitSendAll(theModelRunState->isError());
 
-    // run completed
-    doShutdownRun(i_runId, taskRunId, dbExec);
-    rootRunGroup().reset();
+    // run completed OK
+    if (!theModelRunState->isError()) {
+        doShutdownRun(i_runId, taskRunId, dbExec);
+        rootRunGroup().reset();
+    }
 }
 
 /**
@@ -699,7 +717,7 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
 
     long nAttempt = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;
 
-    bool isAnyActive = false;   // is any group still active: state is not doen, exit or error
+    bool isAnyActive = false;   // is any group still active: state is not done, exit or error
     do {
         isAnyActive = false;
 
