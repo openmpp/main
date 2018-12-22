@@ -384,6 +384,7 @@ void RootController::shutdownOnExit(ModelStatus i_status)
     // receive final status update from children
     receiveStatusUpdate(OM_WAIT_SLEEP_TIME);
 
+    // finalize process: update run and task with final status
     doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec);
 }
 
@@ -737,24 +738,25 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
 
                 // update sub-values run state
                 RunState childState = runStateStore().fromRowVector(rsVec);
+                rg.childState[n].updateStatus(childState.theStatus);
+                rsVec.clear();
 
                 // if status of any child process is error then mark entire group as error
-                rg.childState[n].updateStatus(childState.theStatus);
-
-                if (RunState::isError(childState.theStatus)) {
-                    rg.state.updateStatus(childState.theStatus);    // if status of any child process is error then mark entire group as error
-                }
+                if (RunState::isError(childState.theStatus)) rg.state.updateStatus(childState.theStatus);
             }
 
-            // if status of all child processes is exit then set entire group as exit
+            // if status of all child processes is exit or done then set entire group as exit or done
             if (!rootGroupDef.isRootActive || rg.groupOne != rootRunGroup().groupOne) {     // it not an active root group
                 
                 bool isAllExit = true;
+                bool isAllDone = true;
 
-                for (int n = 0; isAllExit && n < rg.childCount; n++) {
+                for (int n = 0; n < rg.childCount; n++) {
                     isAllExit &= rg.childState[n].status() == ModelStatus::exit;
+                    isAllDone &= rg.childState[n].status() == ModelStatus::done;
                 }
                 if (isAllExit) rg.state.updateStatus(ModelStatus::exit);    // set group status as exit: status of all child processes is exit
+                if (isAllDone) rg.state.updateStatus(ModelStatus::done);    // set group status as done: status of all child processes is done
             }
 
             isAnyActive |= !rg.state.isExit();  // check if any group still "active", group status not: done, exit, error

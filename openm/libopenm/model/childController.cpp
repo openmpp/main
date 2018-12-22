@@ -184,10 +184,10 @@ void ChildController::shutdownOnExit(ModelStatus i_status) {
 /** model process shutdown: cleanup resources. */
 void ChildController::shutdownWaitAll(void)
 {
+    ModelStatus mStatus = theModelRunState->updateStatus(ModelStatus::done);    // set model status as completed OK
+
     sendStatusUpdate();     // send last status update
     msgExec->waitSendAll(); // wait for send completion, if any outstanding
-
-    ModelStatus mStatus = theModelRunState->updateStatus(ModelStatus::done);    // set model status as completed OK
 
     if (!RunState::isError(mStatus)) {
         msgExec->setCleanExit(true);    // if model status not error then do clean shutdown of MPI
