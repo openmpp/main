@@ -30,18 +30,18 @@ namespace openm
         ModelStatus status(void) override;
 
         /** return true if status is one of exiting: ie done, exit, error */
-        bool isExit(void) override;
+        bool isFinal(void) override;
 
         /** return true if status is an error */
         bool isError(void) override;
 
         /** return true if model in shutdown state: modeling completed or one of exiting */
-        bool isShutdownOrExit(void) override;
+        bool isShutdownOrFinal(void) override;
 
         /** retrun model run state data */
         RunState get(void) override;
 
-        /** set model status if not already set as one of exit status values */
+        /** set model status if not already set as one of final status values */
         ModelStatus updateStatus(ModelStatus i_status) override;
 
         /** set modeling progress count and value */
@@ -56,22 +56,22 @@ namespace openm
 
     };
 
-    /** modeling run state for all modeling threads, identified by (run id, sub-value id) pair */
+    /** sub-value run state for all modeling threads, identified by (run id, sub-value id) pair */
     class RunStateHolder
     {
     public:
         RunStateHolder(void) { }
 
-        /** find model run state, return false and empty model run state if not exist */
+        /** find sub-value run state, return false and empty sub-value run state if not exist */
         tuple<bool, RunState> get(int i_runId, int i_subId);
 
-        /** add new or replace existing model run state */
+        /** add new or replace existing sub-value run state */
         void add(int i_runId, int i_subId) { add(i_runId, i_subId, RunState()); };
 
-        /** add new or replace existing model run state */
+        /** add new or replace existing sub-value run state */
         void add(int i_runId, int i_subId, RunState i_state);
 
-        /** update model status if not already set as one of exit status values, return actual status or undefined if not found */
+        /** update sub-value status if not already set as one of final status values, return actual status or undefined if not found */
         ModelStatus updateStatus(int i_runId, int i_subId, ModelStatus i_status, bool i_isFinalUpdate = true);
 
         /**  set modeling progress count and value, return false if not exist */

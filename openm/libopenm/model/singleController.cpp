@@ -159,7 +159,7 @@ int SingleController::nextRun(void)
 
     ModelStatus mStatus = theModelRunState->updateStatus(nowSetRun.status);  // update model status: progress, wait, shutdown
 
-    if (RunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
+    if (RunState::isShutdownOrFinal(mStatus) || nowSetRun.isEmpty()) {
         return 0;   // all done: all sets from task or single run completed
     }
 

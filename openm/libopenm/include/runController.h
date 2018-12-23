@@ -143,7 +143,7 @@ namespace openm
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
     private:
-        /** run states for all modeling threads */
+        /** sub-value run states for all modeling threads */
         RunStateHolder runStateHolder;
 
         // create run options in run_option table

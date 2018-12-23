@@ -139,7 +139,7 @@ int main(int argc, char ** argv)
             // run the model until modeling task completed
             ExitStatus e = ExitStatus::OK;
 
-            while (!theModelRunState->isShutdownOrExit()) {
+            while (!theModelRunState->isShutdownOrFinal()) {
 
                 // create next run id: find model input data set
                 int runId = runCtrl->nextRun();
@@ -325,7 +325,7 @@ void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl)
 
     bool isAnyChildActivity = false;
     do {
-        if (theModelRunState->isExit()) return;   // model completed
+        if (theModelRunState->isFinal()) return;   // model completed
 
         isAnyChildActivity = i_runCtrl->childExchange();    // exchange between root and child processes and threads, if any
         if (isAnyChildActivity) {
@@ -334,7 +334,7 @@ void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl)
     }
     while (isAnyChildActivity && --nExchange > 0);
 
-    if (nExchange > 0 && i_runCtrl->processCount > 1 && !theModelRunState->isExit()) {
+    if (nExchange > 0 && i_runCtrl->processCount > 1 && !theModelRunState->isFinal()) {
         this_thread::sleep_for(chrono::milliseconds(nExchange * OM_ACTIVE_SLEEP_TIME)); // sleep more if no child activity
     }
 }

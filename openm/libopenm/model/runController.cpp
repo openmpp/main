@@ -776,7 +776,7 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
     // merge updated sub-values run state into run progress table
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
-    unordered_set<int> runSetErr;
+    unordered_set<int> runErrSet;
 
     for (const auto & rst : i_updated) {
 
@@ -815,17 +815,17 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
             ")"
         );
 
-        if (RunState::isError(mSt)) runSetErr.insert(nRunId);
+        if (RunState::isError(mSt)) runErrSet.insert(nRunId);
     }
 
     // update run status if sub-value status is error
-    if (runSetErr.size() > 0) {
+    if (runErrSet.size() > 0) {
 
         // concatenate run id's where sub-value run state is error
         string sLst;
         bool isFirst = true;
 
-        for (int n : runSetErr) {
+        for (int n : runErrSet) {
             if (isFirst) {
                 sLst = to_string(n);
                 isFirst = false;

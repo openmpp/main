@@ -79,7 +79,7 @@ string RunState::toRunStatus(ModelStatus i_modelStatus)
 /** set modeling progress count and value */
 void RunState::setProgress(int i_count, double i_value)
 {
-    if (!isExit(theStatus)) {
+    if (!isFinal(theStatus)) {
         theStatus = (theStatus == ModelStatus::waitProgress) ? ModelStatus::waitProgress : ModelStatus::progress;
         progressCount = i_count;
         progressValue = i_value;
@@ -87,10 +87,10 @@ void RunState::setProgress(int i_count, double i_value)
     }
 }
 
-/** set model status if not already set as one of exit status values */
+/** set model status if not already set as one of final status values */
 ModelStatus RunState::setStatus(ModelStatus i_status)
 {
-    if (!isExit(theStatus)) {
+    if (!isFinal(theStatus)) {
         updateTime = chrono::system_clock::now();
         theStatus = i_status;
     }
@@ -105,10 +105,10 @@ ModelStatus ModelRunState::status(void)
 }
 
 /** return true if status is one of exiting: ie done, exit, error */
-bool ModelRunState::isExit(void)
+bool ModelRunState::isFinal(void)
 {
     lock_guard<recursive_mutex> lck(theMutex);
-    return RunState::isExit(theStatus);
+    return RunState::isFinal(theStatus);
 }
 
 /** return true if status is an error */
@@ -119,10 +119,10 @@ bool ModelRunState::isError(void)
 }
 
 /** return true if model in shutdown state: modeling completed or one of exiting */
-bool ModelRunState::isShutdownOrExit(void)
+bool ModelRunState::isShutdownOrFinal(void)
 {
     lock_guard<recursive_mutex> lck(theMutex);
-    return RunState::isShutdownOrExit(theStatus);
+    return RunState::isShutdownOrFinal(theStatus);
 }
 
 /** retrun model run state data */
@@ -132,7 +132,7 @@ RunState ModelRunState::get(void)
     return *this;
 }
 
-/** set model status if not already set as one of exit status values */
+/** set model status if not already set as one of final status values */
 ModelStatus ModelRunState::updateStatus(ModelStatus i_status)
 {
     lock_guard<recursive_mutex> lck(theMutex);
@@ -147,7 +147,7 @@ void ModelRunState::updateProgress(int i_count, double i_value)
     setProgress(i_count, i_value);
 }
 
-/** find model run state, return false and empty model run state if not exist */
+/** find sub-value run state, return false and empty sub-value run state if not exist */
 tuple<bool, RunState> RunStateHolder::get(int i_runId, int i_subId)
 {
     lock_guard<recursive_mutex> lck(theMutex);
@@ -157,8 +157,7 @@ tuple<bool, RunState> RunStateHolder::get(int i_runId, int i_subId)
     }
     return { false, RunState() };
 }
-
-/** add new or replace existing model run state */
+/** add new or replace existing sub-value run state */
 void RunStateHolder::add(int i_runId, int i_subId, RunState i_state)
 {
     lock_guard<recursive_mutex> lck(theMutex);
@@ -166,7 +165,7 @@ void RunStateHolder::add(int i_runId, int i_subId, RunState i_state)
     updateStateMap[pair(i_runId, i_subId)] = i_state;
 }
 
-/** update model status if not already set as one of exit status values, return actual status or undefined if not found */
+/** update sub-value status if not already set as one of final status values, return actual status or undefined if not found */
 ModelStatus RunStateHolder::updateStatus(int i_runId, int i_subId, ModelStatus i_status, bool i_isFinalUpdate)
 {
     lock_guard<recursive_mutex> lck(theMutex);
@@ -184,7 +183,7 @@ ModelStatus RunStateHolder::updateStatus(int i_runId, int i_subId, ModelStatus i
     return ModelStatus::undefined;
 }
 
-/** set modeling progress count and value, return false if not exist */
+/**  set modeling progress count and value, return false if not exist */
 bool RunStateHolder::updateProgress(int i_runId, int i_subId, int i_count, double i_value)
 {
     lock_guard<recursive_mutex> lck(theMutex);

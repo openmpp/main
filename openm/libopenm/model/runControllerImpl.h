@@ -177,6 +177,11 @@ namespace openm
         /** update restart sub-value in database and list of accumulators to be received. */
         void updateAccReceiveList(void);
 
+        /** update process status if all run groups completed: done, exit or error.
+        *   return true if model process status is not error
+        */
+        bool updateModelRunStatus(void);
+
         /** receive status update from all child processes. */
         bool receiveStatusUpdate(long i_waitTime = 0L);
 

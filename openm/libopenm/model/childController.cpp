@@ -163,7 +163,7 @@ int ChildController::nextRun(void)
 {
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
 
-    if (theModelRunState->isShutdownOrExit()) return 0;      // exit if status not a continue status
+    if (theModelRunState->isShutdownOrFinal()) return 0;      // exit if status not a continue status
 
     // broadcast metadata: model status, run id and other run options from root to all other processes
     // if run id received from the root <= 0 then all done, stop this child modeling process
@@ -177,8 +177,8 @@ int ChildController::nextRun(void)
 
 /** model process shutdown if exiting without completion (ie: exit on error). */
 void ChildController::shutdownOnExit(ModelStatus i_status) {
-    sendStatusUpdate();     // send last status update
     theModelRunState->updateStatus(i_status);
+    sendStatusUpdate();     // send last status update
 }
  
 /** model process shutdown: cleanup resources. */

@@ -273,7 +273,7 @@ int RootController::nextRun(void)
 int RootController::makeNextRun(RunGroup & i_runGroup)
 {
     // if group inactive then or at error state then do not create new run for that group
-    if (i_runGroup.state.isShutdownOrExit()) return 0;
+    if (i_runGroup.state.isShutdownOrFinal()) return 0;
 
     // create new run:
     // find next working set of input parameters
@@ -289,7 +289,7 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     msgExec->bcastInt(i_runGroup.groupOne, (int *)&mStatus);
     msgExec->bcastInt(i_runGroup.groupOne, &nowSetRun.runId);
 
-    if (RunState::isShutdownOrExit(mStatus) || nowSetRun.isEmpty()) {
+    if (RunState::isShutdownOrFinal(mStatus) || nowSetRun.isEmpty()) {
         return 0;   // task "wait" for next input set or all done: all sets from task or single run completed
     }
 
@@ -323,7 +323,7 @@ bool RootController::childExchange(void)
 
         // if root is "active" then skip root modeling group, it is done from main()
         if (rootGroupDef.isRootActive && rg.groupOne == rootRunGroup().groupOne) continue;
-        if (rg.state.isExit()) continue;    // group already shutdown
+        if (rg.state.isFinal()) continue;    // group already shutdown
 
         // check if all run sub-values completed then finalize run completed in database
         if (rg.runId > 0) {
@@ -336,19 +336,8 @@ bool RootController::childExchange(void)
     }
 
     // check if all groups already completed, all groups status one of: exit, done, error
-    if (!theModelRunState->isShutdownOrExit()) {
-
-        bool isAnyGroupActive = false;
-        ModelStatus maxStatus = ModelStatus::undefined;
-
-        for (RunGroup & rg : runGroupLst) {
-            ModelStatus gStatus = rg.state.status();
-            isAnyGroupActive |= !RunState::isExit(gStatus);
-            if (gStatus > maxStatus) maxStatus = gStatus;
-        }
-
-        // all group are at exit status (exit, done or error)
-        if (!isAnyGroupActive) theModelRunState->updateStatus(maxStatus);   // set model process status to exit
+    if (!updateModelRunStatus()) {
+        return true;    // exit with error
     }
 
     // create new run and assign it to idle modeling group
@@ -370,7 +359,7 @@ bool RootController::childExchange(void)
             isNewRun = true;
         }
 
-        if (nRunId <= 0 || theModelRunState->isShutdownOrExit()) {
+        if (nRunId <= 0 || theModelRunState->isShutdownOrFinal()) {
             break;          // task "wait" for next input set or all done: all sets from task or single run completed
         }
     }
@@ -381,10 +370,8 @@ bool RootController::childExchange(void)
 /** model process shutdown if exiting without completion (ie: exit on error). */
 void RootController::shutdownOnExit(ModelStatus i_status)
 {
-    // receive final status update from children
+    // finalize process: receive final status from children, update run and task with final status
     receiveStatusUpdate(OM_WAIT_SLEEP_TIME);
-
-    // finalize process: update run and task with final status
     doShutdownOnExit(i_status, rootRunGroup().runId, taskRunId, dbExec);
 }
 
@@ -394,6 +381,7 @@ void RootController::shutdownWaitAll(void)
     // receive outstanding run results
     long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     bool isAnyToRecv = true;
+    bool isError = false;
     do {
         bool isReceived = receiveSubValues();  // receive outstanding sub-values
 
@@ -406,13 +394,15 @@ void RootController::shutdownWaitAll(void)
         // no data received: if any accumulators outstanding then sleep before try again
         if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
 
-        // stop receive attempts if model status is error
-        if (theModelRunState->isError() && --nErrExchange <= 0) break;
+        // receive sub-values status update and set model process status to final: done, exit, error
+        receiveStatusUpdate();
+        isError = !updateModelRunStatus();
+        if (isError && --nErrExchange <= 0) break;  // stop receive attempts if model status is error
     }
     while (isAnyToRecv);
 
     // if model state is error then do one attempt to wait send and shutdown model with error
-    if (theModelRunState->isError()) {
+    if (isError) {
         msgExec->waitSendAll(true);
         shutdownOnExit(ModelStatus::error);                         // do shutdown on error
         throw ModelException("error in child modeiling process");   // exit from root process with error
@@ -428,7 +418,7 @@ void RootController::shutdownWaitAll(void)
     for (RunGroup & rg : runGroupLst) {
 
         // skip if group already shutdown
-        if (rg.state.isShutdownOrExit()) continue;
+        if (rg.state.isShutdownOrFinal()) continue;
 
         // check if all run sub-values completed then finalize run completed in database
         if (rg.runId > 0) {
@@ -441,10 +431,8 @@ void RootController::shutdownWaitAll(void)
         rg.state.updateStatus(mStatus);
     }
 
-    // receive final status update from children
+    // finalize shutdown: receive final status from children, update database and status, set clean shutdown of MPI
     receiveStatusUpdate(OM_WAIT_SLEEP_TIME);
-
-    // finalize shutdown: update database and status, set clean shutdown of MPI
     doShutdownAll(taskRunId, dbExec);
     msgExec->setCleanExit(true);
 }
@@ -455,6 +443,7 @@ void RootController::shutdownRun(int i_runId)
     // receive outstanding sub-values for that run id
     long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     bool isAnyToRecv = true;
+    bool isError = false;
     do {
         bool isReceived = receiveSubValues();  // receive outstanding sub-values
 
@@ -467,14 +456,16 @@ void RootController::shutdownRun(int i_runId)
         // no data received: if any accumulators outstanding then sleep before try again
         if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
 
-        // stop receive attempts if model status is error
-        if (theModelRunState->isError() && --nErrExchange <= 0) break;
+        // receive sub-values status update and set model process status to final: done, exit, error
+        receiveStatusUpdate();
+        isError = !updateModelRunStatus();
+        if (isError && --nErrExchange <= 0) break;  // stop receive attempts if model status is error
     }
     while (isAnyToRecv);
 
     // wait for send completion, if any outstanding
     // if model state is error then do only one attempt to wait send
-    msgExec->waitSendAll(theModelRunState->isError());
+    msgExec->waitSendAll(isError);
 
     // run completed OK
     if (!theModelRunState->isError()) {
@@ -708,6 +699,27 @@ void RootController::updateAccReceiveList(void)
     accRecvLst.remove_if([](AccReceive i_recv) -> bool { return i_recv.isReceived; });
 }
 
+/** update process status if all run groups completed: done, exit or error.
+*   return true if model process status is not error
+*/
+bool RootController::updateModelRunStatus(void)
+{
+    // check if all groups already completed, all groups status one of: exit, done, error
+    bool isAllDone = true;
+    ModelStatus maxStatus = ModelStatus::undefined;
+
+    for (RunGroup & rg : runGroupLst) {
+        ModelStatus gStatus = rg.state.status();
+        isAllDone &= RunState::isFinal(gStatus);
+        if (gStatus > maxStatus) maxStatus = gStatus;
+    }
+
+    // all group are at final status (exit, done or error)
+    if (isAllDone) theModelRunState->updateStatus(maxStatus);   // set model process status to final
+    return
+        !theModelRunState->isError();
+}
+
 /** receive status update from all child processes. */
 bool RootController::receiveStatusUpdate(long i_waitTime)
 {
@@ -724,7 +736,7 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
 
         for (RunGroup & rg : runGroupLst) {
 
-            if (rg.state.isExit()) continue;    // group completed, for all processes in group status: done, exit or error
+            if (rg.state.isFinal()) continue;    // group completed, for all processes in group status: done, exit or error
 
             for (int n = 0; n < rg.childCount; n++) {
 
@@ -759,7 +771,7 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
                 if (isAllDone) rg.state.updateStatus(ModelStatus::done);    // set group status as done: status of all child processes is done
             }
 
-            isAnyActive |= !rg.state.isExit();  // check if any group still "active", group status not: done, exit, error
+            isAnyActive |= !rg.state.isFinal();  // check if any group still "active", group status not: done, exit, error
         }
 
         if (isAnyActive && nAttempt > 0) {

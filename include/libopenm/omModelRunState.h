@@ -115,13 +115,13 @@ namespace openm
         bool operator==(const RunState & i_other) const;
 
         /** return true if status is one of exiting: ie done, exit, error */
-        static bool isExit(ModelStatus i_status) { return i_status >= ModelStatus::done; }
+        static bool isFinal(ModelStatus i_status) { return i_status >= ModelStatus::done; }
 
         /** return true if status is an error */
         static bool isError(ModelStatus i_status) { return i_status >= ModelStatus::error; }
 
         /** return true if model in shutdown state: modeling completed or one of exiting */
-        static bool isShutdownOrExit(ModelStatus i_status) { return i_status == ModelStatus::shutdown || isExit(i_status); }
+        static bool isShutdownOrFinal(ModelStatus i_status) { return i_status == ModelStatus::shutdown || isFinal(i_status); }
 
         /** convert run status to model status */
         static ModelStatus fromRunStatus(const string & i_runStatus);
@@ -129,7 +129,7 @@ namespace openm
         /** convert model status to run status */
         static string toRunStatus(ModelStatus i_modelStatus);
 
-        /** set model status if not already set as one of exit status values */
+        /** set model status if not already set as one of final status values */
         ModelStatus setStatus(ModelStatus i_status);
 
         /** set modeling progress count and value */
@@ -145,18 +145,18 @@ namespace openm
         virtual ModelStatus status(void) = 0;
 
         /** return true if status is one of exiting: done, exit, error */
-        virtual bool isExit(void) = 0;
+        virtual bool isFinal(void) = 0;
 
         /** return true if status is an error */
         virtual bool isError(void) = 0;
 
         /** return true if model in shutdown state: modeling completed or one of exiting */
-        virtual bool isShutdownOrExit(void) = 0;
+        virtual bool isShutdownOrFinal(void) = 0;
 
         /** retrun model run state data */
         virtual RunState get(void) = 0;
 
-        /** set model status if not already set as one of exit status values */
+        /** set model status if not already set as one of final status values */
         virtual ModelStatus updateStatus(ModelStatus i_status) = 0;
 
         /** set modeling progress count and value */
