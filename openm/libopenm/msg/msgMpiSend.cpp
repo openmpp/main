@@ -27,7 +27,7 @@ MpiSendBase::MpiSendBase(int i_selfRank, int i_sendTo, MsgTag i_msgTag) :
 { }
 
 /** cleanup message sender resources by MPI_Request_free. */
-MpiSendBase::~MpiSendBase(void) throw() 
+MpiSendBase::~MpiSendBase(void) noexcept 
 { 
     try { 
         cleanup(); 
@@ -48,7 +48,7 @@ bool MpiSendBase::isCompleted(void)
 }
 
 // cleanup MPI send resources
-void MpiSendBase::cleanup(void) throw()
+void MpiSendBase::cleanup(void) noexcept
 {
     try {
         // request must be released by MPI_Test prior the cleanup

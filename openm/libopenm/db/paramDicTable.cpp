@@ -14,7 +14,7 @@ namespace openm
     public:
         ParamDicTable(IDbExec * i_dbExec, int i_modelId = 0);
         ParamDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ParamDicTable() throw();
+        ~ParamDicTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -113,7 +113,7 @@ namespace openm
 }
 
 // Table never unloaded
-IParamDicTable::~IParamDicTable(void) throw() { }
+IParamDicTable::~IParamDicTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IParamDicTable * IParamDicTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -146,7 +146,7 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-ParamDicTable::~ParamDicTable(void) throw() { }
+ParamDicTable::~ParamDicTable(void) noexcept { }
 
 // Find row by unique key: model id and model parameter id
 const ParamDicRow * ParamDicTable::byKey(int i_modelId, int i_paramId) const

@@ -39,7 +39,7 @@ namespace openm
 
         /** create empty row of value table */
         ValueRow(int i_idCount, const type_info & i_type);
-        ~ValueRow(void) throw() { }
+        ~ValueRow(void) noexcept { }
     };
 
     /** Row adapter to select row from value table (parameter, accumulator or expression) */

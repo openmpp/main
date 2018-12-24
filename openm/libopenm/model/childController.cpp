@@ -265,7 +265,7 @@ void ChildController::writeAccumulators(
 bool ChildController::childExchange(void) 
 {
     // wait for send completion, if any outstanding
-    msgExec->waitSendAll(true);
+    msgExec->waitSendAll();
 
     // get process-wide model run state
     // if model status same and last progress report sent recently then exit

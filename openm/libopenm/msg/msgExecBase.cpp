@@ -144,15 +144,13 @@ bool MsgExecBase::tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, cons
     }
 }
 
-/** wait for non-blocking send to be completed.
-*
-* @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
-*/
-void MsgExecBase::waitSendAll(bool i_isOnce)
+/** wait for non-blocking send to be completed. */
+void MsgExecBase::waitSendAll(void)
 {
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
 
+        long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
         bool isAllDone = true;
         do {
             isAllDone = true;
@@ -172,9 +170,13 @@ void MsgExecBase::waitSendAll(bool i_isOnce)
             }
 
             // sleep if any outstanding request exist
-            if (!i_isOnce && !isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_SEND_SLEEP_TIME));
-        }
-        while (!i_isOnce && !isAllDone);
+            if (!isAllDone) this_thread::sleep_for(chrono::milliseconds(OM_SEND_SLEEP_TIME));
+
+            // stop wait attempts if model status is error
+            if (theFinal != nullptr) {
+                if (theFinal->isError() && --nErrExchange <= 0) break;
+            }
+        } while (!isAllDone);
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

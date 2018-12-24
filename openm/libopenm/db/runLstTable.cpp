@@ -15,7 +15,7 @@ namespace openm
     class RunLstTable : public IRunLstTable
     {
     public:
-        ~RunLstTable() throw();
+        ~RunLstTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: run id
         static vector<RunLstRow> select(IDbExec * i_dbExec, const string & i_where);
@@ -93,10 +93,10 @@ namespace openm
 }
 
 // Table never unloaded
-IRunLstTable::~IRunLstTable(void) throw() { }
+IRunLstTable::~IRunLstTable(void) noexcept { }
 
 // Table never unloaded
-RunLstTable::~RunLstTable(void) throw() { }
+RunLstTable::~RunLstTable(void) noexcept { }
 
 // select table rows
 vector<RunLstRow> IRunLstTable::select(IDbExec * i_dbExec, int i_modelId)

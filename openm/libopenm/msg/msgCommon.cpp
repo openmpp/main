@@ -11,25 +11,25 @@ using namespace openm;
 const char openm::msgUnknownErrorMessage[] = "unknown messaging error";
 
 // cleanup message passing resources.
-IMsgExec::~IMsgExec(void) throw() { }
+IMsgExec::~IMsgExec(void) noexcept { }
 
 // cleanup message sender resources.
-IMsgSend::~IMsgSend(void) throw() { }
-IMsgSendArray::~IMsgSendArray(void) throw() { }
-IMsgSendPacked::~IMsgSendPacked(void) throw() { }
+IMsgSend::~IMsgSend(void) noexcept { }
+IMsgSendArray::~IMsgSendArray(void) noexcept { }
+IMsgSendPacked::~IMsgSendPacked(void) noexcept { }
 
 // cleanup message receiver resources.
-IMsgRecv::~IMsgRecv(void) throw() { }
-IMsgRecvArray::~IMsgRecvArray(void) throw() { }
-IMsgRecvPacked::~IMsgRecvPacked(void) throw() { }
+IMsgRecv::~IMsgRecv(void) noexcept { }
+IMsgRecvArray::~IMsgRecvArray(void) noexcept { }
+IMsgRecvPacked::~IMsgRecvPacked(void) noexcept { }
 
 #ifdef OM_MSG_MPI
 
 // create new message passing interface.
-IMsgExec * IMsgExec::create(int argc, char **argv)
+IMsgExec * IMsgExec::create(int argc, char **argv, IFinalState * i_final)
 {
     lock_guard<recursive_mutex> lck(msgMutex);
-    return new MpiExec(argc, argv);
+    return new MpiExec(argc, argv, i_final);
 }
 
 // return byte size to pack source array.
@@ -142,10 +142,10 @@ unique_ptr<char> IPackedAdapter::packArray(const type_info & /*i_type*/, size_t 
 }
 
 // create new message passing interface.
-IMsgExec * IMsgExec::create(int argc, char **argv)
+IMsgExec * IMsgExec::create(int argc, char **argv, IFinalState * i_final)
 {
     lock_guard<recursive_mutex> lck(msgMutex);
-    return new MsgEmptyExec(argc, argv);
+    return new MsgEmptyExec(argc, argv, i_final);
 }
 
 // create new value array sender.

@@ -14,7 +14,7 @@ namespace openm
     public:
         GroupTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         GroupTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~GroupTxtTable() throw();
+        ~GroupTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -79,7 +79,7 @@ namespace openm
 }
 
 // Table never unloaded
-IGroupTxtTable::~IGroupTxtTable(void) throw() { }
+IGroupTxtTable::~IGroupTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IGroupTxtTable * IGroupTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -110,7 +110,7 @@ GroupTxtTable::GroupTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)
 }
 
 // Table never unloaded
-GroupTxtTable::~GroupTxtTable(void) throw() { }
+GroupTxtTable::~GroupTxtTable(void) noexcept { }
 
 // Find row by primary key: model id, group id, language id
 const GroupTxtRow * GroupTxtTable::byKey(int i_modelId, int i_groupId, int i_langId) const

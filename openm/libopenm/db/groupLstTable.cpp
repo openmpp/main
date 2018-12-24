@@ -14,7 +14,7 @@ namespace openm
     public:
         GroupLstTable(IDbExec * i_dbExec, int i_modelId = 0);
         GroupLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~GroupLstTable() throw();
+        ~GroupLstTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -82,7 +82,7 @@ namespace openm
 }
 
 // Table never unloaded
-IGroupLstTable::~IGroupLstTable(void) throw() { }
+IGroupLstTable::~IGroupLstTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IGroupLstTable * IGroupLstTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -112,7 +112,7 @@ GroupLstTable::GroupLstTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-GroupLstTable::~GroupLstTable(void) throw() { }
+GroupLstTable::~GroupLstTable(void) noexcept { }
 
 // Find row by primary key: model id and group id
 const GroupLstRow * GroupLstTable::byKey(int i_modelId, int i_groupId) const

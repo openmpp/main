@@ -137,18 +137,12 @@ namespace openm
     };
 
     /** model run state public interface: thread safe */
-    struct IModelRunState
+    struct IModelRunState : public IFinalState
     {
-        virtual ~IModelRunState(void) throw() = 0;
+        virtual ~IModelRunState(void) noexcept = 0;
 
         /** get model status */
         virtual ModelStatus status(void) = 0;
-
-        /** return true if status is one of exiting: done, exit, error */
-        virtual bool isFinal(void) = 0;
-
-        /** return true if status is an error */
-        virtual bool isError(void) = 0;
 
         /** return true if model in shutdown state: modeling completed or one of exiting */
         virtual bool isShutdownOrFinal(void) = 0;

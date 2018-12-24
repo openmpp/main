@@ -34,7 +34,7 @@ namespace openm
         ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir);
 
         /** release builder resources. */
-        ~ModelSqlBuilder() throw() { }
+        ~ModelSqlBuilder() noexcept { }
 
         /** if true then create SQLite database */
         bool isSqliteDb(void) const override { return isSqlite; }

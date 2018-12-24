@@ -43,7 +43,7 @@ namespace openm
         }
 
         /** return error message */
-        const char * what(void) const throw() { return msg; }
+        const char * what(void) const noexcept { return msg; }
 
     private:
         char msg[maxMsgSize];   // error message

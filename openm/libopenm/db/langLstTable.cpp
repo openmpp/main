@@ -14,7 +14,7 @@ namespace openm
     public:
         LangLstTable(IDbExec * i_dbExec);
         LangLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~LangLstTable() throw();
+        ~LangLstTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -76,7 +76,7 @@ namespace openm
 }
 
 // Table never unloaded
-ILangLstTable::~ILangLstTable(void) throw() { }
+ILangLstTable::~ILangLstTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ILangLstTable * ILangLstTable::create(IDbExec * i_dbExec)
@@ -100,7 +100,7 @@ LangLstTable::LangLstTable(IDbExec * i_dbExec)
 }
 
 // Table never unloaded
-LangLstTable::~LangLstTable(void) throw() { }
+LangLstTable::~LangLstTable(void) noexcept { }
 
 // Find row by primary key: language id
 const LangLstRow * LangLstTable::byKey(int i_langId) const

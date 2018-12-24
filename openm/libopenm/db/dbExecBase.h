@@ -23,7 +23,7 @@ namespace openm
         DbExecBase(const string & i_connectionStr);
 
         /** cleanup connection resources. */
-        ~DbExecBase(void) throw() { }
+        ~DbExecBase(void) noexcept { }
 
         /** return true in transaction scope. */
         bool isTransaction(void);
@@ -62,7 +62,7 @@ namespace openm
         NoCaseMap parseConnectionStr(const string & i_connectionStr);
 
         // cleanup connection resources
-        virtual void cleanup(void) throw() = 0;
+        virtual void cleanup(void) noexcept = 0;
 
         // validate connection properties
         virtual void validateConnectionProps(void) = 0;

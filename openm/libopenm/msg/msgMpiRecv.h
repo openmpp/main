@@ -40,7 +40,7 @@ namespace openm
             mpiType(MpiPacked::toMpiType(i_type))
         { }
 
-        ~MpiRecvArray(void) throw() { }
+        ~MpiRecvArray(void) noexcept { }
 
         /** try to non-blocking receive value array, return true if completed. */
         bool tryReceive(void);
@@ -81,7 +81,7 @@ namespace openm
             packAdp(i_adapter)
         { }
 
-        ~MpiRecvPacked(void) throw() { }
+        ~MpiRecvPacked(void) noexcept { }
 
         /** try to receive and unpack the data, return return true if completed. */
         bool tryReceive(void);

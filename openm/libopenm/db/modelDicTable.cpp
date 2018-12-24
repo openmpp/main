@@ -14,7 +14,7 @@ namespace openm
     public:
         ModelDicTable(IDbExec * i_dbExec, const char * i_name = NULL, const char * i_digest = NULL);
         ModelDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ModelDicTable() throw();
+        ~ModelDicTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const override { return rowVec; }
@@ -92,7 +92,7 @@ namespace openm
 }
 
 // Table never unloaded
-IModelDicTable::~IModelDicTable(void) throw() { }
+IModelDicTable::~IModelDicTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IModelDicTable * IModelDicTable::create(IDbExec * i_dbExec, const char * i_name, const char * i_digest)
@@ -123,7 +123,7 @@ ModelDicTable::ModelDicTable(IDbExec * i_dbExec, const char * i_name, const char
 }
 
 // Table never unloaded
-ModelDicTable::~ModelDicTable(void) throw() { }
+ModelDicTable::~ModelDicTable(void) noexcept { }
 
 // Find row by primary key: model id
 const ModelDicRow * ModelDicTable::byKey(int i_modelId) const

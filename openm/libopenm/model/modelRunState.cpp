@@ -33,7 +33,8 @@ static ModelRunState processModelRunState;
 IModelRunState * theModelRunState = &processModelRunState;
 
 //  model run state public interface
-IModelRunState::~IModelRunState(void) throw() { }
+IFinalState::~IFinalState(void) noexcept { }
+IModelRunState::~IModelRunState(void) noexcept { }
 
 /** initialize model run state data with default values */
 RunState::RunState(void) : theStatus(ModelStatus::init), progressCount(0), progressValue(0.0), startTime(chrono::system_clock::now())

@@ -14,7 +14,7 @@ namespace openm
     public:
         TableAccTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         TableAccTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TableAccTxtTable() throw();
+        ~TableAccTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -83,7 +83,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableAccTxtTable::~ITableAccTxtTable(void) throw() { }
+ITableAccTxtTable::~ITableAccTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableAccTxtTable * ITableAccTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -118,7 +118,7 @@ TableAccTxtTable::TableAccTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 }
 
 // Table never unloaded
-TableAccTxtTable::~TableAccTxtTable(void) throw() { }
+TableAccTxtTable::~TableAccTxtTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id, accumulator name, language id
 const TableAccTxtRow * TableAccTxtTable::byKey(int i_modelId, int i_tableId, int i_accId, int i_langId) const

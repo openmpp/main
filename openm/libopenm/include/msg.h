@@ -92,7 +92,7 @@ namespace openm
     struct IPackedAdapter
     {
     public:
-        virtual ~IPackedAdapter(void) throw() { }
+        virtual ~IPackedAdapter(void) noexcept { }
 
         /**
          * pack adapter factory: create new adapter for metadata table db rows.
@@ -102,7 +102,7 @@ namespace openm
         static IPackedAdapter * create(MsgTag i_msgTag);
 
         /** return message tag */
-        virtual MsgTag tag(void) const throw() = 0;
+        virtual MsgTag tag(void) const noexcept = 0;
 
         /**
          * pack vector of db rows into char vector.
@@ -132,15 +132,16 @@ namespace openm
     {
     public:
         /** cleanup message passing resources. */
-        virtual ~IMsgExec(void) throw() = 0;
+        virtual ~IMsgExec(void) noexcept = 0;
 
         /**
          * create new message passing interface.
          *
-         * @param[in] argc  main argc to pass to MPI_Init
-         * @param[in] argv  main argv to pass to MPI_Init
+         * @param[in] argc         main argc to pass to MPI_Init
+         * @param[in] argv         main argv to pass to MPI_Init
+         * @param[in] IFinalState  final model run state interface
          */
-        static IMsgExec * create(int argc, char **argv);
+        static IMsgExec * create(int argc, char **argv, IFinalState * i_final);
 
         /** root process rank, always zero */
         static const int rootRank = 0;
@@ -260,11 +261,8 @@ namespace openm
          */
         virtual bool tryReceive(int i_recvFrom, IRowBaseVec & io_resultRowVec, const IPackedAdapter & i_adapter) const = 0;
 
-        /** wait for non-blocking send to be completed.
-        *
-        * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
-        */
-        virtual void waitSendAll(bool i_isOnce = false) = 0;
+        /** wait for non-blocking send to be completed */
+        virtual void waitSendAll(void) = 0;
     };
 }
 

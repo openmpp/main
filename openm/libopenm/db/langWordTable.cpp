@@ -14,7 +14,7 @@ namespace openm
     public:
         LangWordTable(IDbExec * i_dbExec, int i_langId = -1);
         LangWordTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~LangWordTable() throw();
+        ~LangWordTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -73,7 +73,7 @@ namespace openm
 }
 
 // Table never unloaded
-ILangWordTable::~ILangWordTable(void) throw() { }
+ILangWordTable::~ILangWordTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ILangWordTable * ILangWordTable::create(IDbExec * i_dbExec, int i_langId)
@@ -99,7 +99,7 @@ LangWordTable::LangWordTable(IDbExec * i_dbExec, int i_langId)
 }
 
 // Table never unloaded
-LangWordTable::~LangWordTable(void) throw() { }
+LangWordTable::~LangWordTable(void) noexcept { }
 
 // Find row by primary key: language id and word code
 const LangWordRow * LangWordTable::byKey(int i_langId, const string & i_code) const

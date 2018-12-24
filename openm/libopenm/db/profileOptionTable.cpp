@@ -14,7 +14,7 @@ namespace openm
     public:
         ProfileOptionTable(IDbExec * i_dbExec, const string & i_name = "");
         ProfileOptionTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ProfileOptionTable() throw();
+        ~ProfileOptionTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -75,7 +75,7 @@ namespace openm
 }
 
 // Table never unloaded
-IProfileOptionTable::~IProfileOptionTable(void) throw() { }
+IProfileOptionTable::~IProfileOptionTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IProfileOptionTable * IProfileOptionTable::create(IDbExec * i_dbExec, const string & i_name)
@@ -104,7 +104,7 @@ ProfileOptionTable::ProfileOptionTable(IDbExec * i_dbExec, const string & i_name
 }
 
 // Table never unloaded
-ProfileOptionTable::~ProfileOptionTable(void) throw() { }
+ProfileOptionTable::~ProfileOptionTable(void) noexcept { }
 
 // Find row by primary key: profile name, option key
 const ProfileOptionRow * ProfileOptionTable::byKey(const string & i_name, const string & i_key) const

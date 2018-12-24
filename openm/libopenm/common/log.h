@@ -52,16 +52,16 @@ namespace openm
             bool i_usePidStamp,
             bool i_noMsgTime
             );
-        ~LogBase(void) throw();
+        ~LogBase(void) noexcept;
 
         /** return timestamp suffix of log file name: _20120817_160459_0148.
         *
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
-        const string timeStampSuffix(void) throw() override;
+        const string timeStampSuffix(void) noexcept override;
 
         /** return "stamped" log file name suffix which may include timestamp and pid. */
-        const string suffix(void) throw() override;
+        const string suffix(void) noexcept override;
 
         /** re-initialize log file name(s) and other log settings.
         *
@@ -79,7 +79,7 @@ namespace openm
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
-            ) throw();
+            ) noexcept;
 
     protected:
         recursive_mutex theMutex;   // mutex to lock for log operations
@@ -101,20 +101,20 @@ namespace openm
     protected:
 
         /** implement log message: log to console and log files */
-        void doLogMsg(const char * i_msg, const char * i_extra) throw();
+        void doLogMsg(const char * i_msg, const char * i_extra) noexcept;
 
         // create log file or truncate existing, return false on error
-        bool logFileCreate(const string & i_path) throw();
+        bool logFileCreate(const string & i_path) noexcept;
 
         // log to console
         bool logToConsole(
             const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) throw();
+            ) noexcept;
 
         // log to file, return false on error
         virtual bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) throw() = 0;
+            ) noexcept = 0;
 
         // write date-time and message to output stream, return false on error
         void writeToLog(
@@ -156,7 +156,7 @@ namespace openm
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false
             );
-        ~Log(void) throw();
+        ~Log(void) noexcept;
 
         /**
          * re-initialize log file name(s) and other log settings.
@@ -178,31 +178,31 @@ namespace openm
             bool i_usePidStamp = false, 
             bool i_noMsgTime = false,
             bool i_isLogSql = false
-            ) throw();
+            ) noexcept;
 
         /** get language-specific message by source non-translated message */
-        const string getMessage(const char * i_sourceMsg) throw() override;
+        const string getMessage(const char * i_sourceMsg) noexcept override;
 
         /** get list of language name for the messages, eg: (en-ca, en) */
-        const list<string> getLanguages(void) throw() override;
+        const list<string> getLanguages(void) noexcept override;
 
         /** get copy of language-specific messages */
-        const unordered_map<string, string> getLanguageMessages(void) throw() override;
+        const unordered_map<string, string> getLanguageMessages(void) noexcept override;
 
         /** set language-specific messages and update list of languages */
-        void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) throw() override;
+        void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) noexcept override;
 
         /** log message */
-        void logMsg(const char * i_msg, const char * i_extra = NULL) throw() override;
+        void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept override;
 
         /** log message formatted with vsnprintf() */
-        void logFormatted(const char * i_format, ...) throw() override;
+        void logFormatted(const char * i_format, ...) noexcept override;
 
         /** log exception */
-        void logErr(const exception & i_ex, const char * i_msg = nullptr) throw();
+        void logErr(const exception & i_ex, const char * i_msg = nullptr) noexcept;
 
         /** log sql query */
-        void logSql(const char * i_sql) throw();
+        void logSql(const char * i_sql) noexcept;
 
     private:
         bool isSqlLog;                          // if true then log sql queries into last log
@@ -212,7 +212,7 @@ namespace openm
         // log to file, return false on error
         bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) throw();
+            ) noexcept;
 
     private:
         Log(const Log & i_log) = delete;
@@ -255,7 +255,7 @@ namespace openm
             ) : LogBase(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime)
         { }
 
-        ~TraceLog(void) throw();
+        ~TraceLog(void) noexcept;
 
         /** re-initialize log file name(s) and other log settings.
         *
@@ -273,13 +273,13 @@ namespace openm
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
-            ) throw();
+            ) noexcept;
 
         /** log message */
-        void logMsg(const char * i_msg, const char * i_extra = NULL) throw() override;
+        void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept override;
 
         /** log message formatted with vsnprintf() */
-        void logFormatted(const char * i_format, ...) throw() override;
+        void logFormatted(const char * i_format, ...) noexcept override;
 
     private:
         ofstream lastSt;        // last log output stream
@@ -288,7 +288,7 @@ namespace openm
         // log to file, return false on error
         bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) throw();
+            ) noexcept;
 
     private:
         TraceLog(const TraceLog & i_log) = delete;

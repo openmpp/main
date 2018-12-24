@@ -14,7 +14,7 @@ namespace openm
     public:
         TypeEnumLstTable(IDbExec * i_dbExec, int i_modelId = 0);
         TypeEnumLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TypeEnumLstTable() throw();
+        ~TypeEnumLstTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -84,7 +84,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITypeEnumLstTable::~ITypeEnumLstTable(void) throw() { }
+ITypeEnumLstTable::~ITypeEnumLstTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITypeEnumLstTable * ITypeEnumLstTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -115,7 +115,7 @@ TypeEnumLstTable::TypeEnumLstTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-TypeEnumLstTable::~TypeEnumLstTable(void) throw() { }
+TypeEnumLstTable::~TypeEnumLstTable(void) noexcept { }
 
 // Find row by unique key: model id, model type id, enum id
 const TypeEnumLstRow * TypeEnumLstTable::byKey(int i_modelId, int i_typeId, int i_enumId) const

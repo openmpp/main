@@ -22,7 +22,7 @@ namespace openm
         EmptyPackedAdapter(MsgTag i_tag) : msgTag(i_tag) { }
 
         /** return message tag */
-        MsgTag tag(void) const throw() override { return msgTag; }
+        MsgTag tag(void) const noexcept override { return msgTag; }
 
         /** pack vector of db rows into char vector: return empty vector. */
         const vector<char> pack(const IRowBaseVec & /* i_rowVec */) const override
@@ -51,10 +51,10 @@ namespace openm
     {
     public:
         /** create new message passing interface (empty constructor) */
-        MsgEmptyExec(int & /* argc */, char ** & /* argv */) : MsgExecBase() { }
+        MsgEmptyExec(int & /* argc */, char ** & /* argv */, IFinalState * i_final) : MsgExecBase(i_final) { }
 
         /** cleanup message passing resources (empty destructor). */
-        ~MsgEmptyExec(void) throw() { }
+        ~MsgEmptyExec(void) noexcept { }
 
         /** return total number of processes in world communicator: always = 1. */
         int worldSize(void) const override { return MsgExecBase::worldSize(); }
@@ -63,7 +63,7 @@ namespace openm
         int rank(void) const override { return MsgExecBase::rank(); }
 
         /** return rank in modeling group: always = 0. */
-        int groupRank(void) const throw() { return MsgExecBase::groupRank(); }
+        int groupRank(void) const noexcept { return MsgExecBase::groupRank(); }
 
         /** set clean exit flag for normal shutdown of message passing interface. */
         void setCleanExit(bool /*i_isClean*/) override { }
@@ -112,11 +112,8 @@ namespace openm
         bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const override
         { return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
-        /** wait for non-blocking send to be completed.
-         *
-         * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
-         */
-        void waitSendAll(bool i_isOnce = false) override { MsgExecBase::waitSendAll(i_isOnce); }
+        /** wait for non-blocking send to be completed. */
+        void waitSendAll(void) override { MsgExecBase::waitSendAll(); }
 
     private:
         MsgEmptyExec(const MsgEmptyExec & i_exec) = delete;
@@ -135,7 +132,7 @@ namespace openm
         { }
 
         /** cleanup message sender resources (does nothing). */
-        virtual ~MsgEmptySendBase(void) throw() { }
+        virtual ~MsgEmptySendBase(void) noexcept { }
 
     protected:
         int msgTag;         // MPI message tag
@@ -162,7 +159,7 @@ namespace openm
         { }
 
         /** cleanup message sender resources (does nothing). */
-        ~MsgEmptySendArray(void) throw() { }
+        ~MsgEmptySendArray(void) noexcept { }
 
         /** return true if send completed (always true). */
         bool isCompleted(void) { return true; }
@@ -191,7 +188,7 @@ namespace openm
         { }
 
         /** cleanup message sender resources (does nothing). */
-        ~MsgEmptySendPacked(void) throw() { }
+        ~MsgEmptySendPacked(void) noexcept { }
 
         /** return true if send completed (always true). */
         bool isCompleted(void) { return true; }
@@ -222,7 +219,7 @@ namespace openm
         { }
 
         /** cleanup message receiver resources (does nothing). */
-        ~MsgEmptyRecvArray(void) throw() { }
+        ~MsgEmptyRecvArray(void) noexcept { }
 
         /** try to non-blocking receive value array, return true if completed (always true). */
         bool tryReceive(void) { return true; }
@@ -255,7 +252,7 @@ namespace openm
         { }
 
         /** cleanup message receiver resources (does nothing). */
-        ~MsgEmptyRecvPacked(void) throw() { }
+        ~MsgEmptyRecvPacked(void) noexcept { }
 
         /** try to non-blocking receive and unpack the data, return true if completed (always true). */
         bool tryReceive(void) { return true; }

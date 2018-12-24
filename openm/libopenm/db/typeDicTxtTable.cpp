@@ -14,7 +14,7 @@ namespace openm
     public:
         TypeDicTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         TypeDicTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TypeDicTxtTable() throw();
+        ~TypeDicTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -79,7 +79,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITypeDicTxtTable::~ITypeDicTxtTable(void) throw() { }
+ITypeDicTxtTable::~ITypeDicTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITypeDicTxtTable * ITypeDicTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -113,7 +113,7 @@ TypeDicTxtTable::TypeDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId
 }
 
 // Table never unloaded
-TypeDicTxtTable::~TypeDicTxtTable(void) throw() { }
+TypeDicTxtTable::~TypeDicTxtTable(void) noexcept { }
 
 // Find row by unique key: model id, model type id, language id
 const TypeDicTxtRow * TypeDicTxtTable::byKey(int i_modelId, int i_typeId, int i_langId) const

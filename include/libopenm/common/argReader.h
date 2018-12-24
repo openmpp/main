@@ -62,28 +62,28 @@ namespace openm
             );
 
         /** cleanup argument holder resources */
-        ~ArgReader(void) throw() { }
+        ~ArgReader(void) noexcept { }
 
         /** arguments as key-value string pairs with case-neutral search */
         NoCaseMap args;
 
         /** return true if option with this key exist. */
-        bool isOptionExist(const char * i_key) const throw();
+        bool isOptionExist(const char * i_key) const noexcept;
 
         /** return string value by key or default value if not found. */
-        string strOption(const char * i_key, const string & i_default = "") const throw();
+        string strOption(const char * i_key, const string & i_default = "") const noexcept;
 
         /** return boolean value by key or false if not found or value not "yes", "1", "true". */
-        bool boolOption(const char * i_key) const throw();
+        bool boolOption(const char * i_key) const noexcept;
 
         /** return int value by key or default if not found or can not be converted to int. */
-        int intOption(const char * i_key, int i_default) const throw() { return (int)longOption(i_key, i_default); }
+        int intOption(const char * i_key, int i_default) const noexcept { return (int)longOption(i_key, i_default); }
 
         /** return long value by key or default if not found or can not be converted to long. */
-        long long longOption(const char * i_key, long long i_default) const throw();
+        long long longOption(const char * i_key, long long i_default) const noexcept;
 
         /** return double value by key or default if not found or can not be converted to double. */
-        double doubleOption(const char * i_key, double i_default) const throw();
+        double doubleOption(const char * i_key, double i_default) const noexcept;
 
         /** get run options from command line, ie: number of cases. */
         void parseCommandLine(

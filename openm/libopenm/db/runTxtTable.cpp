@@ -12,7 +12,7 @@ namespace openm
     class RunTxtTable : public IRunTxtTable
     {
     public:
-        ~RunTxtTable() throw();
+        ~RunTxtTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: run id and language id
         static vector<RunTxtRow> select(IDbExec * i_dbExec, const string & i_where);
@@ -66,10 +66,10 @@ namespace openm
 }
 
 // Table never unloaded
-IRunTxtTable::~IRunTxtTable(void) throw() { }
+IRunTxtTable::~IRunTxtTable(void) noexcept { }
 
 // Table never unloaded
-RunTxtTable::~RunTxtTable(void) throw() { }
+RunTxtTable::~RunTxtTable(void) noexcept { }
 
 // select table rows
 vector<RunTxtRow> IRunTxtTable::select(IDbExec * i_dbExec, int i_langId)

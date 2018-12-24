@@ -14,7 +14,7 @@ namespace openm
     public:
         ModelWordTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         ModelWordTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ModelWordTable() throw();
+        ~ModelWordTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -75,7 +75,7 @@ namespace openm
 }
 
 // Table never unloaded
-IModelWordTable::~IModelWordTable(void) throw() { }
+IModelWordTable::~IModelWordTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IModelWordTable * IModelWordTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -106,7 +106,7 @@ ModelWordTable::ModelWordTable(IDbExec * i_dbExec, int i_modelId, int i_langId)
 }
 
 // Table never unloaded
-ModelWordTable::~ModelWordTable(void) throw() { }
+ModelWordTable::~ModelWordTable(void) noexcept { }
 
 // Find row by primary key: model id, language, word code
 const ModelWordRow * ModelWordTable::byKey(int i_modelId, int i_langId, const string & i_code) const

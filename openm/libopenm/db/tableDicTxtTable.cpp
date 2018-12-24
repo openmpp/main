@@ -14,7 +14,7 @@ namespace openm
     public:
         TableDicTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         TableDicTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TableDicTxtTable() throw();
+        ~TableDicTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -87,7 +87,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableDicTxtTable::~ITableDicTxtTable(void) throw() { }
+ITableDicTxtTable::~ITableDicTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableDicTxtTable * ITableDicTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -122,7 +122,7 @@ TableDicTxtTable::TableDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 }
 
 // Table never unloaded
-TableDicTxtTable::~TableDicTxtTable(void) throw() { }
+TableDicTxtTable::~TableDicTxtTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id, language id
 const TableDicTxtRow * TableDicTxtTable::byKey(int i_modelId, int i_tableId, int i_langId) const

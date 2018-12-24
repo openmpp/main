@@ -112,7 +112,7 @@ int main(int argc, char ** argv)
             );
 
         // init message interface
-        unique_ptr<IMsgExec> msgExec(IMsgExec::create(argc, argv));
+        unique_ptr<IMsgExec> msgExec(IMsgExec::create(argc, argv, theModelRunState));
 
         try {
             // get db-connection string or use default if not specified

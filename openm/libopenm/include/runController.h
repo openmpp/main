@@ -31,7 +31,7 @@ namespace openm
         static RunController * create(const ArgReader & i_argOpts, bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
 
         /** last cleanup */
-        virtual ~RunController(void) throw() = 0;
+        virtual ~RunController(void) noexcept = 0;
 
         /** return index of parameter by name */
         int parameterIdByName(const char * i_name) const override;

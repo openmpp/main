@@ -14,7 +14,7 @@ namespace openm
     public:
         TableExprTable(IDbExec * i_dbExec, int i_modelId = 0);
         TableExprTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TableExprTable() throw();
+        ~TableExprTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -93,7 +93,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableExprTable::~ITableExprTable(void) throw() { }
+ITableExprTable::~ITableExprTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableExprTable * ITableExprTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -124,7 +124,7 @@ TableExprTable::TableExprTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-TableExprTable::~TableExprTable(void) throw() { }
+TableExprTable::~TableExprTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id, expr id
 const TableExprRow * TableExprTable::byKey(int i_modelId, int i_tableId, int i_exprId) const

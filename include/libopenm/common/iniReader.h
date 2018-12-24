@@ -67,28 +67,28 @@ namespace openm
         IniFileReader(const char * i_filePath, const char * i_codePageName = nullptr);
 
         /** return true if ini-file loaded correctly or false on error */
-        bool isLoaded(void) const throw() { return is_loaded; }
+        bool isLoaded(void) const noexcept { return is_loaded; }
 
         /** return true if section and key exist in ini-file. */
-        bool isExist(const char * i_section, const char * i_key) const throw();
+        bool isExist(const char * i_section, const char * i_key) const noexcept;
 
         /** return true if section.key exist in ini-file. */
-        bool isExist(const char * i_sectionKey) const throw();
+        bool isExist(const char * i_sectionKey) const noexcept;
 
         /** return string value by section and key or deafult value if not found. */
-        const string strValue(const char * i_section, const char * i_key, const string & i_default = "") const throw();
+        const string strValue(const char * i_section, const char * i_key, const string & i_default = "") const noexcept;
 
         /** return string value by section.key or deafult value if not found. */
-        const string strValue(const char * i_sectionKey, const string & i_default = "") const throw();
+        const string strValue(const char * i_sectionKey, const string & i_default = "") const noexcept;
 
         /** return names of ini-file sections as case-neutral set of strings. */
-        const NoCaseSet sectionSet(void) const throw();
+        const NoCaseSet sectionSet(void) const noexcept;
 
         /** return section by name as case-neutral map of (key,value). */
-        const NoCaseMap getSection(const char * i_section) const throw();
+        const NoCaseMap getSection(const char * i_section) const noexcept;
 
         /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-        static void loadMessages(const char * i_iniMsgPath, const string & i_language = "") throw();
+        static void loadMessages(const char * i_iniMsgPath, const string & i_language = "") noexcept;
 
     private:
         bool is_loaded;         // if true then ini-file loaded OK else error

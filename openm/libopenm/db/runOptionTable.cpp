@@ -14,7 +14,7 @@ namespace openm
     public:
         RunOptionTable(IDbExec * i_dbExec, int i_runId = 0);
         RunOptionTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~RunOptionTable() throw();
+        ~RunOptionTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -29,34 +29,34 @@ namespace openm
         vector<RunOptionRow> byRunId(int i_runId) const;
 
         /** return true if primary key (run id, option key) found. */
-        bool isExist(int i_runId, const char * i_key) const throw();
+        bool isExist(int i_runId, const char * i_key) const noexcept;
         
         /** return true if option key found. */
-        bool isExist(const char * i_key) const throw();
+        bool isExist(const char * i_key) const noexcept;
 
         /** return string value by primary key (run id, option key) or default value if not found. */
-        string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw() { return strValue(true, i_runId, i_key, i_default); }
+        string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept { return strValue(true, i_runId, i_key, i_default); }
 
         /** return string value by option key (first found) or default value if not found. */
-        string strValue(const char * i_key, const string & i_default = "") const throw() { return strValue(false, 0, i_key, i_default); }
+        string strValue(const char * i_key, const string & i_default = "") const noexcept { return strValue(false, 0, i_key, i_default); }
 
         /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
-        bool boolValue(int i_runId, const char * i_key) const throw() { return boolValue(true, i_runId, i_key); }
+        bool boolValue(int i_runId, const char * i_key) const noexcept { return boolValue(true, i_runId, i_key); }
 
         /** return boolean value by option key (first found) or false if not found or value not "yes", "1", "true". */
-        bool boolValue(const char * i_key) const throw() { return boolValue(false, 0, i_key); }
+        bool boolValue(const char * i_key) const noexcept { return boolValue(false, 0, i_key); }
 
         /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
-        long long longValue(int i_runId, const char * i_key, long long i_default) const throw() { return longValue(true, i_runId, i_key, i_default); }
+        long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept { return longValue(true, i_runId, i_key, i_default); }
 
         /** return long value by option key (first found) or default if not found or can not be converted to long. */
-        long long longValue(const char * i_key, long long i_default) const throw() { return longValue(false, 0, i_key, i_default); }
+        long long longValue(const char * i_key, long long i_default) const noexcept { return longValue(false, 0, i_key, i_default); }
 
         /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
-        double doubleValue(int i_runId, const char * i_key, double i_default) const throw() { return doubleValue(true, i_runId, i_key, i_default); }
+        double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept { return doubleValue(true, i_runId, i_key, i_default); }
 
         /** return double value by option key (first found) or default if not found or can not be converted to double. */
-        double doubleValue(const char * i_key, double i_default) const throw() { return doubleValue(false, 0, i_key, i_default); }
+        double doubleValue(const char * i_key, double i_default) const noexcept { return doubleValue(false, 0, i_key, i_default); }
 
     private:
         IRowBaseVec rowVec;     // table rows
@@ -65,16 +65,16 @@ namespace openm
         const RunOptionRow * firstOptionKey(const string & i_key) const;
 
         // return string value by primary key (run id, option key) or by option key only, return default value if not found
-        string strValue(bool i_useRunId, int i_runId, const char * i_key, const string & i_default = "") const throw();
+        string strValue(bool i_useRunId, int i_runId, const char * i_key, const string & i_default = "") const noexcept;
 
         // return boolean value by primary key (run id, option key) or by option key only, return false if not found or value not "yes", "1", "true"
-        bool boolValue(bool i_useRunId, int i_runId, const char * i_key) const throw();
+        bool boolValue(bool i_useRunId, int i_runId, const char * i_key) const noexcept;
 
         // return long value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to long
-        long long longValue(bool i_useRunId, int i_runId, const char * i_key, long long i_default) const throw();
+        long long longValue(bool i_useRunId, int i_runId, const char * i_key, long long i_default) const noexcept;
 
         // return double value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to double
-        double doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const throw();
+        double doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const noexcept;
 
     private:
         RunOptionTable(const RunOptionTable & i_table) = delete;
@@ -119,7 +119,7 @@ namespace openm
 }
 
 // Table never unloaded
-IRunOptionTable::~IRunOptionTable(void) throw() { }
+IRunOptionTable::~IRunOptionTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IRunOptionTable * IRunOptionTable::create(IDbExec * i_dbExec, int i_runId)
@@ -147,7 +147,7 @@ RunOptionTable::RunOptionTable(IDbExec * i_dbExec, int i_runId)
 }
 
 // Table never unloaded
-RunOptionTable::~RunOptionTable(void) throw() { }
+RunOptionTable::~RunOptionTable(void) noexcept { }
 
 // Find row by primary key: run id, option key
 const RunOptionRow * RunOptionTable::byKey(int i_runId, const string & i_key) const
@@ -178,7 +178,7 @@ vector<RunOptionRow> RunOptionTable::byRunId(int i_runId) const
 }
 
 /** return true if primary key (run id, option key) found. */
-bool RunOptionTable::isExist(int i_runId, const char * i_key) const throw()
+bool RunOptionTable::isExist(int i_runId, const char * i_key) const noexcept
 { 
     try {
         return i_key != NULL && byKey(i_runId, i_key) != NULL;
@@ -189,7 +189,7 @@ bool RunOptionTable::isExist(int i_runId, const char * i_key) const throw()
 }
 
 /** return true if option key found. */
-bool RunOptionTable::isExist(const char * i_key) const throw()
+bool RunOptionTable::isExist(const char * i_key) const noexcept
 {
     try {
         return i_key != NULL && firstOptionKey(i_key) != NULL;
@@ -200,7 +200,7 @@ bool RunOptionTable::isExist(const char * i_key) const throw()
 }
 
 // return string value by primary key (run id, option key) or by option key only, return default value if not found
-string RunOptionTable::strValue(bool i_useRunId, int i_runId, const char * i_key, const string & i_default) const throw()
+string RunOptionTable::strValue(bool i_useRunId, int i_runId, const char * i_key, const string & i_default) const noexcept
 {
     try {
         if (i_key == NULL) return i_default;    // invalid key
@@ -215,7 +215,7 @@ string RunOptionTable::strValue(bool i_useRunId, int i_runId, const char * i_key
 }
 
 // return boolean value by primary key (run id, option key) or by option key only, return false if not found or value not "yes", "1", "true"
-bool RunOptionTable::boolValue(bool i_useRunId, int i_runId, const char * i_key) const throw()
+bool RunOptionTable::boolValue(bool i_useRunId, int i_runId, const char * i_key) const noexcept
 {
     try {
         string sVal = strValue(i_useRunId, i_runId, i_key);
@@ -228,7 +228,7 @@ bool RunOptionTable::boolValue(bool i_useRunId, int i_runId, const char * i_key)
 }
 
 // return long value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to long
-long long RunOptionTable::longValue(bool i_useRunId, int i_runId, const char * i_key, long long i_default) const throw()
+long long RunOptionTable::longValue(bool i_useRunId, int i_runId, const char * i_key, long long i_default) const noexcept
 {
     try {
         string sVal = strValue(i_useRunId, i_runId, i_key);
@@ -241,7 +241,7 @@ long long RunOptionTable::longValue(bool i_useRunId, int i_runId, const char * i
 }
 
 // return double value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to double
-double RunOptionTable::doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const throw()
+double RunOptionTable::doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const noexcept
 {
     try {
         string sVal = strValue(i_useRunId, i_runId, i_key);

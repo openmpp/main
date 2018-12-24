@@ -24,7 +24,7 @@ namespace openm
         DbExecSqlite(const string & i_connectionStr);
 
         /** close db-connection and cleanup connection resources. */
-        ~DbExecSqlite(void) throw();
+        ~DbExecSqlite(void) noexcept;
 
         /** select integer value of first (row,column) or default if no rows or value IS NULL. */
         int selectToInt(const string & i_sql, int i_default) override;
@@ -80,7 +80,7 @@ namespace openm
         void createStatement(const string & i_sql, int i_paramCount, const type_info ** i_typeArr) override;
 
         /** release statement resources. */
-        void releaseStatement(void) throw() override;
+        void releaseStatement(void) noexcept override;
 
         /** execute statement with parameters. */
         void executeStatement(int i_paramCount, const DbValue * i_valueArr) override;
@@ -98,7 +98,7 @@ namespace openm
         vector<BindHandler> bindFncVec;     // methods to bind parameter values to the statement
 
         /** close db-connection and cleanup connection resources. */
-        void cleanup(void) throw() override;
+        void cleanup(void) noexcept override;
 
         /** validate connection properties. */
         void validateConnectionProps(void) override;

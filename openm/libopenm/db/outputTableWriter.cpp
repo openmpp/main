@@ -25,13 +25,13 @@ namespace openm
             );
 
         // Output table writer cleanup
-        ~OutputTableWriter(void) throw() { }
+        ~OutputTableWriter(void) noexcept { }
 
         // return total number of values for each accumulator
-        size_t sizeOf(void) const throw() override { return totalSize; }
+        size_t sizeOf(void) const noexcept override { return totalSize; }
 
         // return number of output aggregated expressions
-        int expressionCount(void) const throw() override { return exprCount; }
+        int expressionCount(void) const noexcept override { return exprCount; }
 
         // write output table accumulator values
         void writeAccumulator(IDbExec * i_dbExec, int i_subId, int i_accId, size_t i_size, const double * i_valueArr) override;
@@ -77,7 +77,7 @@ namespace openm
 }
 
 // Output table writer cleanup
-IOutputTableWriter::~IOutputTableWriter(void) throw() { }
+IOutputTableWriter::~IOutputTableWriter(void) noexcept { }
 
 // Output table writer factory: create new accumulators writer
 IOutputTableWriter * IOutputTableWriter::create(

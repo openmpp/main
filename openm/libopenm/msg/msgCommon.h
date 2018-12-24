@@ -26,7 +26,7 @@ namespace openm
     {
     public:
         /** cleanup message sender resources. */
-        virtual ~IMsgSend(void) throw() = 0;
+        virtual ~IMsgSend(void) noexcept = 0;
 
         /** check is send completed. */
         virtual bool isCompleted(void) = 0;
@@ -37,7 +37,7 @@ namespace openm
     {
     public:
         /** cleanup message sender resources. */
-        virtual ~IMsgSendArray(void) throw() = 0;
+        virtual ~IMsgSendArray(void) noexcept = 0;
 
         /**
         * create new value array sender.
@@ -59,7 +59,7 @@ namespace openm
     {
     public:
         /** cleanup message sender resources. */
-        virtual ~IMsgSendPacked(void) throw() = 0;
+        virtual ~IMsgSendPacked(void) noexcept = 0;
 
         /**
         * create new sender for packed data.
@@ -79,7 +79,7 @@ namespace openm
     {
     public:
         /** cleanup message receiver resources. */
-        virtual ~IMsgRecv(void) throw() = 0;
+        virtual ~IMsgRecv(void) noexcept = 0;
 
         /** try to receive the data, return return true if received. */
         virtual bool tryReceive(void) = 0;
@@ -90,7 +90,7 @@ namespace openm
     {
     public:
         /** cleanup value array receiver resources. */
-        virtual ~IMsgRecvArray(void) throw() = 0;
+        virtual ~IMsgRecvArray(void) noexcept = 0;
 
         /**
         * create new receiver for value array.
@@ -112,7 +112,7 @@ namespace openm
     {
     public:
         /** cleanup message receiver resources. */
-        virtual ~IMsgRecvPacked(void) throw() = 0;
+        virtual ~IMsgRecvPacked(void) noexcept = 0;
 
         /**
         * create new receiver for packed data.

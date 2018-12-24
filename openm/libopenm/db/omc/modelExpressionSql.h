@@ -123,7 +123,7 @@ namespace openm
         { }
 
         /** release sql builder resources. */
-        ~ModelBaseExpressionSql() throw() { }
+        ~ModelBaseExpressionSql() noexcept { }
 
     protected:
         /** accumulator database table name */
@@ -162,7 +162,7 @@ namespace openm
         { }
 
         /** release sql builder resources. */
-        ~ModelAccumulatorSql() throw() { }
+        ~ModelAccumulatorSql() noexcept { }
 
         /**
          * translate output table "native" (non-derived) accumulator into sql subquery.
@@ -209,7 +209,7 @@ namespace openm
         { }
 
         /** release sql builder resources. */
-        ~ModelAggregationSql() throw() { }
+        ~ModelAggregationSql() noexcept { }
 
         /**
          * translate output aggregation expression into sql.

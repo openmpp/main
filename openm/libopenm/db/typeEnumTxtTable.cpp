@@ -14,7 +14,7 @@ namespace openm
     public:
         TypeEnumTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         TypeEnumTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TypeEnumTxtTable() throw();
+        ~TypeEnumTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -83,7 +83,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITypeEnumTxtTable::~ITypeEnumTxtTable(void) throw() { }
+ITypeEnumTxtTable::~ITypeEnumTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITypeEnumTxtTable * ITypeEnumTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -117,7 +117,7 @@ TypeEnumTxtTable::TypeEnumTxtTable(IDbExec * i_dbExec, int i_modelId, int i_lang
 }
 
 // Table never unloaded
-TypeEnumTxtTable::~TypeEnumTxtTable(void) throw() { }
+TypeEnumTxtTable::~TypeEnumTxtTable(void) noexcept { }
 
 // Find row by unique key: model id, model type id, language id
 const TypeEnumTxtRow * TypeEnumTxtTable::byKey(int i_modelId, int i_typeId, int i_enumId, int i_langId) const

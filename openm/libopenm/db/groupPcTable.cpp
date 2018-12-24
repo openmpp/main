@@ -14,7 +14,7 @@ namespace openm
     public:
         GroupPcTable(IDbExec * i_dbExec, int i_modelId = 0);
         GroupPcTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~GroupPcTable() throw();
+        ~GroupPcTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -82,7 +82,7 @@ namespace openm
 }
 
 // Table never unloaded
-IGroupPcTable::~IGroupPcTable(void) throw() { }
+IGroupPcTable::~IGroupPcTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IGroupPcTable * IGroupPcTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -112,7 +112,7 @@ GroupPcTable::GroupPcTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-GroupPcTable::~GroupPcTable(void) throw() { }
+GroupPcTable::~GroupPcTable(void) noexcept { }
 
 // Find row by primary key: model id, group id, child position
 const GroupPcRow * GroupPcTable::byKey(int i_modelId, int i_groupId, int i_chidPos) const

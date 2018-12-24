@@ -153,7 +153,7 @@ ptrdiff_t IniFileReader::findIndex(const char * i_sectionKey) const
 }
 
 /** return true if section and key exist in ini-file. */
-bool IniFileReader::isExist(const char * i_section, const char * i_key) const throw()
+bool IniFileReader::isExist(const char * i_section, const char * i_key) const noexcept
 {
     try {
         return is_loaded ? findIndex(i_section, i_key) != -1 : false;
@@ -164,7 +164,7 @@ bool IniFileReader::isExist(const char * i_section, const char * i_key) const th
 }
 
 /** return true if section.key exist in ini-file. */
-bool IniFileReader::isExist(const char * i_sectionKey) const throw()
+bool IniFileReader::isExist(const char * i_sectionKey) const noexcept
 {
     try {
         return is_loaded ? findIndex(i_sectionKey) != -1 : false;
@@ -175,7 +175,7 @@ bool IniFileReader::isExist(const char * i_sectionKey) const throw()
 }
 
 /** return string value by section and key or deafult value if not found. */
-const string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const throw()
+const string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const noexcept
 {
     try {
         if (!is_loaded) return i_default;   // ini-file not loaded
@@ -190,7 +190,7 @@ const string IniFileReader::strValue(const char * i_section, const char * i_key,
 }
 
 /** return string value by section.key or deafult value if not found. */
-const string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const throw()
+const string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const noexcept
 {
     try {
         if (!is_loaded) return i_default;   // ini-file not loaded
@@ -205,7 +205,7 @@ const string IniFileReader::strValue(const char * i_sectionKey, const string & i
 }
 
 /** return names of ini-file sections as case-neutral set of strings. */
-const NoCaseSet IniFileReader::sectionSet(void) const throw()
+const NoCaseSet IniFileReader::sectionSet(void) const noexcept
 {
     try {
         NoCaseSet rs;
@@ -220,7 +220,7 @@ const NoCaseSet IniFileReader::sectionSet(void) const throw()
 }
 
 /** return section by name as case-neutral map of (key,value). */
-const NoCaseMap IniFileReader::getSection(const char * i_section) const throw()
+const NoCaseMap IniFileReader::getSection(const char * i_section) const noexcept
 {
     try {
         NoCaseMap sectMap;
@@ -341,7 +341,7 @@ bool IniEntry::equalTo(const char * i_section, const char * i_key) const
 }
 
 /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_language) throw()
+void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_language) noexcept
 {
     try {
         // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)

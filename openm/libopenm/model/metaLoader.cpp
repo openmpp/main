@@ -182,7 +182,7 @@ static const char * prefixOptArr[] = {
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
 /** last cleanup */
-MetaLoader::~MetaLoader(void) throw() { }
+MetaLoader::~MetaLoader(void) noexcept { }
 
 /** initialize run options from command line and ini-file. */
 const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)

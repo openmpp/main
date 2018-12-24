@@ -13,7 +13,7 @@ IModelBuilder * IModelBuilder::create(const string & i_providerNames, const stri
 }
 
 // release builder resources
-IModelBuilder::~IModelBuilder() throw() { }
+IModelBuilder::~IModelBuilder() noexcept { }
 
 // create new model builder and set db table name prefix and suffix rules
 ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir) :

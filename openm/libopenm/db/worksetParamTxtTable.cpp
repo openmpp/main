@@ -12,7 +12,7 @@ namespace openm
     class WorksetParamTxtTable : public IWorksetParamTxtTable
     {
     public:
-        ~WorksetParamTxtTable() throw();
+        ~WorksetParamTxtTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: set id, parameter id, language id
         static vector<WorksetParamTxtRow> select(IDbExec * i_dbExec, const string & i_where);
@@ -70,10 +70,10 @@ namespace openm
 }
 
 // Table never unloaded
-IWorksetParamTxtTable::~IWorksetParamTxtTable(void) throw() { }
+IWorksetParamTxtTable::~IWorksetParamTxtTable(void) noexcept { }
 
 // Table never unloaded
-WorksetParamTxtTable::~WorksetParamTxtTable(void) throw() { }
+WorksetParamTxtTable::~WorksetParamTxtTable(void) noexcept { }
 
 // select table rows
 vector<WorksetParamTxtRow> IWorksetParamTxtTable::select(IDbExec * i_dbExec, int i_setId, int i_langId)

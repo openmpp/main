@@ -33,7 +33,7 @@ namespace openm
         { }
 
         /** last cleanup */
-        virtual ~SingleController(void) throw() { }
+        virtual ~SingleController(void) noexcept { }
 
         /** create new run and input parameters in database. */
         virtual int nextRun(void) override;
@@ -98,7 +98,7 @@ namespace openm
         }
 
         /** last cleanup */
-        virtual ~RootController(void) throw() { }
+        virtual ~RootController(void) noexcept { }
 
         /** create new run and input parameters in database. */
         virtual int nextRun(void) override;
@@ -206,7 +206,7 @@ namespace openm
         }
 
         /** last cleanup */
-        virtual ~ChildController(void) throw() { }
+        virtual ~ChildController(void) noexcept { }
 
         /** create new run and input parameters in database. */
         virtual int nextRun(void) override;
@@ -281,7 +281,7 @@ namespace openm
         { }
 
         /** last cleanup */
-        virtual ~RestartController(void) throw() { }
+        virtual ~RestartController(void) noexcept { }
 
         /** create new run and input parameters in database. */
         virtual int nextRun(void) override;

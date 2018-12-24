@@ -19,7 +19,7 @@ namespace openm
     /** output table writer public interface */
     struct IOutputTableWriter
     {
-        virtual ~IOutputTableWriter() throw() = 0;
+        virtual ~IOutputTableWriter() noexcept = 0;
 
         /** output table writer factory to write accumulators */
         static IOutputTableWriter * create(
@@ -43,13 +43,13 @@ namespace openm
         );
 
         /** return total number of values for each accumulator */
-        virtual size_t sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const noexcept = 0;
 
         /** return total number of values for each accumulator */
         static size_t sizeOf(const MetaHolder * i_metaStore, int i_tableId);
 
         /** return number of output aggregated expressions */
-        virtual int expressionCount(void) const throw() = 0;
+        virtual int expressionCount(void) const noexcept = 0;
 
         /**
         * write output table accumulator values

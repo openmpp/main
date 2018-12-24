@@ -44,7 +44,7 @@ namespace openm
     class IRowAdapter
     {
     public:
-        virtual ~IRowAdapter(void) throw() { }
+        virtual ~IRowAdapter(void) noexcept { }
 
         /** create new row (tuple, struct or array) initialized with default field values */
         virtual IRowBase * createRow(void) const = 0;
@@ -162,7 +162,7 @@ namespace openm
     class IValueFormatter
     {
     public:
-        virtual ~IValueFormatter(void) throw() { }
+        virtual ~IValueFormatter(void) noexcept { }
 
         /**
          * convert value to string using snprintf.
@@ -180,7 +180,7 @@ namespace openm
     class IRowProcessor
     {
     public:
-        virtual ~IRowProcessor(void) throw() { }
+        virtual ~IRowProcessor(void) noexcept { }
 
         /** process row, ie: append to row list or aggregate. */
         virtual void processRow(IRowBaseUptr & i_row) = 0;

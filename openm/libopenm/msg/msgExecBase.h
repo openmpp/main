@@ -22,7 +22,7 @@ namespace openm
     {
     public:
         /** cleanup message passing resources. */
-        virtual ~MsgExecBase(void) throw() { };
+        virtual ~MsgExecBase(void) noexcept { };
 
         /** return total number of processes in MPI world communicator. */
         int worldSize(void) const;
@@ -49,15 +49,16 @@ namespace openm
          *
          * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
          */
-        void waitSendAll(bool i_isOnce);
+        void waitSendAll(void);
 
     protected:
-        MsgExecBase(void) : worldCommSize(1), worldRank(0), group_rank(0) { }
+        MsgExecBase(IFinalState * i_final) : worldCommSize(1), worldRank(0), group_rank(0), theFinal(i_final) { }
 
     protected:
-        int worldCommSize;      // total number of processes in world communicator
-        int worldRank;          // rank of process in world communicator
-        int group_rank;         // rank of process in group communicator
+        int worldCommSize;                  // total number of processes in world communicator
+        int worldRank;                      // rank of process in world communicator
+        int group_rank;                     // rank of process in group communicator
+        IFinalState * theFinal = nullptr;   // final model run state interface
 
         list<unique_ptr<IMsgSend> > sendLst;    // list of active send requests
 

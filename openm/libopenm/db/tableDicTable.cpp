@@ -14,7 +14,7 @@ namespace openm
     public:
         TableDicTable(IDbExec * i_dbExec, int i_modelId = 0);
         TableDicTable(IRowBaseVec & io_rowVec) { rowVec.swap(io_rowVec); }
-        ~TableDicTable() throw();
+        ~TableDicTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -113,7 +113,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableDicTable::~ITableDicTable(void) throw() { }
+ITableDicTable::~ITableDicTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableDicTable * ITableDicTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -146,7 +146,7 @@ TableDicTable::TableDicTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-TableDicTable::~TableDicTable(void) throw() { }
+TableDicTable::~TableDicTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id
 const TableDicRow * TableDicTable::byKey(int i_modelId, int i_tableId) const

@@ -14,7 +14,7 @@ namespace openm
     public:
         TableAccTable(IDbExec * i_dbExec, int i_modelId, bool i_isIncludeDerived);
         TableAccTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TableAccTable() throw();
+        ~TableAccTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -93,7 +93,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableAccTable::~ITableAccTable(void) throw() { }
+ITableAccTable::~ITableAccTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableAccTable * ITableAccTable::create(IDbExec * i_dbExec, int i_modelId, bool i_isIncludeDerived)
@@ -124,7 +124,7 @@ TableAccTable::TableAccTable(IDbExec * i_dbExec, int i_modelId, bool i_isInclude
 }
 
 // Table never unloaded
-TableAccTable::~TableAccTable(void) throw() { }
+TableAccTable::~TableAccTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id, accumulator id
 const TableAccRow * TableAccTable::byKey(int i_modelId, int i_tableId, int i_accId) const

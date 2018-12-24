@@ -6,7 +6,7 @@
 using namespace openm;
 
 // db-row base class
-IRowBase::~IRowBase(void) throw() { }
+IRowBase::~IRowBase(void) noexcept { }
 
 // lang_lst row less comparator by primary key: language id.
 bool LangLstRow::isKeyLess(const LangLstRow & i_left, const LangLstRow & i_right)

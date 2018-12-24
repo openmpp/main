@@ -40,7 +40,7 @@ static const int maxDbTableNameLen = 30;
 const char openm::dbUnknownErrorMessage[] = "unknown db error";
 
 /** close db-connection and release connection resources. */
-IDbExec::~IDbExec(void) throw() { }
+IDbExec::~IDbExec(void) noexcept { }
 
 /** return list of provider names from supplied comma or semicolon separated string or exception on invalid name. */
 list<string> IDbExec::parseListOfProviderNames(const string & i_sqlProviderNames)

@@ -23,19 +23,19 @@ namespace openm
     {
     public:
         /** create message passing interface by MPI_Init. */
-        MpiExec(int & argc, char ** & argv);
+        MpiExec(int & argc, char ** & argv, IFinalState * i_final);
 
         /** cleanup message passing resources by MPI_Finalize. */
-        ~MpiExec(void) throw();
+        ~MpiExec(void) noexcept;
 
         /** return total number of processes in MPI world communicator. */
-        int worldSize(void) const throw() override { return MsgExecBase::worldSize(); }
+        int worldSize(void) const noexcept override { return MsgExecBase::worldSize(); }
 
         /** return current process MPI rank. */
-        int rank(void) const throw() override { return MsgExecBase::rank(); }
+        int rank(void) const noexcept override { return MsgExecBase::rank(); }
 
         /** return rank in modeling group. */
-        int groupRank(void) const throw() override { return MsgExecBase::groupRank(); }
+        int groupRank(void) const noexcept override { return MsgExecBase::groupRank(); }
 
         /** set clean exit flag for normal shutdown messaging else abort MPI. */
         void setCleanExit(bool i_isClean = false) override;
@@ -74,21 +74,18 @@ namespace openm
         bool tryReceive(int i_recvFrom, MsgTag i_msgTag, const type_info & i_type, size_t i_size, void * io_valueArr) const override
         { return MsgExecBase::tryReceive(i_recvFrom, i_msgTag, i_type, i_size, io_valueArr); }
 
-        /** wait for non-blocking send to be completed.
-         *
-         * @param[in] i_isOnce  if true then check send list only once else wait until all requests completed
-         */
-        void waitSendAll(bool i_isOnce = false) override { MsgExecBase::waitSendAll(i_isOnce); }
+        /** wait for non-blocking send to be completed. */
+        void waitSendAll(void) override { MsgExecBase::waitSendAll(); }
 
     private:
-        bool isCleanExit;               // if false then process exit by error or exception
-        MPI_Group worldGroup;           // MPI world global group
-        MPI_Comm groupComm;             // modeling group communicator for current process
-        vector<MPI_Group> mpiGroupVec;  // handles of modeling groups
-        vector<MPI_Comm> mpiCommVec;    // handles of communicators
+        bool isCleanExit;                   // if false then process exit by error or exception
+        MPI_Group worldGroup;               // MPI world global group
+        MPI_Comm groupComm;                 // modeling group communicator for current process
+        vector<MPI_Group> mpiGroupVec;      // handles of modeling groups
+        vector<MPI_Comm> mpiCommVec;        // handles of communicators
 
         // cleanup MPI resources
-        void cleanup(void) throw();
+        void cleanup(void) noexcept;
 
         /** return group communicator by one-based group number or worldwide communicator. */
         MPI_Comm commByGroupOne(int i_groupOne);

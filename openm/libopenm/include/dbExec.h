@@ -21,7 +21,7 @@ namespace openm
     {
     public:
         /** close db-connection and cleanup connection resources. */
-        virtual ~IDbExec(void) throw() = 0;
+        virtual ~IDbExec(void) noexcept = 0;
 
         /** db-connection factory: create new db-connection.
          *
@@ -198,7 +198,7 @@ namespace openm
          *      releaseStatement();
          * @endcode
          */
-        virtual void releaseStatement(void) throw() = 0;
+        virtual void releaseStatement(void) noexcept = 0;
 
         /**
          * execute statement with parameters.

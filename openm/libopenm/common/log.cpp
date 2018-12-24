@@ -34,9 +34,9 @@ static TraceLog defaultTrace;
 ITrace * theTrace = &defaultTrace;
 
 // log public interfaces
-ILogBase::~ILogBase(void) throw() { }
-ILog::~ILog(void) throw() { }
-ITrace::~ITrace(void) throw() { }
+ILogBase::~ILogBase(void) noexcept { }
+ILog::~ILog(void) noexcept { }
+ITrace::~ITrace(void) noexcept { }
 
 /**
 * create log instance.
@@ -70,7 +70,7 @@ LogBase::LogBase(
 }
 
 /** cleanup log resources */
-LogBase::~LogBase(void) throw()
+LogBase::~LogBase(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -90,7 +90,7 @@ LogBase::~LogBase(void) throw()
 */
 void LogBase::init(
     bool i_logToConsole, const char * i_basePath, bool i_logToFile, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
-    ) throw()
+    ) noexcept
 {
     try {
         // reset log status flags
@@ -134,7 +134,7 @@ void LogBase::init(
 *
 * it is never return empty "" string, even no log enabled or timestamp disabled for log file
 */
-const string LogBase::timeStampSuffix(void) throw()
+const string LogBase::timeStampSuffix(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -150,7 +150,7 @@ const string LogBase::timeStampSuffix(void) throw()
 * example: _20120817_160459_0148.1234
 * it can return empty "" string, depending on log settings
 */
-const string LogBase::suffix(void) throw()
+const string LogBase::suffix(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -162,7 +162,7 @@ const string LogBase::suffix(void) throw()
 }
 
 /** implement log message: log to console and log files */
-void LogBase::doLogMsg(const char * i_msg, const char * i_extra) throw()
+void LogBase::doLogMsg(const char * i_msg, const char * i_extra) noexcept
 {
     if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
 
@@ -184,7 +184,7 @@ void LogBase::doLogMsg(const char * i_msg, const char * i_extra) throw()
 }
 
 // create log file or truncate existing, return false on error
-bool LogBase::logFileCreate(const string & i_path) throw()
+bool LogBase::logFileCreate(const string & i_path) noexcept
 {
     try {
         ofstream logSt;
@@ -202,7 +202,7 @@ bool LogBase::logFileCreate(const string & i_path) throw()
 // log to console
 bool LogBase::logToConsole(
     const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
-    ) throw()
+    ) noexcept
 {
     try {
         writeToLog(cout, i_msgTime, i_msg, i_extra);
@@ -262,7 +262,7 @@ Log::Log(
 }
 
 /** cleanup log resources */
-Log::~Log(void) throw()
+Log::~Log(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -291,7 +291,7 @@ void Log::init(
     bool i_usePidStamp, 
     bool i_noMsgTime, 
     bool i_isLogSql
-    ) throw()
+    ) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -302,7 +302,7 @@ void Log::init(
 }
 
 /** get language-specific message by source non-translated message */
-const string Log::getMessage(const char * i_sourceMsg) throw()
+const string Log::getMessage(const char * i_sourceMsg) noexcept
 {
     try {
         if (i_sourceMsg == nullptr) return "";  // empty result on null
@@ -320,7 +320,7 @@ const string Log::getMessage(const char * i_sourceMsg) throw()
 }
 
 /** get list of language name for the messages, eg: (en-ca, en) */
-const list<string> Log::getLanguages(void) throw()
+const list<string> Log::getLanguages(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -333,7 +333,7 @@ const list<string> Log::getLanguages(void) throw()
 }
 
 /** get copy of language-specific messages */
-const unordered_map<string, string> Log::getLanguageMessages(void) throw()
+const unordered_map<string, string> Log::getLanguageMessages(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -346,7 +346,7 @@ const unordered_map<string, string> Log::getLanguageMessages(void) throw()
 }
 
 /** set language-specific messages and update list of languages */
-void Log::swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) throw()
+void Log::swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -357,7 +357,7 @@ void Log::swapLanguageMessages(const list<string> & i_langLst, unordered_map<str
 }
 
 /** log message */
-void Log::logMsg(const char * i_msg, const char * i_extra) throw()
+void Log::logMsg(const char * i_msg, const char * i_extra) noexcept
 {
     try {
         if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
@@ -379,7 +379,7 @@ void Log::logMsg(const char * i_msg, const char * i_extra) throw()
 }
 
 /** log message formatted with vsnprintf() */
-void Log::logFormatted(const char * i_format, ...) throw()
+void Log::logFormatted(const char * i_format, ...) noexcept
 {
     try {
         if (i_format == nullptr) return;       // nothing to log
@@ -405,7 +405,7 @@ void Log::logFormatted(const char * i_format, ...) throw()
 }
 
 /** log exception */
-void Log::logErr(const exception & i_ex, const char * i_msg) throw()
+void Log::logErr(const exception & i_ex, const char * i_msg) noexcept
 {
     try {
         logMsg(i_msg, i_ex.what());
@@ -414,7 +414,7 @@ void Log::logErr(const exception & i_ex, const char * i_msg) throw()
 }
 
 /** log sql query */
-void Log::logSql(const char * i_sql) throw()
+void Log::logSql(const char * i_sql) noexcept
 {
     try {
         if (i_sql == nullptr) return;  // nothing to log
@@ -434,7 +434,7 @@ void Log::logSql(const char * i_sql) throw()
 // log to file, return false on error
 bool Log::logToFile(
     bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
-    ) throw()
+    ) noexcept
 {
     try {
         ofstream logSt;
@@ -454,7 +454,7 @@ bool Log::logToFile(
 }
 
 /** cleanup trace log resources */
-TraceLog::~TraceLog(void) throw()
+TraceLog::~TraceLog(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
@@ -479,13 +479,13 @@ TraceLog::~TraceLog(void) throw()
 */
 void TraceLog::init(
     bool i_logToConsole, const char * i_basePath, bool i_logToFile, bool i_useTimeStamp, bool i_usePidStamp, bool i_noMsgTime
-    ) throw()
+    ) noexcept
 {
     LogBase::init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
 }
 
 /** log message */
-void TraceLog::logMsg(const char * i_msg, const char * i_extra) throw()
+void TraceLog::logMsg(const char * i_msg, const char * i_extra) noexcept
 {
     try {
         doLogMsg(i_msg, i_extra);
@@ -494,7 +494,7 @@ void TraceLog::logMsg(const char * i_msg, const char * i_extra) throw()
 }
 
 /** log message formatted with vsnprintf() */
-void TraceLog::logFormatted(const char * i_format, ...) throw()
+void TraceLog::logFormatted(const char * i_format, ...) noexcept
 {
     try {
         if (i_format == nullptr) return;       // nothing to log
@@ -516,7 +516,7 @@ void TraceLog::logFormatted(const char * i_format, ...) throw()
 // log to file, return false on error
 bool TraceLog::logToFile(
     bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
-    ) throw()
+    ) noexcept
 {
     try {
         ofstream & logSt = i_isToStamped ? stampedSt : lastSt;

@@ -19,13 +19,13 @@ namespace openm
             );
 
         // input parameter reader cleanup
-        ~ParameterReader(void) throw() { }
+        ~ParameterReader(void) noexcept { }
 
         // return input parameter id
-        int parameterId(void) const throw() override { return paramId; }
+        int parameterId(void) const noexcept override { return paramId; }
 
         // return input parameter size: total number of values in the table
-        size_t sizeOf(void) const throw() override { return totalSize; }
+        size_t sizeOf(void) const noexcept override { return totalSize; }
 
         // read input parameter values
         void readParameter(
@@ -48,7 +48,7 @@ namespace openm
 }
 
 // input parameter reader cleanup
-IParameterReader::~IParameterReader(void) throw() { }
+IParameterReader::~IParameterReader(void) noexcept { }
 
 // input parameter reader factory: create new reader
 IParameterReader * IParameterReader::create(

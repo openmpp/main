@@ -64,7 +64,7 @@ namespace openm
         /** create row with default empty field values. */
         LangLstRow(void) : LangLstRow(0) { }
 
-        ~LangLstRow(void) throw() { }
+        ~LangLstRow(void) noexcept { }
 
         /** less comparator by primary key: language id. */
         static bool isKeyLess(const LangLstRow & i_left, const LangLstRow & i_right);
@@ -101,7 +101,7 @@ namespace openm
         /** create row with default empty field values. */
         LangWordRow(void) : LangWordRow(0, "") { }
 
-        ~LangWordRow(void) throw() { }
+        ~LangWordRow(void) noexcept { }
 
         /** less comparator by primary key: language id and word code. */
         static bool isKeyLess(const LangWordRow & i_left, const LangWordRow & i_right);
@@ -149,7 +149,7 @@ namespace openm
         /** create row with default empty field values. */
         ModelDicRow(void) : ModelDicRow(0) { }
 
-        ~ModelDicRow(void) throw() { }
+        ~ModelDicRow(void) noexcept { }
 
         /** less comparator by primary key: model id. */
         static bool isKeyLess(const ModelDicRow & i_left, const ModelDicRow & i_right);
@@ -192,7 +192,7 @@ namespace openm
         /** create row with default empty field values. */
         ModelDicTxtRow(void) : ModelDicTxtRow(0, 0) { }
 
-        ~ModelDicTxtRow(void) throw() { }
+        ~ModelDicTxtRow(void) noexcept { }
 
         /** less comparator by primary key: model id and language id. */
         static bool isKeyLess(const ModelDicTxtRow & i_left, const ModelDicTxtRow & i_right);
@@ -240,7 +240,7 @@ namespace openm
         /** create row with default empty field values. */
         ModelWordRow(void) : ModelWordRow(0, 0, "") { }
 
-        ~ModelWordRow(void) throw() { }
+        ~ModelWordRow(void) noexcept { }
 
         /** less comparator by primary key: model id, language id, word code. */
         static bool isKeyLess(const ModelWordRow & i_left, const ModelWordRow & i_right);
@@ -295,7 +295,7 @@ namespace openm
         /** create row with default empty key values. */
         TypeDicRow(void) : TypeDicRow(0, 0) { }
 
-        ~TypeDicRow(void) throw() { }
+        ~TypeDicRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model type id. */
         static bool isKeyLess(const TypeDicRow & i_left, const TypeDicRow & i_right);
@@ -364,7 +364,7 @@ namespace openm
         /** create row with default empty field values. */
         TypeDicTxtRow(void) : TypeDicTxtRow(0, 0, 0) { }
 
-        ~TypeDicTxtRow(void) throw() { }
+        ~TypeDicTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model type id, language id. */
         static bool isKeyLess(const TypeDicTxtRow & i_left, const TypeDicTxtRow & i_right);
@@ -412,7 +412,7 @@ namespace openm
         /** create row with default empty field values. */
         TypeEnumLstRow(void) : TypeEnumLstRow(0, 0, 0) { }
 
-        ~TypeEnumLstRow(void) throw() { }
+        ~TypeEnumLstRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model type id, enum id. */
         static bool isKeyLess(const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right);
@@ -455,7 +455,7 @@ namespace openm
         /** create row with default empty field values. */
         TypeEnumTxtRow(void) : TypeEnumTxtRow(0, 0, 0, 0) { }
 
-        ~TypeEnumTxtRow(void) throw() { }
+        ~TypeEnumTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model type id, enum id, language id. */
         static bool isKeyLess(const TypeEnumTxtRow & i_left, const TypeEnumTxtRow & i_right);
@@ -535,7 +535,7 @@ namespace openm
         /** create row with default empty field values. */
         ParamDicRow(void) : ParamDicRow(0, 0) { }
 
-        ~ParamDicRow(void) throw() { }
+        ~ParamDicRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model parameter id. */
         static bool isKeyLess(const ParamDicRow & i_left, const ParamDicRow & i_right);
@@ -577,7 +577,7 @@ namespace openm
         /** create row with default empty field values. */
         ParamDicTxtRow(void) : ParamDicTxtRow(0, 0, 0) { }
 
-        ~ParamDicTxtRow(void) throw() { }
+        ~ParamDicTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model parameter id, language id. */
         static bool isKeyLess(const ParamDicTxtRow & i_left, const ParamDicTxtRow & i_right);
@@ -629,7 +629,7 @@ namespace openm
         /** create row with default empty field values. */
         ParamDimsRow(void) : ParamDimsRow(0, 0, 0) { }
 
-        ~ParamDimsRow(void) throw() { }
+        ~ParamDimsRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model parameter id, dimension id. */
         static bool isKeyLess(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
@@ -673,7 +673,7 @@ namespace openm
         /** create row with default empty field values. */
         ParamDimsTxtRow(void) : ParamDimsTxtRow(0, 0, 0, 0) { }
 
-        ~ParamDimsTxtRow(void) throw() { }
+        ~ParamDimsTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model parameter id, dimension id, language id. */
         static bool isKeyLess(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right);
@@ -753,7 +753,7 @@ namespace openm
         /** create row with default empty field values. */
         TableDicRow(void) : TableDicRow(0, 0) { }
 
-        ~TableDicRow(void) throw() { }
+        ~TableDicRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id. */
         static bool isKeyLess(const TableDicRow & i_left, const TableDicRow & i_right);
@@ -803,7 +803,7 @@ namespace openm
         /** create row with default empty field values. */
         TableDicTxtRow(void) : TableDicTxtRow(0, 0, 0) { }
 
-        ~TableDicTxtRow(void) throw() { }
+        ~TableDicTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, language id. */
         static bool isKeyLess(const TableDicTxtRow & i_left, const TableDicTxtRow & i_right);
@@ -863,7 +863,7 @@ namespace openm
         /** create row with default empty field values. */
         TableDimsRow(void) : TableDimsRow(0, 0, 0) { }
 
-        ~TableDimsRow(void) throw() { }
+        ~TableDimsRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, dimension id. */
         static bool isKeyLess(const TableDimsRow & i_left, const TableDimsRow & i_right);
@@ -906,7 +906,7 @@ namespace openm
         /** create row with default empty field values. */
         TableDimsTxtRow(void) : TableDimsTxtRow(0, 0, 0, 0) { }
 
-        ~TableDimsTxtRow(void) throw() { }
+        ~TableDimsTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, dimension id, language id. */
         static bool isKeyLess(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right);
@@ -966,7 +966,7 @@ namespace openm
         /** create row with default empty field values. */
         TableAccRow(void) : TableAccRow(0, 0, 0) { }
 
-        ~TableAccRow(void) throw() { }
+        ~TableAccRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, accumulator id. */
         static bool isKeyLess(const TableAccRow & i_left, const TableAccRow & i_right);
@@ -1012,7 +1012,7 @@ namespace openm
         /** create row with default empty field values. */
         TableAccTxtRow(void) : TableAccTxtRow(0, 0, 0, 0) { }
 
-        ~TableAccTxtRow(void) throw() { }
+        ~TableAccTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, accumulator id, language id. */
         static bool isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right);
@@ -1072,7 +1072,7 @@ namespace openm
         /** create row with default empty field values. */
         TableExprRow(void) : TableExprRow(0, 0, 0) { }
 
-        ~TableExprRow(void) throw() { }
+        ~TableExprRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, expr id. */
         static bool isKeyLess(const TableExprRow & i_left, const TableExprRow & i_right);
@@ -1115,7 +1115,7 @@ namespace openm
         /** create row with default empty field values. */
         TableExprTxtRow(void) : TableExprTxtRow(0, 0, 0, 0) { }
 
-        ~TableExprTxtRow(void) throw() { }
+        ~TableExprTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model table id, expr id, language id. */
         static bool isKeyLess(const TableExprTxtRow & i_left, const TableExprTxtRow & i_right);
@@ -1167,7 +1167,7 @@ namespace openm
         /** create row with default empty field values. */
         GroupLstRow(void) : GroupLstRow(0, 0) { }
 
-        ~GroupLstRow(void) throw() { }
+        ~GroupLstRow(void) noexcept { }
 
         /** less comparator by primary key: model id, group id. */
         static bool isKeyLess(const GroupLstRow & i_left, const GroupLstRow & i_right);
@@ -1206,7 +1206,7 @@ namespace openm
         /** create row with default empty field values. */
         GroupTxtRow(void) : GroupTxtRow(0, 0, 0) { }
 
-        ~GroupTxtRow(void) throw() { }
+        ~GroupTxtRow(void) noexcept { }
 
         /** less comparator by primary key: model id, group id, language id. */
         static bool isKeyLess(const GroupTxtRow & i_left, const GroupTxtRow & i_right);
@@ -1258,7 +1258,7 @@ namespace openm
         /** create row with default empty field values. */
         GroupPcRow(void) : GroupPcRow(0, 0, 0) { }
 
-        ~GroupPcRow(void) throw() { }
+        ~GroupPcRow(void) noexcept { }
 
         /** less comparator by primary key: model id, group id, child position. */
         static bool isKeyLess(const GroupPcRow & i_left, const GroupPcRow & i_right);
@@ -1279,7 +1279,7 @@ namespace openm
         /** create row with default empty field values. */
         ProfileLstRow(void) : ProfileLstRow("") { }
 
-        ~ProfileLstRow(void) throw() { }
+        ~ProfileLstRow(void) noexcept { }
 
         /** less comparator by primary key: profile name. */
         static bool isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right);
@@ -1310,7 +1310,7 @@ namespace openm
         /** create row with default empty field values. */
         ProfileOptionRow(void) : ProfileOptionRow("", "") { }
 
-        ~ProfileOptionRow(void) throw() { }
+        ~ProfileOptionRow(void) noexcept { }
 
         /** less comparator by primary key: profile name, option key. */
         static bool isKeyLess(const ProfileOptionRow & i_left, const ProfileOptionRow & i_right);
@@ -1369,7 +1369,7 @@ namespace openm
         /** create row with default empty field values. */
         RunLstRow(void) : RunLstRow(0) { }
 
-        ~RunLstRow(void) throw() { }
+        ~RunLstRow(void) noexcept { }
 
         /** less comparator by primary key: run id. */
         static bool isKeyLess(const RunLstRow & i_left, const RunLstRow & i_right);
@@ -1411,7 +1411,7 @@ namespace openm
         /** create row with default empty field values. */
         RunTxtRow(void) : RunTxtRow(0, 0) { }
 
-        ~RunTxtRow(void) throw() { }
+        ~RunTxtRow(void) noexcept { }
 
         /** less comparator by primary key: run id and language id. */
         static bool isKeyLess(const RunTxtRow & i_left, const RunTxtRow & i_right);
@@ -1445,7 +1445,7 @@ namespace openm
         /** create row with default empty field values. */
         RunOptionRow(void) : RunOptionRow(0, "") { }
 
-        ~RunOptionRow(void) throw() { }
+        ~RunOptionRow(void) noexcept { }
 
         /** less comparator by primary key: run id, option key. */
         static bool isKeyLess(const RunOptionRow & i_left, const RunOptionRow & i_right);
@@ -1484,7 +1484,7 @@ namespace openm
         /** create row with default empty field values. */
         RunParamTxtRow(void) : RunParamTxtRow(0, 0, 0) { }
 
-        ~RunParamTxtRow(void) throw() { }
+        ~RunParamTxtRow(void) noexcept { }
 
         /** less comparator by primary key: run id, parameter id, language id. */
         static bool isKeyLess(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right);
@@ -1534,7 +1534,7 @@ namespace openm
         /** create row with default empty field values. */
         WorksetLstRow(void) : WorksetLstRow(0) { }
 
-        ~WorksetLstRow(void) throw() { }
+        ~WorksetLstRow(void) noexcept { }
 
         /** less comparator by primary key: set id. */
         static bool isKeyLess(const WorksetLstRow & i_left, const WorksetLstRow & i_right);
@@ -1572,7 +1572,7 @@ namespace openm
         /** create row with default empty field values. */
         WorksetTxtRow(void) : WorksetTxtRow(0, 0) { }
 
-        ~WorksetTxtRow(void) throw() { }
+        ~WorksetTxtRow(void) noexcept { }
 
         /** less comparator by primary key: set id and language id. */
         static bool isKeyLess(const WorksetTxtRow & i_left, const WorksetTxtRow & i_right);
@@ -1623,7 +1623,7 @@ namespace openm
         /** create row with default empty field values. */
         WorksetParamRow(void) : WorksetParamRow(0, 0) { }
 
-        ~WorksetParamRow(void) throw() { }
+        ~WorksetParamRow(void) noexcept { }
 
         /** less comparator by primary key: set id and parameter id. */
         static bool isKeyLess(const WorksetParamRow & i_left, const WorksetParamRow & i_right);
@@ -1665,7 +1665,7 @@ namespace openm
         /** create row with default empty field values. */
         WorksetParamTxtRow(void) : WorksetParamTxtRow(0, 0, 0) { }
 
-        ~WorksetParamTxtRow(void) throw() { }
+        ~WorksetParamTxtRow(void) noexcept { }
 
         /** less comparator by primary key: set id, parameter id, language id. */
         static bool isKeyLess(const WorksetParamTxtRow & i_left, const WorksetParamTxtRow & i_right);
@@ -1714,7 +1714,7 @@ namespace openm
         /** create row with default empty field values. */
         TaskLstRow(void) : TaskLstRow(0) { }
 
-        ~TaskLstRow(void) throw() { }
+        ~TaskLstRow(void) noexcept { }
 
         /** less comparator by primary key: task id. */
         static bool isKeyLess(const TaskLstRow & i_left, const TaskLstRow & i_right);
@@ -1752,7 +1752,7 @@ namespace openm
         /** create row with default empty field values. */
         TaskTxtRow(void) : TaskTxtRow(0, 0) { }
 
-        ~TaskTxtRow(void) throw() { }
+        ~TaskTxtRow(void) noexcept { }
 
         /** less comparator by primary key: task id and language id. */
         static bool isKeyLess(const TaskTxtRow & i_left, const TaskTxtRow & i_right);
@@ -1795,7 +1795,7 @@ namespace openm
         /** create row with default empty field values. */
         TaskSetRow(void) : TaskSetRow(0, 0) { }
 
-        ~TaskSetRow(void) throw() { }
+        ~TaskSetRow(void) noexcept { }
 
         /** less comparator by primary key: task id and set id. */
         static bool isKeyLess(const TaskSetRow & i_left, const TaskSetRow & i_right);
@@ -1841,7 +1841,7 @@ namespace openm
         /** create row with default empty field values. */
         TaskRunLstRow(void) : TaskRunLstRow(0) { }
 
-        ~TaskRunLstRow(void) throw() { }
+        ~TaskRunLstRow(void) noexcept { }
 
         /** less comparator by primary key: task run id. */
         static bool isKeyLess(const TaskRunLstRow & i_left, const TaskRunLstRow & i_right);
@@ -1879,7 +1879,7 @@ namespace openm
         /** create row with default empty field values. */
         TaskRunSetRow(void) : TaskRunSetRow(0, 0) { }
 
-        ~TaskRunSetRow(void) throw() { }
+        ~TaskRunSetRow(void) noexcept { }
 
         /** less comparator by primary key: task run id, run id. */
         static bool isKeyLess(const TaskRunSetRow & i_left, const TaskRunSetRow & i_right);
@@ -1912,7 +1912,7 @@ namespace openm
         /** create row with default empty field values. */
         CodeValueRow(void) : CodeValueRow("", "") { }
 
-        ~CodeValueRow(void) throw() { }
+        ~CodeValueRow(void) noexcept { }
 
         /** less comparator by primary key: code. */
         static bool isKeyLess(const CodeValueRow & i_left, const CodeValueRow & i_right);

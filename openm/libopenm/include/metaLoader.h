@@ -140,7 +140,7 @@ namespace openm
     {
     public:
         /** last cleanup */
-        virtual ~MetaLoader(void) throw() = 0;
+        virtual ~MetaLoader(void) noexcept = 0;
 
         /** total number of sub-values */
         int subValueCount;

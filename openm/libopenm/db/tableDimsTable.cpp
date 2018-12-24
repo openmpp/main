@@ -14,7 +14,7 @@ namespace openm
     public:
         TableDimsTable(IDbExec * i_dbExec, int i_modelId = 0);
         TableDimsTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TableDimsTable() throw();
+        ~TableDimsTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -90,7 +90,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableDimsTable::~ITableDimsTable(void) throw() { }
+ITableDimsTable::~ITableDimsTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableDimsTable * ITableDimsTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -122,7 +122,7 @@ TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-TableDimsTable::~TableDimsTable(void) throw() { }
+TableDimsTable::~TableDimsTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id, dimension id
 const TableDimsRow * TableDimsTable::byKey(int i_modelId, int i_tableId, int i_dimId) const

@@ -14,7 +14,7 @@ namespace openm
     public:
         TypeDicTable(IDbExec * i_dbExec, int i_modelId = 0);
         TypeDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TypeDicTable() throw();
+        ~TypeDicTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -83,7 +83,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITypeDicTable::~ITypeDicTable(void) throw() { }
+ITypeDicTable::~ITypeDicTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITypeDicTable * ITypeDicTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -114,7 +114,7 @@ TypeDicTable::TypeDicTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-TypeDicTable::~TypeDicTable(void) throw() { }
+TypeDicTable::~TypeDicTable(void) noexcept { }
 
 // find row by unique key: model id, model type id
 const TypeDicRow * TypeDicTable::byKey(int i_modelId, int i_typeId) const 

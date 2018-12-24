@@ -29,7 +29,7 @@ namespace openm
     class ModelBase : public IModel
     {
     public:
-        ~ModelBase(void) throw() { }
+        ~ModelBase(void) noexcept { }
 
         /** model factory: create new model sub-value run. */
         static ModelBase * create(
@@ -41,10 +41,10 @@ namespace openm
             );
 
         /** number of sub-values */
-        int subValueCount(void) const throw() override { return runOptions()->subValueCount; }
+        int subValueCount(void) const noexcept override { return runOptions()->subValueCount; }
         
         /** sub-value index of current modeling process */
-        int subValueId(void) const throw() override { return runOptions()->subValueId; }
+        int subValueId(void) const noexcept override { return runOptions()->subValueId; }
 
         /** return index of parameter sub-value in the array of sub-values, used to find thread local parameter values */
         int parameterSubValueIndex(const char * i_name) const override;

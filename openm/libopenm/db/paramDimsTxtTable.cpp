@@ -14,7 +14,7 @@ namespace openm
     public:
         ParamDimsTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         ParamDimsTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ParamDimsTxtTable() throw();
+        ~ParamDimsTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -83,7 +83,7 @@ namespace openm
 }
 
 // Table never unloaded
-IParamDimsTxtTable::~IParamDimsTxtTable(void) throw() { }
+IParamDimsTxtTable::~IParamDimsTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IParamDimsTxtTable * IParamDimsTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -118,7 +118,7 @@ ParamDimsTxtTable::ParamDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 }
 
 // Table never unloaded
-ParamDimsTxtTable::~ParamDimsTxtTable(void) throw() { }
+ParamDimsTxtTable::~ParamDimsTxtTable(void) noexcept { }
 
 // Find row by unique key: model id,  model parameter id, dimension id, language id
 const ParamDimsTxtRow * ParamDimsTxtTable::byKey(int i_modelId, int i_paramId, int i_dimId, int i_langId) const

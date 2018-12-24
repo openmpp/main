@@ -23,7 +23,7 @@ namespace openm
         MpiSendBase(int i_selfRank, int i_sendTo, MsgTag i_msgTag);
 
         /** cleanup message sender resources by MPI_Request_free. */
-        virtual ~MpiSendBase(void) throw();
+        virtual ~MpiSendBase(void) noexcept;
 
         /** check is send completed by MPI_Test. */
         bool isCompleted(void);
@@ -36,7 +36,7 @@ namespace openm
 
     protected:
         // cleanup MPI send resources
-        void cleanup(void) throw();
+        void cleanup(void) noexcept;
 
     private:
         MpiSendBase(const MpiSendBase & i_send) = delete;
@@ -53,7 +53,7 @@ namespace openm
             );
 
         /** cleanup message sender resources. */
-        ~MpiSendArray(void) throw() { }
+        ~MpiSendArray(void) noexcept { }
 
         /** check is send completed by MPI_Test. */
         bool isCompleted(void) { return MpiSendBase::isCompleted(); }
@@ -76,7 +76,7 @@ namespace openm
             );
 
         /** cleanup message sender resources. */
-        ~MpiSendPacked(void) throw() { }
+        ~MpiSendPacked(void) noexcept { }
 
         /** check is send completed by MPI_Test. */
         bool isCompleted(void) { return MpiSendBase::isCompleted(); }

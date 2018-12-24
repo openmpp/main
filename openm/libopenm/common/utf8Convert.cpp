@@ -99,7 +99,7 @@ namespace openm
         static IUtf8Converter * create(CharCvtFrom i_from, const char * i_codePageName = nullptr);
 
         /** release convertor resources. */
-        virtual ~IUtf8Converter(void) throw() = 0;
+        virtual ~IUtf8Converter(void) noexcept = 0;
 
         /** convert next portion of input text bytes into UTF-8 string. */
         virtual string next(long long i_size, const char * i_text) = 0;
@@ -107,14 +107,14 @@ namespace openm
 };
 
 // release convertor resources.
-IUtf8Converter::~IUtf8Converter(void) throw() { }
+IUtf8Converter::~IUtf8Converter(void) noexcept { }
 
 // copy convertor: return source bytes as string (no conversion required when source already UTF-8)
 class Utf8CopyConverter : public IUtf8Converter
 {
 public:
     Utf8CopyConverter(void) { }
-    ~Utf8CopyConverter(void) throw() { }
+    ~Utf8CopyConverter(void) noexcept { }
 
     // return copy of input bytes as UTF-8 string
     string next(long long i_size, const char * i_text)
@@ -131,7 +131,7 @@ public:
 struct DefaultEncodingNameHolder
 {
     // obtain default encoding name
-    DefaultEncodingNameHolder(void) throw() :
+    DefaultEncodingNameHolder(void) noexcept :
         defaultLocale(NULL)
     {
         try { 
@@ -143,17 +143,17 @@ struct DefaultEncodingNameHolder
     }
     
     // release locale resources
-    ~DefaultEncodingNameHolder(void) throw() { try { cleanup(); } catch (...) { } }
+    ~DefaultEncodingNameHolder(void) noexcept { try { cleanup(); } catch (...) { } }
 
     // return default encoding name or empty "" string if not initialized 
-    const char * name(void) const throw() { return encodingName.c_str(); }
+    const char * name(void) const noexcept { return encodingName.c_str(); }
 
 private:
     locale_t defaultLocale;     // if not NULL then default locale handler 
     string encodingName;        // encoding name, ie: UTF-8
 
     // release locale resources
-    void cleanup(void) throw() 
+    void cleanup(void) noexcept 
     { 
         try { 
             if (defaultLocale != NULL && defaultLocale != LC_GLOBAL_LOCALE) freelocale(defaultLocale);
@@ -180,13 +180,13 @@ struct IconvOpenHolder
     }
     
     // release iconv resources
-    ~IconvOpenHolder(void) throw() { try { cleanup(); } catch (...) { } }
+    ~IconvOpenHolder(void) noexcept { try { cleanup(); } catch (...) { } }
 
     // return iconv handler or (iconv_t)-1 on errors  
-    iconv_t handler(void) const throw() { return iconvHandler; }
+    iconv_t handler(void) const noexcept { return iconvHandler; }
 
     // release iconv resources
-    void cleanup(void) throw() 
+    void cleanup(void) noexcept 
     { 
         try { 
             if (iconvHandler != (iconv_t)-1) iconv_close(iconvHandler);
@@ -206,7 +206,7 @@ public:
     	theIconv("UTF-8", i_encodingName)
     {
     }
-    ~ExpicitPageConverter(void) throw() { }
+    ~ExpicitPageConverter(void) noexcept { }
 
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
@@ -284,7 +284,7 @@ class DefaultPageConverter : public IUtf8Converter
 {
 public:
     DefaultPageConverter(void) { }
-    ~DefaultPageConverter(void) throw() { }
+    ~DefaultPageConverter(void) noexcept { }
 
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
@@ -311,7 +311,7 @@ public:
             new wstring_convert<codecvt<wchar_t, char, mbstate_t>, wchar_t>(new codecvt_byname<wchar_t, char, mbstate_t>(i_codePageName))
             );
     }
-    ~ExpicitPageConverter(void) throw() { }
+    ~ExpicitPageConverter(void) noexcept { }
 
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
@@ -333,7 +333,7 @@ class Utf16LePageConverter : public IUtf8Converter
 {
 public:
     Utf16LePageConverter(void) { }
-    ~Utf16LePageConverter(void) throw() { }
+    ~Utf16LePageConverter(void) noexcept { }
 
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)
@@ -355,7 +355,7 @@ class Utf16BePageConverter : public IUtf8Converter
 {
 public:
     Utf16BePageConverter(void) { }
-    ~Utf16BePageConverter(void) throw() { }
+    ~Utf16BePageConverter(void) noexcept { }
 
     // convert next portion of input text bytes into UTF-8 string.
     string next(long long i_size, const char * i_text)

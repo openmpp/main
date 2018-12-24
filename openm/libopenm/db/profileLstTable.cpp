@@ -14,7 +14,7 @@ namespace openm
     public:
         ProfileLstTable(IDbExec * i_dbExec);
         ProfileLstTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ProfileLstTable() throw();
+        ~ProfileLstTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -65,7 +65,7 @@ namespace openm
 }
 
 // Table never unloaded
-IProfileLstTable::~IProfileLstTable(void) throw() { }
+IProfileLstTable::~IProfileLstTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IProfileLstTable * IProfileLstTable::create(IDbExec * i_dbExec)
@@ -87,7 +87,7 @@ ProfileLstTable::ProfileLstTable(IDbExec * i_dbExec)
 }
 
 // Table never unloaded
-ProfileLstTable::~ProfileLstTable(void) throw() { }
+ProfileLstTable::~ProfileLstTable(void) noexcept { }
 
 // Find row by primary key: profile name
 const ProfileLstRow * ProfileLstTable::byKey(const string & i_name) const

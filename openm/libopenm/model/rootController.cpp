@@ -403,7 +403,7 @@ void RootController::shutdownWaitAll(void)
 
     // if model state is error then do one attempt to wait send and shutdown model with error
     if (isError) {
-        msgExec->waitSendAll(true);
+        msgExec->waitSendAll();
         shutdownOnExit(ModelStatus::error);                         // do shutdown on error
         throw ModelException("error in child modeiling process");   // exit from root process with error
     }
@@ -465,7 +465,7 @@ void RootController::shutdownRun(int i_runId)
 
     // wait for send completion, if any outstanding
     // if model state is error then do only one attempt to wait send
-    msgExec->waitSendAll(isError);
+    msgExec->waitSendAll();
 
     // run completed OK
     if (!theModelRunState->isError()) {

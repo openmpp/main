@@ -12,7 +12,7 @@ namespace openm
     class TaskRunLstTable : public ITaskRunLstTable
     {
     public:
-        ~TaskRunLstTable() throw();
+        ~TaskRunLstTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: task id
         static vector<TaskRunLstRow> select(IDbExec * i_dbExec, const string & i_where);
@@ -74,10 +74,10 @@ namespace openm
 }
 
 // Table never unloaded
-ITaskRunLstTable::~ITaskRunLstTable(void) throw() { }
+ITaskRunLstTable::~ITaskRunLstTable(void) noexcept { }
 
 // Table never unloaded
-TaskRunLstTable::~TaskRunLstTable(void) throw() { }
+TaskRunLstTable::~TaskRunLstTable(void) noexcept { }
 
 // select table rows
 vector<TaskRunLstRow> ITaskRunLstTable::select(IDbExec * i_dbExec, int i_taskId)

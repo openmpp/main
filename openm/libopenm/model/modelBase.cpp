@@ -15,7 +15,7 @@ const char openm::modelUnknownErrorMessage[] = "unknown model error";
 const char openm::simulationUnknownErrorMessage[] = "unknown error in simulation";
 
 /** model sub-value run public interface */
-IModel::~IModel() throw() { }
+IModel::~IModel() noexcept { }
 
 /** create new model sub-value run base class */
 ModelBase::ModelBase(

@@ -14,7 +14,7 @@ namespace openm
     public:
         TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
         TableDimsTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~TableDimsTxtTable() throw();
+        ~TableDimsTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -83,7 +83,7 @@ namespace openm
 }
 
 // Table never unloaded
-ITableDimsTxtTable::~ITableDimsTxtTable(void) throw() { }
+ITableDimsTxtTable::~ITableDimsTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 ITableDimsTxtTable * ITableDimsTxtTable::create(IDbExec * i_dbExec, int i_modelId, int i_langId)
@@ -118,7 +118,7 @@ TableDimsTxtTable::TableDimsTxtTable(IDbExec * i_dbExec, int i_modelId, int i_la
 }
 
 // Table never unloaded
-TableDimsTxtTable::~TableDimsTxtTable(void) throw() { }
+TableDimsTxtTable::~TableDimsTxtTable(void) noexcept { }
 
 // Find row by unique key: model id, model table id, dimension id, language id
 const TableDimsTxtRow * TableDimsTxtTable::byKey(int i_modelId, int i_tableId, int i_dimId, int i_langId) const

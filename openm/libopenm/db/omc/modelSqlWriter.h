@@ -29,7 +29,7 @@ namespace openm
         ModelSqlWriter(const string & i_filePath);
 
         /** close sql script file */
-        ~ModelSqlWriter() throw();
+        ~ModelSqlWriter() noexcept;
 
         /** throw exception on output stream fail */
         void throwOnFail(void) const;

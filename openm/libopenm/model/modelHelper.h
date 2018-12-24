@@ -31,7 +31,7 @@ namespace openm
         void setAt(size_t i_pos);
 
         // return count of contiguous true values staring from zero position
-        size_t countFirst(void);
+        int countFirst(void);
 
     private:
         recursive_mutex theMutex;   // mutex to lock access operations

@@ -12,7 +12,7 @@ namespace openm
     class TaskTxtTable : public ITaskTxtTable
     {
     public:
-        ~TaskTxtTable() throw();
+        ~TaskTxtTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: task id and language id
         static vector<TaskTxtRow> select(IDbExec * i_dbExec, const string & i_fromWhere);
@@ -66,10 +66,10 @@ namespace openm
 }
 
 // Table never unloaded
-ITaskTxtTable::~ITaskTxtTable(void) throw() { }
+ITaskTxtTable::~ITaskTxtTable(void) noexcept { }
 
 // Table never unloaded
-TaskTxtTable::~TaskTxtTable(void) throw() { }
+TaskTxtTable::~TaskTxtTable(void) noexcept { }
 
 // select table rows
 vector<TaskTxtRow> ITaskTxtTable::select(IDbExec * i_dbExec, int i_langId)

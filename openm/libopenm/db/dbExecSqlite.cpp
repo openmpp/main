@@ -74,7 +74,7 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
 }
 
 /** close db-connection and cleanup connection resources. */
-DbExecSqlite::~DbExecSqlite(void) throw()
+DbExecSqlite::~DbExecSqlite(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -84,7 +84,7 @@ DbExecSqlite::~DbExecSqlite(void) throw()
 }
 
 /** close db-connection and cleanup connection resources. */
-void DbExecSqlite::cleanup(void) throw()
+void DbExecSqlite::cleanup(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);
@@ -113,7 +113,7 @@ void DbExecSqlite::cleanup(void) throw()
 *      releaseStatement(); 
 * @endcode
 */
-void DbExecSqlite::releaseStatement(void) throw()
+void DbExecSqlite::releaseStatement(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(dbMutex);

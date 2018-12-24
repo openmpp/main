@@ -128,7 +128,7 @@ namespace openm
     {
     public:
         /** return message tag */
-        MsgTag tag(void) const throw() override { return rowMsgTag; }
+        MsgTag tag(void) const noexcept override { return rowMsgTag; }
 
         /**
          * pack vector of metadata db rows into char vector.

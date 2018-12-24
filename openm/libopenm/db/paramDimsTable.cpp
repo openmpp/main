@@ -14,7 +14,7 @@ namespace openm
     public:
         ParamDimsTable(IDbExec * i_dbExec, int i_modelId = 0);
         ParamDimsTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~ParamDimsTable() throw();
+        ~ParamDimsTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -82,7 +82,7 @@ namespace openm
 }
 
 // Table never unloaded
-IParamDimsTable::~IParamDimsTable(void) throw() { }
+IParamDimsTable::~IParamDimsTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IParamDimsTable * IParamDimsTable::create(IDbExec * i_dbExec, int i_modelId)
@@ -114,7 +114,7 @@ ParamDimsTable::ParamDimsTable(IDbExec * i_dbExec, int i_modelId)
 }
 
 // Table never unloaded
-ParamDimsTable::~ParamDimsTable(void) throw() { }
+ParamDimsTable::~ParamDimsTable(void) noexcept { }
 
 // Find row by unique key: model id,  model parameter id, dimension id
 const ParamDimsRow * ParamDimsTable::byKey(int i_modelId, int i_paramId, int i_dimId) const

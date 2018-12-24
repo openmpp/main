@@ -52,13 +52,13 @@ namespace openm
             progressPercent(0),
             progressStep(0.0)
         { }
-        ~RunOptions(void) throw() { }
+        ~RunOptions(void) noexcept { }
     };
 
     /** public interface to initialize model run and input parameters */
     struct IRunBase
     {
-        virtual ~IRunBase(void) throw() = 0;
+        virtual ~IRunBase(void) noexcept = 0;
 
         /** return index of parameter by name */
         virtual int parameterIdByName(const char * i_name) const = 0;
@@ -82,13 +82,13 @@ namespace openm
     /** model sub-value run public interface */
     struct IModel
     {
-        virtual ~IModel(void) throw() = 0;
+        virtual ~IModel(void) noexcept = 0;
 
         /** number of sub-values */
-        virtual int subValueCount(void) const throw() = 0;
+        virtual int subValueCount(void) const noexcept = 0;
 
         /** sub-value index of current modeling process */
-        virtual int subValueId(void) const throw() = 0;
+        virtual int subValueId(void) const noexcept = 0;
 
         /** return model run options */
         virtual const RunOptions * runOptions(void) const = 0;

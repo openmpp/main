@@ -179,7 +179,7 @@ namespace openm
     /** db-row abstract base */
     struct IRowBase
     {
-        virtual ~IRowBase(void) throw() = 0;
+        virtual ~IRowBase(void) noexcept = 0;
     };
 
     /** unique pointer to db row */
@@ -190,6 +190,18 @@ namespace openm
 
     /** db rows: list of unique pointers to db row */
     typedef list<IRowBaseUptr> IRowBaseList;
+
+    /** final model run state public interface: thread safe */
+    struct IFinalState
+    {
+        virtual ~IFinalState(void) noexcept = 0;
+
+        /** return true if status is one of exiting: done, exit, error */
+        virtual bool isFinal(void) = 0;
+
+        /** return true if status is an error */
+        virtual bool isError(void) = 0;
+    };
 
     /** simple resource exit guard implementation */
     template <class ResourceHolder>
@@ -208,7 +220,7 @@ namespace openm
         { }
 
         /** release resource if exit guad hold() was not called */
-        ~exit_guard(void) throw()
+        ~exit_guard(void) noexcept
         {
             try {
                 if (!isHold) (holder->*cleanup)();
@@ -217,7 +229,7 @@ namespace openm
         }
 
         /** hold resource on exit instead of relesing it */
-        void hold(void) throw() { isHold = true; }
+        void hold(void) noexcept { isHold = true; }
 
     private:
         bool isHold;                    // if true then hold resource

@@ -15,11 +15,12 @@ using namespace openm;
 /**
 * create message passing interface by MPI_Init.
 *
-* @param[in,out] argc  main argc to pass to MPI_Init
-* @param[in,out] argv  main argv to pass to MPI_Init
+* @param[in,out] argc     main argc to pass to MPI_Init
+* @param[in,out] argv     main argv to pass to MPI_Init
+* @param[in] IFinalState  final model run state interface
 */
-MpiExec::MpiExec(int & argc, char ** & argv) :
-    MsgExecBase(),
+MpiExec::MpiExec(int & argc, char ** & argv, IFinalState * i_final) :
+    MsgExecBase(i_final),
     isCleanExit(true),
     worldGroup(MPI_GROUP_NULL), 
     groupComm(MPI_COMM_WORLD)
@@ -65,7 +66,7 @@ MpiExec::MpiExec(int & argc, char ** & argv) :
 }
 
 /** cleanup message passing resources by MPI_Finalize. */
-MpiExec::~MpiExec(void) throw()
+MpiExec::~MpiExec(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
@@ -75,7 +76,7 @@ MpiExec::~MpiExec(void) throw()
 }
 
 // Cleanup MPI resources
-void MpiExec::cleanup(void) throw()
+void MpiExec::cleanup(void) noexcept
 {
     try {
         if (!isCleanExit) {
@@ -202,6 +203,7 @@ void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {
 
     if (io_request == MPI_REQUEST_NULL) return;     // no active request
 
+    long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     int isDone = 0;
     do {
         int mpiRet = MPI_Test(&io_request, &isDone, MPI_STATUS_IGNORE);
@@ -209,6 +211,9 @@ void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {
 
         if (!isDone) {
             this_thread::sleep_for(chrono::milliseconds(i_pollTime));
+        }
+        if (theFinal != nullptr) {
+            if (theFinal->isError() && --nErrExchange <= 0) break;  // stop wait attempts if model status is error
         }
     } while (!isDone);
 }

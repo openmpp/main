@@ -12,7 +12,7 @@ namespace openm
     class WorksetLstTable : public IWorksetLstTable
     {
     public:
-        ~WorksetLstTable() throw();
+        ~WorksetLstTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: set id
         static vector<WorksetLstRow> select(IDbExec * i_dbExec, const string & i_where);
@@ -74,10 +74,10 @@ namespace openm
 }
 
 // Table never unloaded
-IWorksetLstTable::~IWorksetLstTable(void) throw() { }
+IWorksetLstTable::~IWorksetLstTable(void) noexcept { }
 
 // Table never unloaded
-WorksetLstTable::~WorksetLstTable(void) throw() { }
+WorksetLstTable::~WorksetLstTable(void) noexcept { }
 
 // select table rows
 vector<WorksetLstRow> IWorksetLstTable::select(IDbExec * i_dbExec, int i_modelId)

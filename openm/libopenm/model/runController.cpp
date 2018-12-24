@@ -13,10 +13,10 @@ using namespace std;
 using namespace openm;
 
 // model run basic support public interface
-IRunBase::~IRunBase() throw() { }
+IRunBase::~IRunBase() noexcept { }
 
 /** last cleanup */
-RunController::~RunController(void) throw() { }
+RunController::~RunController(void) noexcept { }
 
 /** create run controller, load metadata tables and broadcast it to all modeling processes. */
 RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec)

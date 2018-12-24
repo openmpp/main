@@ -46,12 +46,12 @@ void DoneVector::setAt(size_t i_pos)
 }
 
 // return count of contiguous true values staring from zero position
-size_t DoneVector::countFirst(void)
+int DoneVector::countFirst(void)
 {
     lock_guard<recursive_mutex> lck(theMutex);
 
-    size_t nPos = 0;
-    for (; nPos < isDoneVec.size(); nPos++) {
+    int nPos = 0;
+    for (; nPos < (int)isDoneVec.size(); nPos++) {
         if (!isDoneVec[nPos]) return nPos;
     }
     return nPos;

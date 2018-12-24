@@ -22,7 +22,7 @@ namespace openm
     template<class TRow> struct IMetaTable
     {
     public:
-        virtual ~IMetaTable<TRow>(void) throw() { }
+        virtual ~IMetaTable<TRow>(void) noexcept { }
 
     protected:
         /** get list of table rows. */
@@ -42,7 +42,7 @@ namespace openm
         /** db table row comparator. */
         typedef function<bool(const TRow & i_dbRow)> RowEqual;
 
-        virtual ~IMetaLoadedTable<TRow>(void) throw() { }
+        virtual ~IMetaLoadedTable<TRow>(void) noexcept { }
 
         /** get const reference to list of all table rows. */
         virtual const IRowBaseVec & rowsCRef(void) const = 0;
@@ -131,7 +131,7 @@ namespace openm
     /** lang_lst table public interface. */
     struct ILangLstTable : public IMetaLoadedTable<LangLstRow>
     {
-        virtual ~ILangLstTable() throw() = 0;
+        virtual ~ILangLstTable() noexcept = 0;
 
         /** create new table object and load table rows sorted by primary key: language id. */
         static ILangLstTable * create(IDbExec * i_dbExec);
@@ -152,7 +152,7 @@ namespace openm
     /** lang_word table public interface. */
     struct ILangWordTable : public IMetaLoadedTable<LangWordRow>
     {
-        virtual ~ILangWordTable() throw() = 0;
+        virtual ~ILangWordTable() noexcept = 0;
 
         /** create new table object and load table rows sorted by primary key: language id and word code.
         *
@@ -173,7 +173,7 @@ namespace openm
     /** model_dic table public interface. */
     struct IModelDicTable : public IMetaLoadedTable<ModelDicRow>
     {
-        virtual ~IModelDicTable() throw() = 0;
+        virtual ~IModelDicTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: model id.  
@@ -198,7 +198,7 @@ namespace openm
     /** model_dic_txt table public interface. */
     struct IModelDicTxtTable : public IMetaLoadedTable<ModelDicTxtRow>
     {
-        virtual ~IModelDicTxtTable() throw() = 0;
+        virtual ~IModelDicTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: model id and language id.  
@@ -221,7 +221,7 @@ namespace openm
     /** model_word table public interface. */
     struct IModelWordTable : public IMetaLoadedTable<ModelWordRow>
     {
-        virtual ~IModelWordTable() throw() = 0;
+        virtual ~IModelWordTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: model id, language id, word code.  
@@ -244,7 +244,7 @@ namespace openm
     /** type_dic table public interface. */
     struct ITypeDicTable : public IMetaLoadedTable<TypeDicRow>
     {
-        virtual ~ITypeDicTable() throw() = 0;
+        virtual ~ITypeDicTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: type_hid.
@@ -266,7 +266,7 @@ namespace openm
     /** type_dic_txt table public interface. */
     struct ITypeDicTxtTable : public IMetaLoadedTable<TypeDicTxtRow>
     {
-        virtual ~ITypeDicTxtTable() throw() = 0;
+        virtual ~ITypeDicTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model type id, language id.
@@ -289,7 +289,7 @@ namespace openm
     /** type_enum_lst table public interface. */
     struct ITypeEnumLstTable : public IMetaLoadedTable<TypeEnumLstRow>
     {
-        virtual ~ITypeEnumLstTable() throw() = 0;
+        virtual ~ITypeEnumLstTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model type id, enum id.
@@ -320,7 +320,7 @@ namespace openm
     /** type_enum_txt table public interface. */
     struct ITypeEnumTxtTable : public IMetaLoadedTable<TypeEnumTxtRow>
     {
-        virtual ~ITypeEnumTxtTable() throw() = 0;
+        virtual ~ITypeEnumTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model type id, enum id, language id.
@@ -343,7 +343,7 @@ namespace openm
     /** parameter_dic table public interface. */
     struct IParamDicTable : public IMetaLoadedTable<ParamDicRow>
     {
-        virtual ~IParamDicTable() throw() = 0;
+        virtual ~IParamDicTable() noexcept = 0;
 
         /**
         * create new table object and load table rows sorted by unique key: model id and model parameter id.
@@ -371,7 +371,7 @@ namespace openm
     /** parameter_dic_txt table public interface. */
     struct IParamDicTxtTable : public IMetaLoadedTable<ParamDicTxtRow>
     {
-        virtual ~IParamDicTxtTable() throw() = 0;
+        virtual ~IParamDicTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model parameter id, language id.
@@ -394,7 +394,7 @@ namespace openm
     /** parameter_dims table public interface. */
     struct IParamDimsTable : public IMetaLoadedTable<ParamDimsRow>
     {
-        virtual ~IParamDimsTable() throw() = 0;
+        virtual ~IParamDimsTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model parameter id, dimension id.
@@ -419,7 +419,7 @@ namespace openm
     /** parameter_dims_txt table public interface. */
     struct IParamDimsTxtTable : public IMetaLoadedTable<ParamDimsTxtRow>
     {
-        virtual ~IParamDimsTxtTable() throw() = 0;
+        virtual ~IParamDimsTxtTable() noexcept = 0;
 
         /**
         * create new table object and load table rows sorted by unique key: model id, model parameter id, dimension id, language id.
@@ -442,7 +442,7 @@ namespace openm
     /** table_dic table public interface. */
     struct ITableDicTable : public IMetaLoadedTable<TableDicRow>
     {
-        virtual ~ITableDicTable() throw() = 0;
+        virtual ~ITableDicTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id.
@@ -470,7 +470,7 @@ namespace openm
     /** table_dic_txt table public interface. */
     struct ITableDicTxtTable : public IMetaLoadedTable<TableDicTxtRow>
     {
-        virtual ~ITableDicTxtTable() throw() = 0;
+        virtual ~ITableDicTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, language id.
@@ -493,7 +493,7 @@ namespace openm
     /** table_dims table public interface. */
     struct ITableDimsTable : public IMetaLoadedTable<TableDimsRow>
     {
-        virtual ~ITableDimsTable() throw() = 0;
+        virtual ~ITableDimsTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, dimension id.
@@ -518,7 +518,7 @@ namespace openm
     /** table_dims_txt table public interface. */
     struct ITableDimsTxtTable : public IMetaLoadedTable<TableDimsTxtRow>
     {
-        virtual ~ITableDimsTxtTable() throw() = 0;
+        virtual ~ITableDimsTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, dimension id, language id.
@@ -541,7 +541,7 @@ namespace openm
     /** table_acc table public interface. */
     struct ITableAccTable : public IMetaLoadedTable<TableAccRow>
     {
-        virtual ~ITableAccTable() throw() = 0;
+        virtual ~ITableAccTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, accumulator id.
@@ -570,7 +570,7 @@ namespace openm
     /** table_acc_txt table public interface. */
     struct ITableAccTxtTable : public IMetaLoadedTable<TableAccTxtRow>
     {
-        virtual ~ITableAccTxtTable() throw() = 0;
+        virtual ~ITableAccTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, accumulator id, language id.
@@ -593,7 +593,7 @@ namespace openm
     /** table_expr table public interface. */
     struct ITableExprTable : public IMetaLoadedTable<TableExprRow>
     {
-        virtual ~ITableExprTable() throw() = 0;
+        virtual ~ITableExprTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, expr id.
@@ -621,7 +621,7 @@ namespace openm
     /** table_expr_txt table public interface. */
     struct ITableExprTxtTable : public IMetaLoadedTable<TableExprTxtRow>
     {
-        virtual ~ITableExprTxtTable() throw() = 0;
+        virtual ~ITableExprTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by unique key: model id, model table id, expr id, language id.
@@ -644,7 +644,7 @@ namespace openm
     /** group_lst table public interface. */
     struct IGroupLstTable : public IMetaLoadedTable<GroupLstRow>
     {
-        virtual ~IGroupLstTable() throw() = 0;
+        virtual ~IGroupLstTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: model id and group id.
@@ -669,7 +669,7 @@ namespace openm
     /** group_txt table public interface. */
     struct IGroupTxtTable : public IMetaLoadedTable<GroupTxtRow>
     {
-        virtual ~IGroupTxtTable() throw() = 0;
+        virtual ~IGroupTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: model id, group id, language id.
@@ -692,7 +692,7 @@ namespace openm
     /** group_pc table public interface. */
     struct IGroupPcTable : public IMetaLoadedTable<GroupPcRow>
     {
-        virtual ~IGroupPcTable() throw() = 0;
+        virtual ~IGroupPcTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: model id, group id, child position.
@@ -717,7 +717,7 @@ namespace openm
     /** profile_lst table public interface. */
     struct IProfileLstTable : public IMetaLoadedTable<ProfileLstRow>
     {
-        virtual ~IProfileLstTable() throw() = 0;
+        virtual ~IProfileLstTable() noexcept = 0;
 
         /** create new table object and load table rows sorted by primary key: profile name. */
         static IProfileLstTable * create(IDbExec * i_dbExec);
@@ -735,7 +735,7 @@ namespace openm
     /** profile_option table public interface. */
     struct IProfileOptionTable : public IMetaLoadedTable<ProfileOptionRow>
     {
-        virtual ~IProfileOptionTable() throw() = 0;
+        virtual ~IProfileOptionTable() noexcept = 0;
 
         /**
         * create new table object and load table rows sorted by primary key: profile name and option key.
@@ -760,7 +760,7 @@ namespace openm
     /** run_lst table public interface. */
     struct IRunLstTable : public IMetaTable<RunLstRow>
     {
-        virtual ~IRunLstTable() throw() = 0;
+        virtual ~IRunLstTable() noexcept = 0;
 
         /** 
         * select table rows sorted by primary key: run id.
@@ -779,7 +779,7 @@ namespace openm
     /** run_txt table public interface. */
     struct IRunTxtTable : public IMetaTable<RunTxtRow>
     {
-        virtual ~IRunTxtTable() throw() = 0;
+        virtual ~IRunTxtTable() noexcept = 0;
 
         /** 
         * select table rows and sorted by primary key: run id and language id.
@@ -795,7 +795,7 @@ namespace openm
     /** run_option table public interface. */
     struct IRunOptionTable : public IMetaLoadedTable<RunOptionRow>
     {
-        virtual ~IRunOptionTable() throw() = 0;
+        virtual ~IRunOptionTable() noexcept = 0;
 
         /**
         * create new table object and load table rows sorted by primary key: run id and option key.
@@ -811,34 +811,34 @@ namespace openm
         virtual vector<RunOptionRow> byRunId(int i_runId) const = 0;
 
         /** return true if primary key (run id, option key) found. */
-        virtual bool isExist(int i_runId, const char * i_key) const throw() = 0;
+        virtual bool isExist(int i_runId, const char * i_key) const noexcept = 0;
 
         /** return true if option key found. */
-        virtual bool isExist(const char * i_key) const throw() = 0;
+        virtual bool isExist(const char * i_key) const noexcept = 0;
 
         /** return string value by primary key (run id, option key) or default value if not found. */
-        virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const throw() = 0;
+        virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept = 0;
 
         /** return string value by option key (first found) or default value if not found. */
-        virtual string strValue(const char * i_key, const string & i_default = "") const throw() = 0;
+        virtual string strValue(const char * i_key, const string & i_default = "") const noexcept = 0;
 
         /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
-        virtual bool boolValue(int i_runId, const char * i_key) const throw() = 0;
+        virtual bool boolValue(int i_runId, const char * i_key) const noexcept = 0;
 
         /** return booleanvalue by option key (first found) or false if not found or value not "yes", "1", "true". */
-        virtual bool boolValue(const char * i_key) const throw() = 0;
+        virtual bool boolValue(const char * i_key) const noexcept = 0;
 
         /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
-        virtual long long longValue(int i_runId, const char * i_key, long long i_default) const throw() = 0;
+        virtual long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept = 0;
 
         /** return long value by option key (first found) or default if not found or can not be converted to long. */
-        virtual long long longValue(const char * i_key, long long i_default) const throw() = 0;
+        virtual long long longValue(const char * i_key, long long i_default) const noexcept = 0;
 
         /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
-        virtual double doubleValue(int i_runId, const char * i_key, double i_default) const throw() = 0;
+        virtual double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept = 0;
 
         /** return double value by option key (first found) or default if not found or can not be converted to double. */
-        virtual double doubleValue(const char * i_key, double i_default) const throw() = 0;
+        virtual double doubleValue(const char * i_key, double i_default) const noexcept = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static IRunOptionTable * create(IRowBaseVec & io_rowVec);
@@ -850,7 +850,7 @@ namespace openm
     /** run_parameter_txt table public interface. */
     struct IRunParamTxtTable : public IMetaLoadedTable<RunParamTxtRow>
     {
-        virtual ~IRunParamTxtTable() throw() = 0;
+        virtual ~IRunParamTxtTable() noexcept = 0;
 
         /** 
         * create new table object and load table rows sorted by primary key: run id, parameter id, language id.
@@ -873,7 +873,7 @@ namespace openm
     /** workset_lst table public interface. */
     struct IWorksetLstTable : public IMetaTable<WorksetLstRow>
     {
-        virtual ~IWorksetLstTable() throw() = 0;
+        virtual ~IWorksetLstTable() noexcept = 0;
 
         /**
         * select table rows sorted by primary key: set id.
@@ -889,7 +889,7 @@ namespace openm
     /** workset_txt table public interface. */
     struct IWorksetTxtTable : public IMetaTable<WorksetTxtRow>
     {
-        virtual ~IWorksetTxtTable() throw() = 0;
+        virtual ~IWorksetTxtTable() noexcept = 0;
 
         /**
         * select table rows and sorted by primary key: set id and language id.
@@ -905,7 +905,7 @@ namespace openm
     /** workset_parameter table public interface. */
     struct IWorksetParamTable : public IMetaTable<WorksetParamRow>
     {
-        virtual ~IWorksetParamTable() throw() = 0;
+        virtual ~IWorksetParamTable() noexcept = 0;
 
         /**
         * select table rows sorted by primary key: set id and parameter id.
@@ -921,7 +921,7 @@ namespace openm
     /** workset_parameter_txt table public interface. */
     struct IWorksetParamTxtTable : public IMetaTable<WorksetParamTxtRow>
     {
-        virtual ~IWorksetParamTxtTable() throw() = 0;
+        virtual ~IWorksetParamTxtTable() noexcept = 0;
 
         /**
         * select table rows and sorted by primary key: set id, parameter id, language id.
@@ -939,7 +939,7 @@ namespace openm
     /** task_lst table public interface. */
     struct ITaskLstTable : public IMetaTable<TaskLstRow>
     {
-        virtual ~ITaskLstTable() throw() = 0;
+        virtual ~ITaskLstTable() noexcept = 0;
 
         /**
         * select table rows sorted by primary key: task id.
@@ -955,7 +955,7 @@ namespace openm
     /** task_txt table public interface. */
     struct ITaskTxtTable : public IMetaTable<TaskTxtRow>
     {
-        virtual ~ITaskTxtTable() throw() = 0;
+        virtual ~ITaskTxtTable() noexcept = 0;
 
         /**
         * select table rows and sorted by primary key: task id and language id.
@@ -971,7 +971,7 @@ namespace openm
     /** task_set table public interface. */
     struct ITaskSetTable : public IMetaTable<TaskSetRow>
     {
-        virtual ~ITaskSetTable() throw() = 0;
+        virtual ~ITaskSetTable() noexcept = 0;
 
         /**
         * select table rows sorted by primary key: task id and set id.
@@ -987,7 +987,7 @@ namespace openm
     /** task_run_lst table public interface. */
     struct ITaskRunLstTable : public IMetaTable<TaskRunLstRow>
     {
-        virtual ~ITaskRunLstTable() throw() = 0;
+        virtual ~ITaskRunLstTable() noexcept = 0;
 
         /**
         * select table rows sorted by primary key: task run id.
@@ -1003,7 +1003,7 @@ namespace openm
     /** task_run_set table public interface. */
     struct ITaskRunSetTable : public IMetaTable<TaskRunSetRow>
     {
-        virtual ~ITaskRunSetTable() throw() = 0;
+        virtual ~ITaskRunSetTable() noexcept = 0;
 
         /**
         * select table rows sorted by primary key: task run id, run id.

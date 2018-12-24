@@ -19,34 +19,34 @@ namespace openm
     /** base for log public interface */
     struct ILogBase
     {
-        virtual ~ILogBase(void) throw() = 0;
+        virtual ~ILogBase(void) noexcept = 0;
 
         /** log message */
-        virtual void logMsg(const char * i_msg, const char * i_extra = NULL) throw() = 0;
+        virtual void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept = 0;
 
         /** log message formatted with vsnprintf() */
-        virtual void logFormatted(const char * i_format, ...) throw() = 0;
+        virtual void logFormatted(const char * i_format, ...) noexcept = 0;
 
         /** return timestamp suffix of log file name: _20120817_160459_0148.
         *
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
-        virtual const string timeStampSuffix(void) throw() = 0;
+        virtual const string timeStampSuffix(void) noexcept = 0;
 
         /** return "stamped" log file name suffix which may include timestamp and pid. */
-        virtual const string suffix(void) throw() = 0;
+        virtual const string suffix(void) noexcept = 0;
     };
 
     /** log public interface: log to console and into log files */
     struct ILog : public virtual ILogBase
     {
-        virtual ~ILog(void) throw() = 0;
+        virtual ~ILog(void) noexcept = 0;
 
         /** log exception */
-        virtual void logErr(const exception & i_ex, const char * i_msg = NULL) throw() = 0;
+        virtual void logErr(const exception & i_ex, const char * i_msg = NULL) noexcept = 0;
 
         /** log sql query */
-        virtual void logSql(const char * i_sql) throw() = 0;
+        virtual void logSql(const char * i_sql) noexcept = 0;
 
         /** re-initialize log file name(s) and other log settings.
         * @param[in]   i_logToConsole  if true then log to console
@@ -65,25 +65,25 @@ namespace openm
             bool i_usePidStamp = false, 
             bool i_noMsgTime = false,
             bool i_isLogSql = false
-            ) throw() = 0;
+            ) noexcept = 0;
 
         /** get language-specific message by source non-translated message */
-        virtual const string getMessage(const char * i_sourceMsg) throw() = 0;
+        virtual const string getMessage(const char * i_sourceMsg) noexcept = 0;
 
         /** get list of language name for the messages, eg: (en-ca, en) */
-        virtual const list<string> getLanguages(void) throw() = 0;
+        virtual const list<string> getLanguages(void) noexcept = 0;
 
         /** get copy of language-specific messages */
-        virtual const unordered_map<string, string> getLanguageMessages(void) throw() = 0;
+        virtual const unordered_map<string, string> getLanguageMessages(void) noexcept = 0;
 
         /** set language-specific messages and update list of languages */
-        virtual void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) throw() = 0;
+        virtual void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) noexcept = 0;
     };
 
     /** trace log public interface: model event log to console and into log files */
     struct ITrace : public virtual ILogBase
     {
-        virtual ~ITrace(void) throw() = 0;
+        virtual ~ITrace(void) noexcept = 0;
 
         /** re-initialize log file name(s) and other log settings.
         *
@@ -101,7 +101,7 @@ namespace openm
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
-            ) throw() = 0;
+            ) noexcept = 0;
     };
 }
 

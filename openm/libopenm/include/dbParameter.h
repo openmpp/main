@@ -19,7 +19,7 @@ namespace openm
     /** input parameter reader public interface */
     struct IParameterReader
     {
-        virtual ~IParameterReader() throw() = 0;
+        virtual ~IParameterReader() noexcept = 0;
 
         /** input parameter reader factory */
         static IParameterReader * create(
@@ -30,10 +30,10 @@ namespace openm
             );
         
         /** return input parameter id */
-        virtual int parameterId(void) const throw() = 0;
+        virtual int parameterId(void) const noexcept = 0;
 
         /** return input parameter size: total number of values in the table */
-        virtual size_t sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const noexcept = 0;
 
         /**
          * read input parameter values.
@@ -52,7 +52,7 @@ namespace openm
     /** public interface of input parameter writer into workset */
     struct IParameterSetWriter
     {
-        virtual ~IParameterSetWriter() throw() = 0;
+        virtual ~IParameterSetWriter() noexcept = 0;
 
         /** input parameter writer factory */
         static IParameterSetWriter * create(
@@ -64,7 +64,7 @@ namespace openm
             );
 
         /** return input parameter size: total number of values in the table */
-        virtual size_t sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const noexcept = 0;
 
         /**
         * write input parameter values.
@@ -83,7 +83,7 @@ namespace openm
     /** public interface of input parameter writer for model run */
     struct IParameterRunWriter
     {
-        virtual ~IParameterRunWriter() throw() = 0;
+        virtual ~IParameterRunWriter() noexcept = 0;
 
         /** input parameter writer factory */
         static IParameterRunWriter * create(
@@ -95,7 +95,7 @@ namespace openm
             );
 
         /** return input parameter size: total number of values in the table */
-        virtual size_t sizeOf(void) const throw() = 0;
+        virtual size_t sizeOf(void) const noexcept = 0;
 
         /** load parameter values from csv file into run table. 
         *

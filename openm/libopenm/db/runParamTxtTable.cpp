@@ -14,7 +14,7 @@ namespace openm
     public:
         RunParamTxtTable(IDbExec * i_dbExec, int i_runId = 0, int i_langId = -1);
         RunParamTxtTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
-        ~RunParamTxtTable() throw();
+        ~RunParamTxtTable() noexcept;
 
         // get const reference to list of all table rows
         const IRowBaseVec & rowsCRef(void) const { return rowVec; }
@@ -79,7 +79,7 @@ namespace openm
 }
 
 // Table never unloaded
-IRunParamTxtTable::~IRunParamTxtTable(void) throw() { }
+IRunParamTxtTable::~IRunParamTxtTable(void) noexcept { }
 
 // Create new table rows by loading db rows
 IRunParamTxtTable * IRunParamTxtTable::create(IDbExec * i_dbExec, int i_runId, int i_langId)
@@ -114,7 +114,7 @@ RunParamTxtTable::RunParamTxtTable(IDbExec * i_dbExec, int i_runId, int i_langId
 }
 
 // Table never unloaded
-RunParamTxtTable::~RunParamTxtTable(void) throw() { }
+RunParamTxtTable::~RunParamTxtTable(void) noexcept { }
 
 // Find row by primary key: run id, parameter id, language id
 const RunParamTxtRow * RunParamTxtTable::byKey(int i_runId, int i_paramId, int i_langId) const

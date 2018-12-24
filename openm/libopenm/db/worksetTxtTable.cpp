@@ -12,7 +12,7 @@ namespace openm
     class WorksetTxtTable : public IWorksetTxtTable
     {
     public:
-        ~WorksetTxtTable() throw();
+        ~WorksetTxtTable() noexcept;
 
         // select table rows by specified filter, sorted by primary key: set id and language id
         static vector<WorksetTxtRow> select(IDbExec * i_dbExec, const string & i_where);
@@ -66,10 +66,10 @@ namespace openm
 }
 
 // Table never unloaded
-IWorksetTxtTable::~IWorksetTxtTable(void) throw() { }
+IWorksetTxtTable::~IWorksetTxtTable(void) noexcept { }
 
 // Table never unloaded
-WorksetTxtTable::~WorksetTxtTable(void) throw() { }
+WorksetTxtTable::~WorksetTxtTable(void) noexcept { }
 
 // select table rows
 vector<WorksetTxtRow> IWorksetTxtTable::select(IDbExec * i_dbExec, int i_langId)

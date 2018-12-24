@@ -21,7 +21,7 @@ namespace openm
     struct IModelBuilder
     {
     public:
-        virtual ~IModelBuilder() throw() = 0;
+        virtual ~IModelBuilder() noexcept = 0;
 
         /** new model builder to create sql script specific to each db-provider. */
         static IModelBuilder * create(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir);

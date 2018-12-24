@@ -16,7 +16,7 @@ namespace openm
         ParameterWriter(const char * i_name, IDbExec * i_dbExec, const MetaHolder * i_metaStore);
 
         // Parameter writer cleanup
-        virtual ~ParameterWriter(void) throw() { }
+        virtual ~ParameterWriter(void) noexcept { }
 
     protected:
         int modelId;                            // model id in database
@@ -48,10 +48,10 @@ namespace openm
             );
 
         // Parameter writer cleanup
-        ~ParameterSetWriter(void) throw() override { }
+        ~ParameterSetWriter(void) noexcept override { }
 
         // return total number of values
-        virtual size_t sizeOf(void) const throw() override { return totalSize; }
+        virtual size_t sizeOf(void) const noexcept override { return totalSize; }
 
         // write workset parameter values
         void writeParameter(
@@ -80,10 +80,10 @@ namespace openm
         );
 
         // Parameter writer cleanup
-        ~ParameterRunWriter(void) throw() override { }
+        ~ParameterRunWriter(void) noexcept override { }
 
         // return total number of values
-        virtual size_t sizeOf(void) const throw() override { return totalSize; }
+        virtual size_t sizeOf(void) const noexcept override { return totalSize; }
 
         // load parameter values from csv file into run table
         virtual void loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCount, const char * i_filePath, bool i_isIdCsv = false) override;
@@ -103,8 +103,8 @@ namespace openm
 }
 
 // Parameter writer cleanup
-IParameterSetWriter::~IParameterSetWriter(void) throw() { }
-IParameterRunWriter::~IParameterRunWriter(void) throw() { }
+IParameterSetWriter::~IParameterSetWriter(void) noexcept { }
+IParameterRunWriter::~IParameterRunWriter(void) noexcept { }
 
 // Parameter writer factory: create new writer for workset parameter
 IParameterSetWriter * IParameterSetWriter::create(

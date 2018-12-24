@@ -73,7 +73,7 @@ ArgReader::ArgReader(
 }
 
 /** return true if option with this key exist. */
-bool ArgReader::isOptionExist(const char * i_key) const throw()
+bool ArgReader::isOptionExist(const char * i_key) const noexcept
 {
     try {
         return i_key != NULL && args.find(i_key) != args.cend();
@@ -84,7 +84,7 @@ bool ArgReader::isOptionExist(const char * i_key) const throw()
 }
 
 /** return string value by key or default value if not found. */
-string ArgReader::strOption(const char * i_key, const string & i_default) const throw()
+string ArgReader::strOption(const char * i_key, const string & i_default) const noexcept
 {
     try {
         if (i_key == NULL) return i_default;    // invalid key
@@ -99,7 +99,7 @@ string ArgReader::strOption(const char * i_key, const string & i_default) const 
 }
 
 /** return boolean value by key or false if not found or value not "yes", "1", "true". */
-bool ArgReader::boolOption(const char * i_key) const throw()
+bool ArgReader::boolOption(const char * i_key) const noexcept
 {
     try {
         string sVal = strOption(i_key);
@@ -112,7 +112,7 @@ bool ArgReader::boolOption(const char * i_key) const throw()
 }
 
 /** return long value by key or default if not found or can not be converted to long. */
-long long ArgReader::longOption(const char * i_key, long long i_default) const throw()
+long long ArgReader::longOption(const char * i_key, long long i_default) const noexcept
 {
     try {
         string sVal = strOption(i_key);
@@ -125,7 +125,7 @@ long long ArgReader::longOption(const char * i_key, long long i_default) const t
 }
 
 /** return double value by key or default if not found or can not be converted to double. */
-double ArgReader::doubleOption(const char * i_key, double i_default) const throw()
+double ArgReader::doubleOption(const char * i_key, double i_default) const noexcept
 {
     try {
         string sVal = strOption(i_key);
