@@ -203,7 +203,7 @@ void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {
 
     if (io_request == MPI_REQUEST_NULL) return;     // no active request
 
-    long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
+    long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     int isDone = 0;
     do {
         int mpiRet = MPI_Test(&io_request, &isDone, MPI_STATUS_IGNORE);
@@ -213,7 +213,7 @@ void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {
             this_thread::sleep_for(chrono::milliseconds(i_pollTime));
         }
         if (theFinal != nullptr) {
-            if (theFinal->isError() && --nErrExchange <= 0) break;  // stop wait attempts if model status is error
+            if (theFinal->isError() && --nAttempt <= 0) break;  // stop wait attempts if model status is error
         }
     } while (!isDone);
 }

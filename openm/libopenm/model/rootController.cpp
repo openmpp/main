@@ -379,7 +379,7 @@ void RootController::shutdownOnExit(ModelStatus i_status)
 void RootController::shutdownWaitAll(void) 
 {
     // receive outstanding run results
-    long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
+    long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     bool isAnyToRecv = true;
     bool isError = false;
     do {
@@ -391,13 +391,15 @@ void RootController::shutdownWaitAll(void)
             [](AccReceive i_recv) -> bool { return !i_recv.isReceived; }
         );
 
-        // no data received: if any accumulators outstanding then sleep before try again
-        if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
-
         // receive sub-values status update and set model process status to final: done, exit, error
         receiveStatusUpdate();
+        updateRunState(dbExec, runStateStore().saveUpdated());  // update run status for all sub-values
+
         isError = !updateModelRunStatus();
-        if (isError && --nErrExchange <= 0) break;  // stop receive attempts if model status is error
+        if (isError && --nAttempt <= 0) break;      // stop receive attempts if model status is error
+
+        // no data received: if any accumulators outstanding then sleep before try again
+        if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
     }
     while (isAnyToRecv);
 
@@ -441,7 +443,7 @@ void RootController::shutdownWaitAll(void)
 void RootController::shutdownRun(int i_runId) 
 {
     // receive outstanding sub-values for that run id
-    long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
+    long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     bool isAnyToRecv = true;
     bool isError = false;
     do {
@@ -453,13 +455,15 @@ void RootController::shutdownRun(int i_runId)
             [i_runId](AccReceive i_recv) -> bool { return i_recv.runId == i_runId && !i_recv.isReceived; }
         );
 
-        // no data received: if any accumulators outstanding then sleep before try again
-        if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
-
         // receive sub-values status update and set model process status to final: done, exit, error
         receiveStatusUpdate();
+        updateRunState(dbExec, runStateStore().saveUpdated());  // update run status for all sub-values
+
         isError = !updateModelRunStatus();
-        if (isError && --nErrExchange <= 0) break;  // stop receive attempts if model status is error
+        if (isError && --nAttempt <= 0) break;      // stop receive attempts if model status is error
+
+        // no data received: if any accumulators outstanding then sleep before try again
+        if (!isReceived && isAnyToRecv) this_thread::sleep_for(chrono::milliseconds(OM_RECV_SLEEP_TIME));
     }
     while (isAnyToRecv);
 

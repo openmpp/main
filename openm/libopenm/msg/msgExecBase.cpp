@@ -150,7 +150,7 @@ void MsgExecBase::waitSendAll(void)
     try {
         lock_guard<recursive_mutex> lck(msgMutex);
 
-        long nErrExchange = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
+        long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
         bool isAllDone = true;
         do {
             isAllDone = true;
@@ -174,7 +174,7 @@ void MsgExecBase::waitSendAll(void)
 
             // stop wait attempts if model status is error
             if (theFinal != nullptr) {
-                if (theFinal->isError() && --nErrExchange <= 0) break;
+                if (theFinal->isError() && --nAttempt <= 0) break;
             }
         } while (!isAllDone);
     }
