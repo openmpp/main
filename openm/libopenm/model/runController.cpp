@@ -151,17 +151,42 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     // else (not a task) then move run status from init to "in progress"
     if (mStatus == ModelStatus::init) mStatus = ModelStatus::progress;
 
-    // create new run
-    string sn = argOpts().strOption(RunOptionsKey::runName);
-    if (sn.empty()) sn = toAlphaNumeric(string(OM_MODEL_NAME) + "_" + dtStr + "_" + to_string(nRunId));
+    // find set id and make sure this set exist in database:
+    // if this is a task then check is next set of modeling task exist in database
+    // else (not a task) then set specified by model run options or it is model default set
+    nSetId = findWorkset(nSetId, i_dbExec);
 
+    // make new run name or use name specified by model run options
+    string rn = argOpts().strOption(RunOptionsKey::runName);
+    if (rn.empty()) {
+
+        rn = OM_MODEL_NAME;
+        if (i_taskRunId > 0) {
+            string tn = i_dbExec->selectToStr(
+                "SELECT TL.task_name" \
+                " FROM task_lst TL" \
+                " INNER JOIN task_run_lst TRL ON (TRL.task_id = TL.task_id)" \
+                " WHERE TRL.task_run_id = " + to_string(i_taskRunId)
+            );
+            rn += "_" + tn;
+        }
+        string sn = i_dbExec->selectToStr(
+            "SELECT set_name FROM workset_lst WHERE set_id = " + to_string(nSetId)
+        );
+        rn += "_" + sn + "_" + dtStr + "_";
+        string sfx = to_string(nRunId);
+
+        rn = toAlphaNumeric(rn, OM_NAME_DB_MAX - sfx.length()) + sfx;
+    }
+
+    // create new run
     i_dbExec->update(
         "INSERT INTO run_lst" \
         " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_digest)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
-        toQuoted(sn) + ", " +
+        toQuoted(rn) + ", " +
         to_string(subValueCount) + ", " +
         to_string(subValueCount) + ", " +
         "0, " +
@@ -180,9 +205,6 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
             " AND set_id = " + to_string(nSetId) 
             );
     }
-
-    // find workset: next set of modeling task, set specified by model run options or default set
-    nSetId = findWorkset(nSetId, i_dbExec);
 
     // save run options in run_option table
     createRunOptions(nRunId, nSetId, i_dbExec);

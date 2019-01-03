@@ -26,7 +26,7 @@ INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('mod
 INSERT INTO workset_lst 
   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
 VALUES 
-  (2, NULL, 1, 'modelOne', 1, '2013-05-29 23:55:07.1234');
+  (2, NULL, 1, 'Default', 1, '2013-05-29 23:55:07.1234');
 
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 0, 'Model One default set of parameters', NULL);
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 1, '(FR) Model One default set of parameters', NULL);
