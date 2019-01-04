@@ -754,7 +754,10 @@ CREATE TABLE task_run_lst
 );
 
 --
--- Task run: input (working sets) and output (model run)
+-- Task run history: input (working sets) and output (model run)
+--    working sets in task run history may be deleted or edited by user
+--    there is no guarantee of any set_id in task history still exist in workset_lst
+--    or contain same input parameter values as it was at the time of task run.
 --
 CREATE TABLE task_run_set
 (
