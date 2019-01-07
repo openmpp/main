@@ -489,10 +489,10 @@ CREATE TABLE run_lst
   run_id        INT          NOT NULL, -- unique run id
   model_id      INT          NOT NULL, -- model id
   run_name      VARCHAR(255) NOT NULL, -- model run name
-  sub_count     INT          NOT NULL, -- subvalue count
-  sub_started   INT          NOT NULL, -- number of subvalues started
-  sub_completed INT          NOT NULL, -- number of subvalues completed
-  sub_restart   INT          NOT NULL, -- subvalue to restart from
+  sub_count     INT          NOT NULL, -- sub-value count
+  sub_started   INT          NOT NULL, -- number of sub-values started
+  sub_completed INT          NOT NULL, -- number of sub-values completed
+  sub_restart   INT          NOT NULL, -- sub-value to restart from
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
@@ -542,7 +542,7 @@ CREATE TABLE run_parameter
   run_id        INT         NOT NULL, -- master key
   parameter_hid INT         NOT NULL, -- parameter unique id
   base_run_id   INT         NOT NULL, -- source run id to select parameter value
-  sub_count     INT         NOT NULL, -- subvalues count
+  sub_count     INT         NOT NULL, -- sub-values count
   run_digest    VARCHAR(32) NULL,     -- digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
   CONSTRAINT run_parameter_mk 
@@ -665,7 +665,7 @@ CREATE TABLE workset_parameter
 (
   set_id        INT NOT NULL, -- master key
   parameter_hid INT NOT NULL, -- parameter_dic.parameter_id
-  sub_count     INT NOT NULL, -- subvalues count
+  sub_count     INT NOT NULL, -- sub-values count
   PRIMARY KEY (set_id, parameter_hid),
   CONSTRAINT workset_parameter_mk 
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
@@ -744,7 +744,7 @@ CREATE TABLE task_run_lst
 (
   task_run_id INT         NOT NULL, -- unique task run id
   task_id     INT         NOT NULL, -- master key
-  sub_count   INT         NOT NULL, -- subvalues count of task run
+  sub_count   INT         NOT NULL, -- sub-values count of task run
   create_dt   VARCHAR(32) NOT NULL, -- start date-time
   status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
   update_dt   VARCHAR(32) NOT NULL, -- last update date-time
