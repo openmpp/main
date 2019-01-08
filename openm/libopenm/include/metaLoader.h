@@ -40,7 +40,7 @@ namespace openm
         /** model run id to restart model run */
         static const char * restartRunId;
 
-        /** model run name to in database */
+        /** model run name in database */
         static const char * runName;
 
         /** working set id to get input parameters */
@@ -55,11 +55,14 @@ namespace openm
         /** modeling task name */
         static const char * taskName;
 
-        /** modeling task under external supervision */
-        static const char * taskWait;
+        /** modeling task run name in database */
+        static const char * taskRunName;
 
         /** modeling task run id */
         static const char * taskRunId;
+
+        /** modeling task under external supervision */
+        static const char * taskWait;
 
         /** profile name to get run options, default is model name */
         static const char * profile;

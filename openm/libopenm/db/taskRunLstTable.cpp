@@ -26,6 +26,7 @@ namespace openm
     static const type_info * typeTaskRunLstRow[] = { 
         &typeid(decltype(TaskRunLstRow::taskRunId)), 
         &typeid(decltype(TaskRunLstRow::taskId)),
+        &typeid(decltype(TaskRunLstRow::name)),
         &typeid(decltype(TaskRunLstRow::subCount)),
         &typeid(decltype(TaskRunLstRow::createDateTime)),
         &typeid(decltype(TaskRunLstRow::status)),
@@ -55,15 +56,18 @@ namespace openm
                 dynamic_cast<TaskRunLstRow *>(i_row)->taskId = (*(int *)i_value);
                 break;
             case 2:
-                dynamic_cast<TaskRunLstRow *>(i_row)->subCount = (*(int *)i_value);
+                dynamic_cast<TaskRunLstRow *>(i_row)->name = ((const char *)i_value);
                 break;
             case 3:
-                dynamic_cast<TaskRunLstRow *>(i_row)->createDateTime = ((const char *)i_value);
+                dynamic_cast<TaskRunLstRow *>(i_row)->subCount = (*(int *)i_value);
                 break;
             case 4:
-                dynamic_cast<TaskRunLstRow *>(i_row)->status = ((const char *)i_value);
+                dynamic_cast<TaskRunLstRow *>(i_row)->createDateTime = ((const char *)i_value);
                 break;
             case 5:
+                dynamic_cast<TaskRunLstRow *>(i_row)->status = ((const char *)i_value);
+                break;
+            case 6:
                 dynamic_cast<TaskRunLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
                 break;
             default:
@@ -102,7 +106,7 @@ vector<TaskRunLstRow> TaskRunLstTable::select(IDbExec * i_dbExec, const string &
 
     const IRowAdapter & adp = TaskRunLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowVector(
-        "SELECT task_run_id, task_id, sub_count, create_dt, status, update_dt" \
+        "SELECT task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt" \
         " FROM task_run_lst " + i_where + " ORDER BY 1", 
         adp
         );

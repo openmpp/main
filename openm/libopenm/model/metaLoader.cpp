@@ -36,7 +36,7 @@ namespace openm
     /** model run id to restart model run */
     const char * RunOptionsKey::restartRunId = "OpenM.RestartRunId";
 
-    /** model run name to in database */
+    /** model run name in database */
     const char * RunOptionsKey::runName = "OpenM.RunName";
 
     /** working set id to get input parameters */
@@ -54,11 +54,14 @@ namespace openm
     /** modeling task name */
     const char * RunOptionsKey::taskName = "OpenM.TaskName";
 
-    /** modeling task under external supervision */
-    const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
+    /** modeling task run name in database */
+    const char * RunOptionsKey::taskRunName = "OpenM.TaskRunName";
 
     /** modeling task run id */
     const char * RunOptionsKey::taskRunId = "OpenM.TaskRunId";
+
+    /** modeling task under external supervision */
+    const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
 
     /** profile name to get run options, default is model name */
     const char * RunOptionsKey::profile = "OpenM.OptionsProfile";
@@ -136,6 +139,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::setName,
     RunOptionsKey::taskId,
     RunOptionsKey::taskName,
+    RunOptionsKey::taskRunName,
+    RunOptionsKey::taskWait,
     RunOptionsKey::profile,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
@@ -485,17 +490,32 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
 
     string dtStr = toDateTimeString(theLog->timeStampSuffix()); // get log date-time as string
 
-    // create new run
+    // make new task run name or use name specified by model run options
+    string rn = argOpts().strOption(RunOptionsKey::taskRunName);
+    if (rn.empty()) {
+
+        rn = OM_MODEL_NAME;
+        string tn = i_dbExec->selectToStr(
+            "SELECT task_name FROM task_lst WHERE task_id = " + to_string(i_taskId)
+        );
+        rn += "_" + tn + "_" + dtStr + "_";
+        string sfx = to_string(taskRunId);
+
+        rn = toAlphaNumeric(rn, OM_NAME_DB_MAX - sfx.length()) + sfx;
+    }
+
+    // create new task run
     i_dbExec->update(
-        "INSERT INTO task_run_lst (task_run_id, task_id, sub_count, create_dt, status, update_dt)" \
+        "INSERT INTO task_run_lst (task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt)" \
         " VALUES (" +
         to_string(taskRunId) + ", " +
         to_string(i_taskId) + ", " +
+        toQuoted(rn) + ", " +
         to_string(subValueCount) + ", " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::init) + ", " +
         toQuoted(dtStr) + ")"
-        );
+    );
 
     // completed: commit the changes
     i_dbExec->commit();

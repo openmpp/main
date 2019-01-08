@@ -162,14 +162,21 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
 
         rn = OM_MODEL_NAME;
         if (i_taskRunId > 0) {
-            string tn = i_dbExec->selectToStr(
-                "SELECT TL.task_name" \
-                " FROM task_lst TL" \
-                " INNER JOIN task_run_lst TRL ON (TRL.task_id = TL.task_id)" \
-                " WHERE TRL.task_run_id = " + to_string(i_taskRunId)
-            );
-            rn += "_" + tn;
+            string trn = argOpts().strOption(RunOptionsKey::taskRunName);
+            if (!trn.empty()) {
+                rn = trn;       // if task run name specified then use it as prefix of run name
+            }
+            else {
+                string tn = i_dbExec->selectToStr(
+                    "SELECT TL.task_name" \
+                    " FROM task_lst TL" \
+                    " INNER JOIN task_run_lst TRL ON (TRL.task_id = TL.task_id)" \
+                    " WHERE TRL.task_run_id = " + to_string(i_taskRunId)
+                );
+                rn += "_" + tn; // task run name prefix is modelName_taskName
+            }
         }
+
         string sn = i_dbExec->selectToStr(
             "SELECT set_name FROM workset_lst WHERE set_id = " + to_string(nSetId)
         );

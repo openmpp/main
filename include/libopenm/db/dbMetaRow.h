@@ -1810,28 +1810,32 @@ namespace openm
     /** task_run_lst table row. */
     struct TaskRunLstRow : public IMetaRow<TaskRunLstRow>
     {
-        /** task_run_id INT         NOT NULL */
+        /** task_run_id INT          NOT NULL */
         int taskRunId;
 
-        /** task_id     INT         NOT NULL */
+        /** task_id     INT          NOT NULL */
         int taskId;
 
-        /** sub_count   INT         NOT NULL */
+        /** run_name    VARCHAR(255) NOT NULL */
+        string name;
+
+        /** sub_count   INT          NOT NULL */                       
         int subCount;
 
-        /** create_dt   VARCHAR(32) NOT NULL */
+        /** create_dt   VARCHAR(32)  NOT NULL */
         string createDateTime;
 
         /** task status: i=init p=progress w=wait s=success x=exit e=error(failed) */
         string status;
 
-        /** update_dt   VARCHAR(32) NOT NULL */
+        /** update_dt   VARCHAR(32)  NOT NULL */
         string updateDateTime;
 
         /** create row with supplied primary key field values. */
         TaskRunLstRow(int i_taskRunId) :
             taskRunId(i_taskRunId),
             taskId(0),
+            name(""),
             subCount(0),
             createDateTime(""),
             status(""),

@@ -742,12 +742,13 @@ CREATE TABLE task_set
 --
 CREATE TABLE task_run_lst
 (
-  task_run_id INT         NOT NULL, -- unique task run id
-  task_id     INT         NOT NULL, -- master key
-  sub_count   INT         NOT NULL, -- sub-values count of task run
-  create_dt   VARCHAR(32) NOT NULL, -- start date-time
-  status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
-  update_dt   VARCHAR(32) NOT NULL, -- last update date-time
+  task_run_id INT          NOT NULL, -- unique task run id
+  task_id     INT          NOT NULL, -- master key
+  run_name    VARCHAR(255) NOT NULL, -- task run name
+  sub_count   INT          NOT NULL, -- sub-values count of task run
+  create_dt   VARCHAR(32)  NOT NULL, -- start date-time
+  status      VARCHAR(1)   NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
+  update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (task_run_id),
   CONSTRAINT task_run_lst_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id)

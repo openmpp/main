@@ -154,6 +154,7 @@ run:
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.TaskName taskOne \
+		-OpenM.TaskRunName "First Task Run" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 2 -SubValue.salaryFull csv -OpenM.ParamDir ./csv \
