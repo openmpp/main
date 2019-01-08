@@ -7,7 +7,7 @@ Original version created in 2013 by:
                     User ID     E-mail                     Organization
                     ---------   -------------------------  ------------
 Steve Gribble       esseffgee   steve.gribble@hotmail.com  uOttawa
-Anatoly Cherkassky  amc1999     anatoly@beyond2020.com     uOttawa
+Anatoly Cherkassky  amc1999     openmpp99@gmail.com        uOttawa
 
 Contributors:
 
