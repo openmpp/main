@@ -173,11 +173,12 @@ CREATE TABLE parameter_dic
   parameter_hid    INT          NOT NULL, -- unique parameter id
   parameter_name   VARCHAR(255) NOT NULL, -- parameter name
   parameter_digest VARCHAR(32)  NOT NULL, -- parameter digest
-  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
-  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   parameter_rank   INT          NOT NULL, -- parameter rank
   type_hid         INT          NOT NULL, -- parameter type id
+  is_extendable    SMALLINT     NOT NULL, -- if non-zero then parameter value can be NULL
   num_cumulated    INT          NOT NULL, -- number of cumulated dimensions
+  db_run_table     VARCHAR(64)  NOT NULL, -- parameter run values db table name: ageSex_p12345678
+  db_set_table     VARCHAR(64)  NOT NULL, -- parameter workset values db table name: ageSex_w12345678
   PRIMARY KEY (parameter_hid),
   CONSTRAINT parameter_dic_un UNIQUE (parameter_digest),
   CONSTRAINT parameter_dic_type_fk
@@ -488,10 +489,10 @@ CREATE TABLE run_lst
   run_id        INT          NOT NULL, -- unique run id
   model_id      INT          NOT NULL, -- model id
   run_name      VARCHAR(255) NOT NULL, -- model run name
-  sub_count     INT          NOT NULL, -- subvalue count
-  sub_started   INT          NOT NULL, -- number of subvalues started
-  sub_completed INT          NOT NULL, -- number of subvalues completed
-  sub_restart   INT          NOT NULL, -- subvalue to restart from
+  sub_count     INT          NOT NULL, -- sub-value count
+  sub_started   INT          NOT NULL, -- number of sub-values started
+  sub_completed INT          NOT NULL, -- number of sub-values completed
+  sub_restart   INT          NOT NULL, -- sub-value to restart from
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
@@ -541,7 +542,7 @@ CREATE TABLE run_parameter
   run_id        INT         NOT NULL, -- master key
   parameter_hid INT         NOT NULL, -- parameter unique id
   base_run_id   INT         NOT NULL, -- source run id to select parameter value
-  sub_count     INT         NOT NULL, -- subvalues count
+  sub_count     INT         NOT NULL, -- sub-values count
   run_digest    VARCHAR(32) NULL,     -- digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
   CONSTRAINT run_parameter_mk 
@@ -587,6 +588,25 @@ CREATE TABLE run_table
              FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id),
   CONSTRAINT run_table_fk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid)
+);
+
+--
+-- Run progress for each sub-value
+-- progress_count usually contains percent of completed cases (case based models) or time (time based)
+-- progress_value usually contains number cases completed (case based models) or time (time based)
+--
+CREATE TABLE run_progress
+(
+  run_id         INT         NOT NULL, -- master key
+  sub_id         INT         NOT NULL, -- sub-value id (zero based index)
+  create_dt      VARCHAR(32) NOT NULL, -- sub-value start date-time
+  status         VARCHAR(1)  NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
+  update_dt      VARCHAR(32) NOT NULL, -- last update date-time
+  progress_count INT         NOT NULL, -- progress count: percent completed
+  progress_value FLOAT       NOT NULL, -- progress value: number of cases (case based) or time (time based)
+  PRIMARY KEY (run_id, sub_id),
+  CONSTRAINT run_progress_mk 
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
 );
 
 --
@@ -645,7 +665,7 @@ CREATE TABLE workset_parameter
 (
   set_id        INT NOT NULL, -- master key
   parameter_hid INT NOT NULL, -- parameter_dic.parameter_id
-  sub_count     INT NOT NULL, -- subvalues count
+  sub_count     INT NOT NULL, -- sub-values count
   PRIMARY KEY (set_id, parameter_hid),
   CONSTRAINT workset_parameter_mk 
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
@@ -722,25 +742,29 @@ CREATE TABLE task_set
 --
 CREATE TABLE task_run_lst
 (
-  task_run_id INT         NOT NULL, -- unique task run id
-  task_id     INT         NOT NULL, -- master key
-  sub_count   INT         NOT NULL, -- subvalues count of task run
-  create_dt   VARCHAR(32) NOT NULL, -- start date-time
-  status      VARCHAR(1)  NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
-  update_dt   VARCHAR(32) NOT NULL, -- last update date-time
+  task_run_id INT          NOT NULL, -- unique task run id
+  task_id     INT          NOT NULL, -- master key
+  run_name    VARCHAR(255) NOT NULL, -- task run name
+  sub_count   INT          NOT NULL, -- sub-values count of task run
+  create_dt   VARCHAR(32)  NOT NULL, -- start date-time
+  status      VARCHAR(1)   NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
+  update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   PRIMARY KEY (task_run_id),
   CONSTRAINT task_run_lst_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id)
 );
 
 --
--- Task run: input (working sets) and output (model run)
+-- Task run history: input (working sets) and output (model run)
+--    working sets in task run history may be deleted or edited by user
+--    there is no guarantee of any set_id in task history still exist in workset_lst
+--    or contain same input parameter values as it was at the time of task run.
 --
 CREATE TABLE task_run_set
 (
   task_run_id INT NOT NULL, -- master key
   run_id      INT NOT NULL, -- if > 0 then result run id
-  set_id      INT NOT NULL, -- if > 0 then input working set id
+  set_id      INT NOT NULL, -- if > 0 then input working set id used to run the model
   task_id     INT NOT NULL, -- link to task list
   PRIMARY KEY (task_run_id, run_id),
   CONSTRAINT task_rs_un 

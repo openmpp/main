@@ -605,7 +605,7 @@ CREATE TABLE run_progress
   progress_count INT         NOT NULL, -- progress count: percent completed
   progress_value FLOAT       NOT NULL, -- progress value: number of cases (case based) or time (time based)
   PRIMARY KEY (run_id, sub_id),
-  CONSTRAINT run_table_mk 
+  CONSTRAINT run_progress_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
 );
 
@@ -764,7 +764,7 @@ CREATE TABLE task_run_set
 (
   task_run_id INT NOT NULL, -- master key
   run_id      INT NOT NULL, -- if > 0 then result run id
-  set_id      INT NOT NULL, -- if > 0 then input working set id
+  set_id      INT NOT NULL, -- if > 0 then input working set id used to run the model
   task_id     INT NOT NULL, -- link to task list
   PRIMARY KEY (task_run_id, run_id),
   CONSTRAINT task_rs_un 
