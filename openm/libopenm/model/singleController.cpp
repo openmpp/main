@@ -49,7 +49,7 @@ using namespace openm;
 *
 *   - as rows of profile_option table, default profile_name='model name'
 *     profile name also can be command line argument or ini-file entry, i.e.: \n
-*       model.exe -OpenM.OptionsProfile TestProfile
+*       model.exe -OpenM.Profile TestProfile
 *
 *   - some options have hard coded default values which used if nothing above is specified
 *

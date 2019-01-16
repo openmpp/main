@@ -64,7 +64,7 @@ namespace openm
     const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
 
     /** profile name to get run options, default is model name */
-    const char * RunOptionsKey::profile = "OpenM.OptionsProfile";
+    const char * RunOptionsKey::profile = "OpenM.Profile";
 
     /** use sparse output tables */
     const char * RunOptionsKey::useSparse = "OpenM.SparseOutput";
