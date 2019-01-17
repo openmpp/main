@@ -54,11 +54,11 @@ namespace openm
             );
         ~LogBase(void) noexcept;
 
-        /** return timestamp suffix of log file name: _20120817_160459_0148.
+        /** return timestamp part of log file name: 2012_08_17_16_04_59_148.
         *
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
-        const string timeStampSuffix(void) noexcept override;
+        const string timeStamp(void) noexcept override;
 
         /** return "stamped" log file name suffix which may include timestamp and pid. */
         const string suffix(void) noexcept override;
@@ -88,11 +88,11 @@ namespace openm
         bool isLastCreated;         // if true then last log file created
         bool isStampedEnabled;      // if true then last log enabled
         bool isStampedCreated;      // if true then last log file created
-        string tsSuffix;            // log file name timestamp suffix: _20120817_160459_0148
-        string pidSuffix;           // log file name pid suffix: .1234
-        string fileSuffix;          // log file name timestamp and pid suffix: _20120817_160459_0148.1234
+        string tsPart;              // log file name timestamp part: 2012_08_17_16_04_59_148
+        string pidPart;             // log file name pid part: 1234
+        string fileSuffix;          // log file name timestamp and pid suffix: .2012_08_17_16_04_59_148.1234
         string lastPath;            // last log file path: /var/log/openm.log
-        string stampedPath;         // stamped log file path: /var/log/openm_20120817_160459_0148.1234.log
+        string stampedPath;         // stamped log file path: /var/log/openm.2012_08_17_16_04_59_148.1234.log
         bool isNoMsgTime;           // if true then not prefix messages with date-time
 
         static const size_t msgBufferSize = 32768;
@@ -135,7 +135,7 @@ namespace openm
     *  "stamped" file  - log file with unique name, created for every model run
     * 
     * "stamped" name produced from "last run" name by adding time-stamp and pid-stamp, i.e.: \n
-    *  modelOne.log => modelOne_20120817_160459_0148.1234.log
+    *  modelOne.log => modelOne.2012_08_17_16_04_59_148.1234.log
     */
     class Log : public LogBase, public ILog
     {
@@ -230,7 +230,7 @@ namespace openm
     *  "stamped" file  - log file with unique name, created for every model run
     *
     * "stamped" name produced from "last run" name by adding time-stamp and pid-stamp, i.e.: \n
-    *   trace.log => trace_20120817_160459_0148.1234.log
+    *   trace.log => trace.2012_08_17_16_04_59_148.1234.log
     */
     class TraceLog : public LogBase, public ITrace
     {

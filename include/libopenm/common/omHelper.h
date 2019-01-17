@@ -100,13 +100,13 @@ namespace openm
     /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
     extern const string replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue);
 
-    /** make date-time string, ie: 2012-08-17 16:04:59.0148 */
+    /** make date-time string, ie: 2012-08-17 16:04:59.148 */
     extern const string makeDateTime(const chrono::system_clock::time_point & i_time);
 
-    /** make timestamp string, ie: _20120817_160459_0148 */
+    /** make timestamp string, ie: 2012_08_17_16_04_59_148 */
     extern const string makeTimeStamp(const chrono::system_clock::time_point & i_time);
 
-    /** make date-time string from timestamp string, ie: _20120817_160459_0148 => 2012-08-17 16:04:59.0148 */
+    /** make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148 */
     extern const string toDateTimeString(const string & i_timestamp);
 
     /** format message into supplied buffer using vsnprintf() */

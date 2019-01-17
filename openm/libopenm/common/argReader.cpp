@@ -16,7 +16,10 @@ using namespace openm;
 namespace openm
 {
     /** run options file name, ie: model.ini */
-    const char * ArgKey::optionsFile = "OpenM.OptionsFile";
+    const char * ArgKey::iniFile = "OpenM.IniFile";
+
+    /** process run stamp, usually time stamp  */
+    const char * ArgKey::runStamp = "OpenM.RunStamp";
 
     /** log to console */
     const char * ArgKey::logToConsole = "OpenM.LogToConsole";
@@ -66,7 +69,7 @@ ArgReader::ArgReader(
     parseCommandLine(argc, argv, true, false, i_keyArrSize, i_keyArr, i_shortArrSize, i_shortPairArr);
 
     // load options from ini-file
-    loadIniFile(strOption(ArgKey::optionsFile).c_str(), i_keyArrSize, i_keyArr);
+    loadIniFile(strOption(ArgKey::iniFile).c_str(), i_keyArrSize, i_keyArr);
 
     // dependency in log options: if LogToFile is true then file name must be non-empty else must be empty
     adjustLogSettings(argc, argv);

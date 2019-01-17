@@ -19,7 +19,7 @@
 * * -Omc.MessageLanguage    language to display output messages, default: user environment settings
 * * -Omc.MessageFnc     localized message functions, default: LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
-* * -OpenM.OptionsFile  path/to/optional/omc.ini
+* * -OpenM.IniFile      path/to/optional/omc.ini
 * * -Omc.TraceScanning  detailed tracing from scanner
 * * -Omc.TraceParsing   detailed tracing from parser
 * * -Omc.SqlDir         sql/script/dir to create SQLite database
@@ -33,7 +33,7 @@
 * * -u short form of -Omc.UseDir
 * * -p short form of -Omc.ParamDir
 * * -f short form of -Omc.FixedDir
-* * -ini short form of -OpenM.OptionsFile
+* * -ini short form of -OpenM.IniFile
 * 
 * Also common OpenM log options supported: 
 *   OpenM.LogToConsole, OpenM.LogToFile, OpenM.LogFilePath, 
@@ -118,8 +118,8 @@ namespace openm
     /** keys for omc options (short form) */
     struct OmcShortKey
     {
-        /** short name for options file name: -ini fileName.ini */
-        static const char * optionsFile;
+        /** short name for ini file name: -ini fileName.ini */
+        static const char * iniFile;
 
         /** short name for omc model name */
         static const char * modelName;
@@ -188,8 +188,8 @@ namespace openm
     /** list of functions which produce localized messages */
     const char * OmcArgKey::messageFnc = "Omc.MessageFnc";
 
-    /** short name for options file name: -ini fileName.ini */
-    const char * OmcShortKey::optionsFile = "ini";
+    /** short name for ini file name: -ini fileName.ini */
+    const char * OmcShortKey::iniFile = "ini";
 
     /** short name for omc model name  */
     const char * OmcShortKey::modelName = "m";
@@ -229,7 +229,7 @@ namespace openm
         OmcArgKey::dbProviderNames,
         OmcArgKey::messageLang,
         OmcArgKey::messageFnc,
-        ArgKey::optionsFile,
+        ArgKey::iniFile,
         ArgKey::logToConsole,
         ArgKey::logToFile,
         ArgKey::logFilePath,
@@ -244,7 +244,7 @@ namespace openm
     /** array of short and full option names, used to find full option name by short. */
     static const pair<const char *, const char *> shortPairArr[] = 
     {
-        make_pair(OmcShortKey::optionsFile, ArgKey::optionsFile),
+        make_pair(OmcShortKey::iniFile, ArgKey::iniFile),
         make_pair(OmcShortKey::modelName, OmcArgKey::modelName),
         make_pair(OmcShortKey::scenarioName, OmcArgKey::scenarioName),
         make_pair(OmcShortKey::inputDir, OmcArgKey::inputDir),

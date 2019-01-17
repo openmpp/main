@@ -27,11 +27,11 @@ namespace openm
         /** log message formatted with vsnprintf() */
         virtual void logFormatted(const char * i_format, ...) noexcept = 0;
 
-        /** return timestamp suffix of log file name: _20120817_160459_0148.
+        /** return timestamp part of log file name: 2012_08_17_16_04_59_148.
         *
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
-        virtual const string timeStampSuffix(void) noexcept = 0;
+        virtual const string timeStamp(void) noexcept = 0;
 
         /** return "stamped" log file name suffix which may include timestamp and pid. */
         virtual const string suffix(void) noexcept = 0;

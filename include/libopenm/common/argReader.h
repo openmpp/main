@@ -17,8 +17,11 @@ namespace openm
     /** common openM++ keys for runtime arguments */
     struct ArgKey
     {
-        /** run options file name, ie: model.ini */
-        static const char * optionsFile;
+        /** run ini file name, ie: model.ini */
+        static const char * iniFile;
+
+        /** process run stamp, usually time stamp  */
+        static const char * runStamp;
 
         /** log to console */
         static const char * logToConsole;

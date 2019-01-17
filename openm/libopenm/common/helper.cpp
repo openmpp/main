@@ -203,7 +203,7 @@ const string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
     return sRet;
 }
 
-// make date-time string, ie: 2012-08-17 16:04:59.0148
+// make date-time string, ie: 2012-08-17 16:04:59.148
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {
     time_t sys_time = chrono::system_clock::to_time_t(i_time);
@@ -215,40 +215,42 @@ const string openm::makeDateTime(const chrono::system_clock::time_point & i_time
         ' ' <<
         setw(2) << sys_tm->tm_hour << ':' << setw(2) << sys_tm->tm_min << ':' << setw(2) << sys_tm->tm_sec << 
         '.' << 
-        setw(4) << chrono::duration_cast<chrono::milliseconds>(i_time.time_since_epoch()).count() % 1000LL << flush;
+        setw(3) << chrono::duration_cast<chrono::milliseconds>(i_time.time_since_epoch()).count() % 1000LL << flush;
 
     return st.str();
 }
 
-// make timestamp string, ie: _20120817_160459_0148
+// make timestamp string, ie: 2012_08_17_16_04_59_148
 const string openm::makeTimeStamp(const chrono::system_clock::time_point & i_time)
 {
     time_t sys_time = chrono::system_clock::to_time_t(i_time);
     tm * sys_tm = localtime(&sys_time);
 
     ostringstream st;
-    st << '_' << setfill('0') << 
-        setw(4) << sys_tm->tm_year + 1900 << setw(2) << sys_tm->tm_mon + 1 << setw(2) << sys_tm->tm_mday <<
+    st << setfill('0') << 
+        setw(4) << sys_tm->tm_year + 1900 << '_' << setw(2) << sys_tm->tm_mon + 1 << '_' << setw(2) << sys_tm->tm_mday <<
         '_' <<
-        setw(2) << sys_tm->tm_hour << setw(2) << sys_tm->tm_min << setw(2) << sys_tm->tm_sec <<
+        setw(2) << sys_tm->tm_hour << '_' << setw(2) << sys_tm->tm_min << '_' << setw(2) << sys_tm->tm_sec <<
         '_' << 
-        setw(4) << chrono::duration_cast<chrono::milliseconds>(i_time.time_since_epoch()).count() % 1000LL << flush;
+        setw(3) << chrono::duration_cast<chrono::milliseconds>(i_time.time_since_epoch()).count() % 1000LL << flush;
 
     return st.str();
 }
 
-// make date-time string from timestamp string, ie: _20120817_160459_0148 => 2012-08-17 16:04:59.0148
+// make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148
 const string openm::toDateTimeString(const string & i_timestamp)
 {
     string dtStr = i_timestamp;
     size_t dtLen = dtStr.length();
 
-    if (dtLen >= 16) {
-        dtStr = 
-            dtStr.substr(1, 4) + '-' +  dtStr.substr(5, 2) + '-' + dtStr.substr(7, 2) + ' ' +
-            dtStr.substr(10, 2) + ':' + dtStr.substr(12, 2) + ':' + dtStr.substr(14, 2) +
-            ((dtLen >= 18) ? '.' + dtStr.substr(17) : "");
+    if (dtLen >= 19) {
+        dtStr[4] = '-';
+        dtStr[7] = '-';
+        dtStr[10] = ' ';
+        dtStr[13] = ':';
+        dtStr[16] = ':';
     }
+    if (dtLen >= 21) dtStr[19] = '.';
 
     return dtStr;
 }

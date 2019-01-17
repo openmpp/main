@@ -343,7 +343,7 @@ void ModelSqlBuilder::buildCreateModelTables(const string & i_sqlProvider, const
         "--\n" <<
         "-- create model tables: " << i_metaRows.modelDic.name << '\n' <<
         "-- model digest:        " << i_metaRows.modelDic.digest << '\n' <<
-        "-- script created:      " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+        "-- script created:      " << toDateTimeString(theLog->timeStamp()) << '\n' <<
         "--\n\n";
     wr.throwOnFail();
 
@@ -388,7 +388,7 @@ void ModelSqlBuilder::buildDropModelTables(const MetaModelHolder & i_metaRows,  
         "--\n"
         "-- drop model tables: " << i_metaRows.modelDic.name << '\n' <<
         "-- model digest:      " << i_metaRows.modelDic.digest << '\n' <<
-        "-- script created:    " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+        "-- script created:    " << toDateTimeString(theLog->timeStamp()) << '\n' <<
         "--\n" <<
         "-- DROP MODEL TABLES" << '\n' <<
         "-- DO NOT USE THIS SQL UNLESS YOU HAVE TO" << '\n' <<
@@ -721,7 +721,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
                 "--\n" <<
                 "-- compatibility views for model: " << i_metaRows.modelDic.name << '\n' <<
                 "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
-                "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+                "-- script created: " << toDateTimeString(theLog->timeStamp()) << '\n' <<
                 "--\n" <<
                 "-- Dear user:\n" <<
                 "--   this part of database is optional and NOT used by openM++\n" <<
@@ -765,7 +765,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
             "--\n" <<
             "-- drop compatibility views for model: " << i_metaRows.modelDic.name << '\n' <<
             "-- model digest:   " << i_metaRows.modelDic.digest << '\n' <<
-            "-- script created: " << toDateTimeString(theLog->timeStampSuffix()) << '\n' <<
+            "-- script created: " << toDateTimeString(theLog->timeStamp()) << '\n' <<
             "--\n" <<
             "-- Dear user:\n" <<
             "--   this part of database is optional and NOT used by openM++\n" <<

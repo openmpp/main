@@ -26,7 +26,7 @@ INSERT INTO profile_option (profile_name, option_key, option_value) VALUES ('mod
 INSERT INTO workset_lst 
   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
 VALUES 
-  (2, NULL, 1, 'Default', 1, '2013-05-29 23:55:07.1234');
+  (2, NULL, 1, 'Default', 1, '2013-05-29 23:55:07.123');
 
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 0, 'Model One default set of parameters', NULL);
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 1, '(FR) Model One default set of parameters', NULL);
@@ -55,7 +55,7 @@ INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES 
 INSERT INTO workset_lst 
   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
 VALUES 
-  (3, NULL, 1, 'modelOne_set', 0, '2013-05-30 23:55:07.1234');
+  (3, NULL, 1, 'modelOne_set', 0, '2013-05-30 23:55:07.123');
 
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (3, 0, 'modelOne modified set of parameters', NULL);
 
@@ -70,7 +70,7 @@ INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES 
 INSERT INTO workset_lst 
   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
 VALUES 
-  (4, NULL, 1, 'modelOne_other', 1, '2013-05-29 23:55:07.1234');
+  (4, NULL, 1, 'modelOne_other', 1, '2013-05-29 23:55:07.123');
 
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (4, 0, 'Model One other set of parameters', NULL);
 INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (4, 1, '(FR) Model One other set of parameters', NULL);

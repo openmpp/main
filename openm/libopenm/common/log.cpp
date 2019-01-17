@@ -62,8 +62,8 @@ LogBase::LogBase(
 {
     lock_guard<recursive_mutex> lck(theMutex);
 
-    tsSuffix = makeTimeStamp(chrono::system_clock::now());
-    pidSuffix = '.' + to_string(getpid());
+    tsPart = makeTimeStamp(chrono::system_clock::now());
+    pidPart = to_string(getpid());
     msgBuffer[0] = msgBuffer[msgBufferSize] = '\0';
 
     init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
@@ -108,7 +108,7 @@ void LogBase::init(
         isLastEnabled = i_logToFile;    // enable use of last log file
 
         // stamped log file suffix: build timestamp and pid stamp suffix
-        fileSuffix = ((i_useTimeStamp ? tsSuffix : "") + (i_usePidStamp ? pidSuffix : ""));
+        fileSuffix = ((i_useTimeStamp ? ('.' + tsPart) : "") + (i_usePidStamp ? ('.' + pidPart) : ""));
 
         // if suffix not empty then make stamped log file name by inserting suffix before file extension
         if (!fileSuffix.empty()) {
@@ -130,15 +130,15 @@ void LogBase::init(
     catch (...) { }
 }
 
-/** return timestamp suffix of log file name: _20120817_160459_0148.
+/** return timestamp part of log file name: 2012_08_17_16_04_59_148.
 *
 * it is never return empty "" string, even no log enabled or timestamp disabled for log file
 */
-const string LogBase::timeStampSuffix(void) noexcept
+const string LogBase::timeStamp(void) noexcept
 {
     try {
         lock_guard<recursive_mutex> lck(theMutex);
-        return tsSuffix.substr();
+        return tsPart.substr();
     }
     catch (...) {
     }
@@ -147,7 +147,7 @@ const string LogBase::timeStampSuffix(void) noexcept
 
 /** return timestamp and pid suffix of log file name.
 *
-* example: _20120817_160459_0148.1234
+* example: .2012_08_17_16_04_59_148.1234
 * it can return empty "" string, depending on log settings
 */
 const string LogBase::suffix(void) noexcept
@@ -231,7 +231,7 @@ void LogBase::writeToLog(
             ' ' <<
             setw(2) << now_tm->tm_hour << ':' << setw(2) << now_tm->tm_min << ':' << setw(2) << now_tm->tm_sec <<
             '.' <<
-            setw(4) << chrono::duration_cast<chrono::milliseconds>(i_msgTime.time_since_epoch()).count() % 1000LL <<
+            setw(3) << chrono::duration_cast<chrono::milliseconds>(i_msgTime.time_since_epoch()).count() % 1000LL <<
             ' ';
     }
 

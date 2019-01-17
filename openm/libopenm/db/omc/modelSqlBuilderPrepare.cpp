@@ -939,7 +939,7 @@ void ModelSqlBuilder::setModelDicRow(ModelDicRow & io_mdRow) const
     if (io_mdRow.name.length() > 255) throw DbException(LT("invalid (too long) model name: %s"), io_mdRow.name.c_str());
 
     // set model create date-time, if required
-    if (io_mdRow.createDateTime.empty()) io_mdRow.createDateTime = toDateTimeString(theLog->timeStampSuffix());
+    if (io_mdRow.createDateTime.empty()) io_mdRow.createDateTime = toDateTimeString(theLog->timeStamp());
 }
 
 // set workset_lst row field values: readonly status and creation date-time
@@ -957,7 +957,7 @@ void ModelSqlBuilder::setWorksetRow(WorksetLstRow & io_wsRow) const
 
     // mark workset as read-write and set workset creation date-time
     io_wsRow.isReadonly = false;
-    io_wsRow.updateDateTime = toDateTimeString(theLog->timeStampSuffix());
+    io_wsRow.updateDateTime = toDateTimeString(theLog->timeStamp());
 }
 
 // setup type rows, i.e. type digest

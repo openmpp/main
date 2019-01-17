@@ -12,8 +12,8 @@ using namespace openm;
 
 namespace openm
 {
-    /** short name for options file name: -ini fileName.ini */
-    const char * RunShortKey::optionsFile = "ini";
+    /** short name for ini file name: -ini fileName.ini */
+    const char * RunShortKey::iniFile = "ini";
 
     /** options started with "Parameter." treated as value of model scalar input parameters, ex: "-Parameter.Age 42" */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
@@ -158,7 +158,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::traceUsePid,
     RunOptionsKey::traceNoMsgTime,
     RunOptionsKey::messageLang,
-    ArgKey::optionsFile,
+    ArgKey::iniFile,
+    ArgKey::runStamp,
     ArgKey::logToConsole,
     ArgKey::logToFile,
     ArgKey::logFilePath,
@@ -173,7 +174,7 @@ static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);
 /** array of short and full option names, used to find full option name by short. */
 static const pair<const char *, const char *> shortPairArr[] = 
 {
-    make_pair(RunShortKey::optionsFile, ArgKey::optionsFile),
+    make_pair(RunShortKey::iniFile, ArgKey::iniFile),
     make_pair(RunShortKey::setName, RunOptionsKey::setName),
     make_pair(RunShortKey::paramDir, RunOptionsKey::paramDir)
 };
@@ -200,7 +201,7 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
 
     // load options from ini-file and append parameters section
     ar.loadIniFile(
-        ar.strOption(ArgKey::optionsFile).c_str(), runOptKeySize, runOptKeyArr, prefixOptSize, prefixOptArr
+        ar.strOption(ArgKey::iniFile).c_str(), runOptKeySize, runOptKeyArr, prefixOptSize, prefixOptArr
     );
 
     // dependency in log options: if LogToFile is true then file name must be non-empty else must be empty
@@ -488,7 +489,7 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
     if (taskRunId <= 0)
         throw DbException("invalid task run id: %d", taskRunId);
 
-    string dtStr = toDateTimeString(theLog->timeStampSuffix()); // get log date-time as string
+    string dtStr = toDateTimeString(theLog->timeStamp()); // get log date-time as string
 
     // make new task run name or use name specified by model run options
     string rn = argOpts().strOption(RunOptionsKey::taskRunName);

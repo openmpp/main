@@ -128,8 +128,8 @@ namespace openm
     /** keys for model run options (short form) */
     struct RunShortKey
     {
-        /** short name for options file name: -ini fileName.ini */
-        static const char * optionsFile;
+        /** short name for ini file name: -ini fileName.ini */
+        static const char * iniFile;
 
         /** short name for: -s working set name to get input parameters */
         static const char * setName;
