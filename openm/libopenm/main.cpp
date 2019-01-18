@@ -79,9 +79,14 @@ int main(int argc, char ** argv)
         const ArgReader argOpts = MetaLoader::getRunOptions(argc, argv);
 
         // adjust log file(s) with actual log settings specified in model run options file
+        string lfPath;
+        if (argOpts.boolOption(ArgKey::logToFile) || argOpts.boolOption(ArgKey::logToStamped)) {
+            lfPath = argOpts.strOption(ArgKey::logFilePath);
+            if (lfPath.empty()) lfPath = makeDefaultPath(argv[0], ".log");
+        }
         theLog->init(
             argOpts.boolOption(ArgKey::logToConsole) || !argOpts.isOptionExist(ArgKey::logToConsole),
-            argOpts.strOption(ArgKey::logFilePath).c_str(),
+            lfPath.c_str(),
             argOpts.boolOption(ArgKey::logToFile),
             argOpts.boolOption(ArgKey::logUseTs),
             argOpts.boolOption(ArgKey::logUsePid),
@@ -94,17 +99,17 @@ int main(int argc, char ** argv)
             makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), OM_MODEL_NAME, ".message.ini").c_str(),
             argOpts.strOption(RunOptionsKey::messageLang)
         );
-        theLog->logMsg(OM_MODEL_NAME);
+        theLog->logMsg(OM_MODEL_NAME);  // startup message: model name
 
         // if trace log file enabled setup trace file name
-        string traceFilePath;
+        string tfPath;
         if (argOpts.boolOption(RunOptionsKey::traceToFile)) {
-            traceFilePath = argOpts.strOption(RunOptionsKey::traceFilePath);
-            if (traceFilePath.empty()) traceFilePath = makeDefaultPath(argv[0], ".trace.txt");
+            tfPath = argOpts.strOption(RunOptionsKey::traceFilePath);
+            if (tfPath.empty()) tfPath = makeDefaultPath(argv[0], ".trace.txt");
         }
         theTrace->init(
             argOpts.boolOption(RunOptionsKey::traceToConsole),
-            traceFilePath.c_str(),
+            tfPath.c_str(),
             argOpts.boolOption(RunOptionsKey::traceToFile),
             argOpts.boolOption(RunOptionsKey::traceUseTs),
             argOpts.boolOption(RunOptionsKey::traceUsePid),

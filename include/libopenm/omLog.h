@@ -32,9 +32,6 @@ namespace openm
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
         virtual const string timeStamp(void) noexcept = 0;
-
-        /** return "stamped" log file name suffix which may include timestamp and pid. */
-        virtual const string suffix(void) noexcept = 0;
     };
 
     /** log public interface: log to console and into log files */
@@ -66,6 +63,12 @@ namespace openm
             bool i_noMsgTime = false,
             bool i_isLogSql = false
             ) noexcept = 0;
+
+        /** if log to file enabled return "last" log file path. */
+        virtual const string lastLogPath(void) noexcept = 0;
+
+        /** if log to "stamped" file enabled return "stamped" log file path. */
+        virtual const string stampedLogPath(void) noexcept = 0;
 
         /** get language-specific message by source non-translated message */
         virtual const string getMessage(const char * i_sourceMsg) noexcept = 0;

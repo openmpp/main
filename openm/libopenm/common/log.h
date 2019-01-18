@@ -60,9 +60,6 @@ namespace openm
         */
         const string timeStamp(void) noexcept override;
 
-        /** return "stamped" log file name suffix which may include timestamp and pid. */
-        const string suffix(void) noexcept override;
-
         /** re-initialize log file name(s) and other log settings.
         *
         * @param[in]   i_logToConsole  if true then log to console
@@ -90,7 +87,6 @@ namespace openm
         bool isStampedCreated;      // if true then last log file created
         string tsPart;              // log file name timestamp part: 2012_08_17_16_04_59_148
         string pidPart;             // log file name pid part: 1234
-        string fileSuffix;          // log file name timestamp and pid suffix: .2012_08_17_16_04_59_148.1234
         string lastPath;            // last log file path: /var/log/openm.log
         string stampedPath;         // stamped log file path: /var/log/openm.2012_08_17_16_04_59_148.1234.log
         bool isNoMsgTime;           // if true then not prefix messages with date-time
@@ -179,6 +175,12 @@ namespace openm
             bool i_noMsgTime = false,
             bool i_isLogSql = false
             ) noexcept;
+
+        /** if log to file enabled return "last" log file path. */
+        const string lastLogPath(void) noexcept override;
+
+        /** if log to "stamped" file enabled return "stamped" log file path. */
+        const string stampedLogPath(void) noexcept override;
 
         /** get language-specific message by source non-translated message */
         const string getMessage(const char * i_sourceMsg) noexcept override;

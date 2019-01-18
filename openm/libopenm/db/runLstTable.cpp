@@ -36,7 +36,8 @@ namespace openm
         &typeid(decltype(RunLstRow::subRestart)),
         &typeid(decltype(RunLstRow::createDateTime)),
         &typeid(decltype(RunLstRow::status)),
-        &typeid(decltype(RunLstRow::updateDateTime))
+        &typeid(decltype(RunLstRow::updateDateTime)),
+        &typeid(decltype(RunLstRow::runStamp))
     };
 
     // Size (number of columns) for run_lst row
@@ -85,6 +86,9 @@ namespace openm
             case 9:
                 dynamic_cast<RunLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
                 break;
+            case 10:
+                dynamic_cast<RunLstRow *>(i_row)->runStamp = ((const char *)i_value);
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -122,7 +126,7 @@ vector<RunLstRow> RunLstTable::select(IDbExec * i_dbExec, const string & i_where
     const IRowAdapter & adp = RunLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowVector(
         "SELECT" \
-        " run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt" \
+        " run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_stamp" \
         " FROM run_lst " + i_where + " ORDER BY 1", 
         adp
         );

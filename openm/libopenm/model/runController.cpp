@@ -71,7 +71,7 @@ int RunController::parameterIdByName(const char * i_name) const
 //  next set of current modeling task
 //  set id or set name specified by run options (i.e. command line)
 //  default working set for that model
-RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec) const
+RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec)
 {
     // if this is not a part of task then and model status not "initial"
     // then exit with "no more" data to signal all input completed because it was single input set
@@ -167,29 +167,18 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
                 rn = trn;       // if task run name specified then use it as prefix of run name
             }
             else {
-                string tn = i_dbExec->selectToStr(
-                    "SELECT TL.task_name" \
-                    " FROM task_lst TL" \
-                    " INNER JOIN task_run_lst TRL ON (TRL.task_id = TL.task_id)" \
-                    " WHERE TRL.task_run_id = " + to_string(i_taskRunId)
-                );
-                rn += "_" + tn; // task run name prefix is modelName_taskName
+                rn += "_" + argOpts().strOption(RunOptionsKey::taskName);   // task run name prefix: modelName_taskName
             }
         }
+        rn += "_" + argOpts().strOption(RunOptionsKey::setName);
 
-        string sn = i_dbExec->selectToStr(
-            "SELECT set_name FROM workset_lst WHERE set_id = " + to_string(nSetId)
-        );
-        rn += "_" + sn + "_" + dtStr + "_";
-        string sfx = to_string(nRunId);
-
-        rn = toAlphaNumeric(rn, OM_NAME_DB_MAX - sfx.length()) + sfx;
+        rn = toAlphaNumeric(rn, OM_NAME_DB_MAX);
     }
 
     // create new run
     i_dbExec->update(
         "INSERT INTO run_lst" \
-        " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_digest)" \
+        " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_digest, run_stamp)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
@@ -200,9 +189,10 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
         "0, " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::progress) + ", " +
-        toQuoted(dtStr) + 
-        ", NULL)"
-        );
+        toQuoted(dtStr) +
+        ", NULL, " +
+        toQuoted(argOpts().strOption(ArgKey::runStamp)) + ")"
+    );
 
     // if this is a next set of the modeling task then update task progress
     if (i_taskRunId > 0) {
@@ -214,7 +204,7 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     }
 
     // save run options in run_option table
-    createRunOptions(nRunId, nSetId, i_dbExec);
+    createRunOptions(nRunId, i_dbExec);
 
     // copy input parameters from "base" run and working set into new run id
     createRunParameters(nRunId, nSetId, i_dbExec);
@@ -233,42 +223,6 @@ RunController::SetRunItem RunController::createNewRun(int i_taskRunId, bool i_is
     i_dbExec->commit();
 
     return SetRunItem(nSetId, nRunId, mStatus);
-}
-
-// create run options and save it in run_option table
-void RunController::createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const
-{
-    // save options in database
-    for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
-
-        // skip run id and connection string: it is already in database
-        if (optIt->first == RunOptionsKey::restartRunId || optIt->first == RunOptionsKey::dbConnStr) continue;
-
-        // remove sub-value count from run_option, it is stored in run_lst
-        // if (optIt->first == RunOptionsKey::subValueCount) continue;
-
-        i_dbExec->update(
-            "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
-            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second) + ")"
-            );
-    }
-
-    // append working set id, if not explictly specified
-    if (!argOpts().isOptionExist(RunOptionsKey::setId)) {
-        i_dbExec->update(
-            "INSERT INTO run_option (run_id, option_key, option_value)" \
-            " SELECT " + to_string(i_runId) + ", " + toQuoted(RunOptionsKey::setId) + ", set_id" + 
-            " FROM workset_lst WHERE set_id = " + to_string(i_setId)
-            );
-    }
-    // append working set name, if not explictly specified
-    if (!argOpts().isOptionExist(RunOptionsKey::setName)) {
-        i_dbExec->update(
-            "INSERT INTO run_option (run_id, option_key, option_value)" \
-            " SELECT " + to_string(i_runId) + ", " + toQuoted(RunOptionsKey::setName) + ", set_name" + 
-            " FROM workset_lst WHERE set_id = " + to_string(i_setId)
-            );
-    }
 }
 
 // copy input parameters from working set and "base" run into new run id

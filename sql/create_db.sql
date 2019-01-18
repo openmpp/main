@@ -497,6 +497,7 @@ CREATE TABLE run_lst
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
   run_digest    VARCHAR(32)  NULL,     -- digest of the run
+  run_stamp     VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
@@ -749,6 +750,7 @@ CREATE TABLE task_run_lst
   create_dt   VARCHAR(32)  NOT NULL, -- start date-time
   status      VARCHAR(1)   NOT NULL, -- task status: i=init p=progress w=wait s=success x=exit e=error(failed)
   update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
+  run_stamp   VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (task_run_id),
   CONSTRAINT task_run_lst_mk 
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id)

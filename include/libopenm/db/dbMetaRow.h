@@ -1352,6 +1352,9 @@ namespace openm
         /** update_dt     VARCHAR(32)  NOT NULL */
         string updateDateTime;
 
+        /** run_stamp     VARCHAR(32)  NOT NULL */
+        string runStamp;
+
         /** create row with supplied primary key field values. */
         RunLstRow(int i_runId) : 
             runId(i_runId),
@@ -1363,7 +1366,8 @@ namespace openm
             subRestart(0),
             createDateTime(""),
             status(""),
-            updateDateTime("")
+            updateDateTime(""),
+            runStamp("")
         { }
 
         /** create row with default empty field values. */
@@ -1831,6 +1835,9 @@ namespace openm
         /** update_dt   VARCHAR(32)  NOT NULL */
         string updateDateTime;
 
+        /** run_stamp   VARCHAR(32)  NOT NULL */
+        string runStamp;
+
         /** create row with supplied primary key field values. */
         TaskRunLstRow(int i_taskRunId) :
             taskRunId(i_taskRunId),
@@ -1839,7 +1846,8 @@ namespace openm
             subCount(0),
             createDateTime(""),
             status(""),
-            updateDateTime("")
+            updateDateTime(""),
+            runStamp("")
         { }
 
         /** create row with default empty field values. */

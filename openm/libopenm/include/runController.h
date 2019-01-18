@@ -115,7 +115,7 @@ namespace openm
         };
 
         /** create new run, create input parameters and run options for input working sets */
-        SetRunItem createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec) const;
+        SetRunItem createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec);
 
         /** impelementation of model process shutdown if exiting without completion. */
         void doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec);
@@ -145,9 +145,6 @@ namespace openm
     private:
         /** sub-value run states for all modeling threads */
         RunStateHolder runStateHolder;
-
-        // create run options in run_option table
-        void createRunOptions(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
         void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;

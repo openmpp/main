@@ -348,8 +348,6 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 
     defaultOpt[RunOptionsKey::useSparse] = baseRunOpts.useSparse ? "true" : "false";
     defaultOpt[RunOptionsKey::sparseNull] = toString(baseRunOpts.nullValue);
-    defaultOpt[RunOptionsKey::progressPercent] = to_string(baseRunOpts.progressPercent);
-    defaultOpt[RunOptionsKey::progressStep] = toString(baseRunOpts.progressStep);
     defaultOpt[RunOptionsKey::threadCount] = "1";
 
     // load default run options from profile options, default profile name = model name
@@ -372,6 +370,15 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
             NoCaseMap::const_iterator defIt = defaultOpt.find(runOptKeyArr[nOpt]);
             if (defIt != defaultOpt.cend()) argStore.args[runOptKeyArr[nOpt]] = defIt->second;
         }
+    }
+
+    // if run stamp option not specified then use log time stamp by default
+    string rStamp = argStore.strOption(ArgKey::runStamp);
+    if (rStamp.empty()) {
+        argStore.args[ArgKey::runStamp] = theLog->timeStamp();
+    }
+    else {
+        if (rStamp.length() > OM_CODE_DB_MAX) argStore.args[ArgKey::runStamp] = rStamp.substr(0, OM_CODE_DB_MAX);
     }
 
     // update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
@@ -494,20 +501,12 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
     // make new task run name or use name specified by model run options
     string rn = argOpts().strOption(RunOptionsKey::taskRunName);
     if (rn.empty()) {
-
-        rn = OM_MODEL_NAME;
-        string tn = i_dbExec->selectToStr(
-            "SELECT task_name FROM task_lst WHERE task_id = " + to_string(i_taskId)
-        );
-        rn += "_" + tn + "_" + dtStr + "_";
-        string sfx = to_string(taskRunId);
-
-        rn = toAlphaNumeric(rn, OM_NAME_DB_MAX - sfx.length()) + sfx;
+        rn = toAlphaNumeric(OM_MODEL_NAME + string("_") + argOpts().strOption(RunOptionsKey::taskName), OM_NAME_DB_MAX);
     }
 
     // create new task run
     i_dbExec->update(
-        "INSERT INTO task_run_lst (task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt)" \
+        "INSERT INTO task_run_lst (task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt, run_stamp)" \
         " VALUES (" +
         to_string(taskRunId) + ", " +
         to_string(i_taskId) + ", " +
@@ -515,7 +514,8 @@ int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec)
         to_string(subValueCount) + ", " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::init) + ", " +
-        toQuoted(dtStr) + ")"
+        toQuoted(dtStr) + ", " +
+        toQuoted(argOpts().strOption(ArgKey::runStamp)) + ")"
     );
 
     // completed: commit the changes
@@ -569,7 +569,7 @@ int MetaLoader::findTask(IDbExec * i_dbExec)
 //   if set id specified as run option then use such set id
 //   if set name specified as run option then find set id by name
 //   else use min(set id) as default set of model parameters
-int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec) const
+int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec)
 {
     // find set id of parameters workset, default is first set id for that model
     int setId = (i_setId > 0) ? i_setId : argStore.intOption(RunOptionsKey::setId, 0);
@@ -602,5 +602,45 @@ int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec) const
             throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
     }
 
+    // update run options: actual set id and set name can be different
+    setName = i_dbExec->selectToStr("SELECT set_name FROM workset_lst WHERE set_id = " + to_string(setId));
+    argStore.args[RunOptionsKey::setId] = to_string(setId);
+    argStore.args[RunOptionsKey::setName] = setName;
+
     return setId;
 }
+
+// save run options by inserting into run_option table
+void MetaLoader::createRunOptions(int i_runId, IDbExec * i_dbExec) const
+{
+    // save options in database
+    for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
+
+        // skip run id and connection string: it is already in database
+        if (optIt->first == RunOptionsKey::restartRunId || optIt->first == RunOptionsKey::dbConnStr) continue;
+
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
+            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second) + ")"
+        );
+    }
+
+    // append "last" log file path, if not explictly specified and path is not empty
+    string fp = theLog->lastLogPath();
+    if (!argOpts().isOptionExist(ArgKey::logFilePath) && !fp.empty()) {
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " VALUES (" + to_string(i_runId) + ", " + toQuoted(ArgKey::logFilePath) + ", " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
+        );
+    }
+
+    // append "stamped" log file path, if path is not empty
+    fp = theLog->stampedLogPath();
+    if (!fp.empty()) {
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " VALUES (" + to_string(i_runId) + ", 'OpenM.LogStampedFilePath', " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
+        );
+    }
+}
+

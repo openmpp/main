@@ -107,25 +107,24 @@ void LogBase::init(
         lastPath = i_basePath;          // last log file name
         isLastEnabled = i_logToFile;    // enable use of last log file
 
-        // stamped log file suffix: build timestamp and pid stamp suffix
-        fileSuffix = ((i_useTimeStamp ? ('.' + tsPart) : "") + (i_usePidStamp ? ('.' + pidPart) : ""));
+        // file suffix with timestamp and pid stamp: .2012_08_17_16_04_59_148.1234
+        string stamp = ((i_useTimeStamp ? ('.' + tsPart) : "") + (i_usePidStamp ? ('.' + pidPart) : ""));
 
         // if suffix not empty then make stamped log file name by inserting suffix before file extension
-        if (!fileSuffix.empty()) {
+        if (!stamp.empty()) {
 
             stampedPath = lastPath;
             string::size_type namePos = stampedPath.find_last_of("/\\");
             string::size_type extPos = stampedPath.rfind('.');
 
             if (extPos != string::npos && (namePos == string::npos || (namePos != string::npos && extPos > namePos))) {
-                stampedPath.insert(extPos, fileSuffix);
+                stampedPath.insert(extPos, stamp);
             }
             else {
-                stampedPath.append(fileSuffix);
+                stampedPath.append(stamp);
             }
             isStampedEnabled = true;    // enable use of stamped log file
         }
-
     }
     catch (...) { }
 }
@@ -139,22 +138,6 @@ const string LogBase::timeStamp(void) noexcept
     try {
         lock_guard<recursive_mutex> lck(theMutex);
         return tsPart.substr();
-    }
-    catch (...) {
-    }
-    return "";  // return on exception
-}
-
-/** return timestamp and pid suffix of log file name.
-*
-* example: .2012_08_17_16_04_59_148.1234
-* it can return empty "" string, depending on log settings
-*/
-const string LogBase::suffix(void) noexcept
-{
-    try {
-        lock_guard<recursive_mutex> lck(theMutex);
-        return fileSuffix.substr();
     }
     catch (...) {
     }
@@ -299,6 +282,30 @@ void Log::init(
         isSqlLog = i_isLogSql && isLastEnabled;
     }
     catch (...) { }
+}
+
+/** if log to file enabled return "last" log file path. */
+const string Log::lastLogPath(void) noexcept
+{
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        return isLastEnabled ? lastPath.substr() : "";
+    }
+    catch (...) {
+    }
+    return "";  // return on exception
+}
+
+/** if log to "stamped" file enabled return "stamped" log file path. */
+const string Log::stampedLogPath(void) noexcept
+{
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        return isStampedEnabled ? stampedPath.substr() : "";
+    }
+    catch (...) {
+    }
+    return "";  // return on exception
 }
 
 /** get language-specific message by source non-translated message */

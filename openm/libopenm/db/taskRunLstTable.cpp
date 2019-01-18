@@ -30,7 +30,8 @@ namespace openm
         &typeid(decltype(TaskRunLstRow::subCount)),
         &typeid(decltype(TaskRunLstRow::createDateTime)),
         &typeid(decltype(TaskRunLstRow::status)),
-        &typeid(decltype(TaskRunLstRow::updateDateTime))
+        &typeid(decltype(TaskRunLstRow::updateDateTime)),
+        &typeid(decltype(TaskRunLstRow::runStamp))
     };
 
     // Size (number of columns) for task_run_lst row
@@ -70,6 +71,9 @@ namespace openm
             case 6:
                 dynamic_cast<TaskRunLstRow *>(i_row)->updateDateTime = ((const char *)i_value);
                 break;
+            case 7:
+                dynamic_cast<TaskRunLstRow *>(i_row)->runStamp = ((const char *)i_value);
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -106,7 +110,7 @@ vector<TaskRunLstRow> TaskRunLstTable::select(IDbExec * i_dbExec, const string &
 
     const IRowAdapter & adp = TaskRunLstRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowVector(
-        "SELECT task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt" \
+        "SELECT task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt, run_stamp" \
         " FROM task_run_lst " + i_where + " ORDER BY 1", 
         adp
         );

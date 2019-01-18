@@ -208,7 +208,10 @@ namespace openm
         int findTask(IDbExec * i_dbExec);
 
         // find source working set for input parameters
-        int findWorkset(int i_setId, IDbExec * i_dbExec) const;
+        int findWorkset(int i_setId, IDbExec * i_dbExec);
+
+        // save run options by inserting into run_option table
+        void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
 
     private:
         RunOptions baseRunOpts;     // basic model run options

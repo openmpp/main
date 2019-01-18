@@ -41,11 +41,12 @@ using namespace std;
     #endif 
 #endif 
 
-#define OM_STRLEN_MAX   INT_MAX         /** max string length supported */
-#define OM_STR_DB_MAX   32000           /** max database string length: notes varchar (clob, text) */
-#define OM_CODE_DB_MAX  32              /** max database length for codes: language code, digests, date-time string */
-#define OM_NAME_DB_MAX  255             /** max database length for names: parameter name, table name, etc. */
-#define OM_DESCR_DB_MAX 255             /** max database length for description: parameter description, table description, etc. */
+#define OM_STRLEN_MAX       INT_MAX     /** max string length supported */
+#define OM_STR_DB_MAX       32000       /** max database string length: notes varchar (clob, text) */
+#define OM_CODE_DB_MAX      32          /** max database length for codes: language code, digests, date-time string */
+#define OM_NAME_DB_MAX      255         /** max database length for names: parameter name, table name, etc. */
+#define OM_DESCR_DB_MAX     255         /** max database length for description: parameter description, table description, etc. */
+#define OM_OPTION_DB_MAX    2048        /** max database length for option value: profile_option, run_option */
 
 namespace openm
 {

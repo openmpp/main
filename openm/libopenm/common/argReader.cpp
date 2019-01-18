@@ -286,23 +286,17 @@ void ArgReader::adjustLogSettings(int argc, char ** argv)
     if (argc < 1 || argv == nullptr) throw HelperException("Invalid (empty) list of command line arguments, expected at least one");
 
     // dependency in log options: 
-    // if log to file or stamped file then file name must be non-empty else must be empty
     // if log to stamped file then timestamp or pid stamp must be defined
-    if (boolOption(ArgKey::logToFile) || boolOption(ArgKey::logToStamped) || 
-        boolOption(ArgKey::logUseTs) || boolOption(ArgKey::logUsePid)) {
-        
-        string fn = strOption(ArgKey::logFilePath);
-        if (fn.empty()) args[ArgKey::logFilePath] = makeDefaultPath(argv[0], ".log");
-
-        if (boolOption(ArgKey::logToStamped) && !boolOption(ArgKey::logUseTs) && !boolOption(ArgKey::logUsePid)) {
-            args[ArgKey::logUseTs] = "true";
-        }
-
-        if (!boolOption(ArgKey::logToStamped) && (boolOption(ArgKey::logUseTs) || boolOption(ArgKey::logUsePid))) { 
-            args[ArgKey::logToStamped] = "true";
-        }
+    if (boolOption(ArgKey::logToStamped) && !boolOption(ArgKey::logUseTs) && !boolOption(ArgKey::logUsePid)) {
+        args[ArgKey::logUseTs] = "true";
     }
-    else {
-        if (isOptionExist(ArgKey::logFilePath)) args[ArgKey::logFilePath] = "";
+     if (!boolOption(ArgKey::logToStamped) && (boolOption(ArgKey::logUseTs) || boolOption(ArgKey::logUsePid))) {
+        args[ArgKey::logToStamped] = "true";
     }
+
+     // dependency in log options: 
+     // if log to file not empty and no any log-to flags set then set log to file as true
+     if (isOptionExist(ArgKey::logFilePath) && !boolOption(ArgKey::logToFile) && !boolOption(ArgKey::logToStamped)) {
+         args[ArgKey::logToFile] = "true";
+     }
 }
