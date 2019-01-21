@@ -37,7 +37,7 @@
 * 
 * Also common OpenM log options supported: 
 *   OpenM.LogToConsole, OpenM.LogToFile, OpenM.LogFilePath, 
-*   OpenM.LogToStampedFile, OpenM.LogUseTimeStam, OpenM.LogUsePidStamp, OpenM.LogSql. 
+*   OpenM.LogToStampedFile, OpenM.LogUseTimeStamp, OpenM.LogUsePidStamp, OpenM.LogSql. 
 * Please see OpenM++ wiki for more information about log options. \n
 * 
 * Parameters can be specified on command line or through ini-file. 
