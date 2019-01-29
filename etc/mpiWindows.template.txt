@@ -1,0 +1,44 @@
+{{/*
+oms web-service:
+Template to run model_mpi.exe on Linux using OpenMPI
+
+rename this file into "mpiModelRun.template.txt"
+to use it by default to run models on MPI cluster.
+
+result of template processing is multiple lines
+first line is executable name: mpiexec
+other lines are command line arguments for mpiexec
+empty lines are skipped form result
+
+example of result combined on single command line:
+mpiexec -n 16 -wdir models/bin -env key value ../bin/model_mpi.exe -OpenM.LogToFile true
+
+argument of template:
+struct {
+  ModelName string            // model name
+  ExePath   string            // path to model exe as: binDir/modelname
+  Dir       string            // work directory to run the model
+  BinDir    string            // bin directory where model.exe is located
+  MpiNp     int               // number of MPI processes
+  Args      []string          // model command line arguments
+  Env       map[string]string // environment variables to run the model
+}
+*/}}
+
+
+mpiexec
+-n
+{{ .MpiNp}}
+{{with .Dir}}
+-wdir
+{{.}}
+{{end}}
+{{range $key, $val := .Env}}
+-env
+{{$key}}
+{{$val}}
+{{end}}
+{{.ExePath}}_mpi.exe
+{{range .Args}}
+{{.}}
+{{end}}
