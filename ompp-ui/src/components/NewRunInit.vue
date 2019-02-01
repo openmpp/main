@@ -51,12 +51,15 @@ export default {
 
       // set new run parameters
       let rv = {
-        RunName: (this.newRunName || ''),
-        SetName: (this.worksetName || ''),
-        SubCount: (this.subCount || 0)
+        ModelDigest: (this.modelDigest || ''),
+        Opts: {
+          'OpenM.SubValues': (this.subCount || 1).toString(),
+          'OpenM.RunName': (this.newRunName || ''),
+          'OpenM.SetName': (this.worksetName || '')
+        }
       }
       let rst = Mdf.emptyRunState()
-      let u = this.omppServerUrl + '/api/model/' + (this.modelDigest || '') + '/new-run'
+      let u = this.omppServerUrl + '/api/run'
 
       try {
         // send data page to the server, response body expected to be empty

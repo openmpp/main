@@ -23,7 +23,7 @@ const PROGRESS_UPDATE_TIME = 1000 // msec, run progress update time
 export default {
   props: {
     modelDigest: '',
-    newRunKey: '',
+    newRunStamp: '',
     start: 0,
     count: 0
   },
@@ -75,8 +75,8 @@ export default {
       let nCount = (this.count || 0) > 0 ? (this.count || 0) : 0
 
       let u = this.omppServerUrl +
-        '/api/model/' + (this.modelDigest || '') +
-        '/new-run-state' +
+        '/api/run/log/model/' + (this.modelDigest || '') +
+        '/stamp/' + (this.newRunStamp || '') +
         '/start/' + nStart.toString() +
         '/count/' + nCount.toString()
 

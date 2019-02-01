@@ -20,13 +20,13 @@ export const isRunTextList = (rtl) => {
 export const isRunText = (rt) => {
   if (!rt) return false
   if (!rt.hasOwnProperty('ModelName') || !rt.hasOwnProperty('ModelDigest')) return false
-  if (!rt.hasOwnProperty('Name') || !rt.hasOwnProperty('Digest')) return false
+  if (!rt.hasOwnProperty('Name') || !rt.hasOwnProperty('Digest') || !rt.hasOwnProperty('RunStamp')) return false
   if (!rt.hasOwnProperty('SubCount') || !rt.hasOwnProperty('Status')) return false
   if (!Hlpr.hasLength(rt.Param) || !Hlpr.hasLength(rt.Txt)) return false
   return true
 }
 
-// if this is not empty run text: model run text name and status not empty
+// if this is not empty run text: model name, model digest, run name, status, sub-count and run text not empty
 export const isNotEmptyRunText = (rt) => {
   if (!isRunText(rt)) return false
   return (rt.ModelName || '') !== '' && (rt.ModelDigest || '') !== '' &&
@@ -40,6 +40,7 @@ export const emptyRunText = () => {
     ModelDigest: '',
     Name: '',
     Digest: '',
+    RunStamp: '',
     SubCount: 0,
     Status: '',
     Param: [],
@@ -74,24 +75,27 @@ export const statusText = (rt) => {
 // if this is run state (model run status)
 export const isRunState = (rst) => {
   if (!rst) return false
-  return rst.hasOwnProperty('RunKey') && rst.hasOwnProperty('IsFinal') &&
-    rst.hasOwnProperty('RunName') && rst.hasOwnProperty('StartDateTime') && rst.hasOwnProperty('UpdateDateTime')
+  return rst.hasOwnProperty('ModelName') && rst.hasOwnProperty('ModelDigest') &&
+    rst.hasOwnProperty('RunStamp') && rst.hasOwnProperty('IsFinal') &&
+    rst.hasOwnProperty('RunName') && rst.hasOwnProperty('UpdateDateTime')
 }
 
 // if this is not empty run state (model run status)
 export const isNotEmptyRunState = (rst) => {
   if (!isRunState(rst)) return false
-  return (rst.RunKey || '') !== '' && (rst.RunName || '') !== '' && (rst.StartDateTime || '') !== ''
+  return (rst.ModelDigest || '') !== '' && (rst.RunStamp || '') !== '' && (rst.RunName || '') !== '' && (rst.UpdateDateTime || '') !== ''
 }
 
 // return run state (model run status)
 export const emptyRunState = () => {
   return {
-    RunKey: '',
+    ModelName: '',
+    ModelDigest: '',
+    RunStamp: '',
     IsFinal: false,
+    UpdateDateTime: '',
     RunName: '',
-    StartDateTime: '',
-    UpdateDateTime: ''
+    TaskRunName: ''
   }
 }
 
@@ -111,11 +115,13 @@ export const isNotEmptyRunStateLog = (rlp) => {
 // return empty RunStateLog: run state (model run status) and run log page
 export const emptyRunStateLog = () => {
   return {
-    RunKey: '',
+    ModelName: '',
+    ModelDigest: '',
+    RunStamp: '',
     IsFinal: false,
-    RunName: '',
-    StartDateTime: '',
     UpdateDateTime: '',
+    RunName: '',
+    TaskRunName: '',
     Offset: 0,
     Size: 0,
     TotalSize: 0,
@@ -128,12 +134,12 @@ export const toRunStateFromLog = (rlp) => {
   if (!rlp) return emptyRunState()
   if (!isRunState(rlp)) return emptyRunState()
   return {
-    RunKey: rlp.RunKey || '',
+    ModelName: rlp.ModelName,
+    ModelDigest: rlp.ModelDigest,
+    RunStamp: rlp.RunStamp || '',
     IsFinal: !!rlp.IsFinal,
     RunName: rlp.RunName || '',
-    SetName: rlp.SetName || '',
-    SubCount: rlp.SubCount || 0,
-    StartDateTime: rlp.StartDateTime || '',
+    TaskRunName: rlp.TaskRunName || '',
     UpdateDateTime: rlp.UpdateDateTime || ''
   }
 }

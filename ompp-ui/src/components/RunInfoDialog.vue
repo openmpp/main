@@ -6,7 +6,7 @@
   <div v-if="runNote">{{runNote}}</div>
   <div class="note-table mono">
     <div class="note-row">
-      <span class="note-cell">Run name:</span><span class="note-cell">{{runName}}</span>
+      <span class="note-cell">Name:</span><span class="note-cell">{{runName}}</span>
     </div>
     <div class="note-row">
       <span class="note-cell">Status:</span><span class="note-cell">{{statusDescr}}</span>
@@ -34,6 +34,9 @@
     <div v-if="runDigest" class="note-row">
       <span class="note-cell">Digest:</span><span class="note-cell">{{runDigest}}</span>
     </div>
+    <div v-if="runStamp" class="note-row">
+      <span class="note-cell">Stamp:</span><span class="note-cell">{{runStamp}}</span>
+    </div>
   </div>
 </om-mcw-dialog>
 
@@ -59,6 +62,7 @@ export default {
       runNote: '',
       runName: '',
       runDigest: '',
+      runStamp: '',
       statusDescr: '',
       isSucess: false,
       subCount: 0,
@@ -82,6 +86,7 @@ export default {
       this.runNote = Mdf.noteOfTxt(rt)
       this.runName = rt.Name
       this.runDigest = rt.Digest
+      this.runStamp = rt.RunStamp
       this.statusDescr = Mdf.statusText(rt)
       this.isSucess = Mdf.isRunSuccess(rt)
       this.subCount = (rt.SubCount || 0)

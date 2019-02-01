@@ -186,14 +186,14 @@
       <div class="panel-line">
         <new-run-progress  v-if="!isFinalRunStep"
           :model-digest="digest"
-          :new-run-key="newRunState.RunKey"
+          :new-run-stamp="newRunState.RunStamp"
           :start="newRunLogStart"
           :count="newRunLogSize"
           @done="doneNewRunProgress"
           @wait="()=>{}">
         </new-run-progress>
-        <span class="mono"><span v-if="newRunTimeDt">{{newRunTimeDt}} = </span>{{newRunState.StartDateTime}} - {{newRunState.UpdateDateTime}}</span>
-        <span class="mono"><i>[{{newRunState.RunKey}}.log]</i></span>
+        <span class="mono" v-if="newRunState.UpdateDateTime">{{newRunState.UpdateDateTime}}</span>
+        <span class="mono"><i>[{{modelName}}.{{newRunState.RunStamp}}.log]</i></span>
       </div>
       <div>
         <div v-for="ln in newRunLineLst" :key="ln.offset" class="mono mdc-typography--caption">{{ln.text}}</div>
@@ -305,7 +305,6 @@ export default {
       newRunName: '',
       newRunSubCount: 1,
       newRunState: Mdf.emptyRunState(),
-      newRunTimeDt: '',
       newRunLogStart: 0,
       newRunLogSize: 0,
       newRunLineLst: [],
@@ -328,8 +327,7 @@ export default {
     },
     // make new model run name
     autoNewRunName () {
-      const dt = new Date()
-      return (this.wsName || '') + ' ' + Mdf.dtToTimeStamp(dt)
+      return (this.modelName || '') + '_' + (this.wsName || '')
     },
 
     // model new run step: empty, initialize, in progress, final
@@ -401,7 +399,7 @@ export default {
   methods: {
     // reload event handlers: async get the model, runs and worksets
     doneModelLoad (isSuccess) {
-      this.modelName = this.theModel.Name
+      this.modelName = Mdf.modelName(this.theModel)
       this.loadModelDone = true
       this.resetRunStep()
     },
@@ -469,7 +467,6 @@ export default {
       this.newRunName = ''
       this.newRunSubCount = 1
       this.newRunState = Mdf.emptyRunState()
-      this.newRunTimeDt = ''
       this.newRunLogStart = 0
       this.newRunLogSize = MIN_LOG_PAGE_SIZE
       this.newRunLineLst = []
@@ -500,7 +497,6 @@ export default {
       if (!!ok && Mdf.isNotEmptyRunState(rst)) {
         this.newRunState = rst
         this.newRunName = rst.RunName
-        this.newSubCount = (rst.SubCount || 1)
       }
     },
 
@@ -509,7 +505,6 @@ export default {
       if (!ok || !Mdf.isNotEmptyRunStateLog(rlp)) return  // empty run state or error
 
       this.newRunState = Mdf.toRunStateFromLog(rlp)
-      this.newRunTimeDt = Mdf.toIntervalStr(this.newRunState.StartDateTime, this.newRunState.UpdateDateTime)
 
       // update log lines
       let nLen = Mdf.lengthOf(rlp.Lines)
