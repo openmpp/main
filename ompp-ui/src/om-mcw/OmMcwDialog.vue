@@ -27,10 +27,14 @@
       <footer class="mdc-dialog__actions" v-if="cancelText || acceptText">
         <button
           v-if="cancelText"
-          type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="cancel">{{cancelText}}</button>
+          type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="cancel">
+          <span class="mdc-button__label">{cancelText}}</span>
+        </button>
         <button
           v-if="acceptText"
-          type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="accept" mdc-dialog__button--default>{{acceptText}}</button>
+          type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="accept" mdc-dialog__button--default>
+          <span class="mdc-button__label">{{acceptText}}</span>
+        </button>
       </footer>
 
     </div>
