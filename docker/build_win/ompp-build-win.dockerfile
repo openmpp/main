@@ -45,9 +45,10 @@ RUN curl -L -o C:\Temp\perl_setup.zip http://strawberryperl.com/download/5.28.1.
     C:\7zip\7z.exe x -oC:\perl C:\Temp\perl_setup.zip && `
     del C:\Temp\perl_setup.zip
 
-# install cpan pp module
+# install cpan modules
 RUN C:\perl\portableshell /SETENV && `
-    cpanm pp
+    cpanm pp && `
+    cpanm Getopt::Long::Descriptive
 
 # copy build scripts
 COPY do-build.bat do_build_tools.bat prompt_all.txt C:\build_scripts\
