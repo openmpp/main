@@ -1,0 +1,5 @@
+# ignore local volumes and temp directories
+build*
+log*
+temp*
+tmp*
