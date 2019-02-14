@@ -27,4 +27,10 @@ if /i "%1" == "tools" (
   EXIT
 )
 
+if /i "%1" == "perl" (
+
+  call %PERLROOT%\portableshell
+  EXIT
+)
+
 type C:\build_scripts\prompt_all.txt

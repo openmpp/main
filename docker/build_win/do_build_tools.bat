@@ -134,6 +134,11 @@ if not defined OM_SKIP_PERL (
   call :do_pp_call "-o ../bin/patch_modgen12.1_outputs.exe patch_modgen12.1_outputs.pl"
   popd
   
+  if not exist bin\sqlite3.exe (
+    @echo copy %SQLITE_EXE_DIR%\sqlite3.exe bin
+    copy %SQLITE_EXE_DIR%\sqlite3.exe bin
+  )
+  
 ) else (
   @echo Skip: build Perl utilities
   @echo Skip: build Perl utilities >> log\tools-build.log

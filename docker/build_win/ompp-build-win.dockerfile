@@ -7,9 +7,10 @@
 #   docker build --isolation process --tag ompp-build-win -f ompp-build-win.dockerfile .
 #
 # Example of run:
-#   docker run --isolation process -v C:\some\dir:C:\build -it do-build cpp
-#   docker run --isolation process -v C:\some\dir:C:\build -it do-build tools
-# build results can be found in: "C:\some\dir"
+#   docker run --isolation process -v C:\my\build:C:\build     ompp-build-win do-build cpp
+#   docker run --isolation process -v C:\my\build:C:\build     ompp-build-win do-build tools
+#   docker run --isolation process -v C:\my\build:C:\build -it ompp-build-win cmd
+#   docker run --isolation process -v C:\my\build:C:\build -it ompp-build-win do-build perl
 # 
 
 FROM ompp-cpp-win
@@ -49,7 +50,7 @@ RUN C:\perl\portableshell /SETENV && `
     cpanm pp
 
 # copy build scripts
-COPY start_build_all.bat do_build_tools.bat prompt_all.txt C:\build_scripts\
+COPY do-build.bat do_build_tools.bat prompt_all.txt C:\build_scripts\
 
 # set Go, MinGW and R environment, set portable Perl directory
 USER ContainerAdministrator
@@ -83,6 +84,6 @@ WORKDIR /build
 ENTRYPOINT (C:\BuildTools\Common7\Tools\VsDevCmd.bat && `
     C:\MinGW\set_distro_paths.bat && `
     C:\node\nodevars.bat && `
-    copy C:\build_scripts\start_build_all.bat \build\do-build.bat) &&
+    if not exist do-build.bat (echo copy do-build.bat & copy C:\build_scripts\do-build.bat do-build.bat)) &&
 
 CMD type C:\build_scripts\prompt_all.txt

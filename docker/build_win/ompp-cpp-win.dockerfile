@@ -6,8 +6,8 @@
 #   docker build --isolation process --tag ompp-cpp-win -f ompp-cpp-win.dockerfile .
 #
 # Example of run:
-#   docker run --isolation process -v C:\some\dir:C:\build ompp-cpp-win do-build cpp
-# build results can be found in: "C:\some\dir"
+#   docker run --isolation process -v C:\my\build:C:\build     ompp-cpp-win do-cpp
+#   docker run --isolation process -v C:\my\build:C:\build -it ompp-cpp-win cmd
 # 
 
 FROM mcr.microsoft.com/windows/servercore:1809
@@ -66,7 +66,7 @@ RUN curl -L -o C:\Temp\sqlite_bin.zip https://www.sqlite.org/2018/sqlite-tools-w
     del C:\Temp\sqlite_bin.zip
 
 # copy build scripts
-COPY start_build_cpp.bat do_build_cpp.bat prompt_cpp.txt C:\build_scripts\
+COPY do-cpp.bat do_build_cpp.bat prompt_cpp.txt C:\build_scripts\
 
 # add git to PATH
 USER ContainerAdministrator
@@ -88,6 +88,6 @@ WORKDIR /build
 
 # start VC++ developer command prompt with any other commands specified.
 ENTRYPOINT (C:\BuildTools\Common7\Tools\VsDevCmd.bat && `
-    copy C:\build_scripts\start_build_cpp.bat \build\do-build.bat) &&
+    if not exist do-cpp.bat (echo copy do-cpp.bat & copy C:\build_scripts\do-cpp.bat \build\do-cpp.bat)) &&
 
 CMD type C:\build_scripts\prompt_cpp.txt

@@ -1,7 +1,7 @@
 .
 To build openM++ libraries and omc compiler use:
 
-  docker run .... do-build cpp
+  docker run .... <image-name> do-build cpp
 
 Environment variables:
   set OM_SKIP_OPENM=yes              (default: no)
@@ -13,10 +13,15 @@ Environment variables:
 
 To build openM++ tools:
 
-  docker run .... do-build tools
+  docker run .... <image-name> do-build tools
 
 Environment variables:
   set OM_SKIP_GO=yes   (default: no)
   set OM_SKIP_UI=yes   (default: no)
   set OM_SKIP_R=yes    (default: no)
   set OM_SKIP_PERL=yes (default: no)
+
+To open cmd command prompt or Perl command prompt:
+
+  docker run .... -it <image-name> cmd
+  docker run .... -it <image-name> do-build perl
