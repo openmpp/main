@@ -1,5 +1,10 @@
 # ignore local volumes and temp directories
-build*
+build
+build_*
+run
+run_*
+ompp
+ompp_*
 log*
 temp*
 tmp*

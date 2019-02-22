@@ -1,0 +1,49 @@
+.
+To build openM++:
+
+  docker run .... <image-name> build-all
+  docker run .... -e OM_MSG_USE=MPI         <image-name> build-all
+  docker run .... -e OM_BUILD_PLATFORMS=x64 <image-name> build-all
+
+  Environment variables: see below
+
+To build openM++ libraries and omc compiler or demo models use:
+
+  docker run .... <image-name> build-openm
+  
+  Environment variables:
+  set OM_BUILD_CONFIGS=Release,Debug (default: Release,Debug)
+  set OM_BUILD_PLATFORMS=Win32,x64   (default: Win32,x64)
+  set OM_MSG_USE=MPI                 (default: EMPTY)
+
+To build openM++ libraries and omc compiler or demo models use:
+
+  docker run .... <image-name> build-modles
+  
+  Environment variables:
+  set OM_BUILD_CONFIGS=Release,Debug (default: Release)
+  set OM_BUILD_PLATFORMS=Win32,x64   (default: Win32)
+  set OM_MSG_USE=MPI                 (default: EMPTY)
+  set MODEL_DIRS=modelOne,NewCaseBased,NewTimeBased,NewCaseBased_bilingual,NewTimeBased_bilingual,IDMM,OzProj,OzProjGen,RiskPaths
+
+To build openM++ tools use any of:
+
+  docker run .... <image-name> build-go   # Go oms web-service and dbcopy utility
+  docker run .... <image-name> build-ui   # openM++ UI (alpha)
+  docker run .... <image-name> build-r    # openMpp R package
+  docker run .... <image-name> build-perl # Perl utilities
+
+To create openM++ build.zip archive use:
+
+  docker run .... <image-name> build-zip
+  docker run .... -e OM_MSG_USE=MPI            <image-name> build-zip
+  docker run .... -e MODEL_DIRS=IDMM,RiskPaths <image-name> build-zip
+  
+  Environment variables:
+  set OM_MSG_USE=MPI                 (default: EMPTY)
+  set MODEL_DIRS=modelOne,NewCaseBased,NewTimeBased,NewCaseBased_bilingual,NewTimeBased_bilingual,IDMM,OzProj,OzProjGen,RiskPaths
+
+To open cmd command prompt or Perl command prompt:
+
+  docker run .... -it <image-name> cmd
+  docker run .... -it <image-name> C:\perl\portableshell
