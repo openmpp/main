@@ -37,8 +37,8 @@ pushd ompp-go
 
 call :do_cmd_line "go get go.openmpp.org/dbcopy"
 call :do_cmd_line "go get go.openmpp.org/oms"
-call :do_cmd_line "go install go.openmpp.org/dbcopy"
-call :do_cmd_line "go install go.openmpp.org/oms"
+call :do_cmd_line "go install -tags odbc go.openmpp.org/dbcopy"
+call :do_cmd_line "go install -tags odbc go.openmpp.org/oms"
 
 popd
 

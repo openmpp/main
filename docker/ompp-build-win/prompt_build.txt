@@ -29,9 +29,9 @@ To build openM++ libraries and omc compiler or demo models use:
 To build openM++ tools use any of:
 
   docker run .... <image-name> build-go   # Go oms web-service and dbcopy utility
-  docker run .... <image-name> build-ui   # openM++ UI (alpha)
   docker run .... <image-name> build-r    # openMpp R package
   docker run .... <image-name> build-perl # Perl utilities
+  docker run .... <image-name> build-ui   # openM++ UI (alpha)
 
 To create openM++ build.zip archive use:
 

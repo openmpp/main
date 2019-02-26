@@ -77,6 +77,8 @@ else {
 			my @args = (
 				'go',
 				'install',
+				'-tags',
+				'odbc',
 				'go.openmpp.org/'.$utility,
 				);
 			system(@args);

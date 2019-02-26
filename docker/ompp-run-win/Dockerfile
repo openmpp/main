@@ -3,7 +3,7 @@
 # Recommended tag name for that image: ompp-run-win
 #
 # Example of build:
-#   docker build --isolation process --tag ompp-run-win -f ompp-run-win.dockerfile .
+#   docker build --isolation process -t ompp-run-win -t ompp-run:windows-1809 .
 #
 # Example of run:
 #   docker run --isolation process -v C:\my\ompp:C:\ompp -it ompp-run-win

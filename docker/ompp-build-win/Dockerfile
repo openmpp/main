@@ -3,7 +3,7 @@
 # Recommended tag name for that image: ompp-build-win
 #
 # Example of build:
-#   docker build --isolation process --tag ompp-build-win -f ompp-build-win.dockerfile .
+#   docker build --isolation process -t ompp-build-win -t ompp-build:windows-1809 .
 #
 # Example of run:
 #   docker run --isolation process -v C:\my\build:C:\build     ompp-build-win build-all
