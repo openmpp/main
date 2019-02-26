@@ -21,7 +21,7 @@ To build openM++ libraries and omc compiler or demo models use:
 
   docker run .... <image-name> build-modles
   
-  Environment variables to control "build-openm": OM_BUILD_CONFIGS, OM_BUILD_PLATFORMS, OM_MSG_USE, MODEL_DIRS
+  Environment variables to control "build-modles": OM_BUILD_CONFIGS, OM_BUILD_PLATFORMS, OM_MSG_USE, MODEL_DIRS
 
 To build openM++ tools use any of:
 
@@ -36,7 +36,7 @@ To create openM++ build.zip archive use:
   docker run .... -e OM_MSG_USE=MPI            <image-name> build-zip
   docker run .... -e MODEL_DIRS=IDMM,RiskPaths <image-name> build-zip
   
-  Environment variables to control "build-openm": OM_MSG_USE, MODEL_DIRS
+  Environment variables to control "build-zip": OM_MSG_USE, MODEL_DIRS
 
 To open cmd command prompt or Perl command prompt:
 
