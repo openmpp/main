@@ -118,16 +118,16 @@ COPY copy_scripts.bat `
     build-r.bat `
     build-perl.bat `
     build-zip.bat `
-    prompt_build.txt C:\build_scripts\
+    README.txt C:\build_scripts\
 
 # set Go, MinGW and R environment, set portable Perl directory
 USER ContainerAdministrator
 
-RUN setx /M GOROOT C:\go
-RUN setx /M GOPATH C:\build\ompp\ompp-go
-RUN setx /M PERLROOT C:\perl
-RUN setx /M OM_SCRIPTS_DIR C:\build_scripts
-RUN setx /M PATH "%GOROOT%\bin;%GOPATH%\bin;C:\Git\cmd;C:\svn\bin;C:\R\bin;%PATH%"
+RUN setx /M GOROOT C:\go && `
+  setx /M GOPATH C:\build\ompp\ompp-go && `
+  setx /M PERLROOT C:\perl && `
+  setx /M OM_SCRIPTS_DIR C:\build_scripts && `
+  setx /M PATH "%GOROOT%\bin;%GOPATH%\bin;C:\Git\cmd;C:\svn\bin;C:\R\bin;%PATH%"
 
 USER ContainerUser
 
@@ -155,4 +155,4 @@ ENTRYPOINT (C:\BuildTools\Common7\Tools\VsDevCmd.bat && `
     C:\node\nodevars.bat && `
     %OM_SCRIPTS_DIR%\copy_scripts.bat) &&
 
-CMD type %OM_SCRIPTS_DIR%\prompt_build.txt
+CMD type %OM_SCRIPTS_DIR%\README.txt

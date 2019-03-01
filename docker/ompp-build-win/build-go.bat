@@ -20,7 +20,7 @@ REM log build environment
 @echo Log file: log\build-go.log
 @echo %DATE% %TIME% Build Go oms web-service and dbcopy utility > log\build-go.log
 
-REM get source code from svn, if not directory not already exist
+REM get source code from svn, if directory not already exist
 
 if not exist ompp-go (
   

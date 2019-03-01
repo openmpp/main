@@ -6,6 +6,7 @@
 #   docker build --isolation process -t ompp-run-win -t ompp-run:windows-1809 .
 #
 # Example of run:
+#   docker run --isolation process -v C:\my\ompp:C:\ompp     ompp-run-win MyModel.exe
 #   docker run --isolation process -v C:\my\ompp:C:\ompp -it ompp-run-win
 # 
 

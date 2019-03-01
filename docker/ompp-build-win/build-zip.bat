@@ -23,14 +23,13 @@ set   OM_ROOT=%CD%
 
 if not exist log mkdir log
 
-REM get current date, OS local time
-REM known issue: build server can be in different time zone
+REM get current UTC date
 
-set OM_DATE_STAMP=
-
-for /f "skip=1" %%d in ('wmic os get localdatetime') do (
-  if not defined OM_DATE_STAMP set OM_DATE_STAMP=%%d
+for /F "tokens=1,2 delims==" %%G in ('wmic path Win32_UTCTime get Year^,Month^,Day /value ^| find "="') do (
+  set utc_%%G=%%H
 )
+
+set /A OM_DATE_STAMP= 10000 * %utc_Year% + 100 * %utc_Month% + %utc_Day%
 
 set OM_DATE_STAMP=%OM_DATE_STAMP:~0,8%
 set DEPLOY_DIR=..\openmpp_win%OM_SFX_MPI%_%OM_DATE_STAMP%
