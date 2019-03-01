@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+#
+# create zip archive of openM++ build from ompp sub-directory: openmpp_centos_YYYYMMDD.tar.gz
+# environmemnt variables:
+#  OM_MSG_USE=MPI                 (default: EMPTY)
+#  MODEL_DIRS=modelOne,NewCaseBased,NewTimeBased,NewCaseBased_bilingual,NewTimeBased_bilingual,IDMM,OzProj,OzProjGen,RiskPaths
+
+if [ -n "$OM_MSG_USE" ] && [ "$OM_MSG_USE" != 'EMPTY' ] && [ "$OM_MSG_USE" != 'MPI' ]; then
+  echo Error: incorrect value: $OM_MSG_USE, must be one of: MPI or EMPTY
+  exit 1    
+fi
+
+[ "$OM_MSG_USE" = 'MPI' ] && OM_SFX_MPI=_mpi || OM_SFX_MPI=
+
+[ -n "$MODEL_DIRS" ] && \
+  OM_BLD_MDLS=${MODEL_DIRS//,/ } || \
+  OM_BLD_MDLS="modelOne NewCaseBased NewTimeBased NewCaseBased_bilingual NewTimeBased_bilingual IDMM OzProj OzProjGen RiskPaths"
+
+# push into ompp root and make log directory if not exist
+
+if [ ! -d ompp ]; then
+  echo ERROR: missing source code directory: ompp
+  exit 1
+fi
+
+pushd ompp
+OM_ROOT=$PWD
+
+if [ ! -d log ]; then mkdir log; fi
+
+# get current date, UTC time zone and set archive name
+
+OM_DATE_STAMP=`date -u +%Y%m%d`
+
+DEPLOY_DIR=../openmpp_centos${OM_SFX_MPI}_${OM_DATE_STAMP}
+DEPLOY_GZ=$DEPLOY_DIR.tar.gz
+
+# log build environment 
+
+echo Log file: log/build-tar-gz.log
+echo `date` Pack openM++ build | tee log/build-tar-gz.log
+echo Environment: | tee -a log/build-tar-gz.log
+echo " OM_MSG_USE = $OM_MSG_USE" | tee -a log/build-tar-gz.log
+echo " OM_ROOT    = $OM_ROOT" | tee -a log/build-tar-gz.log
+echo " MODEL_DIRS = $MODEL_DIRS" | tee -a log/build-tar-gz.log
+echo " DEPLOY_DIR = $DEPLOY_DIR" | tee -a log/build-tar-gz.log
+echo Pack into: $DEPLOY_GZ | tee -a log/build-tar-gz.log
+
+# delete existing pack directory and zip file
+
+do_cmd()
+{
+  echo $@ | tee -a log/build-tar-gz.log
+  
+  if ! $@ >> log/build-tar-gz.log 2>&1;
+  then
+    echo FAILED. | tee -a log/build-tar-gz.log
+    exit 1
+  fi
+}
+
+if [ -e $DEPLOY_DIR ]; then do_cmd rm -rf $DEPLOY_DIR; fi
+if [ -e $DEPLOY_GZ ];  then do_cmd rm -rf $DEPLOY_GZ; fi
+
+# create new deploy directory
+# copy top level sub-directories and files
+# remove Windows-only and some other extra files from deployment
+
+do_cmd mkdir $DEPLOY_DIR
+do_cmd mkdir $DEPLOY_DIR/log
+
+echo Copy files: | tee -a log/build-tar-gz.log
+
+do_cmd cp -p AUTHORS.txt LICENSE.txt README.txt README_centos.txt $DEPLOY_DIR
+
+do_cmd cp -pr docker   $DEPLOY_DIR
+do_cmd cp -pr etc      $DEPLOY_DIR
+do_cmd cp -pr include  $DEPLOY_DIR
+do_cmd cp -pr licenses $DEPLOY_DIR
+do_cmd cp -pr R        $DEPLOY_DIR
+do_cmd cp -pr sql      $DEPLOY_DIR
+do_cmd cp -pr use      $DEPLOY_DIR
+
+do_cmd cp -pr openm    $DEPLOY_DIR
+
+do_cmd rm -f $DEPLOY_DIR/openm/*.props
+do_cmd rm -f $DEPLOY_DIR/openm/*.sln
+
+# copy openm bin directory
+
+do_cmd cp -pr bin $DEPLOY_DIR
+do_cmd rm -v $DEPLOY_DIR/bin/*win*
+[ -e $DEPLOY_DIR/bin/omcD ] && do_cmd rm -v $DEPLOY_DIR/bin/omcD
+
+# copy openm runtime libraries
+
+do_cmd mkdir $DEPLOY_DIR/lib
+
+do_cmd cp -p lib/libopenm${OM_SFX_MPI}.a lib/libsqlite.a $DEPLOY_DIR/lib
+[ -e lib/libopenmD${OM_SFX_MPI}.a ] && do_cmd cp -p lib/libopenmD${OM_SFX_MPI}.a $DEPLOY_DIR/lib
+[ -e lib/libsqliteD.a ] &&           do_cmd cp -p lib/libsqliteD.a $DEPLOY_DIR/lib
+
+# copy Go bin executables and source code
+
+do_cmd cp -p $GOPATH/bin/dbcopy $DEPLOY_DIR/bin
+do_cmd cp -p $GOPATH/bin/oms    $DEPLOY_DIR/bin
+
+do_cmd mkdir $DEPLOY_DIR/go.openmpp.org
+
+do_cmd cp -pr $GOPATH/src/go.openmpp.org/dbcopy     $DEPLOY_DIR/go.openmpp.org
+do_cmd cp -pr $GOPATH/src/go.openmpp.org/ompp       $DEPLOY_DIR/go.openmpp.org
+do_cmd cp -pr $GOPATH/src/go.openmpp.org/oms        $DEPLOY_DIR/go.openmpp.org
+do_cmd cp -p  $GOPATH/src/go.openmpp.org/licenses/* $DEPLOY_DIR/licenses
+
+# copy UI html build and source code
+
+do_cmd cp -pr ompp-ui/dist   $DEPLOY_DIR/html
+
+do_cmd mkdir $DEPLOY_DIR/ompp-ui
+
+do_cmd cp -p  ompp-ui/*.*    $DEPLOY_DIR/ompp-ui
+do_cmd cp -pr ompp-ui/build  $DEPLOY_DIR/ompp-ui/build
+do_cmd cp -pr ompp-ui/config $DEPLOY_DIR/ompp-ui/config
+do_cmd cp -pr ompp-ui/src    $DEPLOY_DIR/ompp-ui/src
+do_cmd cp -pr ompp-ui/static $DEPLOY_DIR/ompp-ui/static
+
+# copy models
+
+do_cmd mkdir -p $DEPLOY_DIR/models/bin
+do_cmd mkdir -p $DEPLOY_DIR/models/sql
+do_cmd mkdir -p $DEPLOY_DIR/models/log
+
+do_cmd cp -p  models/make*     $DEPLOY_DIR/models
+do_cmd cp -pr models/microdata $DEPLOY_DIR/models/microdata
+
+for M in $OM_BLD_MDLS; do
+
+  do_cmd cp -pr models/$M $DEPLOY_DIR/models/$M
+
+  do_cmd rm -rf $DEPLOY_DIR/models/$M/modgen
+  do_cmd rm -rf $DEPLOY_DIR/models/$M/ompp
+  
+  for F in $DEPLOY_DIR/models/$M/*.sln; do [ -e $F ] && do_cmd rm -r $F; done
+
+  do_cmd cp -pr models/bin/$M${OM_SFX_MPI} $DEPLOY_DIR/models/bin
+  do_cmd cp -p  models/bin/$M.sqlite     $DEPLOY_DIR/models/bin
+
+  for F in models/bin/${M}.*ini; do [ -e $F ] && do_cmd cp -p $F $DEPLOY_DIR/models/bin; done
+  
+  for F in models/sql/${M}_*.sql; do [ -e $F ] && do_cmd cp -p $F $DEPLOY_DIR/models/sql; done
+  
+done
+
+# create tar.gz archive from deployment directory
+
+echo Build completed on:  ${OM_DATE_STAMP:0:4}-${OM_DATE_STAMP:4:2}-${OM_DATE_STAMP:6:2} > $DEPLOY_DIR/build_date.txt
+
+echo Create $DEPLOY_GZ | tee -a log/build-tar-gz.log
+
+do_cmd tar czf $DEPLOY_GZ $DEPLOY_DIR
+
+echo `date` Done. | tee -a log/build-tar-gz.log
+popd

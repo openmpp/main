@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# build openMpp R package
+
+# push into ompp root and make log directory if not exist
+
+if [ ! -d ompp ]; then
+  echo ERROR: missing source code directory: ompp
+  exit 1
+fi
+
+pushd ompp
+
+if [ ! -d log ]; then mkdir log; fi
+
+# log build environment 
+
+echo Log file: log/build-r.log
+echo `date` Build openMpp R package | tee log/build-r.log 
+
+# build openMpp R package
+
+pushd R
+
+echo R CMD build openMpp | tee -a ../log/build-r.log
+
+if ! R CMD build openMpp >> ../log/build-r.log 2>&1;
+then
+  echo FAILED | tee -a ../log/build-r.log
+  exit 1
+fi
+  
+popd
+
+echo `date` Done. | tee -a log/build-r.log
+popd
