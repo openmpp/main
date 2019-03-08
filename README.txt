@@ -14,6 +14,13 @@ Do NOT download _mpi_ binaries unless you have MPI installed on your cluster.
   
 More information at: http://ompp.sourceforge.net/wiki/
 
+2019_03_07:
+    following source code moved to github.com/openmpp:
+    - all svn Go code
+    - R, ompp-ui, docker
+    - openmpp.org web-site
+    SourceForge version of above exist only for historical reason
+
 2018_02_05:
     openM++ user interface (ompp-ui) alpha version
     oms web-service API changes related to ompp-ui
