@@ -6,8 +6,8 @@
     <MODEL_SRC_DIR Condition="'$(MODEL_SRC_DIR)'==''">$(ProjectDir)..</MODEL_SRC_DIR>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
-    <!-- VC 2017 platform toolset -->
-    <PlatformToolset>v141</PlatformToolset>
+    <!-- VC 2019 platform toolset -->
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
