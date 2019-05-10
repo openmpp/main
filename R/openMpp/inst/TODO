@@ -1,5 +1,0 @@
-Add support for MySQL, PostgreSQL, Oracle, MSSQL, DB2
-
-2016-12-27:
-It can be done when (if) R ODBC DBI completed.
-As it is today RODBCDBI is in early stage.
