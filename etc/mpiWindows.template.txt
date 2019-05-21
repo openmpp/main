@@ -1,19 +1,22 @@
 {{/*
 oms web-service:
-Template to run model_mpi.exe on Linux using OpenMPI
 
-rename this file into "mpiModelRun.template.txt"
+Template to run model_mpi.exe on Windows using OpenMPI
+
+Rename this file into:
+  mpiModelRun.template.txt
 to use it by default to run models on MPI cluster.
 
-result of template processing is multiple lines
-first line is executable name: mpiexec
-other lines are command line arguments for mpiexec
-empty lines are skipped form result
+Oms web-service process this template as:
+  - substitute $arguments
+  - combine result into single line
+  - skip empty lines
+Result of template processing is a command line to run model_mpi.exe
 
-example of result combined on single command line:
+Example of result:
 mpiexec -n 16 -wdir models/bin -env key value ../bin/model_mpi.exe -OpenM.LogToFile true
 
-argument of template:
+Arguments of template:
 struct {
   ModelName string            // model name
   ExePath   string            // path to model exe as: binDir/modelname
