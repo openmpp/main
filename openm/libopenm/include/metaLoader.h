@@ -64,7 +64,7 @@ namespace openm
         /** modeling task under external supervision */
         static const char * taskWait;
 
-        /** profile name to get run options, default is model name */
+        /** profile name to get run options */
         static const char * profile;
 
         /** use sparse output tables */

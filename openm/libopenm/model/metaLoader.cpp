@@ -63,7 +63,7 @@ namespace openm
     /** modeling task under external supervision */
     const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
 
-    /** profile name to get run options, default is model name */
+    /** profile name to get run options */
     const char * RunOptionsKey::profile = "OpenM.Profile";
 
     /** use sparse output tables */
@@ -351,28 +351,35 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     defaultOpt[RunOptionsKey::threadCount] = "1";
 
     // load default run options from profile options, default profile name = model name
-    string profileName = argStore.strOption(RunOptionsKey::profile, OM_MODEL_NAME);
-    unique_ptr<IProfileOptionTable> profileTbl(
-        IProfileOptionTable::create(i_dbExec, profileName)
-        );
+    string profileName = argStore.strOption(RunOptionsKey::profile);
 
-    // update run options: merge command line and ini-file with profile and hard-coded default values
-    for (size_t nOpt = 0; nOpt < runOptKeySize; nOpt++) {
+	if (!profileName.empty()) {
 
-        if (argStore.isOptionExist(runOptKeyArr[nOpt])) continue;   // option specified at command line or ini-file
+		// update run options: merge command line and ini-file with profile and hard-coded default values
+		unique_ptr<IProfileOptionTable> profileTbl(IProfileOptionTable::create(i_dbExec, profileName));
 
-        // find option in profile_option table
-        const ProfileOptionRow * optRow = profileTbl->byKey(profileName, runOptKeyArr[nOpt]);
-        if (optRow != nullptr) {
-            argStore.args[runOptKeyArr[nOpt]] = optRow->value;      // add option from database
-        }
-        else {  // no database value for that option key, use hard-coded default
-            NoCaseMap::const_iterator defIt = defaultOpt.find(runOptKeyArr[nOpt]);
-            if (defIt != defaultOpt.cend()) argStore.args[runOptKeyArr[nOpt]] = defIt->second;
-        }
-    }
+		for (size_t nOpt = 0; nOpt < runOptKeySize; nOpt++) {
 
-    // if run stamp option not specified then use log time stamp by default
+			if (argStore.isOptionExist(runOptKeyArr[nOpt])) continue;   // option specified at command line or ini-file
+
+			// find option in profile_option table
+			const ProfileOptionRow * optRow = profileTbl->byKey(profileName, runOptKeyArr[nOpt]);
+			if (optRow != nullptr) {
+				argStore.args[runOptKeyArr[nOpt]] = optRow->value;      // add option from database
+			}
+			else {  // no database value for that option key, use hard-coded default
+				NoCaseMap::const_iterator defIt = defaultOpt.find(runOptKeyArr[nOpt]);
+				if (defIt != defaultOpt.cend()) argStore.args[runOptKeyArr[nOpt]] = defIt->second;
+			}
+		}
+
+		// update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
+		vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
+		mergeParameterProfile(profileName, RunOptionsKey::parameterPrefix, profileTbl.get(), paramVec);
+		mergeParameterProfile(profileName, RunOptionsKey::subValuePrefix, profileTbl.get(), paramVec);
+	}
+
+	// if run stamp option not specified then use log time stamp by default
     string rStamp = argStore.strOption(ArgKey::runStamp);
     if (rStamp.empty()) {
         argStore.args[ArgKey::runStamp] = theLog->timeStamp();
@@ -380,11 +387,6 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     else {
         if (rStamp.length() > OM_CODE_DB_MAX) argStore.args[ArgKey::runStamp] = rStamp.substr(0, OM_CODE_DB_MAX);
     }
-
-    // update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
-    vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
-    mergeParameterProfile(profileName, RunOptionsKey::parameterPrefix, profileTbl.get(), paramVec);
-    mergeParameterProfile(profileName, RunOptionsKey::subValuePrefix, profileTbl.get(), paramVec);
 
     // validate "Parameter." options: it must be name of scalar input parameter
     string prefixDot = string(RunOptionsKey::parameterPrefix) + ".";
