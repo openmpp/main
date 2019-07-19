@@ -1,3 +1,10 @@
+Please notice:
+  not all changes commented here, please use GitHub commits history for more deatils.
+
+2019_07_19:
+  changes in ompp-ui: implemented pivot view UI and remove handsontable
+  small changes in oms web-service to simplify input sets (scenarios) editing
+
 2019_05_10:
   move all source code to GitHub
   remove from main repository Go, R, ompp-ui and docker sources
