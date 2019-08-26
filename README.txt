@@ -42,4 +42,4 @@ ${OM_ROOT}/       -> openM++ "root" folder
 More information at: http://ompp.sourceforge.net/wiki/
 
 Enjoy,
-amc1999
+amc1999 <openmpp99@gmail.com>
