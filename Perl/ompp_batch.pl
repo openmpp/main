@@ -92,13 +92,14 @@ my ($opt, $usage) = describe_options(
 	[ 'threads=i'   => 'threads' ],
 	[ 'processes=i' => 'MPI processes' ],
 	[ 'x64'         => 'append suffix 64 to executable' ],
-	[ 'mpi'         => 'appned _mpi suffix to executable' ],
+	[ 'mpi'         => 'append _mpi suffix to executable' ],
 
-	[ 'runs|r=s'    => 'which runs to launch, e.g. 0,1,2,4,8-10' ],
+	[ 'runs|r=s'    => 'which runs to process, e.g. 0,1,2,4,8-10' ],
 	[ 'force|f'     => 'launch runs even if results present' ],
 
 	[ 'list|l'      => 'just list runs in batch' ],
 	[ 'ini|i'       => 'just write ini files' ],
+	[ 'cmd|c'       => 'just write ini files and commands.cmd file' ],
 	[ 'assemble|a'  => 'just assemble existing runs' ],
 	[ 'post_assemble|p' => 'just post-assemble existing runs' ],
 	[ 'verbose'     => 'additional diagnostic messages' ],
@@ -182,6 +183,8 @@ my $post_assemble = 0;
 my $list = 0;
 # Flag indicating to just write ini files in batch
 my $ini = 0;
+# Flag indicating to just write ini files in batch and commands.cmd
+my $cmd = 0;
 
 # Assign any argument values given in the specification file
 eval $batch_options;
@@ -203,6 +206,7 @@ $assemble      = 1 if $opt->assemble;
 $post_assemble = 1 if $opt->post_assemble;
 $list          = 1 if $opt->list;
 $ini           = 1 if $opt->ini;
+$cmd           = 1 if $opt->cmd;
 
 # Checks on final values of arguments
 
@@ -277,6 +281,9 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0 && $ini == 0) {
 	my $merged; # output from external commands
 	my $run_id;  # run_id of current run
 	my $run_name; # run_name of current run
+	
+	my $commands_cmd = "${out_dir}/commands.cmd";
+	open COMMAND_CMD, '>'.$commands_cmd or die;
 
 	for my $run (@runs) {
 		my $run_name = $prefix.$run_names[$run];
@@ -325,7 +332,10 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0 && $ini == 0) {
 				"-OpenM.Threads", $threads,
 				"-ini", $ini_file,
 				);
-			system(@args);
+			print COMMAND_CMD join(' ', @args)."\n";
+			if ($cmd == 0) {
+				system(@args);
+			}
 		};
 		$retval == 0 or die;
 
@@ -335,6 +345,7 @@ if ($assemble == 0 && $post_assemble == 0 && $list == 0 && $ini == 0) {
 		#print "run_id=$run_id\n";
 		#unlink $ini_file;
 	}
+	close COMMAND_CMD;
 }
 elsif ($list == 1) {
 	for my $run (0..$#run_names) {
@@ -345,7 +356,7 @@ elsif ($list == 1) {
 	}
 }
 elsif ($ini == 1) {
-	for my $run (0..$#run_names) {
+	for my $run (@runs) {
 		my $run_name = $prefix.$run_names[$run];
 		# Create ini file with parameter values
 		my $ini_file = "${out_dir}/${run_name}.ini";
