@@ -159,26 +159,36 @@ $models_root = getcwd; # to ensure is absolute path
 # file locations
 #####################
 
-# MSBuild command line reference:
-# http://msdn.microsoft.com/en-us/library/ms164311.aspx
-
-my $msbuild_exe = "";
-if (defined $ENV{VSINSTALLDIR}) {
-    $msbuild_exe = "$ENV{VSINSTALLDIR}MSBuild\\15.0\\bin\\MSBuild.exe";
-}
-else {
-	# VSINSTALLDIR is empty, default: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\
-    $msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\bin\\MSBuild.exe";
-}
-
 my $create_db_sqlite_sql = "${om_root}/sql/create_db.sql";
 
-# determine if running on windows or linux
+# determine if running on windows or Linux
 my $is_windows = 1;
 my $is_linux = 0;
 if ( $^O eq 'linux') {
 	$is_windows = 0;
 	$is_linux = 1;
+}
+
+# MSBuild command line reference:
+# http://msdn.microsoft.com/en-us/library/ms164311.aspx
+
+my $msbuild_exe = "";
+if ($is_windows) {
+	if (defined $ENV{MSBUILD_EXE}) {
+		# provides a non-standard way to specify the msbuild.exe path
+		$msbuild_exe = "$ENV{MSBUILD_EXE}";
+	}
+	else {
+		# Use VS 2019 aka version 16 if present
+		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\bin\\MSBuild.exe";
+		if ( ! -f $msbuild_exe ) {
+			# fall back to VS 2017 aka version 15 if present
+			$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\bin\\MSBuild.exe";
+		}
+	}
+	if ( ! -e $msbuild_exe ) {
+		die "Missing msbuild_exe: $msbuild_exe";
+	}
 }
 
 ###############
