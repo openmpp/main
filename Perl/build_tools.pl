@@ -17,6 +17,8 @@ my $verbosity = 3;
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 use File::Copy;
+use File::Copy::Recursive qw(dircopy);
+use File::Path qw(make_path remove_tree);
 use File::Which;
 
 # Get ompp root directory
@@ -79,7 +81,7 @@ else {
 				'install',
 				'-tags',
 				'odbc',
-				'go.openmpp.org/'.$utility,
+				'github.com/openmpp/go/'.$utility,
 				);
 			system(@args);
 		};
@@ -106,7 +108,7 @@ if (! -e "${npm_exe}") {
 }
 else {
     print "Building ompp-ui\n";
-    chdir "${om_root}/ompp-ui";
+    chdir "${om_root}/../ompp-ui" || die;
     
     # install node modules if not yet installed
     if (! -d 'node_modules' || is_folder_empty('node_modules') ) {
@@ -137,7 +139,13 @@ else {
 	if ($retval != 0) {
 		print "Build ompp-ui failed (output follows:\n$merged\n"
 	}
-    chdir "${om_root}";
+	
+	# deploy to standard location
+	remove_tree "${om_root}/html";
+	dircopy 'dist', "${om_root}/html";
+	
+    chdir "${om_root}/html";
+	
 }
 
 #done
