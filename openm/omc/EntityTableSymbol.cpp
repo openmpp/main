@@ -564,10 +564,10 @@ void EntityTableSymbol::build_body_current_cell()
         auto rs = dynamic_cast<RangeSymbol *>(es);
         if (rs && rs->lower_bound != 0) {
             // if type is range adjust to zero-based
-            c += av->name + " - " + to_string(rs->lower_bound) + ", ";
+            c += "size_t(" + av->name + " - " + to_string(rs->lower_bound) + "), ";
         }
         else {
-            c += av->name + ", ";
+            c += "size_t(" + av->name + "), ";
         }
     }
     c += "};";
