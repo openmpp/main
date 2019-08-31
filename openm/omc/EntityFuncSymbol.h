@@ -40,6 +40,7 @@ public:
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
         , suppress_code_if_empty(false)
+        , has_line_directive(false)
     {
     }
 

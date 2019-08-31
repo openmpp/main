@@ -1724,8 +1724,8 @@ if ( numeric_limits<TYPE>::min() <= min_value \
 // static
 const token_type Symbol::optimized_storage_type(long long min_value, long long max_value)
 {
-    // typedef the om single-keyword types so that the above macro works
-    // but within function scope to reduce name pollution
+    // typedef the om single-keyword types so that the macro OST_HELPER(TYPE) defined immediately above works
+    // (but within function scope to reduce name pollution)
     typedef unsigned char uchar;
     typedef unsigned short ushort;
     typedef unsigned int uint;

@@ -25,7 +25,7 @@ void ClassificationSymbol::post_parse(int pass)
     case ePopulateDependencies:
         {
             // Information to compute storage type is known in this pass
-            storage_type = optimized_storage_type(0, pp_size() - 1);
+            storage_type = optimized_storage_type(0, (long long)pp_size() - 1);
 
             // Determine which integer-classification transformation functions to emit
 
