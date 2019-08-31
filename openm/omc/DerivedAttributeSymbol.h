@@ -9,6 +9,7 @@
 #include "MaintainedAttributeSymbol.h"
 #include "NumericSymbol.h"
 #include "ConstantSymbol.h"
+#include "UnknownTypeSymbol.h"
 
 class PartitionSymbol;
 class ClassificationSymbol;
@@ -47,8 +48,8 @@ public:
                           const ConstantSymbol *k3)
         : MaintainedAttributeSymbol(DerivedAttributeSymbol::member_name(tok, av1, av2, prt, cls, k1, k2, k3),
                         agent,
-                        NumericSymbol::find(token::TK_double) // will be changed later
-                        )
+                        UnknownTypeSymbol::find() // will be changed later
+        )
         , tok(tok)
         , av1(av1 ? av1->stable_pp() : nullptr)
         , pp_av1(nullptr)
