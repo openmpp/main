@@ -449,3 +449,10 @@ void PreSimulation()
     assert(mg_double_array[MALE] == 9); // derived parameter value persists
 
 }
+
+// Test of event table keyword
+table Person EyeColourToBrown
+{
+    self_scheduling_split(age, AGE_GROUP)+
+    * { event(entrances(eye_colour, EC_BROWN)) }
+};
