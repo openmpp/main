@@ -553,6 +553,8 @@ bool Symbol::option_case_checksum = false;
 
 bool Symbol::option_allow_time_travel = false;
 
+bool Symbol::option_modgen_time_infinite = false;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -1598,6 +1600,22 @@ void Symbol::defaults_and_options()
     }
 
     {
+        string key = "modgen_time_infinite";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_modgen_time_infinite = true;
+            }
+            else if (value == "off") {
+                option_modgen_time_infinite = false;
+            }
+        }
+    }
+
+    {
+        // Handle option measures_method
+
         // First, set default measures method as a function of model type.
         // Determine if model is case-based or time-based
         auto mt = ModelTypeSymbol::find();
