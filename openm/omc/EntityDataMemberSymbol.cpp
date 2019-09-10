@@ -106,8 +106,16 @@ CodeBlock EntityDataMemberSymbol::cxx_initialization_expression(bool type_defaul
     CodeBlock c;
     string str = initialization_value(type_default);
     // As a special case, skip initialization if initial value is an empty string.
-    // Useful for members which are self-initializing collects, e.g. std::set.
+    // Appropriate for members which are self-initializing collections, e.g. std::set.
     if (str.size() > 0) {
+        // Insert #line directive so that C++ type conversion warnings refer to model source declaration location
+        if (decl_loc.begin.filename) {
+            c += (no_line_directives ? "//#line " : "#line ")
+                + to_string(decl_loc.begin.line)
+                + " \""
+                + *(decl_loc.begin.filename)
+                + "\"";
+        }
         // example:              time.initialize(0);\n
         c += name + ".initialize( " + initialization_value(type_default) + " );";
     }
