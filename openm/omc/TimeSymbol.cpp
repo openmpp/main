@@ -28,7 +28,7 @@ CodeBlock TimeSymbol::cxx_declaration_global()
     string typedef_string;
     if (is_wrapped()) {
         // wrap the floating point type in the typedef
-        typedef_string = "fixed_precision_float<" + token_to_string(time_type) + ">";
+        typedef_string = "fixed_precision<" + token_to_string(time_type) + ">";
     }
     else {
         typedef_string = token_to_string(time_type);

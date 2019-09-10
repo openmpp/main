@@ -262,7 +262,7 @@ void TimeReport(double tm)
  */
 void SetMaxTime(double max_value)
 {
-    fixed_precision_float<Time::type>::set_max(max_value);
+    fixed_precision<Time::type>::set_max(max_value);
 }
 
 /**

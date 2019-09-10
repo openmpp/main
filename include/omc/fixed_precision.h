@@ -9,19 +9,19 @@
 #pragma once
 
 template<typename T>
-class fixed_precision_float
+class fixed_precision
 {
 public:
     // expose the wrapped type as .type
     typedef T type;
 
     // default ctor
-    fixed_precision_float()
+    fixed_precision()
         : value(0)
     {}
 
     // converting ctor to wrapped type T
-    fixed_precision_float(T value)
+    fixed_precision(T value)
     {
         this->set(value);
     }
@@ -33,7 +33,7 @@ public:
     }
 
     // operator: assignment by sum
-    fixed_precision_float& operator+=( T modify_value )
+    fixed_precision& operator+=( T modify_value )
     {
         T new_value = value + modify_value;
         this->set( new_value );
@@ -41,7 +41,7 @@ public:
     }
 
     // operator: assignment by difference
-    fixed_precision_float& operator-=( T modify_value )
+    fixed_precision& operator-=( T modify_value )
     {
         T new_value = value - modify_value;
         this->set( new_value );
@@ -49,7 +49,7 @@ public:
     }
 
     // operator: assignment by product
-    fixed_precision_float& operator*=( T modify_value )
+    fixed_precision& operator*=( T modify_value )
     {
         T new_value = value * modify_value;
         this->set( new_value );
@@ -57,7 +57,7 @@ public:
     }
 
     // operator: assignment by quotient
-    fixed_precision_float& operator/=( T modify_value )
+    fixed_precision& operator/=( T modify_value )
     {
         T new_value = value / modify_value;
         this->set( new_value );
@@ -65,7 +65,7 @@ public:
     }
 
     // operator: prefix increment
-    fixed_precision_float& operator++()
+    fixed_precision& operator++()
     {
         T new_value = value + 1;
         this->set( new_value );
@@ -73,7 +73,7 @@ public:
     }
 
     // operator: prefix decrement
-    fixed_precision_float& operator--()
+    fixed_precision& operator--()
     {
         T new_value = value - 1;
         this->set( new_value );
@@ -100,7 +100,7 @@ public:
      * Specify the maximum value to be used (global).
      * 
      * This value is used to calculate how many excess binary digits of precision are to be dropped
-     * in all subsequent assignments to objects of the type fixed_precision_float.  The special
+     * in all subsequent assignments to objects of the type fixed_precision.  The special
      * value 0 indicates that objects will store values with no modification.
      *
      * @param max_val The maximum value.
@@ -170,7 +170,7 @@ private:
 * Specified maximum value, rounded up to the next power of 2 (definition)
 */
 template<typename T>
-int fixed_precision_float<T>::addend = 0;
+int fixed_precision<T>::addend = 0;
 
 // Enable fixed_precision to participate in type resolution
 // e.g. in min/max/clamp templates, by specializing std::common_type
@@ -179,26 +179,26 @@ int fixed_precision_float<T>::addend = 0;
 namespace std {
 
     template<typename T>
-    struct common_type<fixed_precision_float<T>>
+    struct common_type<fixed_precision<T>>
     {
         using type = T;
     };
 
     template<typename T>
-    struct common_type<fixed_precision_float<T>, fixed_precision_float<T>>
+    struct common_type<fixed_precision<T>, fixed_precision<T>>
     {
         using type = T;
     };
 
     template<typename T, typename U>
-    struct common_type<fixed_precision_float<T>, U>
+    struct common_type<fixed_precision<T>, U>
     {
         using type = typename common_type<T, U>::type;
     };
 
     // opposite order to above
     template<typename T, typename U>
-    struct common_type<U, fixed_precision_float<T>>
+    struct common_type<U, fixed_precision<T>>
     {
         using type = typename common_type<T, U>::type;
     };

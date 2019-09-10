@@ -165,7 +165,7 @@ string TypeSymbol::exposed_type()
     }
     else if (auto ts = dynamic_cast<TimeSymbol *>(this)) {
         if (ts->is_wrapped()) {
-            // fixed_precision_float<...>
+            // fixed_precision<...>
             // a Time type of float, double, etc. exposes the floating point type
             return (Symbol::token_to_string(ts->time_type));
         }
