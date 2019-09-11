@@ -20,6 +20,9 @@
 
 using namespace std;
 
+// for testing
+#define OPTIMIZE_DISABLED_EVENTS 1
+
 class BaseEvent
 {
 public:
@@ -107,14 +110,30 @@ public:
                 if ( new_event_time != event_time ) {
                     event_queue->erase( this );
                     event_time = new_event_time;
+#if OPTIMIZE_DISABLED_EVENTS
+                    if (event_time == time_infinite) {
+                        in_queue = false;
+                    }
+                    else {
+                        event_queue->insert(this);
+                    }
+#else
                     event_queue->insert( this );
+#endif
                 }
             }
             else // ! in_queue
             {
                 event_time = new_event_time;
+#if OPTIMIZE_DISABLED_EVENTS
+                if (event_time != time_infinite) {
+                    event_queue->insert(this);
+                    in_queue = true;
+                }
+#else
                 event_queue->insert( this );
                 in_queue = true;
+#endif
             }
         }
         is_dirty = false;
