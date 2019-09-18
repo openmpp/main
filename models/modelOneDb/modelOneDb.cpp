@@ -53,7 +53,7 @@ static const char * runOptKeyArr[] = {
     useSparseKey,           // const char * RunOptionsKey::useSparse,
     sparseNullKey,          // const char * RunOptionsKey::sparseNull,
     doubleFormatKey,        // const char * RunOptionsKey::doubleFormat,
-    ArgKey::optionsFile,
+    ArgKey::iniFile,
     ArgKey::logToConsole,
     ArgKey::logToFile,
     ArgKey::logFilePath,

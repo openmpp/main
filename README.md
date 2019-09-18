@@ -49,6 +49,6 @@ Do NOT download _mpi_ binaries unless you have MPI installed on your cluster.
   
 Please visit our [wiki](https://ompp.sourceforge.io/wiki/) for more information.
 
-E-mail to: openmpp dot org at gmail dot com.
+E-mail to: _openmpp dot org at gmail dot com_.
 
 License: MIT.

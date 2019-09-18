@@ -228,7 +228,7 @@ namespace openm
         static bool isValidProviderName(const char * i_sqlProvider);
 
         /** return max length of db table or view name. */
-        static int maxDbTableNameSize(const string & i_sqlProvider);
+		static const int maxDbTableNameSize;
 
         /** return type name for BIGINT sql type */
         static string bigIntTypeName(const string & i_sqlProvider);

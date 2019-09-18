@@ -27,14 +27,16 @@ const char * openm::ORACLE_DB_PROVIDER = "oracle";
 /** DB2 db-provider name */
 const char * openm::DB2_DB_PROVIDER = "db2";
 
+/** max length of db table or view name.
+* Current max name sizes: PostgreSQL=63 MySQL=64 MSSQL=128 DB2=128 Oracle=128 (Oracle antiques not supported)
+*/
+const int IDbExec::maxDbTableNameSize = 63;
+
 // db-provider names
 static const char * dbProviderNameArr[] = {
     SQLITE_DB_PROVIDER, MYSQL_DB_PROVIDER, PGSQL_DB_PROVIDER, MSSQL_DB_PROVIDER, ORACLE_DB_PROVIDER, DB2_DB_PROVIDER
 };
 static const size_t dbProviderCount = sizeof(dbProviderNameArr) / sizeof(const char *);
-
-/** max size of db table name */
-static const int maxDbTableNameLen = 30;
 
 /** db-exception default error message: "unknown db error" */
 const char openm::dbUnknownErrorMessage[] = "unknown db error";
@@ -87,17 +89,6 @@ bool IDbExec::isValidProviderName(const char * i_sqlProvider)
         dbProviderNameArr + dbProviderCount,
         [&i_sqlProvider](const char * i_name) -> bool { return equalNoCase(i_name, i_sqlProvider); }
     );
-}
-
-/** return max length of db table or view name. */
-int IDbExec::maxDbTableNameSize(const string & i_sqlProvider)
-{
-    if (i_sqlProvider == PGSQL_DB_PROVIDER) return 63;
-    if (i_sqlProvider == ORACLE_DB_PROVIDER) return 30;
-
-    // MySQL=64, MSSQL=128, DB2=128
-    // limit to 64 to create similar names for all db providers, except Oracle
-    return 64;
 }
 
 /** return type name for BIGINT sql type */

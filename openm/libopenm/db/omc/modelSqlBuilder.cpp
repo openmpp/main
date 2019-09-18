@@ -30,24 +30,17 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
 
     isSqlite = dbProviderLst.cend() != std::find(dbProviderLst.cbegin(), dbProviderLst.cend(), SQLITE_DB_PROVIDER);
 
-    // find smallest of max size of db table name
-    int minSize = 256;
-    for (const string providerName : dbProviderLst) {
-        int nSize = IDbExec::maxDbTableNameSize(providerName);
-        if (nSize < minSize) minSize = nSize;
-    }
-
     // if max size of db table name is too short then use crc32(md5) digest
     // table name is: paramNameAsPrefix + _p + md5Suffix, for example: ageSex_p12345678
     // prefix based on parameter name or output table name
     // suffix is 32 chars of md5 or 8 chars of crc32
     // there is extra 2 chars: _p, _w, _v, _a in table name between prefix and suffix
     //
-    // 2016-08-17: always use short crc32 name suffix (due to Oracle 30 limit)
+    // 2016-08-17: always use short crc32 name suffix
     // isCrc32Name = minSize < 50;
     isCrc32Name = true;
     dbSuffixSize = isCrc32Name ? 8 : 32;
-    dbPrefixSize = minSize - (2 + dbSuffixSize);
+    dbPrefixSize = IDbExec::maxDbTableNameSize - (2 + dbSuffixSize);
 
     if (dbPrefixSize < 2 || dbSuffixSize < 8)
         throw DbException(LT("invalid db table name prefix size: %d or suffix size: %d"), dbPrefixSize, dbSuffixSize);
