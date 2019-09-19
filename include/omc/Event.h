@@ -100,9 +100,11 @@ public:
     void clean()
     {
         assert(event_queue);
-        if ( is_zombie && in_queue ) {
-            event_queue->erase( this );
-            in_queue = false;
+        if ( is_zombie ) {
+            if (in_queue) {
+                event_queue->erase(this);
+                in_queue = false;
+            }
         }
         else if ( is_dirty ) {
             Time new_event_time = call_time_func();
