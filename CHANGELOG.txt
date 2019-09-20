@@ -1,6 +1,10 @@
 Please notice:
   not all changes commented here, please use GitHub commits history for more deatils.
 
+2019_09_20:
+  changes in ompp-ui: reorganize model pages
+  small changes in c++ runtime and Go library to use same table names for all database vendors
+
 2019_07_19:
   changes in ompp-ui: implemented pivot view UI and remove handsontable
   small changes in oms web-service to simplify input sets (scenarios) editing
