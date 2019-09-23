@@ -115,6 +115,9 @@ namespace openm
         /** language to display output messages */
         static const char * messageLang;
         
+        /** log version info */
+        static const char* version;
+
         /** sub-value of parameter must be in the input workset */
         static const char * dbSubValue;
 

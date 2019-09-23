@@ -19,6 +19,7 @@ using namespace std;
 #include "omModelRunState.h"
 #include "omLog.h"
 #include "omError.h"
+#include "omVersion.h"
 
 namespace openm
 {

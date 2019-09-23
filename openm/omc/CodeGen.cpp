@@ -224,7 +224,7 @@ void CodeGen::do_name_digest(void)
 
     // define model name and digest
     c += "// model name";
-    c += "const char * OM_MODEL_NAME =\"" + metaRows.modelDic.name + "\";";
+    c += "const char * OM_MODEL_NAME = \"" + metaRows.modelDic.name + "\";";
     c += "";
     c += "// model metadata digest";
     c += "const char * OM_MODEL_DIGEST = \"" + metaRows.modelDic.digest + "\";";

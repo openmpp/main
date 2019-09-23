@@ -384,7 +384,7 @@ const string openm::normalizeLanguageName(const string & i_srcLanguage)
 // normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
 const list<string> openm::splitLanguageName(const string & i_srcLanguage)
 {
-    // normalize convert form en_CA.UTF-8 into en-ca
+    // normalize: convert form en_CA.UTF-8 into en-ca
     string lang = normalizeLanguageName(i_srcLanguage);
 
     // shorten language code: simple (naive) way to get more generic language

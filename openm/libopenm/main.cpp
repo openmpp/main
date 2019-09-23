@@ -101,6 +101,14 @@ int main(int argc, char ** argv)
         );
         theLog->logMsg(OM_MODEL_NAME);  // startup message: model name
 
+        // log model and runtime version
+        if (argOpts.boolOption(RunOptionsKey::version)) {
+            theLog->logMsg("Model digest", OM_MODEL_DIGEST);
+#ifdef OM_RUNTIME_VERSION
+            theLog->logMsg("OpeM++ version", OM_RUNTIME_VERSION);
+#endif
+        }
+
         // if trace log file enabled setup trace file name
         string tfPath;
         if (argOpts.boolOption(RunOptionsKey::traceToFile)) {

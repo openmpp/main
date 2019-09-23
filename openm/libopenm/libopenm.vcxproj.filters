@@ -144,6 +144,9 @@
     <ClInclude Include="..\..\include\libopenm\omLog.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\omVersion.h">
+      <Filter>Header Files\libopenm</Filter>
+    </ClInclude>
     <ClInclude Include="include\metaHolder.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>

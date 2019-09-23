@@ -117,6 +117,9 @@ namespace openm
     /** language to display output messages */
     const char * RunOptionsKey::messageLang = "OpenM.MessageLanguage";
 
+    /** log version info */
+    const char* RunOptionsKey::version = "OpenM.Version";
+
     /** sub-value of parameter must be in the input workset */
     const char * RunOptionsKey::dbSubValue = "db";
 
@@ -158,6 +161,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::traceUsePid,
     RunOptionsKey::traceNoMsgTime,
     RunOptionsKey::messageLang,
+    RunOptionsKey::version,
     ArgKey::iniFile,
     ArgKey::runStamp,
     ArgKey::logToConsole,
@@ -353,33 +357,33 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     // load default run options from profile options, default profile name = model name
     string profileName = argStore.strOption(RunOptionsKey::profile);
 
-	if (!profileName.empty()) {
+    if (!profileName.empty()) {
 
-		// update run options: merge command line and ini-file with profile and hard-coded default values
-		unique_ptr<IProfileOptionTable> profileTbl(IProfileOptionTable::create(i_dbExec, profileName));
+        // update run options: merge command line and ini-file with profile and hard-coded default values
+        unique_ptr<IProfileOptionTable> profileTbl(IProfileOptionTable::create(i_dbExec, profileName));
 
-		for (size_t nOpt = 0; nOpt < runOptKeySize; nOpt++) {
+        for (size_t nOpt = 0; nOpt < runOptKeySize; nOpt++) {
 
-			if (argStore.isOptionExist(runOptKeyArr[nOpt])) continue;   // option specified at command line or ini-file
+            if (argStore.isOptionExist(runOptKeyArr[nOpt])) continue;   // option specified at command line or ini-file
 
-			// find option in profile_option table
-			const ProfileOptionRow * optRow = profileTbl->byKey(profileName, runOptKeyArr[nOpt]);
-			if (optRow != nullptr) {
-				argStore.args[runOptKeyArr[nOpt]] = optRow->value;      // add option from database
-			}
-			else {  // no database value for that option key, use hard-coded default
-				NoCaseMap::const_iterator defIt = defaultOpt.find(runOptKeyArr[nOpt]);
-				if (defIt != defaultOpt.cend()) argStore.args[runOptKeyArr[nOpt]] = defIt->second;
-			}
-		}
+            // find option in profile_option table
+            const ProfileOptionRow * optRow = profileTbl->byKey(profileName, runOptKeyArr[nOpt]);
+            if (optRow != nullptr) {
+                argStore.args[runOptKeyArr[nOpt]] = optRow->value;      // add option from database
+            }
+            else {  // no database value for that option key, use hard-coded default
+                NoCaseMap::const_iterator defIt = defaultOpt.find(runOptKeyArr[nOpt]);
+                if (defIt != defaultOpt.cend()) argStore.args[runOptKeyArr[nOpt]] = defIt->second;
+            }
+        }
 
-		// update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
-		vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
-		mergeParameterProfile(profileName, RunOptionsKey::parameterPrefix, profileTbl.get(), paramVec);
-		mergeParameterProfile(profileName, RunOptionsKey::subValuePrefix, profileTbl.get(), paramVec);
-	}
+        // update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
+        vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
+        mergeParameterProfile(profileName, RunOptionsKey::parameterPrefix, profileTbl.get(), paramVec);
+        mergeParameterProfile(profileName, RunOptionsKey::subValuePrefix, profileTbl.get(), paramVec);
+    }
 
-	// if run stamp option not specified then use log time stamp by default
+    // if run stamp option not specified then use log time stamp by default
     string rStamp = argStore.strOption(ArgKey::runStamp);
     if (rStamp.empty()) {
         argStore.args[ArgKey::runStamp] = theLog->timeStamp();

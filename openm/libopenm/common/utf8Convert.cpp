@@ -203,7 +203,7 @@ class ExpicitPageConverter : public IUtf8Converter
 {
 public:
     ExpicitPageConverter(const char * i_encodingName) :
-    	theIconv("UTF-8", i_encodingName)
+        theIconv("UTF-8", i_encodingName)
     {
     }
     ~ExpicitPageConverter(void) noexcept { }
@@ -319,7 +319,7 @@ public:
         if (i_size <= 0 || i_text == nullptr) return "";   // return on empty input
 
         wstring ws = wcvt->from_bytes(i_text, i_text + i_size);
-		return
+        return
             u8cvt.to_bytes(ws.c_str());
     }
 
