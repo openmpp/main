@@ -63,7 +63,7 @@ namespace openm
         int rank(void) const override { return MsgExecBase::rank(); }
 
         /** return rank in modeling group: always = 0. */
-        int groupRank(void) const noexcept { return MsgExecBase::groupRank(); }
+        int groupRank(void) const noexcept override { return MsgExecBase::groupRank(); }
 
         /** set clean exit flag for normal shutdown of message passing interface. */
         void setCleanExit(bool /*i_isClean*/) override { }

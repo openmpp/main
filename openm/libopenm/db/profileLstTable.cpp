@@ -17,7 +17,7 @@ namespace openm
         ~ProfileLstTable() noexcept;
 
         // get const reference to list of all table rows
-        const IRowBaseVec & rowsCRef(void) const { return rowVec; }
+        const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
         IRowBaseVec & rowsRef(void) { return rowVec; }
