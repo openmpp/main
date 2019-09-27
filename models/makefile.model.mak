@@ -241,9 +241,6 @@ cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(MODEL_SQLITE)
-	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
-	@if [ -d $(PUBLISH_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(PUBLISH_DIR) ; fi 
-	@if [ -d $(OUT_PREFIX) ] ;  then rmdir --ignore-fail-on-non-empty $(OUT_PREFIX) ; fi 
 
 .PHONY: prepare
 prepare:
