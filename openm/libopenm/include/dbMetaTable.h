@@ -45,10 +45,10 @@ namespace openm
         virtual ~IMetaLoadedTable<TRow>(void) noexcept { }
 
         /** get const reference to list of all table rows. */
-        virtual const IRowBaseVec & rowsCRef(void) const = 0;
+        virtual const IRowBaseVec & rowsCRef(void) const override = 0;
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) = 0;
+        virtual IRowBaseVec & rowsRef(void) override = 0;
 
         /** return number of rows. */
         IRowBaseVec::difference_type rowCount(void) const { return rowsCRef().size(); }

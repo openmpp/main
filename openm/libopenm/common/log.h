@@ -110,7 +110,7 @@ namespace openm
         // log to file, return false on error
         virtual bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) noexcept = 0;
+            ) noexcept override = 0;
 
         // write date-time and message to output stream, return false on error
         void writeToLog(

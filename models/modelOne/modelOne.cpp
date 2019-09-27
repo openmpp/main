@@ -57,7 +57,7 @@ void RunModel(IModel * const i_model)
                 theSalarySex->acc[SalarySex::ACC_SUM_ID][nCell] +=
                     ((double)salaryAge[nSalary][nAge]) * 
                     ageSex[nAge][nSex] * 
-                    (double)(i_model->subValueId() + isOldAge[nAge] ? 20 : 1);
+                    (double)(i_model->subValueId() + (isOldAge[nAge] ? 20 : 1));
             }
             nCell++;
         }

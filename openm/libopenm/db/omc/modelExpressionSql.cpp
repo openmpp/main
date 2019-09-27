@@ -340,7 +340,7 @@ const string ModelAggregationSql::translateFnc(
         return
             "SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
             " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") – 1)";
+            " / (COUNT(" + sqlArg + ") - 1)";
 
     case FncCode::sd:   // SQRT(var)
         
@@ -349,7 +349,7 @@ const string ModelAggregationSql::translateFnc(
             "SQRT(" \
             " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
             " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") – 1)" \
+            " / (COUNT(" + sqlArg + ") - 1)" \
             " )";
 
     case FncCode::se:   // SQRT(var / COUNT(arg))
@@ -359,7 +359,7 @@ const string ModelAggregationSql::translateFnc(
             "SQRT(" \
             " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
             " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") – 1)" \
+            " / (COUNT(" + sqlArg + ") - 1)" \
             " / COUNT(" + sqlArg + ") )";
 
     case FncCode::cv:   // 100 * ( SQRT(var) / AVG(arg) ) 
@@ -369,7 +369,7 @@ const string ModelAggregationSql::translateFnc(
             "100 * (SQRT(" \
             " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
             " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") – 1)" \
+            " / (COUNT(" + sqlArg + ") - 1)" \
             " ) / AVG(" + sqlArg + ") )";
 
     default:
