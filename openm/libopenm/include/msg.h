@@ -156,7 +156,7 @@ namespace openm
         virtual int rank(void) const = 0;
 
         /** return rank in modeling group. */
-        virtual int groupRank(void) const = 0;
+        virtual int groupRank(void) const override = 0;
 
         /** set clean exit flag for normal shutdown of message passing interface. */
         virtual void setCleanExit(bool i_isClean = false) = 0;
