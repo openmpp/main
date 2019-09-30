@@ -44,11 +44,12 @@ endif
 
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 LIB_OMC_A = libopenm_omc_db$(BIN_POSTFIX).a
+L_UCVT_FLAG = -liconv
 
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++17 -pthread -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS) -Wno-register
 CPPFLAGS = $(CXXFLAGS)
 
 OMC_EXE = omc$(BIN_POSTFIX)
@@ -166,7 +167,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OUT_LIB_DIR) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++
+	$(CXX) -pthread -L$(OUT_LIB_DIR) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
 
 .PHONY : copy_ini
 copy_ini:
@@ -185,7 +186,8 @@ cleanall: clean
 	rm -f $(OUT_BIN_DIR)/omc.ini
 	rm -f $(OUT_BIN_DIR)/omc.message.ini
 	rm -rf $(BUILD_PROJ_DIR)
-	@if [ -d $(OUT_BIN_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_BIN_DIR) ; fi 
+	@if [ -e $(OUT_BIN_DIR)/omc ] ;  then rm -f $(OUT_BIN_DIR)/omc ; fi 
+	@if [ -e $(OUT_BIN_DIR)/omcD ] ; then rm -f $(OUT_BIN_DIR)/omcD ; fi 
 
 .PHONY: prepare
 prepare:

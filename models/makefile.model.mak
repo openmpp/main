@@ -157,6 +157,7 @@ SUFFIXES += .d
 
 CXXFLAGS = -Wall -std=c++17 -pthread -fdiagnostics-color=auto -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
+L_UCVT_FLAG = -liconv
 
 MODEL_MPP = $(wildcard $(MODEL_CODE_DIR)/*.mpp $(MODEL_CODE_DIR)/*.ompp $(MODEL_CODE_DIR)/*.dat $(MODEL_CODE_DIR)/*.odat)
 
@@ -200,7 +201,7 @@ $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++
+	$(CXX) -pthread -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
 
 #
 # create output SQLite database
