@@ -30,7 +30,7 @@ namespace openm
         // read input parameter values
         void readParameter(
             IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
-            );
+            ) override;
 
     private:
         int runId;                      // source run id

@@ -20,43 +20,43 @@ namespace openm
         const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by primary key: run id, option key
-        const RunOptionRow * byKey(int i_runId, const string & i_key) const;
+        const RunOptionRow * byKey(int i_runId, const string & i_key) const override;
 
         // get list of rows by run id
-        vector<RunOptionRow> byRunId(int i_runId) const;
+        vector<RunOptionRow> byRunId(int i_runId) const override;
 
         /** return true if primary key (run id, option key) found. */
-        bool isExist(int i_runId, const char * i_key) const noexcept;
+        bool isExist(int i_runId, const char * i_key) const noexcept override;
         
         /** return true if option key found. */
-        bool isExist(const char * i_key) const noexcept;
+        bool isExist(const char * i_key) const noexcept override;
 
         /** return string value by primary key (run id, option key) or default value if not found. */
-        string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept { return strValue(true, i_runId, i_key, i_default); }
+        string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept override { return strValue(true, i_runId, i_key, i_default); }
 
         /** return string value by option key (first found) or default value if not found. */
-        string strValue(const char * i_key, const string & i_default = "") const noexcept { return strValue(false, 0, i_key, i_default); }
+        string strValue(const char * i_key, const string & i_default = "") const noexcept override { return strValue(false, 0, i_key, i_default); }
 
         /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
-        bool boolValue(int i_runId, const char * i_key) const noexcept { return boolValue(true, i_runId, i_key); }
+        bool boolValue(int i_runId, const char * i_key) const noexcept override { return boolValue(true, i_runId, i_key); }
 
         /** return boolean value by option key (first found) or false if not found or value not "yes", "1", "true". */
-        bool boolValue(const char * i_key) const noexcept { return boolValue(false, 0, i_key); }
+        bool boolValue(const char * i_key) const noexcept override { return boolValue(false, 0, i_key); }
 
         /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
-        long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept { return longValue(true, i_runId, i_key, i_default); }
+        long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept override { return longValue(true, i_runId, i_key, i_default); }
 
         /** return long value by option key (first found) or default if not found or can not be converted to long. */
-        long long longValue(const char * i_key, long long i_default) const noexcept { return longValue(false, 0, i_key, i_default); }
+        long long longValue(const char * i_key, long long i_default) const noexcept override { return longValue(false, 0, i_key, i_default); }
 
         /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
-        double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept { return doubleValue(true, i_runId, i_key, i_default); }
+        double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept override { return doubleValue(true, i_runId, i_key, i_default); }
 
         /** return double value by option key (first found) or default if not found or can not be converted to double. */
-        double doubleValue(const char * i_key, double i_default) const noexcept { return doubleValue(false, 0, i_key, i_default); }
+        double doubleValue(const char * i_key, double i_default) const noexcept override { return doubleValue(false, 0, i_key, i_default); }
 
     private:
         IRowBaseVec rowVec;     // table rows

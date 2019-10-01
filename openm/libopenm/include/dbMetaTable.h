@@ -146,7 +146,7 @@ namespace openm
         static ILangLstTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** lang_word table public interface. */
@@ -167,7 +167,7 @@ namespace openm
         static ILangWordTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** model_dic table public interface. */
@@ -192,7 +192,7 @@ namespace openm
         static IModelDicTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** model_dic_txt table public interface. */
@@ -215,7 +215,7 @@ namespace openm
         static IModelDicTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** model_word table public interface. */
@@ -238,7 +238,7 @@ namespace openm
         static IModelWordTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** type_dic table public interface. */
@@ -260,7 +260,7 @@ namespace openm
         static ITypeDicTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** type_dic_txt table public interface. */
@@ -283,7 +283,7 @@ namespace openm
         static ITypeDicTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** type_enum_lst table public interface. */
@@ -314,7 +314,7 @@ namespace openm
         static ITypeEnumLstTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** type_enum_txt table public interface. */
@@ -337,7 +337,7 @@ namespace openm
         static ITypeEnumTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** parameter_dic table public interface. */
@@ -365,7 +365,7 @@ namespace openm
         static IParamDicTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** parameter_dic_txt table public interface. */
@@ -388,7 +388,7 @@ namespace openm
         static IParamDicTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** parameter_dims table public interface. */
@@ -413,7 +413,7 @@ namespace openm
         static IParamDimsTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** parameter_dims_txt table public interface. */
@@ -436,7 +436,7 @@ namespace openm
         static IParamDimsTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_dic table public interface. */
@@ -464,7 +464,7 @@ namespace openm
         static ITableDicTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_dic_txt table public interface. */
@@ -487,7 +487,7 @@ namespace openm
         static ITableDicTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_dims table public interface. */
@@ -512,7 +512,7 @@ namespace openm
         static ITableDimsTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_dims_txt table public interface. */
@@ -535,7 +535,7 @@ namespace openm
         static ITableDimsTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_acc table public interface. */
@@ -564,7 +564,7 @@ namespace openm
         static ITableAccTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_acc_txt table public interface. */
@@ -587,7 +587,7 @@ namespace openm
         static ITableAccTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_expr table public interface. */
@@ -615,7 +615,7 @@ namespace openm
         static ITableExprTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** table_expr_txt table public interface. */
@@ -638,7 +638,7 @@ namespace openm
         static ITableExprTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** group_lst table public interface. */
@@ -663,7 +663,7 @@ namespace openm
         static IGroupLstTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** group_txt table public interface. */
@@ -686,7 +686,7 @@ namespace openm
         static IGroupTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** group_pc table public interface. */
@@ -711,7 +711,7 @@ namespace openm
         static IGroupPcTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** profile_lst table public interface. */
@@ -729,7 +729,7 @@ namespace openm
         static IProfileLstTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** profile_option table public interface. */
@@ -754,7 +754,7 @@ namespace openm
         static IProfileOptionTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** run_lst table public interface. */
@@ -844,7 +844,7 @@ namespace openm
         static IRunOptionTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** run_parameter_txt table public interface. */
@@ -867,7 +867,7 @@ namespace openm
         static IRunParamTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) override = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** workset_lst table public interface. */

@@ -20,13 +20,13 @@ namespace openm
         const IRowBaseVec & rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by primary key: model id, group id, child position
-        const GroupPcRow * byKey(int i_modelId, int i_groupId, int i_chidPos) const;
+        const GroupPcRow * byKey(int i_modelId, int i_groupId, int i_chidPos) const override;
 
         // get list of rows by model id
-        vector<GroupPcRow> byModelId(int i_modelId) const;
+        vector<GroupPcRow> byModelId(int i_modelId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows

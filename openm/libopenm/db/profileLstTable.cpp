@@ -20,10 +20,10 @@ namespace openm
         const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by profile name
-        const ProfileLstRow * byKey(const string & i_name) const;
+        const ProfileLstRow * byKey(const string & i_name) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows

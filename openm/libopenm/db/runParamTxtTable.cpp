@@ -20,10 +20,10 @@ namespace openm
         const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by primary key: run id, parameter id, language id
-        const RunParamTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const;
+        const RunParamTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows

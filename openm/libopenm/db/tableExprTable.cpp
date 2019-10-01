@@ -20,7 +20,7 @@ namespace openm
         const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by unique key: model id, model table id, expr id
         const TableExprRow * byKey(int i_modelId, int i_tableId, int i_exprId) const override;

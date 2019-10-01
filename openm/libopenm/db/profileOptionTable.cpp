@@ -20,14 +20,14 @@ namespace openm
         const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by primary key: profile name, option key
-        const ProfileOptionRow * byKey(const string & i_name, const string & i_key) const;
+        const ProfileOptionRow * byKey(const string & i_name, const string & i_key) const override;
 
         // get list of all table rows
         // get list of rows by profile name
-        vector<ProfileOptionRow> byName(const string & i_name) const;
+        vector<ProfileOptionRow> byName(const string & i_name) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows

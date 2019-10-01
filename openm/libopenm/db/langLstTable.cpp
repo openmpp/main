@@ -20,13 +20,13 @@ namespace openm
         const IRowBaseVec& rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by language id
-        const LangLstRow * byKey(int i_langId) const;
+        const LangLstRow * byKey(int i_langId) const override;
 
         // find first row by language code or NULL if not found
-        const LangLstRow * byCode(const string & i_code) const;
+        const LangLstRow * byCode(const string & i_code) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows

@@ -20,10 +20,10 @@ namespace openm
         const IRowBaseVec & rowsCRef(void) const override { return rowVec; }
 
         // get reference to list of all table rows
-        IRowBaseVec & rowsRef(void) { return rowVec; }
+        IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by primary key: model id, group id, language id
-        const GroupTxtRow * byKey(int i_modelId, int i_groupId, int i_langId) const;
+        const GroupTxtRow * byKey(int i_modelId, int i_groupId, int i_langId) const override;
 
     private:
         IRowBaseVec rowVec;     // table rows
