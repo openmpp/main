@@ -1,3 +1,6 @@
+# platform name: Linux or Darwin
+PLATFORM_UNAME := $(shell uname -s)
+
 ifeq ($(OM_MSG_USE), MPI)
   CXX = mpic++
   CC = mpicc
@@ -148,6 +151,11 @@ endif
 LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
+L_UCVT_FLAG =
+ifeq ($(PLATFORM_UNAME), Darwin)
+  L_UCVT_FLAG = -liconv
+endif
+
 #
 # rules and targets
 #
@@ -157,7 +165,6 @@ SUFFIXES += .d
 
 CXXFLAGS = -Wall -std=c++17 -pthread -fdiagnostics-color=auto -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
-L_UCVT_FLAG = -liconv
 
 MODEL_MPP = $(wildcard $(MODEL_CODE_DIR)/*.mpp $(MODEL_CODE_DIR)/*.ompp $(MODEL_CODE_DIR)/*.dat $(MODEL_CODE_DIR)/*.odat)
 

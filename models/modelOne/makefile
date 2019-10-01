@@ -1,3 +1,6 @@
+# platform name: Linux or Darwin
+PLATFORM_UNAME := $(shell uname -s)
+
 ifeq ($(OM_MSG_USE), MPI)
   CXX = mpic++
   CC = mpicc
@@ -66,7 +69,11 @@ endif
 
 LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
-L_UCVT_FLAG = -liconv
+
+L_UCVT_FLAG =
+ifeq ($(PLATFORM_UNAME), Darwin)
+  L_UCVT_FLAG = -liconv
+endif
 
 # recognize dependency files
 SUFFIXES += .d

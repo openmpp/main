@@ -1,3 +1,6 @@
+# platform name: Linux or Darwin
+PLATFORM_UNAME := $(shell uname -s)
+
 CXX = g++
 CC = gcc
 CPP = $(CC)
@@ -44,7 +47,11 @@ endif
 
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 LIB_OMC_A = libopenm_omc_db$(BIN_POSTFIX).a
-L_UCVT_FLAG = -liconv
+
+L_UCVT_FLAG =
+ifeq ($(PLATFORM_UNAME), Darwin)
+  L_UCVT_FLAG = -liconv
+endif
 
 # recognize dependency files
 SUFFIXES += .d
