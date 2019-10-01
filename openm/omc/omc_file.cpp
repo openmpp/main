@@ -19,7 +19,7 @@ list<string> omc::listSourceFiles(const string & i_srcPath, const list<string> &
     // open source directory or current directory if source path is empty
     string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
     DIR * dir = opendir(srcPath.c_str());
-    if (dir == NULL) throw HelperException(LT("error : cannot open source directory %s"), srcPath.c_str());
+    if (dir == nullptr) throw HelperException(LT("error : cannot open source directory %s"), srcPath.c_str());
 
     // collect list of .mpp, .ompp or .dat files
     try {
@@ -30,9 +30,9 @@ list<string> omc::listSourceFiles(const string & i_srcPath, const list<string> &
         string basePath = i_srcPath;
         if (!basePath.empty() && basePath.back() != '/' && basePath.back() != '\\') basePath += '/';
 
-        while ((ent = readdir(dir)) != NULL) {
+        while ((ent = readdir(dir)) != nullptr) {
 
-            if (ent->d_name == NULL) continue;  // skip file name errors
+            if (ent->d_name[0] == '\0') continue;  // skip file name errors
 
             path = basePath + ent->d_name;     // include directory into result
 
