@@ -174,7 +174,7 @@ namespace openm
             bool i_usePidStamp = false, 
             bool i_noMsgTime = false,
             bool i_isLogSql = false
-            ) noexcept;
+            ) noexcept override;
 
         /** if log to file enabled return "last" log file path. */
         const string lastLogPath(void) noexcept override;
@@ -201,10 +201,10 @@ namespace openm
         void logFormatted(const char * i_format, ...) noexcept override;
 
         /** log exception */
-        void logErr(const exception & i_ex, const char * i_msg = nullptr) noexcept;
+        void logErr(const exception & i_ex, const char * i_msg = nullptr) noexcept override;
 
         /** log sql query */
-        void logSql(const char * i_sql) noexcept;
+        void logSql(const char * i_sql) noexcept override;
 
     private:
         bool isSqlLog;                          // if true then log sql queries into last log
@@ -275,7 +275,7 @@ namespace openm
             bool i_useTimeStamp = false,
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
-            ) noexcept;
+            ) noexcept override;
 
         /** log message */
         void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept override;
@@ -290,7 +290,7 @@ namespace openm
         // log to file, return false on error
         bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) noexcept;
+            ) noexcept override;
 
     private:
         TraceLog(const TraceLog & i_log) = delete;
