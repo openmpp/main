@@ -248,7 +248,6 @@ cleanall: clean
 	rm -f $(OUT_DIR)/$(LIBOPENM_A)
 	rm -f $(OUT_DIR)/$(LIB_OMC_A)
 	rm -rf $(BUILD_PROJ_DIR)
-	@if [ -d $(OUT_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_DIR) ; fi 
 
 .PHONY: prepare
 prepare:
