@@ -29,6 +29,9 @@ OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
 
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
+  ifeq ($(PLATFORM_UNAME), Darwin)
+    OUT_PREFIX = ompp-darwin
+  endif
 endif
 
 #
@@ -144,7 +147,6 @@ endif
 OMC_EXE = $(OM_BIN_DIR)/omc
 
 ifndef OM_DB_LIB
-#  OM_DB_LIB = sqlite3
   OM_DB_LIB = sqlite$(BIN_POSTFIX)
 endif
 
@@ -157,14 +159,22 @@ ifeq ($(PLATFORM_UNAME), Darwin)
 endif
 
 #
+# cpp flags and special flags for omc-generated sources
+#
+CXXFLAGS = -Wall -std=c++17 -pthread -fdiagnostics-color=auto -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(BD_CFLAGS)
+CPPFLAGS = $(CXXFLAGS)
+
+CXXFLAGS_OMC =
+ifeq ($(PLATFORM_UNAME), Darwin)
+  CXXFLAGS_OMC = -Wno-pessimizing-move -Wno-missing-braces
+endif
+
+#
 # rules and targets
 #
 
 # recognize dependency files
 SUFFIXES += .d
-
-CXXFLAGS = -Wall -std=c++17 -pthread -fdiagnostics-color=auto -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(BD_CFLAGS)
-CPPFLAGS = $(CXXFLAGS)
 
 MODEL_MPP = $(wildcard $(MODEL_CODE_DIR)/*.mpp $(MODEL_CODE_DIR)/*.ompp $(MODEL_CODE_DIR)/*.dat $(MODEL_CODE_DIR)/*.odat)
 
@@ -202,7 +212,7 @@ $(DEPS_DIR)/%.d : $(MODEL_CODE_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_OMC) -c $< -o $@
 	
 $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
