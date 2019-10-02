@@ -30,7 +30,7 @@ OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
 ifndef OUT_PREFIX
   OUT_PREFIX = ompp-linux
   ifeq ($(PLATFORM_UNAME), Darwin)
-    OUT_PREFIX = ompp-darwin
+    OUT_PREFIX = ompp-mac
   endif
 endif
 
