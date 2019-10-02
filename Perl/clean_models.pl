@@ -1,7 +1,7 @@
 # Copyright (c) 2013-2015 OpenM++
 # This code is licensed under MIT license (see LICENSE.txt for details)
 
-# Script to clean all temporary and output files in ompp, ompp-linux, and modgen
+# Script to clean all temporary and output files in ompp, ompp-linux, ompp-mac, and modgen
 
 # usage: perl clean_models.pl models
 # If models is not specified, all models will be processed.
