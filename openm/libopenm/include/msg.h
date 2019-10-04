@@ -139,7 +139,7 @@ namespace openm
          *
          * @param[in] argc         main argc to pass to MPI_Init
          * @param[in] argv         main argv to pass to MPI_Init
-         * @param[in] IFinalState  final model run state interface
+         * @param[in] i_final  final model run state interface
          */
         static IMsgExec * create(int argc, char **argv, IFinalState * i_final);
 

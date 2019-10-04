@@ -113,8 +113,6 @@ namespace openm
          * @param[in]   i_sql       select sql query
          * @param[in]   i_adapter   row adapter class to create rows and set values
          * @param[in]   i_processor interface to process each row, ie: calculate sum
-         *
-         * @return  list of db-rows
          */
         virtual void selectToRowProcessor(const string & i_sql, const IRowAdapter & i_adapter, IRowProcessor & i_processor) = 0;
 
