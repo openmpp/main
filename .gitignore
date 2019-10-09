@@ -1,6 +1,8 @@
 bin/data/*
 build/
 lib/
+models/bin/
+models/build/
 *.zip
 *.gz
 *.log
