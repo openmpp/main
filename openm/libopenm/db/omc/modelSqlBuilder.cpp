@@ -58,7 +58,7 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         setOutTableInfo(io_metaRows);
 
         // write sql script to create new model tables
-        for (const string providerName : dbProviderLst) {
+        for (const string & providerName : dbProviderLst) {
             buildCreateModelTables(
                 providerName, 
                 io_metaRows, 
@@ -705,7 +705,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 {
     try {
         // write sql script to create views for each provider
-        for (const string providerName : dbProviderLst) {
+        for (const string & providerName : dbProviderLst) {
 
             // put descriptive header
             ModelSqlWriter wr(outputDir + i_metaRows.modelDic.name + "_optional_views_" + providerName + ".sql");
