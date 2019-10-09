@@ -2,9 +2,9 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-using namespace std;
-
 #include "msgCommon.h"
+
+using namespace std;
 using namespace openm;
 
 // messaging library default error message

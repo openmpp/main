@@ -8,11 +8,11 @@
 #ifndef DB_VALUE_H
 #define DB_VALUE_H
 
-using namespace std;
-
 #include "libopenm/db/dbCommon.h"
 #include "helper.h"
 #include "md5.h"
+
+using namespace std;
 
 namespace openm
 {
