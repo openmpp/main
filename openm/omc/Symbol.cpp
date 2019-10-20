@@ -553,7 +553,9 @@ bool Symbol::option_case_checksum = false;
 
 bool Symbol::option_allow_time_travel = false;
 
-bool Symbol::option_modgen_time_infinite = false;
+bool Symbol::option_time_infinite_is_32767 = false;
+
+bool Symbol::option_time_undef_is_minus_one = false;
 
 string Symbol::code_page;
 
@@ -1600,15 +1602,29 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "modgen_time_infinite";
+        string key = "time_infinite_is_32767";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
             if (value == "on") {
-                option_modgen_time_infinite = true;
+                option_time_infinite_is_32767 = true;
             }
             else if (value == "off") {
-                option_modgen_time_infinite = false;
+                option_time_infinite_is_32767 = false;
+            }
+        }
+    }
+
+    {
+        string key = "time_undef_is_32767";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_time_undef_is_minus_one = true;
+            }
+            else if (value == "off") {
+                option_time_undef_is_minus_one = false;
             }
         }
     }

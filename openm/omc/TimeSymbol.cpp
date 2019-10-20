@@ -55,16 +55,21 @@ CodeBlock TimeSymbol::cxx_definition_global()
     // Perform operations specific to this level in the Symbol hierarchy.
 
     // Time 'literals'
-    if (is_floating() && !Symbol::option_modgen_time_infinite) {
+    if (is_floating() && !Symbol::option_time_infinite_is_32767) {
         string typ = token_to_string(time_type);
         c += "const Time_t time_infinite = numeric_limits<" + typ + ">::infinity();";
         c += "const Time_t TIME_INFINITE = numeric_limits<" + typ + ">::infinity(); // for Modgen compatibility";
-        c += "const Time_t time_undef = numeric_limits<" + typ + ">::quiet_NaN();";
-        c += "const Time_t TIME_UNDEF = numeric_limits<" + typ + ">::quiet_NaN(); // for Modgen compatibility";
     }
     else {
         c += "const Time_t time_infinite = 32767;";
         c += "const Time_t TIME_INFINITE = 32767; // for Modgen compatibility";
+    }
+    if (is_floating() && !Symbol::option_time_undef_is_minus_one) {
+        string typ = token_to_string(time_type);
+        c += "const Time_t time_undef = numeric_limits<" + typ + ">::quiet_NaN();";
+        c += "const Time_t TIME_UNDEF = numeric_limits<" + typ + ">::quiet_NaN(); // for Modgen compatibility";
+    }
+    else {
         c += "const Time_t time_undef = -1;";
         c += "const Time_t TIME_UNDEF = -1; // for Modgen compatibility";
     }

@@ -1246,9 +1246,14 @@ public:
     static bool option_allow_time_travel;
 
     /**
-     * true if modgen_time_infinite activated in options statement.
+     * true if time_infinite_is_32767 activated in options statement.
      */
-    static bool option_modgen_time_infinite;
+    static bool option_time_infinite_is_32767;
+
+    /**
+     * true if time_undef_is_minus_one activated in options statement.
+     */
+    static bool option_time_undef_is_minus_one;
 
     /**
      * Code page to use for source file conversion

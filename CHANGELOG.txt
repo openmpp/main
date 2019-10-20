@@ -1,5 +1,11 @@
-Please notice:
-  not all changes commented here, please use GitHub commits history for more deatils.
+Please note:
+  not all changes commented here, please use GitHub commits history for more details.
+
+2019_??_??:
+  model runtime now uses floating point infinity for time_infinite
+  model runtime now uses floating point soft NAN for time_undef
+  new options keyword time_infinite_is_32767 to support legacy Modgen model code which depends on that
+  new options keyword time_undef_is_minus_one to support legacy Modgen model code which depends on that
 
 2019_09_20:
   changes in ompp-ui: reorganize model pages
