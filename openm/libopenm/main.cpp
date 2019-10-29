@@ -173,6 +173,9 @@ int main(int argc, char ** argv)
                 }
 
                 // run completed OK, receive and write the data
+                if (!isMpiUsed || msgExec->isRoot()) {
+                    theLog->logFormatted("Finalize model run: %d %s", runId, argOpts.strOption(RunOptionsKey::runName).c_str());
+                }
                 runCtrl->shutdownRun(runId);
             }
 
@@ -226,7 +229,7 @@ ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControll
     ExitStatus e = ExitStatus::FAIL;
     try {
 #ifdef _DEBUG
-        theLog->logFormatted("Sub-value %d", i_subId);
+        theLog->logFormatted("Sub-value: %d", i_subId);
 #endif      
         // create the model
         unique_ptr<IModel> model(

@@ -644,7 +644,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 
     // calculate output tables aggregated values and mark this run as completed
 #ifdef _DEBUG
-    theLog->logMsg("Writing Output Tables Expressions");
+    theLog->logMsg("Writing output tables expressions");
 #endif
     writeOutputValues(i_runId, i_dbExec);
 
