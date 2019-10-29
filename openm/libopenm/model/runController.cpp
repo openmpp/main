@@ -642,7 +642,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
     if (isRunError) return;     // run completed with errors, exit without expressions calculation
 
     // calculate output tables aggregated values and mark this run as completed
-    theLog->logFormatted("Writing into aggregated output tables. Run: %d", i_runId);
+    theLog->logFormatted("Writing into aggregated output tables, run: %d", i_runId);
 
     writeOutputValues(i_runId, i_dbExec);
 
