@@ -173,9 +173,6 @@ int main(int argc, char ** argv)
                 }
 
                 // run completed OK, receive and write the data
-                if (!isMpiUsed || msgExec->isRoot()) {
-                    theLog->logFormatted("Finalize model run: %d %s", runId, argOpts.strOption(RunOptionsKey::runName).c_str());
-                }
                 runCtrl->shutdownRun(runId);
             }
 
