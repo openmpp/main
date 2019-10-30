@@ -21,7 +21,7 @@ struct {
   ModelName string            // model name
   ExePath   string            // path to model exe as: binDir/modelname
   Dir       string            // work directory to run the model
-  BinDir    string            // bin directory where model.exe is located
+  BinDir    string            // bin directory where model_mpi exe is located
   MpiNp     int               // number of MPI processes
   Args      []string          // model command line arguments
   Env       map[string]string // environment variables to run the model
@@ -31,6 +31,7 @@ struct {
 mpirun
 -n
 {{ .MpiNp}}
+--bind-to none
 {{with .Dir}}
 -wdir
 {{.}}
