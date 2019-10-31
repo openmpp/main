@@ -214,11 +214,11 @@ size_t IOutputTableWriter::sizeOf(const MetaHolder * i_metaStore, int i_tableId)
 }
 
 // write output table accumulator values
-void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subCount, int i_accId, size_t i_size, const double * i_valueArr)
+void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subId, int i_accId, size_t i_size, const double * i_valueArr)
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
-    if (i_subCount < 0 || i_subCount >= subCount) throw DbException("invalid sub-value index: %d for output table: %s", i_subCount, tableRow->tableName.c_str());
+    if (i_subId < 0 || i_subId >= subCount) throw DbException("invalid sub-value index: %d for output table: %s", i_subId, tableRow->tableName.c_str());
     if (i_accId < 0 || i_accId >= accCount) throw DbException("invalid accumulator number: %d for output table: %s", i_accId, tableRow->tableName.c_str());
     if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for output table: %s", i_size, tableRow->tableName.c_str());
 
@@ -233,7 +233,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subCount, int
         sql += ", " + dim.name;
     }
 
-    sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_subCount);
+    sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_subId);
 
     // build sql, append: , ?, ?, ?)
     // as dimensions parameter placeholder(s), value placeholder
