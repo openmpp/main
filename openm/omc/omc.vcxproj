@@ -175,7 +175,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="$(OM_INC_DIR)/libopenm/omCommon.h" />
     <ClInclude Include="$(OM_INC_DIR)/libopenm/db/metaModelHolder.h" />
     <ClInclude Include="$(OM_INC_DIR)/libopenm/db/modelBuilder.h" />
     <ClInclude Include="AggregationSymbol.h" />
