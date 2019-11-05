@@ -88,13 +88,13 @@ namespace openm
         /** number of sub-values */
         virtual int subValueCount(void) const noexcept = 0;
 
-        /** sub-value index of current modeling process */
+        /** sub-value index of current modeling thread */
         virtual int subValueId(void) const noexcept = 0;
 
         /** return model run options */
         virtual const RunOptions * runOptions(void) const = 0;
 
-        /** return index of parameter sub-value in the array of sub-values, used to find thread local parameter values */
+        /** return index of parameter sub-value in the storage array for current modeling thread */
         virtual int parameterSubValueIndex(const char * i_name) const = 0;
 
         /** write output result table: sub values */

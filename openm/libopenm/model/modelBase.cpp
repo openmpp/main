@@ -58,13 +58,16 @@ ModelBase * ModelBase::create(
     return new ModelBase(i_metaStore->modelRow->modelId, i_runId, i_subCount, i_subId, i_runCtrl, i_metaStore);
 }
 
-/** return index of parameter sub-value in the storage array, used to find thread local parameter values */
+/** return index of parameter sub-value in the storage array for current modeling thread */
 int ModelBase::parameterSubValueIndex(const char * i_name) const 
 {
     const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
     if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", (i_name != nullptr ? i_name : ""));
 
-    return runCtrl->parameterSubCount(paramRow->paramId) > 1 ? runOptions()->subValueId - runCtrl->subFirstId : 0;
+    if (runOptions()->subValueId < runCtrl->subFirstId || runOptions()->subValueId >= runCtrl->subFirstId + runCtrl->selfSubCount)
+        throw DbException("parameter: %s sub-value index: %d out of range", (i_name != nullptr ? i_name : ""), runOptions()->subValueId);
+
+    return runCtrl->parameterSubValueIndex(paramRow->paramId, runOptions()->subValueId);
 }
 
 /**

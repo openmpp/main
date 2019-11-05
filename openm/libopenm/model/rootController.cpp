@@ -720,8 +720,8 @@ bool RootController::updateModelRunStatus(void)
 
     // all group are at final status (exit, done or error)
     if (isAllDone) theModelRunState->updateStatus(maxStatus);   // set model process status to final
-    return
-        !theModelRunState->isError();
+    
+    return !theModelRunState->isError();
 }
 
 /** receive status update from all child processes. */

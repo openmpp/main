@@ -226,7 +226,7 @@ ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControll
     ExitStatus e = ExitStatus::FAIL;
     try {
 #ifdef _DEBUG
-        theLog->logFormatted("Sub-value %d", i_subId);
+        theLog->logFormatted("Sub-value: %d", i_subId);
 #endif      
         // create the model
         unique_ptr<IModel> model(

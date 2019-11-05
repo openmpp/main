@@ -43,10 +43,10 @@ namespace openm
         /** number of sub-values */
         int subValueCount(void) const noexcept override { return runOptions()->subValueCount; }
         
-        /** sub-value index of current modeling process */
+        /** sub-value index of current modeling thread */
         int subValueId(void) const noexcept override { return runOptions()->subValueId; }
 
-        /** return index of parameter sub-value in the array of sub-values, used to find thread local parameter values */
+        /** return index of parameter sub-value in the storage array for current modeling thread */
         int parameterSubValueIndex(const char * i_name) const override;
 
         /** return model run options */

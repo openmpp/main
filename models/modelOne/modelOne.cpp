@@ -42,7 +42,7 @@ static thread_local unique_ptr<SalarySex> theSalarySex; // salary by sex
 // Model event loop: user code
 void RunModel(IModel * const i_model)
 {
-    theLog->logMsg("Running Simulation");
+    theLog->logMsg("Running simulation");
     i_model->updateProgress(0);             // update sub-value progress: 0% completed
 
     // calculte salary by sex, accumulator 0: sum
@@ -104,7 +104,7 @@ void RunOnce(IRunBase * const i_runBase)
 void RunInit(IRunBase * const i_runBase)
 {
     // load model parameters
-    theLog->logMsg("Reading Parameters");
+    theLog->logMsg("Reading parameters");
     theModelRunState->updateProgress(0);            // update modeling process-wide progress: 0% completed
 
     om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
@@ -145,7 +145,7 @@ void ModelStartup(IModel * const i_model)
 void ModelShutdown(IModel * const i_model)
 {
     // write output result tables: salarySex sub-value accumulators
-    theLog->logMsg("Writing Output Tables");
+    theLog->logMsg("Writing output tables");
 
     i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
 }

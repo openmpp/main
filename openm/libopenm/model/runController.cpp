@@ -376,9 +376,8 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             string csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".csv");
 
             if (isFileExists(csvPath.c_str())) {
-#ifdef _DEBUG
                 theLog->logMsg("Read", csvPath.c_str());
-#endif      
+
                 // read from csv file, parse csv lines and insert values into parameter run table
                 unique_ptr<IParameterRunWriter> writer(IParameterRunWriter::create(
                     i_runId,
@@ -643,9 +642,8 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
     if (isRunError) return;     // run completed with errors, exit without expressions calculation
 
     // calculate output tables aggregated values and mark this run as completed
-#ifdef _DEBUG
-    theLog->logMsg("Writing Output Tables Expressions");
-#endif
+    theLog->logFormatted("Writing into aggregated output tables, run: %d", i_runId);
+
     writeOutputValues(i_runId, i_dbExec);
 
     // update run status as completed
