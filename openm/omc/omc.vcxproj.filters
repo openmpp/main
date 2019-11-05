@@ -48,9 +48,6 @@
     <ClInclude Include="Symbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(OM_INC_DIR)/libopenm/omCommon.h">
-      <Filter>Header Files\libopenm</Filter>
-    </ClInclude>
     <ClInclude Include="$(OM_INC_DIR)/libopenm/db/metaModelHolder.h">
       <Filter>Header Files\libopenm\db</Filter>
     </ClInclude>
