@@ -81,6 +81,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 {
 	int                   val_token;
     int                   val_int;
+    bool                  val_bool;
     Literal              *pval_Literal;
     IntegerLiteral       *pval_IntegerLiteral;
     CharacterLiteral     *pval_CharacterLiteral;
@@ -536,7 +537,9 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %type  <val_token>      ullong_synonym
 %type  <val_token>      ldouble_synonym
 
-%type  <pval_string>    name_opt;
+%type  <pval_string>    name_opt
+%type  <val_bool>       sample_dimension_opt
+;
 
 %token END      0 "end of file"
 
@@ -717,48 +720,75 @@ option:
  */
 
 decl_import: // just parse old-style syntax, and assume a single table name, not a list
-          "import" SYMBOL[param]
-              "(" 
+          "import" 
+              SYMBOL[param] "("
                         {
                             pc.next_word_is_string = true;
                         }
               STRING[model] "." 
                         {
-                            // parse and ignore for now
-                            delete $model;
-                            $model = nullptr;
                             pc.next_word_is_string = true;
                         }
               STRING[table] ")"
                         {
-                            // parse and ignore for now
-                            delete $table;
-                            $table = nullptr;
                             pc.next_word_is_string = true;
                         }
-              import_opt ";"
+              sample_dimension_opt ";"
                         {
+                            // Add this import to the global list of imports
+                            // For parameter, get stable double-indirection symbol table pointer
+                            auto sym_pp = ($param)->stable_pp();
+                            // tuple<Symbol**, string, string, bool, yy::location>
+                            // element 0 is a double-indirection pointer to a Symbol (in the symbol table)
+                            // element 1 is a string for the model
+                            // element 2 is a string for the table in the model
+                            // element 3 is a bool for the sample_dimension option
+                            // element 4 is the import statement code location
+                            auto tpl = make_tuple(sym_pp, *$model, *$table, $sample_dimension_opt, @param);
+                            Symbol::imports.push_back(tpl);
+
+                            // cleanup
+                            delete $model;
+                            $model = nullptr;
+                            delete $table;
+                            $table = nullptr;
+
                             // finished import statement, return to normal symbol processing
                             pc.next_word_is_string = false;
                         }
         | "import" error ";"
         ;
 
-import_opt:
+sample_dimension_opt:
           STRING[key] "="
                         {
-                            // parse and ignore for now
+                            // only allowed key is sample_dimension
+                            if (*$key != "sample_dimension") {
+                                error(@key, LT("error: invalid option in import statement (must be 'sample_dimension')."));
+                            }
                             delete $key;
                             $key = nullptr;
                             pc.next_word_is_string = true;
                         }
               STRING[value]
                         {
-                            // parse and ignore for now
+                            if (*$value == "on") {
+                                $$ = true;
+                            }
+                            else if (*$value == "off") {
+                                $$ = false;
+                            }
+                            else {
+                                error(@value, LT("error: invalid option value in import statement (must be 'on' or 'off')."));
+                            }
                             delete $value;
                             $value = nullptr;
                         }
-	    | /* nothing */
+                  | /* nothing */
+                        {
+                            // default if sample_dimension is not specified
+                            $$ = false;
+                        }
       ;
 
 

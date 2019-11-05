@@ -76,6 +76,8 @@ list<symbol_map_value_type> Symbol::pp_symbols;
 
 unordered_set<string> Symbol::pp_symbols_ignore;
 
+list<tuple<Symbol**, string, string, bool, yy::location>> Symbol::imports;
+
 unordered_set<string> Symbol::identifiers_in_model_source;
 
 list<TypeSymbol *> Symbol::pp_all_types0;
