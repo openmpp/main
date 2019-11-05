@@ -60,6 +60,7 @@
 #include "AggregationSymbol.h"
 #include "ModelSymbol.h"
 #include "ScenarioSymbol.h"
+#include "ImportSymbol.h"
 
 using namespace std;
 using namespace openm;
@@ -75,8 +76,6 @@ symbol_map_type Symbol::symbols;
 list<symbol_map_value_type> Symbol::pp_symbols;
 
 unordered_set<string> Symbol::pp_symbols_ignore;
-
-list<tuple<Symbol**, string, string, bool, yy::location>> Symbol::imports;
 
 unordered_set<string> Symbol::identifiers_in_model_source;
 
@@ -111,6 +110,8 @@ list<TableGroupSymbol *> Symbol::pp_all_table_groups;
 list<HideGroupSymbol *> Symbol::pp_all_hide_groups;
 
 list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
+
+list<ImportSymbol *> Symbol::pp_all_imports;
 
 set<string> Symbol::pp_all_event_names;
 
@@ -1235,6 +1236,7 @@ void Symbol::post_parse_all()
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_imports.sort([](ImportSymbol* a, ImportSymbol* b) { return a->name < b->name; });
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
     pp_all_aggregations.sort([](AggregationSymbol *a, AggregationSymbol *b) { return a->name < b->name; });
 

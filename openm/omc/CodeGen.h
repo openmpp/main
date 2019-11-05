@@ -58,6 +58,7 @@ public:
     void do_entity_sets();
     void do_entity_tables();
     void do_derived_tables();
+    void do_imports();
     void do_name_digest(void);
 
     /**

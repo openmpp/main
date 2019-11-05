@@ -27,7 +27,8 @@ void CodeGen::do_all()
 	do_parameters();
 	do_entity_tables();
 	do_derived_tables();
-	do_table_interface();
+    do_imports();
+    do_table_interface();
 	do_agents();
 	do_entity_sets();
     do_event_queue();
@@ -890,6 +891,13 @@ void CodeGen::do_derived_tables()
 
     h += "";
 	c += "";
+}
+
+void CodeGen::do_imports()
+{
+    for (auto imp : Symbol::pp_all_imports) {
+        imp->populate_metadata(metaRows);
+    }
 }
 
 void CodeGen::do_table_interface()

@@ -101,6 +101,7 @@ GroupSymbol.cpp \
 HeaderCheck.cpp \
 HideGroupSymbol.cpp \
 IdentityAttributeSymbol.cpp \
+ImportSymbol.cpp \
 LanguageSymbol.cpp \
 LinkAttributeSymbol.cpp \
 LinkToAttributeSymbol.cpp \

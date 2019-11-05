@@ -222,6 +222,7 @@
     <ClInclude Include="GroupSymbol.h" />
     <ClInclude Include="HideGroupSymbol.h" />
     <ClInclude Include="IdentityAttributeSymbol.h" />
+    <ClInclude Include="ImportSymbol.h" />
     <ClInclude Include="LanguageSymbol.h" />
     <ClInclude Include="LinkAttributeSymbol.h" />
     <ClInclude Include="LinkToAttributeSymbol.h" />
@@ -305,6 +306,7 @@
     <ClCompile Include="HeaderCheck.cpp" />
     <ClCompile Include="HideGroupSymbol.cpp" />
     <ClCompile Include="IdentityAttributeSymbol.cpp" />
+    <ClCompile Include="ImportSymbol.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAttributeSymbol.cpp" />
     <ClCompile Include="LinkToAttributeSymbol.cpp" />

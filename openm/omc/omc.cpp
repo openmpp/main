@@ -502,38 +502,6 @@ int main(int argc, char * argv[])
             param->validate_initializer();
         }
 
-        // validate and process import statements
-        {
-            for (auto tpl : Symbol::imports) {
-                // tuple<Symbol**, string, string, bool, yy::location>
-                // element 0 is a double-indirection pointer to a Symbol (in the symbol table)
-                // element 1 is a string for the model
-                // element 2 is a string for the table in the model
-                // element 3 is a bool for the sample_dimension option
-                // element 4 is the import statement code location
-                auto sym_pp = get<0>(tpl);
-                auto upstream_model = get<1>(tpl);
-                auto upstream_table = get<2>(tpl);
-                auto sample_dimension_opt = get<3>(tpl);
-                auto loc = get<4>(tpl);
-
-                auto param = dynamic_cast<ParameterSymbol*>(*sym_pp);
-                if (!param) {
-                    Symbol::pp_error(loc, LT("error : '") + param->name + LT("' must be a parameter to be a target of import"));
-                }
-                else {
-                    // For testing, dump each import to omc log
-                    ostringstream ss;
-                    ss << "import(test): " 
-                        << param->name << "," 
-                        << upstream_model << "," 
-                        << upstream_table << ","
-                        << sample_dimension_opt ? 1 : 0;
-                    theLog->logMsg(ss.str().c_str());
-                }
-            }
-        }
-
         if (Symbol::post_parse_warnings > 0) {
             theLog->logFormatted("%d warnings in post-parse phase", Symbol::post_parse_warnings);
         }

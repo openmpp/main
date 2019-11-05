@@ -38,6 +38,7 @@ class HideGroupSymbol;
 class DependencyGroupSymbol;
 class GlobalFuncSymbol;
 class AggregationSymbol;
+class ImportSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -928,19 +929,6 @@ public:
     static unordered_set<string> pp_symbols_ignore;
 
     /**
-     * List of imports from upstream models.
-     *
-     * From import statements encountered during parse.
-     *
-     * element 0 is a double-indirection pointer to a Symbol (in the symbol table)
-     * element 1 is a string for the model
-     * element 2 is a string for the table in the model
-     * element 3 is a bool for the sample_dimension option
-     * element 4 is the import statement code location
-     */
-    static list<tuple<Symbol**, string, string, bool, yy::location>> imports;
-
-    /**
      * List of all identifiers in model source code.
      * 
      * Includes identifiers in both C++ code and in ompp declarative islands.
@@ -1072,6 +1060,13 @@ public:
      * Populated after parsing is complete.
      */
     static list<DependencyGroupSymbol *> pp_all_dependency_groups;
+
+    /**
+    * The imports in the model
+    *
+    * Populated after parsing is complete.
+    */
+    static list<ImportSymbol*> pp_all_imports;
 
     /**
     * The event names in the model

@@ -720,7 +720,7 @@ option:
  */
 
 decl_import: // just parse old-style syntax, and assume a single table name, not a list
-          "import" 
+          "import"[tok]
               SYMBOL[param] "("
                         {
                             pc.next_word_is_string = true;
@@ -735,17 +735,9 @@ decl_import: // just parse old-style syntax, and assume a single table name, not
                         }
               sample_dimension_opt ";"
                         {
-                            // Add this import to the global list of imports
-                            // For parameter, get stable double-indirection symbol table pointer
-                            auto sym_pp = ($param)->stable_pp();
-                            // tuple<Symbol**, string, string, bool, yy::location>
-                            // element 0 is a double-indirection pointer to a Symbol (in the symbol table)
-                            // element 1 is a string for the model
-                            // element 2 is a string for the table in the model
-                            // element 3 is a bool for the sample_dimension option
-                            // element 4 is the import statement code location
-                            auto tpl = make_tuple(sym_pp, *$model, *$table, $sample_dimension_opt, @param);
-                            Symbol::imports.push_back(tpl);
+                            // create new symbol for import statement
+                            auto *imp = new ImportSymbol($param, *$model, *$table, $sample_dimension_opt, @tok);
+                            assert(imp);
 
                             // cleanup
                             delete $model;

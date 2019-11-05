@@ -75,4 +75,5 @@
 #include "ExprForTable.h"
 #include "ExprForAttribute.h"
 #include "ExtendParameterSymbol.h"
+#include "ImportSymbol.h"
 
