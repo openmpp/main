@@ -337,13 +337,16 @@ if (Win32::OLE->LastError()) {
 # Single set assumed
 my $parameter_dir = glob("${temp_dir}/${model}/set.*/");
 
+# TODO: Check that parameters in MDB are all present in ompp DB
+# TODO: Check that tables in MDB are all present in ompp DB
+
 print "Processing ".(1+$#parameters)." parameters...\n";
 for my $parameter (@parameters) {
 	print "processing parameter ${parameter}\n" if $opt->verbose;
 	# Skip known ompp framework parameters with no modgen equivalent
+	next if $parameter eq 'SimulationCases';
+	next if $parameter eq 'SimulationEnd';
 	next if $parameter eq 'SimulationSeed';
-	next if $parameter eq 'Member';
-	next if $parameter eq 'MemberCount';
 	
 	# Remove all existing rows from parameter
 	$sql = "Delete * From ${parameter};";
