@@ -309,6 +309,25 @@ if (Win32::OLE->LastError()) {
 	exit -1;
 }
 
+sub ado_nap_time
+{
+	#print "Nap time for ADO!\n";
+	$ADO_Conn->Close();
+	if (Win32::OLE->LastError()) {
+		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
+		exit -1;
+	}
+
+	#sleep 10;
+
+	#print "Wake-up time for ADO!\n";
+	$ADO_Conn->Open($sConnect);
+	if (Win32::OLE->LastError()) {
+		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
+		exit -1;
+	}
+}
+
 #
 # Set the scenario information in the output DB
 #
@@ -386,18 +405,20 @@ for my $parameter (@parameters) {
 	close INPUT;
 }
 
-# number of simulation members
-my $members = $run_sub_count;
-
 #
 # replace table values
 #
+
+# number of simulation members
+my $members = $run_sub_count;
 
 # Single run assumed
 my $table_dir = glob("${temp_dir}/${model}/run.*/");
 
 print "Processing ".(1+$#tables)." tables...\n";
 for my $table (@tables) {
+	ado_nap_time;
+	#next if $table ne 'Colorectal_Cancer_Cases_Table_Binary_Filtered'; # DEBUG
 	print "processing table ${table}\n" if $opt->verbose;
 	
 	# Get metadata info for table into working variables
