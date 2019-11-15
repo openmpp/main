@@ -45,7 +45,7 @@ void ImportSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
             << pp_target_param->name << ","
             << upstream_model << ","
             << upstream_table << ","
-            << sample_dimension_opt ? 1 : 0;
+            << (sample_dimension_opt ? 1 : 0);
         theLog->logMsg(ss.str().c_str());
     }
 }

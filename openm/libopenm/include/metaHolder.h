@@ -8,10 +8,10 @@
 #ifndef META_HOLDER_H
 #define META_HOLDER_H
 
-using namespace std;
-
 #include "libopenm/db/dbMetaRow.h"
 #include "dbMetaTable.h"
+
+using namespace std;
 
 namespace openm
 {

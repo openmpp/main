@@ -408,7 +408,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         }
 
         // insert from parameter.csv file if sub-value from option = "csv" or from is default and csv directory specified
-        if (!isInserted && (isFromCsv || isFromDefault && isParamDir)) {
+        if (!isInserted && (isFromCsv || (isFromDefault && isParamDir))) {
 
             // if parameter.csv exist then copy it into parameter value table
             string csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".csv");
@@ -487,7 +487,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             // if base run has same number of sub-values and it is in range [0, sub count - 1] then copy all else only part of source sub-values
             isBaseRunFullCopy = nParamSubCount == nSub &&
-                ((nParamSubCount == 1 && (subOpts.kind == KindSubIds::single && subOpts.subIds[0] == 0 || subOpts.kind == KindSubIds::defaultId) && subOpts.subIds[0] == defaultSubId) ||
+                ((nParamSubCount == 1 && ((subOpts.kind == KindSubIds::single && subOpts.subIds[0] == 0) || subOpts.kind == KindSubIds::defaultId) && subOpts.subIds[0] == defaultSubId) ||
                 (nParamSubCount > 1 && subOpts.kind == KindSubIds::range && subOpts.subIds[0] == 0 && subOpts.subIds.back() == nParamSubCount - 1));
 
             if (isBaseRunFullCopy) {            // copy parameter from base run of workset
