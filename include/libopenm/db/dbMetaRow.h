@@ -1604,24 +1604,28 @@ namespace openm
     /** workset_parameter join to model_parameter_dic table row. */
     struct WorksetParamRow : public IMetaRow<WorksetParamRow>
     {
-        /** set_id       INT NOT NULL */
+        /** set_id        INT NOT NULL */
         int setId;
 
-        /** model_id     INT NOT NULL */
+        /** model_id      INT NOT NULL */
         int modelId;
 
-        /** parameter_id INT NOT NULL */
+        /** parameter_id  INT NOT NULL */
         int paramId;
         
-        /** sub_count    INT NOT NULL */
+        /** sub_count     INT NOT NULL */
         int subCount;
+
+        /** default_sub_id INT NOT NULL */
+        int defaultSubId;
 
         /** create row with supplied primary key field values. */
         WorksetParamRow(int i_setId, int i_paramId) :
             setId(i_setId),
             modelId(0),
             paramId(i_paramId),
-            subCount(0)
+            subCount(0),
+            defaultSubId(0)
         { }
 
         /** create row with default empty field values. */

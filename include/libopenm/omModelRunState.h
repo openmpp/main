@@ -123,10 +123,10 @@ namespace openm
         /** return true if model in shutdown state: modeling completed or one of exiting */
         static bool isShutdownOrFinal(ModelStatus i_status) { return i_status == ModelStatus::shutdown || isFinal(i_status); }
 
-        /** convert run status to model status */
+        /** convert run status to model status code */
         static ModelStatus fromRunStatus(const string & i_runStatus);
 
-        /** convert model status to run status */
+        /** convert model status to run status code */
         static string toRunStatus(ModelStatus i_modelStatus);
 
         /** set model status if not already set as one of final status values */

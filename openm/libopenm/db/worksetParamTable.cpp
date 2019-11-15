@@ -27,7 +27,8 @@ namespace openm
         &typeid(decltype(WorksetParamRow::setId)), 
         &typeid(decltype(WorksetParamRow::modelId)), 
         &typeid(decltype(WorksetParamRow::paramId)),
-        &typeid(decltype(WorksetParamRow::subCount))
+        &typeid(decltype(WorksetParamRow::subCount)),
+        &typeid(decltype(WorksetParamRow::defaultSubId))
     };
 
     // Size (number of columns) for workset_parameter join to model_parameter_dic row
@@ -57,6 +58,9 @@ namespace openm
                 break;
             case 3:
                 dynamic_cast<WorksetParamRow *>(i_row)->subCount = (*(int *)i_value);
+                break;
+            case 4:
+                dynamic_cast<WorksetParamRow *>(i_row)->defaultSubId = (*(int *)i_value);
                 break;
             default:
                 throw DbException("db column number out of range");
@@ -94,7 +98,7 @@ vector<WorksetParamRow> WorksetParamTable::select(IDbExec * i_dbExec, const stri
 
     const IRowAdapter & adp = WorksetParamRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowVector(
-        "SELECT WP.set_id, M.model_id, M.model_parameter_id, WP.sub_count" \
+        "SELECT WP.set_id, M.model_id, M.model_parameter_id, WP.sub_count, WP.default_sub_id" \
         " FROM workset_parameter WP" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = WP.parameter_hid)" +
         i_where + 

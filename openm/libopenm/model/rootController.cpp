@@ -279,24 +279,24 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     // find next working set of input parameters
     // if this is a modeling task then next set from that task
     // else if no run completed then get set by id or name or as default set for the model
-    SetRunItem nowSetRun = createNewRun(taskRunId, isWaitTaskRun, dbExec);
+    auto [nSetId, nRunId, mStatus] = createNewRun(taskRunId, isWaitTaskRun, dbExec);
 
-    ModelStatus mStatus = theModelRunState->updateStatus(nowSetRun.status);  // update model status: progress, wait, shutdown
+    mStatus = theModelRunState->updateStatus(mStatus);  // update model status: progress, wait, shutdown
 
-    i_runGroup.nextRun(nowSetRun.runId, nowSetRun.setId, mStatus);
+    i_runGroup.nextRun(nRunId, nSetId, mStatus);
 
     // broadcast metadata: run id and other run options from root to all other processes
     msgExec->bcastInt(i_runGroup.groupOne, (int *)&mStatus);
-    msgExec->bcastInt(i_runGroup.groupOne, &nowSetRun.runId);
+    msgExec->bcastInt(i_runGroup.groupOne, &nRunId);
 
-    if (RunState::isShutdownOrFinal(mStatus) || nowSetRun.isEmpty()) {
+    if (RunState::isShutdownOrFinal(mStatus) || nSetId <= 0 || nRunId <= 0) {
         return 0;   // task "wait" for next input set or all done: all sets from task or single run completed
     }
 
     // create list of accumulators to be received from child modeling processes 
-    appendAccReceiveList(nowSetRun.runId, i_runGroup);
+    appendAccReceiveList(nRunId, i_runGroup);
 
-    return nowSetRun.runId;
+    return nRunId;
 }
 
 /** exchange between root and child processes and threads.

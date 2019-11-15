@@ -664,9 +664,10 @@ CREATE TABLE workset_txt
 --
 CREATE TABLE workset_parameter
 (
-  set_id        INT NOT NULL, -- master key
-  parameter_hid INT NOT NULL, -- parameter_dic.parameter_id
-  sub_count     INT NOT NULL, -- sub-values count
+  set_id         INT NOT NULL, -- master key
+  parameter_hid  INT NOT NULL, -- parameter_dic.parameter_id
+  sub_count      INT NOT NULL, -- sub-values count
+  default_sub_id INT NOT NULL, -- default sub-value id
   PRIMARY KEY (set_id, parameter_hid),
   CONSTRAINT workset_parameter_mk 
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),

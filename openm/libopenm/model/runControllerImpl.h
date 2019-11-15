@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include "dbParameter.h"
 #include "dbOutputTable.h"
+#include "dbValue.h"
 
 using namespace std;
 

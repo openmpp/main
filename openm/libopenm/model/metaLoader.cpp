@@ -15,11 +15,14 @@ namespace openm
     /** short name for ini file name: -ini fileName.ini */
     const char * RunShortKey::iniFile = "ini";
 
-    /** options started with "Parameter." treated as value of model scalar input parameters, ex: "-Parameter.Age 42" */
+    /** options started with "Parameter." treated as value of model scalar input parameter, ex: "-Parameter.Age 42" */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
-    /** options started with "SubValue." used to describe sub-values of model input parameters, ex: "-SubValue.Age csv" */
-    const char * RunOptionsKey::subValuePrefix = "SubValue";
+    /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: "-SubFrom.Age csv" */
+    const char * RunOptionsKey::subFromPrefix = "SubFrom";
+
+    /** options started with "SubValues." used specify id's of input parameter sub-values, ex: "-SubValues.Age [1,4]" */
+    const char * RunOptionsKey::subValuesPrefix = "SubValues";
 
     /** number of sub-values */
     const char * RunOptionsKey::subValueCount = "OpenM.SubValues";
@@ -128,6 +131,9 @@ namespace openm
 
     /** all parameter sub-values must be in parameter.csv file */
     const char * RunOptionsKey::csvSubValue = "csv";
+
+    /** default value of any option */
+    const char * RunOptionsKey::defaultValue = "default";
 }
 
 /** array of model run option keys. */
@@ -184,10 +190,11 @@ static const pair<const char *, const char *> shortPairArr[] =
 };
 static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 
-/** option prefixes to treat in a special way, ie: "Parameter" or "SubValue" */
+/** option prefixes to treat in a special way, ie: "Parameter" or "SubFrom" */
 static const char * prefixOptArr[] = {
     RunOptionsKey::parameterPrefix, 
-    RunOptionsKey::subValuePrefix
+    RunOptionsKey::subFromPrefix,
+    RunOptionsKey::subValuesPrefix
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
@@ -340,11 +347,12 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
     if (!msgMap.empty()) theLog->swapLanguageMessages(langLst, msgMap);
 }
 
-// merge command line and ini-file arguments with profile_option table values
-// use default values for basic run options, i.e. SparseOutput = false
-// raise exception if "Parameter." or "SubValue." name is not a parameter name
-// raise exception if "Parameter." name is not a not scalar parameter
-// raise exception if "SubValue." name is not valid value
+/** merge command line and ini-file arguments with profile_option table values.
+*
+* use default values for basic run options, i.e. SparseOutput = false
+* validate scalar parameter value option, eg: Parameter.Age 42
+* merge parameter sub-values options, eg: SubFrom.Age csv  SubValues.Age 8 SubValues.Sex default
+*/
 void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 {
     // initial values are hard-coded default run options
@@ -377,10 +385,11 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
             }
         }
 
-        // update "Parameter." and "SubValue." options: merge command line and ini-file with profile table
+        // update prefixed options, ie "Parameter.": merge command line and ini-file with profile table
         vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
         mergeParameterProfile(profileName, RunOptionsKey::parameterPrefix, profileTbl.get(), paramVec);
-        mergeParameterProfile(profileName, RunOptionsKey::subValuePrefix, profileTbl.get(), paramVec);
+        mergeParameterProfile(profileName, RunOptionsKey::subFromPrefix, profileTbl.get(), paramVec);
+        mergeParameterProfile(profileName, RunOptionsKey::subValuesPrefix, profileTbl.get(), paramVec);
     }
 
     // if run stamp option not specified then use log time stamp by default
@@ -393,14 +402,14 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     }
 
     // validate "Parameter." options: it must be name of scalar input parameter
-    string prefixDot = string(RunOptionsKey::parameterPrefix) + ".";
-    size_t nPrefix = prefixDot.length();
+    string paramPrefix = string(RunOptionsKey::parameterPrefix) + ".";
+    size_t nPrefix = paramPrefix.length();
 
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
-        if (!equalNoCase(optIt->first.c_str(), prefixDot.c_str(), nPrefix)) continue;   // it is not a "Parameter."
+        if (!equalNoCase(optIt->first.c_str(), paramPrefix.c_str(), nPrefix)) continue;   // it is not a "Parameter."
 
-        if (optIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified");
+        if (optIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified for %s option", paramPrefix.c_str());
 
         // find parameter by name: it must be a model parameter
         string sName = optIt->first.substr(nPrefix);
@@ -416,48 +425,19 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
         if (optIt->second.empty()) throw ModelException("invalid (empty) value specified for parameter %s", sName.c_str());
     }
 
-    // validate "SubValue." options, it must one of: "db", "iota", "csv"
-    prefixDot = string(RunOptionsKey::subValuePrefix) + ".";
-    nPrefix = prefixDot.length();
+    // merge sub-values options for input  parameters: "SubFrom.Age", "SubValues.Age"
+    subValueCount = argOpts().intOption(RunOptionsKey::subValueCount, 1);
+    if (subValueCount <= 0) throw ModelException("Invalid number of sub-values: %d", subValueCount);
 
-    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+    mergeParamSubOpts();
 
-        if (!equalNoCase(optIt->first.c_str(), prefixDot.c_str(), nPrefix)) continue;   // it is not a "SubValue."
+    // validate sub-values options: cannot be combined with "Parameter." option
+    for (const ParamSubOpts & ps : subOptsArr) {
 
-        if (optIt->first.length() <= nPrefix) throw ModelException("invalid (empty) parameter name argument specified");
-
-        // find parameter by name: it must be a model parameter
-        string sName = optIt->first.substr(nPrefix);
-
-        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, sName);
-        if (paramRow == nullptr)
-            throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-        // argument value must be one of: "db", "iota", "csv"
-        if (!equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue) && 
-            !equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue) && 
-            !equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue))
-            throw ModelException("invalid value specified for parameter %s, expected one of: %s %s %s", 
-                sName.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
-
-        // append parameter id to the list of sub-value parameters
-        paramIdSubArr.push_back(paramRow->paramId);
-    }
-
-    // validate "SubValue." options: each parameter must be included only once and not be in "Parameter." options
-    std::sort(paramIdSubArr.begin(), paramIdSubArr.end());
-
-    prefixDot = string(RunOptionsKey::parameterPrefix) + ".";
-
-    for (size_t k = 0; k < paramIdSubArr.size(); k++) {
-
-        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, paramIdSubArr[k]);
-
-        if (k > 0 && paramRow->paramId == paramIdSubArr[k - 1])
-            throw DbException("parameter %s included more than once in \"%s\"", paramRow->paramName.c_str(), RunOptionsKey::subValuePrefix);
-
-        if (argStore.isOptionExist((prefixDot + paramRow->paramName).c_str()))
-            throw DbException("parameter %s cannot be specified as \"%s\" and \"%s\"", paramRow->paramName.c_str(), RunOptionsKey::subValuePrefix, RunOptionsKey::parameterPrefix);
+        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, ps.paramId);
+        if (argStore.isOptionExist((paramPrefix + paramRow->paramName).c_str()))
+            throw DbException("%s.%s cannot be combined with: \"%s\" or \"%s\"",
+                RunOptionsKey::parameterPrefix, paramRow->paramName.c_str(), RunOptionsKey::subFromPrefix, RunOptionsKey::subValuesPrefix);
     }
 
     // merge model run options
@@ -467,7 +447,387 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     baseRunOpts.progressStep = argStore.doubleOption(RunOptionsKey::progressStep, 0.0);
 }
 
-// merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValue.Age" argument
+namespace
+{
+    /** convert string to integer number and return true if all chars converted, expected string to be trimmed from white spaces. */
+    bool toInt(const string & i_src, int & io_number, int base = 10) {
+        io_number = 0;
+        try {
+            io_number = std::stoi(i_src, nullptr, base);
+        }
+        catch (...) {
+            return false;
+        }
+        return true;
+    }
+}
+
+/** merge sub-value options for input  parameters: "SubFrom.Age", "SubValues.Age"
+*
+* parse and validate parameter sub-values options, eg: SubFrom.Age csv  SubValies.Age 8 SubValues.Sex default
+* validate "SubFrom." option value must one of "db", "csv" or "iota"
+* "SubValues." option can be:
+*   list of id's: SubValues.Age 2,1,4,3
+*   range:        SubValues.Age [1,4]
+*   mask:         SubValues.Age x0F 
+*   single id:    SubValues.Age 7 
+*   default id:   SubValues.Age default
+*/
+/*
+void MetaLoader::mergeParamSubOpts(void)
+{
+    string fromPrefix = string(RunOptionsKey::subFromPrefix) + ".";
+    string valPrefix = string(RunOptionsKey::subValuesPrefix) + ".";
+
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+
+        // check is it "SubFrom." option and add into array of sub-value options
+        bool isFromOpt = equalNoCase(optIt->first.c_str(), fromPrefix.c_str(), fromPrefix.length());
+        bool isValOpt = equalNoCase(optIt->first.c_str(), valPrefix.c_str(), valPrefix.length());
+
+        if (!isFromOpt && !isValOpt) continue; // it is not a parameter sub-value option
+
+        // validate "SubFrom." options, it must have parameter name and value one of: "db", "iota", "csv"
+        if (isFromOpt) {
+
+            ParamSubOpts & ps = addParamSubOpts(optIt->first, fromPrefix.c_str(), fromPrefix.length());
+
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = RunOptionsKey::dbSubValue;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = RunOptionsKey::iotaSubValue;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) ps.from = RunOptionsKey::csvSubValue;
+
+            ps.isFromOpt = ps.from == RunOptionsKey::dbSubValue || ps.from == RunOptionsKey::iotaSubValue || ps.from == RunOptionsKey::csvSubValue;
+            if (!ps.isFromOpt)
+                throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
+                    optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
+        }
+
+        // validate "SubValues." options, it must have parameter name and value as range or comma-separated list or hex mask or "default":
+        //  range:      SubValues.Age [4,7]
+        //  list:       SubValues.Age 4,5,6,7
+        //  mask:       SubValues.Age xF0
+        //  single id:  SubValues.Age 7
+        //  default id: SubValues.Age default
+        // number of sub-values must be 1 or exactly equal to number of sub-values in that model run
+        if (isValOpt) {
+
+            ParamSubOpts & ps = addParamSubOpts(optIt->first, valPrefix.c_str(), valPrefix.length());
+            ps.isValuesOpt = true;
+
+            // convert option value to get sub-value id's: range or mask or comma-separated list
+            string sVal = trim(optIt->second);
+            if (sVal.empty()) throw ModelException("invalid (empty) value specified for %s", optIt->first.c_str());
+
+            size_t nLen = sVal.length();
+            ps.isRange = nLen >= 5 && sVal[0] == '[' && sVal[nLen - 1] == ']';
+            bool isMask = !ps.isRange && nLen >= 2 && (sVal[0] == 'x' || sVal[0] == 'X');
+
+            // convert first and last sub-value id from range: SubValues.Age [4,7]
+            if (ps.isRange) {
+                list<string> sLst = splitCsv(sVal.substr(1, nLen - 2));
+                if (sLst.size() != 2) throw ModelException("invalid range values specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+                int nFirst = 0, nLast = 0;
+                if (!toInt(sLst.front(), nFirst)) throw ModelException("invalid range value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                if (!toInt(sLst.back(), nLast)) throw ModelException("invalid range value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                if (nFirst < nLast) {
+                    ps.firstId = nFirst;
+                    ps.lastId = nLast;
+                }
+                else {
+                    ps.firstId = nLast;
+                    ps.lastId = nFirst;
+                }
+                ps.subCount = (ps.lastId + 1) - ps.firstId;
+            }
+
+            // convert mask into array of sub-value id's: SubValues.Age xF0 => 4,5,6,7
+            if (isMask) {
+
+                size_t k = sVal.length();
+                int nId = 0;
+                while (--k > 0) {
+
+                    int dgt = 0;
+                    if (!toInt(string(sVal, k, 1), dgt, 16)) throw ModelException("invalid (not hexadecimal) value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+                    for (int j = 0; j < 4; j++) {
+                        if (dgt % 2 != 0) {
+                            ps.subIds.push_back(nId);
+                            if (ps.subIds.size() > (size_t)subValueCount) throw ModelException("invalid (to many values) specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                        }
+                        dgt >>= 1;
+                        if (++nId >= INT32_MAX)
+                            throw ModelException("invalid (out of range) value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                    }
+                }
+                ps.subCount = ps.subIds.size();
+            }
+
+            // convert list of sub-value id's: SubValues.Age 4,5,6,7
+            // it can be single id or default id: SubValues.Age default
+            if (!ps.isRange && !isMask) {
+
+                ps.isDefaultId = ps.isSingle = equalNoCase(sVal.c_str(), RunOptionsKey::defaultValue);
+
+                if (ps.isDefaultId) {
+                    ps.subCount = 1;
+                }
+                else {
+                    list<string> sLst = splitCsv(sVal);
+
+                    for (const string & sv : sLst) {
+                        int nId = 0;
+                        if (!toInt(sv, nId)) throw ModelException("invalid value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+                        ps.subIds.push_back(nId);
+                        if (ps.subIds.size() > (size_t)subValueCount) throw ModelException("invalid (to many values) specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                    }
+                    ps.subCount = ps.subIds.size();
+                }
+            }
+
+            // check is it single id
+            if (!ps.isSingle && ps.subCount == 1) {
+                if (!ps.isRange) {
+                    ps.firstId = ps.subIds[0];
+                    ps.lastId = ps.subIds[ps.subIds.size() - 1];
+                }
+                ps.isRange = false;
+                ps.isSingle = true;
+            }
+        }
+    }
+
+    // sort by parameter id
+    std::sort(subOptsArr.begin(), subOptsArr.end(), ParamSubOpts::keyLess);
+
+    // set defult values and validate sub-values options, collect parameter id's with multiple sub-values
+    for (ParamSubOpts & ps : subOptsArr) {
+
+        // if from option specified and number of sub-values not explicitly specified by "SubValues."
+        // then assume number of sub-values for the model run
+        // if from option not specified then use default rules
+        if (ps.isFromOpt) {
+            if (!ps.isValuesOpt) ps.subCount = subValueCount;
+        }
+        else {
+            ps.from = RunOptionsKey::defaultValue;
+        }
+        
+        // if SubFrom.Parameter = iota then parameter cannot have SubId.Parameter or SubValues.Parameter option
+        if (ps.from == RunOptionsKey::iotaSubValue && ps.isValuesOpt)
+            throw ModelException(
+                "invalid options for parameter %s: option %s cannot be combined with %s",
+                metaStore->paramDic->byKey(modelId, ps.paramId)->paramName.c_str(), RunOptionsKey::iotaSubValue, RunOptionsKey::subValuesPrefix
+            );
+
+        // sub-values count must 1 or equal to number of sub-values for that model run
+        if (ps.subCount != 1 && ps.subCount != subValueCount)
+            throw ModelException("invalid number of sub-values: %d specified for parameter: %s, expected 1 or %d",
+                ps.subCount, metaStore->paramDic->byKey(modelId, ps.paramId)->paramName.c_str(), subValueCount);
+
+        // collect parameter id's with multiple sub-values
+        if (ps.subCount > 1) paramIdSubArr.push_back(ps.paramId);
+    }
+}
+*/
+
+/** merge sub-value options for input  parameters: "SubFrom.Age", "SubValues.Age"
+*
+* parse and validate parameter sub-values options, eg: SubFrom.Age csv  SubValies.Age 8 SubValues.Sex default
+* validate "SubFrom." option value must one of "db", "csv" or "iota"
+* "SubValues." option can be:
+*   list of id's: SubValues.Age 2,1,4,3
+*   range:        SubValues.Age [1,4]
+*   mask:         SubValues.Age x0F
+*   single id:    SubValues.Age 7
+*   default id:   SubValues.Age default
+*/
+void MetaLoader::mergeParamSubOpts(void)
+{
+    string fromPrefix = string(RunOptionsKey::subFromPrefix) + ".";
+    string valPrefix = string(RunOptionsKey::subValuesPrefix) + ".";
+
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+
+        // check is it "SubFrom." option and add into array of sub-value options
+        bool isFromOpt = equalNoCase(optIt->first.c_str(), fromPrefix.c_str(), fromPrefix.length());
+        bool isValuesOpt = equalNoCase(optIt->first.c_str(), valPrefix.c_str(), valPrefix.length());
+
+        if (!isFromOpt && !isValuesOpt) continue; // it is not a parameter sub-value option
+
+        // validate "SubFrom." options, it must have parameter name and value one of: "db", "iota", "csv"
+        if (isFromOpt) {
+
+            ParamSubOpts & ps = addParamSubOpts(optIt->first, fromPrefix.c_str(), fromPrefix.length());
+
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = RunOptionsKey::dbSubValue;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = RunOptionsKey::iotaSubValue;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) ps.from = RunOptionsKey::csvSubValue;
+
+            if (ps.from != RunOptionsKey::dbSubValue && ps.from != RunOptionsKey::iotaSubValue && ps.from != RunOptionsKey::csvSubValue)
+                throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
+                    optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
+        }
+
+        // validate "SubValues." options, it must have parameter name and value as range or comma-separated list or hex mask or "default":
+        //  range:      SubValues.Age [4,7]
+        //  list:       SubValues.Age 4,5,6,7
+        //  mask:       SubValues.Age xF0
+        //  single id:  SubValues.Age 7
+        //  default id: SubValues.Age default
+        // number of sub-values must be 1 or exactly equal to number of sub-values in that model run
+        if (isValuesOpt) {
+
+            ParamSubOpts & ps = addParamSubOpts(optIt->first, valPrefix.c_str(), valPrefix.length());
+
+            // convert option value to get sub-value id's: range or mask or comma-separated list
+            string sVal = trim(optIt->second);
+            if (sVal.empty()) throw ModelException("invalid (empty) value specified for %s", optIt->first.c_str());
+
+            size_t nLen = sVal.length();
+            bool isRange = nLen >= 5 && sVal[0] == '[' && sVal[nLen - 1] == ']';
+            bool isMask = !isRange && nLen >= 2 && (sVal[0] == 'x' || sVal[0] == 'X');
+
+            // convert first and last sub-value id from range: SubValues.Age [4,7]
+            if (isRange) {
+                list<string> sLst = splitCsv(sVal.substr(1, nLen - 2));
+                if (sLst.size() != 2) throw ModelException("invalid range values specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+                int nFirst = 0, nLast = 0;
+                if (!toInt(sLst.front(), nFirst)) throw ModelException("invalid range value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                if (!toInt(sLst.back(), nLast)) throw ModelException("invalid range value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                if (nFirst > nLast) {
+                    swap(nFirst, nLast);
+                }
+                ps.subCount = (nLast + 1) - nFirst;
+
+                ps.subIds.clear();
+                for (int n = nFirst; n <= nLast; n++) {
+                    ps.subIds.push_back(n);
+                }
+                ps.kind = ps.subCount > 1 ? KindSubIds::range : KindSubIds::single;
+            }
+
+            // convert mask into array of sub-value id's: SubValues.Age xF0 => 4,5,6,7
+            if (isMask) {
+
+                size_t k = sVal.length();
+                ps.subIds.clear();
+                int nId = 0;
+                while (--k > 0) {
+
+                    int dgt = 0;
+                    if (!toInt(string(sVal, k, 1), dgt, 16)) throw ModelException("invalid (not hexadecimal) value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+                    for (int j = 0; j < 4; j++) {
+                        if (dgt % 2 != 0) {
+                            ps.subIds.push_back(nId);
+                            if (ps.subIds.size() > (size_t)subValueCount) throw ModelException("invalid (to many values) specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                        }
+                        dgt >>= 1;
+                        if (++nId >= INT32_MAX)
+                            throw ModelException("invalid (out of range) value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                    }
+                }
+                ps.subCount = ps.subIds.size();
+                ps.kind = ps.subCount > 1 ? KindSubIds::list : KindSubIds::single;
+            }
+
+            // convert list of sub-value id's: SubValues.Age 4,5,6,7
+            // it can be single id or default id: SubValues.Age default
+            if (!isRange && !isMask) {
+
+                if (equalNoCase(sVal.c_str(), RunOptionsKey::defaultValue)) {
+                    ps.kind = KindSubIds::defaultId;
+                    ps.subCount = 1;
+                    ps.subIds = { 0 };
+                }
+                else {
+                    list<string> sLst = splitCsv(sVal);
+
+                    ps.subIds.clear();
+                    for (const string & sv : sLst) {
+                        int nId = 0;
+                        if (!toInt(sv, nId)) throw ModelException("invalid value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+                        ps.subIds.push_back(nId);
+                        if (ps.subIds.size() > (size_t)subValueCount) throw ModelException("invalid (to many values) specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+                    }
+                    ps.subCount = ps.subIds.size();
+                    ps.kind = ps.subCount > 1 ? KindSubIds::list : KindSubIds::single;
+                }
+            }
+
+            // check is it single id or list of sequential id's (range)
+            if (ps.kind == KindSubIds::list) {
+                bool isSeq = true;
+                for (size_t k = 0; k < ps.subIds.size(); k++) {
+                    isSeq = k == 0 || (isSeq && ps.subIds[k] == ps.subIds[k - 1] + 1);
+                }
+                if (isSeq) ps.kind = KindSubIds::range;
+            }
+
+            if (ps.kind != KindSubIds::single && ps.kind != KindSubIds::defaultId && ps.kind != KindSubIds::range && ps.kind != KindSubIds::list)
+                throw ModelException("invalid value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+        }
+    }
+
+    // sort by parameter id
+    std::sort(subOptsArr.begin(), subOptsArr.end(), ParamSubOpts::keyLess);
+
+    // set defult values and validate sub-values options, collect parameter id's with multiple sub-values
+    for (ParamSubOpts & ps : subOptsArr) {
+
+        // if from option specified and number of sub-values not explicitly specified by "SubValues."
+        // then assume number of sub-values for the model run
+        // if from option not specified then use default rules
+        if (ps.from != RunOptionsKey::defaultValue) {
+            if (ps.kind == KindSubIds::none) ps.subCount = subValueCount;
+        }
+
+        // if SubFrom.Parameter = iota then parameter cannot have SubId.Parameter or SubValues.Parameter option
+        if (ps.from == RunOptionsKey::iotaSubValue && ps.kind != KindSubIds::none)
+            throw ModelException(
+                "invalid options for parameter %s: option %s cannot be combined with %s",
+                metaStore->paramDic->byKey(modelId, ps.paramId)->paramName.c_str(), RunOptionsKey::iotaSubValue, RunOptionsKey::subValuesPrefix
+            );
+
+        // sub-values count must 1 or equal to number of sub-values for that model run
+        if (ps.subCount != 1 && ps.subCount != subValueCount)
+            throw ModelException("invalid number of sub-values: %d specified for parameter: %s, expected 1 or %d",
+                ps.subCount, metaStore->paramDic->byKey(modelId, ps.paramId)->paramName.c_str(), subValueCount);
+
+        // collect parameter id's with multiple sub-values
+        if (ps.subCount > 1) paramIdSubArr.push_back(ps.paramId);
+    }
+}
+
+// find existing or add new parameter sub-values options
+MetaLoader::ParamSubOpts & MetaLoader::addParamSubOpts(const string & optKey, const char * i_prefixDot, size_t i_prefixLen)
+{
+    // check option key: it must have parameter name
+    if (optKey.length() <= i_prefixLen) throw ModelException("invalid (empty) parameter name argument specified for %s option", i_prefixDot);
+
+    // find parameter by name: it must be a model parameter
+    string sName = optKey.substr(i_prefixLen);
+    const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, sName);
+    if (paramRow == nullptr)
+        throw DbException("parameter %s is not an input parameter of model %s, id: %d", sName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+
+    // find parameter in the list of sub-value parameters
+    for (ParamSubOpts & ps : subOptsArr) {
+        if (ps.paramId == paramRow->paramId) return ps; // found existing parameter sub-value options
+    }
+
+    // append parameter new options to the list of sub-value parameters
+    subOptsArr.push_back(ParamSubOpts(paramRow->paramId));
+
+    return subOptsArr.back();
+}
+
+// merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValues.Age" argument
 void MetaLoader::mergeParameterProfile(
     const string & i_profileName, const char * i_prefix, const IProfileOptionTable * i_profileOpt, const vector<ParamDicRow> & i_paramRs
 )
@@ -488,165 +848,3 @@ void MetaLoader::mergeParameterProfile(
         }
     }
 }
-        
-// create task run entry in database
-int MetaLoader::createTaskRun(int i_taskId, IDbExec * i_dbExec) 
-{
-    // update in transaction scope
-    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
-
-    // get next task run id
-    i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'task_run_id'");
-
-    int taskRunId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'task_run_id'", 0);
-    if (taskRunId <= 0)
-        throw DbException("invalid task run id: %d", taskRunId);
-
-    string dtStr = toDateTimeString(theLog->timeStamp()); // get log date-time as string
-
-    // make new task run name or use name specified by model run options
-    string rn = argOpts().strOption(RunOptionsKey::taskRunName);
-    if (rn.empty()) {
-        rn = toAlphaNumeric(OM_MODEL_NAME + string("_") + argOpts().strOption(RunOptionsKey::taskName), OM_NAME_DB_MAX);
-    }
-
-    // create new task run
-    i_dbExec->update(
-        "INSERT INTO task_run_lst (task_run_id, task_id, run_name, sub_count, create_dt, status, update_dt, run_stamp)" \
-        " VALUES (" +
-        to_string(taskRunId) + ", " +
-        to_string(i_taskId) + ", " +
-        toQuoted(rn) + ", " +
-        to_string(subValueCount) + ", " +
-        toQuoted(dtStr) + ", " +
-        toQuoted(RunStatus::init) + ", " +
-        toQuoted(dtStr) + ", " +
-        toQuoted(argOpts().strOption(ArgKey::runStamp)) + ")"
-    );
-
-    // completed: commit the changes
-    i_dbExec->commit();
-
-    argStore.args[RunOptionsKey::taskRunId] = to_string(taskRunId);
-    return taskRunId;
-}
-
-// find modeling task, if specified
-int MetaLoader::findTask(IDbExec * i_dbExec)
-{
-    // find task id or name if specified as run options
-    int taskId = argStore.intOption(RunOptionsKey::taskId, 0);
-    string taskName = argStore.strOption(RunOptionsKey::taskName);
-
-    if (taskId > 0) {
-        int cnt = i_dbExec->selectToInt(
-            "SELECT COUNT(*) FROM task_lst WHERE task_id = " + to_string(taskId), 0
-            );
-        if (cnt <= 0) throw DbException("task id not found in database: %d", taskId);
-    }
-    else {  // find task id by name, if taskName option specified 
-
-        if (!taskName.empty()) {
-            taskId = i_dbExec->selectToInt(
-                "SELECT MIN(task_id) FROM task_lst WHERE model_id = " + to_string(modelId) +
-                " AND task_name = " + toQuoted(taskName),
-                0);
-            if (taskId <= 0)
-                throw DbException("model %s, id: %d does not contain task with name: %s", metaStore->modelRow->name.c_str(), modelId, taskName.c_str());
-        }
-    }
-
-    // if task found then add it to run options
-    if (taskId > 0) {
-
-        if (taskName.empty()) {
-            taskName = i_dbExec->selectToStr(
-                "SELECT task_name FROM task_lst WHERE task_id = " + to_string(taskId)
-                );
-        }
-        argStore.args[RunOptionsKey::taskId] = to_string(taskId);
-        argStore.args[RunOptionsKey::taskName] = taskName;
-    }
-
-    return taskId;
-}
-
-// find id and name of source working set for input parameters:
-//   if set id specified as run option then use such set id
-//   if set name specified as run option then find set id by name
-//   else use min(set id) as default set of model parameters
-int MetaLoader::findWorkset(int i_setId, IDbExec * i_dbExec)
-{
-    // find set id of parameters workset, default is first set id for that model
-    int setId = (i_setId > 0) ? i_setId : argStore.intOption(RunOptionsKey::setId, 0);
-    string setName = argStore.strOption(RunOptionsKey::setName);
-
-    if (setId > 0) {
-        int cnt = i_dbExec->selectToInt(
-            "SELECT COUNT(*) FROM workset_lst WHERE set_id = " + to_string(setId), 0
-            );
-        if (cnt <= 0) throw DbException("working set id not found in database: %d", setId);
-    }
-    else {  // find set id by name, if setName option specified 
-
-        if (!setName.empty()) {
-            setId = i_dbExec->selectToInt(
-                "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(modelId) +
-                " AND set_name = " + toQuoted(setName),
-                0);
-            if (setId <= 0)
-                throw DbException("model %s, id: %d does not contain working set with name: %s", metaStore->modelRow->name.c_str(), modelId, setName.c_str());
-        }
-    }
-
-    // if set id not defined then use default working set for the model
-    if (setId <= 0) {
-        setId = i_dbExec->selectToInt(
-            "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(modelId), 0
-            );
-        if (setId <= 0)
-            throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
-    }
-
-    // update run options: actual set id and set name can be different
-    setName = i_dbExec->selectToStr("SELECT set_name FROM workset_lst WHERE set_id = " + to_string(setId));
-    argStore.args[RunOptionsKey::setId] = to_string(setId);
-    argStore.args[RunOptionsKey::setName] = setName;
-
-    return setId;
-}
-
-// save run options by inserting into run_option table
-void MetaLoader::createRunOptions(int i_runId, IDbExec * i_dbExec) const
-{
-    // save options in database
-    for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
-
-        // skip run id and connection string: it is already in database
-        if (optIt->first == RunOptionsKey::restartRunId || optIt->first == RunOptionsKey::dbConnStr) continue;
-
-        i_dbExec->update(
-            "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
-            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second) + ")"
-        );
-    }
-
-    // append "last" log file path, if not explictly specified and path is not empty
-    string fp = theLog->lastLogPath();
-    if (!argOpts().isOptionExist(ArgKey::logFilePath) && !fp.empty()) {
-        i_dbExec->update(
-            "INSERT INTO run_option (run_id, option_key, option_value)" \
-            " VALUES (" + to_string(i_runId) + ", " + toQuoted(ArgKey::logFilePath) + ", " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
-        );
-    }
-
-    // append "stamped" log file path, if path is not empty
-    fp = theLog->stampedLogPath();
-    if (!fp.empty()) {
-        i_dbExec->update(
-            "INSERT INTO run_option (run_id, option_key, option_value)" \
-            " VALUES (" + to_string(i_runId) + ", 'OpenM.LogStampedFilePath', " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
-        );
-    }
-}
-

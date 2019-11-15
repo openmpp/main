@@ -49,15 +49,15 @@ namespace openm
 
         // Parameter writer cleanup
         ~ParameterSetWriter(void) noexcept override { }
-
+        
         // return total number of values
         virtual size_t sizeOf(void) const noexcept override { return totalSize; }
-
+        
         // write workset parameter values
         void writeParameter(
             IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * i_valueArr
             ) override;
-
+        
     private:
         int setId;              // destination workset id
         string paramSetDbTable; // db table name for workset values of parameter
@@ -86,8 +86,8 @@ namespace openm
         virtual size_t sizeOf(void) const noexcept override { return totalSize; }
 
         // load parameter values from csv file into run table
-        virtual void loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCount, const char * i_filePath, bool i_isIdCsv = false) override;
-    
+        virtual void loadCsvParameter(IDbExec * i_dbExec, const vector<int> & i_subIdArr, const char * i_filePath, bool i_isIdCsv = false) override;
+
         // calculate run parameter values digest and store only single copy of parameter values
         void digestParameter(IDbExec * i_dbExec, int i_paramSubCount, const type_info & i_type) override;
 
@@ -163,11 +163,7 @@ ParameterWriter::ParameterWriter(
     if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
     // get dimensions type and size, calculate total size
-    totalSize = 1;
     for (const ParamDimsRow & dim : paramDims) {
-
-        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(modelId, dim.typeId);
-        if (typeRow == nullptr) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
 
         vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(modelId, dim.typeId);
         int dimSize = (int)de.size();
@@ -178,7 +174,7 @@ ParameterWriter::ParameterWriter(
         dimSizeVec.push_back(dimSize);
     }
 
-    if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
+    totalSize = i_metaStore->parameterSize(*paramRow);  // parameter size: product of dimensions size
 }
 
 // create new writer for workset parameter
@@ -353,11 +349,12 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, int i_subId, const t
 }
 
 // load parameter values from csv file into run table
-void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCount, const char * i_filePath, bool i_isIdCsv)
+void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> & i_subIdArr, const char * i_filePath, bool i_isIdCsv)
 {
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
     if (i_filePath == nullptr) throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
-    if (i_paramSubCount <= 0) throw DbException("invalid sub-value count %d for parameter: %d %s", i_paramSubCount, paramId, paramRow->paramName.c_str());
+    size_t subCount = i_subIdArr.size();
+    if (subCount <= 0) throw DbException("invalid sub-value count %zu for parameter: %d %s", subCount, paramId, paramRow->paramName.c_str());
     if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope for parameter: %d %s", paramId, paramRow->paramName.c_str());
 
     // check if special parameter value handling required: 
@@ -381,6 +378,23 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
         }
         sort(paramEnums.begin(), paramEnums.end(), enumNameCmp);
     }
+
+    // map csv (source) sub-value id into run parameter (destination) sub id
+    vector<int> subCountArr(subCount, 0);
+    vector<int> srcSubIdArr(i_subIdArr);
+    sort(srcSubIdArr.begin(), srcSubIdArr.end());
+
+    // used to map csv (source) sub-value id into run parameter (destination) sub id
+    // return true if sub id is in the ange of expected sub id's
+    auto mapSubId = [&srcSubIdArr](int i_subId) -> tuple<bool, int> {
+        auto it = lower_bound(srcSubIdArr.cbegin(), srcSubIdArr.cend(), i_subId);
+        if (it != srcSubIdArr.cend() && *it == i_subId) {
+            return { true, (int)distance(srcSubIdArr.cbegin(), it) };
+        }
+        else {
+            return { false, 0 };
+        }
+    };
 
     // read csv file into list of strings
     list<string> csvLines = fileToUtf8Lines(i_filePath);
@@ -431,7 +445,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
         // split to columns, unquote and check row size
         splitCsv(line, csvCols, ",", true, '"', csvLocale);
         if (csvCols.size() < (size_t)rowSize)
-            throw DbException("invalid parameter.csv file at line %zd, expected: %d columns for parameter: %d %s", rowCount, rowSize, paramId, paramRow->paramName.c_str());
+            throw DbException("invalid parameter.csv file at line %zu, expected: %d columns for parameter: %d %s", rowCount, rowSize, paramId, paramRow->paramName.c_str());
 
         // make insert sql: append sub_id and dimensions, it cannot be empty
         insSql.clear();
@@ -440,27 +454,29 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
         // append sub_id it must be integer value between 0 and sub count
         list<string>::const_iterator col = csvCols.cbegin();
         if (col->empty())
-            throw DbException("invalid parameter.csv file at line %zd, sub-value index is empty at column zero for parameter: %d %s", rowCount, paramId, paramRow->paramName.c_str());
+            throw DbException("invalid parameter.csv file at line %zu, sub-value index is empty at column zero for parameter: %d %s", rowCount, paramId, paramRow->paramName.c_str());
 
-        int nSub = -1;
+        // convert sub id and validate: it must be in the list of source sub id's
+        int srcSubId = 0;
         try {
-            nSub = std::stoi(*col);
+            srcSubId = std::stoi(*col);
         }
         catch (...) {
-            nSub = -1;
+            throw DbException("invalid sub-value index %s in csv file at line %zu, column zero, parameter: %d %s, value: %s", col->c_str(), rowCount, paramId, paramRow->paramName.c_str(), col->c_str());
         }
-        if (nSub < 0) throw DbException("invalid sub-value index %s in csv file at line %zd, column zero, parameter: %d %s, value: %s", col->c_str(), rowCount, paramId, paramRow->paramName.c_str(), col->c_str());
-        
-        if (nSub >= i_paramSubCount) continue;  // skip csv line if csv file has more sub-values than model want to use now
 
-        insSql += *col + ", ";  // append sub_id
-        ++col;                  // next column
+        auto [isOk, idx] = mapSubId(srcSubId);
+        if (!isOk) continue;        // skip csv line if csv file has more sub-values than model want to use for that run
+
+        insSql += to_string(idx) + ", ";    // append sub_id
+        subCountArr[idx]++;                 // count each sub id
+        ++col;                              // next column
 
         // dimension columns as code or enum id or value
         for (int k = 0; k < dimCount; k++) {
 
             if (col->empty())
-                throw DbException("invalid parameter.csv file at line %zd dimension is empty at column %d for parameter: %d %s", rowCount, k + 1, paramId, paramRow->paramName.c_str());
+                throw DbException("invalid parameter.csv file at line %zu dimension is empty at column %d for parameter: %d %s", rowCount, k + 1, paramId, paramRow->paramName.c_str());
 
             // if dimension is a simple type (integer) then use column value to insert
             // if csv contains enum id's then validate enum id and use column value to insert
@@ -477,12 +493,12 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
                         eId = std::stoi(*col);
                     }
                     catch (...) {
-                        throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k + 1, paramId, paramRow->paramName.c_str(), col->c_str());
+                        throw DbException("invalid value in csv file at line %zu, column %d, parameter: %d %s, value: %s", rowCount, k + 1, paramId, paramRow->paramName.c_str(), col->c_str());
                     }
 
                     TypeEnumLstRow eRow(modelId, paramDims[k].typeId, eId);
                     if (!binary_search(dimEnums[k].cbegin(), dimEnums[k].cend(), eRow, TypeEnumLstRow::isKeyLess))
-                        throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k + 1, paramId, paramRow->paramName.c_str(), col->c_str());
+                        throw DbException("invalid value in csv file at line %zu, column %d, parameter: %d %s, value: %s", rowCount, k + 1, paramId, paramRow->paramName.c_str(), col->c_str());
 
                     insSql += *col + ", ";  // enum id: insert csv value
                 }
@@ -493,7 +509,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
                     auto eIt = lower_bound(dimEnums[k].cbegin(), dimEnums[k].cend(), eRow, enumNameCmp);
 
                     if (eIt == dimEnums[k].cend() || eIt->modelId != modelId || eIt->typeId != paramDims[k].typeId || eIt->name != *col)
-                        throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, k + 1, paramId, paramRow->paramName.c_str(), col->c_str());
+                        throw DbException("invalid value in csv file at line %zu, column %d, parameter: %d %s, value: %s", rowCount, k + 1, paramId, paramRow->paramName.c_str(), col->c_str());
 
                     insSql += to_string(eIt->enumId) + ", ";  // insert enum id
                 }
@@ -504,7 +520,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
 
         // make insert sql: append parameter value, it can be empty or null for extendable parameters
         if (!isNullable && (col->empty() || *col == "null" || *col == "NULL"))
-            throw DbException("invalid parameter.csv file at line %zd, value is empty or NULL at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+            throw DbException("invalid parameter.csv file at line %zu, value is empty or NULL at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
 
         if (!isStr && !isBool && !isEnum) {     // default: no conversion required, insert value as is or NULL if value column empty
             insSql += (!col->empty() ? *col : "NULL") + ")";
@@ -515,7 +531,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
         }
 
         if (isBool) {           // boolean make 0/1 from false/true
-            if (!TypeDicRow::isBoolValid(col->c_str())) throw DbException("invalid parameter.csv file at line %zd, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
+            if (!TypeDicRow::isBoolValid(col->c_str())) throw DbException("invalid parameter.csv file at line %zu, invalid logical value at column %d for parameter: %d %s", rowCount, dimCount, paramId, paramRow->paramName.c_str());
 
             insSql += TypeDicRow::isBoolTrue(col->c_str()) ? "1)" : "0)";
         }
@@ -529,12 +545,12 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
                     eId = std::stoi(*col);
                 }
                 catch (...) {
-                    throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
+                    throw DbException("invalid value in csv file at line %zu, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
                 }
 
                 TypeEnumLstRow eRow(modelId, paramTypeRow->typeId, eId);
                 if (!binary_search(paramEnums.cbegin(), paramEnums.cend(), eRow, TypeEnumLstRow::isKeyLess))
-                    throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
+                    throw DbException("invalid value in csv file at line %zu, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
 
                 insSql += *col + ")";
             }
@@ -545,7 +561,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
                 auto eIt = lower_bound(paramEnums.cbegin(), paramEnums.cend(), eRow, enumNameCmp);
 
                 if (eIt == paramEnums.cend() || eIt->modelId != modelId || eIt->typeId != paramTypeRow->typeId || eIt->name != *col)
-                    throw DbException("invalid value in csv file at line %zd, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
+                    throw DbException("invalid value in csv file at line %zu, column %d, parameter: %d %s, value: %s", rowCount, dimCount, paramId, paramRow->paramName.c_str(), col->c_str());
 
                 insSql += to_string(eIt->enumId) + ")";  // insert enum id
             }
@@ -556,9 +572,16 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, int i_paramSubCoun
         rowCount++;
     }
 
-    // done with insert
-    if (rowCount <= 0 || (totalSize * i_paramSubCount) + 1 != rowCount) 
-        throw DbException("invalid parameter.csv size: %zd, expected: %zd rows for parameter: %d %s ", rowCount, (totalSize * i_paramSubCount), paramId, paramRow->paramName.c_str());
+    // done with insert: check counts fro each sub id
+    if (rowCount <= 0 || (totalSize * subCount) + 1 != rowCount) 
+        throw DbException("invalid number of rows in %s.csv: %zu rows, expected: %zu rows", paramRow->paramName.c_str(), rowCount, (totalSize * subCount) + 1, paramId);
+
+    if (subCount > 1) {
+        for (int n : subCountArr) {
+            if ((size_t)n != totalSize)
+                throw DbException("invalid parameter.csv sub-value size: %d, expected: %zu row(s) for each sub-value of parameter: %d %s", n, totalSize, paramId, paramRow->paramName.c_str());
+        }
+    }
 }
 
 // calculate parameter values digest and store only single copy of parameter values

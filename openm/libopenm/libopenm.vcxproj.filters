@@ -129,9 +129,6 @@
     <ClInclude Include="include\md5.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="db\dbValue.h">
-      <Filter>Source Files\db</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\libopenm\omModel.h">
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
@@ -148,6 +145,9 @@
       <Filter>Header Files\libopenm</Filter>
     </ClInclude>
     <ClInclude Include="include\metaHolder.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dbValue.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -370,6 +370,12 @@
     </ClCompile>
     <ClCompile Include="common\splitCsv.cpp">
       <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="model\runControllerNewRun.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\metaHolder.cpp">
+      <Filter>Source Files\model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

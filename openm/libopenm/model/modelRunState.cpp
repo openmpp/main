@@ -50,7 +50,7 @@ bool RunState::operator==(const RunState & i_other) const
         startTime == i_other.startTime && updateTime == i_other.updateTime;
 }
 
-/** convert run status to model status */
+/** convert run status to model status code */
 ModelStatus RunState::fromRunStatus(const string & i_runStatus)
 {
     if (i_runStatus == RunStatus::init) return ModelStatus::init;
@@ -63,7 +63,7 @@ ModelStatus RunState::fromRunStatus(const string & i_runStatus)
     return ModelStatus::undefined;
 }
 
-/** convert model status to run status */
+/** convert model status to run status code */
 string RunState::toRunStatus(ModelStatus i_modelStatus)
 {
     if (i_modelStatus == ModelStatus::init) return RunStatus::init;
@@ -154,7 +154,7 @@ tuple<bool, RunState> RunStateHolder::get(int i_runId, int i_subId)
     lock_guard<recursive_mutex> lck(theMutex);
 
     if (auto it = stateMap.find(pair(i_runId, i_subId)); it != stateMap.end()) {
-        return{ true, it->second };
+        return { true, it->second };
     }
     return { false, RunState() };
 }

@@ -19,11 +19,14 @@ namespace openm
     /** keys for model run options */
     struct RunOptionsKey
     {
-        /** options started with "Parameter." treated as value of model scalar input parameters, ex: "-Parameter.Age 42" */
+        /** options started with "Parameter." treated as value of model scalar input parameter, ex: "-Parameter.Age 42" */
         static const char * parameterPrefix;
 
-        /** options started with "SubValue." used to describe sub-values of model input parameters, ex: "-SubValue.Age csv" */
-        static const char * subValuePrefix;
+        /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: "-SubFrom.Age csv" */
+        static const char * subFromPrefix;
+
+        /** options started with "SubValues." used specify id's of input parameter sub-values, ex: "-SubValues.Age [1,4]" */
+        static const char * subValuesPrefix;
 
         /** number of sub-values */
         static const char * subValueCount;
@@ -126,6 +129,9 @@ namespace openm
 
         /** all parameter sub-values must be in parameter.csv file */
         static const char * csvSubValue;
+
+        /** default value of any option */
+        static const char * defaultValue;
     };
 
     /** keys for model run options (short form) */
@@ -175,7 +181,36 @@ namespace openm
     protected:
         int modelId;                        // model id in database
         unique_ptr<MetaHolder> metaStore;   // metadata tables
-        vector<int> paramIdSubArr;          // ids of parameters with sub-values
+        vector<int> paramIdSubArr;          // ids of parameters where sub-values count same as model run sub-values count
+
+        // enum to indicate what kind of sub id's selected: single, default, range or list
+        enum class KindSubIds : int
+        {
+            none = 0,       // SubValues option not defined
+            single = 1,     // single sub id
+            defaultId = 2,  // "default" single sub id
+            range =3,       // range of sub id's [first id, last id]
+            list = 4        // list of sub id's
+        };
+
+        // parameter sub-values options:
+        // SubFrom:   get sub-values from "db", "iota" or "csv"
+        // SubValues: can be list of id's: 1,2,3,4 or range: [1,4] or mask: x0F or single id: 7 or default id: "default"
+        struct ParamSubOpts
+        {
+            int paramId = 0;                                    // parameter id
+            int subCount = 1;                                   // number of sub-values
+            KindSubIds kind = KindSubIds::none;                 // is it a single sub id, range or list of id's
+            vector<int> subIds;                                 // list of sub id's to use, if not default id
+            const char * from = RunOptionsKey::defaultValue;    // get sub-values from: "db", "iota" or "csv"
+
+            ParamSubOpts(int i_paramId = 0) : paramId(i_paramId) {}
+
+            // compare parameter sub-value options by key: parameter id
+            static bool keyLess(const ParamSubOpts & i_left, const ParamSubOpts & i_right) { return i_left.paramId < i_right.paramId; }
+        };
+
+        vector<ParamSubOpts> subOptsArr;    // parameters with sub-values
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
@@ -201,26 +236,23 @@ namespace openm
         */
         void loadMessages(IDbExec * i_dbExec);
 
-        // merge command line and ini-file arguments with profile_option table values
+        /** merge command line and ini-file arguments with profile_option table values. */
         void mergeOptions(IDbExec * i_dbExec);
 
-        // create task run entry in database
-        int createTaskRun(int i_taskId, IDbExec * i_dbExec);
-
-        // find modeling task, if specified
-        int findTask(IDbExec * i_dbExec);
-
-        // find source working set for input parameters
-        int findWorkset(int i_setId, IDbExec * i_dbExec);
-
-        // save run options by inserting into run_option table
-        void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
+        /** insert new or update existing argument option. */
+        void setArgOpt(const string & i_key, const string & i_value) { argStore.args[i_key] = i_value; }
 
     private:
         RunOptions baseRunOpts;     // basic model run options
         ArgReader argStore;         // arguments as key-value string pairs with case-neutral search
 
-        // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValue.Age" argument
+        /** merge sub-value options for input  parameters : "SubFrom.Age" or "SubValues.Age" */
+        void mergeParamSubOpts(void);
+
+        // find existing or add new parameter sub-values options
+        ParamSubOpts & addParamSubOpts(const string & optKey, const char * i_prefixDot, size_t i_prefixLen);
+
+        // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValues.Age" argument
         void mergeParameterProfile(
             const string & i_profileName, const char * i_prefix, const IProfileOptionTable * i_profileOpt, const vector<ParamDicRow> & i_paramRs
         );

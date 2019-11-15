@@ -154,12 +154,12 @@ int SingleController::nextRun(void)
     // find next working set of input parameters
     // if this is a modeling task then next set from that task
     // else if no run completed then get set by id or name or as default set for the model
-    SetRunItem nowSetRun = createNewRun(taskRunId, isWaitTaskRun, dbExec);
-    runId = nowSetRun.runId;
+    auto [nSetId, nRunId, mStatus] = createNewRun(taskRunId, isWaitTaskRun, dbExec);
+    runId = nRunId;
 
-    ModelStatus mStatus = theModelRunState->updateStatus(nowSetRun.status);  // update model status: progress, wait, shutdown
+    mStatus = theModelRunState->updateStatus(mStatus);  // update model status: progress, wait, shutdown
 
-    if (RunState::isShutdownOrFinal(mStatus) || nowSetRun.isEmpty()) {
+    if (RunState::isShutdownOrFinal(mStatus) || nSetId <= 0 || nRunId <= 0) {
         return 0;   // all done: all sets from task or single run completed
     }
 

@@ -74,7 +74,7 @@ namespace openm
     public:
 
         /** value of integer type */
-        unsigned long long llVal;
+        long long llVal;
 
         /** value of unsigned integer type */
         unsigned long long ullVal;

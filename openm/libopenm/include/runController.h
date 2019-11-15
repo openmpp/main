@@ -100,22 +100,20 @@ namespace openm
         /** get number of sub-values, read and broadcast metadata. */
         virtual void init(void) = 0;
 
-        // input set id, result run id and status
-        struct SetRunItem
-        {
-            int setId;              // set id of input parameters
-            int runId;              // if >0 then run id
-            ModelStatus status;     // run status
+        /** create task run entry in database */
+        int createTaskRun(int i_taskId, IDbExec * i_dbExec);
 
-            SetRunItem(void) : setId(0), runId(0) { }
-            SetRunItem(int i_setId, int i_runId, ModelStatus i_status) : setId(i_setId), runId(i_runId), status(i_status) { }
-
-            // return true if set or run undefined
-            bool isEmpty(void) { return setId <= 0 || runId <= 0; }
-        };
+        /** find modeling task, if specified */
+        int findTask(IDbExec * i_dbExec);
 
         /** create new run, create input parameters and run options for input working sets */
-        SetRunItem createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec);
+        tuple<int, int, ModelStatus> createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec);
+
+        /** find source working set for input parameters */
+        int findWorkset(int i_setId, IDbExec * i_dbExec);
+
+        /** save run options by inserting into run_option table */
+        void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
 
         /** impelementation of model process shutdown if exiting without completion. */
         void doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec);
@@ -151,6 +149,19 @@ namespace openm
 
         /** write output tables aggregated values into database */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
+
+        // check sub-value id's and count: sub id must be zero in range [0, sub count -1] and count must be equal to parameter size
+        void checkParamSubCounts(int i_runId, int i_subCount, const ParamDicRow & i_paramRow, IDbExec * i_dbExec) const;
+
+        // make part of where clause to select sub_id's
+        const string makeWhereSubId(const MetaLoader::ParamSubOpts & i_subOpts) const;
+
+        // make part of select columns list to map source sub id's to run parameter sub_id's
+        const string mapSelectedSubId(const MetaLoader::ParamSubOpts & i_subOpts) const;
+
+        // return parameter sub-value options by parameter id
+        const MetaLoader::ParamSubOpts subOptsById(const ParamDicRow & i_paramRow, int i_subCount, int i_defaultSubId) const;
+
 
     private:
         RunController(const RunController & i_runCtrl) = delete;

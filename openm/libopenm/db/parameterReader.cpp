@@ -88,22 +88,7 @@ ParameterReader::ParameterReader(
     paramDims = i_metaStore->paramDims->byModelIdParamId(mId, paramId);
     if (dimCount < 0 || dimCount != (int)paramDims.size()) throw DbException("invalid parameter rank or dimensions not found for parameter: %s", i_name);
 
-    const TypeDicRow * paramTypeRow = i_metaStore->typeDic->byKey(mId, paramRow->typeId);
-    if (paramTypeRow == nullptr) throw DbException("type not found for parameter: %s", i_name);
-
-    // get dimensions type and size, calculate total size
-    totalSize = 1;
-    for (const ParamDimsRow & dim : paramDims) {
-
-        const TypeDicRow * typeRow = i_metaStore->typeDic->byKey(mId, dim.typeId);
-        if (typeRow == nullptr) throw DbException("type not found for dimension %s of parameter: %s", dim.name.c_str(), i_name);
-
-        int dimSize = (int)i_metaStore->typeEnumLst->byModelIdTypeId(mId, dim.typeId).size();
-
-        if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
-    }
-
-    if (totalSize <= 0) throw DbException("invalid size of the parameter: %s", i_name);
+    totalSize = i_metaStore->parameterSize(*paramRow);  // parameter size: product of dimensions size
 }
 
 // read input parameter values

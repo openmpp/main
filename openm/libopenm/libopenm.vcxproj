@@ -156,11 +156,11 @@
     <ClInclude Include="common\log.h" />
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />
-    <ClInclude Include="db\dbValue.h" />
     <ClInclude Include="include\dbExec.h" />
     <ClInclude Include="include\dbMetaTable.h" />
     <ClInclude Include="include\dbOutputTable.h" />
     <ClInclude Include="include\dbParameter.h" />
+    <ClInclude Include="include\dbValue.h" />
     <ClInclude Include="include\helper.h" />
     <ClInclude Include="include\md5.h" />
     <ClInclude Include="include\metaHolder.h" />
@@ -239,6 +239,7 @@
     <ClCompile Include="db\worksetTxtTable.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\childController.cpp" />
+    <ClCompile Include="model\metaHolder.cpp" />
     <ClCompile Include="model\metaLoader.cpp" />
     <ClCompile Include="model\modelHelper.cpp" />
     <ClCompile Include="model\restartController.cpp" />
@@ -246,6 +247,7 @@
     <ClCompile Include="model\modelRunState.cpp" />
     <ClCompile Include="model\rootController.cpp" />
     <ClCompile Include="model\runController.cpp" />
+    <ClCompile Include="model\runControllerNewRun.cpp" />
     <ClCompile Include="model\singleController.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />

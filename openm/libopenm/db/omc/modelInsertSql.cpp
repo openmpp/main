@@ -931,16 +931,16 @@ void ModelInsertSql::createWorksetMeta(
         // validate field values
         if (row.paramId < 0) throw DbException(LT("invalid (negative) workset parameter id: %d"), row.paramId);
 
-        // INSERT INTO workset_parameter (set_id, parameter_hid, sub_count)
+        // INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id)
         // SELECT 
-        //   W.set_id, P.parameter_hid, 1
+        //   W.set_id, P.parameter_hid, 1, 0
         // FROM workset_lst W
         // INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = 1)
         // WHERE W.set_id = 1234;
         i_dbExec->update(
-            "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count)" \
+            "INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id)" \
             " SELECT" \
-            " W.set_id, P.parameter_hid, 1" \
+            " W.set_id, P.parameter_hid, 1, 0" \
             " FROM workset_lst W" \
             " INNER JOIN model_parameter_dic P ON (P.model_id = W.model_id AND P.model_parameter_id = " + to_string(row.paramId) + ")"
             " WHERE W.set_id = " + setIdStr);

@@ -51,6 +51,15 @@ namespace openm
 
         /** create empty model metadata holder */
         MetaHolder(void) : modelRow(nullptr) { }
+        
+        /** return type enums size: number of enums for that type or zero if no enumms found (most of built-in types) */
+        size_t typeEnumsSize(int i_modelId, int i_typeId) const;
+
+        /** return input parameter size: total number of values in the parameter as product of all of dimensions size */
+        size_t parameterSize(const ParamDicRow & paramRow) const;
+
+        /** return accumulator size: total number of accumulator values as product of dimensions size, including total item */
+        size_t accumulatorSize(const TableDicRow & i_tableRow) const;
     };
 }
 

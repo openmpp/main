@@ -161,12 +161,10 @@ OutputTableWriter::OutputTableWriter(
     // calculate total number of values for each accumulator
     // for each dimension collect all enum id's
     // include "total" enum id if total enabled for that output table dimension
-    totalSize = 1;
     for (const TableDimsRow & dim : tableDims) {
 
         size_t nSize = dim.dimSize;
         if (nSize <= 0) throw DbException("invalid size of dimension %s for table: %s", dim.name.c_str(), i_name);
-        totalSize *= nSize;
 
         // collect enum id's for that dimension
         vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(modelId, dim.typeId);
@@ -183,7 +181,8 @@ OutputTableWriter::OutputTableWriter(
 
         dimEnumIds.push_back(std::move(idArr));     // store enum id's for that dimension
     }
-    if (totalSize <= 0) throw DbException("invalid size of the table: %s", i_name);
+
+    totalSize = i_metaStore->accumulatorSize(*tableRow);    // total number of accumulator values as product of dimensions size, including total item
 }
 
 // calculate output table size: total number of values for each accumulator
