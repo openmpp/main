@@ -570,11 +570,15 @@ const string RunController::makeWhereSubId(const MetaLoader::ParamSubOpts & i_su
         return "sub_id BETWEEN " + to_string(i_subOpts.subIds[0]) + " AND " + to_string(i_subOpts.subIds[i_subOpts.subIds.size() - 1]);
 
     case KindSubIds::list:
-        string flt = "sub_id IN (";
-        for (size_t k = 0; k < i_subOpts.subIds.size(); k++) {
-            flt += ((k > 0) ? ", " : "") + to_string(i_subOpts.subIds[k]);
+        {
+            string flt = "sub_id IN (";
+            for (size_t k = 0; k < i_subOpts.subIds.size(); k++) {
+                flt += ((k > 0) ? ", " : "") + to_string(i_subOpts.subIds[k]);
+            }
+            return flt += ")";
         }
-        return flt += ")";
+
+    default: break;     // only to suppress compiler warning
     }
     return "";  // by default use all sub id's from source
 }
@@ -591,11 +595,15 @@ const string RunController::mapSelectedSubId(const MetaLoader::ParamSubOpts & i_
         return "sub_id - " + to_string(i_subOpts.subIds[0]);
 
     case KindSubIds::list:
-        string sql = "CASE";
-        for (size_t k = 0; k < i_subOpts.subIds.size(); k++) {
-            sql += " WHEN sub_id = " + to_string(i_subOpts.subIds[k]) + " THEN " + to_string(k);
+        {
+            string sql = "CASE";
+            for (size_t k = 0; k < i_subOpts.subIds.size(); k++) {
+                sql += " WHEN sub_id = " + to_string(i_subOpts.subIds[k]) + " THEN " + to_string(k);
+            }
+            return sql += " END";
         }
-        return sql += " END";
+
+    default: break;     // only to suppress compiler warning
     }
     return "sub_id";    // default result is no mapping: return sub_id as is
 }
