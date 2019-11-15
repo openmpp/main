@@ -166,12 +166,12 @@ run:
 		-OpenM.TaskRunName "First Task Run" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
-		-OpenM.SubValues 2 -SubValue.salaryFull csv -OpenM.ParamDir ./csv \
+		-OpenM.SubValues 2 -SubFrom.salaryFull csv -OpenM.ParamDir ./csv \
 		-OpenM.RunName "Parameter sub-values 2 from csv" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-SubValue.baseSalary db -SubValue.salaryFull db -SubValue.filePath db -SubValue.isOldAge db \
+		-SubFrom.baseSalary db -SubFrom.salaryFull db -SubFrom.filePath db -SubFrom.isOldAge db \
 		-OpenM.RunName "Parameter sub-values 4" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
