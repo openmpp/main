@@ -14,7 +14,7 @@ Oms web-service process this template as:
 Result of template processing is a command line to run model_mpi executable.
 
 Example of result:
-mpirun -n 16 -wdir models/bin -x key=value ../bin/model_mpi -OpenM.LogToFile true
+mpirun -n 16 --bind-to none -wdir models/bin -x key=value ../bin/model_mpi -OpenM.LogToFile true
 
 Arguments of template:
 struct {
