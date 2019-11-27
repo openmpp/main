@@ -97,7 +97,7 @@ int ChildController::broadcastMetaData(void)
     broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
     broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
     broadcastMetaTable<IGroupLstTable>(MsgTag::groupLst, metaStore->groupLst);
-    broadcastMetaTable<IGroupPcTable>(MsgTag::groupLst, metaStore->groupPc);
+    broadcastMetaTable<IGroupPcTable>(MsgTag::groupPc, metaStore->groupPc);
 
     // find model by name digest
     metaStore->modelRow = metaStore->modelTable->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
