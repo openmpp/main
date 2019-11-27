@@ -5,3 +5,9 @@ sub_id,dim0,param_value
 1,L,Full
 1,M,Full
 1,H,Full
+2,L,Full
+2,M,Part
+2,H,Part
+3,L,Part
+3,M,Full
+3,H,Full
