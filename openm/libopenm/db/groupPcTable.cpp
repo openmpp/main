@@ -28,6 +28,9 @@ namespace openm
         // get list of rows by model id
         vector<GroupPcRow> byModelId(int i_modelId) const override;
 
+        // get list of parameter id's or table id's for the group: list of bottom level group members.
+        vector<int> groupLeafs(int i_modelId, int i_groupId) const override;
+
     private:
         IRowBaseVec rowVec;     // table rows
 
@@ -127,4 +130,48 @@ vector<GroupPcRow> GroupPcTable::byModelId(int i_modelId) const
     return findAll(
         [i_modelId](const GroupPcRow & i_row) -> bool { return i_row.modelId == i_modelId; }
     );
+}
+
+// get list of parameter id's or table id's for the group: list of bottom level group members.
+vector<int> GroupPcTable::groupLeafs(int i_modelId, int i_groupId) const
+{
+    unordered_map<int, bool> groups;    // group id and flag to mark already processed groups
+    set<int> leafIds;                   // leaf parameter id's or table id's
+
+    // starting from source group process all child groups and add leafs id into result
+    groups[i_groupId] = false;
+    bool isAllDone = false;
+
+    while (!isAllDone) {
+
+        // find first new group: group which is not yet processed
+        isAllDone = true;
+        auto grpIt = groups.begin();
+
+        for (; grpIt != groups.end(); ++grpIt) {
+            isAllDone &= grpIt->second;
+            if (!grpIt->second) break;  // that group is not processed yet
+        }
+        if (isAllDone) break;       // all groups already processed
+
+        grpIt->second = true;       // mark current group as completed
+
+        // add all child groups of current group into group list, add all leafs into leafs set
+        for (auto it = rowVec.cbegin(); it != rowVec.cend(); ++it) {
+            GroupPcRow * grp = dynamic_cast<GroupPcRow *>(it->get());
+
+            if (grp->modelId != i_modelId || grp->groupId != grpIt->first) continue;    // not a child of current group
+
+            // if this is a leaf then add leaf id into results
+            if (grp->leafId >= 0) {
+                leafIds.insert(grp->leafId);
+            }
+            // if this is a child group add it to groups list if not already there
+            if (grp->childGroupId >= 0) {
+                if (groups.find(grp->childGroupId) == groups.end()) groups.insert({ {grp->childGroupId, false} });
+            }
+        }
+    }
+
+    return vector<int>(leafIds.cbegin(), leafIds.cend());
 }

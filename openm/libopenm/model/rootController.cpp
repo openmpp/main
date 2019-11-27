@@ -168,6 +168,8 @@ void RootController::broadcastMetaData(void)
     broadcastMetaTable<ITableDimsTable>(MsgTag::tableDims, metaStore->tableDims);
     broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
     broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
+    broadcastMetaTable<IGroupLstTable>(MsgTag::groupLst, metaStore->groupLst);
+    broadcastMetaTable<IGroupPcTable>(MsgTag::groupPc, metaStore->groupPc);
 }
 
 // broadcast meta table db rows

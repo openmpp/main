@@ -25,8 +25,14 @@ namespace openm
         /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: "-SubFrom.Age csv" */
         static const char * subFromPrefix;
 
-        /** options started with "SubValues." used specify id's of input parameter sub-values, ex: "-SubValues.Age [1,4]" */
+        /** options started with "SubValues." used specify sub-values of input parameter, ex: "-SubValues.Age [1,4]" */
         static const char * subValuesPrefix;
+
+        /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: "-SubGroupFrom.Geo csv" */
+        static const char * subGroupFromPrefix;
+
+        /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: "-SubGroupValues.Geo [1,4]" */
+        static const char * subGroupValuesPrefix;
 
         /** number of sub-values */
         static const char * subValueCount;
@@ -246,11 +252,14 @@ namespace openm
         RunOptions baseRunOpts;     // basic model run options
         ArgReader argStore;         // arguments as key-value string pairs with case-neutral search
 
-        /** merge sub-value options for input  parameters : "SubFrom.Age" or "SubValues.Age" */
-        void mergeParamSubOpts(void);
+        /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo" */
+        void parseParamSubOpts(void);
 
         // find existing or add new parameter sub-values options
-        ParamSubOpts & addParamSubOpts(const string & optKey, const char * i_prefixDot, size_t i_prefixLen);
+        ParamSubOpts & addParamSubOpts(const string & i_paramName);
+
+        // return name of parameters by model group name
+        const vector<string> expandParamGroup(int i_modelId, const string & i_groupName) const;
 
         // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValues.Age" argument
         void mergeParameterProfile(

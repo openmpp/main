@@ -707,6 +707,9 @@ namespace openm
         /** get list of rows by model id. */
         virtual vector<GroupPcRow> byModelId(int i_modelId) const = 0;
 
+        /** get list of parameter id's or table id's for the group: list of bottom level group members. */
+        virtual vector<int> groupLeafs(int i_modelId, int i_groupId) const = 0;
+
         /** create new table rows by swap with supplied vector of rows. */
         static IGroupPcTable * create(IRowBaseVec & io_rowVec);
 

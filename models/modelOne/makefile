@@ -174,6 +174,11 @@ run:
 		-SubFrom.baseSalary db -SubFrom.salaryFull db -SubFrom.filePath db -SubFrom.isOldAge db \
 		-OpenM.RunName "Parameter sub-values 4" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.SubValues 2 \
+		-SubGroupFrom.age_sex_parameters csv -SubGroupValues.age_sex_parameters 2,3 -OpenM.ParamDir ../csv -SubFrom.salaryFull db \
+		-OpenM.RunName "Parameter group sub-values 2 from csv" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:

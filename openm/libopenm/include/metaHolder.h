@@ -49,6 +49,12 @@ namespace openm
         /** table_expr table rows */
         unique_ptr<ITableExprTable> tableExpr;
 
+        /** group_lst table rows */
+        unique_ptr<IGroupLstTable> groupLst;
+
+        /** group_pc table rows */
+        unique_ptr<IGroupPcTable> groupPc;
+
         /** create empty model metadata holder */
         MetaHolder(void) : modelRow(nullptr) { }
         
