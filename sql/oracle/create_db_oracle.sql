@@ -420,6 +420,7 @@ CREATE TABLE group_lst
   group_name   VARCHAR(255) NOT NULL, -- group name
   is_hidden    SMALLINT     NOT NULL, -- if non-zero then group is hidden
   PRIMARY KEY (model_id, group_id),
+  CONSTRAINT group_lst_un UNIQUE (model_id, group_name),
   CONSTRAINT group_lst_mk 
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
