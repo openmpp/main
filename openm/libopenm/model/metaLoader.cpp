@@ -15,6 +15,9 @@ namespace openm
     /** short name for ini file name: -ini fileName.ini */
     const char * RunShortKey::iniFile = "ini";
 
+    /** number of sub-values */
+    const char * RunOptionsKey::subValueCount = "OpenM.SubValues";
+
     /** options started with "Parameter." treated as value of model scalar input parameter, ex: "-Parameter.Age 42" */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
@@ -29,9 +32,6 @@ namespace openm
 
     /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: "-SubGroupValues.Geo [1,4]" */
     const char * RunOptionsKey::subGroupValuesPrefix = "SubGroupValues";
-
-    /** number of sub-values */
-    const char * RunOptionsKey::subValueCount = "OpenM.SubValues";
 
     /** number of modeling threads */
     const char * RunOptionsKey::threadCount = "OpenM.Threads";

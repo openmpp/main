@@ -19,6 +19,9 @@ namespace openm
     /** keys for model run options */
     struct RunOptionsKey
     {
+        /** number of sub-values */
+        static const char * subValueCount;
+
         /** options started with "Parameter." treated as value of model scalar input parameter, ex: "-Parameter.Age 42" */
         static const char * parameterPrefix;
 
@@ -33,9 +36,6 @@ namespace openm
 
         /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: "-SubGroupValues.Geo [1,4]" */
         static const char * subGroupValuesPrefix;
-
-        /** number of sub-values */
-        static const char * subValueCount;
 
         /** number of modeling threads */
         static const char * threadCount;
