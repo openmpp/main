@@ -267,7 +267,7 @@ bool TypeEnumTxtLangRow::uniqueLangKeyEqual(const TypeEnumTxtLangRow & i_left, c
 // parameter_dic join model_parameter_dic row less comparator by unique key: model id, model parameter id.
 bool ParamDicRow::isKeyLess(const ParamDicRow & i_left, const ParamDicRow & i_right)
 {
-    return(i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
+    return (i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
 }
 
 // parameter_dic join model_parameter_dic row equal comparator by unique key: model id, model parameter id.
@@ -284,6 +284,23 @@ vector<ParamDicRow>::const_iterator ParamDicRow::byKey(int i_modelId, int i_para
         i_rowVec.cend(),
         [i_modelId, i_paramId](const ParamDicRow & i_row) -> bool { return i_row.modelId == i_modelId && i_row.paramId == i_paramId; }
     );
+}
+
+/** less comparator by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name. */
+bool ParamImportRow::isKeyLess(const ParamImportRow & i_left, const ParamImportRow & i_right)
+{
+    return (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId) ||
+        (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.isFromParam < i_right.isFromParam) ||
+        (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.isFromParam == i_right.isFromParam && i_left.fromName < i_right.fromName) ||
+        (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.isFromParam == i_right.isFromParam && i_left.fromName == i_right.fromName && i_left.fromModel < i_right.fromModel);
+}
+
+/** equal comparator by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name. */
+bool ParamImportRow::isKeyEqual(const ParamImportRow & i_left, const ParamImportRow & i_right)
+{
+    return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && 
+        i_left.isFromParam == i_right.isFromParam && i_left.fromName == i_right.fromName && i_left.fromModel == i_right.fromModel;
 }
 
 // parameter_dic_txt join to model_parameter_dic row less comparator by unique key: model id, model parameter id, language id.

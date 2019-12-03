@@ -377,5 +377,8 @@
     <ClCompile Include="model\metaHolder.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="db\paramImportTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

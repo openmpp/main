@@ -50,6 +50,9 @@ namespace openm
         /** insert row into parameter_dic and model_parameter_dic tables. */
         static void insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_typeIdMap, ParamDicRow & io_row);
 
+        /** insert row into model_parameter_import table. */
+        static void insertParamImport(IDbExec * i_dbExec, ParamImportRow & io_row);
+
         /** insert row into parameter_dic_txt table. */
         static void insertParamText(
             IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<string, int> & i_langMap, ParamDicTxtLangRow & io_row

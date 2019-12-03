@@ -197,6 +197,7 @@
     <ClCompile Include="db\paramDimsTxtTable.cpp" />
     <ClCompile Include="db\parameterReader.cpp" />
     <ClCompile Include="db\parameterWriter.cpp" />
+    <ClCompile Include="db\paramImportTable.cpp" />
     <ClCompile Include="db\profileLstTable.cpp" />
     <ClCompile Include="db\profileOptionTable.cpp" />
     <ClCompile Include="db\runLstTable.cpp" />

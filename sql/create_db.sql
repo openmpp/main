@@ -203,6 +203,22 @@ CREATE TABLE model_parameter_dic
 );
 
 --
+-- Model parameters import: link parameter to upstream model output table or parameter
+--
+CREATE TABLE model_parameter_import
+(
+  model_id           INT          NOT NULL, -- master key
+  model_parameter_id INT          NOT NULL, -- master key
+  is_from_parameter  SMALLINT     NOT NULL, -- if non-zero then import from parameter else from output table
+  from_name          VARCHAR(255) NOT NULL, -- name of source output table or parameter
+  from_model_name    VARCHAR(255) NOT NULL, -- source model name
+  is_sample_dim      SMALLINT     NOT NULL, -- not used by openM++
+  PRIMARY KEY (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name),
+  CONSTRAINT model_parameter_import_mk
+             FOREIGN KEY (model_id, model_parameter_id) REFERENCES model_parameter_dic (model_id, model_parameter_id)
+);
+
+--
 -- Parameter text info
 --
 CREATE TABLE parameter_dic_txt
@@ -279,6 +295,7 @@ CREATE TABLE model_table_dic
   table_hid      INT      NOT NULL, -- master key
   is_user        SMALLINT NOT NULL, -- if non-zero then "user" table
   expr_dim_pos   INT      NOT NULL, -- table expressions dimension (analysis dimension) position
+  is_hidden      SMALLINT NOT NULL, -- if non-zero then output table is hidden
   PRIMARY KEY (model_id, model_table_id),
   CONSTRAINT model_table_dic_un UNIQUE (model_id, table_hid),
   CONSTRAINT model_table_dic_mk 
@@ -497,7 +514,7 @@ CREATE TABLE run_lst
   create_dt     VARCHAR(32)  NOT NULL, -- start date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
-  run_digest    VARCHAR(32)  NULL,     -- digest of the run
+  run_digest    VARCHAR(32),           -- if not NULL then digest of the run
   run_stamp     VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
@@ -536,7 +553,7 @@ CREATE TABLE run_option
 );
 
 --
--- Parameter run value list
+-- Run parameters list
 -- "base run id" is run id where parameter value must be selected from
 --
 CREATE TABLE run_parameter
@@ -545,7 +562,7 @@ CREATE TABLE run_parameter
   parameter_hid INT         NOT NULL, -- parameter unique id
   base_run_id   INT         NOT NULL, -- source run id to select parameter value
   sub_count     INT         NOT NULL, -- sub-values count
-  run_digest    VARCHAR(32) NULL,     -- digest of parameter value for the run
+  run_digest    VARCHAR(32),          -- if not NULL then digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
   CONSTRAINT run_parameter_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
@@ -556,11 +573,11 @@ CREATE TABLE run_parameter
 );
 
 --
--- Parameter run text: parameter run value notes
+-- Run parameters text: parameter run value notes
 --
 CREATE TABLE run_parameter_txt
 (
-  run_id        INT             NOT NULL, -- model run id
+  run_id        INT             NOT NULL, -- master key
   parameter_hid INT             NOT NULL, -- master key
   lang_id       INT             NOT NULL, -- language id
   note          VARCHAR(32000),           -- parameter value notes
@@ -574,6 +591,24 @@ CREATE TABLE run_parameter_txt
 );
 
 --
+-- Run parameters import: link parameter to upstream model output table or parameter
+--
+CREATE TABLE run_parameter_import
+(
+  run_id             INT          NOT NULL, -- master key
+  parameter_hid      INT          NOT NULL, -- master key
+  is_from_parameter  SMALLINT     NOT NULL, -- if non-zero then import from parameter else from output table
+  from_name          VARCHAR(255) NOT NULL, -- name of source output table or parameter
+  from_model_name    VARCHAR(255) NOT NULL, -- source model name
+  from_model_digest  VARCHAR(32)  NOT NULL, -- source model digest
+  from_run_id        INT          NOT NULL, -- source run id
+  from_run_digest    VARCHAR(32)  NOT NULL, -- source run digest
+  PRIMARY KEY (run_id, parameter_hid),
+  CONSTRAINT run_parameter_import_mk
+             FOREIGN KEY (run_id, parameter_hid) REFERENCES run_parameter (run_id, parameter_hid)
+);
+
+--
 -- Output table run value list
 -- "base run id" is run id where values of output table accumulators and expressions must be selected from
 --
@@ -582,7 +617,7 @@ CREATE TABLE run_table
   run_id      INT         NOT NULL, -- master key
   table_hid   INT         NOT NULL, -- output table unique id
   base_run_id INT         NOT NULL, -- source run id to select output table value
-  run_digest  VARCHAR(32) NULL,     -- digest of table value for the run
+  run_digest  VARCHAR(32),          -- if not NULL then digest of table value for the run
   PRIMARY KEY (run_id, table_hid),
   CONSTRAINT run_table_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),

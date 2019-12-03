@@ -88,6 +88,7 @@ LIBOPENM_CPPLIST = \
   db/paramDicTxtTable.cpp \
   db/paramDimsTable.cpp \
   db/paramDimsTxtTable.cpp \
+  db/paramImportTable.cpp \
   db/parameterReader.cpp \
   db/parameterWriter.cpp \
   db/profileLstTable.cpp \
@@ -165,6 +166,7 @@ LIB_OMC_CPPLIST = \
   db/paramDicTxtTable.cpp \
   db/paramDimsTable.cpp \
   db/paramDimsTxtTable.cpp \
+  db/paramImportTable.cpp \
   db/parameterReader.cpp \
   db/parameterWriter.cpp \
   db/profileLstTable.cpp \

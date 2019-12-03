@@ -148,6 +148,9 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     for (ParamDicRow & row : io_metaRows.paramDic) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
+    for (ParamImportRow & row : io_metaRows.paramImport) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
     for (ParamDicTxtLangRow & row : io_metaRows.paramTxt) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
@@ -241,6 +244,11 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     // model input parameter rows: parameter_dic and model_parameter_dic
     for (ParamDicRow & row : io_metaRows.paramDic) {
         ModelInsertSql::insertParamDic(i_dbExec, typeIdMap, row);
+    }
+
+    // model parameter import rows: model_parameter_import
+    for (ParamImportRow & row : io_metaRows.paramImport) {
+        ModelInsertSql::insertParamImport(i_dbExec, row);
     }
 
     // parameter text rows: parameter_dic_txt

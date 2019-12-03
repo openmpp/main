@@ -42,6 +42,9 @@ namespace openm
         /** parameter_dic table rows */
         vector<ParamDicRow> paramDic;
 
+        /** model_parameter_import table rows */
+        vector<ParamImportRow> paramImport;
+
         /** parameter_dic_txt table rows and language code */
         vector<ParamDicTxtLangRow> paramTxt;
 

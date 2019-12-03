@@ -284,5 +284,8 @@
     <ClCompile Include="db\omc\modelExpressionSql.cpp">
       <Filter>Source Files\db\omc</Filter>
     </ClCompile>
+    <ClCompile Include="db\paramImportTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

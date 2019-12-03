@@ -368,6 +368,31 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
+    /** model_parameter_import table public interface. */
+    struct IParamImportTable : public IMetaLoadedTable<ParamImportRow>
+    {
+        virtual ~IParamImportTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static IParamImportTable * create(IDbExec * i_dbExec, int i_modelId = 0);
+
+        /** binary search row by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name, return NULL if not found. */
+        virtual const ParamImportRow * byKey(int i_modelId, int i_paramId, bool i_isFromParam, const string & i_fromName, const string & i_fromModel) const = 0;
+
+        /** get list of rows by model id. */
+        virtual vector<ParamImportRow> byModelId(int i_modelId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IParamImportTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
     /** parameter_dic_txt table public interface. */
     struct IParamDicTxtTable : public IMetaLoadedTable<ParamDicTxtRow>
     {

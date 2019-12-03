@@ -143,6 +143,21 @@ INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 5, 9, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 6, 10, 0);
 
+INSERT INTO model_parameter_import
+  (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
+VALUES
+  (1, 0, 1, 'ageSex', 'modelOne', 0);
+
+INSERT INTO model_parameter_import
+  (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
+VALUES
+  (1, 1, 1, 'salaryAge', 'modelOne', 0);
+
+INSERT INTO model_parameter_import
+  (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
+VALUES
+  (1, 2, 1, 'StartingSeed', 'modelOne', 0);
+
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, '(FR) Age by Sex', NULL);
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 0, 'Salary by Age', 'Salary by Age note');
@@ -179,7 +194,7 @@ INSERT INTO table_dic
 VALUES 
   (2, 'salarySex', '_20128171604590141', 2, 1, 'salarySex_v_2012820', 'salarySex_a_2012820', 'salarySex_d_2012820');
 
-INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (1, 0, 2, 0, 1);
+INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 0, 2, 0, 1, 0);
   
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)

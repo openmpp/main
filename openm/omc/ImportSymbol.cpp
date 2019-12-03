@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "ImportSymbol.h"
+#include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
 
@@ -38,16 +39,16 @@ void ImportSymbol::post_parse(int pass)
 
 void ImportSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
 {
-    {
-        // For testing, dump each import to omc log
-        ostringstream ss;
-        ss << "import(test): "
-            << pp_target_param->name << ","
-            << upstream_model << ","
-            << upstream_table << ","
-            << (sample_dimension_opt ? 1 : 0);
-        theLog->logMsg(ss.str().c_str());
-    }
+    using namespace openm;
+    ParamImportRow importRow;
+
+    importRow.paramId = pp_target_param->pp_parameter_id;
+    importRow.isFromParam = false;    // import of upstream parameters not supporetd by language yet
+    importRow.fromName = upstream_table;
+    importRow.fromModel = upstream_model;
+    importRow.isSampleDim = sample_dimension_opt;
+
+    metaRows.paramImport.push_back(importRow);
 }
 
 int ImportSymbol::counter = 0;

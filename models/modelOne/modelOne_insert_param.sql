@@ -28,8 +28,8 @@ INSERT INTO workset_lst
 VALUES 
   (2, NULL, 1, 'Default', 1, '2013-05-29 23:55:07.123');
 
-INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 0, 'Model One default set of parameters', NULL);
-INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (2, 1, '(FR) Model One default set of parameters', NULL);
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (2, 0, 'Model One default set of parameters', NULL);
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (2, 1, '(FR) Model One default set of parameters', NULL);
 
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 4, 1, 0);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 5, 1, 0);
@@ -57,7 +57,7 @@ INSERT INTO workset_lst
 VALUES 
   (3, NULL, 1, 'modelOne_set', 0, '2013-05-30 23:55:07.123');
 
-INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (3, 0, 'modelOne modified set of parameters', NULL);
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (3, 0, 'modelOne modified set of parameters', NULL);
 
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (3, 4, 1, 0);
 
@@ -72,8 +72,8 @@ INSERT INTO workset_lst
 VALUES 
   (4, NULL, 1, 'modelOne_other', 1, '2013-05-29 23:55:07.123');
 
-INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (4, 0, 'Model One other set of parameters', NULL);
-INSERT INTO workset_txt(set_id, lang_id, descr, note) VALUES (4, 1, '(FR) Model One other set of parameters', NULL);
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (4, 0, 'Model One other set of parameters', NULL);
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (4, 1, '(FR) Model One other set of parameters', NULL);
 
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 4, 1, 0);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 5, 1, 0);

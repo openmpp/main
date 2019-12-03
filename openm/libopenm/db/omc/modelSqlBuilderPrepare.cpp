@@ -63,6 +63,7 @@ void ModelSqlBuilder::sortModelRows(MetaModelHolder & io_metaRows)
     sort(io_metaRows.typeEnum.begin(), io_metaRows.typeEnum.end(), TypeEnumLstRow::isKeyLess);
     sort(io_metaRows.typeEnumTxt.begin(), io_metaRows.typeEnumTxt.end(), TypeEnumTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.paramDic.begin(), io_metaRows.paramDic.end(), ParamDicRow::isKeyLess);
+    sort(io_metaRows.paramImport.begin(), io_metaRows.paramImport.end(), ParamImportRow::isKeyLess);
     sort(io_metaRows.paramTxt.begin(), io_metaRows.paramTxt.end(), ParamDicTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.paramDims.begin(), io_metaRows.paramDims.end(), ParamDimsRow::isKeyLess);
     sort(io_metaRows.paramDimsTxt.begin(), io_metaRows.paramDimsTxt.end(), ParamDimsTxtLangRow::uniqueLangKeyLess);
@@ -132,6 +133,11 @@ void ModelSqlBuilder::trimModelRows(MetaModelHolder & io_metaRows)
     for (auto & row : io_metaRows.paramDic) {
         row.paramName = trim(row.paramName, loc);
         row.digest = trim(row.digest, loc);
+    }
+
+    for (auto & row : io_metaRows.paramImport) {
+        row.fromName = trim(row.fromName, loc);
+        row.fromModel = trim(row.fromModel, loc);
     }
 
     for (auto & row : io_metaRows.paramTxt) {
@@ -405,6 +411,28 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
                 i_row.modelId == rowIt->modelId && i_row.paramId != rowIt->paramId && i_row.paramName == rowIt->paramName;
         }
         )) throw DbException(LT("in parameter_dic not unique model id: %d and parameter name: %s"), rowIt->modelId, rowIt->paramName.c_str());
+    }
+
+    // model_parameter_import table
+    // unique: model id, parameter id, is_from_parameter, from_name, from_model_name
+    // master key: model id, parameter id;
+    for (vector<ParamImportRow>::const_iterator rowIt = io_metaRows.paramImport.cbegin(); rowIt != io_metaRows.paramImport.cend(); ++rowIt) {
+
+        if (rowIt->modelId != mId)
+            throw DbException(LT("in model_parameter_import invalid model id: %d, expected: %d in row with parameter id: %d"), rowIt->modelId, mId, rowIt->paramId);
+
+        ParamDicRow mkRow(rowIt->modelId, rowIt->paramId);
+        if (!std::binary_search(
+            io_metaRows.paramDic.cbegin(),
+            io_metaRows.paramDic.cend(),
+            mkRow,
+            ParamDicRow::isKeyLess
+        )) throw DbException(LT("in model_parameter_import invalid model id: %d and parameter id: %d: not found in parameter_dic"), rowIt->modelId, rowIt->paramId);
+
+        vector<ParamImportRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.paramImport.cend() && ParamImportRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException(LT("in model_parameter_import not unique model id: %d and parameter id: %d"), rowIt->modelId, rowIt->paramId);
     }
 
     // parameter_dic_txt table
@@ -1086,8 +1114,8 @@ const string ModelSqlBuilder::makeTypeDigest(const TypeDicRow & i_typeRow, const
     // make type digest header as type name and kind of type
     MD5 md5;
 
-    md5.add("type_name,dic_id\n", strlen("type_name,dic_id\n"));
-    string sLine = i_typeRow.name + "," + to_string(i_typeRow.dicId) + "\n";
+    md5.add("type_name,dic_id,total_enum_id\n", strlen("type_name,dic_id,total_enum_id\n"));
+    string sLine = i_typeRow.name + "," + to_string(i_typeRow.dicId) + "," + to_string(i_typeRow.totalEnumId) + "\n";
     md5.add(sLine.c_str(), sLine.length());
 
     // add to digest list of all enum id, enum value
@@ -1172,7 +1200,7 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
     md5.add(sLine.c_str(), sLine.length());
 
     // add dimensions: id, name, dimension type digest
-    md5.add("dim_id,dim_name,type_digest\n", strlen("dim_id,dim_name,type_digest\n"));
+    md5.add("dim_id,dim_name,dim_size,type_digest\n", strlen("dim_id,dim_name,dim_size,type_digest\n"));
 
     if (i_tableRow.rank > 0) {
 
@@ -1196,7 +1224,7 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
                 throw DbException(LT("in table_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
 
             // add dimension to digest: id, name, type digest
-            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + typeRowIt->digest + "\n";
+            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + to_string(rowIt->dimSize) + "," + typeRowIt->digest + "\n";
             md5.add(sLine.c_str(), sLine.length());
         }
     }

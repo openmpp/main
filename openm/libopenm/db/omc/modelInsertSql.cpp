@@ -344,6 +344,35 @@ void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_
         ")");
 }
 
+// insert row into model_parameter_import table.
+void ModelInsertSql::insertParamImport(IDbExec * i_dbExec, ParamImportRow & io_row)
+{
+    // validate field values
+    MessageEllipter me;
+    if (io_row.paramId < 0) throw DbException(LT("invalid (negative) parameter id: %d"), io_row.paramId);
+
+    if (io_row.fromName.empty()) throw DbException(LT("invalid (empty) source name for parameter import, id: %d"), io_row.paramId);
+    if (io_row.fromName.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) source name: %s for parameter import, id: %d"), OM_NAME_DB_MAX, me.ellipt(io_row.fromName.c_str()), io_row.paramId);
+
+    if (io_row.fromModel.empty()) throw DbException(LT("invalid (empty) source model name for parameter import, id: %d"), io_row.paramId);
+    if (io_row.fromModel.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) source model name: %s for parameter import, id: %d"), OM_NAME_DB_MAX, me.ellipt(io_row.fromModel.c_str()), io_row.paramId);
+
+    // INSERT INTO model_parameter_import
+    //   (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
+    // VALUES
+    //   (1234, 1, 1, 'ageSex', 0)
+    i_dbExec->update(
+        "INSERT INTO model_parameter_import (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)" \
+        " VALUES (" +
+        to_string(io_row.modelId) + ", " +
+        to_string(io_row.paramId) + ", " +
+        (io_row.isFromParam ? " 1" : " 0") + ", " +
+        toQuoted(io_row.fromName) + ", " +
+        toQuoted(io_row.fromModel) + ", " +
+        (io_row.isSampleDim ? " 1" : " 0") +
+        ")");
+}
+
 // insert row into parameter_dic_txt table.
 void ModelInsertSql::insertParamText(
     IDbExec * i_dbExec, const ParamDicRow & i_paramRow, const map<string, int> & i_langMap, ParamDicTxtLangRow & io_row
@@ -480,14 +509,18 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
         toQuoted(io_row.dbAccAll) +
         ")");
 
-    // INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (1234, 8, 9876, 0, 1)
+    // INSERT INTO model_table_dic 
+    //   (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden)
+    // VALUES
+    //   (1234, 8, 9876, 0, 1, 0)
     i_dbExec->update(
-        "INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos) VALUES (" +
+        "INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (" +
         to_string(io_row.modelId) + ", " +
         to_string(io_row.tableId) + ", " +
         to_string(io_row.tableHid) + ", " +
-        (io_row.isUser ? "1, " : "0, ") + 
-        to_string(io_row.exprPos) +
+        (io_row.isUser ? "1" : "0") + ", " +
+        to_string(io_row.exprPos) + ", " +
+        (io_row.isHidden ? "1" : "0") +
         ")");
 }
 
@@ -515,7 +548,7 @@ void ModelInsertSql::insertTableText(
     // INSERT INTO table_dic_txt 
     //   (table_hid, lang_id, descr, note, expr_descr, expr_note) 
     // VALUES
-    //   (9876, 101, 'Salary by Sex', 'Salary by Sex note (EN)', '', '')
+    //   (9876, 101, 'Salary by Sex', 'Salary by Sex note (EN)', '', '', 0)
     i_dbExec->update(
         "INSERT INTO table_dic_txt (table_hid, lang_id, descr, note, expr_descr, expr_note) VALUES (" +
         to_string(i_tableRow.tableHid) + ", " +

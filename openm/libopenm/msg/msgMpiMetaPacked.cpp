@@ -252,6 +252,7 @@ namespace openm
         MpiPacked::pack(val->dbAccTable, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->dbAccAll, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->exprPos)>(val->exprPos, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
     }
 
     // table_dic: unpack MPI message into db row
@@ -272,6 +273,7 @@ namespace openm
         val->dbAccTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->dbAccAll = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->exprPos = MpiPacked::unpack<decltype(val->exprPos)>(i_packedSize, i_packedData, io_packPos);
+        val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
     }
 
     // table_dic: return byte size to pack db row into MPI message
@@ -291,7 +293,8 @@ namespace openm
             MpiPacked::packedSize(val->dbExprTable) +
             MpiPacked::packedSize(val->dbAccTable) +
             MpiPacked::packedSize(val->dbAccAll) +
-            MpiPacked::packedSize(typeid(val->exprPos));
+            MpiPacked::packedSize(typeid(val->exprPos)) +
+            MpiPacked::packedSize(typeid(val->isHidden));
     }
 
     // table_dims: pack db row into MPI message
