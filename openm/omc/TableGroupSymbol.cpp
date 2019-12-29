@@ -44,7 +44,7 @@ void TableGroupSymbol::post_parse(int pass)
 void TableGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
 {
     {
-        // For testing, dump each table group to omc log
+        // For testing, dump table group to omc log
         ostringstream ss;
         ss << "table group: "
             << name << ":\n";

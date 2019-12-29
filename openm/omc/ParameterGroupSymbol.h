@@ -33,4 +33,11 @@ public:
     void post_parse(int pass);
 
     void populate_metadata(openm::MetaModelHolder& metaRows);
+
+    /**
+     * Determine if group contains a scenario parameter
+     *
+     * @return true if group contains a scenario parameter, otherwise false
+     */
+    const bool contains_scenario_parameter();
 };
