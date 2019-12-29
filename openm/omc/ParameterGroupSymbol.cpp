@@ -27,3 +27,21 @@ void ParameterGroupSymbol::post_parse(int pass)
         break;
     }
 }
+
+void ParameterGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
+{
+    {
+        // For testing, dump each parameter group to omc log
+        ostringstream ss;
+        ss << "parameter group: "
+            << name << ":\n";
+        for (auto sym : pp_symbol_list) {
+            bool is_group = dynamic_cast<GroupSymbol*>(sym);
+            ss << "   "
+                << (is_group ? "group: " : "param: ")
+                << sym->name
+                << "\n";
+        }
+        theLog->logMsg(ss.str().c_str());
+    }
+}

@@ -69,7 +69,7 @@ list<Symbol *> GroupSymbol::expanded_list() const
 {
     list<Symbol *> result = pp_symbol_list;
 
-    // Protect from recursive stak overflow
+    // Protect from recursive stack overflow
     // by performing circularity check.
     // If circular, return an empty list.
     if (!is_circular()) {

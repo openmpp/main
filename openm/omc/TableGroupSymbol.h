@@ -31,4 +31,6 @@ public:
     }
 
     void post_parse(int pass);
+
+    void populate_metadata(openm::MetaModelHolder& metaRows);
 };

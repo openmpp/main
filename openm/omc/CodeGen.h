@@ -59,6 +59,7 @@ public:
     void do_entity_tables();
     void do_derived_tables();
     void do_imports();
+    void do_groups();
     void do_name_digest(void);
 
     /**

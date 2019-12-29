@@ -39,6 +39,8 @@ class DependencyGroupSymbol;
 class GlobalFuncSymbol;
 class AggregationSymbol;
 class ImportSymbol;
+class ParameterGroupSymbol;
+class TableGroupSymbol;
 
 namespace openm {
     struct MetaModelHolder;

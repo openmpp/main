@@ -28,6 +28,7 @@ void CodeGen::do_all()
 	do_entity_tables();
 	do_derived_tables();
     do_imports();
+    do_groups();
     do_table_interface();
 	do_agents();
 	do_entity_sets();
@@ -897,6 +898,23 @@ void CodeGen::do_imports()
 {
     for (auto imp : Symbol::pp_all_imports) {
         imp->populate_metadata(metaRows);
+    }
+}
+
+void CodeGen::do_groups()
+{
+    if (Symbol::pp_all_parameter_groups.size()) {
+        theLog->logMsg("Parameter groups:");
+        for (auto grp : Symbol::pp_all_parameter_groups) {
+            grp->populate_metadata(metaRows);
+        }
+    }
+
+    if (Symbol::pp_all_table_groups.size()) {
+        theLog->logMsg("Table groups:");
+        for (auto grp : Symbol::pp_all_table_groups) {
+            grp->populate_metadata(metaRows);
+        }
     }
 }
 

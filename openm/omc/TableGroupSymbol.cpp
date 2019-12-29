@@ -27,3 +27,21 @@ void TableGroupSymbol::post_parse(int pass)
         break;
     }
 }
+
+void TableGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
+{
+    {
+        // For testing, dump each table group to omc log
+        ostringstream ss;
+        ss << "table group: "
+            << name << ":\n";
+        for (auto sym : pp_symbol_list) {
+            bool is_group = dynamic_cast<GroupSymbol*>(sym);
+            ss << "   "
+                << (is_group ? "group: " : "table: ")
+                << sym->name
+                << "\n";
+        }
+        theLog->logMsg(ss.str().c_str());
+    }
+}
