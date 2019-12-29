@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "TableGroupSymbol.h"
+#include "TableSymbol.h"
 
 using namespace std;
 
@@ -17,6 +18,18 @@ void TableGroupSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignMembers:
+    {
+        // check that group members are allowed types
+        for (auto sym : pp_symbol_list) {
+            bool is_table = dynamic_cast<TableSymbol*>(sym);
+            bool is_table_group = dynamic_cast<TableGroupSymbol*>(sym);
+            if (!(is_table || is_table_group)) {
+                pp_error(LT("error : invalid member '") + sym->name + LT("' of table group '") + name + LT("'"));
+            }
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // add this to the complete list of table groups

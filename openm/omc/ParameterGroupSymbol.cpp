@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "ParameterGroupSymbol.h"
+#include "ParameterSymbol.h"
 
 using namespace std;
 
@@ -17,6 +18,18 @@ void ParameterGroupSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignMembers:
+    {
+        // check that group members are allowed types
+        for (auto sym : pp_symbol_list) {
+            bool is_parameter = dynamic_cast<ParameterSymbol*>(sym);
+            bool is_parameter_group = dynamic_cast<ParameterGroupSymbol*>(sym);
+            if (!(is_parameter || is_parameter_group)) {
+                pp_error(LT("error : invalid member '") + sym->name + LT("' of parameter group '") + name + LT("'"));
+            }
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // add this to the complete list of parameter groups
