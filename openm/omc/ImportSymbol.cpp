@@ -42,6 +42,12 @@ void ImportSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
     using namespace openm;
     ParamImportRow importRow;
 
+    if (pp_target_param->source != ParameterSymbol::scenario_parameter) {
+        // Do not publish import if the target parameter is not a scenario parameter
+        pp_warning(LT("warning : target parameter '") + pp_target_param->name + LT("' is not a scenario parameter, import suppressed."));
+        return;
+    }
+
     importRow.paramId = pp_target_param->pp_parameter_id;
     importRow.isFromParam = false;    // import of upstream parameters not supporetd by language yet
     importRow.fromName = upstream_table;
