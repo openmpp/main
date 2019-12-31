@@ -4,7 +4,7 @@
 --
 
 --
--- list of ids: values < 10 reserved for development and testing
+-- list of ids: values < 100 reserved for development and testing
 --   model id = 1 is modelOne
 --   set id = 2 is default set of input parameters for modelOne
 --   set id = 3, 4 modified working sets of input parameters
@@ -103,45 +103,45 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (4, 'ageSex', '_20128171604590131', 2, 14, 1, 0, 'ageSex_p_2012817', 'ageSex_w_2012817');
+  (44, 'ageSex', '_20128171604590131', 2, 14, 1, 0, 'ageSex_p_2012817', 'ageSex_w_2012817');
 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (5, 'salaryAge', '_20128171604590132', 2, 4, 0, 0, 'salaryAge_p_2012818', 'salaryAge_w_2012818');
+  (45, 'salaryAge', '_20128171604590132', 2, 4, 0, 0, 'salaryAge_p_2012818', 'salaryAge_w_2012818');
 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (6, 'StartingSeed', '_20128171604590133', 0, 4, 0, 0, 'StartingSeed_p_2012819', 'StartingSeed_w_2012819');
+  (46, 'StartingSeed', '_20128171604590133', 0, 4, 0, 0, 'StartingSeed_p_2012819', 'StartingSeed_w_2012819');
 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (7, 'salaryFull', '_20128171604590134', 1, 99, 0, 0, 'salaryFull_p_2012812', 'salaryFull_w_2012812');
+  (47, 'salaryFull', '_20128171604590134', 1, 99, 0, 0, 'salaryFull_p_2012812', 'salaryFull_w_2012812');
 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (8, 'baseSalary', '_20128171604590135', 0, 99, 0, 0, 'baseSalary_p_2012811', 'baseSalary_w_2012811');
+  (48, 'baseSalary', '_20128171604590135', 0, 99, 0, 0, 'baseSalary_p_2012811', 'baseSalary_w_2012811');
 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (9, 'filePath', '_20128171604590136', 0, 21, 0, 0, 'filePath_p_2012814', 'filePath_w_2012814');
+  (49, 'filePath', '_20128171604590136', 0, 21, 0, 0, 'filePath_p_2012814', 'filePath_w_2012814');
 
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
 VALUES
-  (10, 'isOldAge', '_20128171604590137', 1, 7, 0, 0, 'isOldAge_p_2012815', 'isOldAge_w_2012815');
+  (50, 'isOldAge', '_20128171604590137', 1, 7, 0, 0, 'isOldAge_p_2012815', 'isOldAge_w_2012815');
   
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 4, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 5, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 6, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 3, 7, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 4, 8, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 5, 9, 0);
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 6, 10, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 44, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 45, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 2, 46, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 3, 47, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 4, 48, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 5, 49, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 6, 50, 0);
 
 INSERT INTO model_parameter_import
   (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
@@ -158,31 +158,31 @@ INSERT INTO model_parameter_import
 VALUES
   (1, 2, 1, 'StartingSeed', 'modelOne', 0);
 
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 0, 'Age by Sex', 'Age by Sex note');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (4, 1, '(FR) Age by Sex', NULL);
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 0, 'Salary by Age', 'Salary by Age note');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (5, 1, '(FR) Salary by Age', '(FR) Salary by Age note');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (6, 1, 'Starting Seed', 'Random numbers generator starting seed value');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (7, 0, 'Full or part time by Salary level', NULL);
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (8, 0, 'Base salary level', NULL);
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (9, 0, 'File path string', NULL);
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (10, 0, 'Is Old Age', 'Is Old Age notes');
-INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (10, 1, '(FR) Is Old Age', '(FR) Is Old Age notes');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (44, 0, 'Age by Sex', 'Age by Sex note');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (44, 1, '(FR) Age by Sex', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (45, 0, 'Salary by Age', 'Salary by Age note');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (45, 1, '(FR) Salary by Age', '(FR) Salary by Age note');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (46, 1, 'Starting Seed', 'Random numbers generator starting seed value');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (47, 0, 'Full or part time by Salary level', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (48, 0, 'Base salary level', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (49, 0, 'File path string', NULL);
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (50, 0, 'Is Old Age', 'Is Old Age notes');
+INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (50, 1, '(FR) Is Old Age', '(FR) Is Old Age notes');
 
-INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 0, 'dim0', 96);
-INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (4, 1, 'dim1', 97);
-INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5, 0, 'dim0', 98);
-INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5, 1, 'dim1', 96);
-INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (7, 0, 'dim0', 98);
-INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (10, 0, 'dim0', 96);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (44, 0, 'dim0', 96);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (44, 1, 'dim1', 97);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (45, 0, 'dim0', 98);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (45, 1, 'dim1', 96);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (47, 0, 'dim0', 98);
+INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (50, 0, 'dim0', 96);
 
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 0, 'Age Dim', 'Age Dim notes');
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 1, 0, 'Sex Dim', 'Sex Dim notes');
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (4, 1, 1, 'Sex Dim', NULL);
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (7, 0, 0, 'Full Dim', NULL);
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (10, 0, 0, 'Age Dim', 'Age Dim notes');
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (10, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 0, 0, 'Age Dim', 'Age Dim notes');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 1, 0, 'Sex Dim', 'Sex Dim notes');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 1, 1, 'Sex Dim', NULL);
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (47, 0, 0, 'Full Dim', NULL);
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (50, 0, 0, 'Age Dim', 'Age Dim notes');
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (50, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
 
 -- 
 -- modelOne output tables
@@ -192,99 +192,109 @@ INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VAL
 INSERT INTO table_dic 
   (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view) 
 VALUES 
-  (2, 'salarySex', '_20128171604590141', 2, 1, 'salarySex_v_2012820', 'salarySex_a_2012820', 'salarySex_d_2012820');
+  (82, 'salarySex', '_20128171604590141', 2, 1, 'salarySex_v_2012820', 'salarySex_a_2012820', 'salarySex_d_2012820');
 
-INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 0, 2, 0, 1, 0);
+INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 0, 82, 0, 1, 0);
   
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (2, 0, 'Salary by Sex', 'Salary by Sex notes', 'Measure', 'Measure notes');
+  (82, 0, 'Salary by Sex', 'Salary by Sex notes', 'Measure', 'Measure notes');
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (2, 1, '(FR) Salary by Sex', '(FR) Salary by Sex notes', '(FR) Measure', NULL);
+  (82, 1, '(FR) Salary by Sex', '(FR) Salary by Sex notes', '(FR) Measure', NULL);
 
 -- dim1 "sex" has total enabled, enum id = 800
-INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (2, 0, 'dim0', 98, 0, 3);
-INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (2, 1, 'dim1', 97, 1, 3);
+INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (82, 0, 'dim0', 98, 0, 3);
+INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (82, 1, 'dim1', 97, 1, 3);
 
-INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 0, 0, 'Salary Dim', 'Salary Dim notes');
-INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 0, 1, '(FR) Salary Dim', '(FR) Salary Dim notes');
-INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sex Dim', 'Sex Dim notes');
-INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (2, 1, 1, '(FR) Sex Dim', NULL);
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (82, 0, 0, 'Salary Dim', 'Salary Dim notes');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (82, 0, 1, '(FR) Salary Dim', '(FR) Salary Dim notes');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (82, 1, 0, 'Sex Dim', 'Sex Dim notes');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (82, 1, 1, '(FR) Sex Dim', NULL);
 
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  2, 0, 'acc0', 0, 'value_sum()', 'A.acc_value'
+  82, 0, 'acc0', 0, 'value_sum()', 'A.acc_value'
   );
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  2, 1, 'acc1', 0, 'value_count()', 
+  82, 1, 'acc1', 0, 'value_count()', 
   'SELECT A1.acc_value FROM salarySex_a_2012820 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1'
   );
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  2, 2, 'acc2', 1, 'acc0 + acc1', 
+  82, 2, 'acc2', 1, 'acc0 + acc1', 
   '(A.acc_value) + (SELECT A1.acc_value FROM salarySex_a_2012820 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1)'
   );
   
-INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 0, 0, 'Sum of salary by sex', NULL);
-INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 1, 0, 'Count of salary by sex', NULL);
-INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (2, 2, 0, 'Derived accumulator', NULL);
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (82, 0, 0, 'Sum of salary by sex', NULL);
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (82, 1, 0, 'Count of salary by sex', NULL);
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (82, 2, 0, 'Derived accumulator', NULL);
 
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (2, 0, 'expr0', 4, 'OM_AVG(acc0)', 
+  (82, 0, 'expr0', 4, 'OM_AVG(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr0 FROM salarySex_a_2012820 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (2, 1, 'expr1', 4, 'OM_SUM(acc1)', 
+  (82, 1, 'expr1', 4, 'OM_SUM(acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, SUM(M1.acc_value) AS expr1 FROM salarySex_a_2012820 M1 WHERE M1.acc_id = 1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (2, 2, 'expr2', 2, 'OM_MIN(acc0)', 
+  (82, 2, 'expr2', 2, 'OM_MIN(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, MIN(M1.acc_value) AS expr2 FROM salarySex_a_2012820 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (2, 3, 'expr3', 3, 'OM_AVG(acc0 * acc1)', 
+  (82, 3, 'expr3', 3, 'OM_AVG(acc0 * acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value * A1.acc1) AS expr3 FROM salarySex_a_2012820 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a_2012820 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
   
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 0, 'Average acc0', 'Average on acc0 notes');
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 0, 1, '(FR) Average acc0', '(FR) Average on acc0 notes');
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 1, 0, 'Sum acc1', NULL);
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 2, 0, 'Min acc0', NULL);
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (2, 3, 0, 'Average acc0 * acc1', NULL);
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82, 0, 0, 'Average acc0', 'Average on acc0 notes');
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82, 0, 1, '(FR) Average acc0', '(FR) Average on acc0 notes');
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82, 1, 0, 'Sum acc1', NULL);
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82, 2, 0, 'Min acc0', NULL);
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82, 3, 0, 'Average acc0 * acc1', NULL);
 
-INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 1, 1, 'all_parameters', 0);
-INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 2, 1, 'age_sex_parameters', 0);
+--
+-- model groups
+--
+INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 1, 1, 'AllParameters', 0);
+INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 2, 1, 'AgeSexParameters', 0);
+INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 3, 1, 'SalaryParameters', 0);
 
 INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 0, 'All parameters', 'All model parameters group');
 INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 1, 1, '(FR) All parameters', NULL);
 INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 2, 0, 'Age and Sex parameters', 'Age and Sex model parameters group');
+INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 2, 1, '(FR) Age and Sex parameters', '(FR) Age and Sex model parameters group');
+INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 3, 0, 'Salary parameters', 'Salary model parameters group');
 
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 1, 2, NULL);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 0, 2, NULL);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 1, 3, NULL);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 2, NULL, 2);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 3, NULL, 3);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 4, NULL, 4);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 5, NULL, 5);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 1, NULL, 0);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 2, NULL, 1);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 3, NULL, 6);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 1, 3, NULL, 5);
+
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 0, NULL, 0);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 1, NULL, 1);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 2, 2, NULL, 6);
+
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 0, NULL, 1);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 1, NULL, 3);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 2, NULL, 4);
 
 --
 -- modelOne input parameters
