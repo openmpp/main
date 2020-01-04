@@ -152,9 +152,9 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDic.tableId = pp_table_id;
         tableDic.tableName = name;
         tableDic.rank = dimension_count();
-        tableDic.isSparse = true;   // do not store zeroes
+        tableDic.isSparse = true;           // do not store zeroes
         tableDic.exprPos = measures_position;
-        tableDic.isHidden = false;  // hidden in UI flag
+        tableDic.isHidden = is_internal;    // hidden in UI flag
         metaRows.tableDic.push_back(tableDic);
 
         // Labels and notes for the table

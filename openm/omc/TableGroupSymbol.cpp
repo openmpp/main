@@ -8,6 +8,8 @@
 #include <cassert>
 #include "TableGroupSymbol.h"
 #include "TableSymbol.h"
+#include "LanguageSymbol.h"
+#include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
 
@@ -41,20 +43,65 @@ void TableGroupSymbol::post_parse(int pass)
     }
 }
 
-void TableGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
+void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
-    {
-        // For testing, dump table group to omc log
-        ostringstream ss;
-        ss << "table group: "
-            << name << ":\n";
-        for (auto sym : pp_symbol_list) {
-            bool is_group = dynamic_cast<GroupSymbol*>(sym);
-            ss << "   "
-                << (is_group ? "group: " : "table: ")
-                << sym->name
-                << "\n";
+    using namespace openm;
+
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    GroupLstRow groupRow;
+
+    // basic information about the group
+    groupRow.groupId = pp_group_id;
+    groupRow.isParam = false;       // group of output tables
+    groupRow.name = name;
+    groupRow.isHidden = is_hidden;
+    metaRows.groupLst.push_back(groupRow);
+
+    // labels and notes for the group
+    for (auto lang : Symbol::pp_all_languages) {
+        GroupTxtLangRow groupTxt;
+        groupTxt.groupId = pp_group_id;
+        groupTxt.langCode = lang->name;
+        groupTxt.descr = label(*lang);
+        groupTxt.note = note(*lang);
+        metaRows.groupTxt.push_back(groupTxt);
+    }
+
+    // group children
+    int childPos = 1;   // child position in the group, must be unique
+
+    for (auto sym : pp_symbol_list) {
+        auto tgs = dynamic_cast<TableGroupSymbol *>(sym);
+        if (tgs) {
+            GroupPcRow groupPc;
+            groupPc.groupId = pp_group_id;
+            groupPc.childPos = childPos++;
+            groupPc.childGroupId = tgs->pp_group_id;
+            groupPc.leafId = -1;            // negative value treated as db-NULL
+            metaRows.groupPc.push_back(groupPc);
+
+            continue;   // done with this child group
         }
-        theLog->logMsg(ss.str().c_str());
+        // else symbol must be a table
+        auto tbl = dynamic_cast<TableSymbol *>(sym);
+        if (tbl) {
+
+            GroupPcRow groupPc;
+            groupPc.groupId = pp_group_id;
+            groupPc.childPos = childPos++;
+            groupPc.childGroupId = -1;      // negative value treated as db-NULL
+            groupPc.leafId = tbl->pp_table_id;
+            metaRows.groupPc.push_back(groupPc);
+
+            continue;   // done with this child table
+        }
+        else {
+            pp_error(LT("error : '") + sym->name + LT("' in table group is not a table"));
+        }
     }
 }
+

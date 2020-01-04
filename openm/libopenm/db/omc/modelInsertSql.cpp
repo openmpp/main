@@ -821,7 +821,6 @@ void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException(LT("invalid (negative) group id: %d"), i_row.groupId);
-    if (i_row.childPos < 0) throw DbException(LT("invalid (negative) child position: %d in group id: %d"), i_row.childPos, i_row.groupId);
 
     // INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1234, 0, 1, NULL, 22)
     i_dbExec->update(

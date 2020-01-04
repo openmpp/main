@@ -627,16 +627,16 @@ bool GroupTxtRow::isKeyEqual(const GroupTxtRow & i_left, const GroupTxtRow & i_r
 // group_txt row less comparator by unique key: model id, group id, language code. 
 bool GroupTxtLangRow::uniqueLangKeyLess(const GroupTxtLangRow & i_left, const GroupTxtLangRow & i_right)
 {
-    return i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode == i_right.langCode;
+    return
+        (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.groupId < i_right.groupId) ||
+        (i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode < i_right.langCode);
 }
 
 // group_txt row equal comparator by unique key: model id, group id, language code. 
 bool GroupTxtLangRow::uniqueLangKeyEqual(const GroupTxtLangRow & i_left, const GroupTxtLangRow & i_right)
 {
-    return
-        (i_left.modelId < i_right.modelId) ||
-        (i_left.modelId == i_right.modelId && i_left.groupId < i_right.groupId) ||
-        (i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode < i_right.langCode);
+    return i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode == i_right.langCode;
 }
 
 // group_pc row less comparator by primary key: model id, group id, child position.
