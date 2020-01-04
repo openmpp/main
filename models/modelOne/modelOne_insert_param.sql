@@ -7,7 +7,8 @@
 -- list of ids: values < 10 reserved for development and testing
 --   model id = 1 is modelOne
 --   set id = 2 is default set of input parameters for modelOne
---   set id = 3, 4 modified working sets of input parameters
+--   set id = 3 invalid set of input parameters, for test only
+--   set id = 4 modified set of input parameters
 --
 
 -- 

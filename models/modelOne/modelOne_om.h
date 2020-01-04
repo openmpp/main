@@ -30,6 +30,7 @@ void ModelShutdown(openm::IModel * const i_model);
 const size_t N_AGE = 4;
 const size_t N_SEX = 2;
 const size_t N_SALARY = 3;
+const size_t N_FULL = 2;
 
 // model parameters
 extern thread_local int om_value_startSeed;
@@ -48,7 +49,9 @@ extern thread_local bool * om_value_isOldAge;
 #define salaryFull  (*reinterpret_cast<const int(*)[N_SALARY]>(om_value_salaryFull))
 #define isOldAge    (*reinterpret_cast<const bool(*)[N_AGE]>(om_value_isOldAge))
 
-// model output tables: salary by sex
+// model output tables
+//
+// salary by sex
 class SalarySex
 {
 public:
@@ -76,6 +79,34 @@ public:
     {
         std::fill(acc[ACC_SUM_ID], &acc[ACC_SUM_ID][N_CELL], 0.0);
         std::fill(acc[ACC_COUNT_ID], &acc[ACC_COUNT_ID][N_CELL], 0.0);
+    }
+};
+
+class FullAgeSalary
+{
+public:
+    static const size_t N_CELL = N_FULL * (N_AGE + 1) * N_SALARY;   // number of cells, "age" dimension has total enabled
+    static const size_t N_ACC = 1;                                  // number of accumulators
+    static const size_t ACC_ID = 0;                                 // accumulator 0: only one accumulator in that table
+    static const char * NAME;                                       // output table name: fullAgeSalary
+
+public:
+    double * acc[N_ACC];                // acc[N_ACC][N_CELL];
+    forward_list<unique_ptr<double> > acc_storage;
+
+    FullAgeSalary(void)
+    {
+        auto it = acc_storage.before_begin();
+        for (size_t k = 0; k < N_ACC; k++) {
+            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            acc[k] = it->get();
+        }
+    }
+
+    // initailize accumulators
+    void initialize_accumulators(void)
+    {
+        std::fill(acc[ACC_ID], &acc[ACC_ID][N_CELL], 0.0);
     }
 };
 

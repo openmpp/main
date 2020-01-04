@@ -3,6 +3,7 @@
 -- This code is licensed under MIT license (see LICENSE.txt for details)
 --
 
+DROP VIEW fullAgeSalary;
 DROP VIEW salarySex;
 DROP VIEW StartingSeed;
 DROP VIEW salaryAge;
@@ -12,10 +13,13 @@ DROP VIEW baseSalary;
 DROP VIEW filePath;
 DROP VIEW isOldAge;
 
-DROP VIEW salarySex_d_2012820;
+DROP VIEW fullAgeSalary_d_2012883;
+DROP VIEW salarySex_d_2012882;
 
-DROP TABLE salarySex_v_2012820;
-DROP TABLE salarySex_a_2012820;
+DROP TABLE fullAgeSalary_v_2012883;
+DROP TABLE fullAgeSalary_a_2012883;
+DROP TABLE salarySex_v_2012882;
+DROP TABLE salarySex_a_2012882;
 
 DROP TABLE StartingSeed_w_2012819;
 DROP TABLE StartingSeed_p_2012819;

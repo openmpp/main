@@ -35,9 +35,12 @@ thread_local string om_value_filePath;
 static vector<unique_ptr<bool[]>> om_param_isOldAge;
 thread_local bool * om_value_isOldAge = nullptr;
 
-// model output tables: salary by sex
+// model output tables
 const char * SalarySex::NAME = "salarySex";
 static thread_local unique_ptr<SalarySex> theSalarySex; // salary by sex
+
+const char * FullAgeSalary::NAME = "fullAgeSalary";
+static thread_local unique_ptr<FullAgeSalary> theFullAgeSalary; // full time by age by salary bracket
 
 // Model event loop: user code
 void RunModel(IModel * const i_model)
@@ -45,7 +48,7 @@ void RunModel(IModel * const i_model)
     theLog->logMsg("Running simulation");
     i_model->updateProgress(0);             // update sub-value progress: 0% completed
 
-    // calculte salary by sex, accumulator 0: sum
+    // calculate salary by sex, accumulator 0: sum
     // "sex" dimension has total enabled
     size_t nCell = 0;
 
@@ -66,12 +69,7 @@ void RunModel(IModel * const i_model)
             ((double)(nSalary + 800 * i_model->subValueId() + 1));
     }
 
-    // update sub-value progress: 50% completed
-    // second parameter of updateProgress() is "value" of type double, usually it number of cases or Time for time-based models
-    i_model->updateProgress(50, (double)nCell);
-    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 50, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
-
-    // calculte salary by sex, accumulator 1: count
+    // calculate salary by sex, accumulator 1: count
     // "sex" dimension has total enabled
     nCell = 0;
 
@@ -88,6 +86,35 @@ void RunModel(IModel * const i_model)
         // "sex" dimension has total enabled: make test value for "total"
         theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] =
             (double)(nSalary + 800 + i_model->subValueId() + 1 + nFullBonus);
+    }
+
+    // update sub-value progress: 50% completed
+    // second parameter of updateProgress() is "value" of type double, usually it number of cases or Time for time-based models
+    i_model->updateProgress(50, (double)nCell);
+    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 50, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
+
+    // calculate full or part time salary by age, accumulator 0
+    // "age" dimension has total enabled
+    nCell = 0;
+
+    for (size_t nFull = 0; nFull < N_FULL; nFull++) {
+        for (size_t nAge = 0; nAge < N_AGE + 1; nAge++) {
+            for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
+
+                // "age" dimension has total enabled
+                if (nAge < N_AGE) {
+                    theFullAgeSalary->acc[FullAgeSalary::ACC_ID][nCell++] =
+                        ((salaryFull[nSalary] == jobKind::fullTime) ? 2.0 : 1.0) *
+                        ((double)salaryAge[nSalary][nAge]) *
+                        (double)(i_model->subValueId() + (isOldAge[nAge] ? 1 : 2));
+                }
+                else {
+                    // make test value for age "total"
+                    theFullAgeSalary->acc[FullAgeSalary::ACC_ID][nCell++] =
+                        (double)((nFull + nAge + nSalary) * (1 + i_model->subValueId()));
+                }
+            }
+        }
     }
 
     i_model->updateProgress(100);               // update sub-value progress: 100% completed
@@ -136,16 +163,19 @@ void ModelStartup(IModel * const i_model)
 
     // clear existing output table(s) - release memory if allocated by previous run
     theSalarySex.reset(new SalarySex());
+    theFullAgeSalary.reset(new FullAgeSalary());
 
     // allocate and initialize new output table(s)
     theSalarySex->initialize_accumulators();
+    theFullAgeSalary->initialize_accumulators();
 }
 
 // Model shutdown method: write output tables
 void ModelShutdown(IModel * const i_model)
 {
-    // write output result tables: salarySex sub-value accumulators
+    // write output result tables: salarySex and fullAgeSalary sub-value accumulators
     theLog->logMsg("Writing output tables");
 
     i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
+    i_model->writeOutputTable(FullAgeSalary::NAME, FullAgeSalary::N_CELL, theFullAgeSalary->acc_storage);
 }
