@@ -37,10 +37,16 @@ thread_local bool * om_value_isOldAge = nullptr;
 
 // model output tables
 const char * SalarySex::NAME = "salarySex";
-static thread_local unique_ptr<SalarySex> theSalarySex; // salary by sex
+static thread_local unique_ptr<SalarySex> theSalarySex;         // salary by sex
 
 const char * FullAgeSalary::NAME = "fullAgeSalary";
 static thread_local unique_ptr<FullAgeSalary> theFullAgeSalary; // full time by age by salary bracket
+
+const char * AgeSexIncome::NAME = "ageSexIncome";
+static thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;   // age by sex income
+
+const char * SeedOldAge::NAME = "seedOldAge";
+static thread_local unique_ptr<SeedOldAge> theSeedOldAge;       // age by sex income
 
 // Model event loop: user code
 void RunModel(IModel * const i_model)
@@ -56,11 +62,9 @@ void RunModel(IModel * const i_model)
         for (size_t nSex = 0; nSex < N_SEX; nSex++) {
             for (size_t nAge = 0; nAge < N_AGE; nAge++) {
 
-                // make some test value
                 theSalarySex->acc[SalarySex::ACC_SUM_ID][nCell] +=
                     ((double)salaryAge[nSalary][nAge]) * 
-                    ageSex[nAge][nSex] * 
-                    (double)(i_model->subValueId() + (isOldAge[nAge] ? 20 : 1));
+                    ageSex[nAge][nSex];
             }
             nCell++;
         }
@@ -74,24 +78,18 @@ void RunModel(IModel * const i_model)
     nCell = 0;
 
     for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
-
-        int nFullBonus = (salaryFull[nSalary] == jobKind::fullTime) ? 1 : 0;
-
         for (size_t nSex = 0; nSex < N_SEX; nSex++) {
 
-            // make some test value
-            theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] = 
-                (double)(nSalary + nSex + i_model->subValueId() + 1 + nFullBonus);
+            theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] = (double)(nSalary + nSex + i_model->subValueId());
         }
         // "sex" dimension has total enabled: make test value for "total"
-        theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] =
-            (double)(nSalary + 800 + i_model->subValueId() + 1 + nFullBonus);
+        theSalarySex->acc[SalarySex::ACC_COUNT_ID][nCell++] = (double)(nSalary + 800 + i_model->subValueId());
     }
 
-    // update sub-value progress: 50% completed
+    // update sub-value progress: 25% completed
     // second parameter of updateProgress() is "value" of type double, usually it number of cases or Time for time-based models
-    i_model->updateProgress(50, (double)nCell);
-    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 50, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
+    i_model->updateProgress(25, (double)nCell);
+    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 25, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
 
     // calculate full or part time salary by age, accumulator 0
     // "age" dimension has total enabled
@@ -105,16 +103,47 @@ void RunModel(IModel * const i_model)
                 if (nAge < N_AGE) {
                     theFullAgeSalary->acc[FullAgeSalary::ACC_ID][nCell++] =
                         ((salaryFull[nSalary] == jobKind::fullTime) ? 2.0 : 1.0) *
-                        ((double)salaryAge[nSalary][nAge]) *
-                        (double)(i_model->subValueId() + (isOldAge[nAge] ? 1 : 2));
+                        ((double)salaryAge[nSalary][nAge]);
                 }
                 else {
                     // make test value for age "total"
-                    theFullAgeSalary->acc[FullAgeSalary::ACC_ID][nCell++] =
-                        (double)((nFull + nAge + nSalary) * (1 + i_model->subValueId()));
+                    theFullAgeSalary->acc[FullAgeSalary::ACC_ID][nCell++] = (double)((nFull + nAge + nSalary) * (1 + i_model->subValueId()));
                 }
             }
         }
+    }
+
+    // update sub-value progress: 50% completed
+    i_model->updateProgress(50, (double)nCell);
+    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 50, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
+
+    // calculate age by sex, accumulator 0: income
+    nCell = 0;
+    for (size_t nAge = 0; nAge < N_AGE; nAge++) {
+        for (size_t nSex = 0; nSex < N_SEX; nSex++) {
+
+            theAgeSexIncome->acc[AgeSexIncome::ACC_INCOME_ID][nCell++] = ageSex[nAge][nSex] + (double)i_model->subValueId();
+        }
+    }
+
+    // calculate age by sex, accumulator 1: age adjusted income
+    nCell = 0;
+    for (size_t nAge = 0; nAge < N_AGE; nAge++) {
+        for (size_t nSex = 0; nSex < N_SEX; nSex++) {
+
+            theAgeSexIncome->acc[AgeSexIncome::ACC_OLD_AGE_ID][nCell++] = 
+                (ageSex[nAge][nSex] + i_model->subValueId()) *
+                (double)(i_model->subValueId() + (isOldAge[nAge] ? 10 : 1));
+        }
+    }
+
+    // update sub-value progress: 50% completed
+    i_model->updateProgress(75, (double)nCell);
+    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 75, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
+
+    // calculate old age seed, accumulator 0, scalar output table, only one cell
+    for (size_t nAge = 0; nAge < N_AGE + 1; nAge++) {
+        theSeedOldAge->acc[SeedOldAge::ACC_ID][0] += (double)(i_model->subValueId() + (isOldAge[nAge] ? 10 : 1));
     }
 
     i_model->updateProgress(100);               // update sub-value progress: 100% completed
@@ -164,10 +193,13 @@ void ModelStartup(IModel * const i_model)
     // clear existing output table(s) - release memory if allocated by previous run
     theSalarySex.reset(new SalarySex());
     theFullAgeSalary.reset(new FullAgeSalary());
+    theAgeSexIncome.reset(new AgeSexIncome());
+    theSeedOldAge.reset(new SeedOldAge());
 
     // allocate and initialize new output table(s)
     theSalarySex->initialize_accumulators();
     theFullAgeSalary->initialize_accumulators();
+    theSeedOldAge->initialize_accumulators();
 }
 
 // Model shutdown method: write output tables
@@ -178,4 +210,6 @@ void ModelShutdown(IModel * const i_model)
 
     i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
     i_model->writeOutputTable(FullAgeSalary::NAME, FullAgeSalary::N_CELL, theFullAgeSalary->acc_storage);
+    i_model->writeOutputTable(AgeSexIncome::NAME, AgeSexIncome::N_CELL, theAgeSexIncome->acc_storage);
+    i_model->writeOutputTable(SeedOldAge::NAME, SeedOldAge::N_CELL, theSeedOldAge->acc_storage);
 }

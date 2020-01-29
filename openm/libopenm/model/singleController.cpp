@@ -80,7 +80,7 @@ void SingleController::init(void)
     // load metadata table rows, except of run_option, which is may not created yet
     // load messages from database
     metaStore.reset(new MetaHolder);
-    modelId = readMetaTables(dbExec, metaStore.get());
+    modelId = readMetaTables(dbExec, metaStore.get(), OM_MODEL_NAME, OM_MODEL_DIGEST);
     loadMessages(dbExec);
 
     // merge command line and ini-file arguments with profile_option table values
@@ -185,7 +185,7 @@ void SingleController::readParameter(const char * i_name, int i_subId, const typ
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(runId, i_name, dbExec, meta())
             );
         reader->readParameter(dbExec, i_subId, i_type, i_size, io_valueArr);
     }

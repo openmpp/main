@@ -247,13 +247,13 @@ namespace openm
         /** calculate type digest */
         static const string makeTypeDigest(const TypeDicRow & i_typeRow, const MetaModelHolder & i_metaRows);
 
-        /** calculate parameter metadata digest */
-        static const string makeParamDigest(const ParamDicRow & i_paramRow, const MetaModelHolder & i_metaRows);
+        /** calculate parameter metadata digest and parameter import digest */
+        static const tuple<string, string> makeParamDigest(const ParamDicRow & i_paramRow, const MetaModelHolder & i_metaRows);
         
         /** calculate output table metadata digest */
-        static const string makeOutTableDigest(const TableDicRow i_tableRow, const MetaModelHolder & i_metaRows);
+        static const tuple<string, string> makeOutTableDigest(const TableDicRow i_tableRow, const MetaModelHolder & i_metaRows);
 
-        /** calculate model metadata digest */
+        /** calculate model metadata digest and table import digest */
         static const string makeModelDigest(const MetaModelHolder & i_metaRows);
     };
 }

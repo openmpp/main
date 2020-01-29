@@ -18,35 +18,11 @@ namespace openm
     /** number of sub-values */
     const char * RunOptionsKey::subValueCount = "OpenM.SubValues";
 
-    /** options started with "Parameter." treated as value of model scalar input parameter, ex: "-Parameter.Age 42" */
-    const char * RunOptionsKey::parameterPrefix = "Parameter";
-
-    /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: "-SubFrom.Age csv" */
-    const char * RunOptionsKey::subFromPrefix = "SubFrom";
-
-    /** options started with "SubValues." used specify sub-values of input parameter, ex: "-SubValues.Age [1,4]" */
-    const char * RunOptionsKey::subValuesPrefix = "SubValues";
-
-    /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: "-SubGroupFrom.Geo csv" */
-    const char * RunOptionsKey::subGroupFromPrefix = "SubGroupFrom";
-
-    /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: "-SubGroupValues.Geo [1,4]" */
-    const char * RunOptionsKey::subGroupValuesPrefix = "SubGroupValues";
-
-    /** number of modeling threads */
-    const char * RunOptionsKey::threadCount = "OpenM.Threads";
-
-    /** if true then do not run modeling threads at root process */
-    const char * RunOptionsKey::notOnRoot = "OpenM.NotOnRoot";
-
-    /** database connection string */
-    const char * RunOptionsKey::dbConnStr = "OpenM.Database";
+    /** model run name in database */
+    const char * RunOptionsKey::runName = "OpenM.RunName";
 
     /** model run id to restart model run */
     const char * RunOptionsKey::restartRunId = "OpenM.RestartRunId";
-
-    /** model run name in database */
-    const char * RunOptionsKey::runName = "OpenM.RunName";
 
     /** working set id to get input parameters */
     const char * RunOptionsKey::setId = "OpenM.SetId";
@@ -75,6 +51,15 @@ namespace openm
     /** profile name to get run options */
     const char * RunOptionsKey::profile = "OpenM.Profile";
 
+    /** number of modeling threads */
+    const char * RunOptionsKey::threadCount = "OpenM.Threads";
+
+    /** if true then do not run modeling threads at root process */
+    const char * RunOptionsKey::notOnRoot = "OpenM.NotOnRoot";
+
+    /** database connection string */
+    const char * RunOptionsKey::dbConnStr = "OpenM.Database";
+
     /** use sparse output tables */
     const char * RunOptionsKey::useSparse = "OpenM.SparseOutput";
 
@@ -101,6 +86,48 @@ namespace openm
 
     /** if positive then used for simulation progress reporting, ex: every 1000 cases or every 0.1 time step */
     const char * RunOptionsKey::progressStep = "OpenM.ProgressStep";
+
+    /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
+    const char * RunOptionsKey::parameterPrefix = "Parameter";
+
+    /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: -SubFrom.Age csv */
+    const char * RunOptionsKey::subFromPrefix = "SubFrom";
+
+    /** options started with "SubValues." used specify sub-values of input parameter, ex: -SubValues.Age [1,4] */
+    const char * RunOptionsKey::subValuesPrefix = "SubValues";
+
+    /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: -SubGroupFrom.Geo csv */
+    const char * RunOptionsKey::subGroupFromPrefix = "SubGroupFrom";
+
+    /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: -SubGroupValues.Geo [1,4] */
+    const char * RunOptionsKey::subGroupValuesPrefix = "SubGroupValues";
+
+    /** import parameters from all upstream models last runs, ex: -Import.All true */
+    const char * RunOptionsKey::importAll = "Import.All";
+
+    /** options started with "Import." used to specify parameters import from upstream model run, ex: -Import.modelOne true */
+    const char * RunOptionsKey::importPrefix = "Import";
+
+    /** options started with "ImportRunDigest." used to specify run name to import parameters from, ex: -ImportRunDigest.modelOne abcdef */
+    const char * RunOptionsKey::importRunDigestPrefix = "ImportRunDigest";
+
+    /** options started with "ImportRunId." used to specify run id to import parameters from, ex: -ImportRunId.modelOne 101 */
+    const char * RunOptionsKey::importRunIdPrefix = "ImportRunId";
+
+    /** options started with "ImportRunName." used to specify run name to import parameters from, ex: -ImportRunName.modelOne GoodRun */
+    const char * RunOptionsKey::importRunNamePrefix = "ImportRunName";
+
+    /** options started with "ImportDigest." used to specify model digest to import parameters from last run of that model, ex: -ImportModelDigest.modelOne fedcba */
+    const char * RunOptionsKey::importModelDigestPrefix = "ImportModelDigest";
+
+    /** options started with "ImportId." used to specify model id to import parameters from last run of that model, ex: -ImportModelId.modelOne 123 */
+    const char * RunOptionsKey::importModelIdPrefix = "ImportModelId";
+
+    /** options started with "ImportExpr." used to specify expression name to import from output table, ex: -ImportExpr.AgeTable expr2 */
+    const char * RunOptionsKey::importExprPrefix = "ImportExpr";
+
+    /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDatabase.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
+    const char * RunOptionsKey::importDbPrefix = "ImportDb";
 
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -140,16 +167,16 @@ namespace openm
 
     /** default value of any option */
     const char * RunOptionsKey::defaultValue = "default";
+
+    /** all value for any option */
+    const char * RunOptionsKey::allValue = "All";
 }
 
 /** array of model run option keys. */
 static const char * runOptKeyArr[] = {
     RunOptionsKey::subValueCount,
-    RunOptionsKey::threadCount,
-    RunOptionsKey::notOnRoot,
-    RunOptionsKey::dbConnStr,
-    RunOptionsKey::restartRunId,
     RunOptionsKey::runName,
+    RunOptionsKey::restartRunId,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
     RunOptionsKey::taskId,
@@ -157,6 +184,10 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::taskRunName,
     RunOptionsKey::taskWait,
     RunOptionsKey::profile,
+    RunOptionsKey::importAll,
+    RunOptionsKey::threadCount,
+    RunOptionsKey::notOnRoot,
+    RunOptionsKey::dbConnStr,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     RunOptionsKey::doubleFormat,
@@ -202,7 +233,15 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::subFromPrefix,
     RunOptionsKey::subValuesPrefix,
     RunOptionsKey::subGroupFromPrefix,
-    RunOptionsKey::subGroupValuesPrefix
+    RunOptionsKey::subGroupValuesPrefix,
+    RunOptionsKey::importPrefix,
+    RunOptionsKey::importRunDigestPrefix,
+    RunOptionsKey::importRunIdPrefix,
+    RunOptionsKey::importRunNamePrefix,
+    RunOptionsKey::importModelDigestPrefix,
+    RunOptionsKey::importModelIdPrefix,
+    RunOptionsKey::importDbPrefix,
+    RunOptionsKey::importExprPrefix
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
@@ -235,17 +274,17 @@ const RunOptions MetaLoader::modelRunOptions(int i_subCount, int i_subId) const
     RunOptions opts(baseRunOpts);
     opts.subValueCount = i_subCount;
     opts.subValueId = i_subId;
-    return opts; 
+    return opts;
 }
 
 // read metadata tables from db, except of run_option table
-int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore)
+int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore, const char * i_name, const char * i_digest)
 {
     // find model by name digest
-    io_metaStore->modelTable.reset(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_DIGEST));
+    io_metaStore->modelTable.reset(IModelDicTable::create(i_dbExec, i_name, i_digest));
 
-    io_metaStore->modelRow = io_metaStore->modelTable->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
-    if (io_metaStore->modelRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
+    io_metaStore->modelRow = io_metaStore->modelTable->byNameDigest(i_name, i_digest);
+    if (io_metaStore->modelRow == nullptr) throw DbException("model %s not found in the database", i_name);
 
     int mId = io_metaStore->modelRow->modelId;
 
@@ -254,6 +293,7 @@ int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore)
     io_metaStore->typeEnumLst.reset(ITypeEnumLstTable::create(i_dbExec, mId));
     io_metaStore->paramDic.reset(IParamDicTable::create(i_dbExec, mId));
     io_metaStore->paramDims.reset(IParamDimsTable::create(i_dbExec, mId));
+    io_metaStore->paramImport.reset(IParamImportTable::create(i_dbExec, mId));
     io_metaStore->tableDic.reset(ITableDicTable::create(i_dbExec, mId));
     io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mId));
     io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mId));
@@ -267,7 +307,7 @@ int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore)
 /** read model messages from database.
 *
 * User preferd language determined by simple match, for example:
-* if user language is en_CA.UTF-8 then search done for lower case ["en-ca", "en", "model-default-langauge"].
+* if user language is en_CA.UTF-8 then search done for lower case ["en-ca", "en", "model-default-language"].
 */
 void MetaLoader::loadMessages(IDbExec * i_dbExec)
 {
@@ -276,7 +316,7 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
     // find model by name digest
     unique_ptr<IModelDicTable> mdTbl(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_DIGEST));
 
-    const ModelDicRow *mdRow = mdTbl->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
+    const ModelDicRow * mdRow = mdTbl->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
     if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
 
     // get list of languages
@@ -359,9 +399,10 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
 
 /** merge command line and ini-file arguments with profile_option table values.
 *
-* use default values for basic run options, i.e. SparseOutput = false
-* validate scalar parameter value option, eg: Parameter.Age 42
-* merge parameter sub-values options, eg: SubFrom.Age csv  SubValues.Age 8 SubValues.Sex default
+* - use default values for basic run options, i.e. SparseOutput = false
+* - validate scalar parameter value option, eg: Parameter.Age 42
+* - parse parameter sub-values options, eg: SubFrom.Age csv  SubValues.Age 8 SubValues.Sex default
+* - parse parameter import options
 */
 void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 {
@@ -442,13 +483,16 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     parseParamSubOpts();
 
     // validate sub-values options: cannot be combined with "Parameter." option
-    for (const ParamSubOpts & ps : subOptsArr) {
+    for (const auto & ps : subOptsMap) {
 
-        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, ps.paramId);
+        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, ps.first);
         if (argStore.isOptionExist((paramPrefix + paramRow->paramName).c_str()))
             throw DbException("%s.%s cannot be combined with: \"%s\" or \"%s\"",
                 RunOptionsKey::parameterPrefix, paramRow->paramName.c_str(), RunOptionsKey::subFromPrefix, RunOptionsKey::subValuesPrefix);
     }
+
+    // parse parameters import options
+    parseImportOptions();
 
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
@@ -484,18 +528,19 @@ namespace
 
 /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo"
 *
-* parse and validate parameter sub-values options, eg: 
-*   SubFrom.Age        csv
-*   SubValues.Age      [0,15]
-*   SubValues.Sex      default
-*   SubGroupFrom.Geo   csv
-*   SubGroupValues.Geo [0,15]
-* validate "SubFrom." and "SubGroupFrom." options value, it must one of "db", "csv" or "iota"
-* "SubValues." and "SubGroupValues." option can be:
-*   list of id's: SubValues.Age 2,1,4,3
-*   range:        SubValues.Age [1,4]
-*   mask:         SubValues.Age x0F
-*   single id:    SubValues.Age 7
+* parse and validate parameter sub-values options, for example:     \n
+*   SubFrom.Age        csv          \n
+*   SubValues.Age      [0,15]       \n
+*   SubValues.Sex      default      \n
+*   SubGroupFrom.Geo   csv          \n
+*   SubGroupValues.Geo [0,15]       \n
+*
+* validate "SubFrom." and "SubGroupFrom." options value, it must one of "db", "csv" or "iota".  \n
+* "SubValues." and "SubGroupValues." option can be:     \n
+*   list of id's: SubValues.Age 2,1,4,3                 \n
+*   range:        SubValues.Age [1,4]                   \n
+*   mask:         SubValues.Age x0F                     \n
+*   single id:    SubValues.Age 7                       \n
 *   default id:   SubValues.Age default
 */
 void MetaLoader::parseParamSubOpts(void)
@@ -515,7 +560,7 @@ void MetaLoader::parseParamSubOpts(void)
 
         if (!isFromOpt && !isValuesOpt && !isFromGroupOpt && !isValuesGroupOpt) continue; // it is not a parameter sub-value option
 
-        // check option key: parameter name or group name maust not be empty
+        // check option key: parameter name or group name must not be empty
         string argName;
         if (isFromOpt) argName = parseParamOrGroupName(optIt->first, fromPrefix.length());
         if (isValuesOpt) argName = parseParamOrGroupName(optIt->first, valPrefix.length());
@@ -537,7 +582,13 @@ void MetaLoader::parseParamSubOpts(void)
         // validate "SubFrom." or "SubGroupFrom.", it must have value as one of: "db", "iota", "csv"
         if (isFromOpt || isFromGroupOpt) {
             for (const string & pName : pnArr) {
-                ParamSubOpts & ps = addParamSubOpts(pName);
+
+                // find parameter by name: it must be a model parameter
+                const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, pName);
+                if (paramRow == nullptr)
+                    throw DbException("parameter %s is not an input parameter of model %s, id: %d", pName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+
+                ParamSubOpts & ps = subOptsMap[paramRow->paramId];  // insert new or get existing options
 
                 if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = RunOptionsKey::dbSubValue;
                 if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = RunOptionsKey::iotaSubValue;
@@ -559,7 +610,13 @@ void MetaLoader::parseParamSubOpts(void)
         if (isValuesOpt || isValuesGroupOpt) {
 
             for (const string & pName : pnArr) {
-                ParamSubOpts & ps = addParamSubOpts(pName);
+
+                // find parameter by name: it must be a model parameter
+                const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, pName);
+                if (paramRow == nullptr)
+                    throw DbException("parameter %s is not an input parameter of model %s, id: %d", pName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+
+                ParamSubOpts & ps = subOptsMap[paramRow->paramId];  // insert new or get existing options
 
                 // convert option value to get sub-value id's: range or mask or comma-separated list
                 string sVal = trim(optIt->second);
@@ -610,7 +667,7 @@ void MetaLoader::parseParamSubOpts(void)
                                 throw ModelException("invalid (out of range) value specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
                         }
                     }
-                    ps.subCount = ps.subIds.size();
+                    ps.subCount = (int)ps.subIds.size();
                     ps.kind = ps.subCount > 1 ? KindSubIds::list : KindSubIds::single;
                 }
 
@@ -634,7 +691,7 @@ void MetaLoader::parseParamSubOpts(void)
                             ps.subIds.push_back(nId);
                             if (ps.subIds.size() > (size_t)subValueCount) throw ModelException("invalid (to many values) specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
                         }
-                        ps.subCount = ps.subIds.size();
+                        ps.subCount = (int)ps.subIds.size();
                         ps.kind = ps.subCount > 1 ? KindSubIds::list : KindSubIds::single;
                     }
                 }
@@ -654,53 +711,31 @@ void MetaLoader::parseParamSubOpts(void)
         }
     }
 
-    // sort by parameter id
-    std::sort(subOptsArr.begin(), subOptsArr.end(), ParamSubOpts::keyLess);
-
     // set defult values and validate sub-values options, collect parameter id's with multiple sub-values
-    for (ParamSubOpts & ps : subOptsArr) {
+    for (auto & ps : subOptsMap) {
 
         // if from option specified and number of sub-values not explicitly specified by "SubValues."
         // then assume number of sub-values for the model run
         // if from option not specified then use default rules
-        if (ps.from != RunOptionsKey::defaultValue) {
-            if (ps.kind == KindSubIds::none) ps.subCount = subValueCount;
+        if (ps.second.from != RunOptionsKey::defaultValue) {
+            if (ps.second.kind == KindSubIds::none) ps.second.subCount = subValueCount;
         }
 
         // if SubFrom.Parameter = iota then parameter cannot have SubId.Parameter or SubValues.Parameter option
-        if (ps.from == RunOptionsKey::iotaSubValue && ps.kind != KindSubIds::none)
+        if (ps.second.from == RunOptionsKey::iotaSubValue && ps.second.kind != KindSubIds::none)
             throw ModelException(
                 "invalid options for parameter %s: option %s cannot be combined with %s",
-                metaStore->paramDic->byKey(modelId, ps.paramId)->paramName.c_str(), RunOptionsKey::iotaSubValue, RunOptionsKey::subValuesPrefix
+                metaStore->paramDic->byKey(modelId, ps.first)->paramName.c_str(), RunOptionsKey::iotaSubValue, RunOptionsKey::subValuesPrefix
             );
 
         // sub-values count must 1 or equal to number of sub-values for that model run
-        if (ps.subCount != 1 && ps.subCount != subValueCount)
+        if (ps.second.subCount != 1 && ps.second.subCount != subValueCount)
             throw ModelException("invalid number of sub-values: %d specified for parameter: %s, expected 1 or %d",
-                ps.subCount, metaStore->paramDic->byKey(modelId, ps.paramId)->paramName.c_str(), subValueCount);
+                ps.second.subCount, metaStore->paramDic->byKey(modelId, ps.first)->paramName.c_str(), subValueCount);
 
         // collect parameter id's with multiple sub-values
-        if (ps.subCount > 1) paramIdSubArr.push_back(ps.paramId);
+        if (ps.second.subCount > 1) paramIdSubArr.push_back(ps.first);
     }
-}
-
-// find existing or add new parameter sub-values options
-MetaLoader::ParamSubOpts & MetaLoader::addParamSubOpts(const string & i_paramName)
-{
-    // find parameter by name: it must be a model parameter
-    const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_paramName);
-    if (paramRow == nullptr)
-        throw DbException("parameter %s is not an input parameter of model %s, id: %d", i_paramName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-    // find parameter in the list of sub-value parameters
-    for (ParamSubOpts & ps : subOptsArr) {
-        if (ps.paramId == paramRow->paramId) return ps; // found existing parameter sub-value options
-    }
-
-    // append parameter new options to the list of sub-value parameters
-    subOptsArr.push_back(ParamSubOpts(paramRow->paramId));
-
-    return subOptsArr.back();
 }
 
 // return name of parameters by model group name
@@ -728,6 +763,191 @@ const vector<string> MetaLoader::expandParamGroup(int i_modelId, const string & 
         pnArr.push_back(paramRow->paramName);
     }
     return pnArr;
+}
+
+/** parse parameter import options.
+*
+* Get source run and source model to import parameters.
+* 
+* If for example:       \n
+*   -Import.All true    \n
+* then import all parameters specified in model_import_table.
+*
+* If for example:       \n
+*   -ImportModelDb.MyModel "Database=my_model.sqlite;OpenMode=RedaOnly;"     \n
+* then use above connection string to open MyModel database
+* else use default rule to find MyModel model in database:
+*   if model name MyModel exist in current database then use it to import parameters
+*   else open default database: MyModel.sqlite.
+*
+* Following options can be specified to find model run to import parameters from model MyModel,
+* in priority oredr from lowest to highest:     \n
+*   -Import.MyModel true                : use last run where model name = MyModel                           \n
+*   -ImportModelId.MyModel 123          : use last run where model id = 123 and name MyModel                \n
+*   -ImportModelDigest.MyModel fedcba   : use last run where digest = fedcba and name MyModel               \n
+*   -ImportRunName.MyModel GoodRun      : use last run where run name = GoodRun and model name = MyModel    \n
+*   -ImportRunId.MyModel 101            : use run where id = 101 and model name = MyModel                   \n
+*   -ImportRunDigest.MyModel abcdef     : use run where digest = abcdef and model name = MyModel            \n
+*
+* It is possible to specify multiple options to find model run to import parameters.
+* If for example:       \n
+*   -ImportModelId.MyModel 123 -ImportRunName.MyModel GoodRun   \n
+* then result is a run where model name = MyModel and model id = 123 and run name = GoodRun
+*
+* If output table has multiple expressions then by default first expression (zero index) imported as parameter value.
+* To import other expression use:   \n
+*   ImportExpr.AgeTable expr2       \n
+*
+* If output table has multiple accumulators then by default first accumulator (zero index) imported as parameter sub values.
+* To import other accumulator use:  \n
+*   ImportAcc.AgeTable acc4         \n
+*/
+void MetaLoader::parseImportOptions(void)
+{
+    string modelNamePrefix = string(RunOptionsKey::importPrefix) + ".";
+    string modelIdPrefix = string(RunOptionsKey::importModelIdPrefix) + ".";
+    string modelDigestPrefix = string(RunOptionsKey::importModelDigestPrefix) + ".";
+    string runIdPrefix = string(RunOptionsKey::importRunIdPrefix) + ".";
+    string runNamePrefix = string(RunOptionsKey::importRunNamePrefix) + ".";
+    string runDigestPrefix = string(RunOptionsKey::importRunDigestPrefix) + ".";
+    string dbPrefix = string(RunOptionsKey::importDbPrefix) + ".";
+    string exprPrefix = string(RunOptionsKey::importExprPrefix) + ".";
+
+    // add all models from model_parameter_import
+    // if Import.All is true then for each model set import source as last run of the model with that name
+    vector<ParamImportRow> piArr = metaStore->paramImport->byModelId(modelId);
+
+    if (argStore.boolOption(RunOptionsKey::importAll)) {
+        for (const ParamImportRow & pi : piArr) {
+            importOptsMap[pi.fromModel].kind = ImportKind::modelName;
+        }
+    }
+
+    // get name from option key: Import.modelOne => modelOne
+    auto nameKey = [](const string & i_key, size_t i_prefixLen) -> const string {
+        if (i_key.length() <= i_prefixLen) throw ModelException("invalid (empty) name specified for %s option", i_key.c_str());
+        return i_key.substr(i_prefixLen);
+    };
+
+    // for each model run option:
+    // if option is started from import prefix then add model name into import options map with coressponding option value
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+
+        if (equalNoCase(optIt->first.c_str(), RunOptionsKey::importAll)) continue;  // skip "Import.All" option
+
+        // if it is import from run digest: "ImportRunDigest.modelOne abcdef"
+        if (equalNoCase(optIt->first.c_str(), runDigestPrefix.c_str(), runDigestPrefix.length())) {
+            string mName = nameKey(optIt->first, runDigestPrefix.length());
+
+            importOptsMap[mName].runDigest = optIt->second;
+            if(importOptsMap[mName].kind < ImportKind::runDigest) importOptsMap[mName].kind = ImportKind::runDigest;
+            continue;
+        }
+
+        // if it is import from run id: "ImportRunId.modelOne 101"
+        if (equalNoCase(optIt->first.c_str(), runIdPrefix.c_str(), runIdPrefix.length())) {
+            string mName = nameKey(optIt->first, runIdPrefix.length());
+
+            int nId = 0;
+            bool isOk = toInt(optIt->second, nId);
+            if (!isOk || nId <= 0) throw ModelException("invalid run id specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+            importOptsMap[mName].runId = nId;
+            if (importOptsMap[mName].kind < ImportKind::runId) importOptsMap[mName].kind = ImportKind::runId;
+            continue;
+        }
+
+        // if it is import from run name: "ImportRunName.modelOne GoodRun"
+        if (equalNoCase(optIt->first.c_str(), runNamePrefix.c_str(), runNamePrefix.length())) {
+            string mName = nameKey(optIt->first, runNamePrefix.length());
+
+            importOptsMap[mName].runName = optIt->second;
+            if (importOptsMap[mName].kind < ImportKind::runName) importOptsMap[mName].kind = ImportKind::runName;
+            continue;
+        }
+
+        // if it is import from model digest: "ImportModelDigest.modelOne fedcba"
+        if (equalNoCase(optIt->first.c_str(), modelDigestPrefix.c_str(), modelDigestPrefix.length())) {
+            string mName = nameKey(optIt->first, modelDigestPrefix.length());
+
+            importOptsMap[mName].modelDigest = optIt->second;
+            if (importOptsMap[mName].kind < ImportKind::modelDigest) importOptsMap[mName].kind = ImportKind::modelDigest;
+            continue;
+        }
+
+        // if it is import from model id: "ImportModelId.modelOne 123"
+        if (equalNoCase(optIt->first.c_str(), modelIdPrefix.c_str(), modelIdPrefix.length())) {
+            string mName = nameKey(optIt->first, modelIdPrefix.length());
+
+            int nId = 0;
+            bool isOk = toInt(optIt->second, nId);
+            if (!isOk || nId <= 0) throw ModelException("invalid model id specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+
+            importOptsMap[mName].modelId = nId;
+            if (importOptsMap[mName].kind < ImportKind::modelId) importOptsMap[mName].kind = ImportKind::modelId;
+            continue;
+        }
+
+        // if it is import from model name: "Import.modelOne true"
+        if (equalNoCase(optIt->first.c_str(), modelNamePrefix.c_str(), modelNamePrefix.length())) {
+            string mName = nameKey(optIt->first, modelNamePrefix.length());
+
+            if (argStore.boolOption(optIt->first.c_str())) {
+                if (auto it = importOptsMap.find(mName); it != importOptsMap.end()) {
+                    if (it->second.kind == ImportKind::none) importOptsMap[mName].kind = ImportKind::modelName;
+                }
+                else {
+                    importOptsMap[mName].kind = ImportKind::modelName;
+                }
+            }
+            continue;
+        }
+
+        // if it is import database connection string: ImportDb.modelOne "Database=m1.sqlite;"
+        if (equalNoCase(optIt->first.c_str(), dbPrefix.c_str(), dbPrefix.length())) {
+            string mName = nameKey(optIt->first, dbPrefix.length());
+
+            importOptsMap[mName].connectionStr = optIt->second;
+            if (importOptsMap[mName].kind == ImportKind::none) importOptsMap[mName].kind = ImportKind::modelName;
+            continue;
+        }
+
+        // if it is import expression name: ImportExpr.AgeTable expr2
+        if (equalNoCase(optIt->first.c_str(), exprPrefix.c_str(), exprPrefix.length())) {
+            string tName = nameKey(optIt->first, exprPrefix.length());
+
+            const auto piRows = meta()->paramImport->findAll(
+                [&tName](const ParamImportRow & i_row) -> bool { return i_row.fromName == tName; }
+            );
+
+            bool isFound = false;
+            for (const auto & pi : piRows) {
+                paramImportOptsMap[pi.paramId].expr = optIt->second;
+                isFound = true;
+            }
+            if (!isFound) throw ModelException("invalid output table specified: %s %s", optIt->first.c_str(), optIt->second.c_str());
+            continue;
+        }
+    }
+
+    // check: all model names must exist in model_parameter_import
+    for (auto impOptsIt = importOptsMap.begin(); impOptsIt != importOptsMap.end(); ) {
+
+        if (impOptsIt->second.kind == ImportKind::none) {   // remove import if it is disabled for that model name
+            importOptsMap.erase(impOptsIt->first);
+            continue;
+        }
+        
+        // model name must exist in model_parameter_import
+        auto it = find_if(
+            piArr.cbegin(),
+            piArr.cend(),
+            [impOptsIt](const ParamImportRow & i_pi) -> bool { return i_pi.fromModel == impOptsIt->first; }
+        );
+        if (it == piArr.cend()) throw ModelException("invalid model name specified: %s", impOptsIt->first.c_str());
+
+        ++impOptsIt;
+    }
 }
 
 // merge parameter name arguments with profile_option table, ie "Parameter.Age" or "SubValues.Age" argument

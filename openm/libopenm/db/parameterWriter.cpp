@@ -22,13 +22,18 @@ namespace openm
         int modelId;                            // model id in database
         int paramId;                            // parameter id
         int dimCount;                           // number of dimensions
-        size_t totalSize;                       // total number of values in the table
+        size_t totalSize;                       // parameter size for single sub value
         vector<int> dimSizeVec;                 // size of each parameter dimension
         const ParamDicRow * paramRow;           // parameter metadata row
         const TypeDicRow * paramTypeRow;        // parameter type
         vector<TypeEnumLstRow> paramEnums;      // enums for parameter value, if parameter value type is enum based
         vector<ParamDimsRow> paramDims;         // parameter dimensions
         vector<vector<TypeEnumLstRow>> dimEnums;    // enums for each dimension
+
+        // write parameter: write all sub values of the parameter into run db table or set db table
+        void writeParameter(
+            IDbExec * i_dbExec, bool i_isToRun, int i_dstId, const type_info & i_type, int i_subCount, size_t i_valueLen, void * i_valueArr
+        );
 
     private:
         ParameterWriter(const ParameterWriter & i_writer) = delete;
@@ -50,17 +55,16 @@ namespace openm
         // Parameter writer cleanup
         ~ParameterSetWriter(void) noexcept override { }
         
-        // return total number of values
+        // parameter size for single sub value
         virtual size_t sizeOf(void) const noexcept override { return totalSize; }
         
-        // write workset parameter values
+        // write parameter: write all sub values of the parameter into db set table
         void writeParameter(
-            IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * i_valueArr
+            IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * i_valueArr
             ) override;
         
     private:
         int setId;              // destination workset id
-        string paramSetDbTable; // db table name for workset values of parameter
 
     private:
         ParameterSetWriter(const ParameterSetWriter & i_writer) = delete;
@@ -82,14 +86,21 @@ namespace openm
         // Parameter writer cleanup
         ~ParameterRunWriter(void) noexcept override { }
 
-        // return total number of values
+        // parameter size for single sub value
         virtual size_t sizeOf(void) const noexcept override { return totalSize; }
 
+        // write parameter: write all sub values of the parameter into db run table
+        void writeParameter(
+            IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * i_valueArr
+        ) override;
+
         // load parameter values from csv file into run table
-        virtual void loadCsvParameter(IDbExec * i_dbExec, const vector<int> & i_subIdArr, const char * i_filePath, bool i_isIdCsv = false) override;
+        virtual void loadCsvParameter(
+            IDbExec * i_dbExec, const vector<int> & i_subIdArr, const char * i_filePath, bool i_isIdCsv = false
+        ) override;
 
         // calculate run parameter values digest and store only single copy of parameter values
-        void digestParameter(IDbExec * i_dbExec, int i_paramSubCount, const type_info & i_type) override;
+        void digestParameter(IDbExec * i_dbExec, int i_subCount, const type_info & i_type) override;
 
     private:
         int runId;              // model run id
@@ -168,9 +179,7 @@ ParameterWriter::ParameterWriter(
         vector<TypeEnumLstRow> de = i_metaStore->typeEnumLst->byModelIdTypeId(modelId, dim.typeId);
         int dimSize = (int)de.size();
         dimEnums.push_back(de);
-
-        if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
-
+        // if (dimSize > 0) totalSize *= dimSize;  // can be simple type, without enums in enum list
         dimSizeVec.push_back(dimSize);
     }
 
@@ -197,9 +206,6 @@ ParameterSetWriter::ParameterSetWriter(
 
     vector<WorksetParamRow>::const_iterator wsParamIt = WorksetParamRow::byKey(i_setId, paramId, i_metaSet->worksetParam);
     if (wsParamIt == i_metaSet->worksetParam.cend()) throw DbException("workset %d does not contain parameter %s", i_setId, paramRow->paramName.c_str());
-
-    // name of workset parameter value table
-    paramSetDbTable = paramRow->dbSetTable;
 }
 
 // create new writer for model run parameter
@@ -224,30 +230,47 @@ template<typename TValue> void setDbValue(size_t i_cellOffset, const void * i_va
     o_dbVal = DbValue(val);
 }
 
-// write workset parameter values
-void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * i_valueArr)
+// write parameter: write all sub values of the parameter into db set table
+void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * i_valueArr)
 {
-    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
-    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter, id: %d", i_size, paramId);
-    if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zu for parameter: %d %s", i_size, paramId, paramRow->paramName.c_str());
 
-    if (!i_dbExec->isTransaction()) throw DbException("workset update must be in transaction scope");
-
-    // validate sub_id: must be between 0 and sub_count
     int nSub = i_dbExec->selectToInt(
         "SELECT sub_count FROM workset_parameter WHERE set_id = " + to_string(setId) + " AND parameter_hid = " + to_string(paramRow->paramHid),
         -1);
-    if (i_subId < 0 || i_subId >= nSub) throw DbException("invalid sub value id: %d for parameter id: %d", i_subId, paramId);
+    if (i_subCount <= 0 || i_subCount != nSub) throw DbException("invalid sub-value count %d for parameter: %d %s", i_subCount, paramId, paramRow->paramName.c_str());
 
-    // set parameter columns type: dimensions and value
+    ParameterWriter::writeParameter(i_dbExec, false, setId, i_type, i_subCount, i_size * (size_t)i_subCount, i_valueArr);
+}
+
+// write parameter: write all sub values of the parameter into db run table
+void ParameterRunWriter::writeParameter(IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * i_valueArr)
+{
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zu for parameter: %d %s", i_size, paramId, paramRow->paramName.c_str());
+    if (i_subCount <= 0) throw DbException("invalid sub-value count %d for parameter: %d %s", i_subCount, paramId, paramRow->paramName.c_str());
+
+    ParameterWriter::writeParameter(i_dbExec, true, runId, i_type, i_subCount, i_size * (size_t)i_subCount, i_valueArr);
+}
+
+// write parameter: write all sub values of the parameter into run db table or set db table
+void ParameterWriter::writeParameter(
+    IDbExec * i_dbExec, bool i_isToRun, int i_dstId, const type_info & i_type, int i_subCount, size_t i_valueLen, void * i_valueArr
+) {
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    // if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter, id: %d", i_size, paramId);
+    if (i_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+    if (i_subCount <= 0) throw DbException("invalid sub-value count %d for parameter: %d %s", i_subCount, paramId, paramRow->paramName.c_str());
+    if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction: %d %s", paramId, paramRow->paramName.c_str());
+
+    // set parameter columns type: sub value id, dimensions and value
     vector<const type_info *> typeArr;
-    for (int nDim = 0; nDim < dimCount; nDim++) {
+    for (int nDim = 0; nDim < 1 + dimCount; nDim++) {
         typeArr.push_back(&typeid(int));
     }
     typeArr.push_back(&i_type);         // type of value
 
     // set parameter column conversion handler
-    function<void (size_t i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
+    function<void(size_t i_cellOffset, const void * i_valueArr, DbValue & o_dbVal)> doSetValue = nullptr;
 
     if (i_type == typeid(char)) doSetValue = setDbValue<char>;
     if (i_type == typeid(unsigned char)) doSetValue = setDbValue<unsigned char>;
@@ -275,25 +298,30 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, int i_subId, const t
 
     if (doSetValue == nullptr) throw DbException("invalid type to use as input parameter");    // conversion to target parameter type is not supported
 
-    // make sql to insert parameter value
-    // INSERT INTO ageSex_w201208171604590148 (set_id, sub_id, dim0, dim1, param_value) VALUES (2, 31, ?, ?, ?)
+    // make sql to insert parameter value into run table or into set table:
     //
-    string insSql = "INSERT INTO " + paramSetDbTable + " (set_id, sub_id";
+    // INSERT INTO ageSex_p201208171604590148 (run_id, sub_id, dim0, dim1, param_value) VALUES (104, ?, ?, ?, ?)
+    // INSERT INTO ageSex_w201208171604590148 (set_id, sub_id, dim0, dim1, param_value) VALUES (102, ?, ?, ?, ?)
+    //
+    string insSql = i_isToRun ?
+        "INSERT INTO " + paramRow->dbRunTable + " (run_id, sub_id" :
+        "INSERT INTO " + paramRow->dbSetTable + " (set_id, sub_id";
 
     for (const ParamDimsRow & dim : paramDims) {
         insSql += ", " + dim.name;
     }
 
-    insSql += ", param_value) VALUES (" + to_string(setId) + ", " + to_string(i_subId);
+    insSql += ", param_value) VALUES (" + to_string(i_dstId);
 
-    for (int nDim = 0; nDim < dimCount; nDim++) {
+    for (int nDim = 0; nDim < 1 + dimCount; nDim++) {
         insSql += ", ?";
     }
     insSql += ", ?)";
 
     // delete existing parameter values
-    i_dbExec->update(
-        "DELETE FROM " + paramSetDbTable + " WHERE set_id = " + to_string(setId) + " AND sub_id = " + to_string(i_subId)
+    i_dbExec->update(i_isToRun ?
+        "DELETE FROM " + paramRow->dbRunTable + " WHERE run_id = " + to_string(i_dstId) :
+        "DELETE FROM " + paramRow->dbSetTable + " WHERE set_id = " + to_string(i_dstId)
     );
 
     // do insert values
@@ -302,47 +330,49 @@ void ParameterSetWriter::writeParameter(IDbExec * i_dbExec, int i_subId, const t
         exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
         i_dbExec->createStatement(insSql, (int)typeArr.size(), typeArr.data());
 
-        // storage for dimension enum indexes
-        unique_ptr<int> cellArrUptr(new int[dimCount]);
+        // storage for sub value id index and dimension enum indexes
+        unique_ptr<int> cellArrUptr(new int[1 + dimCount]);
         int * cellArr = cellArrUptr.get();
 
-        for (int k = 0; k < dimCount; k++) {
+        for (int k = 0; k < 1 + dimCount; k++) {
             cellArr[k] = 0;
         }
 
-        // storage for dimension items and db row values
-        int rowSize = dimCount + 1;
+        // storage for sub value id, dimension items and db row values
+        int rowSize = dimCount + 2;
         unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
         DbValue * valVec = valVecUptr.get();
 
         // loop through all dimensions and store cell values
-        for (size_t cellOffset = 0; cellOffset < i_size; cellOffset++) {
+        for (size_t cellOffset = 0; cellOffset < i_valueLen; cellOffset++) {
+
+            valVec[0] = DbValue(cellArr[0]);    // set sql parameter value: sub value id by sub value index
 
             // set sql parameter values: dimension enum id by enum index
             for (int nDim = 0; nDim < dimCount; nDim++) {
 
-                int eId = cellArr[nDim];
-                if (dimSizeVec[nDim] > 0) eId = dimEnums[nDim][cellArr[nDim]].enumId;
+                int eId = cellArr[1 + nDim];
+                if (dimSizeVec[nDim] > 0) eId = dimEnums[nDim][cellArr[1 + nDim]].enumId;
 
-                valVec[nDim] = DbValue(eId);
+                valVec[1 + nDim] = DbValue(eId);
             }
 
-            doSetValue(cellOffset, i_valueArr, valVec[dimCount]);   // set parameter value
+            doSetValue(cellOffset, i_valueArr, valVec[rowSize - 1]);    // set parameter value
 
             // insert cell value into parameter table
             i_dbExec->executeStatement(rowSize, valVec);
 
-            // get next cell indices
-            for (int nDim = dimCount - 1; nDim >= 0; nDim--) {
-                if (nDim > 0 && cellArr[nDim] >= dimSizeVec[nDim] - 1) {
-                    cellArr[nDim] = 0;
+            // get next cell indices for sub value id and dimensions
+            for (int n = dimCount; n >= 0; n--) {
+                if (n > 0 && cellArr[n] >= dimSizeVec[n - 1] - 1) {
+                    cellArr[n] = 0;
                 }
                 else {
-                    cellArr[nDim]++;
+                    cellArr[n]++;
                     break;
                 }
             }
-            if (cellOffset + 1 < i_size && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException("Invalid value array size");
+            if (cellOffset + 1 < i_valueLen && cellArr[0] >= i_subCount) throw DbException("Invalid value array size");
         }
     }
     // done with insert
@@ -355,7 +385,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> 
     if (i_filePath == nullptr) throw DbException("invalid (empty) parameter.csv file path for parameter: %d %s", paramId, paramRow->paramName.c_str());
     size_t subCount = i_subIdArr.size();
     if (subCount <= 0) throw DbException("invalid sub-value count %zu for parameter: %d %s", subCount, paramId, paramRow->paramName.c_str());
-    if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope for parameter: %d %s", paramId, paramRow->paramName.c_str());
+    if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope: %d %s", paramId, paramRow->paramName.c_str());
 
     // check if special parameter value handling required: 
     // bool conversion to 0/1 or quoted for string or enum code to id
@@ -385,7 +415,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> 
     sort(srcSubIdArr.begin(), srcSubIdArr.end());
 
     // used to map csv (source) sub-value id into run parameter (destination) sub id
-    // return true if sub id is in the ange of expected sub id's
+    // return true if sub id is in the range of expected sub id's
     auto mapSubId = [&srcSubIdArr](int i_subId) -> tuple<bool, int> {
         auto it = lower_bound(srcSubIdArr.cbegin(), srcSubIdArr.cend(), i_subId);
         if (it != srcSubIdArr.cend() && *it == i_subId) {
@@ -585,10 +615,10 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> 
 }
 
 // calculate parameter values digest and store only single copy of parameter values
-void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_paramSubCount, const type_info & i_type)
+void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, const type_info & i_type)
 {
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
-    if (i_paramSubCount <= 0) throw DbException("invalid sub-value count %d for parameter: %d %s", i_paramSubCount, paramId, paramRow->paramName.c_str());
+    if (i_subCount <= 0) throw DbException("invalid sub-value count %d for parameter: %d %s", i_subCount, paramId, paramRow->paramName.c_str());
     if (!i_dbExec->isTransaction()) throw DbException("parameter update must be in transaction scope");
 
     // insert run_parameter dictionary record
@@ -597,7 +627,7 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_paramSubCount
 
     i_dbExec->update(
         "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, run_digest)" \
-        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + to_string(i_paramSubCount) + ", NULL)"
+        " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + to_string(i_subCount) + ", NULL)"
         );
 
     // build sql to select parameter values:

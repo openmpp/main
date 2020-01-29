@@ -53,7 +53,7 @@ namespace openm
         virtual int size(void) const = 0;
 
         /** array[rowSize] of type_info for each column, used to convert from db-type to target type */
-        virtual const type_info *const * columnTypes(void) const = 0;
+        virtual const type_info * const * columnTypes(void) const = 0;
 
         /**
          * @brief   field value setter: i_row[i_column] = *i_value 

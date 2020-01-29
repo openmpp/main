@@ -3,6 +3,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "dbParameter.h"
+
 using namespace openm;
 
 namespace openm
@@ -27,10 +28,20 @@ namespace openm
         // return input parameter size: total number of values in the table
         size_t sizeOf(void) const noexcept override { return totalSize; }
 
-        // read input parameter values
+        // read input parameter single sub value
         void readParameter(
             IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr
             ) override;
+
+        // read all sub values of input parameter
+        void readParameter(
+            IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * io_valueArr
+        ) override;
+
+        // read input parameter single selected sub values
+        void readParameter(
+            IDbExec * i_dbExec, const vector<int> & i_subIdArr, const type_info & i_type, size_t i_size, void * io_valueArr
+        ) override;
 
     private:
         int runId;                      // source run id
@@ -91,8 +102,20 @@ ParameterReader::ParameterReader(
     totalSize = i_metaStore->parameterSize(*paramRow);  // parameter size: product of dimensions size
 }
 
-// read input parameter values
+// read input parameter single sub value
 void ParameterReader::readParameter(IDbExec * i_dbExec, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr)
+{
+    // validate parameters
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter id: %d", i_size, paramId);
+    if (io_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+
+    const vector<int> subIdArr = { i_subId };
+    readParameter(i_dbExec, subIdArr, i_type, i_size, io_valueArr);
+}
+
+// read all sub values of input parameter
+void ParameterReader::readParameter(IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * io_valueArr)
 {
     // validate parameters
     if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
@@ -103,37 +126,66 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, int i_subId, const type_
     int nSub = i_dbExec->selectToInt(
         "SELECT sub_count FROM run_parameter WHERE run_id = " + to_string(runId) + " AND parameter_hid = " + to_string(paramRow->paramHid),
         -1);
-    if (i_subId < 0 || i_subId >= nSub) throw DbException("invalid sub value id: %d for parameter id: %d", i_subId, paramId);
+    if (i_subCount != nSub) throw DbException("invalid sub value count: %d, expected: %d for parameter id: %d", i_subCount, nSub, paramId);
+
+    const vector<int> subIdArr;
+    readParameter(i_dbExec, subIdArr, i_type, i_size, io_valueArr);
+}
+
+// read input parameter single selected sub values or all sub values if i_subIdArr is empty
+void ParameterReader::readParameter(IDbExec * i_dbExec, const vector<int> & i_subIdArr, const type_info & i_type, size_t i_size, void * io_valueArr)
+{
+    // validate parameters
+    if (i_dbExec == nullptr) throw DbException("invalid (NULL) database connection");
+    if (i_size <= 0 || totalSize != i_size) throw DbException("invalid value array size: %zd for parameter id: %d", i_size, paramId);
+    if (io_valueArr == nullptr) throw DbException("invalid value array: it can not be NULL for parameter, id: %d", paramId);
+
+    // validate sub_id: must be between 0 and sub_count
+    int nDstSubCount = (int)i_subIdArr.size();
+
+    int nSub = i_dbExec->selectToInt(
+        "SELECT sub_count FROM run_parameter WHERE run_id = " + to_string(runId) + " AND parameter_hid = " + to_string(paramRow->paramHid),
+        -1);
+    if (nDstSubCount > 0) {
+        for (int nId : i_subIdArr) {
+            if (nId < 0 || nId >= nSub) throw DbException("invalid sub value id: %d for parameter id: %d", nId, paramId);
+        }
+    }
 
     // make sql to select parameter value
     //
-    // SELECT dim0, dim1, param_value 
+    // SELECT sub_id, dim0, dim1, param_value 
     // FROM ageSex_p201208171604590148 
     // WHERE run_id = 
     // (
     //   SELECT R.base_run_id FROM run_parameter R WHERE R.run_id = 4 AND R.parameter_hid = 654
     // )
-    // AND sub_id = 31
-    // ORDER BY 1, 2
+    // AND sub_id IN (2, 4, 6, 8)
+    // ORDER BY 1, 2, 3
     //
     string sDimLst;
-    string sOrder;
+    string sOrder = "1";
 
     for (int k = 0; k < dimCount; k++) {
         sDimLst += paramDims[k].name + ", ";
-        sOrder += to_string(k + 1) + ((k < dimCount - 1) ? ", " : "");
+        sOrder += ", " + to_string(k + 2);
     }
 
-    string sql = "SELECT " + sDimLst + " param_value" +
+    string sIdLst;
+    for (int k = 0; k < nDstSubCount; k++) {
+        sIdLst += (k > 0 ? ", " : "") + to_string(i_subIdArr[k]);
+    }
+
+    string sql = "SELECT sub_id, " + sDimLst + " param_value" +
         " FROM " + paramDbTable +
         " WHERE run_id = " \
         " (" \
         " SELECT R.base_run_id FROM run_parameter R" \
         " WHERE R.run_id = " + to_string(runId) + " AND R.parameter_hid = " + to_string(paramRow->paramHid) +
         " )" +
-        " AND sub_id = " + to_string(i_subId) +
-        ((dimCount > 0) ? " ORDER BY " + sOrder : "");
+        (nDstSubCount > 0 ? " AND sub_id IN (" + sIdLst + ")" : "") +
+        " ORDER BY " + sOrder;
 
     // select parameter and return value column
-    i_dbExec->selectColumn(sql, dimCount, i_type, i_size, io_valueArr);
+    i_dbExec->selectColumn(sql, 1 + dimCount, i_type, (nDstSubCount > 0 ? nDstSubCount * i_size : nSub * i_size), io_valueArr);
 }

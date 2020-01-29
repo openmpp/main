@@ -41,18 +41,19 @@ namespace openm
 
     // Columns type for parameter_dic join to model_parameter_dic row
     static const type_info * typeParamDicRow[] = { 
-        &typeid(decltype(ParamDicRow::modelId)), 
-        &typeid(decltype(ParamDicRow::paramId)), 
-        &typeid(decltype(ParamDicRow::paramName)), 
-        &typeid(decltype(ParamDicRow::paramHid)), 
-        &typeid(decltype(ParamDicRow::digest)), 
-        &typeid(decltype(ParamDicRow::rank)), 
-        &typeid(decltype(ParamDicRow::typeId)), 
+        &typeid(decltype(ParamDicRow::modelId)),
+        &typeid(decltype(ParamDicRow::paramId)),
+        &typeid(decltype(ParamDicRow::paramName)),
+        &typeid(decltype(ParamDicRow::paramHid)),
+        &typeid(decltype(ParamDicRow::digest)),
+        &typeid(decltype(ParamDicRow::rank)),
+        &typeid(decltype(ParamDicRow::typeId)),
         &typeid(decltype(ParamDicRow::isExtendable)),
         &typeid(decltype(ParamDicRow::isHidden)),
         &typeid(decltype(ParamDicRow::numCumulated)),
         &typeid(decltype(ParamDicRow::dbRunTable)),
-        &typeid(decltype(ParamDicRow::dbSetTable))
+        &typeid(decltype(ParamDicRow::dbSetTable)),
+        &typeid(decltype(ParamDicRow::importDigest))
     };
 
     // Size (number of columns) for parameter_dic join to model_parameter_dic row
@@ -105,6 +106,9 @@ namespace openm
             case 11:
                 dynamic_cast<ParamDicRow *>(i_row)->dbSetTable = ((const char *)i_value);
                 break;
+            case 12:
+                dynamic_cast<ParamDicRow *>(i_row)->importDigest = ((const char *)i_value);
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -133,8 +137,9 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = ParamDicRowAdapter();
     rowVec = load(
         "SELECT" \
-        " M.model_id, M.model_parameter_id, D.parameter_name, D.parameter_hid, D.parameter_digest," \
-        " D.parameter_rank, T.model_type_id, D.is_extendable, M.is_hidden, D.num_cumulated, D.db_run_table, D.db_set_table" \
+        " M.model_id, M.model_parameter_id, D.parameter_name, D.parameter_hid," \
+        " D.parameter_digest, D.parameter_rank, T.model_type_id, D.is_extendable," \
+        " M.is_hidden, D.num_cumulated, D.db_run_table, D.db_set_table, D.import_digest" \
         " FROM parameter_dic D" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
         " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +

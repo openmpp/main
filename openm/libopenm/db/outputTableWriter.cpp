@@ -446,8 +446,8 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     md5.add(sLine.c_str(), sLine.length()); // append expressions header
 
     // +1 column: expr_id
-    ValueRowDigester md5ExprRd(dimCount + 1, typeid(double), &md5, doubleFmt.c_str());
-    ValueRowAdapter exprAdp(dimCount + 1, typeid(double));
+    ValueRowDigester md5ExprRd(1 + dimCount, typeid(double), &md5, doubleFmt.c_str());
+    ValueRowAdapter exprAdp(1 + dimCount, typeid(double));
 
     i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5ExprRd);
 

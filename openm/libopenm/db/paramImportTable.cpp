@@ -23,7 +23,7 @@ namespace openm
         IRowBaseVec & rowsRef(void) override { return rowVec; }
 
         // find row by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name
-        const ParamImportRow * byKey(int i_modelId, int i_paramId, bool i_isFromParam, const string & i_fromName, const string & i_fromModel) const override;
+        const ParamImportRow * byKey(int i_modelId, int i_paramId) const override;
 
         // get list of rows by model id
         vector<ParamImportRow> byModelId(int i_modelId) const override;
@@ -41,10 +41,9 @@ namespace openm
         &typeid(decltype(ParamImportRow::modelId)), 
         &typeid(decltype(ParamImportRow::paramId)), 
         &typeid(decltype(ParamImportRow::paramHid)),
-        &typeid(decltype(ParamImportRow::isFromParam)),
         &typeid(decltype(ParamImportRow::fromName)),
-        & typeid(decltype(ParamImportRow::fromModel)),
-        & typeid(decltype(ParamImportRow::isSampleDim))
+        &typeid(decltype(ParamImportRow::fromModel)),
+        &typeid(decltype(ParamImportRow::isSampleDim))
     };
     // Size (number of columns) for parameter_dic join to model_parameter_import row
     static const int sizeParamImportRow = sizeof(typeParamImportRow) / sizeof(const type_info *);
@@ -70,15 +69,12 @@ namespace openm
                 dynamic_cast<ParamImportRow *>(i_row)->paramHid = (*(int *)i_value);
                 break;
             case 3:
-                dynamic_cast<ParamImportRow *>(i_row)->isFromParam = (*(bool *)i_value);
-                break;
-            case 4:
                 dynamic_cast<ParamImportRow *>(i_row)->fromName = ((const char *)i_value);
                 break;
-            case 5:
+            case 4:
                 dynamic_cast<ParamImportRow *>(i_row)->fromModel = ((const char *)i_value);
                 break;
-            case 6:
+            case 5:
                 dynamic_cast<ParamImportRow *>(i_row)->isSampleDim = (*(bool *)i_value);
                 break;
             default:
@@ -109,12 +105,12 @@ ParamImportTable::ParamImportTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = ParamImportRowAdapter();
     rowVec = load(
         "SELECT" \
-        " I.model_id, I.model_parameter_id, D.parameter_hid, I.is_from_parameter, I.from_name, I.from_model_name, I.is_sample_dim" \
+        " I.model_id, I.model_parameter_id, D.parameter_hid, I.from_name, I.from_model_name, I.is_sample_dim" \
         " FROM parameter_dic D" \
-        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
-        " INNER JOIN model_parameter_import I ON (I.model_id = M.model_id AND I.model_parameter_id = M.model_parameter_id)" +
-        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
-        " ORDER BY 1, 2, 4, 5, 6", 
+        " INNER JOIN model_parameter_dic MP ON (MP.parameter_hid = D.parameter_hid)" \
+        " INNER JOIN model_parameter_import I ON (I.model_id = MP.model_id AND I.model_parameter_id = MP.model_parameter_id)" +
+        ((i_modelId > 0) ? " WHERE I.model_id = " + to_string(i_modelId) : "") +
+        " ORDER BY 1, 2", 
         i_dbExec,
         adp
         );
@@ -124,9 +120,9 @@ ParamImportTable::ParamImportTable(IDbExec * i_dbExec, int i_modelId)
 ParamImportTable::~ParamImportTable(void) noexcept { }
 
 // Find row by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name
-const ParamImportRow * ParamImportTable::byKey(int i_modelId, int i_paramId, bool i_isFromParam, const string & i_fromName, const string & i_fromModel) const
+const ParamImportRow * ParamImportTable::byKey(int i_modelId, int i_paramId) const
 {
-    const IRowBaseUptr keyRow( new ParamImportRow(i_modelId, i_paramId, i_isFromParam, i_fromName, i_fromModel) );
+    const IRowBaseUptr keyRow( new ParamImportRow(i_modelId, i_paramId) );
     return findKey(keyRow);
 }
 

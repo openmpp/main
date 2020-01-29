@@ -97,7 +97,7 @@ void RootController::init(void)
     // load metadata table rows, except of run_option, which is may not created yet
     // load messages from database
     metaStore.reset(new MetaHolder);
-    modelId = readMetaTables(dbExec, metaStore.get());
+    modelId = readMetaTables(dbExec, metaStore.get(), OM_MODEL_NAME, OM_MODEL_DIGEST);
     loadMessages(dbExec);
 
     // merge command line and ini-file arguments with profile_option table values
@@ -168,8 +168,6 @@ void RootController::broadcastMetaData(void)
     broadcastMetaTable<ITableDimsTable>(MsgTag::tableDims, metaStore->tableDims);
     broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
     broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
-    broadcastMetaTable<IGroupLstTable>(MsgTag::groupLst, metaStore->groupLst);
-    broadcastMetaTable<IGroupPcTable>(MsgTag::groupPc, metaStore->groupPc);
 }
 
 // broadcast meta table db rows
@@ -496,7 +494,7 @@ void RootController::readParameter(const char * i_name, int i_subId, const type_
     try {
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(rootRunGroup().runId, i_name, dbExec, metaStore.get())
+            IParameterReader::create(rootRunGroup().runId, i_name, dbExec, meta())
             );
         reader->readParameter(dbExec, i_subId, i_type, i_size, io_valueArr);
 
@@ -530,7 +528,7 @@ void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 
         // read parameter from db
         unique_ptr<IParameterReader> reader(
-            IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[nPar].name, dbExec, metaStore.get())
+            IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[nPar].name, dbExec, meta())
             );
         int nCount = parameterSubCount(reader->parameterId());
 
@@ -581,7 +579,7 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
         // get accumulator data size
         if (tblId != accVec[nAcc].tableId) {
             tblId = accVec[nAcc].tableId;
-            valSize = IOutputTableWriter::sizeOf(metaStore.get(), tblId);
+            valSize = IOutputTableWriter::sizeOf(meta(), tblId);
         }
 
         for (int nSub = 0; nSub < subValueCount; nSub++) {
@@ -627,7 +625,7 @@ bool RootController::receiveSubValues(void)
             accRecv.runId,
             tblRow->tableName.c_str(),
             dbExec,
-            metaStore.get(),
+            meta(),
             subValueCount,
             modelRunOptions().useSparse,
             modelRunOptions().nullValue

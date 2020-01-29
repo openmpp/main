@@ -110,4 +110,64 @@ public:
     }
 };
 
+// age by sex income
+class AgeSexIncome
+{
+public:
+    static const size_t N_CELL = N_AGE * N_SEX;     // number of cells, total emuns disabled for all dimensions
+    static const size_t N_ACC = 2;                  // number of accumulators
+    static const size_t ACC_INCOME_ID = 0;          // accumulator 0: income
+    static const size_t ACC_OLD_AGE_ID = 1;         // accumulator 1: income adjusted for old age
+    static const char * NAME;                       // output table name: ageSexIncome
+
+public:
+    double * acc[N_ACC];                // acc[N_ACC][N_CELL];
+    forward_list<unique_ptr<double> > acc_storage;
+
+    AgeSexIncome(void)
+    {
+        auto it = acc_storage.before_begin();
+        for (size_t k = 0; k < N_ACC; k++) {
+            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            acc[k] = it->get();
+        }
+    }
+
+    // initailize accumulators
+    void initialize_accumulators(void)
+    {
+        std::fill(acc[ACC_INCOME_ID], &acc[ACC_INCOME_ID][N_CELL], 0.0);
+        std::fill(acc[ACC_OLD_AGE_ID], &acc[ACC_OLD_AGE_ID][N_CELL], 0.0);
+    }
+};
+
+// seed for old age output table
+class SeedOldAge
+{
+public:
+    static const size_t N_CELL = 1;     // number of cells =1 for scalar parameter
+    static const size_t N_ACC = 1;      // number of accumulators
+    static const size_t ACC_ID = 0;     // accumulator 0: seed value
+    static const char * NAME;           // output table name: seedOldAge
+
+public:
+    double * acc[N_ACC];                // acc[N_ACC][N_CELL];
+    forward_list<unique_ptr<double> > acc_storage;
+
+    SeedOldAge(void)
+    {
+        auto it = acc_storage.before_begin();
+        for (size_t k = 0; k < N_ACC; k++) {
+            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            acc[k] = it->get();
+        }
+    }
+
+    // initailize accumulators
+    void initialize_accumulators(void)
+    {
+        std::fill(acc[ACC_ID], &acc[ACC_ID][N_CELL], 0.0);
+    }
+};
+
 #endif  // MODEL_ONE_H

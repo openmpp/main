@@ -203,6 +203,7 @@
     <ClCompile Include="db\modelDicTable.cpp" />
     <ClCompile Include="db\modelDicTxtTable.cpp" />
     <ClCompile Include="db\modelWordTable.cpp" />
+    <ClCompile Include="db\outputTableReader.cpp" />
     <ClCompile Include="db\outputTableWriter.cpp" />
     <ClCompile Include="db\paramDicTable.cpp" />
     <ClCompile Include="db\paramDicTxtTable.cpp" />
@@ -249,6 +250,7 @@
     <ClCompile Include="model\rootController.cpp" />
     <ClCompile Include="model\runController.cpp" />
     <ClCompile Include="model\runControllerNewRun.cpp" />
+    <ClCompile Include="model\runControllerParams.cpp" />
     <ClCompile Include="model\singleController.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />

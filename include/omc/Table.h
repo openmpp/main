@@ -10,6 +10,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <numeric>
 #include <memory>
 
 using namespace std;

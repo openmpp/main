@@ -95,46 +95,48 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (99, 
 -- modelOne input parameters
 -- parameter digest: not a real digest (32 digits hex)
 -- db suffix: not a real value (8 digits hex)
---   ageSex parameter is float and parameter value can be null
---   salaryFull parameter is enum-based
---   baseSalary is scalar parameter is enum-based
---   filePath is a test parameter of string type
---   isOldAge parameter of logical type
+--   ageSex rank 2, float and parameter value can be null
+--   salaryAge rank 2, int
+--   StartingSeed rank 0 scalar (no dimensions), int
+--   salaryFull rank 1, enum-based
+--   baseSalary rank 0 scalar enum-based
+--   filePath rank 0 of string type
+--   isOldAge rank 0 logical type
 --
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (44, 'ageSex', '_20128171604590131', 2, 14, 1, 0, 'ageSex_p_2012817', 'ageSex_w_2012817');
+  (44, 'ageSex', '_20128171604590131', 2, 14, 1, 0, 'ageSex_p_2012817', 'ageSex_w_2012817', '_i0128171604590131');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (45, 'salaryAge', '_20128171604590132', 2, 4, 0, 0, 'salaryAge_p_2012818', 'salaryAge_w_2012818');
+  (45, 'salaryAge', '_20128171604590132', 2, 4, 0, 0, 'salaryAge_p_2012818', 'salaryAge_w_2012818', '_i0128171604590132');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (46, 'StartingSeed', '_20128171604590133', 0, 4, 0, 0, 'StartingSeed_p_2012819', 'StartingSeed_w_2012819');
+  (46, 'StartingSeed', '_20128171604590133', 0, 4, 0, 0, 'StartingSeed_p_2012819', 'StartingSeed_w_2012819', '_i0128171604590133');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (47, 'salaryFull', '_20128171604590134', 1, 99, 0, 0, 'salaryFull_p_2012812', 'salaryFull_w_2012812');
+  (47, 'salaryFull', '_20128171604590134', 1, 99, 0, 0, 'salaryFull_p_2012812', 'salaryFull_w_2012812', '_i0128171604590134');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (48, 'baseSalary', '_20128171604590135', 0, 99, 0, 0, 'baseSalary_p_2012811', 'baseSalary_w_2012811');
+  (48, 'baseSalary', '_20128171604590135', 0, 99, 0, 0, 'baseSalary_p_2012811', 'baseSalary_w_2012811', '_i0128171604590135');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (49, 'filePath', '_20128171604590136', 0, 21, 0, 0, 'filePath_p_2012814', 'filePath_w_2012814');
+  (49, 'filePath', '_20128171604590136', 0, 21, 0, 0, 'filePath_p_2012814', 'filePath_w_2012814', '_i0128171604590136');
 
 INSERT INTO parameter_dic
-  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+  (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
 VALUES
-  (50, 'isOldAge', '_20128171604590137', 1, 7, 0, 0, 'isOldAge_p_2012815', 'isOldAge_w_2012815');
+  (50, 'isOldAge', '_20128171604590137', 1, 7, 0, 0, 'isOldAge_p_2012815', 'isOldAge_w_2012815', '_i0128171604590137');
   
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 0, 44, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 1, 45, 0);
@@ -144,20 +146,10 @@ INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 5, 49, 0);
 INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 6, 50, 0);
 
-INSERT INTO model_parameter_import
-  (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
-VALUES
-  (1, 0, 1, 'ageSex', 'modelOne', 0);
-
-INSERT INTO model_parameter_import
-  (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
-VALUES
-  (1, 1, 1, 'salaryAge', 'modelOne', 0);
-
-INSERT INTO model_parameter_import
-  (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
-VALUES
-  (1, 2, 1, 'StartingSeed', 'modelOne', 0);
+INSERT INTO model_parameter_import (model_id, model_parameter_id, from_name, from_model_name, is_sample_dim) VALUES (1, 1, 'salaryAge', 'modelOne', 0);
+INSERT INTO model_parameter_import (model_id, model_parameter_id, from_name, from_model_name, is_sample_dim) VALUES (1, 2, 'StartingSeed', 'modelOne', 0);
+INSERT INTO model_parameter_import (model_id, model_parameter_id, from_name, from_model_name, is_sample_dim) VALUES (1, 0, 'ageSexIncome', 'modelOne', 0);
+-- INSERT INTO model_parameter_import (model_id, model_parameter_id, from_name, from_model_name, is_sample_dim) VALUES (1, 0, 'ageSex', 'modelOne', 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (44, 0, 'Age by Sex', 'Age by Sex note');
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (44, 1, '(FR) Age by Sex', NULL);
@@ -192,12 +184,13 @@ INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VAL
 --
 
 --
+-- salarySex output table
 -- salary by sex output table
 --
 INSERT INTO table_dic 
-  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view) 
+  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest) 
 VALUES 
-  (82, 'salarySex', '_20128171604590182', 2, 1, 'salarySex_v_2012882', 'salarySex_a_2012882', 'salarySex_d_2012882');
+  (82, 'salarySex', '_20128171604590182', 2, 1, 'salarySex_v_2012882', 'salarySex_a_2012882', 'salarySex_d_2012882', '_i0128171604590182');
 
 INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 0, 82, 0, 1, 0);
   
@@ -276,12 +269,13 @@ INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (82, 3, 0, 'Average acc0 * acc1', NULL);
 
 --
+-- fullAgeSalary output table
 -- full time by age by salary output table
 --
 INSERT INTO table_dic 
-  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view) 
+  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest) 
 VALUES 
-  (83, 'fullAgeSalary', '_20128171604590183', 3, 0, 'fullAgeSalary_v_2012883', 'fullAgeSalary_a_2012883', 'fullAgeSalary_d_2012883');
+  (83, 'fullAgeSalary', '_20128171604590183', 3, 0, 'fullAgeSalary_v_2012883', 'fullAgeSalary_a_2012883', 'fullAgeSalary_d_2012883', '_i0128171604590183');
 
 INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 1, 83, 0, 1, 0);
 
@@ -320,6 +314,92 @@ VALUES
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (83, 0, 0, 'Average acc0', 'Average on acc0 notes');
 
 --
+-- ageSexIncome output table
+-- age by sex income output table
+-- import digest same as ageSex parameter import digest
+--
+INSERT INTO table_dic 
+  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest) 
+VALUES 
+  (84, 'ageSexIncome', '_20128171604590184', 2, 0, 'ageSexIncome_v_2012884', 'ageSexIncome_a_2012884', 'ageSexIncome_d_2012884', '_i0128171604590131');
+
+INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 2, 84, 0, 0, 0);
+
+INSERT INTO table_dic_txt
+  (table_hid, lang_id, descr, note, expr_descr, expr_note)
+VALUES
+  (84, 0, 'Age by Sex Income', 'Age by Sex Income notes', 'Income Measure', 'Income Measure notes');
+INSERT INTO table_dic_txt
+  (table_hid, lang_id, descr, note, expr_descr, expr_note)
+VALUES
+  (84, 1, '(FR) Age by Sex Income', '(FR) Age by Sex Income notes', '(FR) Income Measure notes', NULL);
+
+-- total enum disabled for all dimensions to be imported into ageSex parameter
+INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (84, 0, 'dim0', 96, 0, 4);
+INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (84, 1, 'dim1', 97, 0, 2);
+
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (84, 0, 0, 'Age Dim', 'Age Dim notes');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (84, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (84, 1, 0, 'Sex Dim', 'Sex Dim notes');
+INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (84, 1, 1, '(FR) Sex Dim', NULL);
+
+INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) VALUES (84, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
+INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) VALUES (84, 1, 'acc1', 0, 'adjust_value()', 'A.acc_value');
+
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (84, 0, 0, 'Income', 'Income notes');
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (84, 1, 0, 'Income adjusted', 'Income adjusted notes');
+
+INSERT INTO table_expr 
+  (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
+VALUES 
+  (84, 0, 'expr0', 2, 'OM_AVG(acc0)', 
+  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr0 FROM ageSexIncome_a_2012884 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+  );
+INSERT INTO table_expr 
+  (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
+VALUES 
+  (84, 1, 'expr1', 3, 'OM_AVG(acc1)', 
+  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr1 FROM ageSexIncome_a_2012884 M1 WHERE M1.acc_id = 1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+  );
+
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (84, 0, 0, 'Average acc0', 'Average on acc0 notes');
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (84, 1, 0, 'Average acc1', 'Average on acc1 notes');
+
+--
+-- seedOldAge output table
+--
+INSERT INTO table_dic 
+  (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest) 
+VALUES 
+  (85, 'seedOldAge', '_20128171604590185', 0, 0, 'seedOldAge_v_2012885', 'seedOldAge_a_2012885', 'seedOldAge_d_2012885', '_i0128171604590185');
+
+INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_dim_pos, is_hidden) VALUES (1, 3, 85, 0, 0, 0);
+
+INSERT INTO table_dic_txt
+  (table_hid, lang_id, descr, note, expr_descr, expr_note)
+VALUES
+  (85, 0, 'Seed Old Age', 'Seed Old Age notes', 'Seed Old Age Measure', 'Measure notes');
+INSERT INTO table_dic_txt
+  (table_hid, lang_id, descr, note, expr_descr, expr_note)
+VALUES
+  (85, 1, '(FR) Seed Old Age', '(FR) Seed Old Age notes', '(FR) Measure notes', NULL);
+
+-- scalar output table: no dimensions
+
+INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) VALUES (85, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
+
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (85, 0, 0, 'Seed', 'Seed notes');
+
+INSERT INTO table_expr 
+  (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
+VALUES 
+  (85, 0, 'expr0', 5, 'OM_AVG(acc0)', 
+  'SELECT M1.run_id, AVG(M1.acc_value) AS expr0 FROM seedOldAge_a_2012885 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id'
+  );
+
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (85, 0, 0, 'Average acc0', 'Average on acc0 notes');
+
+--
 -- model groups of parameters
 --
 INSERT INTO group_lst (model_id, group_id, is_parameter, group_name, is_hidden) VALUES (1, 1, 1, 'AllParameters', 0);
@@ -354,6 +434,8 @@ INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 10, 
 INSERT INTO group_txt (model_id, group_id, lang_id, descr, note) VALUES (1, 10, 1, '(FR) Additional output tables', NULL);
 
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 10, 0, NULL, 1);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 10, 1, NULL, 2);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 10, 2, NULL, 3);
 
 --
 -- modelOne input parameters
@@ -552,18 +634,67 @@ CREATE TABLE fullAgeSalary_v_2012883
 );
 
 --
+-- ageSexIncome output table
+--
+-- enum ids for ageSexIncome.dim0: 10,  20,  30, 40
+-- enum ids for ageSexIncome.dim1: 0,   1
+--
+CREATE TABLE ageSexIncome_a_2012884
+(
+  run_id    INT   NOT NULL,
+  acc_id    INT   NOT NULL, 
+  sub_id    INT   NOT NULL, 
+  dim0      INT   NOT NULL, 
+  dim1      INT   NOT NULL, 
+  acc_value FLOAT NULL,
+  PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
+);
+
+CREATE TABLE ageSexIncome_v_2012884
+(
+  run_id     INT   NOT NULL,
+  expr_id    INT   NOT NULL, 
+  dim0       INT   NOT NULL, 
+  dim1       INT   NOT NULL, 
+  expr_value FLOAT NULL,
+  PRIMARY KEY (run_id, expr_id, dim0, dim1)
+);
+
+--
+-- seedOldAge output table
+--
+-- scalar output table: no dimensions
+--
+CREATE TABLE seedOldAge_a_2012885
+(
+  run_id    INT   NOT NULL,
+  acc_id    INT   NOT NULL, 
+  sub_id    INT   NOT NULL, 
+  acc_value FLOAT NULL,
+  PRIMARY KEY (run_id, acc_id, sub_id)
+);
+
+CREATE TABLE seedOldAge_v_2012885
+(
+  run_id     INT   NOT NULL,
+  expr_id    INT   NOT NULL, 
+  expr_value FLOAT NULL,
+  PRIMARY KEY (run_id, expr_id)
+);
+
+--
 -- modelOne all accumulators view
 --
+
+-- if MSSQL return an error on CREATE VIEW then uncomment next line GO
+--
+-- GO
 
 --
 -- salarySex all accumulators view
 --
 -- it does include all "native" accumulators: acc0, acc1
 -- and "derived" accumulator: acc2 = acc0 + acc1
---
-
--- uncomment next line GO if MSSQL return an error on CREATE VIEW
--- GO
 --
 CREATE VIEW salarySex_d_2012882
 AS
@@ -609,4 +740,49 @@ SELECT
 FROM fullAgeSalary_a_2012883 A
 WHERE A.acc_id = 0;
 
+--
+-- ageSexIncome all accumulators view
+--
+-- it does include all "native" accumulators: acc0, acc1
+-- and "derived" accumulator: acc2 = acc0 - acc1
+--
+CREATE VIEW ageSexIncome_d_2012884
+AS
+SELECT
+  A.run_id,
+  A.sub_id,
+  A.dim0,
+  A.dim1,
+  A.acc_value AS acc0,
+  (
+    SELECT A1.acc_value FROM ageSexIncome_a_2012884 A1
+    WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+    AND A1.acc_id = 1
+  ) AS acc1,
+  (
+    (
+      A.acc_value
+    )
+    - 
+    (
+      SELECT A1.acc_value FROM ageSexIncome_a_2012884 A1
+      WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
+      AND A1.acc_id = 1
+    )
+  ) AS acc2
+FROM ageSexIncome_a_2012884 A
+WHERE A.acc_id = 0;
 
+--
+-- seedOldAge all accumulators view
+--
+-- only "native" accumulator defined for that table: acc0
+--
+CREATE VIEW seedOldAge_d_2012885
+AS
+SELECT
+  A.run_id,
+  A.sub_id,
+  A.acc_value AS acc0
+FROM seedOldAge_a_2012885 A
+WHERE A.acc_id = 0;

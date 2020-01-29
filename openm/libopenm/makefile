@@ -83,6 +83,7 @@ LIBOPENM_CPPLIST = \
   db/modelDicTable.cpp \
   db/modelDicTxtTable.cpp \
   db/modelWordTable.cpp \
+  db/outputTableReader.cpp \
   db/outputTableWriter.cpp \
   db/paramDicTable.cpp \
   db/paramDicTxtTable.cpp \
@@ -91,6 +92,7 @@ LIBOPENM_CPPLIST = \
   db/paramImportTable.cpp \
   db/parameterReader.cpp \
   db/parameterWriter.cpp \
+  db/paramImportTable.cpp \
   db/profileLstTable.cpp \
   db/profileOptionTable.cpp \
   db/runLstTable.cpp \
@@ -128,6 +130,7 @@ LIBOPENM_CPPLIST = \
   model/rootController.cpp \
   model/runController.cpp \
   model/runControllerNewRun.cpp \
+  model/runControllerParams.cpp \
   model/singleController.cpp \
   msg/msgCommon.cpp \
   msg/msgExecBase.cpp \

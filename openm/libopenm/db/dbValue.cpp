@@ -305,3 +305,49 @@ void ValueRowDigester::processRow(IRowBaseUptr & i_row)
     md5->add("\n", 1);   // row delimiter
 }
 
+/** create new array of values or array of string */
+ValueArray::ValueArray(const type_info & i_type, size_t i_size) : valueType(i_type), valueCount(i_size), valueArr(nullptr)
+{
+    if (i_size <= 0 || i_size >= INT_MAX) throw DbException("invalid value array size: %zd", i_size);
+
+    if (i_type == typeid(char)) valueArr = newValueArray<char>(i_size);
+    if (i_type == typeid(unsigned char)) valueArr = newValueArray<unsigned char>(i_size);
+    if (i_type == typeid(short)) valueArr = newValueArray<short>(i_size);
+    if (i_type == typeid(unsigned short)) valueArr = newValueArray<unsigned short>(i_size);
+    if (i_type == typeid(int)) valueArr = newValueArray<int>(i_size);
+    if (i_type == typeid(unsigned int)) valueArr = newValueArray<unsigned int>(i_size);
+    if (i_type == typeid(long)) valueArr = newValueArray<long>(i_size);
+    if (i_type == typeid(unsigned long)) valueArr = newValueArray<unsigned long>(i_size);
+    if (i_type == typeid(long long)) valueArr = newValueArray<long long>(i_size);
+    if (i_type == typeid(unsigned long long)) valueArr = newValueArray<unsigned long long>(i_size);
+    if (i_type == typeid(int8_t)) valueArr = newValueArray<int8_t>(i_size);
+    if (i_type == typeid(uint8_t)) valueArr = newValueArray<uint8_t>(i_size);
+    if (i_type == typeid(int16_t)) valueArr = newValueArray<int16_t>(i_size);
+    if (i_type == typeid(uint16_t)) valueArr = newValueArray<uint16_t>(i_size);
+    if (i_type == typeid(int32_t)) valueArr = newValueArray<int32_t>(i_size);
+    if (i_type == typeid(uint32_t)) valueArr = newValueArray<uint32_t>(i_size);
+    if (i_type == typeid(int64_t)) valueArr = newValueArray<int64_t>(i_size);
+    if (i_type == typeid(uint64_t)) valueArr = newValueArray<uint64_t>(i_size);
+    if (i_type == typeid(bool)) valueArr = newValueArray<bool>(i_size);
+    if (i_type == typeid(float)) valueArr = newValueArray<float>(i_size);
+    if (i_type == typeid(double)) valueArr = newValueArray<double>(i_size);
+    if (i_type == typeid(long double)) valueArr = newValueArray<long double>(i_size);
+    if (i_type == typeid(string)) valueArr = new string[i_size];
+
+    if (valueArr == nullptr) throw DbException("invalid value type: %s", i_type.name());   // target type is not supported
+}
+
+/** cleanup resources: free memory */
+void ValueArray::cleanup(void) noexcept {
+    try {
+        if (valueType != typeid(string)) {
+            delete[] valueArr;      // expected g++ warning: deleting void* is undefined
+        }
+        else {
+            string * strArr = static_cast<string *>(valueArr);
+            delete[] strArr;
+        }
+        valueArr = nullptr;
+    }
+    catch (...) {}
+}

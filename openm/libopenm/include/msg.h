@@ -69,12 +69,6 @@ namespace openm
         /** table_expr db rows */
         tableExpr,
 
-        /** group_lst db rows */
-        groupLst,
-
-        /** group_pc db rows */
-        groupPc,
-
         /** run_option db rows */
         runOption,
 

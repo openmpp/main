@@ -148,6 +148,47 @@ namespace openm
         ValueRowDigester(const ValueRowDigester &) = delete;
         ValueRowDigester & operator=(const ValueRowDigester &) = delete;
     };
+
+    /** holder for array of primitive values or array of string */
+    struct ValueArray
+    {
+    public:
+        /** create new array of values or array of string */
+        ValueArray(const type_info & i_type, size_t i_size);
+
+
+        /** cleanup resources: free memory */
+        ~ValueArray(void) noexcept { try { cleanup(); } catch (...) {} }
+
+        /** cleanup resources: free memory */
+        void cleanup(void) noexcept;
+
+        /** type of value */
+        const type_info & typeOf(void) const { return valueType; }
+
+        /** array size: value count */
+        const size_t sizeOf(void) const { return valueCount; }
+
+        /** return pointer to array */
+        void * ptr(void) const { return valueArr; }
+
+    private:
+        const type_info & valueType;    // value type
+        const size_t valueCount;        // size of array: number of values
+        void * valueArr;                // array data
+
+        // create new array of primitive values and fill it with NaN
+        template<typename TVal> TVal * newValueArray(size_t i_size)
+        {
+            TVal * pData = new TVal[i_size];
+            fill(static_cast<TVal *>(pData), &(static_cast<TVal *>(pData))[i_size], numeric_limits<TVal>::quiet_NaN());
+            return pData;
+        }
+
+    private:
+        ValueArray(const ValueArray & i_src) = delete;
+        ValueArray & operator=(const ValueArray & i_src) = delete;
+    };
 }
 
 #endif  // DB_VALUE_H
