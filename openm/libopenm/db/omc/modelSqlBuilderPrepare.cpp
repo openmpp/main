@@ -1167,15 +1167,23 @@ const tuple<string, string> ModelSqlBuilder::makeParamDigest(const ParamDicRow &
     sLine = to_string(i_paramRow.rank) + "," + typeRowIt->digest + "\n";
     md5Imp.add(sLine.c_str(), sLine.length());
 
-    // add dimensions: id, name and dimension type digest
-    md5Full.add("dim_id,dim_name,type_digest\n", strlen("dim_id,dim_name,type_digest\n"));
-    md5Imp.add("dim_id,dim_name,type_digest\n", strlen("dim_id,dim_name,type_digest\n"));
+    // add dimensions: id, name, size and dimension type digest
+    sLine = "dim_id,dim_name,dim_size,type_digest\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+    md5Imp.add(sLine.c_str(), sLine.length());
 
     if (i_paramRow.rank > 0) {
 
         ParamDimsRow dimFkRow(i_paramRow.modelId, i_paramRow.paramId, 0);
         const auto dimRowIt = std::lower_bound(
-            i_metaRows.paramDims.cbegin(), i_metaRows.paramDims.cend(), dimFkRow, ParamDimsRow::isKeyLess
+            i_metaRows.paramDims.cbegin(),
+            i_metaRows.paramDims.cend(),
+            dimFkRow,
+            [](const ParamDimsRow & i_left, const ParamDimsRow & i_right) -> bool { // first parameter dimension (lowest dim_id)
+                return
+                    (i_left.modelId < i_right.modelId) ||
+                    (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
+            }
         );
         if (dimRowIt == i_metaRows.paramDims.cend() || dimRowIt->modelId != i_paramRow.modelId || dimRowIt->paramId != i_paramRow.paramId)
             throw DbException(LT("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic"), i_paramRow.modelId, i_paramRow.paramId);
@@ -1192,10 +1200,30 @@ const tuple<string, string> ModelSqlBuilder::makeParamDigest(const ParamDicRow &
             if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
                 throw DbException(LT("in parameter_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
 
-            // add dimension to parameter digest: id, name, type digest
-            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + typeRowIt->digest + "\n";
+            // find first enum of that type 
+            TypeEnumLstRow enumFkRow(typeRowIt->modelId, typeRowIt->typeId, 0);
+            const auto enumRowIt = std::lower_bound(
+                i_metaRows.typeEnum.cbegin(),
+                i_metaRows.typeEnum.cend(),
+                enumFkRow,
+                [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool { // find first enum of the type (lowest enum id)
+                    return
+                        (i_left.modelId < i_right.modelId) ||
+                        (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId);
+                }
+            );
+
+            int dimSize = 0;
+            for (vector<TypeEnumLstRow>::const_iterator it = enumRowIt;
+                it != i_metaRows.typeEnum.cend() && it->modelId == typeRowIt->modelId && it->typeId == typeRowIt->typeId;
+                ++it) {
+                dimSize++;
+            }
+
+            // add dimension to digest: id, name, size, type digest
+            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + to_string(dimSize) + "," + typeRowIt->digest + "\n";
             md5Full.add(sLine.c_str(), sLine.length());
-            md5Imp.add("dim_id,dim_name,type_digest\n", strlen("dim_id,dim_name,type_digest\n"));
+            md5Imp.add(sLine.c_str(), sLine.length());
         }
     }
 
@@ -1217,10 +1245,10 @@ const tuple<string, string> ModelSqlBuilder::makeOutTableDigest(const TableDicRo
     sLine = to_string(i_tableRow.rank) + ",_double_\n";
     md5Imp.add(sLine.c_str(), sLine.length());
     
-    // add dimensions: id, name, size, dimension type digest
-    // import digest does not include size
-    md5Full.add("dim_id,dim_name,dim_size,type_digest\n", strlen("dim_id,dim_name,dim_size,type_digest\n"));
-    md5Imp.add("dim_id,dim_name,type_digest\n", strlen("dim_id,dim_name,type_digest\n"));
+    // add dimensions: id, name, size and dimension type digest
+    sLine = "dim_id,dim_name,dim_size,type_digest\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+    md5Imp.add(sLine.c_str(), sLine.length());
 
     if (i_tableRow.rank > 0) {
 
@@ -1246,9 +1274,6 @@ const tuple<string, string> ModelSqlBuilder::makeOutTableDigest(const TableDicRo
             // add dimension to digest: id, name, size, type digest
             sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + to_string(rowIt->dimSize) + "," + typeRowIt->digest + "\n";
             md5Full.add(sLine.c_str(), sLine.length());
-
-            // add dimension to import digest: id, name, type digest
-            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + typeRowIt->digest + "\n";
             md5Imp.add(sLine.c_str(), sLine.length());
         }
     }
