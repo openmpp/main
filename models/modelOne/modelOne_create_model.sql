@@ -282,11 +282,11 @@ INSERT INTO model_table_dic (model_id, model_table_id, table_hid, is_user, expr_
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (83, 0, 'Full Time by Age by Salary Group', 'Full Time by Age by Salary Group notes', 'Measure', 'Measure notes');
+  (83, 0, 'Full Time by Age by Salary Bracket', 'Full Time by Age by Salary Bracket notes', 'Measure', 'Measure notes');
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (83, 1, '(FR) Full Time by Age by Salary Group', '(FR) Full Time by Age by Salary Group notes', '(FR) Measure', NULL);
+  (83, 1, '(FR) Full Time by Age by Salary Bracket', '(FR) Full Time by Age by Salary Bracket notes', '(FR) Measure', NULL);
 
 -- dim1 "age" has total enabled, type hid = 96, enum id = 500
 INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (83, 0, 'dim0', 99, 0, 2);
