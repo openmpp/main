@@ -71,8 +71,10 @@ LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 L_UCVT_FLAG =
+WL_PIE_FLAG = -pie
 ifeq ($(PLATFORM_UNAME), Darwin)
   L_UCVT_FLAG = -liconv
+  WL_PIE_FLAG = -Wl,-pie
 endif
 
 # recognize dependency files
@@ -111,7 +113,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OM_LIB_DIR) -pie -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
+	$(CXX) -pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
 
 #
 # create model SQLite database
