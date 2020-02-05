@@ -5,11 +5,11 @@
 
     <OMC_INPUTS Include="$(MODEL_CODE_DIR)/*.mpp" />
     <OMC_INPUTS Include="$(MODEL_CODE_DIR)/*.ompp" />
-    <OMC_INPUTS Include="Model.props" />
     <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.dat" />
     <OMC_INPUTS Include="$(OMC_IN_SCENARIO_DIR)/*.odat" />
     <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.dat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'" />
     <OMC_INPUTS Include="$(OMC_IN_FIXED_DIR)/*.odat" Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'" />
+    <OMC_INPUTS Include="Model.props" Condition="Exists('Model.props')"/>
   
     <OMC_H_OUTPUTS Include="$(OMC_OUT_DIR)/om_types0.h" />
     <OMC_H_OUTPUTS Include="$(OMC_OUT_DIR)/om_types1.h" />
@@ -19,10 +19,12 @@
     <OMC_CPP_OUTPUTS Include="$(OMC_OUT_DIR)/om_developer.cpp" />
     <OMC_CPP_OUTPUTS Include="$(OMC_OUT_DIR)/om_fixed_parms.cpp" />
 
-    <OMC_SQLITE_OUTPUT Include="$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite" />
+    <OMC_SQLITE_OUTPUT Include="$(BUILD_DIR)/$(MODEL_NAME).sqlite" />
+
     <OMC_SQL_OUTPUTS Include="@(OMC_SQLITE_OUTPUT)" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql" />
+    
     <OMC_MSG_INI_OUTPUT Include="$(OMC_OUT_DIR)/$(MODEL_NAME).message.ini" />
     <!--
     drop sql-scripts created by omc and it is for dba use only:
@@ -34,8 +36,6 @@
     <OMC_OUTPUTS Include="@(OMC_H_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_CPP_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_SQL_OUTPUTS)" />
-    <OMC_OUTPUTS Include="@(OMC_SQLITE_OUTPUT)" />
-    <OMC_OUTPUTS Include="@(OMC_MSG_INI_OUTPUT)" />
 
   </ItemGroup>
 
