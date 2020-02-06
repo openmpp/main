@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <Import Project="$(SolutionDir)openm.0.version.props" />
-
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -78,6 +76,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -91,6 +90,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

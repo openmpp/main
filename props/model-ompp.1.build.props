@@ -77,7 +77,12 @@
     
     <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
     
-    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
+    <!--
+    If this is Debug under Visual Studio then put model.sqlite into project directory else use publish directory.
+    Otherwise debug model.exe always fail to find model.sqlite because in current directory.
+    -->
+    <PUBLISH_SQLITE Condition="'$(Configuration)'=='Debug' And '$(BuildingInsideVisualStudio)'=='true'">$(ProjectDir)$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
+    <PUBLISH_SQLITE Condition="'$(PUBLISH_SQLITE)'==''">$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
 
     <!-- 
     The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,
