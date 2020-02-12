@@ -71,10 +71,10 @@ namespace openm
         static const char * doubleFormat;
 
         /** dir/to/read/input/parameter.csv */
-        static const char *paramDir;
+        static const char * paramDir;
 
         /** if true then parameter(s) csv file(s) contain enum id's, default: enum code */
-        static const char *useIdCsv;
+        static const char * useIdCsv;
 
         /** if true then parameter value is enum id, default: enum code */
         static const char * useIdParamValue;
@@ -152,7 +152,7 @@ namespace openm
         static const char * messageLang;
         
         /** log version info */
-        static const char* version;
+        static const char * version;
 
         /** sub-value of parameter must be in the input workset */
         static const char * dbSubValue;
