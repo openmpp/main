@@ -321,7 +321,7 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
     for (const auto & rst : i_updated) {
 
         int nRunId = rst.first.first;
-        if (nRunId <= 0) continue;      // skip zero run id: it is process process status
+        if (nRunId <= 0) continue;      // skip zero run id: it is process status
 
         ModelStatus mSt = rst.second.theStatus;
         string sRunId = to_string(nRunId);
