@@ -255,6 +255,23 @@ const string openm::toDateTimeString(const string & i_timestamp)
     return dtStr;
 }
 
+// return number of milliseconds since epoch to measure intervals
+int64_t openm::getMilliseconds(void)
+{
+#ifndef _WIN32
+    const int64_t NANO_PER_SECOND = 1000000000;
+    const int64_t MILLI_PER_NANO = 1000000;
+
+    struct timespec ts;
+    if (!timespec_get(&ts, TIME_UTC)) return 0;
+
+    return ((int64_t)ts.tv_sec * NANO_PER_SECOND + (int64_t)ts.tv_nsec) / MILLI_PER_NANO;
+#else
+
+    return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+#endif
+}
+
 // format message into supplied buffer using vsnprintf()
 void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args)
 {

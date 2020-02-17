@@ -31,6 +31,7 @@ double PieceLinearLookup(double x, const double *ax, const double *ay, int n);
 double PieceLinearLookup(double x, const double *axy, int n);
 bool IsUndefined(double x);
 void report_simulation_progress(int member, int percent);
+void report_simulation_progress_beat(int percent, double value = 0.0);
 void ProgressMsg(const char *msg);
 void TimeReport(double dTime);
 void initialize_model_streams();

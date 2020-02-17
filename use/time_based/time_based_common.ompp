@@ -29,13 +29,13 @@ namespace fmk {
 } // namespace fmk
 
 /**
- * Report simulation progress for case-based model.
+ * Report simulation progress for time-based model.
  * 
  */
 void report_simulation_progress(int member, int percent, Time i_time)
 {
     theLog->logFormatted("member=%d Simulation progress=%d%% time=%g", member, percent, i_time);
-    fmk::i_model->updateProgress(percent, (double)i_time);
+    report_simulation_progress_beat(percent, (double)i_time);
 }
 
 /**
@@ -188,6 +188,8 @@ void SimulateEvents()
     double next_step_progress = step_progress;
     int next_percent_progress = percent_progress;
     bool is_100_percent_done = false;
+    int64_t next_progress_beat = 0;
+    int64_t next_ms_progress_beat = getMilliseconds() + OM_STATE_BEAT_TIME;
     
     report_simulation_progress(simulation_member, 0);   // initial 0% progress report 
     
@@ -238,6 +240,18 @@ void SimulateEvents()
             if (is_do_percent_progress || is_do_step_progress) {
                 is_100_percent_done = percent_done >= 100;
                 report_simulation_progress(simulation_member, percent_done, the_time);
+                next_progress_beat = 0;
+                next_ms_progress_beat = getMilliseconds() + OM_STATE_BEAT_TIME;
+            }
+            else {
+                if (++next_progress_beat > 1000) {
+                    next_progress_beat = 0;
+                    int64_t ms = getMilliseconds();
+                    if (ms > next_ms_progress_beat) {
+                        report_simulation_progress_beat(percent_done, (double)the_time);
+                        next_ms_progress_beat = ms + OM_STATE_BEAT_TIME;
+                    }
+                }
             }
         }
     }
