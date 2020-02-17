@@ -101,14 +101,6 @@ int main(int argc, char ** argv)
         );
         theLog->logMsg(OM_MODEL_NAME);  // startup message: model name
 
-        // log model and runtime version
-        if (argOpts.boolOption(RunOptionsKey::version)) {
-            theLog->logMsg("Model digest", OM_MODEL_DIGEST);
-#ifdef OM_RUNTIME_VERSION
-            theLog->logMsg("OpeM++ version", OM_RUNTIME_VERSION);
-#endif
-        }
-
         // if trace log file enabled setup trace file name
         string tfPath;
         if (argOpts.boolOption(RunOptionsKey::traceToFile)) {
@@ -141,6 +133,16 @@ int main(int argc, char ** argv)
 
             // load metadata tables and broadcast it to all modeling processes
             unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
+
+            // log model and runtime version
+            if (argOpts.boolOption(RunOptionsKey::version)) {
+                theLog->logMsg("Model version ", runCtrl->meta()->modelRow->version.c_str());
+                theLog->logMsg("Model created ", runCtrl->meta()->modelRow->createDateTime.c_str());
+                theLog->logMsg("Model digest  ", OM_MODEL_DIGEST);
+#ifdef OM_RUNTIME_VERSION
+                theLog->logMsg("OpeM++ version", OM_RUNTIME_VERSION);
+#endif
+            }
 
             if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
                 theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);
