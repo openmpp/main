@@ -1324,8 +1324,8 @@ const string ModelSqlBuilder::makeModelDigest(const MetaModelHolder & i_metaRows
 {
     // make digest header as name and kind of model
     MD5 md5;
-    md5.add("model_name,model_type\n", strlen("model_name,model_type\n"));
-    string sLine = i_metaRows.modelDic.name + "," + to_string(i_metaRows.modelDic.type) + "\n";
+    md5.add("model_name,model_type,model_ver\n", strlen("model_name,model_type,model_ver\n"));
+    string sLine = i_metaRows.modelDic.name + "," + to_string(i_metaRows.modelDic.type) + "," + i_metaRows.modelDic.version + "\n";
     md5.add(sLine.c_str(), sLine.length());
 
     // add digests of all model types
