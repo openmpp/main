@@ -4,7 +4,7 @@ oms web-service:
 Template to run model_mpi executable on Linux using MPICH
 
 Rename this file into:
-  mpiModelRun.template.txt
+  mpi.ModelRun.template.txt
 to use it by default to run models on MPI cluster.
 
 Oms web-service process this template as:
