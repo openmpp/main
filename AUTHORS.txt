@@ -27,6 +27,6 @@ StatCan: Statistics Canada,    www.statcan.gc.ca
 Contact Us
 ----------
 
-openmpp99@gmail.com
+openmpp.org@gmail.com
 www.openmpp.org
-ommp.sourceforge.net
+github.com/openmpp/main
