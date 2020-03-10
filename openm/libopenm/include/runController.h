@@ -147,6 +147,9 @@ namespace openm
         // copy input parameters from "base" run and working set into new run id
         void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
+        // cretate run description and notes using run options or by copy it from workset text
+        void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
+
         /** write output tables aggregated values into database */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
 

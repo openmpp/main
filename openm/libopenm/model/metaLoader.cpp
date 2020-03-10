@@ -129,6 +129,9 @@ namespace openm
     /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDatabase.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
     const char * RunOptionsKey::importDbPrefix = "ImportDb";
 
+    /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
+    const char * RunOptionsKey::runDescrSuffix = "RunDescription";
+
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
 
@@ -245,6 +248,12 @@ static const char * prefixOptArr[] = {
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
+/** option suffixes to provide language-specific options, ex: "EN.RunDescription" */
+static const char * langSuffixOptArr[] = {
+    RunOptionsKey::runDescrSuffix
+};
+static const size_t langSuffixOptSize = sizeof(langSuffixOptArr) / sizeof(const char *);
+
 /** last cleanup */
 MetaLoader::~MetaLoader(void) noexcept { }
 
@@ -254,12 +263,12 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
     // get command line options
     ArgReader ar;
     ar.parseCommandLine(
-        argc, argv, true, false, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr, prefixOptSize, prefixOptArr
+        argc, argv, true, false, runOptKeySize, runOptKeyArr, shortPairSize, shortPairArr, prefixOptSize, prefixOptArr, langSuffixOptSize, langSuffixOptArr
     );
 
     // load options from ini-file and append parameters section
     ar.loadIniFile(
-        ar.strOption(ArgKey::iniFile).c_str(), runOptKeySize, runOptKeyArr, prefixOptSize, prefixOptArr
+        ar.strOption(ArgKey::iniFile).c_str(), runOptKeySize, runOptKeyArr, prefixOptSize, prefixOptArr, langSuffixOptSize, langSuffixOptArr
     );
 
     // dependency in log options: if LogToFile is true then file name must be non-empty else must be empty
@@ -298,6 +307,7 @@ int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore, co
     io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mId));
     io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mId));
     io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mId));
+    io_metaStore->langLst.reset(ILangLstTable::create(i_dbExec));
     io_metaStore->groupLst.reset(IGroupLstTable::create(i_dbExec, mId));
     io_metaStore->groupPc.reset(IGroupPcTable::create(i_dbExec, mId));
 
@@ -313,17 +323,9 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
 {
     if (i_dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
-    // find model by name digest
-    unique_ptr<IModelDicTable> mdTbl(IModelDicTable::create(i_dbExec, OM_MODEL_NAME, OM_MODEL_DIGEST));
-
-    const ModelDicRow * mdRow = mdTbl->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
-    if (mdRow == nullptr) throw DbException("model %s not found in the database", OM_MODEL_NAME);
-
-    // get list of languages
     // get model language-specific messages in all languages
     // get common runtime language-specific messages in all languages
-    unique_ptr<ILangLstTable> langTbl(ILangLstTable::create(i_dbExec));
-    unique_ptr<IModelWordTable> mwTbl(IModelWordTable::create(i_dbExec, mdRow->modelId));
+    unique_ptr<IModelWordTable> mwTbl(IModelWordTable::create(i_dbExec, metaStore->modelRow->modelId));
     unique_ptr<ILangWordTable> wordTbl(ILangWordTable::create(i_dbExec));
 
     // if language list already set (stored in theLog) then use it
@@ -331,25 +333,25 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
     list<string> langLst = theLog->getLanguages();
     if (langLst.empty()) langLst = splitLanguageName(getDefaultLocaleName());
 
-    // make list of language id's by shroten user language: en-ca, en
+    // make list of language id's by srorten user language: en-ca, en
     vector<int> langIdArr;
     bool isDef = false;     // if true then it is model default language
 
     for (const string & lang : langLst) {
 
         // if language code found then add id into the list
-        const LangLstRow * langRow = langTbl->findFirst(
+        const LangLstRow * langRow = metaStore->langLst->findFirst(
             [&lang](const LangLstRow & i_row) -> bool { return normalizeLanguageName(i_row.code) == lang; }
         );
         if (langRow != nullptr) {
             langIdArr.push_back(langRow->langId);
-            if (!isDef) isDef = langRow->langId == mdRow->defaultLangId;
+            if (!isDef) isDef = langRow->langId == metaStore->modelRow->defaultLangId;
         }
     }
 
     // append model default language at the bottom of the list, if not already there
     if (!isDef) {
-        const LangLstRow * langRow = langTbl->byKey(mdRow->defaultLangId);
+        const LangLstRow * langRow = metaStore->langLst->byKey(metaStore->modelRow->defaultLangId);
         if (langRow != nullptr) {
             langIdArr.push_back(langRow->langId);
             langLst.push_back(normalizeLanguageName(langRow->code));
@@ -493,6 +495,9 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 
     // parse parameters import options
     parseImportOptions();
+
+    // parse language-specific options
+    parseLangOptions();
 
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
@@ -916,7 +921,7 @@ void MetaLoader::parseImportOptions(void)
         if (equalNoCase(optIt->first.c_str(), exprPrefix.c_str(), exprPrefix.length())) {
             string tName = nameKey(optIt->first, exprPrefix.length());
 
-            const auto piRows = meta()->paramImport->findAll(
+            const auto piRows = metaStore->paramImport->findAll(
                 [&tName](const ParamImportRow & i_row) -> bool { return i_row.fromName == tName; }
             );
 
@@ -947,6 +952,42 @@ void MetaLoader::parseImportOptions(void)
         if (it == piArr.cend()) throw ModelException("invalid model name specified: %s", impOptsIt->first.c_str());
 
         ++impOptsIt;
+    }
+}
+
+/** parse language-specific options to get language code and option value.
+*
+* For example: -EN.RunDescription "run the model with 50,000 cases"
+*/
+void MetaLoader::parseLangOptions(void)
+{
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+
+        LangOptKind kind = LangOptKind::none;
+        int lid = 0;
+        size_t nMax = 0;
+        for (size_t n = 0; kind == LangOptKind::none && n < langSuffixOptSize; n++) {
+
+            string sfx = string(".") + langSuffixOptArr[n];
+            if (!endWithNoCase(optIt->first, sfx.c_str())) continue;    // option does not end with this language-specific suffix
+
+            // validate language prefix of options: it must be non-empty and exist in lang_lst table
+            if (optIt->first.length() <= sfx.length()) throw ModelException("invalid (empty) language specified for %s option", optIt->first.c_str());
+
+            const LangLstRow * langRow = metaStore->langLst->byCode(optIt->first.substr(0, optIt->first.length() - sfx.length()));
+            if (langRow == nullptr)
+                throw ModelException("invalid language specified for %s option", optIt->first.c_str());
+
+            // this is language-specific option, only run description option supported
+            kind = LangOptKind::runDescr;
+            lid = langRow->langId;
+            nMax = OM_DESCR_DB_MAX;
+        }
+
+        // if this is this language-specific option then store language code and value
+        if (kind != LangOptKind::none) {
+            langOptsMap[pair<LangOptKind, int>(kind, lid)] = optIt->second.substr(0, nMax);
+        }
     }
 }
 

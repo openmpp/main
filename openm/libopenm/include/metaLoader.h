@@ -127,6 +127,9 @@ namespace openm
         /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDatabase.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
         static const char * importDbPrefix;
 
+        /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
+        static const char * runDescrSuffix;
+
         /** trace log to console */
         static const char * traceToConsole;
 
@@ -312,6 +315,15 @@ namespace openm
         };
         map<int, ParamImportOpts> paramImportOptsMap;   // parameter id mapped to import options
 
+        // enum to specify what kind of language-specific option it is
+        enum class LangOptKind {
+            none = 0,       // undefined
+            runDescr = 1    // run description
+        };
+
+        // language-specific options: map (kind, language id) to option value
+        map<pair<LangOptKind, int>, string> langOptsMap;
+
     private:
         RunOptions baseRunOpts;     // basic model run options
         ArgReader argStore;         // arguments as key-value string pairs with case-neutral search
@@ -329,6 +341,9 @@ namespace openm
 
         /** parse parameters import options: get source run to import parameters */
         void parseImportOptions(void);
+
+        /** parse language-specific options to get language code and option value */
+        void parseLangOptions(void);
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;

@@ -237,15 +237,8 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     // copy input parameters from "base" run and working set into new run id
     createRunParameters(nRunId, nSetId, i_dbExec);
 
-    // copy workset text into run text if workset exists and it is readonly
-    i_dbExec->update(
-        "INSERT INTO run_txt (run_id, lang_id, descr, note)" \
-        " SELECT " + 
-        to_string(nRunId) + ", WT.lang_id, WT.descr, WT.note" \
-        " FROM workset_lst W" \
-        " INNER JOIN workset_txt WT ON (WT.set_id = W.set_id)" \
-        " WHERE W.set_id = " + to_string(nSetId) +
-        " AND W.is_readonly <> 0");
+    // insert run description and text
+    createRunText(nRunId, nSetId, i_dbExec);
 
     // completed: commit the changes
     i_dbExec->commit();
@@ -334,5 +327,37 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
             "INSERT INTO run_option (run_id, option_key, option_value)" \
             " VALUES (" + to_string(i_runId) + ", 'OpenM.LogStampedFilePath', " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
         );
+    }
+}
+
+// cretate run description and notes using run options or by copy it from workset text
+void RunController::createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const
+{
+    // insert run description using run options
+    for (const auto & lOpt : langOptsMap) {
+        if (lOpt.first.first != LangOptKind::runDescr) continue;    // this is not run decription
+
+        i_dbExec->update(
+            "INSERT INTO run_txt (run_id, lang_id, descr, note)" \
+            " VALUES (" +
+            to_string(i_runId) + ", " +
+            to_string(lOpt.first.second) + ", " +
+            toQuoted(lOpt.second) + ", " +
+            "NULL)");
+    }
+
+    // copy workset text into run text where run description is not specified by run options
+    vector<WorksetTxtRow> wtRows = IWorksetTxtTable::select(i_dbExec, i_setId);
+
+    for (const auto & row : wtRows) {
+        if (langOptsMap.find(pair(LangOptKind::runDescr, row.langId)) != langOptsMap.end()) continue;   // skip: run text specified through options
+
+        i_dbExec->update(
+            "INSERT INTO run_txt (run_id, lang_id, descr, note)" \
+            " VALUES (" +
+            to_string(i_runId) + ", " +
+            to_string(row.langId) + ", " +
+            toQuoted(row.descr) + ", " +
+            (!row.note.empty() ? toQuoted(row.note) : "NULL") + ")");
     }
 }

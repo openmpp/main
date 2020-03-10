@@ -52,6 +52,9 @@ namespace openm
         /** table_expr table rows */
         unique_ptr<ITableExprTable> tableExpr;
 
+        /** lang_lst table rows */
+        unique_ptr<ILangLstTable> langLst;
+
         /** group_lst table rows */
         unique_ptr<IGroupLstTable> groupLst;
 

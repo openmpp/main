@@ -927,7 +927,7 @@ namespace openm
         *
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_langId = -1);
+        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_setId, int i_langId = -1);
 
         /** select table row by primary key: set id and language id. */
         static vector<WorksetTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_langId);

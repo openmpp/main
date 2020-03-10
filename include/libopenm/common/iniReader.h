@@ -81,6 +81,9 @@ namespace openm
         /** return string value by section.key or deafult value if not found. */
         const string strValue(const char * i_sectionKey, const string & i_default = "") const noexcept;
 
+        /** return const reference to ini-file entries. */
+        const IniEntryVec & rowsCRef(void) const { return entryVec; }
+
         /** return names of ini-file sections as case-neutral set of strings. */
         const NoCaseSet sectionSet(void) const noexcept;
 

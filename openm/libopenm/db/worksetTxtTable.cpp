@@ -72,10 +72,10 @@ IWorksetTxtTable::~IWorksetTxtTable(void) noexcept { }
 WorksetTxtTable::~WorksetTxtTable(void) noexcept { }
 
 // select table rows
-vector<WorksetTxtRow> IWorksetTxtTable::select(IDbExec * i_dbExec, int i_langId)
+vector<WorksetTxtRow> IWorksetTxtTable::select(IDbExec * i_dbExec, int i_setId, int i_langId)
 {
-    string sWhere = "";
-    if (i_langId >= 0) sWhere = " WHERE lang_id = " + to_string(i_langId);
+    string sWhere = " WHERE set_id = " + to_string(i_setId);
+    if (i_langId >= 0) sWhere += " AND lang_id = " + to_string(i_langId);
 
     return 
         WorksetTxtTable::select(i_dbExec, sWhere);
