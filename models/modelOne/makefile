@@ -49,7 +49,7 @@ endif
 MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
 
 ifndef RELEASE
-  BD_CFLAGS = -g -D_DEBUG
+  BD_CFLAGS = -g -D_DEBUG -Og
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin

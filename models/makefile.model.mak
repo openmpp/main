@@ -107,7 +107,7 @@ else
 endif
 
 ifndef RELEASE
-  BD_CFLAGS = -g -D_DEBUG
+  BD_CFLAGS = -g -D_DEBUG -Og
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/debug/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj

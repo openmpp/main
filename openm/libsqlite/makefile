@@ -15,7 +15,7 @@ BUILD_PROJ_DIR = $(BUILD_DIR)/libsqlite
 DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
 ifndef RELEASE
-  BD_CFLAGS = -g -D_DEBUG
+  BD_CFLAGS = -g -D_DEBUG -Og
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
   BIN_POSTFIX = D
