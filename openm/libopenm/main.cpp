@@ -140,7 +140,7 @@ int main(int argc, char ** argv)
                 theLog->logMsg("Model created ", runCtrl->meta()->modelRow->createDateTime.c_str());
                 theLog->logMsg("Model digest  ", OM_MODEL_DIGEST);
 #ifdef OM_RUNTIME_VERSION
-                theLog->logMsg("OpeM++ version", OM_RUNTIME_VERSION);
+                theLog->logMsg("OpenM++ version", OM_RUNTIME_VERSION);
 #endif
             }
 
