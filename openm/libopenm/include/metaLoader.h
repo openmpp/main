@@ -305,7 +305,7 @@ namespace openm
             string runDigest;               // source run digest
             int modelId = 0;                // source model id
             string modelDigest;             // source model digest
-            unique_ptr <MetaHolder> meta;   // metadata rows: source model, parameters and output tables to import from
+            unique_ptr<MetaHolder> meta;    // metadata rows: source model, parameters and output tables to import from
             unique_ptr<IDbExec> dbExec;     // database connection, if null then use "main" database connection
         };
 
