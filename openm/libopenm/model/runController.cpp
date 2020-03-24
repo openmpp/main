@@ -94,10 +94,10 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
                 " WHERE run_id = " + to_string(i_runId)
             );
 
-            string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
+            string sDigest = IRunLstTable::digestRunValue(i_dbExec, modelId, i_runId);
 
             i_dbExec->update(
-                "UPDATE run_lst SET run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+                "UPDATE run_lst SET value_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
                 " WHERE run_id = " + to_string(i_runId)
             );
         }
@@ -216,10 +216,10 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
             " WHERE run_id = " + to_string(i_runId)
         );
 
-        string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
+        string sDigest = IRunLstTable::digestRunValue(i_dbExec, modelId, i_runId);
 
         i_dbExec->update(
-            "UPDATE run_lst SET run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+            "UPDATE run_lst SET value_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
             " WHERE run_id = " + to_string(i_runId)
         );
 

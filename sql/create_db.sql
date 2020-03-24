@@ -512,10 +512,11 @@ CREATE TABLE run_lst
   sub_started   INT          NOT NULL, -- number of sub-values started
   sub_completed INT          NOT NULL, -- number of sub-values completed
   sub_restart   INT          NOT NULL, -- sub-value to restart from
-  create_dt     VARCHAR(32)  NOT NULL, -- start date-time
+  create_dt     VARCHAR(32)  NOT NULL, -- run created date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
-  run_digest    VARCHAR(32),           -- if not NULL then digest of the run
+  run_digest    VARCHAR(32)  NOT NULL, -- digest of the run metadata: model digest, run name, sub count, created date-time, run stamp
+  value_digest  VARCHAR(32),           -- if not NULL then digest of the run values: all parameters and output tables
   run_stamp     VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 
@@ -563,7 +564,7 @@ CREATE TABLE run_parameter
   parameter_hid INT         NOT NULL, -- parameter unique id
   base_run_id   INT         NOT NULL, -- source run id to select parameter value
   sub_count     INT         NOT NULL, -- sub-values count
-  run_digest    VARCHAR(32),          -- if not NULL then digest of parameter value for the run
+  value_digest  VARCHAR(32),          -- if not NULL then digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
   CONSTRAINT run_parameter_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
@@ -614,10 +615,10 @@ CREATE TABLE run_parameter_import
 --
 CREATE TABLE run_table
 (
-  run_id      INT         NOT NULL, -- master key
-  table_hid   INT         NOT NULL, -- output table unique id
-  base_run_id INT         NOT NULL, -- source run id to select output table value
-  run_digest  VARCHAR(32),          -- if not NULL then digest of table value for the run
+  run_id       INT         NOT NULL, -- master key
+  table_hid    INT         NOT NULL, -- output table unique id
+  base_run_id  INT         NOT NULL, -- source run id to select output table value
+  value_digest VARCHAR(32),          -- if not NULL then digest of table value for the run
   PRIMARY KEY (run_id, table_hid),
   CONSTRAINT run_table_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),

@@ -135,8 +135,19 @@ vector<RunLstRow> RunLstTable::select(IDbExec * i_dbExec, const string & i_where
     return IMetaTable<RunLstRow>::rows(vec);
 }
 
-// calculate run digest, including run parameters and output table values digest
-string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
+// calculate run metadata digest: model digest, run name, sub count, created date-time, run stamp
+string IRunLstTable::digestRunMeta(const string & i_modelDigest, const RunLstRow & i_runRow)
+{
+    MD5 md5;
+    string sLine = "model_digest,run_name,sub_count,create_dt,run_stamp\n" +
+        i_modelDigest + "," + i_runRow.name + "," + to_string(i_runRow.subCount) + "," + i_runRow.createDateTime + "," + i_runRow.runStamp + "\n";
+
+    md5.add(sLine.c_str(), sLine.length());
+    return md5.getHash();
+}
+
+// calculate run value digest, including run parameters and output table values digest
+string IRunLstTable::digestRunValue(IDbExec * i_dbExec, int i_modelId, int i_runId)
 {
     // if no run record then return empty "" digest
     vector<RunLstRow> rv = byKey(i_dbExec, i_runId);
@@ -144,13 +155,13 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
 
     // start from metadata digest
     MD5 md5;
-    string sLine = "run_name,sub_count,sub_completed,status\n" +
-        rv[0].name + "," + to_string(rv[0].subCount) + "," + to_string(rv[0].subCompleted) + "," + rv[0].status + "\n";
+    string sLine = "sub_count,sub_completed,status\n" +
+        to_string(rv[0].subCount) + "," + to_string(rv[0].subCompleted) + "," + rv[0].status + "\n";
 
     md5.add(sLine.c_str(), sLine.length());
 
     // append run parameters value digest header
-    sLine = "run_digest\n";
+    sLine = "value_digest\n";
     md5.add(sLine.c_str(), sLine.length());
 
     // select count of run parameters value digest to allocate buffer for digest select
@@ -163,13 +174,13 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
         " ORDER BY 1",
         0);
 
-    // select run parameters value digest and append to run digest
+    // select run parameters value digest and append to run value digest
     if (nRow > 0) {
 
         unique_ptr<string[]> strArr(new string[nRow]);
         void * digestData = strArr.get();
 
-        string sql = "SELECT M.model_parameter_id, R.run_digest" \
+        string sql = "SELECT M.model_parameter_id, R.value_digest" \
             " FROM run_parameter R" \
             " INNER JOIN model_parameter_dic M ON (M.parameter_hid = R.parameter_hid)" \
             " WHERE M.model_id = " + to_string(i_modelId) +
@@ -178,7 +189,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
 
         i_dbExec->selectColumn(sql, 1, typeid(string), nRow, digestData);
 
-        // append run parameters values digest to run digest
+        // append run parameters values digest to run value digest
         for (size_t k = 0; k < nRow; k++) {
             sLine = strArr[k] + "\n";
             md5.add(sLine.c_str(), sLine.length());
@@ -191,7 +202,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
     }
 
     // append output tables value digest header
-    sLine = "run_digest\n";
+    sLine = "value_digest\n";
     md5.add(sLine.c_str(), sLine.length());
 
     // select count of run output tables value digest to allocate buffer for digest select
@@ -204,13 +215,13 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
         " ORDER BY 1",
         0);
 
-    // select output tables value digest and append to run digest
+    // select output tables value digest and append to run value digest
     if (nRow > 0) {
 
         unique_ptr<string[]> strArr(new string[nRow]);
         void * digestData = strArr.get();
 
-        string sql = "SELECT M.model_table_id, R.run_digest" \
+        string sql = "SELECT M.model_table_id, R.value_digest" \
             " FROM run_table R" \
             " INNER JOIN model_table_dic M ON (M.table_hid = R.table_hid)" \
             " WHERE M.model_id = " + to_string(i_modelId) +
@@ -219,7 +230,7 @@ string IRunLstTable::digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId)
 
         i_dbExec->selectColumn(sql, 1, typeid(string), nRow, digestData);
 
-        // append output tables values digest to run digest
+        // append output tables values digest to run value digest
         for (size_t k = 0; k < nRow; k++) {
             sLine = strArr[k] + "\n";
             md5.add(sLine.c_str(), sLine.length());

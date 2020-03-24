@@ -626,7 +626,7 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
     string sRunId = to_string(runId);
 
     i_dbExec->update(
-        "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, run_digest)" \
+        "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, value_digest)" \
         " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", " + to_string(i_subCount) + ", NULL)"
         );
 
@@ -669,19 +669,19 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
 
     // update digest and base run id
     //
-    // UPDATE run_parameter SET run_digest = '22ee44cc' WHERE run_id = 11 parameter_hid = 456
+    // UPDATE run_parameter SET value_digest = '22ee44cc' WHERE run_id = 11 parameter_hid = 456
     //
     // UPDATE run_parameter SET 
     //   base_run_id =
     //   (
     //     SELECT MIN(E.run_id) FROM run_parameter E
     //     WHERE E.parameter_hid = 456
-    //     AND E.run_digest = '22ee44cc'
+    //     AND E.value_digest = '22ee44cc'
     //   )
     // WHERE run_id = 11 AND parameter_hid = 456
     //
     i_dbExec->update(
-        "UPDATE run_parameter SET run_digest = " + toQuoted(sDigest) + 
+        "UPDATE run_parameter SET value_digest = " + toQuoted(sDigest) + 
         " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
         );
 
@@ -690,7 +690,7 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
         " (" \
         " SELECT MIN(E.run_id) FROM run_parameter E" \
         " WHERE E.parameter_hid = " + sHid +
-        " AND E.run_digest = " + toQuoted(sDigest) +
+        " AND E.value_digest = " + toQuoted(sDigest) +
         " )" \
         " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
         );

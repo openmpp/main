@@ -203,10 +203,18 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
         rn = toAlphaNumeric(rn, OM_NAME_DB_MAX);
     }
 
-    // create new run entry
+    // calculate run metadata digest and create new run entry
+    RunLstRow rr(nRunId);
+    rr.name = rn;
+    rr.subCount = subValueCount;
+    rr.createDateTime = dtStr;
+    rr.runStamp = argOpts().strOption(ArgKey::runStamp);
+
+    string metaDigest = IRunLstTable::digestRunMeta(metaStore->modelRow->digest, rr);
+
     i_dbExec->update(
         "INSERT INTO run_lst" \
-        " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_digest, run_stamp)" \
+        " (run_id, model_id, run_name, sub_count, sub_started, sub_completed, sub_restart, create_dt, status, update_dt, run_digest, value_digest, run_stamp)" \
         " VALUES (" +
         to_string(nRunId) + ", " +
         to_string(modelId) + ", " +
@@ -217,9 +225,10 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
         "0, " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::progress) + ", " +
-        toQuoted(dtStr) +
-        ", NULL, " +
-        toQuoted(argOpts().strOption(ArgKey::runStamp)) + ")"
+        toQuoted(dtStr) + ", " +
+        toQuoted(metaDigest) + ", " +
+        "NULL, " +
+        toQuoted(rr.runStamp) + ")"
     );
 
     // if this is a next set of the modeling task then update task progress

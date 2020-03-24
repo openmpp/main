@@ -303,8 +303,8 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
 
             if (isBaseRunFullCopy) {            // copy parameter from base run of workset
                 i_dbExec->update(
-                    "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, run_digest)" \
-                    " SELECT " + sRunId + ", parameter_hid, base_run_id, sub_count, run_digest" \
+                    "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, value_digest)" \
+                    " SELECT " + sRunId + ", parameter_hid, base_run_id, sub_count, value_digest" \
                     " FROM run_parameter"
                     " WHERE run_id = " + sBaseWsRunId +
                     " AND parameter_hid = " + to_string(paramIt->paramHid)
@@ -628,7 +628,7 @@ MetaLoader::RunImportOpts RunController::findImportRun(
 
     // import run must be completed successfully
     riOpts.runDigest = dbEx->selectToStr(
-        "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(riOpts.runId)
+        "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(riOpts.runId) + " AND status = " + toQuoted(RunStatus::done)
     );
     if (riOpts.runDigest.empty()) throw DbException("error: import run id: %d not completed successfully", riOpts.runId);
 

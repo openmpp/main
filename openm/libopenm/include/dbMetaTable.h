@@ -803,8 +803,11 @@ namespace openm
         /** select table row by primary key: run id. */
         static vector<RunLstRow> byKey(IDbExec * i_dbExec, int i_runId);
 
-        /** calculate run digest, including run parameters and output table values digest */
-        static string digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId);
+        /** calculate run value digest, including run parameters and output table values digest */
+        static string digestRunValue(IDbExec * i_dbExec, int i_modelId, int i_runId);
+
+        /** calculate run metadata digest: model digest, run name, sub count, created date-time, run stamp */
+        static string digestRunMeta(const string & i_modelDigest, const RunLstRow & i_runRow);
     };
 
     /** run_txt table public interface. */
