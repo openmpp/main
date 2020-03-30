@@ -203,6 +203,29 @@ const string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
     return sRet;
 }
 
+// replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore
+const string openm::cleanPathChars(const string & i_str, int i_maxSize)
+{
+    string sRet;
+    int len = 0;
+
+    for (char nowCh : i_str) {
+
+        bool isOk = isprint(nowCh, locale::classic());
+        if (isOk) {
+            for (char c : "\"'`$}{@><:|?*&^;/\\") {
+                if (isOk = nowCh != c; !isOk) break;
+            }
+        }
+
+        sRet += isOk ? nowCh : '_';
+        len++;
+
+        if (i_maxSize > 0 && len >= i_maxSize) return sRet;     // if max size supplied then return up to max size chars
+    }
+    return sRet;
+}
+
 // make date-time string, ie: 2012-08-17 16:04:59.148
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {

@@ -101,6 +101,9 @@ namespace openm
     /** replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores. */
     const string toAlphaNumeric(const string & i_str, int i_maxSize = 0);
 
+    /** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
+    const string cleanPathChars(const string & i_str, int i_maxSize = 0);
+
     /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
     extern const string replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue);
 

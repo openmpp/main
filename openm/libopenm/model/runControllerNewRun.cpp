@@ -28,9 +28,9 @@ int RunController::createTaskRun(int i_taskId, IDbExec * i_dbExec)
     string dtStr = toDateTimeString(theLog->timeStamp()); // get log date-time as string
 
     // make new task run name or use name specified by model run options
-    string rn = argOpts().strOption(RunOptionsKey::taskRunName);
-    if (rn.empty()) {
-        rn = toAlphaNumeric(OM_MODEL_NAME + string("_") + argOpts().strOption(RunOptionsKey::taskName), OM_NAME_DB_MAX);
+    string trn = cleanPathChars(argOpts().strOption(RunOptionsKey::taskRunName), OM_NAME_DB_MAX);
+    if (trn.empty()) {
+        trn = cleanPathChars(OM_MODEL_NAME + string("_") + argOpts().strOption(RunOptionsKey::taskName), OM_NAME_DB_MAX);
     }
 
     // create new task run
@@ -39,7 +39,7 @@ int RunController::createTaskRun(int i_taskId, IDbExec * i_dbExec)
         " VALUES (" +
         to_string(taskRunId) + ", " +
         to_string(i_taskId) + ", " +
-        toQuoted(rn) + ", " +
+        toQuoted(trn) + ", " +
         to_string(subValueCount) + ", " +
         toQuoted(dtStr) + ", " +
         toQuoted(RunStatus::init) + ", " +
@@ -185,7 +185,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     nSetId = findWorkset(nSetId, i_dbExec);
 
     // make new run name or use name specified by model run options
-    string rn = argOpts().strOption(RunOptionsKey::runName);
+    string rn = cleanPathChars(argOpts().strOption(RunOptionsKey::runName), OM_NAME_DB_MAX);
     if (rn.empty()) {
 
         rn = OM_MODEL_NAME;
@@ -200,7 +200,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
         }
         rn += "_" + argOpts().strOption(RunOptionsKey::setName);
 
-        rn = toAlphaNumeric(rn, OM_NAME_DB_MAX);
+        rn = cleanPathChars(rn, OM_NAME_DB_MAX);
     }
 
     // calculate run metadata digest and create new run entry
