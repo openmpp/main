@@ -113,12 +113,42 @@
   <PropertyGroup>
     <BuildDependsOn>OmcCompile;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
+
+
+  <!--
+  StopOms
+  -->
+
+  <!-- Stop oms web-service if model.ompp_ui.tickle exist -->
+  <!-- otherwise publish will fail because model.sqlite is opened by oms.exe -->
+  <PropertyGroup>
+    <OMS_PORT Condition="'$(OMS_PORT)'==''">4040</OMS_PORT>
+    <OMPP_UI_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).ompp_ui.tickle</OMPP_UI_TICKLE>
+  </PropertyGroup>
+
+  <Target Name="StopOms"
+          Condition="'$(OPEN_MODEL_WEB_UI)'=='true' And Exists('$(OMPP_UI_TICKLE)')" 
+          BeforeTargets="ModelPublish"
+          >
+    <Message Text="Use PowerShell to stop $(OMS_EXE):" />
+    <Message Text="powershell -Command &quot;Invoke-WebRequest -Method PUT -Uri http://localhost:$(OMS_PORT)/api/admin/shutdown&quot;" />
+    <Message Text="If error is: 'Unable to connect to the remote server'" />
+    <Message Text="   then oms web-service not running on localhost:$(OMS_PORT)" />
+    <Message Text="If error is: 'The underlying connection was closed: An unexpected error occurred on a receive'" />
+    <Message Text="   then oms web-service shutdown succeeded" />
+    <Exec 
+          ContinueOnError="true"
+          Command="powershell -Command &quot;Invoke-WebRequest -Method PUT -Uri http://localhost:$(OMS_PORT)/api/admin/shutdown&quot;"
+          />
+
+    <Delete Files="$(OMPP_UI_TICKLE)" />
+
+  </Target>
   
   
   <!--
   ModelPublish
   -->
-
   
   <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
@@ -164,14 +194,17 @@
   RunModel
   -->
 
-  
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
+    <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -OpenM.SubValues $(MEMBERS)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -OpenM.Threads $(THREADS)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
-    <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
+    <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
     <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
 
@@ -263,11 +296,37 @@
     <Exec Command="&quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
   </Target>
 
- 
+  <!--
+  StartOmppUI
+  -->
+
+  <PropertyGroup>
+    <OMS_EXE>oms.exe</OMS_EXE>
+  </PropertyGroup>
+
+  <Target Name="StartOmppUI"
+          Condition="'$(OPEN_MODEL_WEB_UI)'=='true'" 
+          Outputs="$(OMPP_UI_TICKLE)"
+          AfterTargets="ModelPublish"
+          >
+    <Message Text="Use PowerShell to start $(OMS_EXE):" />
+    <Message Text="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;" />
+    <Exec 
+          WorkingDirectory="$(OM_ROOT)"
+          Command="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;"
+          />
+    <Message Text="Open web browser at http://localhost:$(OMS_PORT)" />
+    <Exec Command="START http://localhost:$(OMS_PORT)"/>
+
+    <Touch  Files="$(OMPP_UI_TICKLE)"
+            AlwaysCreate="true"
+            />
+  </Target>
+
+
   <!-- 
   Diagnostics
   -->
- 
  
   <Target Name="Diagnostics"
           Condition="'1'=='1'">

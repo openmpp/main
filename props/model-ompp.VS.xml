@@ -133,5 +133,14 @@
                 DisplayName="Launch Excel after export to Excel"
                 Description="To follow"
                 />
-                  
+  <BoolProperty Category="RunOptions"
+                Name="OPEN_MODEL_WEB_UI"
+                DisplayName="Open model web UI"
+                Description="Publish model in web-service and open model web UI using default browser"
+                />
+  <StringProperty Category="RunOptions"
+                  Name="OMS_PORT"
+                  DisplayName="UI web-service port"
+                  Description="TCP port number for model UI web-service. Default: 4040"
+                  />
 </Rule>
