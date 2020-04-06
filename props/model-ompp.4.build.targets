@@ -310,11 +310,13 @@
           AfterTargets="ModelPublish"
           >
     <Message Text="Use PowerShell to start $(OMS_EXE):" />
-    <Message Text="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;" />
-    <Exec 
-          WorkingDirectory="$(OM_ROOT)"
-          Command="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;"
-          />
+    <Message
+      Text="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -WindowStyle Minimized -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;"
+      />
+    <Exec
+      WorkingDirectory="$(OM_ROOT)"
+      Command="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -WindowStyle Minimized -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;"
+      />
     <Message Text="Open web browser at http://localhost:$(OMS_PORT)" />
     <Exec Command="START http://localhost:$(OMS_PORT)"/>
 
