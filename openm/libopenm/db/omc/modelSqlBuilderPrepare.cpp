@@ -31,7 +31,9 @@ void ModelSqlBuilder::setParamDicRows(MetaModelHolder & io_metaRows) const
 {
     // make parameter digest and name db tables
     for (ParamDicRow & paramRow : io_metaRows.paramDic) {
-        paramRow.digest = makeParamDigest(paramRow, io_metaRows);
+        auto [dgst, impDgst] = makeParamDigest(paramRow, io_metaRows);
+        paramRow.digest = dgst;
+        paramRow.importDigest = impDgst;
         string p = makeDbNamePrefix(paramRow.paramId, paramRow.paramName);
         string s = makeDbNameSuffix(paramRow.paramId, paramRow.paramName, paramRow.digest);
         paramRow.dbRunTable = p + "_p" + s;
@@ -44,7 +46,9 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
 {
     // make parameter digest and db table parts
     for (TableDicRow & tableRow : io_metaRows.tableDic) {
-        tableRow.digest = makeOutTableDigest(tableRow, io_metaRows);
+        auto [dgst, impDgst] = makeOutTableDigest(tableRow, io_metaRows);
+        tableRow.digest = dgst;
+        tableRow.importDigest = impDgst;
         string p = makeDbNamePrefix(tableRow.tableId, tableRow.tableName);
         string s = makeDbNameSuffix(tableRow.tableId, tableRow.tableName, tableRow.digest);
         tableRow.dbExprTable = p + "_v" + s;
@@ -414,7 +418,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // model_parameter_import table
-    // unique: model id, parameter id, is_from_parameter, from_name, from_model_name
+    // unique: model id, parameter id, from_name, from_model_name
     // master key: model id, parameter id;
     for (vector<ParamImportRow>::const_iterator rowIt = io_metaRows.paramImport.cbegin(); rowIt != io_metaRows.paramImport.cend(); ++rowIt) {
 
@@ -1140,8 +1144,8 @@ const string ModelSqlBuilder::makeTypeDigest(const TypeDicRow & i_typeRow, const
     return md5.getHash();
 }
 
-// calculate parameter metadata digest
-const string ModelSqlBuilder::makeParamDigest(const ParamDicRow & i_paramRow, const MetaModelHolder & i_metaRows)
+// calculate parameter metadata digest and parameter import digest
+const tuple<string, string> ModelSqlBuilder::makeParamDigest(const ParamDicRow & i_paramRow, const MetaModelHolder & i_metaRows)
 { 
     // find parameter type
     TypeDicRow typeFkRow(i_paramRow.modelId, i_paramRow.typeId);
@@ -1152,19 +1156,34 @@ const string ModelSqlBuilder::makeParamDigest(const ParamDicRow & i_paramRow, co
         throw DbException(LT("in parameter_dic invalid model id: %d and type id: %d: not found in type_dic"), i_paramRow.modelId, i_paramRow.typeId);
 
     // make parameter digest header as name, rank and parameter type digest
-    MD5 md5;
-    md5.add("parameter_name,parameter_rank,type_digest\n", strlen("parameter_name,parameter_rank,type_digest\n"));
+    MD5 md5Full;
+    md5Full.add("parameter_name,parameter_rank,type_digest\n", strlen("parameter_name,parameter_rank,type_digest\n"));
     string sLine = i_paramRow.paramName + "," + to_string(i_paramRow.rank)  + "," + typeRowIt->digest + "\n";
-    md5.add(sLine.c_str(), sLine.length());
+    md5Full.add(sLine.c_str(), sLine.length());
 
-    // add dimensions: id, name and dimension type digest
-    md5.add("dim_id,dim_name,type_digest\n", strlen("dim_id,dim_name,type_digest\n"));
+    // import digest same as full parameter digest but does not include parameter name
+    MD5 md5Imp;
+    md5Imp.add("parameter_rank,type_digest\n", strlen("parameter_rank,type_digest\n"));
+    sLine = to_string(i_paramRow.rank) + "," + typeRowIt->digest + "\n";
+    md5Imp.add(sLine.c_str(), sLine.length());
+
+    // add dimensions: id, name, size and dimension type digest
+    sLine = "dim_id,dim_name,dim_size,type_digest\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+    md5Imp.add(sLine.c_str(), sLine.length());
 
     if (i_paramRow.rank > 0) {
 
         ParamDimsRow dimFkRow(i_paramRow.modelId, i_paramRow.paramId, 0);
         const auto dimRowIt = std::lower_bound(
-            i_metaRows.paramDims.cbegin(), i_metaRows.paramDims.cend(), dimFkRow, ParamDimsRow::isKeyLess
+            i_metaRows.paramDims.cbegin(),
+            i_metaRows.paramDims.cend(),
+            dimFkRow,
+            [](const ParamDimsRow & i_left, const ParamDimsRow & i_right) -> bool { // first parameter dimension (lowest dim_id)
+                return
+                    (i_left.modelId < i_right.modelId) ||
+                    (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
+            }
         );
         if (dimRowIt == i_metaRows.paramDims.cend() || dimRowIt->modelId != i_paramRow.modelId || dimRowIt->paramId != i_paramRow.paramId)
             throw DbException(LT("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic"), i_paramRow.modelId, i_paramRow.paramId);
@@ -1181,26 +1200,55 @@ const string ModelSqlBuilder::makeParamDigest(const ParamDicRow & i_paramRow, co
             if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
                 throw DbException(LT("in parameter_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
 
-            // add dimension to parameter digest: id, name, type digest
-            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + typeRowIt->digest + "\n";
-            md5.add(sLine.c_str(), sLine.length());
+            // find first enum of that type 
+            TypeEnumLstRow enumFkRow(typeRowIt->modelId, typeRowIt->typeId, 0);
+            const auto enumRowIt = std::lower_bound(
+                i_metaRows.typeEnum.cbegin(),
+                i_metaRows.typeEnum.cend(),
+                enumFkRow,
+                [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool { // find first enum of the type (lowest enum id)
+                    return
+                        (i_left.modelId < i_right.modelId) ||
+                        (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId);
+                }
+            );
+
+            int dimSize = 0;
+            for (vector<TypeEnumLstRow>::const_iterator it = enumRowIt;
+                it != i_metaRows.typeEnum.cend() && it->modelId == typeRowIt->modelId && it->typeId == typeRowIt->typeId;
+                ++it) {
+                dimSize++;
+            }
+
+            // add dimension to digest: id, name, size, type digest
+            sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + to_string(dimSize) + "," + typeRowIt->digest + "\n";
+            md5Full.add(sLine.c_str(), sLine.length());
+            md5Imp.add(sLine.c_str(), sLine.length());
         }
     }
 
-    return md5.getHash();
+    return { md5Full.getHash(), md5Imp.getHash() };
 }
 
-// calculate output table metadata digest
-const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, const MetaModelHolder & i_metaRows)
+// calculate output table metadata digest and table import digest
+const tuple<string, string> ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, const MetaModelHolder & i_metaRows)
 {
     // make digest header as name and rank
-    MD5 md5;
-    md5.add("table_name,table_rank\n", strlen("table_name,table_rank\n"));
+    MD5 md5Full;
+    md5Full.add("table_name,table_rank\n", strlen("table_name,table_rank\n"));
     string sLine = i_tableRow.tableName + "," + to_string(i_tableRow.rank) + "\n";
-    md5.add(sLine.c_str(), sLine.length());
+    md5Full.add(sLine.c_str(), sLine.length());
 
-    // add dimensions: id, name, dimension type digest
-    md5.add("dim_id,dim_name,dim_size,type_digest\n", strlen("dim_id,dim_name,dim_size,type_digest\n"));
+    // table import digest calculated as import digest of parameter with double type for that table
+    MD5 md5Imp;
+    md5Imp.add("parameter_rank,type_digest\n", strlen("parameter_rank,type_digest\n"));
+    sLine = to_string(i_tableRow.rank) + ",_double_\n";
+    md5Imp.add(sLine.c_str(), sLine.length());
+    
+    // add dimensions: id, name, size and dimension type digest
+    sLine = "dim_id,dim_name,dim_size,type_digest\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+    md5Imp.add(sLine.c_str(), sLine.length());
 
     if (i_tableRow.rank > 0) {
 
@@ -1223,14 +1271,15 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
             if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
                 throw DbException(LT("in table_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
 
-            // add dimension to digest: id, name, type digest
+            // add dimension to digest: id, name, size, type digest
             sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + to_string(rowIt->dimSize) + "," + typeRowIt->digest + "\n";
-            md5.add(sLine.c_str(), sLine.length());
+            md5Full.add(sLine.c_str(), sLine.length());
+            md5Imp.add(sLine.c_str(), sLine.length());
         }
     }
 
     // add accumulators: id, name, source expression
-    md5.add("acc_id,acc_name,acc_src\n", strlen("acc_id,acc_name,acc_src\n"));
+    md5Full.add("acc_id,acc_name,acc_src\n", strlen("acc_id,acc_name,acc_src\n"));
 
     TableAccRow accFkRow(i_tableRow.modelId, i_tableRow.tableId, 0);
     const auto accRowIt = std::lower_bound(
@@ -1245,11 +1294,11 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
 
         // add accumulator to digest: id, name, expression
         sLine = to_string(rowIt->accId) + "," + rowIt->name + "," + rowIt->accSrc + "\n";
-        md5.add(sLine.c_str(), sLine.length());
+        md5Full.add(sLine.c_str(), sLine.length());
     }
 
     // add output table expressions: id, name, source expression
-    md5.add("expr_id,expr_name,expr_src\n", strlen("expr_id,expr_name,expr_src\n"));
+    md5Full.add("expr_id,expr_name,expr_src\n", strlen("expr_id,expr_name,expr_src\n"));
 
     TableExprRow exprFkRow(i_tableRow.modelId, i_tableRow.tableId, 0);
     const auto exprRowIt = std::lower_bound(
@@ -1264,10 +1313,10 @@ const string ModelSqlBuilder::makeOutTableDigest(const TableDicRow i_tableRow, c
 
         // add table expression to output table digest: id, name, source expression
         sLine = to_string(rowIt->exprId) + "," + rowIt->name + "," + rowIt->srcExpr + "\n";
-        md5.add(sLine.c_str(), sLine.length());
+        md5Full.add(sLine.c_str(), sLine.length());
     }
 
-    return md5.getHash();
+    return { md5Full.getHash(), md5Imp.getHash() };
 }
 
 // calculate model metadata digest
@@ -1275,8 +1324,8 @@ const string ModelSqlBuilder::makeModelDigest(const MetaModelHolder & i_metaRows
 {
     // make digest header as name and kind of model
     MD5 md5;
-    md5.add("model_name,model_type\n", strlen("model_name,model_type\n"));
-    string sLine = i_metaRows.modelDic.name + "," + to_string(i_metaRows.modelDic.type) + "\n";
+    md5.add("model_name,model_type,model_ver\n", strlen("model_name,model_type,model_ver\n"));
+    string sLine = i_metaRows.modelDic.name + "," + to_string(i_metaRows.modelDic.type) + "," + i_metaRows.modelDic.version + "\n";
     md5.add(sLine.c_str(), sLine.length());
 
     // add digests of all model types

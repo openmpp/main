@@ -153,6 +153,7 @@ namespace openm
         MpiPacked::pack<decltype(val->numCumulated)>(val->numCumulated, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->dbRunTable, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack(val->dbSetTable, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->importDigest, i_packedSize, io_packedData, io_packPos);
     }
 
     // parameter_dic: unpack MPI message into db row
@@ -173,6 +174,7 @@ namespace openm
         val->numCumulated = MpiPacked::unpack<decltype(val->numCumulated)>(i_packedSize, i_packedData, io_packPos);
         val->dbRunTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->dbSetTable = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->importDigest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
     // parameter_dic: return byte size to pack db row into MPI message
@@ -192,7 +194,8 @@ namespace openm
             MpiPacked::packedSize(typeid(val->isHidden)) +
             MpiPacked::packedSize(typeid(val->numCumulated)) +
             MpiPacked::packedSize(val->dbRunTable) +
-            MpiPacked::packedSize(val->dbSetTable);
+            MpiPacked::packedSize(val->dbSetTable) +
+            MpiPacked::packedSize(val->importDigest);
     }
 
     // parameter_dims: pack db row into MPI message
@@ -253,6 +256,7 @@ namespace openm
         MpiPacked::pack(val->dbAccAll, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->exprPos)>(val->exprPos, i_packedSize, io_packedData, io_packPos);
         MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->importDigest, i_packedSize, io_packedData, io_packPos);
     }
 
     // table_dic: unpack MPI message into db row
@@ -274,6 +278,7 @@ namespace openm
         val->dbAccAll = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
         val->exprPos = MpiPacked::unpack<decltype(val->exprPos)>(i_packedSize, i_packedData, io_packPos);
         val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
+        val->importDigest = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
     }
 
     // table_dic: return byte size to pack db row into MPI message
@@ -294,7 +299,8 @@ namespace openm
             MpiPacked::packedSize(val->dbAccTable) +
             MpiPacked::packedSize(val->dbAccAll) +
             MpiPacked::packedSize(typeid(val->exprPos)) +
-            MpiPacked::packedSize(typeid(val->isHidden));
+            MpiPacked::packedSize(typeid(val->isHidden)) +
+            MpiPacked::packedSize(val->importDigest);
     }
 
     // table_dims: pack db row into MPI message
@@ -432,6 +438,7 @@ namespace openm
             MpiPacked::packedSize(val->sqlExpr);
     }
 
+    /*
     // group_lst: pack db row into MPI message
     template<>
     void RowMpiPackedAdapter<GroupLstRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
@@ -509,6 +516,7 @@ namespace openm
             MpiPacked::packedSize(typeid(val->childGroupId)) +
             MpiPacked::packedSize(typeid(val->leafId));
     }
+    */
 
     // run_option: pack db row into MPI message
     template<>
@@ -646,10 +654,6 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
         return new MetaMpiPackedAdapter<MsgTag::tableAcc, TableAccRow>();
     case MsgTag::tableExpr:
         return new MetaMpiPackedAdapter<MsgTag::tableExpr, TableExprRow>();
-    case MsgTag::groupLst:
-        return new MetaMpiPackedAdapter<MsgTag::groupLst, GroupLstRow>();
-    case MsgTag::groupPc:
-        return new MetaMpiPackedAdapter<MsgTag::groupPc, GroupPcRow>();
     case MsgTag::codeValue:
         return new MetaMpiPackedAdapter<MsgTag::codeValue, CodeValueRow>();
     case MsgTag::statusUpdate:

@@ -74,5 +74,32 @@ SELECT
   S.dim1       AS "Dim1",
   S.expr_id    AS "Dim2",
   S.expr_value AS "Value"
-FROM salarySex_v_2012820 S
+FROM salarySex_v_2012882 S
+WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
+
+CREATE VIEW fullAgeSalary 
+AS 
+SELECT
+  S.dim0       AS "Dim0",
+  S.dim1       AS "Dim1",
+  S.expr_id    AS "Dim2",
+  S.dim2       AS "Dim3",
+  S.expr_value AS "Value"
+FROM fullAgeSalary_v_2012883 S
+WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
+
+CREATE VIEW ageSexIncome 
+AS 
+SELECT
+  S.dim0       AS "Dim0",
+  S.dim1       AS "Dim1",
+  S.expr_value AS "Value"
+FROM ageSexIncome_v_2012884 S
+WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);
+
+CREATE VIEW seedOldAge 
+AS 
+SELECT
+  S.expr_value AS "Value"
+FROM seedOldAge_v_2012885 S
 WHERE S.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = 1);

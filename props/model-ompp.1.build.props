@@ -77,6 +77,10 @@
     
     <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
     
+    <!--
+    If this is Debug under Visual Studio then PUBLISH_DIR, TargetDir, LocalDebuggerWorkingDirectory must be identical
+    otherwise debug model.exe always fail to find model.sqlite in current directory.
+    -->
     <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
 
     <!-- 

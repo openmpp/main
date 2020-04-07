@@ -94,10 +94,10 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
                 " WHERE run_id = " + to_string(i_runId)
             );
 
-            string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
+            string sDigest = IRunLstTable::digestRunValue(i_dbExec, modelId, i_runId);
 
             i_dbExec->update(
-                "UPDATE run_lst SET run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+                "UPDATE run_lst SET value_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
                 " WHERE run_id = " + to_string(i_runId)
             );
         }
@@ -216,10 +216,10 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
             " WHERE run_id = " + to_string(i_runId)
         );
 
-        string sDigest = IRunLstTable::digestRun(i_dbExec, modelId, i_runId);
+        string sDigest = IRunLstTable::digestRunValue(i_dbExec, modelId, i_runId);
 
         i_dbExec->update(
-            "UPDATE run_lst SET run_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
+            "UPDATE run_lst SET value_digest = " + ((!sDigest.empty()) ? toQuoted(sDigest) : "NULL") +
             " WHERE run_id = " + to_string(i_runId)
         );
 
@@ -317,11 +317,12 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
     unordered_set<int> runErrSet;
+    unordered_map<int, string> runUpdTimeMap;
 
     for (const auto & rst : i_updated) {
 
         int nRunId = rst.first.first;
-        if (nRunId <= 0) continue;      // skip zero run id: it is process process status
+        if (nRunId <= 0) continue;      // skip zero run id: it is process status
 
         ModelStatus mSt = rst.second.theStatus;
         string sRunId = to_string(nRunId);
@@ -331,6 +332,14 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
         string sUpd = toQuoted(makeDateTime(rst.second.updateTime));
         string sPc = to_string(rst.second.progressCount);
         string sPv = toString(rst.second.progressValue);
+
+        // store max updated time for each run id        
+        if (auto rtIt = runUpdTimeMap.find(nRunId); rtIt != runUpdTimeMap.end()) {
+            if (rtIt->second < sUpd) rtIt->second = sUpd;
+        }
+        else {
+            runUpdTimeMap[nRunId] = sUpd;
+        }
 
         i_dbExec->update(
             "UPDATE run_progress SET"
@@ -379,6 +388,15 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
         i_dbExec->update(
             "UPDATE run_lst SET status = " + toQuoted(RunStatus::error) +
             " WHERE run_id IN (" + sLst + ")"
+            " AND status IN ('i', 'p')"
+        );
+    }
+
+    // update run_lst update time for each run where status is in progress
+    for (const auto rtIt : runUpdTimeMap) {
+        i_dbExec->update(
+            "UPDATE run_lst SET update_dt = " + rtIt.second +
+            " WHERE run_id = " + to_string(rtIt.first) + 
             " AND status IN ('i', 'p')"
         );
     }

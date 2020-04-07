@@ -49,7 +49,6 @@ void ImportSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
     }
 
     importRow.paramId = pp_target_param->pp_parameter_id;
-    importRow.isFromParam = false;    // import of upstream parameters not supporetd by language yet
     importRow.fromName = upstream_table;
     importRow.fromModel = upstream_model;
     importRow.isSampleDim = sample_dimension_opt;

@@ -293,7 +293,8 @@ void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_
     if (io_row.paramName.empty()) throw DbException(LT("invalid (empty) parameter name, id: %d"), io_row.paramId);
     if (io_row.paramName.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) parameter name: %s"), OM_NAME_DB_MAX, me.ellipt(io_row.paramName.c_str()));
 
-    if (io_row.digest.empty() || io_row.digest.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (empty or longer then %d) digest of parameter: %s"), OM_CODE_DB_MAX, io_row.paramName.c_str());
+    if (io_row.digest.empty() || io_row.digest.length() > OM_CODE_DB_MAX || io_row.importDigest.empty() || io_row.importDigest.length() > OM_CODE_DB_MAX)
+        throw DbException(LT("invalid (empty or longer then %d) digest of parameter: %s"), OM_CODE_DB_MAX, io_row.paramName.c_str());
 
     if (io_row.dbRunTable.empty() || io_row.dbRunTable.length() > 64 || io_row.dbSetTable.empty() || io_row.dbSetTable.length() > 64)
         throw DbException(LT("invalid (longer than 64) db table name, parameter: %s"), io_row.paramName.c_str());
@@ -316,12 +317,12 @@ void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_
     if (io_row.paramHid <= 0) throw DbException(LT("invalid (not positive) parameter Hid, parameter: %s"), io_row.paramName.c_str());
 
     // INSERT INTO parameter_dic
-    //   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)
+    //   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
     // VALUES
-    //   (4321, 'ageSex', 'cdef', 2, 7890, 1, 0, 'ageSex_pcdef', 'ageSex_wcdef') 
+    //   (4321, 'ageSex', 'cdef', 2, 7890, 1, 0, 'ageSex_pcdef', 'ageSex_wcdef', 'fe24') 
     i_dbExec->update(
         "INSERT INTO parameter_dic" \
-        " (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table)" \
+        " (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)" \
         " VALUES (" +
         to_string(io_row.paramHid) + ", " +
         toQuoted(io_row.paramName) + ", " +
@@ -331,7 +332,8 @@ void ModelInsertSql::insertParamDic(IDbExec * i_dbExec, const map<int, int> & i_
         (io_row.isExtendable ? " 1" : " 0") + ", " +
         to_string(io_row.numCumulated) + ", " +
         toQuoted(io_row.dbRunTable) + ", " +
-        toQuoted(io_row.dbSetTable) + 
+        toQuoted(io_row.dbSetTable) + ", " +
+        toQuoted(io_row.importDigest) +
         ")");
 
     // INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1234, 1, 4321, 0)
@@ -358,15 +360,14 @@ void ModelInsertSql::insertParamImport(IDbExec * i_dbExec, ParamImportRow & io_r
     if (io_row.fromModel.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) source model name: %s for parameter import, id: %d"), OM_NAME_DB_MAX, me.ellipt(io_row.fromModel.c_str()), io_row.paramId);
 
     // INSERT INTO model_parameter_import
-    //   (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)
+    //   (model_id, model_parameter_id, from_name, from_model_name, is_sample_dim)
     // VALUES
     //   (1234, 1, 1, 'ageSex', 0)
     i_dbExec->update(
-        "INSERT INTO model_parameter_import (model_id, model_parameter_id, is_from_parameter, from_name, from_model_name, is_sample_dim)" \
+        "INSERT INTO model_parameter_import (model_id, model_parameter_id, from_name, from_model_name, is_sample_dim)" \
         " VALUES (" +
         to_string(io_row.modelId) + ", " +
         to_string(io_row.paramId) + ", " +
-        (io_row.isFromParam ? " 1" : " 0") + ", " +
         toQuoted(io_row.fromName) + ", " +
         toQuoted(io_row.fromModel) + ", " +
         (io_row.isSampleDim ? " 1" : " 0") +
@@ -472,7 +473,8 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
     if (io_row.tableName.empty()) throw DbException(LT("invalid (empty) output table name, id: %d"), io_row.tableId);
     if (io_row.tableName.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) output table name: %s"), OM_NAME_DB_MAX, me.ellipt(io_row.tableName));
 
-    if (io_row.digest.empty() || io_row.digest.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (empty or longer then %d) digest of output table: %s"), OM_CODE_DB_MAX, io_row.tableName.c_str());
+    if (io_row.digest.empty() || io_row.digest.length() > OM_CODE_DB_MAX || io_row.importDigest.empty() || io_row.importDigest.length() > OM_CODE_DB_MAX)
+        throw DbException(LT("invalid (empty or longer then %d) digest of output table: %s"), OM_CODE_DB_MAX, io_row.tableName.c_str());
 
     if (io_row.dbExprTable.empty() || io_row.dbExprTable.length() > 64 || 
         io_row.dbAccTable.empty() || io_row.dbAccTable.length() > 64 ||
@@ -492,12 +494,12 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
     if (io_row.tableHid <= 0) throw DbException(LT("invalid (not positive) output table Hid, table: %s"), io_row.tableName.c_str());
 
     // INSERT INTO table_dic
-    //   (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view)
+    //   (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest)
     // VALUES 
-    //   (9876, 'salarySex', '0fdc', 2, 0, 'salarySex_v0fdc', 'salarySex_a0fdc', 'salarySex_d0fdc')
+    //   (9876, 'salarySex', '0fdc', 2, 0, 'salarySex_v0fdc', 'salarySex_a0fdc', 'salarySex_d0fdc', 'c44d')
     i_dbExec->update(
         "INSERT INTO table_dic" \
-        " (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view)" \
+        " (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest)" \
         " VALUES (" +
         to_string(io_row.tableHid) + ", " +
         toQuoted(io_row.tableName) + ", " +
@@ -506,7 +508,8 @@ void ModelInsertSql::insertTableDic(IDbExec * i_dbExec, TableDicRow & io_row)
         (io_row.isSparse ? "1" : "0") + ", " +
         toQuoted(io_row.dbExprTable) + ", " +
         toQuoted(io_row.dbAccTable) + ", " +
-        toQuoted(io_row.dbAccAll) +
+        toQuoted(io_row.dbAccAll) + ", " +
+        toQuoted(io_row.importDigest) +
         ")");
 
     // INSERT INTO model_table_dic 
@@ -821,7 +824,6 @@ void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row)
 {
     // validate field values
     if (i_row.groupId < 0) throw DbException(LT("invalid (negative) group id: %d"), i_row.groupId);
-    if (i_row.childPos < 0) throw DbException(LT("invalid (negative) child position: %d in group id: %d"), i_row.childPos, i_row.groupId);
 
     // INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1234, 0, 1, NULL, 22)
     i_dbExec->update(

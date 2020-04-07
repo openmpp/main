@@ -1,11 +1,11 @@
 OpenM++ Linux
 =============
 
-It is build on CentOS 7, x64, g++ 4.8.5
+It is build on CentOS 8, x64, g++ 8.2.1
 
 make RELEASE=1
 
-MPI cluster version build with OpenMPI 1.10.6
+MPI cluster version build with OpenMPI 3.1.2
 
 make RELEASE=1 OM_MSG_USE=MPI
 
@@ -14,14 +14,18 @@ Make sure following commands executed without errors:
 
 module load mpi/openmpi-x86_64
 
-It is also tested on Ubuntu 14.04 and 16.04, 
-you can build it or use binaries as is.
+On CentOS 8.1 MPICH is recommended instead of openMPI.
+
+OpenM++ also tested on CentOS 7, Ubuntu 18.04, MX Linux 19
+and expected to work on any mordern Linux distribution.
 
 It is also possible to use other versions of g++ or Intel c++,
-but c++11 support is critical for OpenM++ and compilers below g++ 4.8 
+but c++17 support is critical for OpenM++ and compilers below g++ 7.3 
 are not going to work.
 
-More information at: http://ompp.sourceforge.net/wiki/
+More information at: 
+https://openmpp.org
+https://ompp.sourceforge.net/wiki/
 
 Truly yours, 
 amc1999

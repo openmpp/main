@@ -22,6 +22,7 @@ void HideGroupSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // add this to the complete list of hide groups
+        is_hidden = true;
         pp_all_hide_groups.push_back(this);
         break;
     }

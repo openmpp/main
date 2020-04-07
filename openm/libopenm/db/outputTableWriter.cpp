@@ -376,7 +376,7 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     string sRunId = to_string(runId);
 
     i_dbExec->update(
-        "INSERT INTO run_table (run_id, table_hid, base_run_id, run_digest)" \
+        "INSERT INTO run_table (run_id, table_hid, base_run_id, value_digest)" \
         " VALUES (" + sRunId + ", " + sHid + ", " + sRunId + ", NULL)"
         );
 
@@ -446,8 +446,8 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     md5.add(sLine.c_str(), sLine.length()); // append expressions header
 
     // +1 column: expr_id
-    ValueRowDigester md5ExprRd(dimCount + 1, typeid(double), &md5, doubleFmt.c_str());
-    ValueRowAdapter exprAdp(dimCount + 1, typeid(double));
+    ValueRowDigester md5ExprRd(1 + dimCount, typeid(double), &md5, doubleFmt.c_str());
+    ValueRowAdapter exprAdp(1 + dimCount, typeid(double));
 
     i_dbExec->selectToRowProcessor(exprSql, exprAdp, md5ExprRd);
 
@@ -455,19 +455,19 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
 
     // update digest and base run id
     //
-    // UPDATE run_table SET run_digest = '22ee44cc' WHERE run_id = 11 table_hid = 456
+    // UPDATE run_table SET value_digest = '22ee44cc' WHERE run_id = 11 table_hid = 456
     //
     // UPDATE run_table SET 
     //   base_run_id =
     //   (
     //     SELECT MIN(E.run_id) FROM run_table E
     //     WHERE E.table_hid = 456
-    //     AND E.run_digest = '22ee44cc'
+    //     AND E.value_digest = '22ee44cc'
     //   )
     // WHERE run_id = 11 AND table_hid = 456
     //
     i_dbExec->update(
-        "UPDATE run_table SET run_digest = " + toQuoted(sDigest) + 
+        "UPDATE run_table SET value_digest = " + toQuoted(sDigest) + 
         " WHERE run_id = " + sRunId + " AND table_hid = " + sHid
         );
 
@@ -476,7 +476,7 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
         " (" \
         " SELECT MIN(E.run_id) FROM run_table E" \
         " WHERE E.table_hid = " + sHid +
-        " AND E.run_digest = " + toQuoted(sDigest) +
+        " AND E.value_digest = " + toQuoted(sDigest) +
         " )" \
         " WHERE run_id = " + sRunId + " AND table_hid = " + sHid
         );

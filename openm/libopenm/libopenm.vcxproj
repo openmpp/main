@@ -79,6 +79,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>$(OM_DB_DEF);$(OM_MSG_DEF);$(OM_UCVT_DEF);_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OM_MSG_INC);$(OM_DB_INC);$(OM_INC_DIR);$(SolutionDir)libopenm/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -95,6 +96,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>$(OM_DB_DEF);$(OM_MSG_DEF);$(OM_UCVT_DEF);_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OM_MSG_INC);$(OM_DB_INC);$(OM_INC_DIR);$(SolutionDir)libopenm/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -203,6 +205,7 @@
     <ClCompile Include="db\modelDicTable.cpp" />
     <ClCompile Include="db\modelDicTxtTable.cpp" />
     <ClCompile Include="db\modelWordTable.cpp" />
+    <ClCompile Include="db\outputTableReader.cpp" />
     <ClCompile Include="db\outputTableWriter.cpp" />
     <ClCompile Include="db\paramDicTable.cpp" />
     <ClCompile Include="db\paramDicTxtTable.cpp" />
@@ -249,6 +252,7 @@
     <ClCompile Include="model\rootController.cpp" />
     <ClCompile Include="model\runController.cpp" />
     <ClCompile Include="model\runControllerNewRun.cpp" />
+    <ClCompile Include="model\runControllerParams.cpp" />
     <ClCompile Include="model\singleController.cpp" />
     <ClCompile Include="msg\msgCommon.cpp" />
     <ClCompile Include="msg\msgExecBase.cpp" />

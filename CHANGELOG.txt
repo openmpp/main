@@ -1,7 +1,16 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
-2019_??_??:
+2020_04_07:
+  various improvements in UI
+  developer can open model UI as part of VS project build
+  support model run metadata digest and value digest (database schema changed)
+
+2020_02_06:
+  implemented parameters import between models (database schema changed)
+
+2019_11_20:
+  added default sub-value for input parameters (database schema changed)
   model runtime now uses floating point infinity for time_infinite
   model runtime now uses floating point soft NAN for time_undef
   new options keyword time_infinite_is_32767 to support legacy Modgen model code which depends on that

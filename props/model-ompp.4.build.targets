@@ -106,17 +106,51 @@
         Overwrite="true"
         Encoding="Unicode"
     />
+    <Message Text="Move $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite to @(OMC_SQLITE_OUTPUT)" />
+    <Move SourceFiles="$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite" DestinationFiles="@(OMC_SQLITE_OUTPUT)" />
   </Target>
 
   <PropertyGroup>
     <BuildDependsOn>OmcCompile;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
-  
-  
+
+
+  <!--
+  StopOms
+  -->
+
+  <!-- Stop oms web-service if model.ompp_ui.tickle exist -->
+  <!-- otherwise publish will fail because model.sqlite is opened by oms.exe -->
+  <PropertyGroup>
+    <OMS_URL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).oms_url.tickle</OMS_URL_TICKLE>
+    <STOP_OMS_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).stop_oms.log</STOP_OMS_LOG>
+  </PropertyGroup>
+
+  <Target Name="StopOms"
+          Condition="'$(OPEN_MODEL_WEB_UI)'=='true' And Exists('$(OMS_URL_TICKLE)')" 
+          BeforeTargets="ModelPublish"
+          >
+
+    <Message Text="Using PowerShell to stop oms web-service:" />
+    <Message
+      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      />
+    <!--
+      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1 2&gt;&amp;1 &gt; $(STOP_OMS_LOG)"
+      -->
+    <Exec
+      WorkingDirectory="$(OM_ROOT)"
+      ContinueOnError="true"
+      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      />
+    <Delete Files="$(OMS_URL_TICKLE)" />
+
+  </Target>
+
   <!--
   ModelPublish
   -->
-
   
   <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
@@ -135,8 +169,8 @@
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(PUBLISH_SQLITE)" />
 
-    <Message Text="Move @(OMC_SQLITE_OUTPUT) to $(PUBLISH_SQLITE)" />
-    <Move SourceFiles="@(OMC_SQLITE_OUTPUT)" DestinationFiles="$(PUBLISH_SQLITE)" />
+    <Message Text="Copy @(OMC_SQLITE_OUTPUT) to $(PUBLISH_SQLITE)" />
+    <Copy SourceFiles="@(OMC_SQLITE_OUTPUT)" DestinationFiles="$(PUBLISH_SQLITE)" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
@@ -162,14 +196,17 @@
   RunModel
   -->
 
-  
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
+    <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -OpenM.SubValues $(MEMBERS)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -OpenM.Threads $(THREADS)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
-    <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
+    <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
     <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
 
@@ -261,11 +298,32 @@
     <Exec Command="&quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
   </Target>
 
- 
+  <!--
+  StartOmppUI
+  -->
+
+  <PropertyGroup>
+    <START_OMPP_UI_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).start_ompp_ui.log</START_OMPP_UI_LOG>
+  </PropertyGroup>
+
+  <Target Name="StartOmppUI"
+          Condition="'$(OPEN_MODEL_WEB_UI)'=='true'" 
+          Outputs="$(OMS_URL_TICKLE)"
+          AfterTargets="ModelPublish"
+          >
+    <Message Text="Using PowerShell to start openM++ UI:" />
+    <Message
+      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
+      />
+    <Exec
+      WorkingDirectory="$(OM_ROOT)"
+      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
+      />
+  </Target>
+
   <!-- 
   Diagnostics
   -->
- 
  
   <Target Name="Diagnostics"
           Condition="'1'=='1'">

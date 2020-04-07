@@ -48,6 +48,9 @@ using namespace std;
 #define OM_DESCR_DB_MAX     255         /** max database length for description: parameter description, table description, etc. */
 #define OM_OPTION_DB_MAX    2048        /** max database length for option value: profile_option, run_option */
 
+#define OM_STATE_SAVE_TIME 1811L        /** msec, interval between run state save if any changes in run status */
+#define OM_STATE_BEAT_TIME 1823L        /** msec, interval between run state heart beats update */
+
 namespace openm
 {
     /** convert string to lower case */
@@ -98,6 +101,9 @@ namespace openm
     /** replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores. */
     const string toAlphaNumeric(const string & i_str, int i_maxSize = 0);
 
+    /** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
+    const string cleanPathChars(const string & i_str, int i_maxSize = 0);
+
     /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
     extern const string replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue);
 
@@ -109,6 +115,9 @@ namespace openm
 
     /** make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148 */
     extern const string toDateTimeString(const string & i_timestamp);
+
+    /** return number of milliseconds since epoch to measure intervals */
+    extern int64_t getMilliseconds(void);
 
     /** format message into supplied buffer using vsnprintf() */
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);

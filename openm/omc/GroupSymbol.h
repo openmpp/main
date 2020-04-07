@@ -28,6 +28,8 @@ public:
     */
     GroupSymbol(Symbol *sym, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
+        , is_hidden(false)
+        , pp_group_id(-1)
     {
     }
 
@@ -39,6 +41,8 @@ public:
      */
     GroupSymbol(const string unique_name, yy::location decl_loc = yy::location())
         : Symbol(unique_name, decl_loc)
+        , is_hidden(false)
+        , pp_group_id(-1)
     {
     }
 
@@ -73,4 +77,14 @@ public:
      * List of symbols (post-parse)
      */
     list<Symbol *> pp_symbol_list;
+
+    /**
+     * True if the group is hidden
+     */
+    bool is_hidden;
+
+    /**
+     * Numeric identifier. Used for communicating with metadata API.
+     */
+    int pp_group_id;
 };

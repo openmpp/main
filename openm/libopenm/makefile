@@ -24,7 +24,7 @@ BUILD_PROJ_DIR = $(BUILD_DIR)/libopenm$(MSG_POSTFIX)
 DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
 ifndef RELEASE
-  BD_CFLAGS = -g -D_DEBUG
+  BD_CFLAGS = -g -D_DEBUG -Og
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
   BIN_POSTFIX = D
@@ -50,7 +50,7 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) \
+CXXFLAGS = -Wall -std=c++17 -pthread -fPIC -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) \
   -I$(INCLUDE_G_DIR) -I$(INCLUDE_L_DIR) $(OM_DB_CFLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
@@ -83,6 +83,7 @@ LIBOPENM_CPPLIST = \
   db/modelDicTable.cpp \
   db/modelDicTxtTable.cpp \
   db/modelWordTable.cpp \
+  db/outputTableReader.cpp \
   db/outputTableWriter.cpp \
   db/paramDicTable.cpp \
   db/paramDicTxtTable.cpp \
@@ -91,6 +92,7 @@ LIBOPENM_CPPLIST = \
   db/paramImportTable.cpp \
   db/parameterReader.cpp \
   db/parameterWriter.cpp \
+  db/paramImportTable.cpp \
   db/profileLstTable.cpp \
   db/profileOptionTable.cpp \
   db/runLstTable.cpp \
@@ -128,6 +130,7 @@ LIBOPENM_CPPLIST = \
   model/rootController.cpp \
   model/runController.cpp \
   model/runControllerNewRun.cpp \
+  model/runControllerParams.cpp \
   model/singleController.cpp \
   msg/msgCommon.cpp \
   msg/msgExecBase.cpp \

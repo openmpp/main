@@ -8,7 +8,7 @@
 #include "metaHolder.h"
 using namespace openm;
 
-/** return input parameter size: total number of values in the parameter as product of all of dimensions size */
+/** return input parameter size of single sub value: total number of values in the parameter as product of all of dimensions size */
 size_t MetaHolder::parameterSize(const ParamDicRow & i_paramRow) const
 {
     // get dimensions list
@@ -48,7 +48,7 @@ size_t MetaHolder::accumulatorSize(const TableDicRow & i_tableRow) const
     return totalSize;
 }
 
-/** return type enums size: number of enums for that type or zero if no enumms found (most of built-in types) */
+/** return type enums size: number of enums for that type or zero if no enums found (most of built-in types) */
 size_t MetaHolder::typeEnumsSize(int i_modelId, int i_typeId) const
 {
     // compare type enum rows only by model id and type id

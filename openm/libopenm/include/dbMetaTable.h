@@ -175,12 +175,15 @@ namespace openm
     {
         virtual ~IModelDicTable() noexcept = 0;
 
-        /** 
+        /**
         * create new table object and load table rows sorted by primary key: model id.  
         * 
         * if name and/or digest specified then select only rows where model_name = i_name and model_digest = i_digest
         */
         static IModelDicTable * create(IDbExec * i_dbExec, const char * i_name = nullptr, const char * i_digest = nullptr);
+
+        /** create new table object and load table row by primary key: model id. */
+        static IModelDicTable * create(IDbExec * i_dbExec, int i_modelId);
 
         /** binary search row by primary key: model id, return NULL if not found. */
         virtual const ModelDicRow * byKey(int i_modelId) const = 0;
@@ -374,14 +377,14 @@ namespace openm
         virtual ~IParamImportTable() noexcept = 0;
 
         /**
-        * create new table object and load table rows sorted by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name.
+        * create new table object and load table rows sorted by unique key: model id, model parameter id.
         *
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
         static IParamImportTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
-        /** binary search row by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name, return NULL if not found. */
-        virtual const ParamImportRow * byKey(int i_modelId, int i_paramId, bool i_isFromParam, const string & i_fromName, const string & i_fromModel) const = 0;
+        /** binary search row by unique key: model id, model parameter id, return NULL if not found. */
+        virtual const ParamImportRow * byKey(int i_modelId, int i_paramId) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<ParamImportRow> byModelId(int i_modelId) const = 0;
@@ -800,8 +803,11 @@ namespace openm
         /** select table row by primary key: run id. */
         static vector<RunLstRow> byKey(IDbExec * i_dbExec, int i_runId);
 
-        /** calculate run digest, including run parameters and output table values digest */
-        static string digestRun(IDbExec * i_dbExec, int i_modelId, int i_runId);
+        /** calculate run value digest, including run parameters and output table values digest */
+        static string digestRunValue(IDbExec * i_dbExec, int i_modelId, int i_runId);
+
+        /** calculate run metadata digest: model digest, run name, sub count, created date-time, run stamp */
+        static string digestRunMeta(const string & i_modelDigest, const RunLstRow & i_runRow);
     };
 
     /** run_txt table public interface. */
@@ -924,7 +930,7 @@ namespace openm
         *
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_langId = -1);
+        static vector<WorksetTxtRow> select(IDbExec * i_dbExec, int i_setId, int i_langId = -1);
 
         /** select table row by primary key: set id and language id. */
         static vector<WorksetTxtRow> byKey(IDbExec * i_dbExec, int i_setId, int i_langId);

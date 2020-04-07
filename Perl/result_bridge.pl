@@ -246,7 +246,7 @@ my $run_sub_completed = 0;
 	if (defined($record)) {
 		chomp $record;
 		@fields = split(/,/, $record);
-		# Fields are run_id,model_id,run_name,sub_count,sub_started,sub_completed,create_dt,status,update_dt,run_digest
+		# Fields are run_id,model_id,run_name,sub_count,sub_started,sub_completed,create_dt,status,update_dt,run_digest,value_digest,run_stamp
 		$run_id = $fields[0];
 		print "run_id=${run_id}\n" if $opt->verbose;
 		$run_name = $fields[2];

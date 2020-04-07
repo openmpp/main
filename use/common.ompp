@@ -225,9 +225,17 @@ void ModelExit(const char* msg)
 void report_simulation_progress(int member, int percent)
 {
     theLog->logFormatted("member=%d Simulation progress=%d%%", member, percent);
-    fmk::i_model->updateProgress(percent);
+    report_simulation_progress_beat(percent);
 }
 
+/**
+ * Report simulation progress by sending it to database update thread.
+ * 
+ */
+void report_simulation_progress_beat(int percent, double value)
+{
+    fmk::i_model->updateProgress(percent, value);
+}
 
 /**
  * In Modgen, displays a progress message in the UI.

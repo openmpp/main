@@ -151,8 +151,10 @@ double ArgReader::doubleOption(const char * i_key, double i_default) const noexc
 * @param[in] i_keyArr           array of allowed keys: full key names
 * @param[in] i_shortArrSize     size of i_shortPairArr, can be zero
 * @param[in] i_shortPairArr     array of short and full key names to remap from short to full name
-* @param[in] i_prefixToCopySize size of options "prefix." array to be copied
-* @param[in] i_prefixToCopyArr  copy options started from "prefix." i.e.: "Parameter." or "SubValue."
+* @param[in] i_prefixSize       size of options "prefix." array to be allowed
+* @param[in] i_prefixArr        allow options started from "prefix." i.e.: "Parameter." or "SubValue."
+* @param[in] i_suffixSize       size of options ".suffix" array to be allowed
+* @param[in] i_suffixArr        allow options ended with ".suffix" i.e.: "EN.RunDescription"
 */
 void ArgReader::parseCommandLine(
     int argc, 
@@ -163,9 +165,11 @@ void ArgReader::parseCommandLine(
     const char ** i_keyArr, 
     const size_t i_shortArrSize, 
     const pair<const char *, const char *> * i_shortPairArr,
-    const size_t i_prefixToCopySize,
-    const char ** i_prefixToCopyArr
-    )
+    const size_t i_prefixSize,
+    const char ** i_prefixArr,
+    const size_t i_suffixSize,
+    const char ** i_suffixArr
+)
 {
     // if no command line arguments then return empty options
     if (argc <= 1) return;
@@ -174,17 +178,24 @@ void ArgReader::parseCommandLine(
     if (argc < 1 || argv == nullptr) throw HelperException("Invalid (empty) list of command line arguments, expected at least one");
     if (i_keyArrSize <= 0 || i_keyArrSize > SHRT_MAX || i_keyArr == nullptr) throw HelperException("Invalid (or empty) list of option keys");
     if (i_shortArrSize < 0 || i_shortArrSize > SHRT_MAX || (i_shortArrSize != 0 && i_shortPairArr == nullptr)) throw HelperException("Invalid (or empty) list of option short keys");
-    if (i_prefixToCopySize < 0 || i_prefixToCopySize > SHRT_MAX || (i_prefixToCopySize != 0 && i_prefixToCopyArr == nullptr)) throw HelperException("Invalid (or empty) list of option prefixes");
-    
+    if (i_prefixSize < 0 || i_prefixSize > SHRT_MAX || (i_prefixSize != 0 && i_prefixArr == nullptr)) throw HelperException("Invalid (or empty) list of option prefixes");
+    if (i_suffixSize < 0 || i_suffixSize > SHRT_MAX || (i_suffixSize != 0 && i_suffixArr == nullptr)) throw HelperException("Invalid (or empty) list of option suffixes");
+
     // past the end of option names array
     const char ** endOfKeyArr = i_keyArr + i_keyArrSize;
     const pair<const char *, const char *> * endOfShortArr = i_shortPairArr + i_shortArrSize;
 
-    // make list of "Prefix." to copy
-    vector<string> cpVec;
-    if (i_prefixToCopySize > 0 && i_prefixToCopyArr != nullptr) {
-        for (size_t k = 0; k < i_prefixToCopySize; k++) {
-            cpVec.push_back(string(i_prefixToCopyArr[k]) + ".");
+    // make of "Prefix." and ".Suffix" options
+    vector<string> preVec;
+    if (i_prefixSize > 0 && i_prefixArr != nullptr) {
+        for (size_t k = 0; k < i_prefixSize; k++) {
+            preVec.push_back(string(i_prefixArr[k]) + ".");
+        }
+    }
+    vector<string> sfxVec;
+    if (i_suffixSize > 0 && i_suffixArr != nullptr) {
+        for (size_t k = 0; k < i_suffixSize; k++) {
+            sfxVec.push_back(string(".") + i_suffixArr[k]);
         }
     }
 
@@ -219,8 +230,11 @@ void ArgReader::parseCommandLine(
         else {              // key not found: raise error, store or ignore unknown key
 
             bool isUnk = true;
-            for (vector<string>::const_iterator it = cpVec.cbegin(); isUnk && it != cpVec.cend(); it++) {
+            for (vector<string>::const_iterator it = preVec.cbegin(); isUnk && it != preVec.cend(); it++) {
                 isUnk = !startWithNoCase(sKey, it->c_str());
+            }
+            for (vector<string>::const_iterator it = sfxVec.cbegin(); isUnk && it != sfxVec.cend(); it++) {
+                isUnk = !endWithNoCase(sKey, it->c_str());
             }
             if (isUnk) {
                 if (i_isThrowUnknown) throw HelperException("Invalid command line parameter %s", argv[nArg]);
@@ -243,14 +257,18 @@ void ArgReader::parseCommandLine(
 * @param[in] i_keyArrSize         size of i_keyArr, must be positive
 * @param[in] i_keyArr             array of allowed keys: full key names
 * @param[in] i_sectionToMergeSize number of section names to merge
-* @param[in] i_sectionToMergeArr  if not NULL then merge section from ini-file, i.e.: "Parameter" or "SubValue"
+* @param[in] i_sectionToMergeArr  if not NULL then merge section from ini-file, ex: "Parameter" or "SubValue"
+* @param[in] i_multiKeySize       size of i_multiKeyArr array
+* @param[in] i_multiKeyArr        array of keys which can be used in any sections, ex: "EN.RunDescription"
 */
 void ArgReader::loadIniFile(
     const char * i_filePath,
     const size_t i_keyArrSize,
     const char ** i_keyArr,
     const size_t i_sectionToMergeSize,
-    const char ** i_sectionToMergeArr
+    const char ** i_sectionToMergeArr,
+    const size_t i_multiKeySize,
+    const char ** i_multiKeyArr
 )
 {
     // load options from ini-file
@@ -272,9 +290,26 @@ void ArgReader::loadIniFile(
         for (size_t k = 0; k < i_sectionToMergeSize; k++) {
             NoCaseMap sect = iniRd.getSection(i_sectionToMergeArr[k]);
             for (const auto & ent : sect) {
-                string key = string(i_sectionToMergeArr[k]) + "." + ent.first;
-                if (args.find(key) == args.cend()) args[key] = ent.second;
+                string optKey = string(i_sectionToMergeArr[k]) + "." + ent.first;
+                if (args.find(optKey) == args.cend()) args[optKey] = ent.second;
             }
+        }
+    }
+
+    // there are options which distiguished by suffix, ex: "-EN.RunDescription"
+    // corresponding ini-flie keys can exist in multiple sections
+    // append such ini-file option if it is not already defined on command line
+    if (i_sectionToMergeSize > 0 && i_sectionToMergeArr != nullptr) {
+        for (const auto & ini : iniRd.rowsCRef()) {
+
+            bool isFound = false;
+            for (size_t n = 0; !isFound && n < i_multiKeySize; n++) {
+                isFound = equalNoCase(i_multiKeyArr[n], ini.key.c_str());   // is ini key a one of suffix-based options
+            }
+            if (!isFound) continue;     // skip this ini key, it is not a suffix-based option
+
+            string optKey = ini.section + "." + ini.key;
+            if (args.find(optKey) == args.cend()) args[optKey] = ini.val;   // add from ini-file to options map
         }
     }
 }

@@ -904,14 +904,12 @@ void CodeGen::do_imports()
 void CodeGen::do_groups()
 {
     if (Symbol::pp_all_parameter_groups.size()) {
-        theLog->logMsg("Parameter groups:");
         for (auto grp : Symbol::pp_all_parameter_groups) {
             grp->populate_metadata(metaRows);
         }
     }
 
     if (Symbol::pp_all_table_groups.size()) {
-        theLog->logMsg("Table groups:");
         for (auto grp : Symbol::pp_all_table_groups) {
             grp->populate_metadata(metaRows);
         }

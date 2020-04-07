@@ -12,7 +12,8 @@ namespace openm
     class ModelDicTable : public IModelDicTable
     {
     public:
-        ModelDicTable(IDbExec * i_dbExec, const char * i_name = NULL, const char * i_digest = NULL);
+        ModelDicTable(IDbExec * i_dbExec, int i_modelId);
+        ModelDicTable(IDbExec * i_dbExec, const char * i_name = nullptr, const char * i_digest = nullptr);
         ModelDicTable(IRowBaseVec & io_rowVec) {  rowVec.swap(io_rowVec); }
         ~ModelDicTable() noexcept;
 
@@ -30,6 +31,9 @@ namespace openm
 
     private:
         IRowBaseVec rowVec;     // table rows
+
+        // load table rows from db
+        void select(IDbExec * i_dbExec, const string & i_where);
 
     private:
         ModelDicTable(const ModelDicTable & i_table) = delete;
@@ -94,10 +98,16 @@ namespace openm
 // Table never unloaded
 IModelDicTable::~IModelDicTable(void) noexcept { }
 
-// Create new table rows by loading db rows
+// Create new table rows by loading db rows by model name and/or digest
 IModelDicTable * IModelDicTable::create(IDbExec * i_dbExec, const char * i_name, const char * i_digest)
 {
     return new ModelDicTable(i_dbExec, i_name, i_digest);
+}
+
+// Create new table rows by loading db rows by primery key: model id
+IModelDicTable * IModelDicTable::create(IDbExec * i_dbExec, int i_modelId)
+{
+    return new ModelDicTable(i_dbExec, i_modelId);
 }
 
 // Create new table rows by swap with supplied vector of rows
@@ -106,24 +116,40 @@ IModelDicTable * IModelDicTable::create(IRowBaseVec & io_rowVec)
     return new ModelDicTable(io_rowVec);
 }
 
-// Load table from db
+// Table never unloaded
+ModelDicTable::~ModelDicTable(void) noexcept { }
+
+// Load table rows from db by model name and/or digest
 ModelDicTable::ModelDicTable(IDbExec * i_dbExec, const char * i_name, const char * i_digest)
 { 
-    string sql = 
+    string where;
+    if (i_name != nullptr && i_digest == nullptr) where += " WHERE model_name = " + toQuoted(i_name);
+    if (i_name == nullptr && i_digest != nullptr) where += " WHERE model_digest = " + toQuoted(i_digest);
+    if (i_name != nullptr && i_digest != nullptr) where += " WHERE model_name = " + toQuoted(i_name) + " AND model_digest = " + toQuoted(i_digest);
+
+    select(i_dbExec, where);
+}
+
+// Load table row from db by primary key: model id
+ModelDicTable::ModelDicTable(IDbExec * i_dbExec, int i_modelId)
+{
+    string where = " WHERE model_id = " + to_string(i_modelId);
+    select(i_dbExec, where);
+}
+
+// Load table rows from db
+void ModelDicTable::select(IDbExec * i_dbExec, const string & i_where)
+{
+    string sql =
         "SELECT" \
         " model_id, model_name, model_digest, model_type, model_ver, create_dt, default_lang_id" \
-        " FROM model_dic";
-    if (i_name != NULL && i_digest == NULL) sql += " WHERE model_name = " + toQuoted(i_name);
-    if (i_name == NULL && i_digest != NULL) sql += " WHERE model_digest = " + toQuoted(i_digest);
-    if (i_name != NULL && i_digest != NULL) sql += " WHERE model_name = " + toQuoted(i_name) + " AND model_digest = " + toQuoted(i_digest);
-    sql += " ORDER BY 1";
+        " FROM model_dic" + 
+        (!i_where.empty() ? i_where :"") +
+        " ORDER BY 1";
 
     const IRowAdapter & adp = ModelDicRowAdapter();
     rowVec = load(sql, i_dbExec, adp);
 }
-
-// Table never unloaded
-ModelDicTable::~ModelDicTable(void) noexcept { }
 
 // Find row by primary key: model id
 const ModelDicRow * ModelDicTable::byKey(int i_modelId) const

@@ -49,7 +49,7 @@ endif
 MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
 
 ifndef RELEASE
-  BD_CFLAGS = -g -D_DEBUG
+  BD_CFLAGS = -g -D_DEBUG -Og
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
@@ -71,14 +71,16 @@ LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
 L_UCVT_FLAG =
+WL_PIE_FLAG = -pie
 ifeq ($(PLATFORM_UNAME), Darwin)
   L_UCVT_FLAG = -liconv
+  WL_PIE_FLAG = -Wl,-pie
 endif
 
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -I$(OM_INC_DIR) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -I$(OM_INC_DIR) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
@@ -111,7 +113,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OM_LIB_DIR) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
+	$(CXX) -pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
 
 #
 # create model SQLite database
@@ -167,17 +169,25 @@ run:
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 2 -SubFrom.salaryFull csv -OpenM.ParamDir ./csv \
-		-OpenM.RunName "Parameter sub-values 2 from csv" \
+		-OpenM.RunName "Sub-values_2_from_csv" \
+		-EN.RunDescription "Parameter sub-values 2 from csv" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-SubFrom.baseSalary db -SubFrom.salaryFull db -SubFrom.filePath db -SubFrom.isOldAge db \
-		-OpenM.RunName "Parameter sub-values 4" \
+		-OpenM.RunName "Sub-values_4" \
+		-EN.RunDescription "Parameter sub-values 4" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 2 \
-		-SubGroupFrom.age_sex_parameters csv -SubGroupValues.age_sex_parameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
-		-OpenM.RunName "Parameter group sub-values 2 from csv" \
+		-SubGroupFrom.AgeSexParameters csv -SubGroupValues.AgeSexParameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
+		-OpenM.RunName "Group_sub-values_2_from_csv" \
+		-EN.RunDescription "Parameter group sub-values 2 from csv" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-ImportRunName.modelOne Default \
+		-OpenM.RunName "Import_from_Default_run" \
+		-EN.RunDescription "Import parameters from Default run" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean

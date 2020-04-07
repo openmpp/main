@@ -23,7 +23,6 @@
     <ProjectGuid>{8D0AE5FC-090B-437F-800E-6B24288C23C0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libopenm_omc_db</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -79,6 +78,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OM_DB_INC);$(OM_INC_DIR);$(SolutionDir)libopenm/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,6 +94,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(OM_DB_INC);$(OM_INC_DIR);$(SolutionDir)libopenm/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -1239,8 +1239,8 @@ void Symbol::post_parse_all()
     pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_imports.sort([](ImportSymbol* a, ImportSymbol* b) { return a->name < b->name; });
-    pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
-    pp_all_table_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
+    // pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
+    // pp_all_table_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
     pp_all_aggregations.sort([](AggregationSymbol *a, AggregationSymbol *b) { return a->name < b->name; });
 
@@ -1268,6 +1268,18 @@ void Symbol::post_parse_all()
         int id = 0;
         for (auto table : pp_all_tables) {
             table->pp_table_id = id;
+            ++id;
+        }
+    }
+
+    {
+        int id = 0;
+        for (auto pg : pp_all_parameter_groups) {
+            pg->pp_group_id = id;
+            ++id;
+        }
+        for (auto tg : pp_all_table_groups) {
+            tg->pp_group_id = id;
             ++id;
         }
     }

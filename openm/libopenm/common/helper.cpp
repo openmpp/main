@@ -203,6 +203,29 @@ const string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
     return sRet;
 }
 
+// replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore
+const string openm::cleanPathChars(const string & i_str, int i_maxSize)
+{
+    string sRet;
+    int len = 0;
+
+    for (char nowCh : i_str) {
+
+        bool isOk = isprint(nowCh, locale::classic());
+        if (isOk) {
+            for (char c : "\"'`$}{@><:|?*&^;/\\") {
+                if (isOk = nowCh != c; !isOk) break;
+            }
+        }
+
+        sRet += isOk ? nowCh : '_';
+        len++;
+
+        if (i_maxSize > 0 && len >= i_maxSize) return sRet;     // if max size supplied then return up to max size chars
+    }
+    return sRet;
+}
+
 // make date-time string, ie: 2012-08-17 16:04:59.148
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {
@@ -253,6 +276,23 @@ const string openm::toDateTimeString(const string & i_timestamp)
     if (dtLen >= 21) dtStr[19] = '.';
 
     return dtStr;
+}
+
+// return number of milliseconds since epoch to measure intervals
+int64_t openm::getMilliseconds(void)
+{
+#ifndef _WIN32
+    const int64_t NANO_PER_SECOND = 1000000000;
+    const int64_t MILLI_PER_NANO = 1000000;
+
+    struct timespec ts;
+    if (!timespec_get(&ts, TIME_UTC)) return 0;
+
+    return ((int64_t)ts.tv_sec * NANO_PER_SECOND + (int64_t)ts.tv_nsec) / MILLI_PER_NANO;
+#else
+
+    return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+#endif
 }
 
 // format message into supplied buffer using vsnprintf()

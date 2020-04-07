@@ -516,6 +516,9 @@ namespace openm
         /** db_set_table     VARCHAR(64)  NOT NULL */
         string dbSetTable;
 
+        /** import_digest   VARCHAR(32)   NOT NULL */
+        string importDigest;
+
         /** create row with supplied unique key field values. */
         ParamDicRow(int i_modelId, int i_paramId) : 
             modelId(i_modelId), 
@@ -529,7 +532,8 @@ namespace openm
             isHidden(false),
             numCumulated(0),
             dbRunTable(""),
-            dbSetTable("")
+            dbSetTable(""),
+            importDigest("")
         { }
 
         /** create row with default empty field values. */
@@ -559,9 +563,6 @@ namespace openm
         /** parameter_hid      INT          NOT NULL, -- unique parameter id */
         int paramHid;
 
-        /** is_from_parameter  SMALLINT     NOT NULL */
-        bool isFromParam;
-
         /** from_name          VARCHAR(255) NOT NULL */
         string fromName;
 
@@ -572,25 +573,24 @@ namespace openm
         bool isSampleDim;
 
         /** create row with supplied unique key field values. */
-        ParamImportRow(int i_modelId, int i_paramId, bool i_isFromParam, const string & i_fromName, const string & i_fromModel) :
+        ParamImportRow(int i_modelId, int i_paramId) :
             modelId(i_modelId),
             paramId(i_paramId),
             paramHid(0),
-            isFromParam(i_isFromParam),
-            fromName(i_fromName),
-            fromModel(i_fromModel),
+            fromName(""),
+            fromModel(""),
             isSampleDim(0)
         { }
 
         /** create row with default empty field values. */
-        ParamImportRow(void) : ParamImportRow(0, 0, false, "", "") { }
+        ParamImportRow(void) : ParamImportRow(0, 0) { }
 
         ~ParamImportRow(void) noexcept { }
 
-        /** less comparator by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name. */
+        /** less comparator by unique key: model id, model parameter id. */
         static bool isKeyLess(const ParamImportRow & i_left, const ParamImportRow & i_right);
 
-        /** equal comparator by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name. */
+        /** equal comparator by unique key: model id, model parameter id. */
         static bool isKeyEqual(const ParamImportRow & i_left, const ParamImportRow & i_right);
     };
 
@@ -784,6 +784,9 @@ namespace openm
         /** is_hidden        SMALLINT NOT NULL     */
         bool isHidden;
 
+        /** import_digest    VARCHAR(32)   NOT NULL */
+        string importDigest;
+
         /** create row with supplied key field values. */
         TableDicRow(int i_modelId, int i_tableId) : 
             modelId(i_modelId), 
@@ -798,7 +801,8 @@ namespace openm
             dbAccTable(""),
             dbAccAll(""),
             exprPos(-1),
-            isHidden(false)
+            isHidden(false),
+            importDigest("")
         { }
 
         /** create row with default empty field values. */

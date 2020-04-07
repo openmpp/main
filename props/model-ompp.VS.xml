@@ -133,5 +133,9 @@
                 DisplayName="Launch Excel after export to Excel"
                 Description="To follow"
                 />
-                  
+  <BoolProperty Category="RunOptions"
+                Name="OPEN_MODEL_WEB_UI"
+                DisplayName="Open model web UI"
+                Description="Publish model in web-service and open model web UI using default browser"
+                />
 </Rule>

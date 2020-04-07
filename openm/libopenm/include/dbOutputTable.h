@@ -70,6 +70,59 @@ namespace openm
         /** calculate output table values digest and store only single copy of output values */
         virtual void digestOutput(IDbExec * i_dbExec) = 0;
     };
+
+    /** output table reader public interface */
+    struct IOutputTableReader
+    {
+        virtual ~IOutputTableReader() noexcept = 0;
+
+        /** return number of values to select from the table */
+        virtual size_t sizeOf(void) const noexcept = 0;
+
+        /** return output table size: total number of values in the table */
+        virtual size_t totalSizeOf(void) const noexcept = 0;
+
+        /**
+         * read output table values.
+         *
+         * @param[in]     i_dbExec    database connection
+         * @param[in]     i_isNanFill if true then initially fill io_valueArr with quiet_NaN else zero fill
+         * @param[in]     i_size      number of values to return
+         * @param[in,out] io_valueArr array to return output values, size must be =i_size
+         */
+        virtual void readTable(IDbExec * i_dbExec, bool i_isNanFill, size_t i_size, double * io_valueArr) = 0;
+    };
+
+    /** output table expressions reader public interface */
+    struct IOutputTableExprReader : public IOutputTableReader
+    {
+        virtual ~IOutputTableExprReader() noexcept = 0;
+
+        /** output table reader factory: create new reader table expressions reader */
+        static IOutputTableExprReader * create(
+            int i_runId,
+            const char * i_name,
+            IDbExec * i_dbExec,
+            const MetaHolder * i_metaStore,
+            const char * i_expr = ""
+        );
+    };
+
+    /** output table accumulators reader public interface */
+    struct IOutputTableAccReader : public IOutputTableReader
+    {
+        virtual ~IOutputTableAccReader() noexcept = 0;
+
+        /** output table reader factory: create new reader table accumulators reader */
+        static IOutputTableAccReader * create(
+            int i_runId,
+            const char * i_name,
+            IDbExec * i_dbExec,
+            const MetaHolder * i_metaStore,
+            const char * i_acc = "",
+            const vector<int> & i_subIdArr = {}
+        );
+    };
 }
 
 #endif  // DB_OUTPUT_TABLE_H

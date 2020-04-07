@@ -41,19 +41,20 @@ namespace openm
 
     // Columns type for table_dic join to model_table_dic row
     static const type_info * typeTableDicRow[] = { 
-        &typeid(decltype(TableDicRow::modelId)), 
-        &typeid(decltype(TableDicRow::tableId)), 
-        &typeid(decltype(TableDicRow::tableName)), 
-        &typeid(decltype(TableDicRow::tableHid)), 
-        &typeid(decltype(TableDicRow::digest)), 
-        &typeid(decltype(TableDicRow::rank)), 
+        &typeid(decltype(TableDicRow::modelId)),
+        &typeid(decltype(TableDicRow::tableId)),
+        &typeid(decltype(TableDicRow::tableName)),
+        &typeid(decltype(TableDicRow::tableHid)),
+        &typeid(decltype(TableDicRow::digest)),
+        &typeid(decltype(TableDicRow::rank)),
         &typeid(decltype(TableDicRow::isSparse)),
-        &typeid(decltype(TableDicRow::isUser)), 
-        &typeid(decltype(TableDicRow::dbExprTable)), 
-        &typeid(decltype(TableDicRow::dbAccTable)), 
-        &typeid(decltype(TableDicRow::dbAccAll)), 
+        &typeid(decltype(TableDicRow::isUser)),
+        &typeid(decltype(TableDicRow::dbExprTable)),
+        &typeid(decltype(TableDicRow::dbAccTable)),
+        &typeid(decltype(TableDicRow::dbAccAll)),
         &typeid(decltype(TableDicRow::exprPos)),
-        & typeid(decltype(TableDicRow::isHidden))
+        &typeid(decltype(TableDicRow::isHidden)),
+        &typeid(decltype(TableDicRow::importDigest))
     };
 
     // Size (number of columns) for table_dic join to model_table_dic row
@@ -109,6 +110,9 @@ namespace openm
             case 12:
                 dynamic_cast<TableDicRow *>(i_row)->isHidden = (*(bool *)i_value);
                 break;
+            case 13:
+                dynamic_cast<TableDicRow *>(i_row)->importDigest = ((const char *)i_value);
+                break;
             default:
                 throw DbException("db column number out of range");
             }
@@ -140,7 +144,7 @@ TableDicTable::TableDicTable(IDbExec * i_dbExec, int i_modelId)
         " M.model_id, M.model_table_id, D.table_name, D.table_hid," \
         " D.table_digest, D.table_rank, D.is_sparse, M.is_user," \
         " D.db_expr_table, D.db_acc_table, D.db_acc_all_view, M.expr_dim_pos," \
-        " M.is_hidden" \
+        " M.is_hidden, D.import_digest" \
         " FROM table_dic D" \
         " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +

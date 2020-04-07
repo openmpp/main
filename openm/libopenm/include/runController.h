@@ -36,7 +36,7 @@ namespace openm
         /** return index of parameter by name */
         int parameterIdByName(const char * i_name) const override;
 
-        /** number of parameter sub-values for current process */
+        /** number of parameter sub-values for current model run */
         int parameterSubCount(int i_paramId) const override
         {
             return MetaLoader::parameterSubCount(i_paramId);
@@ -109,12 +109,6 @@ namespace openm
         /** create new run, create input parameters and run options for input working sets */
         tuple<int, int, ModelStatus> createNewRun(int i_taskRunId, bool i_isWaitTaskRun, IDbExec * i_dbExec);
 
-        /** find source working set for input parameters */
-        int findWorkset(int i_setId, IDbExec * i_dbExec);
-
-        /** save run options by inserting into run_option table */
-        void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
-
         /** impelementation of model process shutdown if exiting without completion. */
         void doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec);
 
@@ -144,8 +138,17 @@ namespace openm
         /** sub-value run states for all modeling threads */
         RunStateHolder runStateHolder;
 
+        /** find source working set for input parameters */
+        int findWorkset(int i_setId, IDbExec * i_dbExec);
+
+        /** save run options by inserting into run_option table */
+        void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
+
         // copy input parameters from "base" run and working set into new run id
         void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;
+
+        // cretate run description and notes using run options or by copy it from workset text
+        void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         /** write output tables aggregated values into database */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
@@ -162,6 +165,29 @@ namespace openm
         // return parameter sub-value options by parameter id
         const MetaLoader::ParamSubOpts subOptsById(const ParamDicRow & i_paramRow, int i_subCount, int i_defaultSubId) const;
 
+        /** find import run of upstream model and verify it is completed successfully */
+        RunImportOpts findImportRun(const string & i_modelName, const ImportOpts & i_importOpts, const IModelDicTable * i_mainModelTable, IDbExec * i_dbExec) const;
+
+        /** import parameter value from output table expression of upstream model, return true if imported or false if not found */
+        bool importOutputTable(
+            int i_runId,
+            const ParamDicRow & i_paramRow,
+            const ParameterNameSizeItem * i_nameSizeItem,
+            const RunImportOpts & i_riOpts,
+            const ParamImportRow * i_importRow,
+            IDbExec * i_dbExec
+        ) const;
+
+        /** import parameter from parameter of upstream model, return true if imported or false if not found */
+        bool importParameter(
+            int i_runId,
+            const ParamDicRow & i_paramRow,
+            const ParameterNameSizeItem * i_nameSizeItem,
+            const RunImportOpts & i_riOpts,
+            const ParamImportRow * i_importRow,
+            const ParamSubOpts & i_subOpts,
+            IDbExec * i_dbExec
+        ) const;
 
     private:
         RunController(const RunController & i_runCtrl) = delete;

@@ -286,21 +286,16 @@ vector<ParamDicRow>::const_iterator ParamDicRow::byKey(int i_modelId, int i_para
     );
 }
 
-/** less comparator by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name. */
+/** less comparator by unique key: model id, model parameter id. */
 bool ParamImportRow::isKeyLess(const ParamImportRow & i_left, const ParamImportRow & i_right)
 {
-    return (i_left.modelId < i_right.modelId) ||
-        (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId) ||
-        (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.isFromParam < i_right.isFromParam) ||
-        (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.isFromParam == i_right.isFromParam && i_left.fromName < i_right.fromName) ||
-        (i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.isFromParam == i_right.isFromParam && i_left.fromName == i_right.fromName && i_left.fromModel < i_right.fromModel);
+    return (i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
 }
 
-/** equal comparator by unique key: model id, model parameter id, is_from_parameter, from_name, from_model_name. */
+/** equal comparator by unique key: model id, model parameter id. */
 bool ParamImportRow::isKeyEqual(const ParamImportRow & i_left, const ParamImportRow & i_right)
 {
-    return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && 
-        i_left.isFromParam == i_right.isFromParam && i_left.fromName == i_right.fromName && i_left.fromModel == i_right.fromModel;
+    return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId;
 }
 
 // parameter_dic_txt join to model_parameter_dic row less comparator by unique key: model id, model parameter id, language id.
@@ -627,16 +622,16 @@ bool GroupTxtRow::isKeyEqual(const GroupTxtRow & i_left, const GroupTxtRow & i_r
 // group_txt row less comparator by unique key: model id, group id, language code. 
 bool GroupTxtLangRow::uniqueLangKeyLess(const GroupTxtLangRow & i_left, const GroupTxtLangRow & i_right)
 {
-    return i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode == i_right.langCode;
+    return
+        (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.groupId < i_right.groupId) ||
+        (i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode < i_right.langCode);
 }
 
 // group_txt row equal comparator by unique key: model id, group id, language code. 
 bool GroupTxtLangRow::uniqueLangKeyEqual(const GroupTxtLangRow & i_left, const GroupTxtLangRow & i_right)
 {
-    return
-        (i_left.modelId < i_right.modelId) ||
-        (i_left.modelId == i_right.modelId && i_left.groupId < i_right.groupId) ||
-        (i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode < i_right.langCode);
+    return i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.langCode == i_right.langCode;
 }
 
 // group_pc row less comparator by primary key: model id, group id, child position.

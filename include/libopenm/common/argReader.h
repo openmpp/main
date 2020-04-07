@@ -98,8 +98,10 @@ namespace openm
             const char ** i_keyArr,
             const size_t i_shortArrSize = 0,
             const pair<const char *, const char *> * i_shortPairArr = nullptr,
-            const size_t i_prefixToCopySize = 0,
-            const char ** i_prefixToCopyArr = nullptr
+            const size_t i_prefixSize = 0,
+            const char ** i_prefixArr = nullptr,
+            const size_t i_suffixSize = 0,
+            const char ** i_suffixArr = nullptr
         );
 
         /** read ini-file and merge command line arguments. */
@@ -108,8 +110,10 @@ namespace openm
             const size_t i_keyArrSize, 
             const char ** i_keyArr,
             const size_t i_sectionToMergeSize = 0,
-            const char ** i_sectionToMergeArr = nullptr
-            );
+            const char ** i_sectionToMergeArr = nullptr,
+            const size_t i_multiKeySize = 0,
+            const char ** i_multiKeyArr = nullptr
+        );
 
         /** adjust log file settings, ie: make default log file path if required. */
         void adjustLogSettings(int argc, char ** argv);

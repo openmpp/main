@@ -37,6 +37,9 @@ namespace openm
         /** param_dims table rows */
         unique_ptr<IParamDimsTable> paramDims;
 
+        /** model_parameter_import table rows */
+        unique_ptr<IParamImportTable> paramImport;
+
         /** table_dic table rows */
         unique_ptr<ITableDicTable> tableDic;
 
@@ -49,6 +52,9 @@ namespace openm
         /** table_expr table rows */
         unique_ptr<ITableExprTable> tableExpr;
 
+        /** lang_lst table rows */
+        unique_ptr<ILangLstTable> langLst;
+
         /** group_lst table rows */
         unique_ptr<IGroupLstTable> groupLst;
 
@@ -58,10 +64,10 @@ namespace openm
         /** create empty model metadata holder */
         MetaHolder(void) : modelRow(nullptr) { }
         
-        /** return type enums size: number of enums for that type or zero if no enumms found (most of built-in types) */
+        /** return type enums size: number of enums for that type or zero if no enums found (most of built-in types) */
         size_t typeEnumsSize(int i_modelId, int i_typeId) const;
 
-        /** return input parameter size: total number of values in the parameter as product of all of dimensions size */
+        /** return input parameter size of single sub value: total number of values in the parameter as product of all of dimensions size */
         size_t parameterSize(const ParamDicRow & paramRow) const;
 
         /** return accumulator size: total number of accumulator values as product of dimensions size, including total item */
