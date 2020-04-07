@@ -302,7 +302,6 @@ use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
 
 my $sConnect = "Provider = Microsoft.ACE.OLEDB.12.0; Data source = ${out_db}";
 my $ADO_Conn = Win32::OLE->new('ADODB.Connection');	# creates a connection object
-my $ADO_RS = Win32::OLE->new('ADODB.Recordset');		# creates a recordset object
 $ADO_Conn->Open($sConnect);
 if (Win32::OLE->LastError()) {
 	print "Fatal Error: ", Win32::OLE->LastError(), "\n";
@@ -341,7 +340,7 @@ sub ado_nap_time
 			    [Description]='${run_descr}',
 				[Note]='${run_date_time} ${run_note}'
 			;";
-	$ADO_RS = $ADO_Conn->Execute($sql);
+	$ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
 		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
 		print "sql=${sql}\n";
@@ -369,7 +368,7 @@ for my $parameter (@parameters) {
 	
 	# Remove all existing rows from parameter
 	$sql = "Delete * From ${parameter};";
-	$ADO_RS = $ADO_Conn->Execute($sql);
+	$ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
 		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
 		print "sql=${sql}\n";
@@ -395,7 +394,7 @@ for my $parameter (@parameters) {
 			$values = "'".$values."'";
 		}
 		$sql = "Insert Into ${parameter} Values (${values});";
-		$ADO_RS = $ADO_Conn->Execute($sql);
+		$ADO_Conn->Execute($sql);
 		if (Win32::OLE->LastError()) {
 			print "Fatal Error: ", Win32::OLE->LastError(), "\n";
 			print "sql=${sql}\n";
@@ -470,7 +469,7 @@ for my $table (@tables) {
 
 	# Remove all existing rows from the table in the output Modgen Access DB
 	$sql = "Delete * From ${table};";
-	$ADO_RS = $ADO_Conn->Execute($sql);
+	$ADO_Conn->Execute($sql);
 	if (Win32::OLE->LastError()) {
 		print "Fatal Error: ", Win32::OLE->LastError(), "\n";
 		print "sql=${sql}\n";
@@ -576,7 +575,7 @@ for my $table (@tables) {
 		$out_values = join(',', @out_fields);
 	
 		$sql = "Insert Into ${table} Values (${out_values});";
-		$ADO_RS = $ADO_Conn->Execute($sql);
+		$ADO_Conn->Execute($sql);
 		if (Win32::OLE->LastError()) {
 			print "Fatal Error: ", Win32::OLE->LastError(), "\n";
 			print "sql=${sql}\n";
