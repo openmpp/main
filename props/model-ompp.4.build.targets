@@ -122,30 +122,32 @@
   <!-- Stop oms web-service if model.ompp_ui.tickle exist -->
   <!-- otherwise publish will fail because model.sqlite is opened by oms.exe -->
   <PropertyGroup>
-    <OMS_PORT Condition="'$(OMS_PORT)'==''">4040</OMS_PORT>
-    <OMPP_UI_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).ompp_ui.tickle</OMPP_UI_TICKLE>
+    <OMS_URL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).oms_url.tickle</OMS_URL_TICKLE>
+    <STOP_OMS_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).stop_oms.log</STOP_OMS_LOG>
   </PropertyGroup>
 
   <Target Name="StopOms"
-          Condition="'$(OPEN_MODEL_WEB_UI)'=='true' And Exists('$(OMPP_UI_TICKLE)')" 
+          Condition="'$(OPEN_MODEL_WEB_UI)'=='true' And Exists('$(OMS_URL_TICKLE)')" 
           BeforeTargets="ModelPublish"
           >
-    <Message Text="Use PowerShell to stop $(OMS_EXE):" />
-    <Message Text="powershell -Command &quot;Invoke-WebRequest -Method PUT -Uri http://localhost:$(OMS_PORT)/api/admin/shutdown&quot;" />
-    <Message Text="If error is: 'Unable to connect to the remote server'" />
-    <Message Text="   then oms web-service not running on localhost:$(OMS_PORT)" />
-    <Message Text="If error is: 'The underlying connection was closed: An unexpected error occurred on a receive'" />
-    <Message Text="   then oms web-service shutdown succeeded" />
-    <Exec 
-          ContinueOnError="true"
-          Command="powershell -Command &quot;Invoke-WebRequest -Method PUT -Uri http://localhost:$(OMS_PORT)/api/admin/shutdown&quot;"
-          />
 
-    <Delete Files="$(OMPP_UI_TICKLE)" />
+    <Message Text="Using PowerShell to stop oms web-service:" />
+    <Message
+      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      />
+    <!--
+      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1 2&gt;&amp;1 &gt; $(STOP_OMS_LOG)"
+      -->
+    <Exec
+      WorkingDirectory="$(OM_ROOT)"
+      ContinueOnError="true"
+      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      />
+    <Delete Files="$(OMS_URL_TICKLE)" />
 
   </Target>
-  
-  
+
   <!--
   ModelPublish
   -->
@@ -301,30 +303,23 @@
   -->
 
   <PropertyGroup>
-    <OMS_EXE>oms.exe</OMS_EXE>
+    <START_OMPP_UI_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).start_ompp_ui.log</START_OMPP_UI_LOG>
   </PropertyGroup>
 
   <Target Name="StartOmppUI"
           Condition="'$(OPEN_MODEL_WEB_UI)'=='true'" 
-          Outputs="$(OMPP_UI_TICKLE)"
+          Outputs="$(OMS_URL_TICKLE)"
           AfterTargets="ModelPublish"
           >
-    <Message Text="Use PowerShell to start $(OMS_EXE):" />
+    <Message Text="Using PowerShell to start openM++ UI:" />
     <Message
-      Text="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -WindowStyle Minimized -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;"
+      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
       />
     <Exec
       WorkingDirectory="$(OM_ROOT)"
-      Command="powershell -Command &quot;Start-Process bin/$(OMS_EXE) -WindowStyle Minimized -ArgumentList '-l localhost:$(OMS_PORT) -oms.ModelDir &quot;$(PUBLISH_DIR)&quot; -oms.ModelLogDir &quot;$(PUBLISH_DIR)&quot; -oms.LogRequest'&quot;"
+      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
       />
-    <Message Text="Open web browser at http://localhost:$(OMS_PORT)" />
-    <Exec Command="START http://localhost:$(OMS_PORT)"/>
-
-    <Touch  Files="$(OMPP_UI_TICKLE)"
-            AlwaysCreate="true"
-            />
   </Target>
-
 
   <!-- 
   Diagnostics
