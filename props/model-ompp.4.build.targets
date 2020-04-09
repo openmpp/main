@@ -304,6 +304,10 @@
 
   <PropertyGroup>
     <START_OMPP_UI_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).start_ompp_ui.log</START_OMPP_UI_LOG>
+    <RUN_TEMPLATE Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></RUN_TEMPLATE>
+    <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">run.Win32.Debug.template.txt</RUN_TEMPLATE>
+    <RUN_TEMPLATE Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">run.x64.Release.template.txt</RUN_TEMPLATE>
+    <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">run.x64.Debug.template.txt</RUN_TEMPLATE>
   </PropertyGroup>
 
   <Target Name="StartOmppUI"
@@ -313,11 +317,11 @@
           >
     <Message Text="Using PowerShell to start openM++ UI:" />
     <Message
-      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
+      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set RUN_TEMPLATE=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
       />
     <Exec
       WorkingDirectory="$(OM_ROOT)"
-      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
+      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
       />
   </Target>
 
