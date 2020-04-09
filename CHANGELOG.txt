@@ -1,6 +1,9 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_04_09:
+  minor changes to correctly pass Debug/Release/Win32/x64 from VS project to UI
+
 2020_04_07:
   various improvements in UI
   developer can open model UI as part of VS project build
