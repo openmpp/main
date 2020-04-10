@@ -2,6 +2,16 @@
 <Project InitialTargets="Validate;Diagnostics" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- 
+  Override default VStudio cpp project settings
+  -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+
+  <!-- 
   FixModgen11
   -->
   
