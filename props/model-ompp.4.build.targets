@@ -19,7 +19,7 @@
   <Target Name="FixModgen11" BeforeTargets="OmcCompile">
     <Exec
       WorkingDirectory="$(OM_ROOT)/props"
-      Command="powershell.exe -NonInteractive -ExecutionPolicy RemoteSigned -File DetectAndFixModgen11Issue.ps1 $(ModgenLanguage)"
+      Command="powershell.exe -NonInteractive -ExecutionPolicy Bypass -File DetectAndFixModgen11Issue.ps1 $(ModgenLanguage)"
       IgnoreExitCode="true"
     >
       <Output TaskParameter="ExitCode" PropertyName="Modgen11FixDone"/>
@@ -143,16 +143,12 @@
 
     <Message Text="Using PowerShell to stop oms web-service:" />
     <Message
-      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/stopOms.ps1"
       />
-    <!--
-      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
-      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1 2&gt;&amp;1 &gt; $(STOP_OMS_LOG)"
-      -->
     <Exec
       WorkingDirectory="$(OM_ROOT)"
       ContinueOnError="true"
-      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/stopOms.ps1"
+      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/stopOms.ps1"
       />
     <Delete Files="$(OMS_URL_TICKLE)" />
 
@@ -327,11 +323,11 @@
           >
     <Message Text="Using PowerShell to start openM++ UI:" />
     <Message
-      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set RUN_TEMPLATE=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
+      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set RUN_TEMPLATE=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
       />
     <Exec
       WorkingDirectory="$(OM_ROOT)"
-      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy RemoteSigned -File props/startOmppUI.ps1"
+      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
       />
   </Target>
 

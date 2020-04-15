@@ -9,7 +9,7 @@
   <Target Name="FixModgen11" BeforeTargets="ModgenCompile">
     <Exec
       WorkingDirectory="$(OM_ROOT)/props"
-      Command="powershell.exe -NonInteractive -ExecutionPolicy RemoteSigned -File DetectAndFixModgen11Issue.ps1 $(ModgenLanguage)"
+      Command="powershell.exe -NonInteractive -ExecutionPolicy Bypass -File DetectAndFixModgen11Issue.ps1 $(ModgenLanguage)"
       IgnoreExitCode="true"
     >
       <Output TaskParameter="ExitCode" PropertyName="Modgen11FixDone"/>
