@@ -1,7 +1,7 @@
 {{/*
 oms web-service:
 
-Template to run model_mpi.exe on Windows using Microsoft MPI
+Template to run modelName_mpi.exe on Windows using Microsoft MPI
 
 Rename this file into:
   mpi.ModelRun.template.txt
@@ -14,12 +14,12 @@ Oms web-service process this template as:
 Result of template processing is a command line to run model_mpi.exe
 
 Example of result:
-mpiexec -n 16 -wdir models/bin -env key value ../bin/model_mpi -OpenM.LogToFile true
+mpiexec -n 16 -wdir models/bin -env key value ../bin/modelName_mpi -OpenM.LogToFile true
 
 Arguments of template:
 struct {
   ModelName string            // model name
-  ExePath   string            // path to model exe as: binDir/modelname
+  ExeStem   string            // base part of model exe name, usually modelName
   Dir       string            // work directory to run the model
   BinDir    string            // bin directory where model_mpi.exe is located
   MpiNp     int               // number of MPI processes
@@ -41,7 +41,7 @@ mpiexec
 {{$key}}
 {{$val}}
 {{end}}
-{{.ExePath}}_mpi
+{{.BinDir}}/{{.ExeStem}}_mpi
 {{range .Args}}
 {{.}}
 {{end}}
