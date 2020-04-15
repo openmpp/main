@@ -2,6 +2,11 @@ Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
 2020_04_09:
+  VS projects: use Bypass execution policy to execute Powershell scripts
+  omc compiler: check for possible key clash in model code
+  demo models: use empty microdata/OzProj22_5K.csv file
+
+2020_04_09:
   minor changes to correctly pass Debug/Release/Win32/x64 from VS project to UI
 
 2020_04_07:
