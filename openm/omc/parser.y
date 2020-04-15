@@ -708,6 +708,14 @@ option:
                         }
               option_rhs[value]
                         {
+                            // check for possible clash in model source specifying same key
+                            auto srch = Symbol::options.find(*$key);
+                            if (srch != Symbol::options.end()) {
+                                // value for key already specified in model source
+                                if (srch->second != *$value) {
+                                    error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (srch->second) + LT("'"));
+                                }
+                            }
                             // place key-value pair in options collection
                             Symbol::options[*$key] = *$value;
                             // prepare for another possible key-value pair
