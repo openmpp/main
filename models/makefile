@@ -46,22 +46,22 @@ LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql
 all : prepare $(MODEL_DIRS)
 
 $(MODEL_DIRS) :
-	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) OMC_CODE_PAGE=$(OMC_CODE_PAGE) -C $@
+	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) OMC_CODE_PAGE=$(OMC_CODE_PAGE) -C $@ || { exit $$?; }
 
 .PHONY : publish
 publish : prepare
-	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish;)
+	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish || { exit $$?; };)
 	cp -pf modelOne/*.sql $(LOCAL_SQL_DIR)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(LOCAL_BUILD_DIR)/$(d)/$(OMC_SRC_DIR)/*.sql $(LOCAL_SQL_DIR);)
 
 .PHONY : publish-views
 publish-views : publish
-	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish-views;)
-	
+	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) publish-views || { exit $$?; };)
+
 .PHONY : run
 run : prepare
-	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) run;)
-	
+	$(foreach d,$(MODEL_DIRS),$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) -C $(d) run || { exit $$?; };)
+
 .PHONY : prepare
 prepare:
 	@if [ ! -d $(LOCAL_BIN_DIR) ] ; then mkdir -p $(LOCAL_BIN_DIR) ; fi
