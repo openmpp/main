@@ -1,22 +1,23 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
-2020_04_09:
+2020_04_09: minor changes
   VS projects: use Bypass execution policy to execute Powershell scripts
   omc compiler: check for possible key clash in model code
+  Linux makefiles: exit if recursive sub-directory target fail
 
 2020_04_09:
   minor changes to correctly pass Debug/Release/Win32/x64 from VS project to UI
 
-2020_04_07:
+2020_04_07: BREAKING changes
   various improvements in UI
   developer can open model UI as part of VS project build
   support model run metadata digest and value digest (database schema changed)
 
-2020_02_06:
+2020_02_06: BREAKING changes
   implemented parameters import between models (database schema changed)
 
-2019_11_20:
+2019_11_20: BREAKING changes
   added default sub-value for input parameters (database schema changed)
   model runtime now uses floating point infinity for time_infinite
   model runtime now uses floating point soft NAN for time_undef
