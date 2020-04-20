@@ -517,27 +517,27 @@ void CodeGen::do_ModelStartup()
 
     c += "theLog->logFormatted(\"member=%d Compute derived parameters\", simulation_member);";
     auto & sg = Symbol::pre_simulation;
-    if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-        c += "int mem_id = i_model->subValueId();";
-        c += "int mem_count = i_model->subValueCount();";
-        c += "before_presimulation(mem_id, mem_count); // defined in model framework module";
-        for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-            // The following can be useful to track down run-time errors occurring in a PreSimulation function
-            c += "#ifdef _DEBUG";
-            c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
-            c += "#endif";
-            c += sg.disambiguated_name(id) + "();";
-        }
-        for (auto suffix : sg.suffixes) {
-            // The following can be useful to track down run-time errors occurring in a PreSimulation function
-            c += "#ifdef _DEBUG";
-            c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
-            c += "#endif";
-            c += sg.prefix + suffix + "();";
-        }
-        c += "after_presimulation(); // defined in model framework module";
-        c += "";
+    c += "int mem_id = i_model->subValueId();";
+    c += "int mem_count = i_model->subValueCount();";
+    c += "before_presimulation(mem_id, mem_count); // defined in model framework module";
+    c += "// Call " + to_string(sg.ambiguous_count) + " PreSimulation functions without suffix";
+    for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+        // The following can be useful to track down run-time errors occurring in a PreSimulation function
+        c += "#ifdef _DEBUG";
+        c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
+        c += "#endif";
+        c += sg.disambiguated_name(id) + "();";
     }
+    c += "// Call " + to_string(sg.suffixes.size()) + " PreSimulation functions with suffix";
+    for (auto suffix : sg.suffixes) {
+        // The following can be useful to track down run-time errors occurring in a PreSimulation function
+        c += "#ifdef _DEBUG";
+        c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
+        c += "#endif";
+        c += sg.prefix + suffix + "();";
+    }
+    c += "after_presimulation(); // defined in model framework module";
+    c += "";
 
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only derived parameters in this for loop
