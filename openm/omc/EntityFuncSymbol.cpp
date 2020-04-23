@@ -33,13 +33,11 @@ void EntityFuncSymbol::post_parse(int pass)
 
             // Construct the set of all identifiers used in the function body.
             auto rng = memfunc_bodyids.equal_range(unique_name);
-            for_each(rng.first,
-                    rng.second,
-                    [&](unordered_multimap<string, string>::value_type& vt)
+            for (auto vt = rng.first; vt != rng.second; ++vt)
             {
-                body_identifiers.insert(vt.second);
+                body_identifiers.insert(vt->second);
             }
-            );
+
         }
         break;
     }
