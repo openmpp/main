@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <set>
+#include <algorithm>
 #include "location.hh"
 #include "EntityMemberSymbol.h"
 #include "CodeBlock.h"
