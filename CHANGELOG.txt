@@ -1,6 +1,11 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_05_06:
+  add Python examples: how to use openM++ from Python
+  add preliminary support for MacOS
+  minor changes in UI and oms web-service
+
 2020_04_09: minor changes
   VS projects: use Bypass execution policy to execute Powershell scripts
   omc compiler: check for possible key clash in model code

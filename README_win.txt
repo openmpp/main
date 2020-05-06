@@ -15,7 +15,7 @@ As result you will see:
 - web UI in your default browser at http://localhost:4040
 
 It is recommended to use Chrome, Firefox or Edge for ompp-ui.
-Please note Internet Explorer is significantly slower and may not work correctly.
+Please note Internet Explorer is not supported and may not work correctly.
 
 ========================================
 Setting the OM_ROOT environment variable
