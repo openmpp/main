@@ -94,10 +94,10 @@ namespace openm
 
         /** write parameter: write all sub values of the parameter into db set table
         *
-        * @param[in]     i_dbExec   database connection
-        * @param[in]     i_subId    parameter sub value id
-        * @param[in]     i_type     parameter value type, use std::string for string parameters
-        * @param[in]     i_size     parameter size for single sub value
+        * @param[in]     i_dbExec      database connection
+        * @param[in]     i_subCount  nmuber of  sub values
+        * @param[in]     i_type           parameter value type, use std::string for string parameters
+        * @param[in]     i_size           parameter size for single sub value
         * @param[in,out] i_valueArr array of parameter values, size must be == i_size * i_subCount
         */
         virtual void writeParameter(
