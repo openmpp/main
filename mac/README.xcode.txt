@@ -36,10 +36,10 @@ git clone https://github.com/openmpp/main.git ompp-main
 2. Add Xcode projects to openM++
 --------------------------------
 
-# clone from GitLab
+# clone from GitHub
 
 cd ompp-main
-git clone https://gitlab.com/ompp/xcode.git ompp-xcode
+git clone https://github.com/ompp/xcode.git ompp-xcode
 
 # copy projects into our main tree
 
