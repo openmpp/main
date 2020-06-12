@@ -1,0 +1,22 @@
+//
+// omc configuration settings
+//
+// Copyright (c) OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+// to build omc we need bison version >= 2.6 and <= 3.5
+// please use Homebrew to install:
+//   brew install bison@2.7
+//
+OMC_BISON = bison@2.7
+OMC_BISON_PATH = /usr/local/opt/$(OMC_BISON)/bin
+OMC_BISON_LDFLAGS = /usr/local/opt/$(OMC_BISON)/lib
+
+// OM_ROOT: openM++ root directory, expected sub-directories: bin, lib, sql
+//
+OM_ROOT = $(SRCROOT)/../..
+
+// dynamic source code directory: *.hh and *.cpp output of bison and flex
+//
+BUILD_SRC_DIR = $(SRCROOT)/Xcode-src
+

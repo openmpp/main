@@ -1,0 +1,821 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D893973E247EB25300D61DAA /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973D247EB20600D61DAA /* libiconv.tbd */; };
+		D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973F247EB25E00D61DAA /* liblibsqlite.a */; };
+		D8939742247EB26400D61DAA /* liblibopenm_omc_db.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */; };
+		D8FD8832247D83D20006D608 /* BoolSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD882C247D83D20006D608 /* BoolSymbol.cpp */; };
+		D8FD8833247D83D20006D608 /* AggregationSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD882E247D83D20006D608 /* AggregationSymbol.cpp */; };
+		D8FD8834247D83D20006D608 /* AttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8831247D83D20006D608 /* AttributeSymbol.cpp */; };
+		D8FD8877247D84330006D608 /* DimensionSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8837247D842F0006D608 /* DimensionSymbol.cpp */; };
+		D8FD8878247D84330006D608 /* Driver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8839247D842F0006D608 /* Driver.cpp */; };
+		D8FD8879247D84330006D608 /* EnumerationSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD883A247D842F0006D608 /* EnumerationSymbol.cpp */; };
+		D8FD887A247D84330006D608 /* EnumeratorSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD883B247D842F0006D608 /* EnumeratorSymbol.cpp */; };
+		D8FD887B247D84330006D608 /* EntityTableAccumulatorSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8842247D842F0006D608 /* EntityTableAccumulatorSymbol.cpp */; };
+		D8FD887C247D84330006D608 /* CodeGen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8843247D842F0006D608 /* CodeGen.cpp */; };
+		D8FD887D247D84330006D608 /* CodeBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8844247D84300006D608 /* CodeBlock.cpp */; };
+		D8FD887E247D84330006D608 /* EntityTableMeasureAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8845247D84300006D608 /* EntityTableMeasureAttributeSymbol.cpp */; };
+		D8FD887F247D84330006D608 /* EntityEventSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8846247D84300006D608 /* EntityEventSymbol.cpp */; };
+		D8FD8880247D84330006D608 /* EntityForeignMemberSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD884A247D84300006D608 /* EntityForeignMemberSymbol.cpp */; };
+		D8FD8881247D84330006D608 /* EnumerationWithEnumeratorsSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD884F247D84300006D608 /* EnumerationWithEnumeratorsSymbol.cpp */; };
+		D8FD8882247D84330006D608 /* BuiltinAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8851247D84300006D608 /* BuiltinAttributeSymbol.cpp */; };
+		D8FD8883247D84330006D608 /* EntityHookSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8852247D84300006D608 /* EntityHookSymbol.cpp */; };
+		D8FD8884247D84330006D608 /* DependencyGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8855247D84300006D608 /* DependencyGroupSymbol.cpp */; };
+		D8FD8885247D84330006D608 /* EntityTableSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8856247D84310006D608 /* EntityTableSymbol.cpp */; };
+		D8FD8886247D84330006D608 /* EntityDataMemberSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8857247D84310006D608 /* EntityDataMemberSymbol.cpp */; };
+		D8FD8887247D84330006D608 /* EntityArrayMemberSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD885A247D84310006D608 /* EntityArrayMemberSymbol.cpp */; };
+		D8FD8888247D84330006D608 /* EntityFuncSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD885B247D84310006D608 /* EntityFuncSymbol.cpp */; };
+		D8FD8889247D84330006D608 /* EntityTableMeasureSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD885C247D84310006D608 /* EntityTableMeasureSymbol.cpp */; };
+		D8FD888A247D84330006D608 /* EntityMemberSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD885E247D84310006D608 /* EntityMemberSymbol.cpp */; };
+		D8FD888B247D84330006D608 /* DerivedTableSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8860247D84310006D608 /* DerivedTableSymbol.cpp */; };
+		D8FD888C247D84330006D608 /* EntitySymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8861247D84310006D608 /* EntitySymbol.cpp */; };
+		D8FD888D247D84330006D608 /* ConstantSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8862247D84310006D608 /* ConstantSymbol.cpp */; };
+		D8FD888E247D84330006D608 /* Constant.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8866247D84320006D608 /* Constant.cpp */; };
+		D8FD888F247D84330006D608 /* EntityMultilinkSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8867247D84320006D608 /* EntityMultilinkSymbol.cpp */; };
+		D8FD8890247D84330006D608 /* EntityInternalSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8869247D84320006D608 /* EntityInternalSymbol.cpp */; };
+		D8FD8891247D84330006D608 /* EntityIncrementSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD886A247D84320006D608 /* EntityIncrementSymbol.cpp */; };
+		D8FD8892247D84330006D608 /* ClassificationSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD886E247D84320006D608 /* ClassificationSymbol.cpp */; };
+		D8FD8893247D84330006D608 /* ExtendParameterSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD886F247D84320006D608 /* ExtendParameterSymbol.cpp */; };
+		D8FD8894247D84330006D608 /* EntitySetSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8873247D84320006D608 /* EntitySetSymbol.cpp */; };
+		D8FD8895247D84330006D608 /* DerivedAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8874247D84320006D608 /* DerivedAttributeSymbol.cpp */; };
+		D8FD88B9247D846C0006D608 /* LanguageSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8898247D846A0006D608 /* LanguageSymbol.cpp */; };
+		D8FD88BA247D846C0006D608 /* GroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8899247D846A0006D608 /* GroupSymbol.cpp */; };
+		D8FD88BB247D846C0006D608 /* MultilinkAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD889F247D846B0006D608 /* MultilinkAttributeSymbol.cpp */; };
+		D8FD88BC247D846C0006D608 /* omc_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88A0247D846B0006D608 /* omc_file.cpp */; };
+		D8FD88BD247D846C0006D608 /* IdentityAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88A6247D846B0006D608 /* IdentityAttributeSymbol.cpp */; };
+		D8FD88BE247D846C0006D608 /* LinkAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88A8247D846B0006D608 /* LinkAttributeSymbol.cpp */; };
+		D8FD88BF247D846C0006D608 /* ModelSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88AA247D846B0006D608 /* ModelSymbol.cpp */; };
+		D8FD88C0247D846C0006D608 /* omc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88AD247D846C0006D608 /* omc.cpp */; };
+		D8FD88C1247D846C0006D608 /* MaintainedAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88AE247D846C0006D608 /* MaintainedAttributeSymbol.cpp */; };
+		D8FD88C2247D846C0006D608 /* HideGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B0247D846C0006D608 /* HideGroupSymbol.cpp */; };
+		D8FD88C3247D846C0006D608 /* LinkToAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B2247D846C0006D608 /* LinkToAttributeSymbol.cpp */; };
+		D8FD88C4247D846C0006D608 /* ParameterGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B3247D846C0006D608 /* ParameterGroupSymbol.cpp */; };
+		D8FD88C5247D846C0006D608 /* ModelTypeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B4247D846C0006D608 /* ModelTypeSymbol.cpp */; };
+		D8FD88C6247D846C0006D608 /* ImportSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B5247D846C0006D608 /* ImportSymbol.cpp */; };
+		D8FD88C7247D846C0006D608 /* HeaderCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B6247D846C0006D608 /* HeaderCheck.cpp */; };
+		D8FD88C8247D846C0006D608 /* NumericSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B7247D846C0006D608 /* NumericSymbol.cpp */; };
+		D8FD88C9247D846C0006D608 /* GlobalFuncSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88B8247D846C0006D608 /* GlobalFuncSymbol.cpp */; };
+		D8FD88F4247D84B30006D608 /* StringSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88CA247D84B00006D608 /* StringSymbol.cpp */; };
+		D8FD88F5247D84B30006D608 /* PartitionSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88CC247D84B00006D608 /* PartitionSymbol.cpp */; };
+		D8FD88F6247D84B30006D608 /* TableMeasureSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88CD247D84B00006D608 /* TableMeasureSymbol.cpp */; };
+		D8FD88F7247D84B30006D608 /* TableSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88CE247D84B00006D608 /* TableSymbol.cpp */; };
+		D8FD88F8247D84B30006D608 /* RealSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88CF247D84B00006D608 /* RealSymbol.cpp */; };
+		D8FD88F9247D84B30006D608 /* RangeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88D0247D84B00006D608 /* RangeSymbol.cpp */; };
+		D8FD88FA247D84B30006D608 /* TypeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88D1247D84B00006D608 /* TypeSymbol.cpp */; };
+		D8FD88FC247D84B30006D608 /* UnknownTypeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88D3247D84B00006D608 /* UnknownTypeSymbol.cpp */; };
+		D8FD88FD247D84B30006D608 /* TableGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88DB247D84B10006D608 /* TableGroupSymbol.cpp */; };
+		D8FD88FF247D84B30006D608 /* StringTypeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88E0247D84B10006D608 /* StringTypeSymbol.cpp */; };
+		D8FD8900247D84B30006D608 /* ScenarioSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88E2247D84B10006D608 /* ScenarioSymbol.cpp */; };
+		D8FD8901247D84B30006D608 /* Symbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88E3247D84B20006D608 /* Symbol.cpp */; };
+		D8FD8902247D84B30006D608 /* TypeOfLinkSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88E6247D84B20006D608 /* TypeOfLinkSymbol.cpp */; };
+		D8FD8903247D84B30006D608 /* ParseContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88E8247D84B20006D608 /* ParseContext.cpp */; };
+		D8FD8904247D84B30006D608 /* SimpleAttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88E9247D84B20006D608 /* SimpleAttributeSymbol.cpp */; };
+		D8FD8905247D84B30006D608 /* ParameterSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88EA247D84B20006D608 /* ParameterSymbol.cpp */; };
+		D8FD8906247D84B30006D608 /* VersionSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88EC247D84B20006D608 /* VersionSymbol.cpp */; };
+		D8FD8907247D84B30006D608 /* SimpleAttributeEnumSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88EE247D84B20006D608 /* SimpleAttributeEnumSymbol.cpp */; };
+		D8FD8908247D84B30006D608 /* TimeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD88F0247D84B20006D608 /* TimeSymbol.cpp */; };
+		D8FD8913247DA43B0006D608 /* scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8911247DA43A0006D608 /* scanner.cpp */; };
+		D8FD8914247DA43B0006D608 /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8912247DA43B0006D608 /* parser.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D8FD881F247D823E0006D608 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		D893973D247EB20600D61DAA /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
+		D893973F247EB25E00D61DAA /* liblibsqlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibsqlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibopenm_omc_db.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8FD8821247D823E0006D608 /* omc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = omc; sourceTree = BUILT_PRODUCTS_DIR; };
+		D8FD882B247D83D20006D608 /* BoolEnumeratorSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoolEnumeratorSymbol.h; sourceTree = "<group>"; };
+		D8FD882C247D83D20006D608 /* BoolSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BoolSymbol.cpp; sourceTree = "<group>"; };
+		D8FD882D247D83D20006D608 /* ast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ast.h; sourceTree = "<group>"; };
+		D8FD882E247D83D20006D608 /* AggregationSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AggregationSymbol.cpp; sourceTree = "<group>"; };
+		D8FD882F247D83D20006D608 /* AttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD8830247D83D20006D608 /* AggregationSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AggregationSymbol.h; sourceTree = "<group>"; };
+		D8FD8831247D83D20006D608 /* AttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8835247D842F0006D608 /* CodeGen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CodeGen.h; sourceTree = "<group>"; };
+		D8FD8836247D842F0006D608 /* BuiltinAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BuiltinAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD8837247D842F0006D608 /* DimensionSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DimensionSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8838247D842F0006D608 /* EntityTableMeasureAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityTableMeasureAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD8839247D842F0006D608 /* Driver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Driver.cpp; sourceTree = "<group>"; };
+		D8FD883A247D842F0006D608 /* EnumerationSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnumerationSymbol.cpp; sourceTree = "<group>"; };
+		D8FD883B247D842F0006D608 /* EnumeratorSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnumeratorSymbol.cpp; sourceTree = "<group>"; };
+		D8FD883C247D842F0006D608 /* DerivedTableSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DerivedTableSymbol.h; sourceTree = "<group>"; };
+		D8FD883D247D842F0006D608 /* EntityTableMeasureSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityTableMeasureSymbol.h; sourceTree = "<group>"; };
+		D8FD883E247D842F0006D608 /* ConstantSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConstantSymbol.h; sourceTree = "<group>"; };
+		D8FD883F247D842F0006D608 /* EntityArrayMemberSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityArrayMemberSymbol.h; sourceTree = "<group>"; };
+		D8FD8840247D842F0006D608 /* EnumeratorSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumeratorSymbol.h; sourceTree = "<group>"; };
+		D8FD8841247D842F0006D608 /* EntityEventSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityEventSymbol.h; sourceTree = "<group>"; };
+		D8FD8842247D842F0006D608 /* EntityTableAccumulatorSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityTableAccumulatorSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8843247D842F0006D608 /* CodeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGen.cpp; sourceTree = "<group>"; };
+		D8FD8844247D84300006D608 /* CodeBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeBlock.cpp; sourceTree = "<group>"; };
+		D8FD8845247D84300006D608 /* EntityTableMeasureAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityTableMeasureAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8846247D84300006D608 /* EntityEventSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityEventSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8847247D84300006D608 /* DerivedAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DerivedAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD8848247D84300006D608 /* EntityFuncSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityFuncSymbol.h; sourceTree = "<group>"; };
+		D8FD8849247D84300006D608 /* EntityForeignMemberSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityForeignMemberSymbol.h; sourceTree = "<group>"; };
+		D8FD884A247D84300006D608 /* EntityForeignMemberSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityForeignMemberSymbol.cpp; sourceTree = "<group>"; };
+		D8FD884B247D84300006D608 /* EnumerationWithEnumeratorsSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumerationWithEnumeratorsSymbol.h; sourceTree = "<group>"; };
+		D8FD884C247D84300006D608 /* BoolSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoolSymbol.h; sourceTree = "<group>"; };
+		D8FD884D247D84300006D608 /* ClassificationSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClassificationSymbol.h; sourceTree = "<group>"; };
+		D8FD884E247D84300006D608 /* ClassificationEnumeratorSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClassificationEnumeratorSymbol.h; sourceTree = "<group>"; };
+		D8FD884F247D84300006D608 /* EnumerationWithEnumeratorsSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnumerationWithEnumeratorsSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8850247D84300006D608 /* EnumerationSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumerationSymbol.h; sourceTree = "<group>"; };
+		D8FD8851247D84300006D608 /* BuiltinAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BuiltinAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8852247D84300006D608 /* EntityHookSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityHookSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8853247D84300006D608 /* DependencyGroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DependencyGroupSymbol.h; sourceTree = "<group>"; };
+		D8FD8854247D84300006D608 /* CodeBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CodeBlock.h; sourceTree = "<group>"; };
+		D8FD8855247D84300006D608 /* DependencyGroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DependencyGroupSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8856247D84310006D608 /* EntityTableSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityTableSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8857247D84310006D608 /* EntityDataMemberSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityDataMemberSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8858247D84310006D608 /* EntityTableAccumulatorSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityTableAccumulatorSymbol.h; sourceTree = "<group>"; };
+		D8FD8859247D84310006D608 /* EntityMultilinkSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityMultilinkSymbol.h; sourceTree = "<group>"; };
+		D8FD885A247D84310006D608 /* EntityArrayMemberSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityArrayMemberSymbol.cpp; sourceTree = "<group>"; };
+		D8FD885B247D84310006D608 /* EntityFuncSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityFuncSymbol.cpp; sourceTree = "<group>"; };
+		D8FD885C247D84310006D608 /* EntityTableMeasureSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityTableMeasureSymbol.cpp; sourceTree = "<group>"; };
+		D8FD885D247D84310006D608 /* EntityTableSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityTableSymbol.h; sourceTree = "<group>"; };
+		D8FD885E247D84310006D608 /* EntityMemberSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityMemberSymbol.cpp; sourceTree = "<group>"; };
+		D8FD885F247D84310006D608 /* EntityHookSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityHookSymbol.h; sourceTree = "<group>"; };
+		D8FD8860247D84310006D608 /* DerivedTableSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DerivedTableSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8861247D84310006D608 /* EntitySymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntitySymbol.cpp; sourceTree = "<group>"; };
+		D8FD8862247D84310006D608 /* ConstantSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConstantSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8863247D84310006D608 /* Constant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constant.h; sourceTree = "<group>"; };
+		D8FD8864247D84310006D608 /* EntityMemberSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityMemberSymbol.h; sourceTree = "<group>"; };
+		D8FD8865247D84310006D608 /* ExprForTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExprForTable.h; sourceTree = "<group>"; };
+		D8FD8866247D84320006D608 /* Constant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Constant.cpp; sourceTree = "<group>"; };
+		D8FD8867247D84320006D608 /* EntityMultilinkSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityMultilinkSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8868247D84320006D608 /* EntitySetSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntitySetSymbol.h; sourceTree = "<group>"; };
+		D8FD8869247D84320006D608 /* EntityInternalSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityInternalSymbol.cpp; sourceTree = "<group>"; };
+		D8FD886A247D84320006D608 /* EntityIncrementSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityIncrementSymbol.cpp; sourceTree = "<group>"; };
+		D8FD886B247D84320006D608 /* EntityInternalSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityInternalSymbol.h; sourceTree = "<group>"; };
+		D8FD886C247D84320006D608 /* DimensionSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DimensionSymbol.h; sourceTree = "<group>"; };
+		D8FD886D247D84320006D608 /* ExprForAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExprForAttribute.h; sourceTree = "<group>"; };
+		D8FD886E247D84320006D608 /* ClassificationSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ClassificationSymbol.cpp; sourceTree = "<group>"; };
+		D8FD886F247D84320006D608 /* ExtendParameterSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ExtendParameterSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8870247D84320006D608 /* ExtendParameterSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExtendParameterSymbol.h; sourceTree = "<group>"; };
+		D8FD8871247D84320006D608 /* EntityDataMemberSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityDataMemberSymbol.h; sourceTree = "<group>"; };
+		D8FD8872247D84320006D608 /* EntityIncrementSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityIncrementSymbol.h; sourceTree = "<group>"; };
+		D8FD8873247D84320006D608 /* EntitySetSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntitySetSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8874247D84320006D608 /* DerivedAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DerivedAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8875247D84320006D608 /* EntitySymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntitySymbol.h; sourceTree = "<group>"; };
+		D8FD8876247D84330006D608 /* Driver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Driver.h; sourceTree = "<group>"; };
+		D8FD8896247D846A0006D608 /* MultilinkAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultilinkAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD8897247D846A0006D608 /* omc_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_common.h; sourceTree = "<group>"; };
+		D8FD8898247D846A0006D608 /* LanguageSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LanguageSymbol.cpp; sourceTree = "<group>"; };
+		D8FD8899247D846A0006D608 /* GroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GroupSymbol.cpp; sourceTree = "<group>"; };
+		D8FD889A247D846A0006D608 /* Literal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Literal.h; sourceTree = "<group>"; };
+		D8FD889B247D846A0006D608 /* GroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GroupSymbol.h; sourceTree = "<group>"; };
+		D8FD889C247D846B0006D608 /* IdentityAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IdentityAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD889D247D846B0006D608 /* LinkAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinkAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD889E247D846B0006D608 /* MaintainedAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaintainedAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD889F247D846B0006D608 /* MultilinkAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MultilinkAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88A0247D846B0006D608 /* omc_file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_file.cpp; sourceTree = "<group>"; };
+		D8FD88A1247D846B0006D608 /* NumericSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NumericSymbol.h; sourceTree = "<group>"; };
+		D8FD88A2247D846B0006D608 /* LinkToAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinkToAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD88A3247D846B0006D608 /* omc_file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_file.h; sourceTree = "<group>"; };
+		D8FD88A4247D846B0006D608 /* ParameterGroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParameterGroupSymbol.h; sourceTree = "<group>"; };
+		D8FD88A5247D846B0006D608 /* HideGroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HideGroupSymbol.h; sourceTree = "<group>"; };
+		D8FD88A6247D846B0006D608 /* IdentityAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IdentityAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88A7247D846B0006D608 /* ModelSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelSymbol.h; sourceTree = "<group>"; };
+		D8FD88A8247D846B0006D608 /* LinkAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinkAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88A9247D846B0006D608 /* GlobalFuncSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GlobalFuncSymbol.h; sourceTree = "<group>"; };
+		D8FD88AA247D846B0006D608 /* ModelSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88AB247D846C0006D608 /* ImportSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImportSymbol.h; sourceTree = "<group>"; };
+		D8FD88AC247D846C0006D608 /* LanguageSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LanguageSymbol.h; sourceTree = "<group>"; };
+		D8FD88AD247D846C0006D608 /* omc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc.cpp; sourceTree = "<group>"; };
+		D8FD88AE247D846C0006D608 /* MaintainedAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaintainedAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88AF247D846C0006D608 /* ModelTypeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelTypeSymbol.h; sourceTree = "<group>"; };
+		D8FD88B0247D846C0006D608 /* HideGroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HideGroupSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88B1247D846C0006D608 /* ModuleSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModuleSymbol.h; sourceTree = "<group>"; };
+		D8FD88B2247D846C0006D608 /* LinkToAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinkToAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88B3247D846C0006D608 /* ParameterGroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParameterGroupSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88B4247D846C0006D608 /* ModelTypeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelTypeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88B5247D846C0006D608 /* ImportSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImportSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88B6247D846C0006D608 /* HeaderCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HeaderCheck.cpp; sourceTree = "<group>"; };
+		D8FD88B7247D846C0006D608 /* NumericSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NumericSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88B8247D846C0006D608 /* GlobalFuncSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GlobalFuncSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88CA247D84B00006D608 /* StringSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88CB247D84B00006D608 /* TableMeasureSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableMeasureSymbol.h; sourceTree = "<group>"; };
+		D8FD88CC247D84B00006D608 /* PartitionSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PartitionSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88CD247D84B00006D608 /* TableMeasureSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TableMeasureSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88CE247D84B00006D608 /* TableSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TableSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88CF247D84B00006D608 /* RealSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RealSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88D0247D84B00006D608 /* RangeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RangeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88D1247D84B00006D608 /* TypeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TypeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88D3247D84B00006D608 /* UnknownTypeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnknownTypeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88D4247D84B10006D608 /* SimpleAttributeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleAttributeSymbol.h; sourceTree = "<group>"; };
+		D8FD88D5247D84B10006D608 /* StringTypeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringTypeSymbol.h; sourceTree = "<group>"; };
+		D8FD88D6247D84B10006D608 /* ParseContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParseContext.h; sourceTree = "<group>"; };
+		D8FD88D7247D84B10006D608 /* TypeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TypeSymbol.h; sourceTree = "<group>"; };
+		D8FD88D8247D84B10006D608 /* SpecialGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpecialGlobal.h; sourceTree = "<group>"; };
+		D8FD88D9247D84B10006D608 /* RealSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RealSymbol.h; sourceTree = "<group>"; };
+		D8FD88DA247D84B10006D608 /* TableGroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableGroupSymbol.h; sourceTree = "<group>"; };
+		D8FD88DB247D84B10006D608 /* TableGroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TableGroupSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88DC247D84B10006D608 /* PartitionSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PartitionSymbol.h; sourceTree = "<group>"; };
+		D8FD88DD247D84B10006D608 /* TableSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableSymbol.h; sourceTree = "<group>"; };
+		D8FD88DE247D84B10006D608 /* ScenarioSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScenarioSymbol.h; sourceTree = "<group>"; };
+		D8FD88E0247D84B10006D608 /* StringTypeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringTypeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88E1247D84B10006D608 /* VersionSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionSymbol.h; sourceTree = "<group>"; };
+		D8FD88E2247D84B10006D608 /* ScenarioSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScenarioSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88E3247D84B20006D608 /* Symbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol.cpp; sourceTree = "<group>"; };
+		D8FD88E4247D84B20006D608 /* PartitionEnumeratorSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PartitionEnumeratorSymbol.h; sourceTree = "<group>"; };
+		D8FD88E5247D84B20006D608 /* TypeOfLinkSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TypeOfLinkSymbol.h; sourceTree = "<group>"; };
+		D8FD88E6247D84B20006D608 /* TypeOfLinkSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TypeOfLinkSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88E7247D84B20006D608 /* TimeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimeSymbol.h; sourceTree = "<group>"; };
+		D8FD88E8247D84B20006D608 /* ParseContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParseContext.cpp; sourceTree = "<group>"; };
+		D8FD88E9247D84B20006D608 /* SimpleAttributeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SimpleAttributeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88EA247D84B20006D608 /* ParameterSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParameterSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88EB247D84B20006D608 /* StringSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringSymbol.h; sourceTree = "<group>"; };
+		D8FD88EC247D84B20006D608 /* VersionSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VersionSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88ED247D84B20006D608 /* RangeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RangeSymbol.h; sourceTree = "<group>"; };
+		D8FD88EE247D84B20006D608 /* SimpleAttributeEnumSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SimpleAttributeEnumSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88EF247D84B20006D608 /* Symbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Symbol.h; sourceTree = "<group>"; };
+		D8FD88F0247D84B20006D608 /* TimeSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimeSymbol.cpp; sourceTree = "<group>"; };
+		D8FD88F1247D84B20006D608 /* SimpleAttributeEnumSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleAttributeEnumSymbol.h; sourceTree = "<group>"; };
+		D8FD88F2247D84B20006D608 /* UnknownTypeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnknownTypeSymbol.h; sourceTree = "<group>"; };
+		D8FD88F3247D84B30006D608 /* ParameterSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParameterSymbol.h; sourceTree = "<group>"; };
+		D8FD890A247D86CA0006D608 /* dirent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dirent.h; sourceTree = "<group>"; };
+		D8FD890B247D94BE0006D608 /* omc.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = omc.xcconfig; sourceTree = "<group>"; };
+		D8FD8911247DA43A0006D608 /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = scanner.cpp; path = "Xcode-src/scanner.cpp"; sourceTree = "<group>"; };
+		D8FD8912247DA43B0006D608 /* parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parser.cpp; path = "Xcode-src/parser.cpp"; sourceTree = "<group>"; };
+		D8FD8916247DAF1C0006D608 /* location.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = location.hh; path = "Xcode-src/location.hh"; sourceTree = "<group>"; };
+		D8FD8917247DAF1C0006D608 /* parser.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = parser.hpp; path = "Xcode-src/parser.hpp"; sourceTree = "<group>"; };
+		D8FD8918247DAF1C0006D608 /* position.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = position.hh; path = "Xcode-src/position.hh"; sourceTree = "<group>"; };
+		D8FD8919247DAF1C0006D608 /* stack.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = stack.hh; path = "Xcode-src/stack.hh"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D8FD881E247D823E0006D608 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8939742247EB26400D61DAA /* liblibopenm_omc_db.a in Frameworks */,
+				D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */,
+				D893973E247EB25300D61DAA /* libiconv.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D893973C247EB20600D61DAA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */,
+				D893973F247EB25E00D61DAA /* liblibsqlite.a */,
+				D893973D247EB20600D61DAA /* libiconv.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D8FD8818247D823E0006D608 = {
+			isa = PBXGroup;
+			children = (
+				D8FD890B247D94BE0006D608 /* omc.xcconfig */,
+				D8FD890C247DA27A0006D608 /* Xcode-src */,
+				D8FD8909247D86CA0006D608 /* dirent */,
+				D8FD88EA247D84B20006D608 /* ParameterSymbol.cpp */,
+				D8FD88F3247D84B30006D608 /* ParameterSymbol.h */,
+				D8FD88E8247D84B20006D608 /* ParseContext.cpp */,
+				D8FD88D6247D84B10006D608 /* ParseContext.h */,
+				D8FD88E4247D84B20006D608 /* PartitionEnumeratorSymbol.h */,
+				D8FD88CC247D84B00006D608 /* PartitionSymbol.cpp */,
+				D8FD88DC247D84B10006D608 /* PartitionSymbol.h */,
+				D8FD88D0247D84B00006D608 /* RangeSymbol.cpp */,
+				D8FD88ED247D84B20006D608 /* RangeSymbol.h */,
+				D8FD88CF247D84B00006D608 /* RealSymbol.cpp */,
+				D8FD88D9247D84B10006D608 /* RealSymbol.h */,
+				D8FD88E2247D84B10006D608 /* ScenarioSymbol.cpp */,
+				D8FD88DE247D84B10006D608 /* ScenarioSymbol.h */,
+				D8FD88EE247D84B20006D608 /* SimpleAttributeEnumSymbol.cpp */,
+				D8FD88F1247D84B20006D608 /* SimpleAttributeEnumSymbol.h */,
+				D8FD88E9247D84B20006D608 /* SimpleAttributeSymbol.cpp */,
+				D8FD88D4247D84B10006D608 /* SimpleAttributeSymbol.h */,
+				D8FD88D8247D84B10006D608 /* SpecialGlobal.h */,
+				D8FD88CA247D84B00006D608 /* StringSymbol.cpp */,
+				D8FD88EB247D84B20006D608 /* StringSymbol.h */,
+				D8FD88E0247D84B10006D608 /* StringTypeSymbol.cpp */,
+				D8FD88D5247D84B10006D608 /* StringTypeSymbol.h */,
+				D8FD88E3247D84B20006D608 /* Symbol.cpp */,
+				D8FD88EF247D84B20006D608 /* Symbol.h */,
+				D8FD88DB247D84B10006D608 /* TableGroupSymbol.cpp */,
+				D8FD88DA247D84B10006D608 /* TableGroupSymbol.h */,
+				D8FD88CD247D84B00006D608 /* TableMeasureSymbol.cpp */,
+				D8FD88CB247D84B00006D608 /* TableMeasureSymbol.h */,
+				D8FD88CE247D84B00006D608 /* TableSymbol.cpp */,
+				D8FD88DD247D84B10006D608 /* TableSymbol.h */,
+				D8FD88F0247D84B20006D608 /* TimeSymbol.cpp */,
+				D8FD88E7247D84B20006D608 /* TimeSymbol.h */,
+				D8FD88E6247D84B20006D608 /* TypeOfLinkSymbol.cpp */,
+				D8FD88E5247D84B20006D608 /* TypeOfLinkSymbol.h */,
+				D8FD88D1247D84B00006D608 /* TypeSymbol.cpp */,
+				D8FD88D7247D84B10006D608 /* TypeSymbol.h */,
+				D8FD88D3247D84B00006D608 /* UnknownTypeSymbol.cpp */,
+				D8FD88F2247D84B20006D608 /* UnknownTypeSymbol.h */,
+				D8FD88EC247D84B20006D608 /* VersionSymbol.cpp */,
+				D8FD88E1247D84B10006D608 /* VersionSymbol.h */,
+				D8FD88B8247D846C0006D608 /* GlobalFuncSymbol.cpp */,
+				D8FD88A9247D846B0006D608 /* GlobalFuncSymbol.h */,
+				D8FD8899247D846A0006D608 /* GroupSymbol.cpp */,
+				D8FD889B247D846A0006D608 /* GroupSymbol.h */,
+				D8FD88B6247D846C0006D608 /* HeaderCheck.cpp */,
+				D8FD88B0247D846C0006D608 /* HideGroupSymbol.cpp */,
+				D8FD88A5247D846B0006D608 /* HideGroupSymbol.h */,
+				D8FD88A6247D846B0006D608 /* IdentityAttributeSymbol.cpp */,
+				D8FD889C247D846B0006D608 /* IdentityAttributeSymbol.h */,
+				D8FD88B5247D846C0006D608 /* ImportSymbol.cpp */,
+				D8FD88AB247D846C0006D608 /* ImportSymbol.h */,
+				D8FD8898247D846A0006D608 /* LanguageSymbol.cpp */,
+				D8FD88AC247D846C0006D608 /* LanguageSymbol.h */,
+				D8FD88A8247D846B0006D608 /* LinkAttributeSymbol.cpp */,
+				D8FD889D247D846B0006D608 /* LinkAttributeSymbol.h */,
+				D8FD88B2247D846C0006D608 /* LinkToAttributeSymbol.cpp */,
+				D8FD88A2247D846B0006D608 /* LinkToAttributeSymbol.h */,
+				D8FD889A247D846A0006D608 /* Literal.h */,
+				D8FD88AE247D846C0006D608 /* MaintainedAttributeSymbol.cpp */,
+				D8FD889E247D846B0006D608 /* MaintainedAttributeSymbol.h */,
+				D8FD88AA247D846B0006D608 /* ModelSymbol.cpp */,
+				D8FD88A7247D846B0006D608 /* ModelSymbol.h */,
+				D8FD88B4247D846C0006D608 /* ModelTypeSymbol.cpp */,
+				D8FD88AF247D846C0006D608 /* ModelTypeSymbol.h */,
+				D8FD88B1247D846C0006D608 /* ModuleSymbol.h */,
+				D8FD889F247D846B0006D608 /* MultilinkAttributeSymbol.cpp */,
+				D8FD8896247D846A0006D608 /* MultilinkAttributeSymbol.h */,
+				D8FD88B7247D846C0006D608 /* NumericSymbol.cpp */,
+				D8FD88A1247D846B0006D608 /* NumericSymbol.h */,
+				D8FD8897247D846A0006D608 /* omc_common.h */,
+				D8FD88A0247D846B0006D608 /* omc_file.cpp */,
+				D8FD88A3247D846B0006D608 /* omc_file.h */,
+				D8FD88AD247D846C0006D608 /* omc.cpp */,
+				D8FD88B3247D846C0006D608 /* ParameterGroupSymbol.cpp */,
+				D8FD88A4247D846B0006D608 /* ParameterGroupSymbol.h */,
+				D8FD884C247D84300006D608 /* BoolSymbol.h */,
+				D8FD8851247D84300006D608 /* BuiltinAttributeSymbol.cpp */,
+				D8FD8836247D842F0006D608 /* BuiltinAttributeSymbol.h */,
+				D8FD884E247D84300006D608 /* ClassificationEnumeratorSymbol.h */,
+				D8FD886E247D84320006D608 /* ClassificationSymbol.cpp */,
+				D8FD884D247D84300006D608 /* ClassificationSymbol.h */,
+				D8FD8844247D84300006D608 /* CodeBlock.cpp */,
+				D8FD8854247D84300006D608 /* CodeBlock.h */,
+				D8FD8843247D842F0006D608 /* CodeGen.cpp */,
+				D8FD8835247D842F0006D608 /* CodeGen.h */,
+				D8FD8866247D84320006D608 /* Constant.cpp */,
+				D8FD8863247D84310006D608 /* Constant.h */,
+				D8FD8862247D84310006D608 /* ConstantSymbol.cpp */,
+				D8FD883E247D842F0006D608 /* ConstantSymbol.h */,
+				D8FD8855247D84300006D608 /* DependencyGroupSymbol.cpp */,
+				D8FD8853247D84300006D608 /* DependencyGroupSymbol.h */,
+				D8FD8874247D84320006D608 /* DerivedAttributeSymbol.cpp */,
+				D8FD8847247D84300006D608 /* DerivedAttributeSymbol.h */,
+				D8FD8860247D84310006D608 /* DerivedTableSymbol.cpp */,
+				D8FD883C247D842F0006D608 /* DerivedTableSymbol.h */,
+				D8FD8837247D842F0006D608 /* DimensionSymbol.cpp */,
+				D8FD886C247D84320006D608 /* DimensionSymbol.h */,
+				D8FD8839247D842F0006D608 /* Driver.cpp */,
+				D8FD8876247D84330006D608 /* Driver.h */,
+				D8FD885A247D84310006D608 /* EntityArrayMemberSymbol.cpp */,
+				D8FD883F247D842F0006D608 /* EntityArrayMemberSymbol.h */,
+				D8FD8857247D84310006D608 /* EntityDataMemberSymbol.cpp */,
+				D8FD8871247D84320006D608 /* EntityDataMemberSymbol.h */,
+				D8FD8846247D84300006D608 /* EntityEventSymbol.cpp */,
+				D8FD8841247D842F0006D608 /* EntityEventSymbol.h */,
+				D8FD884A247D84300006D608 /* EntityForeignMemberSymbol.cpp */,
+				D8FD8849247D84300006D608 /* EntityForeignMemberSymbol.h */,
+				D8FD885B247D84310006D608 /* EntityFuncSymbol.cpp */,
+				D8FD8848247D84300006D608 /* EntityFuncSymbol.h */,
+				D8FD8852247D84300006D608 /* EntityHookSymbol.cpp */,
+				D8FD885F247D84310006D608 /* EntityHookSymbol.h */,
+				D8FD886A247D84320006D608 /* EntityIncrementSymbol.cpp */,
+				D8FD8872247D84320006D608 /* EntityIncrementSymbol.h */,
+				D8FD8869247D84320006D608 /* EntityInternalSymbol.cpp */,
+				D8FD886B247D84320006D608 /* EntityInternalSymbol.h */,
+				D8FD885E247D84310006D608 /* EntityMemberSymbol.cpp */,
+				D8FD8864247D84310006D608 /* EntityMemberSymbol.h */,
+				D8FD8867247D84320006D608 /* EntityMultilinkSymbol.cpp */,
+				D8FD8859247D84310006D608 /* EntityMultilinkSymbol.h */,
+				D8FD8873247D84320006D608 /* EntitySetSymbol.cpp */,
+				D8FD8868247D84320006D608 /* EntitySetSymbol.h */,
+				D8FD8861247D84310006D608 /* EntitySymbol.cpp */,
+				D8FD8875247D84320006D608 /* EntitySymbol.h */,
+				D8FD8842247D842F0006D608 /* EntityTableAccumulatorSymbol.cpp */,
+				D8FD8858247D84310006D608 /* EntityTableAccumulatorSymbol.h */,
+				D8FD8845247D84300006D608 /* EntityTableMeasureAttributeSymbol.cpp */,
+				D8FD8838247D842F0006D608 /* EntityTableMeasureAttributeSymbol.h */,
+				D8FD885C247D84310006D608 /* EntityTableMeasureSymbol.cpp */,
+				D8FD883D247D842F0006D608 /* EntityTableMeasureSymbol.h */,
+				D8FD8856247D84310006D608 /* EntityTableSymbol.cpp */,
+				D8FD885D247D84310006D608 /* EntityTableSymbol.h */,
+				D8FD883A247D842F0006D608 /* EnumerationSymbol.cpp */,
+				D8FD8850247D84300006D608 /* EnumerationSymbol.h */,
+				D8FD884F247D84300006D608 /* EnumerationWithEnumeratorsSymbol.cpp */,
+				D8FD884B247D84300006D608 /* EnumerationWithEnumeratorsSymbol.h */,
+				D8FD883B247D842F0006D608 /* EnumeratorSymbol.cpp */,
+				D8FD8840247D842F0006D608 /* EnumeratorSymbol.h */,
+				D8FD886D247D84320006D608 /* ExprForAttribute.h */,
+				D8FD8865247D84310006D608 /* ExprForTable.h */,
+				D8FD886F247D84320006D608 /* ExtendParameterSymbol.cpp */,
+				D8FD8870247D84320006D608 /* ExtendParameterSymbol.h */,
+				D8FD882E247D83D20006D608 /* AggregationSymbol.cpp */,
+				D8FD8830247D83D20006D608 /* AggregationSymbol.h */,
+				D8FD882D247D83D20006D608 /* ast.h */,
+				D8FD8831247D83D20006D608 /* AttributeSymbol.cpp */,
+				D8FD882F247D83D20006D608 /* AttributeSymbol.h */,
+				D8FD882B247D83D20006D608 /* BoolEnumeratorSymbol.h */,
+				D8FD882C247D83D20006D608 /* BoolSymbol.cpp */,
+				D8FD8822247D823E0006D608 /* Products */,
+				D893973C247EB20600D61DAA /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		D8FD8822247D823E0006D608 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D8FD8821247D823E0006D608 /* omc */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D8FD8909247D86CA0006D608 /* dirent */ = {
+			isa = PBXGroup;
+			children = (
+				D8FD890A247D86CA0006D608 /* dirent.h */,
+			);
+			path = dirent;
+			sourceTree = "<group>";
+		};
+		D8FD890C247DA27A0006D608 /* Xcode-src */ = {
+			isa = PBXGroup;
+			children = (
+				D8FD8916247DAF1C0006D608 /* location.hh */,
+				D8FD8917247DAF1C0006D608 /* parser.hpp */,
+				D8FD8918247DAF1C0006D608 /* position.hh */,
+				D8FD8919247DAF1C0006D608 /* stack.hh */,
+				D8FD8912247DA43B0006D608 /* parser.cpp */,
+				D8FD8911247DA43A0006D608 /* scanner.cpp */,
+			);
+			name = "Xcode-src";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D8FD8820247D823E0006D608 /* omc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D8FD8828247D823E0006D608 /* Build configuration list for PBXNativeTarget "omc" */;
+			buildPhases = (
+				D8FD8915247DA9370006D608 /* Do bison and flex */,
+				D8FD881D247D823E0006D608 /* Sources */,
+				D8FD881E247D823E0006D608 /* Frameworks */,
+				D8982E70247ED218008159CE /* Copy omc release version */,
+				D8FD881F247D823E0006D608 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = omc;
+			productName = omc;
+			productReference = D8FD8821247D823E0006D608 /* omc */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D8FD8819247D823E0006D608 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1130;
+				ORGANIZATIONNAME = "OpenM++";
+				TargetAttributes = {
+					D8FD8820247D823E0006D608 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
+				};
+			};
+			buildConfigurationList = D8FD881C247D823E0006D608 /* Build configuration list for PBXProject "omc" */;
+			compatibilityVersion = "Xcode 11.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D8FD8818247D823E0006D608;
+			productRefGroup = D8FD8822247D823E0006D608 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D8FD8820247D823E0006D608 /* omc */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D8982E70247ED218008159CE /* Copy omc release version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/omc",
+			);
+			name = "Copy omc release version";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(OM_ROOT)/bin/omc",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/omc-copy-release.sh\n";
+		};
+		D8FD8915247DA9370006D608 /* Do bison and flex */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/parser.y",
+				"$(SRCROOT)/scanner.l",
+			);
+			name = "Do bison and flex";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILD_SRC_DIR)/parser.cpp",
+				"$(BUILD_SRC_DIR)/scanner.cpp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${SRCROOT}/omc-bison-flex.sh\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D8FD881D247D823E0006D608 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D8FD88FF247D84B30006D608 /* StringTypeSymbol.cpp in Sources */,
+				D8FD8894247D84330006D608 /* EntitySetSymbol.cpp in Sources */,
+				D8FD88F6247D84B30006D608 /* TableMeasureSymbol.cpp in Sources */,
+				D8FD887E247D84330006D608 /* EntityTableMeasureAttributeSymbol.cpp in Sources */,
+				D8FD88C9247D846C0006D608 /* GlobalFuncSymbol.cpp in Sources */,
+				D8FD887B247D84330006D608 /* EntityTableAccumulatorSymbol.cpp in Sources */,
+				D8FD888F247D84330006D608 /* EntityMultilinkSymbol.cpp in Sources */,
+				D8FD8889247D84330006D608 /* EntityTableMeasureSymbol.cpp in Sources */,
+				D8FD8887247D84330006D608 /* EntityArrayMemberSymbol.cpp in Sources */,
+				D8FD88BD247D846C0006D608 /* IdentityAttributeSymbol.cpp in Sources */,
+				D8FD88F8247D84B30006D608 /* RealSymbol.cpp in Sources */,
+				D8FD8877247D84330006D608 /* DimensionSymbol.cpp in Sources */,
+				D8FD8881247D84330006D608 /* EnumerationWithEnumeratorsSymbol.cpp in Sources */,
+				D8FD88C2247D846C0006D608 /* HideGroupSymbol.cpp in Sources */,
+				D8FD88B9247D846C0006D608 /* LanguageSymbol.cpp in Sources */,
+				D8FD88C5247D846C0006D608 /* ModelTypeSymbol.cpp in Sources */,
+				D8FD8903247D84B30006D608 /* ParseContext.cpp in Sources */,
+				D8FD88BC247D846C0006D608 /* omc_file.cpp in Sources */,
+				D8FD8884247D84330006D608 /* DependencyGroupSymbol.cpp in Sources */,
+				D8FD8882247D84330006D608 /* BuiltinAttributeSymbol.cpp in Sources */,
+				D8FD8893247D84330006D608 /* ExtendParameterSymbol.cpp in Sources */,
+				D8FD888C247D84330006D608 /* EntitySymbol.cpp in Sources */,
+				D8FD88BF247D846C0006D608 /* ModelSymbol.cpp in Sources */,
+				D8FD88C6247D846C0006D608 /* ImportSymbol.cpp in Sources */,
+				D8FD88C8247D846C0006D608 /* NumericSymbol.cpp in Sources */,
+				D8FD8892247D84330006D608 /* ClassificationSymbol.cpp in Sources */,
+				D8FD88F7247D84B30006D608 /* TableSymbol.cpp in Sources */,
+				D8FD88BB247D846C0006D608 /* MultilinkAttributeSymbol.cpp in Sources */,
+				D8FD88FC247D84B30006D608 /* UnknownTypeSymbol.cpp in Sources */,
+				D8FD887F247D84330006D608 /* EntityEventSymbol.cpp in Sources */,
+				D8FD8895247D84330006D608 /* DerivedAttributeSymbol.cpp in Sources */,
+				D8FD8890247D84330006D608 /* EntityInternalSymbol.cpp in Sources */,
+				D8FD88FD247D84B30006D608 /* TableGroupSymbol.cpp in Sources */,
+				D8FD8834247D83D20006D608 /* AttributeSymbol.cpp in Sources */,
+				D8FD8886247D84330006D608 /* EntityDataMemberSymbol.cpp in Sources */,
+				D8FD8902247D84B30006D608 /* TypeOfLinkSymbol.cpp in Sources */,
+				D8FD8833247D83D20006D608 /* AggregationSymbol.cpp in Sources */,
+				D8FD8880247D84330006D608 /* EntityForeignMemberSymbol.cpp in Sources */,
+				D8FD8904247D84B30006D608 /* SimpleAttributeSymbol.cpp in Sources */,
+				D8FD88BE247D846C0006D608 /* LinkAttributeSymbol.cpp in Sources */,
+				D8FD88C7247D846C0006D608 /* HeaderCheck.cpp in Sources */,
+				D8FD8914247DA43B0006D608 /* parser.cpp in Sources */,
+				D8FD8883247D84330006D608 /* EntityHookSymbol.cpp in Sources */,
+				D8FD88F9247D84B30006D608 /* RangeSymbol.cpp in Sources */,
+				D8FD8907247D84B30006D608 /* SimpleAttributeEnumSymbol.cpp in Sources */,
+				D8FD8885247D84330006D608 /* EntityTableSymbol.cpp in Sources */,
+				D8FD888A247D84330006D608 /* EntityMemberSymbol.cpp in Sources */,
+				D8FD8906247D84B30006D608 /* VersionSymbol.cpp in Sources */,
+				D8FD888E247D84330006D608 /* Constant.cpp in Sources */,
+				D8FD88C4247D846C0006D608 /* ParameterGroupSymbol.cpp in Sources */,
+				D8FD8900247D84B30006D608 /* ScenarioSymbol.cpp in Sources */,
+				D8FD888D247D84330006D608 /* ConstantSymbol.cpp in Sources */,
+				D8FD88C3247D846C0006D608 /* LinkToAttributeSymbol.cpp in Sources */,
+				D8FD888B247D84330006D608 /* DerivedTableSymbol.cpp in Sources */,
+				D8FD88BA247D846C0006D608 /* GroupSymbol.cpp in Sources */,
+				D8FD8891247D84330006D608 /* EntityIncrementSymbol.cpp in Sources */,
+				D8FD8913247DA43B0006D608 /* scanner.cpp in Sources */,
+				D8FD8832247D83D20006D608 /* BoolSymbol.cpp in Sources */,
+				D8FD88FA247D84B30006D608 /* TypeSymbol.cpp in Sources */,
+				D8FD88C1247D846C0006D608 /* MaintainedAttributeSymbol.cpp in Sources */,
+				D8FD8908247D84B30006D608 /* TimeSymbol.cpp in Sources */,
+				D8FD887A247D84330006D608 /* EnumeratorSymbol.cpp in Sources */,
+				D8FD887C247D84330006D608 /* CodeGen.cpp in Sources */,
+				D8FD88F4247D84B30006D608 /* StringSymbol.cpp in Sources */,
+				D8FD8878247D84330006D608 /* Driver.cpp in Sources */,
+				D8FD8888247D84330006D608 /* EntityFuncSymbol.cpp in Sources */,
+				D8FD8901247D84B30006D608 /* Symbol.cpp in Sources */,
+				D8FD88C0247D846C0006D608 /* omc.cpp in Sources */,
+				D8FD8905247D84B30006D608 /* ParameterSymbol.cpp in Sources */,
+				D8FD887D247D84330006D608 /* CodeBlock.cpp in Sources */,
+				D8FD88F5247D84B30006D608 /* PartitionSymbol.cpp in Sources */,
+				D8FD8879247D84330006D608 /* EnumerationSymbol.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D8FD8826247D823E0006D608 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D8FD890B247D94BE0006D608 /* omc.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D8FD8827247D823E0006D608 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D8FD890B247D94BE0006D608 /* omc.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D8FD8829247D823E0006D608 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				HEADER_SEARCH_PATHS = (
+					../../include,
+					"$(BUILD_SRC_DIR)",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-Wno-register";
+			};
+			name = Debug;
+		};
+		D8FD882A247D823E0006D608 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGN_STYLE = Automatic;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				HEADER_SEARCH_PATHS = (
+					../../include,
+					"$(BUILD_SRC_DIR)",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-Wno-register";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D8FD881C247D823E0006D608 /* Build configuration list for PBXProject "omc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8FD8826247D823E0006D608 /* Debug */,
+				D8FD8827247D823E0006D608 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D8FD8828247D823E0006D608 /* Build configuration list for PBXNativeTarget "omc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8FD8829247D823E0006D608 /* Debug */,
+				D8FD882A247D823E0006D608 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D8FD8819247D823E0006D608 /* Project object */;
+}

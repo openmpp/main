@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "container:omc/omc.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:libopenm/libopenm.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:libopenm/libopenm_omc_db.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:libsqlite/libsqlite.xcodeproj">
+   </FileRef>
+</Workspace>
