@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+#
+# build openMpp R package
+
+# push into ompp root and make log directory if not exist
+
+if [ ! -d ompp ]; then 
+
+  echo mkdir ompp
+  
+  if ! mkdir ompp; then
+    echo FAILED
+    exit 1
+  fi
+fi
+
+pushd ompp
+
+if [ ! -d log ]; then mkdir log; fi
+
+# log build environment 
+
+echo Log file: log/build-r.log
+echo `date` Build openMpp R package | tee log/build-r.log 
+
+# get source code from git, if directory not already exist
+
+if [ ! -d ompp-r ]; then
+  
+  echo git clone https://github.com/openmpp/R ompp-r | tee -a log/build-r.log
+  
+  if ! git clone https://github.com/openmpp/R ompp-r >> log/build-r.log 2>&1;
+  then
+    echo FAILED git clone | tee -a log/build-r.log
+    exit 1
+  fi
+else
+  echo Skip: git clone
+fi
+
+# build openMpp R package
+
+pushd ompp-r
+
+echo R CMD build openMpp | tee -a ../log/build-r.log
+
+if ! R CMD build openMpp >> ../log/build-r.log 2>&1;
+then
+  echo FAILED | tee -a ../log/build-r.log
+  exit 1
+fi
+  
+popd
+
+echo `date` Done. | tee -a log/build-r.log
+popd

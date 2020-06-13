@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#
+# MacOS openM++ build script.
+# you can customize this script or any scripts below in order to change build results
+
+set -e
+
+# to build omc we need bison version >= 2.6 and <= 3.5
+#
+OMC_BISON=bison@2.7
+export PATH="/usr/local/opt/${OMC_BISON}/bin:${PATH}"
+export LDFLAGS="-L/usr/local/opt/${OMC_BISON}/lib ${LDFLAGS}"
+
+# set GOPATH to openM++ Go sources
+#
+export GOPATH=${PWD}/ompp/ompp-go
+
+# execute command, echo results and exit on errors
+do_cmd()
+{
+  echo $@
+  
+  if ! $@;
+  then
+    echo FAILED.
+    exit 1
+  fi
+}
+
+# get build scripts
+
+if [ ! -d mac ]; then
+  do_cmd mkdir mac
+fi
+
+if [ ! -d mac/build ]; then
+  pushd mac
+  do_cmd git clone https://gitlab.com/ompp/macos-build.git build
+  do_cmd chmod a+x "build/build-*"
+  popd
+  do_cmd cp -pv \
+    mac/build/build-openm \
+    mac/build/build-models \
+    mac/build/build-go \
+    mac/build/build-r \
+    mac/build/build-ui \
+    mac/build/build-mac-tar-gz .
+fi
+
+# get Xcode project files
+
+if [ ! -d mac/xcode ]; then
+  pushd mac
+  do_cmd git clone https://gitlab.com/ompp/xcode.git xcode
+  popd
+fi
+
+# do build 
+
+./build-openm && \
+./build-models && \
+./build-go && \
+./build-r && \
+./build-ui && \
+./build-mac-tar-gz
+
+
+

@@ -1,5 +1,5 @@
 bin/data/*
-build/
+/build/
 lib/
 models/bin/
 models/build/
