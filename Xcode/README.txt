@@ -30,7 +30,7 @@ tar xzf openmpp_mac.tar.gz
 1. Copy Model Xcode project files into model directory, for example NewCaseBased model:
 
 cd ~/any/dir/openmpp_mac
-cp -pr Xcode/* models/NewCaseBased/
+cp -pr Xcode/Model.* models/NewCaseBased/
 
 2. Follow screenshots on GitHub: https/github.com/opempp/mac/pictures:
 
