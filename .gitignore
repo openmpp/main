@@ -1,5 +1,5 @@
 bin/data/*
-/build/
+build/
 lib/
 models/bin/
 models/build/
@@ -69,7 +69,8 @@ xcuserdata/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 
 # Thumbnails
