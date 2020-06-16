@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+#
+# build openM++ run-time libraries and omc compiler
+# environmemnt variables:
+#  OM_BUILD_CONFIGS=RELEASE,DEBUG (default: RELEASE,DEBUG)
+#  OM_MSG_USE=MPI                 (default: EMPTY)
+
+OM_BLD_CFG=${OM_BUILD_CONFIGS:-RELEASE,DEBUG}
+
+for C in ${OM_BLD_CFG//,/ }; do
+  if [ "$C" != 'RELEASE' ] && [ "$C" != 'DEBUG' ]; then
+    echo Error: incorrect value: $C, must be any combination of: RELEASE,DEBUG
+    exit 1    
+  fi
+done
+
+if [ -n "$OM_MSG_USE" ] && [ "$OM_MSG_USE" != 'EMPTY' ] && [ "$OM_MSG_USE" != 'MPI' ]; then
+  echo Error: incorrect value: $OM_MSG_USE, must be one of: MPI or EMPTY
+  exit 1    
+fi
+
+[ "$OM_MSG_USE" = 'MPI' ] && OM_P_MPI="OM_MSG_USE=MPI" || OM_P_MPI=
+
+# show environment
+
+START_DT=`date`
+echo $START_DT Build openM++ run-time libraries and omc compiler
+echo Environment:
+echo " OM_BUILD_CONFIGS   = $OM_BUILD_CONFIGS"
+echo " OM_MSG_USE         = $OM_MSG_USE"
+echo Build configurations: $OM_BLD_CFG
+if [ -z $OM_P_MPI ]; then
+  echo Build desktop version: non-MPI
+else
+  echo Build cluster version: using MPI
+fi;
+
+# get source code from git
+
+if [ ! -d ompp ]; then
+  
+  if ! git clone https://github.com/openmpp/main.git ompp ;
+  then
+    echo FAILED git clone
+    exit 1
+  fi
+  
+else
+  echo Skip: git clone
+fi
+
+# push into ompp root and make log directory if not exist
+
+pushd ompp
+OM_ROOT=$PWD
+echo " OM_ROOT            = $OM_ROOT"
+
+if [ ! -d log ]; then mkdir log; fi
+
+# log build environment 
+
+echo Log file: log/build-openm.log
+echo $START_DT Build openM++ run-time libraries and omc compiler > log/build-openm.log
+echo " OM_BUILD_CONFIGS   = $OM_BUILD_CONFIGS" >> log/build-openm.log
+echo " OM_MSG_USE         = $OM_MSG_USE" >> log/build-openm.log
+echo " OM_ROOT            = $OM_ROOT" >> log/build-openm.log
+echo Build configurations: $OM_BLD_CFG >> log/build-openm.log
+if [ -z $OM_P_MPI ]; then
+  echo Build desktop version: non-MPI >> log/build-openm.log
+else
+  echo Build cluster version: using MPI >> log/build-openm.log
+fi;
+
+# create omVersion.h
+
+echo Create: include/libopenm/omVersion.h >> log/build-openm.log
+
+echo "/**"                         > include/libopenm/omVersion.h
+echo " * @file"                    >> include/libopenm/omVersion.h
+echo " * OpenM++: runtime version" >> include/libopenm/omVersion.h
+echo " */"                         >> include/libopenm/omVersion.h
+echo "// Copyright (c) OpenM++"    >> include/libopenm/omVersion.h
+echo "// This code is licensed under the MIT license (see LICENSE.txt for details)" >> include/libopenm/omVersion.h
+echo "//"                          >> include/libopenm/omVersion.h
+echo "#ifndef OM_H_VERSION_H"      >> include/libopenm/omVersion.h
+echo "#define OM_H_VERSION_H"      >> include/libopenm/omVersion.h
+echo "//"                          >> include/libopenm/omVersion.h
+
+echo "git show -s --date=short --format=...." >> log/build-openm.log
+
+if ! git show -s --date=short --format="#define OM_RUNTIME_VERSION \"%cd %H\"" >> include/libopenm/omVersion.h ;
+then
+  echo FAILED git clone
+  exit 1
+fi
+ 
+echo "//"                        >> include/libopenm/omVersion.h
+echo "#endif  // OM_H_VERSION_H" >> include/libopenm/omVersion.h
+
+# build c++ run-time libraries and omc compiler
+
+pushd openm
+
+for C in ${OM_BLD_CFG//,/ }; do
+
+  [ "$C" = 'RELEASE' ] && OM_P_RLS="RELEASE=1" || OM_P_RLS=
+
+  echo make $OM_P_RLS $OM_P_MPI
+  
+  if ! make $OM_P_RLS $OM_P_MPI >> ../log/build-openm.log 2>&1;
+  then
+    echo FAILED: make $OM_P_RLS $OM_P_MPI | tee -a ../log/build-openm.log
+    exit 1
+  fi
+done
+
+popd
+
+echo `date` Done. | tee -a log/build-openm.log
+popd
+

@@ -1,0 +1,280 @@
+#!/usr/bin/env bash
+#
+# create zip archive of openM++ build from ompp sub-directory: openmpp_mac_YYYYMMDD.tar.gz
+# environmemnt variables:
+#  OM_MSG_USE=MPI                 (default: EMPTY)
+#  MODEL_DIRS=modelOne,NewCaseBased,NewTimeBased,NewCaseBased_bilingual,NewTimeBased_bilingual,IDMM,OzProj,OzProjGen,RiskPaths
+
+if [ -n "$OM_MSG_USE" ] && [ "$OM_MSG_USE" != 'EMPTY' ] && [ "$OM_MSG_USE" != 'MPI' ]; then
+  echo Error: incorrect value: $OM_MSG_USE, must be one of: MPI or EMPTY
+  exit 1    
+fi
+
+[ "$OM_MSG_USE" = 'MPI' ] && OM_SFX_MPI=_mpi || OM_SFX_MPI=
+
+[ -n "$MODEL_DIRS" ] && \
+  OM_BLD_MDLS=${MODEL_DIRS//,/ } || \
+  OM_BLD_MDLS="modelOne NewCaseBased NewTimeBased NewCaseBased_bilingual NewTimeBased_bilingual IDMM OzProj OzProjGen RiskPaths"
+
+# push into ompp root and make log directory if not exist
+
+if [ ! -d ompp ]; then
+  echo ERROR: missing source code directory: ompp
+  exit 1
+fi
+
+pushd ompp
+OM_ROOT=$PWD
+
+if [ ! -d log ]; then mkdir log; fi
+
+# get current date, UTC time zone and set archive name
+
+OM_DATE_STAMP=`date -u +%Y%m%d`
+
+DEPLOY_NAME=openmpp_mac${OM_SFX_MPI}_${OM_DATE_STAMP}
+DEPLOY_DIR=../$DEPLOY_NAME
+DEPLOY_GZ=$DEPLOY_NAME.tar.gz
+
+# log build environment 
+
+echo Log file: log/build-tar-gz.log
+echo `date` Pack openM++ build | tee log/build-tar-gz.log
+echo Environment: | tee -a log/build-tar-gz.log
+echo " OM_MSG_USE = $OM_MSG_USE" | tee -a log/build-tar-gz.log
+echo " OM_ROOT    = $OM_ROOT" | tee -a log/build-tar-gz.log
+echo " MODEL_DIRS = $MODEL_DIRS" | tee -a log/build-tar-gz.log
+echo " DEPLOY_DIR = $DEPLOY_DIR" | tee -a log/build-tar-gz.log
+echo Pack into: $DEPLOY_GZ | tee -a log/build-tar-gz.log
+
+# execute command, log results and exit on errors
+do_cmd()
+{
+  echo $@ | tee -a log/build-tar-gz.log
+  
+  if ! $@ >> log/build-tar-gz.log 2>&1;
+  then
+    echo FAILED. | tee -a log/build-tar-gz.log
+    exit 1
+  fi
+}
+
+# set dotglob to copy all files from source to destination directory
+do_cp_all()
+{
+  (
+    shopt -s dotglob
+    for f in $1/*; do
+      if [ -f $f ]; then do_cmd cp -p $f $2/ || exit 1; fi
+    done
+  ) 
+  if [ $? -ne 0 ]; 
+  then
+    echo FAILED on file copy.
+    exit 1
+  fi
+}
+
+# delete existing pack directory and zip file
+
+if [ -e $DEPLOY_DIR ]; then do_cmd rm -rf $DEPLOY_DIR; fi
+if [ -e ../$DEPLOY_GZ ];  then do_cmd rm -rf ../$DEPLOY_GZ; fi
+
+# create new deploy directory
+# copy top level sub-directories and files
+
+do_cmd mkdir $DEPLOY_DIR
+do_cmd mkdir $DEPLOY_DIR/log
+
+echo Copy files: | tee -a log/build-tar-gz.log
+
+do_cp_all . $DEPLOY_DIR
+
+do_cmd cp -pr etc      $DEPLOY_DIR
+do_cmd cp -pr Excel    $DEPLOY_DIR
+do_cmd cp -pr include  $DEPLOY_DIR
+do_cmd cp -pr licenses $DEPLOY_DIR
+do_cmd cp -pr openm    $DEPLOY_DIR
+do_cmd cp -pr Perl     $DEPLOY_DIR
+do_cmd cp -pr props    $DEPLOY_DIR
+do_cmd cp -pr sql      $DEPLOY_DIR
+do_cmd cp -pr use      $DEPLOY_DIR
+
+# copy template files to run models
+
+#
+# MacOS
+#
+
+do_cmd cp -p etc/runMacOS.Debug.template.txt   $DEPLOY_DIR/etc/run.Debug.template.txt
+# do_cmd cp -p etc/mpiLinux.openMPI.template.txt $DEPLOY_DIR/etc/mpi.ModelRun.template.txt
+
+#
+# end of MacOS
+#
+
+# copy openm bin directory
+
+do_cmd cp -pr bin $DEPLOY_DIR
+[ -e $DEPLOY_DIR/bin/omcD ] && do_cmd rm -v $DEPLOY_DIR/bin/omcD
+
+# copy openm runtime libraries
+
+do_cmd mkdir $DEPLOY_DIR/lib
+
+do_cmd cp -p lib/libopenm${OM_SFX_MPI}.a lib/libsqlite.a $DEPLOY_DIR/lib
+[ -e lib/libopenmD${OM_SFX_MPI}.a ] && do_cmd cp -p lib/libopenmD${OM_SFX_MPI}.a $DEPLOY_DIR/lib
+[ -e lib/libsqliteD.a ] &&             do_cmd cp -p lib/libsqliteD.a             $DEPLOY_DIR/lib
+
+# copy Go bin executables and source code
+
+do_cmd cp -p ompp-go/bin/dbcopy $DEPLOY_DIR/bin
+do_cmd cp -p ompp-go/bin/oms    $DEPLOY_DIR/bin
+
+do_cmd mkdir $DEPLOY_DIR/ompp-go
+
+do_cp_all ompp-go/src/github.com/openmpp/go $DEPLOY_DIR/ompp-go
+
+do_cmd cp -pr ompp-go/src/github.com/openmpp/go/dbcopy   $DEPLOY_DIR/ompp-go
+do_cmd cp -pr ompp-go/src/github.com/openmpp/go/ompp     $DEPLOY_DIR/ompp-go
+do_cmd cp -pr ompp-go/src/github.com/openmpp/go/oms      $DEPLOY_DIR/ompp-go
+do_cmd cp -pr ompp-go/src/github.com/openmpp/go/licenses $DEPLOY_DIR/ompp-go
+
+# get Docker source code from git and copy Docker sources
+
+if [ ! -d ompp-docker ]; then
+  do_cmd git clone https://github.com/openmpp/docker ompp-docker
+fi
+
+do_cmd mkdir $DEPLOY_DIR/ompp-docker
+
+do_cp_all ompp-docker $DEPLOY_DIR/ompp-docker
+
+do_cmd cp -pr ompp-docker/ompp-build-win      $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-build-win-1903 $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-build-win-1809 $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-run-win        $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-run-win-1903   $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-run-win-1809   $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-build-centos   $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-build-centos-7 $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-run-centos     $DEPLOY_DIR/ompp-docker
+do_cmd cp -pr ompp-docker/ompp-run-centos-7   $DEPLOY_DIR/ompp-docker
+
+# get Python source code from git and copy Python sources
+
+if [ ! -d ompp-python ]; then
+  do_cmd git clone https://github.com/openmpp/python ompp-python
+fi
+
+do_cmd mkdir $DEPLOY_DIR/ompp-python
+
+do_cp_all ompp-python $DEPLOY_DIR/ompp-python
+
+do_cmd cp -pr ompp-python/images $DEPLOY_DIR/ompp-python
+
+# copy R package and source code
+
+do_cmd mkdir $DEPLOY_DIR/ompp-r
+
+do_cp_all ompp-r $DEPLOY_DIR/ompp-r
+
+do_cmd cp -pr ompp-r/openMpp $DEPLOY_DIR/ompp-r
+
+# copy UI html build and source code
+
+do_cmd cp -pr ompp-ui/dist   $DEPLOY_DIR/html
+
+do_cmd mkdir $DEPLOY_DIR/ompp-ui
+
+do_cp_all ompp-ui $DEPLOY_DIR/ompp-ui
+
+do_cmd cp -pr ompp-ui/licenses $DEPLOY_DIR/ompp-ui/licenses
+do_cmd cp -pr ompp-ui/public   $DEPLOY_DIR/ompp-ui/public
+do_cmd cp -pr ompp-ui/src      $DEPLOY_DIR/ompp-ui/src
+do_cmd cp -pr ompp-ui/addons   $DEPLOY_DIR/ompp-ui/addons
+
+do_cmd mkdir $DEPLOY_DIR/html/public
+do_cmd cp -p ompp-ui/addons/login_required.html $DEPLOY_DIR/html/public
+
+[ -e $DEPLOY_DIR/ompp-ui/package-lock.json ] && do_cmd rm -v $DEPLOY_DIR/ompp-ui/package-lock.json
+
+# copy models
+
+do_cmd mkdir -p $DEPLOY_DIR/models/bin
+do_cmd mkdir -p $DEPLOY_DIR/models/sql
+do_cmd mkdir -p $DEPLOY_DIR/models/log
+
+do_cp_all models $DEPLOY_DIR/models
+
+do_cmd cp -pr models/microdata $DEPLOY_DIR/models/microdata
+
+for M in $OM_BLD_MDLS; do
+
+  do_cmd cp -pr models/$M                  $DEPLOY_DIR/models/$M
+  do_cmd cp -pr models/bin/$M${OM_SFX_MPI} $DEPLOY_DIR/models/bin
+  do_cmd cp -p  models/bin/$M.sqlite       $DEPLOY_DIR/models/bin
+
+  for F in models/bin/${M}.*ini; do [ -e $F ] && do_cmd cp -p $F $DEPLOY_DIR/models/bin; done
+  
+  for F in models/sql/${M}_*.sql; do [ -e $F ] && do_cmd cp -p $F $DEPLOY_DIR/models/sql; done
+  
+done
+
+#
+# MacOS
+#
+
+# MacOS: Xcode project files for openm core
+
+do_cmd cp -pr ../mac/xcode/openm/openm.xcworkspace $DEPLOY_DIR/openm/
+do_cmd cp -pr ../mac/xcode/openm/libsqlite/*       $DEPLOY_DIR/openm/libsqlite/
+do_cmd cp -pr ../mac/xcode/openm/libopenm/*        $DEPLOY_DIR/openm/libopenm/
+do_cmd cp -pr ../mac/xcode/openm/omc/*             $DEPLOY_DIR/openm/omc/
+
+# MacOS: build files
+
+do_cmd mkdir -p $DEPLOY_DIR/ompp-mac/build
+
+do_cmd cp -p "../mac/build/*" $DEPLOY_DIR/ompp-mac/build/
+
+# MacOS: Xcode project files for models
+
+do_cmd cp -pr ../mac/xcode/models/model-xcode           $DEPLOY_DIR/ompp-mac/
+do_cmd cp -p  "../mac/xcode/models/*.sh"                $DEPLOY_DIR/models/
+do_cmd cp -p  ../mac/xcode/models/Model-common.xcconfig $DEPLOY_DIR/models/
+do_cmd cp -p  "../mac/xcode/README.txt"                 $DEPLOY_DIR/ompp-mac/README.xcode.txt
+
+do_cmd cp -pr "../mac/xcode/models/modelOne/*"          $DEPLOY_DIR/models/modelOne/
+
+# MacOS: cleanup
+
+do_cmd xattr -rc "$DEPLOY_DIR"
+
+do_cmd find $DEPLOY_DIR -name ".DS_Store" -delete
+do_cmd find $DEPLOY_DIR -name "*.ipa" -delete
+do_cmd find $DEPLOY_DIR -name ".dSYM.zip" -delete
+do_cmd find $DEPLOY_DIR -name ".dSYM" -delete
+do_cmd find $DEPLOY_DIR -name ".AppleDouble" -delete
+do_cmd find $DEPLOY_DIR -name ".LSOverride" -delete
+do_cmd find $DEPLOY_DIR -name "._*" -delete
+#
+# end of MacOS
+#
+
+echo Build completed on:  ${OM_DATE_STAMP:0:4}-${OM_DATE_STAMP:4:2}-${OM_DATE_STAMP:6:2} > $DEPLOY_DIR/build_date.txt
+
+popd
+
+# create tar.gz archive from deployment directory
+
+echo Create $DEPLOY_GZ | tee -a ompp/log/build-tar-gz.log
+echo tar czf $DEPLOY_GZ $DEPLOY_NAME | tee -a ompp/log/build-tar-gz.log
+  
+if ! tar czf $DEPLOY_GZ $DEPLOY_NAME >> ompp/log/build-tar-gz.log 2>&1;
+then
+  echo FAILED. | tee -a ompp/log/build-tar-gz.log
+  exit 1
+fi
+
+echo `date` Done. | tee -a ompp/log/build-tar-gz.log

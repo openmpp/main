@@ -12,6 +12,11 @@ ifndef OMC_CODE_PAGE
   OMC_CODE_PAGE = WINDOWS-1252
 endif
 
+OMC_NO_LINE_DEF=
+ifdef OMC_NO_LINE
+  OMC_NO_LINE_DEF = "OMC_NO_LINE=$(OMC_NO_LINE)"
+endif
+
 #
 # models to build
 #
@@ -46,7 +51,7 @@ LOCAL_SQL_DIR = $(LOCAL_OUT_PREFIX)sql
 all : prepare $(MODEL_DIRS)
 
 $(MODEL_DIRS) :
-	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) OMC_CODE_PAGE=$(OMC_CODE_PAGE) -C $@ || { exit $$?; }
+	$(MAKE) BUILD_DIR=$(BUILD_DIR) OUT_PREFIX=$(OUT_PREFIX) PUBLISH_DIR=$(BIN_DIR) OMC_CODE_PAGE=$(OMC_CODE_PAGE) $(OMC_NO_LINE_DEF) -C $@ || { exit $$?; }
 
 .PHONY : publish
 publish : prepare

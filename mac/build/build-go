@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# build openM++ Go oms web-service and dbcopy utility
+
+# push into ompp root and make log directory if not exist
+
+if [ ! -d ompp ]; then 
+
+  echo mkdir ompp
+  
+  if ! mkdir ompp; then
+    echo FAILED
+    exit 1
+  fi
+fi
+
+pushd ompp
+
+if [ ! -d log ]; then mkdir log; fi
+
+# log build environment 
+
+echo Log file: log/build-go.log
+echo `date` Build Go oms web-service and dbcopy utility | tee log/build-go.log 
+
+# build go oms web-service and dbcopy database utility
+# do not use unixODBC by defaults, it is required to have dynamic unixODBC.so installed
+# if you want to build dbcopy or oms with ODBC then modify commands below:
+#   go install -tags odbc go.openmpp.org/dbcopy
+#   go install -tags odbc go.openmpp.org/oms
+
+if [ ! -d ompp-go ]; then
+  
+  echo mkdir ompp-go | tee -a log/build-go.log
+
+  if ! mkdir ompp-go >> log/build-go.log 2>&1;
+  then
+    echo FAILED | tee -a log/build-go.log
+    exit 1
+  fi
+fi
+
+pushd ompp-go
+
+do_go_cmd()
+{
+  echo go $@ | tee -a ../log/build-go.log
+  
+  if ! go $@ >> ../log/build-go.log 2>&1;
+  then
+    echo FAILED. | tee -a ../log/build-go.log
+    exit 1
+  fi
+}
+
+do_go_cmd get github.com/openmpp/go/dbcopy
+do_go_cmd get github.com/openmpp/go/oms
+
+popd
+
+echo `date` Done. | tee -a log/build-go.log
+popd

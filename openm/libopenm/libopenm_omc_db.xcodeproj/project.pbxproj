@@ -1,0 +1,642 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 52;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D87BC4962478561300EDF729 /* outputTableReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D87BC4952478561300EDF729 /* outputTableReader.cpp */; };
+		D87BC4982478562100EDF729 /* paramImportTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D87BC4972478562100EDF729 /* paramImportTable.cpp */; };
+		D87BC49A2478565900EDF729 /* dbValue.h in Headers */ = {isa = PBXBuildFile; fileRef = D87BC4992478565900EDF729 /* dbValue.h */; };
+		D88C30FD234D790400863352 /* helper.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30A7234D790300863352 /* helper.h */; };
+		D88C30FE234D790400863352 /* metaHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30A8234D790300863352 /* metaHolder.h */; };
+		D88C3100234D790400863352 /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30AA234D790300863352 /* md5.h */; };
+		D88C3101234D790400863352 /* metaLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30AB234D790300863352 /* metaLoader.h */; };
+		D88C3102234D790400863352 /* dbExec.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30AC234D790300863352 /* dbExec.h */; };
+		D88C3105234D790400863352 /* dbMetaTable.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30AF234D790300863352 /* dbMetaTable.h */; };
+		D88C3106234D790400863352 /* dbOutputTable.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30B0234D790300863352 /* dbOutputTable.h */; };
+		D88C3108234D790400863352 /* dbParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30B2234D790300863352 /* dbParameter.h */; };
+		D88C3109234D790400863352 /* crc32.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30B3234D790300863352 /* crc32.h */; };
+		D88C310A234D790400863352 /* taskLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30B5234D790300863352 /* taskLstTable.cpp */; };
+		D88C310B234D790400863352 /* typeEnumLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30B6234D790300863352 /* typeEnumLstTable.cpp */; };
+		D88C310D234D790400863352 /* dbExecSqlite.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30B8234D790300863352 /* dbExecSqlite.h */; };
+		D88C310E234D790400863352 /* tableDicTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30B9234D790300863352 /* tableDicTable.cpp */; };
+		D88C310F234D790400863352 /* dbExecProvider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30BA234D790300863352 /* dbExecProvider.cpp */; };
+		D88C3110234D790400863352 /* runOptionTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30BB234D790300863352 /* runOptionTable.cpp */; };
+		D88C3111234D790400863352 /* tableDicTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30BC234D790300863352 /* tableDicTxtTable.cpp */; };
+		D88C3112234D790400863352 /* groupTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30BD234D790300863352 /* groupTxtTable.cpp */; };
+		D88C3113234D790400863352 /* typeDicTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30BE234D790300863352 /* typeDicTable.cpp */; };
+		D88C3114234D790400863352 /* groupPcTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30BF234D790300863352 /* groupPcTable.cpp */; };
+		D88C3115234D790400863352 /* typeDicTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C0234D790300863352 /* typeDicTxtTable.cpp */; };
+		D88C3116234D790400863352 /* worksetParamTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C1234D790300863352 /* worksetParamTable.cpp */; };
+		D88C3117234D790400863352 /* taskSetTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C2234D790300863352 /* taskSetTable.cpp */; };
+		D88C3118234D790400863352 /* runParamTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C3234D790300863352 /* runParamTxtTable.cpp */; };
+		D88C3119234D790400863352 /* tableAccTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C4234D790300863352 /* tableAccTable.cpp */; };
+		D88C311A234D790400863352 /* runLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C5234D790300863352 /* runLstTable.cpp */; };
+		D88C311B234D790400863352 /* modelDicTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C6234D790300863352 /* modelDicTxtTable.cpp */; };
+		D88C311C234D790400863352 /* dbMetaRow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C7234D790300863352 /* dbMetaRow.cpp */; };
+		D88C311D234D790400863352 /* paramDicTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C8234D790300863352 /* paramDicTxtTable.cpp */; };
+		D88C311E234D790400863352 /* langLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C9234D790300863352 /* langLstTable.cpp */; };
+		D88C311F234D790400863352 /* worksetTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CA234D790300863352 /* worksetTxtTable.cpp */; };
+		D88C3120234D790400863352 /* dbValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CB234D790300863352 /* dbValue.cpp */; };
+		D88C3121234D790400863352 /* paramDimsTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CC234D790300863352 /* paramDimsTxtTable.cpp */; };
+		D88C3122234D790400863352 /* worksetLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CD234D790300863352 /* worksetLstTable.cpp */; };
+		D88C3123234D790400863352 /* tableDimsTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CE234D790300863352 /* tableDimsTxtTable.cpp */; };
+		D88C3124234D790400863352 /* paramDicTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CF234D790300863352 /* paramDicTable.cpp */; };
+		D88C3125234D790400863352 /* dbExec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D0234D790300863352 /* dbExec.cpp */; };
+		D88C3126234D790400863352 /* runTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D1234D790300863352 /* runTxtTable.cpp */; };
+		D88C3127234D790400863352 /* modelSqlBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30D3234D790300863352 /* modelSqlBuilder.h */; };
+		D88C3128234D790400863352 /* modelExpressionSql.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D4234D790300863352 /* modelExpressionSql.cpp */; };
+		D88C3129234D790400863352 /* modelInsertSql.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D5234D790300863352 /* modelInsertSql.cpp */; };
+		D88C312A234D790400863352 /* modelSqlBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D6234D790300863352 /* modelSqlBuilder.cpp */; };
+		D88C312B234D790400863352 /* modelSqlWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D7234D790300863352 /* modelSqlWriter.cpp */; };
+		D88C312C234D790400863352 /* modelSqlBuilderPrepare.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D8234D790300863352 /* modelSqlBuilderPrepare.cpp */; };
+		D88C312D234D790400863352 /* modelExpressionSql.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30D9234D790300863352 /* modelExpressionSql.h */; };
+		D88C312E234D790400863352 /* modelInsertSql.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30DA234D790300863352 /* modelInsertSql.h */; };
+		D88C312F234D790400863352 /* modelSqlWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30DB234D790300863352 /* modelSqlWriter.h */; };
+		D88C3130234D790400863352 /* groupLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30DC234D790300863352 /* groupLstTable.cpp */; };
+		D88C3131234D790400863352 /* tableAccTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30DD234D790300863352 /* tableAccTxtTable.cpp */; };
+		D88C3132234D790400863352 /* tableExprTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30DE234D790300863352 /* tableExprTable.cpp */; };
+		D88C3133234D790400863352 /* taskRunLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30DF234D790300863352 /* taskRunLstTable.cpp */; };
+		D88C3134234D790400863352 /* parameterReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E0234D790300863352 /* parameterReader.cpp */; };
+		D88C3135234D790400863352 /* modelWordTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E1234D790300863352 /* modelWordTable.cpp */; };
+		D88C3136234D790400863352 /* tableDimsTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E2234D790300863352 /* tableDimsTable.cpp */; };
+		D88C3137234D790400863352 /* taskRunSetTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E3234D790300863352 /* taskRunSetTable.cpp */; };
+		D88C3138234D790400863352 /* dbExecBase.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30E4234D790300863352 /* dbExecBase.h */; };
+		D88C3139234D790400863352 /* modelDicTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E5234D790300863352 /* modelDicTable.cpp */; };
+		D88C313A234D790400863352 /* profileLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E6234D790300863352 /* profileLstTable.cpp */; };
+		D88C313B234D790400863352 /* dbExecBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E7234D790300863352 /* dbExecBase.cpp */; };
+		D88C313C234D790400863352 /* dbExecSqlite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E8234D790300863352 /* dbExecSqlite.cpp */; };
+		D88C313D234D790400863352 /* taskTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30E9234D790300863352 /* taskTxtTable.cpp */; };
+		D88C313E234D790400863352 /* typeEnumTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30EA234D790300863352 /* typeEnumTxtTable.cpp */; };
+		D88C313F234D790400863352 /* profileOptionTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30EB234D790300863352 /* profileOptionTable.cpp */; };
+		D88C3140234D790400863352 /* langWordTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30EC234D790300863352 /* langWordTable.cpp */; };
+		D88C3141234D790400863352 /* outputTableWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30ED234D790300863352 /* outputTableWriter.cpp */; };
+		D88C3142234D790400863352 /* paramDimsTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30EE234D790300863352 /* paramDimsTable.cpp */; };
+		D88C3143234D790400863352 /* parameterWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30EF234D790300863352 /* parameterWriter.cpp */; };
+		D88C3144234D790400863352 /* worksetParamTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F0234D790300863352 /* worksetParamTxtTable.cpp */; };
+		D88C3145234D790400863352 /* tableExprTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F1234D790300863352 /* tableExprTxtTable.cpp */; };
+		D88C3146234D790400863352 /* md5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F3234D790300863352 /* md5.cpp */; };
+		D88C3147234D790400863352 /* log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F4234D790300863352 /* log.cpp */; };
+		D88C3148234D790400863352 /* argReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F5234D790300863352 /* argReader.cpp */; };
+		D88C3149234D790400863352 /* crc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F6234D790300863352 /* crc32.cpp */; };
+		D88C314A234D790400863352 /* helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F7234D790300863352 /* helper.cpp */; };
+		D88C314B234D790400863352 /* iniReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F8234D790300863352 /* iniReader.cpp */; };
+		D88C314C234D790400863352 /* file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30F9234D790300863352 /* file.cpp */; };
+		D88C314D234D790400863352 /* utf8Convert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30FA234D790300863352 /* utf8Convert.cpp */; };
+		D88C314E234D790400863352 /* log.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30FB234D790300863352 /* log.h */; };
+		D88C314F234D790400863352 /* splitCsv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30FC234D790300863352 /* splitCsv.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D8547991234D70AD00A240CB /* liblibopenm_omc_db.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblibopenm_omc_db.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D87BC4952478561300EDF729 /* outputTableReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = outputTableReader.cpp; sourceTree = "<group>"; };
+		D87BC4972478562100EDF729 /* paramImportTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramImportTable.cpp; sourceTree = "<group>"; };
+		D87BC4992478565900EDF729 /* dbValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbValue.h; sourceTree = "<group>"; };
+		D88C30A7234D790300863352 /* helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
+		D88C30A8234D790300863352 /* metaHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metaHolder.h; sourceTree = "<group>"; };
+		D88C30AA234D790300863352 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
+		D88C30AB234D790300863352 /* metaLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metaLoader.h; sourceTree = "<group>"; };
+		D88C30AC234D790300863352 /* dbExec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbExec.h; sourceTree = "<group>"; };
+		D88C30AF234D790300863352 /* dbMetaTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbMetaTable.h; sourceTree = "<group>"; };
+		D88C30B0234D790300863352 /* dbOutputTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbOutputTable.h; sourceTree = "<group>"; };
+		D88C30B2234D790300863352 /* dbParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbParameter.h; sourceTree = "<group>"; };
+		D88C30B3234D790300863352 /* crc32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crc32.h; sourceTree = "<group>"; };
+		D88C30B5234D790300863352 /* taskLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = taskLstTable.cpp; sourceTree = "<group>"; };
+		D88C30B6234D790300863352 /* typeEnumLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = typeEnumLstTable.cpp; sourceTree = "<group>"; };
+		D88C30B8234D790300863352 /* dbExecSqlite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbExecSqlite.h; sourceTree = "<group>"; };
+		D88C30B9234D790300863352 /* tableDicTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableDicTable.cpp; sourceTree = "<group>"; };
+		D88C30BA234D790300863352 /* dbExecProvider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbExecProvider.cpp; sourceTree = "<group>"; };
+		D88C30BB234D790300863352 /* runOptionTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runOptionTable.cpp; sourceTree = "<group>"; };
+		D88C30BC234D790300863352 /* tableDicTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableDicTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30BD234D790300863352 /* groupTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = groupTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30BE234D790300863352 /* typeDicTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = typeDicTable.cpp; sourceTree = "<group>"; };
+		D88C30BF234D790300863352 /* groupPcTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = groupPcTable.cpp; sourceTree = "<group>"; };
+		D88C30C0234D790300863352 /* typeDicTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = typeDicTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30C1234D790300863352 /* worksetParamTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = worksetParamTable.cpp; sourceTree = "<group>"; };
+		D88C30C2234D790300863352 /* taskSetTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = taskSetTable.cpp; sourceTree = "<group>"; };
+		D88C30C3234D790300863352 /* runParamTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runParamTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30C4234D790300863352 /* tableAccTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableAccTable.cpp; sourceTree = "<group>"; };
+		D88C30C5234D790300863352 /* runLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runLstTable.cpp; sourceTree = "<group>"; };
+		D88C30C6234D790300863352 /* modelDicTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelDicTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30C7234D790300863352 /* dbMetaRow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbMetaRow.cpp; sourceTree = "<group>"; };
+		D88C30C8234D790300863352 /* paramDicTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramDicTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30C9234D790300863352 /* langLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = langLstTable.cpp; sourceTree = "<group>"; };
+		D88C30CA234D790300863352 /* worksetTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = worksetTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30CB234D790300863352 /* dbValue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbValue.cpp; sourceTree = "<group>"; };
+		D88C30CC234D790300863352 /* paramDimsTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramDimsTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30CD234D790300863352 /* worksetLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = worksetLstTable.cpp; sourceTree = "<group>"; };
+		D88C30CE234D790300863352 /* tableDimsTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableDimsTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30CF234D790300863352 /* paramDicTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramDicTable.cpp; sourceTree = "<group>"; };
+		D88C30D0234D790300863352 /* dbExec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbExec.cpp; sourceTree = "<group>"; };
+		D88C30D1234D790300863352 /* runTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30D3234D790300863352 /* modelSqlBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelSqlBuilder.h; sourceTree = "<group>"; };
+		D88C30D4234D790300863352 /* modelExpressionSql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelExpressionSql.cpp; sourceTree = "<group>"; };
+		D88C30D5234D790300863352 /* modelInsertSql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelInsertSql.cpp; sourceTree = "<group>"; };
+		D88C30D6234D790300863352 /* modelSqlBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelSqlBuilder.cpp; sourceTree = "<group>"; };
+		D88C30D7234D790300863352 /* modelSqlWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelSqlWriter.cpp; sourceTree = "<group>"; };
+		D88C30D8234D790300863352 /* modelSqlBuilderPrepare.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelSqlBuilderPrepare.cpp; sourceTree = "<group>"; };
+		D88C30D9234D790300863352 /* modelExpressionSql.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelExpressionSql.h; sourceTree = "<group>"; };
+		D88C30DA234D790300863352 /* modelInsertSql.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelInsertSql.h; sourceTree = "<group>"; };
+		D88C30DB234D790300863352 /* modelSqlWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelSqlWriter.h; sourceTree = "<group>"; };
+		D88C30DC234D790300863352 /* groupLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = groupLstTable.cpp; sourceTree = "<group>"; };
+		D88C30DD234D790300863352 /* tableAccTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableAccTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30DE234D790300863352 /* tableExprTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableExprTable.cpp; sourceTree = "<group>"; };
+		D88C30DF234D790300863352 /* taskRunLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = taskRunLstTable.cpp; sourceTree = "<group>"; };
+		D88C30E0234D790300863352 /* parameterReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parameterReader.cpp; sourceTree = "<group>"; };
+		D88C30E1234D790300863352 /* modelWordTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelWordTable.cpp; sourceTree = "<group>"; };
+		D88C30E2234D790300863352 /* tableDimsTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableDimsTable.cpp; sourceTree = "<group>"; };
+		D88C30E3234D790300863352 /* taskRunSetTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = taskRunSetTable.cpp; sourceTree = "<group>"; };
+		D88C30E4234D790300863352 /* dbExecBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dbExecBase.h; sourceTree = "<group>"; };
+		D88C30E5234D790300863352 /* modelDicTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelDicTable.cpp; sourceTree = "<group>"; };
+		D88C30E6234D790300863352 /* profileLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = profileLstTable.cpp; sourceTree = "<group>"; };
+		D88C30E7234D790300863352 /* dbExecBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbExecBase.cpp; sourceTree = "<group>"; };
+		D88C30E8234D790300863352 /* dbExecSqlite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbExecSqlite.cpp; sourceTree = "<group>"; };
+		D88C30E9234D790300863352 /* taskTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = taskTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30EA234D790300863352 /* typeEnumTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = typeEnumTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30EB234D790300863352 /* profileOptionTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = profileOptionTable.cpp; sourceTree = "<group>"; };
+		D88C30EC234D790300863352 /* langWordTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = langWordTable.cpp; sourceTree = "<group>"; };
+		D88C30ED234D790300863352 /* outputTableWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = outputTableWriter.cpp; sourceTree = "<group>"; };
+		D88C30EE234D790300863352 /* paramDimsTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramDimsTable.cpp; sourceTree = "<group>"; };
+		D88C30EF234D790300863352 /* parameterWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = parameterWriter.cpp; sourceTree = "<group>"; };
+		D88C30F0234D790300863352 /* worksetParamTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = worksetParamTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30F1234D790300863352 /* tableExprTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableExprTxtTable.cpp; sourceTree = "<group>"; };
+		D88C30F3234D790300863352 /* md5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = md5.cpp; sourceTree = "<group>"; };
+		D88C30F4234D790300863352 /* log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = log.cpp; sourceTree = "<group>"; };
+		D88C30F5234D790300863352 /* argReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = argReader.cpp; sourceTree = "<group>"; };
+		D88C30F6234D790300863352 /* crc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crc32.cpp; sourceTree = "<group>"; };
+		D88C30F7234D790300863352 /* helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = helper.cpp; sourceTree = "<group>"; };
+		D88C30F8234D790300863352 /* iniReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = iniReader.cpp; sourceTree = "<group>"; };
+		D88C30F9234D790300863352 /* file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = file.cpp; sourceTree = "<group>"; };
+		D88C30FA234D790300863352 /* utf8Convert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8Convert.cpp; sourceTree = "<group>"; };
+		D88C30FB234D790300863352 /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
+		D88C30FC234D790300863352 /* splitCsv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = splitCsv.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D854798F234D70AD00A240CB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D8547988234D70AD00A240CB = {
+			isa = PBXGroup;
+			children = (
+				D88C30F2234D790300863352 /* common */,
+				D88C30B4234D790300863352 /* db */,
+				D88C30A6234D790300863352 /* include */,
+				D8547992234D70AD00A240CB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D8547992234D70AD00A240CB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D8547991234D70AD00A240CB /* liblibopenm_omc_db.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D88C30A6234D790300863352 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				D87BC4992478565900EDF729 /* dbValue.h */,
+				D88C30A7234D790300863352 /* helper.h */,
+				D88C30A8234D790300863352 /* metaHolder.h */,
+				D88C30AA234D790300863352 /* md5.h */,
+				D88C30AB234D790300863352 /* metaLoader.h */,
+				D88C30AC234D790300863352 /* dbExec.h */,
+				D88C30AF234D790300863352 /* dbMetaTable.h */,
+				D88C30B0234D790300863352 /* dbOutputTable.h */,
+				D88C30B2234D790300863352 /* dbParameter.h */,
+				D88C30B3234D790300863352 /* crc32.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		D88C30B4234D790300863352 /* db */ = {
+			isa = PBXGroup;
+			children = (
+				D87BC4972478562100EDF729 /* paramImportTable.cpp */,
+				D87BC4952478561300EDF729 /* outputTableReader.cpp */,
+				D88C30B5234D790300863352 /* taskLstTable.cpp */,
+				D88C30B6234D790300863352 /* typeEnumLstTable.cpp */,
+				D88C30B8234D790300863352 /* dbExecSqlite.h */,
+				D88C30B9234D790300863352 /* tableDicTable.cpp */,
+				D88C30BA234D790300863352 /* dbExecProvider.cpp */,
+				D88C30BB234D790300863352 /* runOptionTable.cpp */,
+				D88C30BC234D790300863352 /* tableDicTxtTable.cpp */,
+				D88C30BD234D790300863352 /* groupTxtTable.cpp */,
+				D88C30BE234D790300863352 /* typeDicTable.cpp */,
+				D88C30BF234D790300863352 /* groupPcTable.cpp */,
+				D88C30C0234D790300863352 /* typeDicTxtTable.cpp */,
+				D88C30C1234D790300863352 /* worksetParamTable.cpp */,
+				D88C30C2234D790300863352 /* taskSetTable.cpp */,
+				D88C30C3234D790300863352 /* runParamTxtTable.cpp */,
+				D88C30C4234D790300863352 /* tableAccTable.cpp */,
+				D88C30C5234D790300863352 /* runLstTable.cpp */,
+				D88C30C6234D790300863352 /* modelDicTxtTable.cpp */,
+				D88C30C7234D790300863352 /* dbMetaRow.cpp */,
+				D88C30C8234D790300863352 /* paramDicTxtTable.cpp */,
+				D88C30C9234D790300863352 /* langLstTable.cpp */,
+				D88C30CA234D790300863352 /* worksetTxtTable.cpp */,
+				D88C30CB234D790300863352 /* dbValue.cpp */,
+				D88C30CC234D790300863352 /* paramDimsTxtTable.cpp */,
+				D88C30CD234D790300863352 /* worksetLstTable.cpp */,
+				D88C30CE234D790300863352 /* tableDimsTxtTable.cpp */,
+				D88C30CF234D790300863352 /* paramDicTable.cpp */,
+				D88C30D0234D790300863352 /* dbExec.cpp */,
+				D88C30D1234D790300863352 /* runTxtTable.cpp */,
+				D88C30D2234D790300863352 /* omc */,
+				D88C30DC234D790300863352 /* groupLstTable.cpp */,
+				D88C30DD234D790300863352 /* tableAccTxtTable.cpp */,
+				D88C30DE234D790300863352 /* tableExprTable.cpp */,
+				D88C30DF234D790300863352 /* taskRunLstTable.cpp */,
+				D88C30E0234D790300863352 /* parameterReader.cpp */,
+				D88C30E1234D790300863352 /* modelWordTable.cpp */,
+				D88C30E2234D790300863352 /* tableDimsTable.cpp */,
+				D88C30E3234D790300863352 /* taskRunSetTable.cpp */,
+				D88C30E4234D790300863352 /* dbExecBase.h */,
+				D88C30E5234D790300863352 /* modelDicTable.cpp */,
+				D88C30E6234D790300863352 /* profileLstTable.cpp */,
+				D88C30E7234D790300863352 /* dbExecBase.cpp */,
+				D88C30E8234D790300863352 /* dbExecSqlite.cpp */,
+				D88C30E9234D790300863352 /* taskTxtTable.cpp */,
+				D88C30EA234D790300863352 /* typeEnumTxtTable.cpp */,
+				D88C30EB234D790300863352 /* profileOptionTable.cpp */,
+				D88C30EC234D790300863352 /* langWordTable.cpp */,
+				D88C30ED234D790300863352 /* outputTableWriter.cpp */,
+				D88C30EE234D790300863352 /* paramDimsTable.cpp */,
+				D88C30EF234D790300863352 /* parameterWriter.cpp */,
+				D88C30F0234D790300863352 /* worksetParamTxtTable.cpp */,
+				D88C30F1234D790300863352 /* tableExprTxtTable.cpp */,
+			);
+			path = db;
+			sourceTree = "<group>";
+		};
+		D88C30D2234D790300863352 /* omc */ = {
+			isa = PBXGroup;
+			children = (
+				D88C30D3234D790300863352 /* modelSqlBuilder.h */,
+				D88C30D4234D790300863352 /* modelExpressionSql.cpp */,
+				D88C30D5234D790300863352 /* modelInsertSql.cpp */,
+				D88C30D6234D790300863352 /* modelSqlBuilder.cpp */,
+				D88C30D7234D790300863352 /* modelSqlWriter.cpp */,
+				D88C30D8234D790300863352 /* modelSqlBuilderPrepare.cpp */,
+				D88C30D9234D790300863352 /* modelExpressionSql.h */,
+				D88C30DA234D790300863352 /* modelInsertSql.h */,
+				D88C30DB234D790300863352 /* modelSqlWriter.h */,
+			);
+			path = omc;
+			sourceTree = "<group>";
+		};
+		D88C30F2234D790300863352 /* common */ = {
+			isa = PBXGroup;
+			children = (
+				D88C30F3234D790300863352 /* md5.cpp */,
+				D88C30F4234D790300863352 /* log.cpp */,
+				D88C30F5234D790300863352 /* argReader.cpp */,
+				D88C30F6234D790300863352 /* crc32.cpp */,
+				D88C30F7234D790300863352 /* helper.cpp */,
+				D88C30F8234D790300863352 /* iniReader.cpp */,
+				D88C30F9234D790300863352 /* file.cpp */,
+				D88C30FA234D790300863352 /* utf8Convert.cpp */,
+				D88C30FB234D790300863352 /* log.h */,
+				D88C30FC234D790300863352 /* splitCsv.cpp */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D854798D234D70AD00A240CB /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D88C310D234D790400863352 /* dbExecSqlite.h in Headers */,
+				D88C312E234D790400863352 /* modelInsertSql.h in Headers */,
+				D88C3106234D790400863352 /* dbOutputTable.h in Headers */,
+				D88C3105234D790400863352 /* dbMetaTable.h in Headers */,
+				D88C3109234D790400863352 /* crc32.h in Headers */,
+				D88C3108234D790400863352 /* dbParameter.h in Headers */,
+				D88C312D234D790400863352 /* modelExpressionSql.h in Headers */,
+				D88C312F234D790400863352 /* modelSqlWriter.h in Headers */,
+				D88C3100234D790400863352 /* md5.h in Headers */,
+				D88C30FD234D790400863352 /* helper.h in Headers */,
+				D88C314E234D790400863352 /* log.h in Headers */,
+				D88C3101234D790400863352 /* metaLoader.h in Headers */,
+				D88C3138234D790400863352 /* dbExecBase.h in Headers */,
+				D88C30FE234D790400863352 /* metaHolder.h in Headers */,
+				D88C3102234D790400863352 /* dbExec.h in Headers */,
+				D87BC49A2478565900EDF729 /* dbValue.h in Headers */,
+				D88C3127234D790400863352 /* modelSqlBuilder.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D8547990234D70AD00A240CB /* libopenm_omc_db */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D854799C234D70AD00A240CB /* Build configuration list for PBXNativeTarget "libopenm_omc_db" */;
+			buildPhases = (
+				D854798D234D70AD00A240CB /* Headers */,
+				D854798E234D70AD00A240CB /* Sources */,
+				D854798F234D70AD00A240CB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = libopenm_omc_db;
+			productName = libopenm_omc_db;
+			productReference = D8547991234D70AD00A240CB /* liblibopenm_omc_db.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D8547989234D70AD00A240CB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1110;
+				ORGANIZATIONNAME = openmpp;
+				TargetAttributes = {
+					D8547990234D70AD00A240CB = {
+						CreatedOnToolsVersion = 11.1;
+					};
+				};
+			};
+			buildConfigurationList = D854798C234D70AD00A240CB /* Build configuration list for PBXProject "libopenm_omc_db" */;
+			compatibilityVersion = "Xcode 11.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D8547988234D70AD00A240CB;
+			productRefGroup = D8547992234D70AD00A240CB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D8547990234D70AD00A240CB /* libopenm_omc_db */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D854798E234D70AD00A240CB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D88C3117234D790400863352 /* taskSetTable.cpp in Sources */,
+				D88C3139234D790400863352 /* modelDicTable.cpp in Sources */,
+				D88C3129234D790400863352 /* modelInsertSql.cpp in Sources */,
+				D88C3148234D790400863352 /* argReader.cpp in Sources */,
+				D88C312C234D790400863352 /* modelSqlBuilderPrepare.cpp in Sources */,
+				D88C3119234D790400863352 /* tableAccTable.cpp in Sources */,
+				D88C3144234D790400863352 /* worksetParamTxtTable.cpp in Sources */,
+				D88C313D234D790400863352 /* taskTxtTable.cpp in Sources */,
+				D88C3131234D790400863352 /* tableAccTxtTable.cpp in Sources */,
+				D88C313A234D790400863352 /* profileLstTable.cpp in Sources */,
+				D88C3122234D790400863352 /* worksetLstTable.cpp in Sources */,
+				D88C3136234D790400863352 /* tableDimsTable.cpp in Sources */,
+				D88C3123234D790400863352 /* tableDimsTxtTable.cpp in Sources */,
+				D88C311E234D790400863352 /* langLstTable.cpp in Sources */,
+				D88C3147234D790400863352 /* log.cpp in Sources */,
+				D88C311F234D790400863352 /* worksetTxtTable.cpp in Sources */,
+				D88C3125234D790400863352 /* dbExec.cpp in Sources */,
+				D88C312B234D790400863352 /* modelSqlWriter.cpp in Sources */,
+				D88C311D234D790400863352 /* paramDicTxtTable.cpp in Sources */,
+				D88C3141234D790400863352 /* outputTableWriter.cpp in Sources */,
+				D88C3128234D790400863352 /* modelExpressionSql.cpp in Sources */,
+				D88C3143234D790400863352 /* parameterWriter.cpp in Sources */,
+				D88C314D234D790400863352 /* utf8Convert.cpp in Sources */,
+				D88C3115234D790400863352 /* typeDicTxtTable.cpp in Sources */,
+				D88C313B234D790400863352 /* dbExecBase.cpp in Sources */,
+				D88C311C234D790400863352 /* dbMetaRow.cpp in Sources */,
+				D87BC4962478561300EDF729 /* outputTableReader.cpp in Sources */,
+				D88C3137234D790400863352 /* taskRunSetTable.cpp in Sources */,
+				D88C314F234D790400863352 /* splitCsv.cpp in Sources */,
+				D88C310A234D790400863352 /* taskLstTable.cpp in Sources */,
+				D88C3121234D790400863352 /* paramDimsTxtTable.cpp in Sources */,
+				D88C3118234D790400863352 /* runParamTxtTable.cpp in Sources */,
+				D88C3142234D790400863352 /* paramDimsTable.cpp in Sources */,
+				D88C313E234D790400863352 /* typeEnumTxtTable.cpp in Sources */,
+				D88C3135234D790400863352 /* modelWordTable.cpp in Sources */,
+				D88C3146234D790400863352 /* md5.cpp in Sources */,
+				D88C310F234D790400863352 /* dbExecProvider.cpp in Sources */,
+				D88C3112234D790400863352 /* groupTxtTable.cpp in Sources */,
+				D88C313C234D790400863352 /* dbExecSqlite.cpp in Sources */,
+				D88C313F234D790400863352 /* profileOptionTable.cpp in Sources */,
+				D88C3126234D790400863352 /* runTxtTable.cpp in Sources */,
+				D88C3113234D790400863352 /* typeDicTable.cpp in Sources */,
+				D88C310E234D790400863352 /* tableDicTable.cpp in Sources */,
+				D88C311A234D790400863352 /* runLstTable.cpp in Sources */,
+				D88C310B234D790400863352 /* typeEnumLstTable.cpp in Sources */,
+				D88C312A234D790400863352 /* modelSqlBuilder.cpp in Sources */,
+				D88C3124234D790400863352 /* paramDicTable.cpp in Sources */,
+				D88C3145234D790400863352 /* tableExprTxtTable.cpp in Sources */,
+				D88C3134234D790400863352 /* parameterReader.cpp in Sources */,
+				D88C3114234D790400863352 /* groupPcTable.cpp in Sources */,
+				D88C3130234D790400863352 /* groupLstTable.cpp in Sources */,
+				D88C3149234D790400863352 /* crc32.cpp in Sources */,
+				D88C314A234D790400863352 /* helper.cpp in Sources */,
+				D88C3140234D790400863352 /* langWordTable.cpp in Sources */,
+				D88C3110234D790400863352 /* runOptionTable.cpp in Sources */,
+				D88C3116234D790400863352 /* worksetParamTable.cpp in Sources */,
+				D88C314C234D790400863352 /* file.cpp in Sources */,
+				D87BC4982478562100EDF729 /* paramImportTable.cpp in Sources */,
+				D88C311B234D790400863352 /* modelDicTxtTable.cpp in Sources */,
+				D88C3111234D790400863352 /* tableDicTxtTable.cpp in Sources */,
+				D88C3120234D790400863352 /* dbValue.cpp in Sources */,
+				D88C3132234D790400863352 /* tableExprTable.cpp in Sources */,
+				D88C3133234D790400863352 /* taskRunLstTable.cpp in Sources */,
+				D88C314B234D790400863352 /* iniReader.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D854799A234D70AD00A240CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"OM_DB_SQLITE=1",
+					"OM_UCVT_ICONV=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../include,
+					../libsqlite,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D854799B234D70AD00A240CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"OM_DB_SQLITE=1",
+					"OM_UCVT_ICONV=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../include,
+					../libsqlite,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D854799D234D70AD00A240CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		D854799E234D70AD00A240CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D854798C234D70AD00A240CB /* Build configuration list for PBXProject "libopenm_omc_db" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D854799A234D70AD00A240CB /* Debug */,
+				D854799B234D70AD00A240CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D854799C234D70AD00A240CB /* Build configuration list for PBXNativeTarget "libopenm_omc_db" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D854799D234D70AD00A240CB /* Debug */,
+				D854799E234D70AD00A240CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D8547989234D70AD00A240CB /* Project object */;
+}

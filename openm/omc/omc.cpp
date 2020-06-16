@@ -618,6 +618,12 @@ int main(int argc, char * argv[])
             scenario_parameters_count++;
             WorksetParamRow wsParam;
             wsParam.paramId = param->pp_parameter_id;
+            //
+            wsParam.subCount = 1;       // number of parameter sub-values in the scenario
+            wsParam.defaultSubId = 0;   // sub-value id to be used by default for that parameter
+            // default parameter sub id can be any int, including negative, but it must exist in the input data
+            // as it is today omc insert only sub id = 0
+            //
             metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
             // value notes for the parameter
             for (auto lang : Symbol::pp_all_languages) {
@@ -649,7 +655,7 @@ int main(int argc, char * argv[])
             for (auto param : Symbol::pp_all_parameters) {
                 if (param->source != ParameterSymbol::scenario_parameter) continue;
                 auto lst = param->initializer_for_storage();
-                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);
+                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);  // it does insert parameter value(s) with sub-value id=0
                 scenario_parameters_done++;
                 chrono::system_clock::time_point now = chrono::system_clock::now();
                 if (chrono::duration_cast<chrono::seconds>(now - start).count() >= 3) {     // report not more often than every 3 seconds

@@ -123,7 +123,7 @@ void deserialize_random_state(const random_state & rs)
         ss >> *fmk::stream_uniforms[j];
         auto wrk = rs[k++];
         fmk::other_normal_valid[j] = (wrk != "");
-        if (fmk::other_normal_valid) {
+        if (fmk::other_normal_valid[j]) {
             fmk::other_normal[j] = atof(wrk.c_str());
         }
         else {

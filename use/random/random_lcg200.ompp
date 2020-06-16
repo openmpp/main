@@ -336,7 +336,7 @@ void deserialize_random_state(const random_state & rs)
         fmk::stream_seeds[j] = atol(rs[k++].c_str());
         auto wrk = rs[k++];
         fmk::other_normal_valid[j] = (wrk != "");
-        if (fmk::other_normal_valid) {
+        if (fmk::other_normal_valid[j]) {
             fmk::other_normal[j] = atof(wrk.c_str());
         }
         else {

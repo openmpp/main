@@ -36,6 +36,7 @@ ${OM_ROOT}/       -> openM++ "root" folder
                 ModelName/ -> model(s) source code and project files
           ompp-docker/  -> Docker files to build openM++ and/or models and to run the models
           ompp-go/      -> Go source code: oms web-service, dbcopy utility and GO API
+          ompp-python/  -> Python examples: how to use openM++ from Python
           ompp-r/       -> openMpp R package
           ompp-ui/      -> UI front-end source code
 

@@ -1,0 +1,19 @@
+//
+//  modelOne configuration settings
+//
+// Copyright (c) OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+// Model name: by default is the same as target name
+//
+MODEL_NAME = $(TARGET_NAME)
+
+// openM++ root directory, expected sub-directories: bin, lib, sql
+//
+// if you have openM++ binaries in separate location from models
+// then change OM_ROOT, for example:
+//   OM_ROOT = $(HOME)/my-openmpp
+//
+OM_ROOT = $(SRCROOT)/../..
+OM_SQL_DIR = $(OM_ROOT)/sql
+OM_SQLITE_DIR=${OM_SQL_DIR}/sqlite

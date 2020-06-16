@@ -1,13 +1,13 @@
 OpenM++ Linux
 =============
 
-It is build on CentOS 8, x64, g++ 8.2.1
+It is build on CentOS 8.1, x64, g++ 8.2.1
 
 make RELEASE=1
-
-MPI cluster version build with OpenMPI 3.1.2
-
 make RELEASE=1 OM_MSG_USE=MPI
+
+MPI cluster version for CentOS 8.1 build with MPICH
+MPI cluster version for CentOS 7 build with OpenMPI 3.1.2
 
 You may need to install openmpi-x86_64 to run MPI version.
 Make sure following commands executed without errors:

@@ -192,7 +192,7 @@ void EntitySetSymbol::build_body_update_cell()
         assert(es); // integrity check guarantee
         c += "";
         c += "// dimension=" + to_string(dim->index) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
-        if (dim > 0) {
+        if (dim->index > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }
         c += "index = " + av->name + ";";

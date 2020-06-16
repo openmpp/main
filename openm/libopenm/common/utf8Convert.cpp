@@ -50,7 +50,7 @@ static const long long bomMaxLen = 4;   // max size of BOM
 #define IN_CVT_SIZE  OM_STR_DB_MAX      /* input conversion buffer size, must be even on Windows */
 #define OUT_CVT_SIZE (4 * IN_CVT_SIZE)  /* output conversion buffer size, must be at least 4*input buffer size */
 
-static const long long utf8ProbeLen = OUT_CVT_SIZE;     // max bytes used to probe for valid UTF-8
+static const long long utf8ProbeLen = (2 * 1000 * 1024);    // max bytes used to probe for valid UTF-8
 
 /** openM++ namespace */
 namespace openm
@@ -247,10 +247,10 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
 {
     switch (i_from)
     {
-    case CharCvtFrom::explicitPage:
-        return new ExpicitPageConverter(i_codePageName);
     case CharCvtFrom::utf8:
         return new Utf8CopyConverter();
+    case CharCvtFrom::explicitPage:
+        return new ExpicitPageConverter(i_codePageName);
     case CharCvtFrom::utf16Le:
         return new ExpicitPageConverter("UTF-16LE");
     case CharCvtFrom::utf16Be:
@@ -377,10 +377,10 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
 {
     switch (i_from)
     {
-    case CharCvtFrom::explicitPage:
-        return new ExpicitPageConverter(i_codePageName);
     case CharCvtFrom::utf8:
         return new Utf8CopyConverter();
+    case CharCvtFrom::explicitPage:
+        return new ExpicitPageConverter(i_codePageName);
     case CharCvtFrom::utf16Le:
         return new Utf16LePageConverter();
     case CharCvtFrom::utf16Be:
@@ -613,28 +613,28 @@ const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * 
         bomSize = sizeof(BOM_UTF32BE);
     }
 
-    // if no BOM and code page name specified then use the page for conversion
-    if (fromChar == CharCvtFrom::defaultPage && i_codePageName != nullptr && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
-
-    // if no BOM and no explicit code page name, probe content to see if it appears to be UTF-8
+    // if no BOM then probe content to see if it appears to be UTF-8
     if (fromChar == CharCvtFrom::defaultPage) {
-        unsigned char utf8ProbeBuf[utf8ProbeLen];
+        unique_ptr<char[]> utf8ProbeBuf(new char[utf8ProbeLen]);
 
         // No BOM, rewind file to beginning
         inpSt.clear();
         inpSt.seekg(0);
 
-        inpSt.read((char *)utf8ProbeBuf, utf8ProbeLen);
+        inpSt.read(utf8ProbeBuf.get(), utf8ProbeLen);
         if (inpSt.bad()) throw HelperException("Error at file read");
 
         long long probeSize = inpSt.gcount();
 
-        if (isUtf8((size_t)probeSize, (const char *)utf8ProbeBuf)) {
+        if (isUtf8((size_t)probeSize, utf8ProbeBuf.get())) {
             // looks like UTF-8, treat as if so
             fromChar = CharCvtFrom::utf8;
             bomSize = 0;
         }
     }
+
+    // if no BOM and no utf-8 detected and code page name specified then use the page for conversion
+    if (fromChar == CharCvtFrom::defaultPage && i_codePageName != nullptr && i_codePageName[0] != '\0') fromChar = CharCvtFrom::explicitPage;
 
     // create converter
     unique_ptr<IUtf8Converter> cvt(IUtf8Converter::create(fromChar, i_codePageName));

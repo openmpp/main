@@ -88,11 +88,19 @@ ifdef OMC_FIXED_PARAM_DIR
   OMC_FIXED_OPT = -f $(OMC_FIXED_PARAM_DIR)
 endif
 
-# 
+#
 # convert source files to utf-8 from Windows code page
 #
 ifdef OMC_CODE_PAGE
   OMC_CODE_PAGE_OPT = -Omc.CodePage $(OMC_CODE_PAGE)
+endif
+
+#
+# if OMC_NO_LINE is true then disable generation of #line directives
+# true case-insenstive "true" or "yes" or "1" anything else is false
+#
+ifdef OMC_NO_LINE
+  OMC_NO_LINE_OPT = -Omc.NoLineDirectives $(OMC_NO_LINE)
 endif
 
 #
@@ -195,9 +203,9 @@ sources = $(MODEL_CPPLIST)
 
 OBJS := $(foreach root,$(sources:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
 DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
-    
+
 .PHONY : all
-all: model 
+all: model
 
 .PHONY : model
 model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
@@ -205,7 +213,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP)
-	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT)
+	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT)
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
@@ -215,10 +223,10 @@ $(DEPS_DIR)/%.d : $(MODEL_CODE_DIR)/%.cpp
 
 $(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_OMC) -c $< -o $@
-	
+
 $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-	
+
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
 	$(CXX) -pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
 

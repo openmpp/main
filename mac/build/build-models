@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+#
+# build openM++ models
+# environmemnt variables:
+#  OM_BUILD_CONFIGS=RELEASE,DEBUG (default: RELEASE)
+#  OM_MSG_USE=MPI                 (default: EMPTY)
+#  MODEL_DIRS=modelOne,NewCaseBased,NewTimeBased,NewCaseBased_bilingual,NewTimeBased_bilingual,IDMM,OzProj,OzProjGen,RiskPaths
+# Note: default value of MODEL_DIRS specified in makefile
+
+OM_BLD_CFG=${OM_BUILD_CONFIGS:-RELEASE}
+
+for C in ${OM_BLD_CFG//,/ }; do
+  if [ "$C" != 'RELEASE' ] && [ "$C" != 'DEBUG' ]; then
+    echo Error: incorrect value: $C, must be any combination of: RELEASE,DEBUG
+    exit 1    
+  fi
+done
+
+if [ -n "$OM_MSG_USE" ] && [ "$OM_MSG_USE" != 'EMPTY' ] && [ "$OM_MSG_USE" != 'MPI' ]; then
+  echo Error: incorrect value: $OM_MSG_USE, must be one of: MPI or EMPTY
+  exit 1    
+fi
+
+[ "$OM_MSG_USE" = 'MPI' ] && OM_P_MPI="OM_MSG_USE=MPI" || OM_P_MPI=
+
+# push into ompp root and make log directory if not exist
+
+if [ ! -d ompp ]; then
+  echo ERROR: missing source code directory: ompp
+  exit 1
+fi
+
+pushd ompp
+OM_ROOT=$PWD
+
+if [ ! -d log ]; then mkdir log; fi
+
+# log build environment 
+
+echo Log file: log/build-models.log
+echo `date` Build openM++ models | tee log/build-models.log 
+echo Environment: | tee -a log/build-models.log 
+echo " OM_BUILD_CONFIGS   = $OM_BUILD_CONFIGS" | tee -a log/build-models.log 
+echo " OM_MSG_USE         = $OM_MSG_USE" | tee -a log/build-models.log 
+echo " OM_ROOT            = $OM_ROOT" | tee -a log/build-models.log 
+echo " MODEL_DIRS         = $MODEL_DIRS" | tee -a log/build-models.log 
+echo Build configurations: $OM_BLD_CFG | tee -a log/build-models.log 
+if [ -z $OM_P_MPI ]; then
+  echo Build desktop version: non-MPI | tee -a log/build-models.log 
+else
+  echo Build cluster version: using MPI | tee -a log/build-models.log 
+fi;
+
+# build models
+
+pushd models
+
+if [ -n "$MODEL_DIRS" ]; then
+  export MODEL_DIRS="${MODEL_DIRS//,/ }"
+fi
+
+for C in ${OM_BLD_CFG//,/ }; do
+
+  [ "$C" = 'RELEASE' ] && OM_P_RLS="RELEASE=1" || OM_P_RLS=
+
+  echo make $OM_P_RLS $OM_P_MPI all publish run
+  
+  if ! make $OM_P_RLS $OM_P_MPI all publish run >> ../log/build-models.log 2>&1;
+  then
+    echo FAILED: make $OM_P_RLS $OM_P_MPI all publish run | tee -a ../log/build-models.log
+    exit 1
+  fi
+done
+
+popd
+
+echo `date` Done. | tee -a log/build-models.log
+popd

@@ -393,7 +393,7 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
     }
 
     // update run_lst update time for each run where status is in progress
-    for (const auto rtIt : runUpdTimeMap) {
+    for (const auto & rtIt : runUpdTimeMap) {
         i_dbExec->update(
             "UPDATE run_lst SET update_dt = " + rtIt.second +
             " WHERE run_id = " + to_string(rtIt.first) + 
