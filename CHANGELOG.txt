@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_06_25:
+  openM++ ported on MacOS
+  improve IDE integration:
+    - Visual Studio on Windows
+    - Xcode on MacOS
+    - Visual Studio Code on Linux
+
 2020_05_06:
   add Python examples: how to use openM++ from Python
   add preliminary support for MacOS
