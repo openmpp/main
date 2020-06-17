@@ -3,6 +3,9 @@ oms web-service:
 
 Template to run Debug modelNameD executable on MacOS
 
+This template is required if model exe created by make: modelNameD
+It is NOT required if model exe created by Xcode: .../Debug/modelName
+
 Rename this file into:
   run.Debug.template.txt
 to make it visible to oms web-service an UI
