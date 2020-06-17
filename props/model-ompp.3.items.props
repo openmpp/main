@@ -62,12 +62,8 @@
     <ClInclude Include="src/om_types0.h" />
     <ClInclude Include="src/om_types1.h" />
     <ClInclude Include="src/om_declarations.h" />
-    <ClInclude Include="../code/*.h" />
-
-    <None Include="../code/*.mpp" />
-    <None Include="../code/*.ompp" />
-    <None Include="../parameters/*/*.dat" />
-    <None Include="../parameters/*/*.odat" />
+    <ClInclude Include="../code/custom_early.h" />
+    <ClInclude Include="../code/custom.h" />
     
   </ItemGroup>
 

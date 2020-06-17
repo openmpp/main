@@ -30,27 +30,10 @@
     </ClCompile>
 
     <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
-    <ClInclude Include="$(MODEL_CODE_DIR)/*.h" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/custom_early.h" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/custom.h" />
 
     <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
-    
-    <!-- 
-      Coded using relative path to fixed sister directories
-      pending bug fix of VS vcxproj.filters issue. 
-      (Project does not load if filters refer to files with slightly complex Include property)
-    
-      <None Include="$(MODEL_CODE_DIR)/*.mpp" />
-      <None Include="$(MODEL_CODE_DIR)/*.ompp" />
-      <None Include="$(FIXED_PARAMETERS_FOLDER)/*.dat" />
-      <None Include="$(FIXED_PARAMETERS_FOLDER)/*.odat" />
-      <None Include="$(SCENARIO_PARAMETERS_FOLDER)/*.dat" />
-      <None Include="$(SCENARIO_PARAMETERS_FOLDER)/*.odat" />
-    -->
-    <None Include="../code/*.mpp" />
-    <None Include="../code/*.ompp" />
-    <None Include="../parameters/*/*.dat" />
-    <None Include="../parameters/*/*.odat" />
-    
     
     <SCENARIO_DATS Include="$(SCENARIO_PARAMETERS_FOLDER)/*.dat" />
     <SCENARIO_DATS Include="$(FIXED_PARAMETERS_FOLDER)/*.dat"  Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'"/>
