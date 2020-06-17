@@ -31,6 +31,7 @@ ${OM_ROOT}/       -> openM++ "root" folder
           ompp-python/  -> Python examples: how to use openM++ from Python
           ompp-r/       -> openMpp R package
           ompp-ui/      -> UI front-end source code
+          Xcode/        -> Xcode project files for openM++ model
 ```
 
 ## Download
