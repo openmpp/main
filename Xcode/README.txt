@@ -18,31 +18,30 @@ https://github.com/openmpp/main/releases/latest
 
 For example:
 
-mkdir ~/any/dir
-cd ~/any/dir
-curl -L -o openmpp_mac.tar.gz https://github.com/openmpp/main/releases/download/v1.6.0/openmpp_mac_20200618.tar.gz
-tar xzf openmpp_mac.tar.gz
+curl -L -o om.tar.gz https://github.com/openmpp/main/releases/download/v1.6.0/openmpp_mac_20200625.tar.gz
+tar xzf om.tar.gz
 
---------------------------
-2. Build model using Xcode
---------------------------
+-------------------------------------
+2. Create Xcode project for new model
+-------------------------------------
 
 1. Copy Model Xcode project files into model directory, for example NewCaseBased model:
 
-cd ~/any/dir/openmpp_mac
-cp -pr Xcode/Model.* models/NewCaseBased/
+cd ~/openmpp_mac_20200625
+mkdir MyModel
+cp -pr Xcode/Model.* models/MyModel/
 
 2. Follow screenshots on GitHub: https/github.com/opempp/mac/pictures:
 
-2.1.Start Xcode and open ~/any/dir/openmpp_mac/models/NewCaseBased/Model.xcworkspace
+2.1.Start Xcode and open ~/openmpp_mac_20200625/models/MyModel/Model.xcworkspace
 
 2.2.Rename model
-  Click on model project -> Targets -> double click taregt name -> rename to model name
-  Product -> Scheme -> rename "Model" to actual model name: NewCaseBased
+  Click on model project -> Targets -> click twice on target name -> rename to model name
+  Product -> Scheme -> rename "Model" to actual model name: MyModel
 
 2.3.Add model source code from "code" folder.
 
-2.4.Select Product -> Scheme -> NewCaseBased
+2.4.Select Product -> Scheme -> MyModel
   Known issue: 
   Xcode UI may not update check mark on selected scheme
   To fix it go to Product -> Scheme -> Manage Schemes
