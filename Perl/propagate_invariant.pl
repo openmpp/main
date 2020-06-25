@@ -81,6 +81,17 @@ else {
 # Activate option to remove target file (perhaps not necessary - doc'n unclear)
 local $File::Copy::Recursive::RMTrgFil = 1;
 
+# Special check that definitive ompp/props/model/*/*vcxproj* files are identical to their counterparts in ompp/models/NewCaseBased
+for my $prop_file ("Model.vcxproj", "Model.vcxproj.filters") {
+	for my $platform ("modgen", "ompp") {
+		my $src = "${om_root}/props/model/${platform}/${prop_file}";
+		my $dst = "${om_root}/models/NewCaseBased/${platform}/${prop_file}";
+		if (compare ${src}, ${dst}) {
+			logmsg info, "NewCaseBased", "warning: ${src} differs from ${dst}";
+		}
+	}
+}
+
 MODEL:
 for my $model (@models) {
 
@@ -90,10 +101,12 @@ for my $model (@models) {
 		logmsg error, "${model}: Not a model folder";
 		next MODEL;
 	}
+	
 
 	# Invariant files to align if present in each model
 	# First element is the file, second is the model containing the definitive version to propagate.
-	# As a special case, if MODEL is in first element, it is replaced by the source and destination model
+	# As a special case, if 'MODEL' is in first element,
+	# 'MODEL' is replaced by the name of the source or destination model
 	my @invariant_list = (
 		"makefile",                     "NewCaseBased",
 
