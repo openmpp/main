@@ -249,7 +249,6 @@
 		D8FD88F1247D84B20006D608 /* SimpleAttributeEnumSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleAttributeEnumSymbol.h; sourceTree = "<group>"; };
 		D8FD88F2247D84B20006D608 /* UnknownTypeSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnknownTypeSymbol.h; sourceTree = "<group>"; };
 		D8FD88F3247D84B30006D608 /* ParameterSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParameterSymbol.h; sourceTree = "<group>"; };
-		D8FD890A247D86CA0006D608 /* dirent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dirent.h; sourceTree = "<group>"; };
 		D8FD890B247D94BE0006D608 /* omc.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = omc.xcconfig; sourceTree = "<group>"; };
 		D8FD8911247DA43A0006D608 /* scanner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = scanner.cpp; path = "Xcode-src/scanner.cpp"; sourceTree = "<group>"; };
 		D8FD8912247DA43B0006D608 /* parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parser.cpp; path = "Xcode-src/parser.cpp"; sourceTree = "<group>"; };
@@ -288,7 +287,6 @@
 			children = (
 				D8FD890B247D94BE0006D608 /* omc.xcconfig */,
 				D8FD890C247DA27A0006D608 /* Xcode-src */,
-				D8FD8909247D86CA0006D608 /* dirent */,
 				D8FD88EA247D84B20006D608 /* ParameterSymbol.cpp */,
 				D8FD88F3247D84B30006D608 /* ParameterSymbol.h */,
 				D8FD88E8247D84B20006D608 /* ParseContext.cpp */,
@@ -448,14 +446,6 @@
 				D8FD8821247D823E0006D608 /* omc */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		D8FD8909247D86CA0006D608 /* dirent */ = {
-			isa = PBXGroup;
-			children = (
-				D8FD890A247D86CA0006D608 /* dirent.h */,
-			);
-			path = dirent;
 			sourceTree = "<group>";
 		};
 		D8FD890C247DA27A0006D608 /* Xcode-src */ = {

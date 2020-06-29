@@ -146,7 +146,7 @@ namespace openm
     /** omc model name */
     const char * OmcArgKey::modelName = "Omc.ModelName";
 
-    /** omc model name */
+    /** omc scenario name */
     const char * OmcArgKey::scenarioName = "Omc.ScenarioName";
 
     /** omc input directory with openM++ source files */
