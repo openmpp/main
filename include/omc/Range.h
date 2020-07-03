@@ -237,10 +237,19 @@ public:
         return (int)(index + min);
     }
 
-    // limits (static constants)
+    // limits (static constants) - declarations
+#if !defined(_MSC_VER)
+    // Declared here and defined below in separate template statements
+    static const int min;
+    static const int max;
+    static const int size;
+#else // defined(_MSC_VER)
+    // MSVC bug workaround 2020-07-03
+    // With standard idiom, MSVC does not treat these as compile time constants.
     static const int min = T_min;
     static const int max = T_max;
     static const int size = (int)T_max - (int)T_min + 1;
+#endif //!defined(_MSC_VER)
 
 private:
     // cover function to get value
@@ -261,3 +270,30 @@ private:
     T range_value;
 };
 
+// limits (static constants) - definitions
+
+#if !defined(_MSC_VER)
+template<
+    typename T,
+    int T_min,
+    int T_max
+>
+const int Range<T, T_min, T_max>::min = T_min;
+
+template<
+    typename T,
+    int T_min,
+    int T_max
+>
+const int Range<T, T_min, T_max>::max = T_max;
+
+template<
+    typename T,
+    int T_min,
+    int T_max
+>
+const int Range<T, T_min, T_max>::size = (int)T_max - (int)T_min + 1;
+#else // defined(_MSC_VER)
+    // MSVC bug workaround 2020-07-03
+    // With standard idiom, MSVC does not treat these as compile time constants.
+#endif // !defined(_MSC_VER)

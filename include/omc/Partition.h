@@ -182,10 +182,20 @@ public:
         return (it == T_splitter.end()) ? max : it->second;
     }
 
-    // limits (static constants)
+    // limits (static constants) - declarations
+#if !defined(_MSC_VER)
+    // Declared here and defined below in separate template statements
+    static const T min;
+    static const T max;
+    static const int size;
+#else // defined(_MSC_VER)
+    // MSVC bug workaround 2020-07-03
+    // With standard idiom, MSVC does not treat these as compile time constants.
     static const T min = 0;
     static const T max = T_size - 1;
     static const int size = T_size;
+#endif //!defined(_MSC_VER)
+
 
 private:
     // assignment cover function
@@ -198,4 +208,36 @@ private:
     T interval;
 };
 
+// limits (static constants) - definitions
 
+#if !defined(_MSC_VER)
+template<
+    typename T,
+    T T_size,
+    const array<real, T_size> &T_lower,
+    const array<real, T_size> &T_upper,
+    const map<real, T> &T_splitter
+>
+const T Partition<T, T_size, T_lower, T_upper, T_splitter>::min = 0;
+
+template<
+    typename T,
+    T T_size,
+    const array<real, T_size> &T_lower,
+    const array<real, T_size> &T_upper,
+    const map<real, T> &T_splitter
+>
+const T Partition<T, T_size, T_lower, T_upper, T_splitter>::max = T_size - 1;
+
+template<
+    typename T,
+    T T_size,
+    const array<real, T_size> &T_lower,
+    const array<real, T_size> &T_upper,
+    const map<real, T> &T_splitter
+>
+const int Partition<T, T_size, T_lower, T_upper, T_splitter>::size = T_size;
+#else // defined(_MSC_VER)
+    // MSVC bug workaround 2020-07-03
+    // With standard idiom, MSVC does not treat these as compile time constants.
+#endif // !defined(_MSC_VER)

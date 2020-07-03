@@ -105,10 +105,19 @@ public:
         return integer_counter<int, 0, T_size - 1>();
     }
 
-    // limits (static constants)
+    // limits (static constants) - declarations
+#if !defined(_MSC_VER)
+    // Declared here and defined below in separate template statements
+    static const T min;
+    static const T max;
+    static const int size;
+#else // defined(_MSC_VER)
+    // MSVC bug workaround 2020-07-03
+    // With standard idiom, MSVC does not treat these as compile time constants.
     static const T min = (T) 0;
     static const T max = (T) (T_size - 1);
     static const int size = T_size;
+#endif //!defined(_MSC_VER)
 
 private:
     // cover function to get value
@@ -128,4 +137,27 @@ private:
     T enum_value;
 };
 
+// limits (static constants) - definitions
 
+#if !defined(_MSC_VER)
+template<
+    typename T,
+    size_t T_size
+>
+const T Classification<T, T_size>::min = (T) 0;
+
+template<
+    typename T,
+    size_t T_size
+>
+const T Classification<T, T_size>::max = (T) (T_size - 1);
+
+template<
+    typename T,
+    size_t T_size
+>
+const int Classification<T, T_size>::size = T_size;
+#else // defined(_MSC_VER)
+    // MSVC bug workaround 2020-07-03
+    // With standard idiom, MSVC does not treat these as compile time constants.
+#endif // !defined(_MSC_VER)
