@@ -7,21 +7,11 @@
 
 #pragma once
 
-// using freeware implementation of dirent.h for VisualStudio because MS stop including it
-// it must be replaced with std::filesystem as soon it comes into std
-#ifdef _WIN32
-    #define WIN32_LEAN_AND_MEAN
-    #include <Windows.h>
-    #include "dirent/dirent.h"
-#else
-    #include <dirent.h>
-    #include <sys/stat.h>
-#endif // _WIN32
-
 #include <iostream>
 #include <fstream>
 #include <list>
 #include <unordered_set>
+#include <filesystem>
 #include "libopenm/omLog.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/iniReader.h"

@@ -49,9 +49,11 @@ LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 LIB_OMC_A = libopenm_omc_db$(BIN_POSTFIX).a
 
 L_UCVT_FLAG =
+STDC_FS_LIB = stdc++fs
 WL_PIE_FLAG = -pie
 ifeq ($(PLATFORM_UNAME), Darwin)
   L_UCVT_FLAG = -liconv
+  STDC_FS_LIB = stdc++
   WL_PIE_FLAG = -Wl,-pie
 endif
 
@@ -177,7 +179,7 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 $(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OUT_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -lstdc++ $(L_UCVT_FLAG)
+	$(CXX) -pthread -L$(OUT_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
 
 .PHONY : copy_ini
 copy_ini:

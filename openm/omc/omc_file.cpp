@@ -9,6 +9,7 @@
 
 using namespace std;
 using namespace openm;
+namespace fs = std::filesystem;
 
 // get list of files matching extension list from specified directory or current directory if source path is empty
 // each file name in result is a relative path and include source directory
@@ -18,42 +19,20 @@ list<string> omc::listSourceFiles(const string & i_srcPath, const list<string> &
     
     // open source directory or current directory if source path is empty
     string srcPath = !i_srcPath.empty() ? i_srcPath : ".";
-    DIR * dir = opendir(srcPath.c_str());
-    if (dir == nullptr) throw HelperException(LT("error : cannot open source directory %s"), srcPath.c_str());
 
     // collect list of .mpp, .ompp or .dat files
-    try {
-        dirent * ent;
-        struct stat fileStat;
-        string path;
+    for (const fs::directory_entry & de : fs::directory_iterator(srcPath)) {
+        
+        if (!de.is_regular_file()) continue;    // skip directories and special files
 
-        string basePath = i_srcPath;
-        if (!basePath.empty() && basePath.back() != '/' && basePath.back() != '\\') basePath += '/';
+        const string p = de.path().generic_string();
 
-        while ((ent = readdir(dir)) != nullptr) {
-
-            if (ent->d_name[0] == '\0') continue;  // skip file name errors
-
-            path = basePath + ent->d_name;     // include directory into result
-
-            // skip directories and special files
-            if (ent->d_type != DT_REG) {
-                if (ent->d_type != DT_UNKNOWN) continue;            // skip directories and special files
-                if (stat(path.c_str(), &fileStat) != 0) continue;   // we can't get file type
-                if (!S_ISREG(fileStat.st_mode)) continue;           // skip directories and special files
-            }
-
-            for (auto ext : i_extensions) {
-                if (endWithNoCase(path, ext.c_str())) {
-                    pathLst.push_back(path);
-                    break;
-                }
+        for (auto e : i_extensions) {
+            if (endWithNoCase(p, e.c_str())) {
+                pathLst.push_back(p);
+                break;
             }
         }
-    }
-    catch(...) {
-        closedir(dir);  // close directory on error
-        throw;
     }
     
     // sort source files in alphabetical order for reproducibility
@@ -64,59 +43,15 @@ list<string> omc::listSourceFiles(const string & i_srcPath, const list<string> &
 // get extension of filename
 string omc::getFileNameExt(const string &file_name)
 {
-    // length of optional path part, including final trailing slash
-    int in_path_len = file_name.find_last_of("/\\");
-    if (in_path_len == -1) in_path_len = 0;
-    if (in_path_len > 0) in_path_len++;
-
-    // position of stem part
-    int in_stem_pos = in_path_len;
-
-    // position of extension (0 if no extension)
-    int in_ext_pos = file_name.find_last_of(".");
-    if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
-
-    // length of extension
-    int in_ext_len = (in_ext_pos == 0) ? 0 : file_name.length() - in_ext_pos;
-
-    // length of stem
-    int in_stem_len = file_name.length() - in_path_len - in_ext_len;
-
-    string in_path = file_name.substr(0, in_path_len);
-    string in_stem = file_name.substr(in_stem_pos, in_stem_len);
-    string in_ext = file_name.substr(in_ext_pos, in_ext_len);
-    openm::toLower(in_ext);
-
-    return in_ext;
+    string ext = fs::path(file_name).extension().generic_string();
+    openm::toLower(ext);
+    return ext;
 }
 
 // get stem of filename
 string omc::getFileNameStem(const string &file_name)
 {
-    // length of optional path part, including final trailing slash
-    int in_path_len = file_name.find_last_of("/\\");
-    if (in_path_len == -1) in_path_len = 0;
-    if (in_path_len > 0) in_path_len++;
-
-    // position of stem part
-    int in_stem_pos = in_path_len;
-
-    // position of extension (0 if no extension)
-    int in_ext_pos = file_name.find_last_of(".");
-    if (in_ext_pos < in_path_len) in_ext_pos = 0; // ignore final . if in path portion
-
-    // length of extension
-    int in_ext_len = (in_ext_pos == 0) ? 0 : file_name.length() - in_ext_pos;
-
-    // length of stem
-    int in_stem_len = file_name.length() - in_path_len - in_ext_len;
-
-    string in_path = file_name.substr(0, in_path_len);
-    string in_stem = file_name.substr(in_stem_pos, in_stem_len);
-    string in_ext = file_name.substr(in_ext_pos, in_ext_len);
-    openm::toLower(in_ext);
-
-    return in_stem;
+    return fs::path(file_name).stem().generic_string();
 }
 
 // create output/modelName.message.ini file by merging model messages and languages with existing code/modelName.message.ini 

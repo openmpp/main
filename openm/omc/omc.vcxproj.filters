@@ -60,9 +60,6 @@
     <ClInclude Include="parser.y">
       <Filter>flex_bison</Filter>
     </ClInclude>
-    <ClInclude Include="dirent\dirent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LanguageSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>

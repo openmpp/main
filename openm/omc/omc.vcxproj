@@ -193,7 +193,6 @@
     <ClInclude Include="DerivedAttributeSymbol.h" />
     <ClInclude Include="DerivedTableSymbol.h" />
     <ClInclude Include="DimensionSymbol.h" />
-    <ClInclude Include="dirent\dirent.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="EntityArrayMemberSymbol.h" />
     <ClInclude Include="EntityDataMemberSymbol.h" />
