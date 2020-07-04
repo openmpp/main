@@ -1,6 +1,10 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_07_04:
+  fix c++ issue with Range.h, Partition.h, Classification.h
+  MacOS: start openM++ UI by double click on bin/ompp_ui.command
+
 2020_06_25:
   openM++ ported on MacOS
   improve IDE integration:
