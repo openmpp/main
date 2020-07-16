@@ -21,7 +21,7 @@ endif
 # models to build
 #
 ifndef MODEL_DIRS
-  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual NewTimeBased_bilingual RiskPaths OzProj OzProjGen Alpha2 THIM
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual NewTimeBased_bilingual RiskPaths OzProj OzProjGen Alpha2
 endif
 
 # set OM_MSG_USE:
