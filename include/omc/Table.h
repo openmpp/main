@@ -294,7 +294,7 @@ void SetTableValue(const string measure_name, double value, Items... args)
     auto it = om_table_measure.find(measure_name);
     if (it == om_table_measure.end()) {
         theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to SetTableValue",
-            measure_name);
+            measure_name.c_str());
     }
     else {
         auto pr = it->second;
@@ -306,7 +306,7 @@ void SetTableValue(const string measure_name, double value, Items... args)
         }
         else {
             theLog->logFormatted("Warning : Invalid indices in call to SetTableValue(\"%s\", ... )",
-                measure_name);
+                measure_name.c_str());
         }
     }
 }
