@@ -1,5 +1,5 @@
 /**
-* @file    omc_helper.cpp
+* @file    omc_file.cpp
  * omc file helper functions.
 */
 // Copyright (c) 2013-2016 OpenM++

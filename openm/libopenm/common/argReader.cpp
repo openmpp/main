@@ -5,6 +5,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "libopenm/omLog.h"
 #include "libopenm/omError.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/argReader.h"
@@ -175,11 +176,11 @@ void ArgReader::parseCommandLine(
     if (argc <= 1) return;
 
     // validate parameters
-    if (argc < 1 || argv == nullptr) throw HelperException("Invalid (empty) list of command line arguments, expected at least one");
-    if (i_keyArrSize <= 0 || i_keyArrSize > SHRT_MAX || i_keyArr == nullptr) throw HelperException("Invalid (or empty) list of option keys");
-    if (i_shortArrSize < 0 || i_shortArrSize > SHRT_MAX || (i_shortArrSize != 0 && i_shortPairArr == nullptr)) throw HelperException("Invalid (or empty) list of option short keys");
-    if (i_prefixSize < 0 || i_prefixSize > SHRT_MAX || (i_prefixSize != 0 && i_prefixArr == nullptr)) throw HelperException("Invalid (or empty) list of option prefixes");
-    if (i_suffixSize < 0 || i_suffixSize > SHRT_MAX || (i_suffixSize != 0 && i_suffixArr == nullptr)) throw HelperException("Invalid (or empty) list of option suffixes");
+    if (argc < 1 || argv == nullptr) throw HelperException(LT("Invalid (empty) list of command line arguments, expected at least one"));
+    if (i_keyArrSize <= 0 || i_keyArrSize > SHRT_MAX || i_keyArr == nullptr) throw HelperException(LT("Invalid (or empty) list of option keys"));
+    if (i_shortArrSize < 0 || i_shortArrSize > SHRT_MAX || (i_shortArrSize != 0 && i_shortPairArr == nullptr)) throw HelperException(LT("Invalid (or empty) list of option short keys"));
+    if (i_prefixSize < 0 || i_prefixSize > SHRT_MAX || (i_prefixSize != 0 && i_prefixArr == nullptr)) throw HelperException(LT("Invalid (or empty) list of option prefixes"));
+    if (i_suffixSize < 0 || i_suffixSize > SHRT_MAX || (i_suffixSize != 0 && i_suffixArr == nullptr)) throw HelperException(LT("Invalid (or empty) list of option suffixes"));
 
     // past the end of option names array
     const char ** endOfKeyArr = i_keyArr + i_keyArrSize;
@@ -204,7 +205,7 @@ void ArgReader::parseCommandLine(
 
         // command line key must start from - or /
         string sKey = toUtf8(argv[nArg]);
-        if (sKey.empty() || (sKey[0] != '-' && sKey[0] != '/')) throw HelperException("Invalid command line parameter %s", argv[nArg]);
+        if (sKey.empty() || (sKey[0] != '-' && sKey[0] != '/')) throw HelperException(LT("Invalid command line parameter %s"), argv[nArg]);
 
         sKey = sKey.substr(1);  // remove leading - or /
 
@@ -237,7 +238,7 @@ void ArgReader::parseCommandLine(
                 isUnk = !endWithNoCase(sKey, it->c_str());
             }
             if (isUnk) {
-                if (i_isThrowUnknown) throw HelperException("Invalid command line parameter %s", argv[nArg]);
+                if (i_isThrowUnknown) throw HelperException(LT("Invalid command line parameter %s"), argv[nArg]);
                 if (!i_isStoreUnknown) continue;
             }
         }
@@ -318,7 +319,7 @@ void ArgReader::loadIniFile(
 void ArgReader::adjustLogSettings(int argc, char ** argv)
 {
     // validate parameters
-    if (argc < 1 || argv == nullptr) throw HelperException("Invalid (empty) list of command line arguments, expected at least one");
+    if (argc < 1 || argv == nullptr) throw HelperException(LT("Invalid (empty) list of command line arguments, expected at least one"));
 
     // dependency in log options: 
     // if log to stamped file then timestamp or pid stamp must be defined

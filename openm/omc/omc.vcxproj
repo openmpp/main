@@ -233,6 +233,7 @@
     <ClInclude Include="MultilinkAttributeSymbol.h" />
     <ClInclude Include="NumericSymbol.h" />
     <ClInclude Include="omc_common.h" />
+    <ClInclude Include="omc_csv.h" />
     <ClInclude Include="omc_file.h" />
     <ClInclude Include="ParameterGroupSymbol.h" />
     <ClInclude Include="ParameterSymbol.h" />
@@ -308,6 +309,7 @@
     <ClCompile Include="LanguageSymbol.cpp" />
     <ClCompile Include="LinkAttributeSymbol.cpp" />
     <ClCompile Include="LinkToAttributeSymbol.cpp" />
+    <ClCompile Include="Literal.cpp" />
     <ClCompile Include="MaintainedAttributeSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
@@ -316,6 +318,7 @@
     <ClCompile Include="omc.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/parser.cpp" />
     <ClCompile Include="$(BUILD_OMC_SRC_DIR)/scanner.cpp" />
+    <ClCompile Include="omc_csv.cpp" />
     <ClCompile Include="omc_file.cpp" />
     <ClCompile Include="ParameterGroupSymbol.cpp" />
     <ClCompile Include="ParameterSymbol.cpp" />

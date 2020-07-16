@@ -172,11 +172,11 @@ struct IconvOpenHolder
     IconvOpenHolder(const char * i_toEncoding, const char * i_fromEncoding) :
         iconvHandler((iconv_t)-1)
     {
-        if (i_toEncoding == nullptr || i_toEncoding[0] == '\0') throw HelperException("Error: invalid (empty) destination encoding name");
-        if (i_fromEncoding == nullptr || i_fromEncoding[0] == '\0') throw HelperException("Error: invalid (empty) source encoding name");
+        if (i_toEncoding == nullptr || i_toEncoding[0] == '\0') throw HelperException(LT("Error: invalid (empty) destination encoding name"));
+        if (i_fromEncoding == nullptr || i_fromEncoding[0] == '\0') throw HelperException(LT("Error: invalid (empty) source encoding name"));
             
         iconvHandler = iconv_open(i_toEncoding, i_fromEncoding);
-        if (iconvHandler == (iconv_t)-1) throw HelperException("Error: iconv_open failed");
+        if (iconvHandler == (iconv_t)-1) throw HelperException(LT("Error: iconv_open failed"));
     }
     
     // release iconv resources
@@ -224,7 +224,7 @@ public:
         size_t convRet = iconv(theIconv.handler(), &inBytes, &inSize, &outBytes, &outSize);
 
         if (convRet == (size_t)-1) {
-            if (errno != EINVAL) throw HelperException("Error at conversion into UTF-8");
+            if (errno != EINVAL) throw HelperException(LT("Error at conversion into UTF-8"));
             // EINVAL: incomplete input byte sequence - this not an error
         }
 
@@ -261,7 +261,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
         return new ExpicitPageConverter("UTF-32BE");
 
     default:    // CharCvtFrom::defaultPage
-        if (defaultEncodingHolder.name() == nullptr || defaultEncodingHolder.name()[0] == '\0') throw HelperException("Error: unknown default encoding name");
+        if (defaultEncodingHolder.name() == nullptr || defaultEncodingHolder.name()[0] == '\0') throw HelperException(LT("Error: unknown default encoding name"));
 
         // if default encoding already UTF-8 then return copy of input text else do character conversion
         if (equalNoCase(defaultEncodingHolder.name(), "UTF-8") || equalNoCase(defaultEncodingHolder.name(), "UTF8"))
@@ -387,7 +387,7 @@ IUtf8Converter * IUtf8Converter::create(CharCvtFrom i_from, const char * i_codeP
         return new Utf16BePageConverter();
     case CharCvtFrom::utf32Le:
     case CharCvtFrom::utf32Be:
-        throw HelperException("Error: conversion from UTF-32 not impelemented on Windows");
+        throw HelperException(LT("Error: conversion from UTF-32 not impelemented on Windows"));
     default:    // CharCvtFrom::defaultPage
         return new DefaultPageConverter();
     }
@@ -561,20 +561,20 @@ const string openm::fileToUtf8(const char * i_filePath, const char * i_codePageN
 */
 const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * i_codePageName)
 {
-    if (i_filePath == nullptr || i_filePath[0] == '\0') throw HelperException("Invalid (empty) file name");
+    if (i_filePath == nullptr || i_filePath[0] == '\0') throw HelperException(LT("Invalid (empty) file name"));
 
     // open file
     ifstream inpSt;
     exit_guard<ifstream> onExit(&inpSt, &ifstream::close);  // close on exit
 
     inpSt.open(i_filePath, ios_base::in | ios_base::binary);
-    if (inpSt.fail()) throw HelperException("Error at file open: %s", i_filePath);
+    if (inpSt.fail()) throw HelperException(LT("Error at file open: %s"), i_filePath);
 
     // detect encoding by checking BOM
     unsigned char bomBuf[bomMaxLen];
 
     inpSt.read((char *)bomBuf, bomMaxLen);
-    if (inpSt.bad()) throw HelperException("Error at file read");
+    if (inpSt.bad()) throw HelperException(LT("Error at file read"));
 
     long long bomReadCount = inpSt.gcount();
     long long bomSize = 0;
@@ -622,7 +622,7 @@ const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * 
         inpSt.seekg(0);
 
         inpSt.read(utf8ProbeBuf.get(), utf8ProbeLen);
-        if (inpSt.bad()) throw HelperException("Error at file read");
+        if (inpSt.bad()) throw HelperException(LT("Error at file read"));
 
         long long probeSize = inpSt.gcount();
 
@@ -680,9 +680,9 @@ const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * 
             }
             while (nStart < nLen);
         }
-        //        if (totalSize >= OM_STRLEN_MAX) throw HelperException("File is too large for in-memory read");
+        //        if (totalSize >= OM_STRLEN_MAX) throw HelperException(LT("File is too large for in-memory read"));
     }
-    if (inpSt.bad()) throw HelperException("Error at file read");
+    if (inpSt.bad()) throw HelperException(LT("Error at file read"));
 
     if (!lastLine.empty())  contentLst.push_back(lastLine);
 

@@ -36,6 +36,13 @@ public:
 
     bool is_valid_constant(const Constant &k) const;
 
+    /**
+    * Create new boolean Constant from 'i_value' enum literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
     string format_for_storage(const Constant &k) const;
 
     /**

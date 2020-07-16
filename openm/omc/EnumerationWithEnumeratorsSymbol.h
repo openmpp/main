@@ -77,4 +77,12 @@ public:
      * Created after parsing is complete.
      */
     map<string, int> pp_name_to_int;
+
+protected:
+    /**
+    * Enumerator name literal validator.
+    *
+    * @return true if 'i_value' string represent valid enumerator name
+    */
+    bool is_valid_enum_name(const char * i_value) const;
 };

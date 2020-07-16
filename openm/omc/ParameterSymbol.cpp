@@ -183,18 +183,7 @@ void ParameterSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // Mark enumerations required for metadata support for this parameter
-        if (source == scenario_parameter) {
-            // The storage type if an enumeration
-            if (pp_datatype->is_enumeration()) {
-                auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
-                assert(es); // compiler guarantee
-                es->metadata_needed = true;
-            }
-            // The enumeration of each dimension
-            for (auto es : pp_enumeration_list) {
-                es->metadata_needed = true;
-            }
-        }
+        post_parse_mark_enumerations();
 
         // Generate body of lookup function
         if (cumrate) {
@@ -239,6 +228,24 @@ void ParameterSymbol::post_parse(int pass)
 
     default:
         break;
+    }
+}
+
+// Mark enumerations required for metadata support for this parameter
+void ParameterSymbol::post_parse_mark_enumerations(void)
+{
+    // Mark enumerations required for metadata support for this parameter
+    if (source == scenario_parameter) {
+        // The storage type if an enumeration
+        if (pp_datatype->is_enumeration()) {
+            auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
+            assert(es); // compiler guarantee
+            es->metadata_needed = true;
+        }
+        // The enumeration of each dimension
+        for (auto es : pp_enumeration_list) {
+            es->metadata_needed = true;
+        }
     }
 }
 

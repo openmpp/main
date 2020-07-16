@@ -19,6 +19,11 @@ bool StringTypeSymbol::is_valid_constant(const Constant &k) const
     return true;
 }
 
+Constant * StringTypeSymbol::make_constant(const string & i_value) const
+{
+    return StringLiteral::is_valid_literal(i_value.c_str()) ? new Constant(new StringLiteral(i_value)) : nullptr;
+}
+
 void StringTypeSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

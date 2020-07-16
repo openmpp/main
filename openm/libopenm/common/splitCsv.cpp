@@ -27,6 +27,8 @@ list<string> openm::splitCsv(const string & i_values, const char * i_delimiters,
     return resultLst;
 }
 
+#include "libopenm/omLog.h"
+
 /**
 * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
 *
@@ -47,13 +49,16 @@ void openm::splitCsv(
     char i_quote, 
     const locale & i_locale)
 { 
-    // if source is empty then return empty result
+    // if source is empty or contains only CR LF then return empty result
     string::size_type nSrcLen = i_values.length();
-    if (nSrcLen <= 0) {         
-        io_resultLst.clear();   // source string is empty: return empty list
-        return;
+    if (string::size_type n = i_values.find_last_not_of("\r\n"); nSrcLen <= 0 || n == string::npos) {
+        io_resultLst.clear();
+        return;             // return empty result: source line is empty or contains only CR LF
     }
-        
+    else {
+        nSrcLen = n + 1;    // ignore CR LF at the end of the source line
+    }
+
     // no delimiters: return entire source string as first element of result list
     size_t nDelimLen = (i_delimiters != nullptr) ? strnlen(i_delimiters, OM_STRLEN_MAX) : 0;
     if (0 == nDelimLen) {

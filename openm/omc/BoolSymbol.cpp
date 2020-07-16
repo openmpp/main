@@ -31,7 +31,7 @@ void BoolSymbol::post_parse(int pass)
     }
 }
 
-bool BoolSymbol::is_valid_constant(const Constant &k) const
+bool BoolSymbol::is_valid_constant(const Constant & k) const
 {
     // only bool literals are valid for a bool
     if (!k.is_literal) return false;
@@ -40,6 +40,16 @@ bool BoolSymbol::is_valid_constant(const Constant &k) const
     if (pp_name_to_int.count(k.value()) == 0) return false;
 
     return true;
+}
+
+Constant * BoolSymbol::make_constant(const string & i_value) const
+{
+    if (!BooleanLiteral::is_valid_literal(i_value.c_str())) return nullptr;
+
+    // convert to lower case due to often use of FALSE and TRUE in uppercase
+    string v(i_value);
+    toLower(v);
+    return new Constant(new BooleanLiteral(v));
 }
 
 string BoolSymbol::format_for_storage(const Constant &k) const
@@ -53,7 +63,6 @@ string BoolSymbol::format_for_storage(const Constant &k) const
     string result = to_string(ordinal);
     return result;
 }
-
 
 BoolSymbol *BoolSymbol::find()
 {

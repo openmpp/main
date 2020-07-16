@@ -59,6 +59,7 @@
 #include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
 #include "omc_file.h"
+#include "omc_csv.h"
 
 using namespace std;
 using namespace openm;
@@ -260,6 +261,9 @@ namespace openm
 static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
 
 
+#include <regex>
+
+
 int main(int argc, char * argv[])
 {
     try {
@@ -436,11 +440,12 @@ int main(int argc, char * argv[])
         list<string>::iterator start_it = Symbol::all_source_files.begin();
         parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
 
+        string paramDir = argStore.strOption(OmcArgKey::paramDir);
+        string fixedDir = argStore.strOption(OmcArgKey::fixedDir);
+
         // Parse parameter scenario directory if specified
-        string paramDir; // make visible for possible later use for Missing.dat
         if (argStore.isOptionExist(OmcArgKey::paramDir)) {
             // -p scenario parameters specified
-            paramDir = argStore.strOption(OmcArgKey::paramDir);
             pc.is_scenario_parameter_value = true;
             pc.is_fixed_parameter_value = false;
             if (paramDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", paramDir.c_str());
@@ -462,7 +467,6 @@ int main(int argc, char * argv[])
         // Parse fixed parameter directory if specified
         if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
             // -f fixed parameters specified
-            string fixedDir = argStore.strOption(OmcArgKey::fixedDir);
             pc.is_scenario_parameter_value = false;
             pc.is_fixed_parameter_value = true;
             if (fixedDir != ".") theLog->logFormatted("Compile fixed parameters from: %s", fixedDir.c_str());
@@ -495,6 +499,24 @@ int main(int argc, char * argv[])
             // An error count of zero means something went seriously worng in the post-parse phase
             // and an exception was thrown without first incrementing the error count and log message.
             if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
+        }
+
+        // to filter csv files make map of parameter name in lower case to parameter symbol
+        map<string, ParameterSymbol *> paramNameMap;
+        for (const auto param : Symbol::pp_all_parameters) {
+            string nameLc = param->name;
+            toLower(nameLc);
+            paramNameMap[nameLc] = param;
+        }
+
+        // load parameters data from .csv or .tsv files
+        forward_list<unique_ptr<Constant> > cpLst;
+
+        if (argStore.isOptionExist(OmcArgKey::paramDir)) {
+            readParameterCsvFiles(false, paramDir, paramNameMap, cpLst);
+        }
+        if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
+            readParameterCsvFiles(true, fixedDir, paramNameMap, cpLst);
         }
 
         // validate parameter initializers
@@ -563,12 +585,12 @@ int main(int argc, char * argv[])
             );
         cg.do_all();
 
-        string Missing_dat_name = "Missing.dat.tmp";
+        const string Missing_dat_name = "Missing.dat.tmp";
         if (missing_param_defs.size() > 0) {
             // Some generated output for one or more missing parameters present.
             if (argStore.isOptionExist(OmcArgKey::paramDir)) {
                 // open output stream for generated definitions for missing parameters
-                ofstream Missing_dat(paramDir + Missing_dat_name, ios::out | ios::trunc | ios::binary);
+                ofstream Missing_dat(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()), ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
                 if (Missing_dat.fail()) throw HelperException(LT("error : unable to open %s for writing"), "Missing.dat.tmp");
                 Missing_dat << missing_param_defs;
@@ -582,8 +604,7 @@ int main(int argc, char * argv[])
         else {
             // Model contains no missing parameters, so delete obsolete Missing.dat.tmp if present
             if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-                string full_name = paramDir + Missing_dat_name;
-                remove(full_name.c_str());
+                remove(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()).c_str());
             }
         }
 
@@ -672,6 +693,11 @@ int main(int argc, char * argv[])
 
         // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);
+
+        // cleanup literals created from csv files
+        for (auto & cp : cpLst) {
+            if (cp->literal != nullptr) delete cp->literal;
+        }
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");

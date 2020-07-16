@@ -48,6 +48,13 @@ public:
     bool is_valid_constant(const Constant &k) const;
 
     /**
+    * Create new classification Constant from 'i_value' enum literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
+    /**
      * The name of the C++ enum used for classification values.
      *
      * @return A string.

@@ -171,6 +171,12 @@ bool TypeDicRow::isInt(void) const
     return !isBool() && !isString() && !isFloat() && !isBigInt();
 }
 
+/** return true if model type is Time */
+bool TypeDicRow::isTime(void) const
+{
+    return equalNoCase(name.c_str(), "time");
+}
+
 /** return true if lower case of source string one of: "1" "t" "true" */
 bool TypeDicRow::isBoolTrue(const char * i_str)
 { 

@@ -38,6 +38,13 @@ public:
 
     bool is_valid_constant(const Constant &k) const;
 
+    /**
+    * Create new string Constant from 'i_value' literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
     const string default_initial_value() const {
         return "";
     };
@@ -56,6 +63,6 @@ public:
      *
      * @return The formatted for storage.
      */
-    string format_for_storage(const Constant &k) const;
+    string format_for_storage(const Constant &k) const override;
 };
 

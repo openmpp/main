@@ -51,7 +51,14 @@ public:
 
     bool is_valid_constant(const Constant &k) const;
 
-    string format_for_storage(const Constant &k) const;
+    /**
+    * Create new range Constant from 'i_value' enum literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
+    string format_for_storage(const Constant &k) const override;
 
     /**
      * Gets the size of the enumeration (specialization for RangeSymbol)
@@ -73,5 +80,12 @@ public:
      */
     int upper_bound;
 
+private:
+    /**
+    * Range value literal validator.
+    *
+    * @return true if 'i_value' string represent valid literal of the range type
+    */
+    bool is_valid_literal(const char * i_value) const;
 };
 

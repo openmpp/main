@@ -25,7 +25,6 @@
 #include <sstream>
 #include <climits>
 #include <vector>
-#include <regex>
 
 using namespace std;
 
@@ -124,9 +123,6 @@ namespace openm
 
     /** if source string exceed max size than return ellipted copy into the buffer */
     extern const char * elliptString(const char * i_src, size_t i_size, char * io_buffer);
-
-    // this function exist only because g++ below 4.9 does not support std::regex
-    extern string regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith);
 
     /** normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8" */
     extern const string normalizeLanguageName(const string & i_srcLanguage);

@@ -152,6 +152,13 @@ public:
      * @return true if valid constant, false if not.
      */
     bool is_valid_constant(const Constant &k) const;
+    
+    /**
+    * Create new numeric Constant of float or integer type from 'i_value' literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
 
     /**
      * Formats the constant for the data store.
@@ -160,5 +167,5 @@ public:
      *
      * @return The formatted for storage.
      */
-    string format_for_storage(const Constant &k) const;
+    string format_for_storage(const Constant &k) const override;
 };

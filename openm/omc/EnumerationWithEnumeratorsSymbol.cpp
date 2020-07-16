@@ -80,4 +80,8 @@ int EnumerationWithEnumeratorsSymbol::pp_size() const
     return pp_enumerators.size();
 }
 
+bool EnumerationWithEnumeratorsSymbol::is_valid_enum_name(const char * i_value) const
+{
+    return i_value != nullptr && pp_name_to_int.count(i_value) != 0;
+}
 

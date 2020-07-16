@@ -321,6 +321,9 @@ namespace openm
         /** return true if model type is integer (not float, string, boolean or bigint) */
         bool isInt(void) const;
 
+        /** return true if model type is Time */
+        bool isTime(void) const;
+
         /** return true if model type is built-in, ie: int, double, logical */
         bool isBuiltIn(void) const { return isBuiltIn(typeId); }
 

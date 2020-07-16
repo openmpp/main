@@ -178,11 +178,24 @@ bool PartitionSymbol::is_valid_constant(const Constant &k) const
     // floating point literals are invalid for partition
     if (is_floating()) return false;
 
-    long value = stol(k.value());
-    // value must fall with allowed ordinal values
-    if (value < 0 || value > pp_size() - 1 ) return false;
+    return is_valid_literal(k.value().c_str());
+}
 
-    return true;
+bool PartitionSymbol::is_valid_literal(const char * i_value) const
+{
+    if (i_value == nullptr) return false;
+
+    // floating point literals are invalid for partition
+    if (!IntegerLiteral::is_valid_literal(i_value)) return false;
+
+    // value must fall with allowed ordinal values
+    long v = stol(i_value);
+    return 0 <= v && v < pp_size();
+}
+
+Constant * PartitionSymbol::make_constant(const string & i_value) const
+{
+    return (is_valid_literal(i_value.c_str())) ? new Constant(new Literal(i_value)) : nullptr;
 }
 
 //static

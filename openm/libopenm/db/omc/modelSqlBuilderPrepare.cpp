@@ -1011,18 +1011,19 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
         tblInf.modelId = io_metaRows.modelDic.modelId;
         tblInf.id = paramRow.paramId;
         tblInf.name = paramRow.paramName;
-        tblInf.isNullable = paramRow.isExtendable;
+        
+        // find parameter value type
+        tblInf.valueTypeIt = TypeDicRow::byKey(paramRow.modelId, paramRow.typeId, io_metaRows.typeDic);
+        if (tblInf.valueTypeIt == io_metaRows.typeDic.cend())
+            throw DbException(LT("invalid type id: %d for parameter id: %d, name: %s"), paramRow.typeId, paramRow.paramId, paramRow.paramName.c_str());
+
+        tblInf.isNullable = paramRow.isExtendable || tblInf.valueTypeIt->isTime();
 
         // collect dimension names
         tblInf.dimNameVec.clear();
         for (const ParamDimsRow & dimRow : io_metaRows.paramDims) {
             if (dimRow.paramId == tblInf.id) tblInf.dimNameVec.push_back(dimRow.name);
         }
-
-        // find parameter value type
-        tblInf.valueTypeIt = TypeDicRow::byKey(paramRow.modelId, paramRow.typeId, io_metaRows.typeDic);
-        if (tblInf.valueTypeIt == io_metaRows.typeDic.cend())
-            throw DbException(LT("invalid type id: %d for parameter id: %d, name: %s"), paramRow.typeId, paramRow.paramId, paramRow.paramName.c_str());
 
         paramInfoVec.push_back(tblInf);     // add to parameters info vector
     }

@@ -117,11 +117,24 @@ bool RangeSymbol::is_valid_constant(const Constant &k) const
     // floating point literals are invalid for range
     if (is_floating()) return false;
 
-    long value = stol(k.value());
-    // value must fall with range bounds
-    if (value < lower_bound || value > upper_bound) return false;
+    return is_valid_literal(k.value().c_str());
+}
 
-    return true;
+bool RangeSymbol::is_valid_literal(const char * i_value) const
+{
+    if (i_value == nullptr) return false;
+    
+    // floating point literals are invalid for range
+    if (!IntegerLiteral::is_valid_literal(i_value)) return false;
+
+    // value must fall with range bounds
+    long v = stol(i_value);
+    return lower_bound <= v && v <= upper_bound;
+}
+
+Constant * RangeSymbol::make_constant(const string & i_value) const
+{
+    return (is_valid_literal(i_value.c_str())) ? new Constant(new Literal(i_value)) : nullptr;
 }
 
 string RangeSymbol::format_for_storage(const Constant &k) const
