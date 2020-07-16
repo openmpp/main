@@ -107,8 +107,10 @@ string TimeSymbol::format_for_storage(const Constant & k) const
                 return to_string(numeric_limits<double>::max());
             case token::TK_ldouble:
                 return to_string(numeric_limits<long double>::max());
+            default:
+                return k.value();    // unexpected Time floating type
             }
-            return k.value();   // unexpected Time floating type
+            // return k.value();   // unexpected Time floating type
         }
         else {
             return "32767";

@@ -24,7 +24,7 @@ private:
     typedef EnumerationWithEnumeratorsSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
     * Constructor.
@@ -37,15 +37,15 @@ public:
     {
     }
 
-    const string default_initial_value() const;
+    const string default_initial_value() const override;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_global();
+    CodeBlock cxx_declaration_global() override;
 
-    CodeBlock cxx_definition_global();
+    CodeBlock cxx_definition_global() override;
 
-    bool is_valid_constant(const Constant &k) const;
+    bool is_valid_constant(const Constant &k) const override;
 
     /**
     * Create new partition Constant from 'i_value' enum literal.

@@ -23,7 +23,7 @@ private:
     typedef TypeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -56,13 +56,13 @@ public:
     {
     }
 
-    virtual const string default_initial_value() const = 0;
+    virtual const string default_initial_value() const override = 0;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
     string metadata_signature() const;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
     /**
      * Gets the size of the enumeration.

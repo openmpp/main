@@ -24,7 +24,7 @@ private:
     typedef EnumerationSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -41,15 +41,15 @@ public:
     {
     }
 
-    const string default_initial_value() const;
+    const string default_initial_value() const override;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_global();
+    CodeBlock cxx_declaration_global() override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
-    bool is_valid_constant(const Constant &k) const;
+    bool is_valid_constant(const Constant &k) const override;
 
     /**
     * Create new range Constant from 'i_value' enum literal.
@@ -65,7 +65,7 @@ public:
      *
      * @return An int.
      */
-    int pp_size() const
+    int pp_size() const override
     {
         return upper_bound - lower_bound + 1;
     }

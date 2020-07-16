@@ -23,7 +23,7 @@ private:
     typedef EnumerationWithEnumeratorsSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -39,13 +39,13 @@ public:
     {
     }
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_global();
+    CodeBlock cxx_declaration_global() override;
 
-    CodeBlock cxx_definition_global();
+    CodeBlock cxx_definition_global() override;
 
-    bool is_valid_constant(const Constant &k) const;
+    bool is_valid_constant(const Constant &k) const override;
 
     /**
     * Create new classification Constant from 'i_value' enum literal.
@@ -64,7 +64,7 @@ public:
         return "om_enum_" + name;
     }
 
-    string format_for_storage(const Constant &k) const;
+    string format_for_storage(const Constant &k) const override;
 
     /**
      * Query if the classification is a candidate for integer transformations.
