@@ -509,35 +509,23 @@ void RootController::readParameter(const char * i_name, int i_subId, const type_
 /** read all input parameters by run id and broadcast to child processes. */
 void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 {
-    unique_ptr<char> byteArr;
-    unique_ptr<string[]> strArr;
-    void * paramData = nullptr;
-
     for (size_t nPar = 0; nPar < PARAMETER_NAME_ARR_LEN; nPar++) {
 
-        // allocate memory to read parameter
-        if (parameterNameSizeArr[nPar].typeOf == typeid(string)) {
-            strArr.reset(new string[parameterNameSizeArr[nPar].size]);
-            paramData = strArr.get();
-        }
-        else {
-            size_t packSize = IPackedAdapter::packedSize(parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size);
-            byteArr.reset(new char[packSize]);
-            paramData = byteArr.get();
-        }
-
-        // read parameter from db
+        // create parameter reader to get from db parameter values for the group run id
         unique_ptr<IParameterReader> reader(
             IParameterReader::create(i_runGroup.runId, parameterNameSizeArr[nPar].name, dbExec, meta())
-            );
-        int nCount = parameterSubCount(reader->parameterId());
+        );
+        int nSubCount = parameterSubCount(reader->parameterId());
 
-        for (int nSub = 0; nSub < nCount; nSub++) {
-            reader->readParameter(dbExec, nSub, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
+        // allocate memory to read parameter sub-value
+        auto paramData = ValueArray(parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size);
 
-            // broadcast parameter to all child modeling processes
-            msgExec->bcastSend(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData);
+        // read each parameter sub-values from db and broadcast to all child modeling processes
+        for (int nSub = 0; nSub < nSubCount; nSub++) {
+            reader->readParameter(dbExec, nSub, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData.ptr());
+            msgExec->bcastSend(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData.ptr());
         }
+        paramData.cleanup();
     }
 }
 
