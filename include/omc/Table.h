@@ -293,17 +293,21 @@ void SetTableValue(const string measure_name, double value, Items... args)
     if (0 == sizeof...(Items)) indices.clear();
     auto it = om_table_measure.find(measure_name);
     if (it == om_table_measure.end()) {
-        //TODO - run time error - invalid table.measure
-    }
-    auto pr = it->second;
-    auto table_id = pr.first;
-    auto measure_id = pr.second;
-    double *address = om_get_table_measure_address(table_id, measure_id, indices);
-    if (address != nullptr) {
-        *address = value;
+        theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to SetTableValue",
+            measure_name);
     }
     else {
-        //TODO - run time error
+        auto pr = it->second;
+        auto table_id = pr.first;
+        auto measure_id = pr.second;
+        double* address = om_get_table_measure_address(table_id, measure_id, indices);
+        if (address != nullptr) {
+            *address = value;
+        }
+        else {
+            theLog->logFormatted("Warning : Invalid indices in call to SetTableValue(\"%s\", ... )",
+                measure_name);
+        }
     }
 }
 
