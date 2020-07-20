@@ -224,7 +224,8 @@
           >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
-    <Exec WorkingDirectory="$(TargetDir)"
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
+          WorkingDirectory="$(TargetDir)"
           Command="$(TargetPath) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
@@ -239,14 +240,14 @@
           >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
-    <Exec WorkingDirectory="$(TargetDir)"
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
+          WorkingDirectory="$(TargetDir)"
           Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
             AlwaysCreate="true"
             />
   </Target>
-
   
   <!--
   ExportCsv
