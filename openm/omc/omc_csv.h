@@ -12,6 +12,10 @@
 #include "libopenm/common/omFile.h"
 #include "TypeSymbol.h"
 #include "EnumerationSymbol.h"
+#include "EnumerationWithEnumeratorsSymbol.h"
+#include "RangeSymbol.h"
+#include "PartitionSymbol.h"
+#include "PartitionEnumeratorSymbol.h"
 #include "ParameterSymbol.h"
 
 using namespace std;
@@ -22,7 +26,6 @@ namespace omc
     extern void readParameterCsvFiles(
         bool i_isFixed, 
         const string & i_srcDir, 
-        const map<string, ParameterSymbol *> & i_paramNameMap, 
         forward_list<unique_ptr<Constant> > & io_cpLst
     );
 }

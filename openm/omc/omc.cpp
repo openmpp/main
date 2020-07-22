@@ -501,22 +501,14 @@ int main(int argc, char * argv[])
             if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
         }
 
-        // to filter csv files make map of parameter name in lower case to parameter symbol
-        map<string, ParameterSymbol *> paramNameMap;
-        for (const auto param : Symbol::pp_all_parameters) {
-            string nameLc = param->name;
-            toLower(nameLc);
-            paramNameMap[nameLc] = param;
-        }
-
         // load parameters data from .csv or .tsv files
         forward_list<unique_ptr<Constant> > cpLst;
 
         if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-            readParameterCsvFiles(false, paramDir, paramNameMap, cpLst);
+            readParameterCsvFiles(false, paramDir, cpLst);
         }
         if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
-            readParameterCsvFiles(true, fixedDir, paramNameMap, cpLst);
+            readParameterCsvFiles(true, fixedDir, cpLst);
         }
 
         // validate parameter initializers
