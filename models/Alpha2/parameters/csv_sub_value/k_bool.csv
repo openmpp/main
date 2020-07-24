@@ -1,0 +1,5 @@
+sub_id,dim0,dim1,param_value
+0,EAST,EAST,true
+0,EAST,WEST,false
+0,WEST,EAST,false
+0,WEST,WEST,true

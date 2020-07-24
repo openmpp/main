@@ -18,25 +18,23 @@ struct EItem {
 };
 
 // parameter dimension
-struct Dim {
+struct PDim {
     string name;                        // dimension name
     const EnumerationSymbol * eSym;     // dimension symbol
     int size;                           // dimension size (item count)
     int shift;                          // multiplier to convert from dimension item index to cell index of parameter value 
-    vector <EItem> enums;               // dimension items
     map <string, int> nameIdxMap;       // map enum names to index in dimension
 };
 
-static vector<Dim> getDims(const ParameterSymbol * i_param);
-static const vector<string> parseSimpleCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, bool i_isCsvFile, string & i_pathCsv);
-static const vector<string> parseDimCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, bool i_isCsvFile, string & i_pathCsv);
+static const vector< pair< int, vector<string> > > parseSimpleCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv);
+static const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv);
+static vector<PDim> getDims(const ParameterSymbol * i_param);
 
 // read parameters data from .csv or .tsv files from fixed directory and parameter directory
 extern void omc::readParameterCsvFiles(
     bool i_isFixed,
     const string & i_srcDir,
-    forward_list<unique_ptr<Constant> > & io_cpLst
-)
+    forward_list<unique_ptr<Constant> > & io_cpLst)
 {
     // to filter csv files make map of parameter name in lower case to parameter symbol
     map<string, ParameterSymbol *> paramNameMap;
@@ -47,22 +45,23 @@ extern void omc::readParameterCsvFiles(
     }
 
     // get list of parameterName.csv files
-    list<string> csv_files = listSourceFiles(i_srcDir, { ".csv", ".tsv", ".dim.csv", ".dim.tsv" });
+    list<string> csv_files = listSourceFiles(i_srcDir, { ".csv", ".tsv", ".value.csv", ".value.tsv" });
     int nFiles = 0;
 
-    // read csv files if file name is parameterName.csv, ignore case of parameterName
+    // read csv file if file name is parameterName.csv, ignore case of parameterName
     // each line of csv file can contain multiple columns separated by comma or tab
     // any csv value can be "quoted by double quote", quoutes are removed
     for (string & pathCsv : csv_files) {
 
         // get parameter name from file path
-        // get file type: CVS or TSV, with dimensions or simple file with parameter data only
+        // parameter values separator: comma .csv or tab .tsv
+        // file content: dimensions and values or parameter values only
         string nameLc = getFileNameStem(pathCsv);
         toLower(nameLc);
-        bool isCsvFile = equalNoCase(getFileNameExt(pathCsv).c_str(), ".csv");
+        const char * separator = equalNoCase(getFileNameExt(pathCsv).c_str(), ".csv") ? "," : "\t";
 
-        bool isDimFile = endWithNoCase(nameLc, ".dim");
-        if (isDimFile) nameLc = getFileNameStem(nameLc);
+        bool isValueOnly = endWithNoCase(nameLc, ".value");
+        if (isValueOnly) nameLc = getFileNameStem(nameLc);
 
         // find parameter name in lower case
         auto paramIt = paramNameMap.find(nameLc);
@@ -80,6 +79,7 @@ extern void omc::readParameterCsvFiles(
         if (param->source == ParameterSymbol::scenario_parameter) {
             if (i_isFixed) {
                 theLog->logFormatted("error : scenario parameter %s cannot be re-initialized as fixed parameter by csv file: %s", param->name.c_str(), pathCsv.c_str());
+                Symbol::post_parse_errors++;
                 continue;   // skip this csv file
             }
             else {
@@ -90,6 +90,7 @@ extern void omc::readParameterCsvFiles(
         if (param->source == ParameterSymbol::fixed_parameter) {
             if (!i_isFixed) {
                 theLog->logFormatted("error : fixed parameter %s cannot be re-initialized as scenario parameter by csv file: %s", param->name.c_str(), pathCsv.c_str());
+                Symbol::post_parse_errors++;
                 continue;   // skip this csv file
             }
             else {
@@ -101,6 +102,7 @@ extern void omc::readParameterCsvFiles(
         list<string> csvLines = fileToUtf8Lines(pathCsv.c_str(), Symbol::code_page.c_str());
         if (csvLines.size() <= 0) {
             theLog->logFormatted("error : invalid (empty) parameter file : %s", pathCsv.c_str());
+            Symbol::post_parse_errors++;
             continue;   // skip this csv file
         }
         Symbol::all_source_files.push_back(pathCsv);    // add csv file path to list of source files
@@ -108,46 +110,61 @@ extern void omc::readParameterCsvFiles(
 
         // re-initialize parameter: clear previous values from .dat file
         param->source = i_isFixed ? ParameterSymbol::fixed_parameter : ParameterSymbol::scenario_parameter;
-        param->initializer_list.clear();
+        param->sub_initial_list.resize(1);
+        param->sub_initial_list[0].first = param->default_sub_id;
+        param->sub_initial_list[0].second.clear();
         param->post_parse_mark_enumerations();  // mark all dimensions and dimension enum items as dependency of parameter
 
         // create list of string literal parameter values from csv lines
-        vector<string> valLst;
-        if (!isDimFile) {
-            valLst = parseSimpleCsv(param, csvLines, isCsvFile, pathCsv);
+        vector< pair< int, vector<string> > > subValArr;
+        if (isValueOnly) {
+            subValArr = parseSimpleCsv(param, csvLines, separator, pathCsv);
         }
         else {
-            valLst = parseDimCsv(param, csvLines, isCsvFile, pathCsv);
+            subValArr = parseDimCsv(param, csvLines, separator, pathCsv);
         }
-
-        if (valLst.size() <= 0) {
+        if (subValArr.size() <= 0) {
             theLog->logFormatted("error : invalid or empty parameter file : %s", pathCsv.c_str());
+            Symbol::post_parse_errors++;
             continue;     // skip invalid parameter csv
         }
+
+        param->default_sub_id = subValArr[0].first; // default parameter sub value is a first sub value from csv file
 
         // convert string literal values to parameter type constants and append to initializer list
         TypeSymbol * pt = param->pp_datatype;
 
-        unsigned int nLine = 0;
-        for (const string & val : valLst) {
-            nLine++;
+        for (size_t nSub = 0; nSub < subValArr.size(); nSub++) {
 
-            // if it is empty value then use default initial value
-            string v = !val.empty() ? val : pt->default_initial_value();
-
-            // validate value literal and make constant for parameter initializer list
-            Constant * c = pt->make_constant(v);
-            if (c == nullptr) {
-                Symbol::pp_error(
-                    yy::location(yy::position(&pathCsv, nLine)),
-                    LT("error : '") + v + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + param->name + LT("'"));
-
-                param->initializer_list.clear();    // parameter value invalid
-                break;
+            // clear first sub-value (default sub-value) or append additional sub-values
+            if (nSub < param->sub_initial_list.size()) {
+                param->sub_initial_list[nSub].first = subValArr[nSub].first;
+                param->sub_initial_list[nSub].second.clear();
+            }
+            else {
+                param->sub_initial_list.push_back({ subValArr[nSub].first, list<Constant *>() });
             }
 
-            io_cpLst.push_front(unique_ptr<Constant>(c));
-            param->initializer_list.push_back(c);
+            // make parameter value constants from string literals
+            for (const string & val : subValArr[nSub].second) {
+
+                // if it is empty value then use default initial value
+                string v = !val.empty() ? val : pt->default_initial_value();
+
+                // validate value literal and make constant for parameter initializer list
+                Constant * c = pt->make_constant(v);
+                if (c == nullptr) {
+                    Symbol::pp_error(
+                        yy::location(yy::position(&pathCsv)),
+                        LT("error : '") + v + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + param->name + LT("'"));
+
+                    param->sub_initial_list[nSub].second.clear();   // parameter value invalid
+                    break;
+                }
+
+                io_cpLst.push_front(unique_ptr<Constant>(c));
+                param->sub_initial_list[nSub].second.push_back(c);
+            }
         }
     }
 
@@ -156,7 +173,7 @@ extern void omc::readParameterCsvFiles(
 }
 
 // parse "simple" parameter csv file: simple file contains only parameter values, no dimensions
-const vector<string> parseSimpleCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, bool i_isCsvFile, string & i_pathCsv)
+const vector< pair< int, vector<string> > > parseSimpleCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv)
 {
     // append csv string values to output list
     // skip empty lines from csv file and skip empty values after parameter size
@@ -168,7 +185,7 @@ const vector<string> parseSimpleCsv(const ParameterSymbol * i_param, const list<
     for (const string & line : i_csvLines) {
         nLine++;
 
-        list<string> cols = splitCsv(line, (i_isCsvFile ? "," : "\t"), true, '"');   // split csv columns, separated by comma or tab, "unquoute" column values
+        list<string> cols = splitCsv(line, i_separator, true, '"'); // split csv columns, separated by comma or tab, "unquoute" column values
 
         // append string literal values to initializer list
         unsigned int nCol = 0;
@@ -186,125 +203,180 @@ const vector<string> parseSimpleCsv(const ParameterSymbol * i_param, const list<
                     yy::location(yy::position(&i_pathCsv, nLine, nCol)),
                     LT("error : initializer for parameter '") + i_param->name + LT("' has size ") + to_string(valArr.size() + 1) + LT(", exceeds ") + to_string(nParamSize));
 
-                return vector<string>();    // exit on invalid parameter value
+                return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
             }
 
             valArr.emplace_back(val);
         }
     }
 
-    return valArr;
+    return { {i_param->default_sub_id, valArr } };
 }
 
-// parse "dimension" parameter csv file: each file line contain dimension enum value and parameter value
-// first file line must be a header: dimName0,dimName1,param_value
-const vector<string> parseDimCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, bool i_isCsvFile, string & i_pathCsv)
+// parse "dimension" parameter csv file
+// each file line contain sub-value id (optional), dimensions enum values and parameter value
+// first file line must be a header: sub_id,dimName0,dimName1,param_value
+// sub-value id column is optional
+// if header starts with "sub_id" then first column is sub-value id 
+// else file contains only dimensions and parameter values.
+const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv)
 {
     if (i_csvLines.size() <= 0) {
         theLog->logFormatted("error : invalid (empty) parameter file : %s", i_pathCsv.c_str());
-        return vector<string>();    // exit: parameter file must have header line
+        return vector< pair< int, vector<string> > >();    // return error: parameter file must have header line
     }
 
-    vector<Dim> dims = getDims(i_param);    // get dimensions and dimension items sorted by enum id's
+    vector<PDim> dims = getDims(i_param);    // get dimensions and dimension items sorted by enum id's
     size_t nRank = dims.size();
 
     // verify file header
-    list<string> hCols = splitCsv(i_csvLines.front(), (i_isCsvFile ? "," : "\t"), true, '"');   // split csv columns, separated by comma or tab, "unquoute" column values
+    list<string> hCols = splitCsv(i_csvLines.front(), i_separator, true, '"');  // split csv columns, separated by comma or tab, "unquoute" column values
 
-    if (hCols.size() != nRank + 1) {
+    bool isSubIdFile = hCols.size() == nRank + 2 && equalNoCase(hCols.front().c_str(), "sub_id");
+
+    size_t colCount = isSubIdFile ? nRank + 2 : nRank + 1;
+   if (hCols.size() != colCount) {
         theLog->logFormatted("error : invalid header (first line) in parameter file : %s", i_pathCsv.c_str());
-        return vector<string>();    // exit: parameter header line must have rank + 1 columns
+        return vector< pair< int, vector<string> > >();     // return error: parameter header line must have rank + 1 columns
     }
 
+    bool isSkip = isSubIdFile;
     size_t k = 0;
     for (auto const & h : hCols) {
+        if (isSkip && k == 0) {
+            isSkip = false;
+            continue;       // skip first column if it is "sub_id"
+        }
         if (k < nRank && !equalNoCase(h.c_str(), dims[k].name.c_str())) {
             theLog->logFormatted("error : invalid header (first line) in parameter file : %s, expected: %s, found: %s", i_pathCsv.c_str(), dims[k].name.c_str(), h.c_str());
-            return vector<string>();    // exit: parameter header line must have rank + 1 columns
+            return vector< pair< int, vector<string> > >();     // return error: parameter header line must have rank + 1 columns
         }
         k++;
     }
     if (!equalNoCase(hCols.back().c_str(), "param_value")) {
         theLog->logFormatted("error : invalid header (first line) in parameter file : %s, expected: %s, found: %s", i_pathCsv.c_str(), "param_value", hCols.back().c_str());
-        return vector<string>();    // exit: parameter header line must have rank + 1 columns
+        return vector< pair< int, vector<string> > >();     // return error: parameter header line must have rank + 1 columns
     }
 
     // append csv string values to output list, skip empty lines from csv file
     size_t nParamSize = i_param->size();
-    vector<string> valArr(nParamSize);          // parameter values (parameter cells)
-    vector<bool> useArr(nParamSize, false);     // if true then parameter cell value already found in csv
+    map<int, int> subIdIndexMap;        // map sub-value id to index in result arrays
+
+    vector< pair< int, vector<string> > > subValArr;    // parameter sub values (parameter cells) for each sub value id
+    vector< vector<bool> > useArr;                      // if true then parameter cell value already found in csv
 
     unsigned int nLine = 0;
     for (const string & line : i_csvLines) {
 
         if (nLine++ == 0) continue; // skip header line
 
-        list<string> cols = splitCsv(line, (i_isCsvFile ? "," : "\t"), true, '"');   // split csv columns, separated by comma or tab, "unquoute" column values
+        list<string> cols = splitCsv(line, i_separator, true, '"'); // split csv columns, separated by comma or tab, "unquoute" column values
 
         // skip empty lines
         if (cols.size() <= 0 || cols.size() == 1 && cols.front().empty()) {
             continue;   // skip all empty values after end of parameter
         }
 
-        // each non-empty line in csv file must hace rank + 1 columns
-        if (cols.size() != nRank + 1) {
+        // each non-empty line in csv file must have rank + 1 or rank + 2 columns
+        if (cols.size() != colCount) {
             Symbol::pp_error(
                 yy::location(yy::position(&i_pathCsv, nLine)),
-                LT("error : line in parameter '") + i_param->name + LT("' .csv/.tsv file has ") + to_string(cols.size()) + LT(" columns, expected: ") + to_string(nRank));
+                LT("error : line of parameter file '") + i_param->name + LT("' has ") + to_string(cols.size()) + LT(" columns, expected: ") + to_string(colCount));
 
-            return vector<string>();    // exit on invalid parameter value
+            return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
         }
 
         // for each line: check dimension enums and append string literal parameter value to initializer list
         int nCol = 0;
+        int nDim = 0;
         int nCell = 0;
+        int nSubId = i_param->default_sub_id;
+        int nSubIndex = 0;
         for (const string & val : cols) {
 
-            // find csv dimension item in dimension enum item array
-            if (nCol < (int)nRank) {
+            if (isSubIdFile && nCol == 0) {
 
-                const auto eIt = dims[nCol].nameIdxMap.find(val);
-                if (eIt == dims[nCol].nameIdxMap.cend()) {
+                if (!IntegerLiteral::is_valid_literal(val.c_str())) {
                     Symbol::pp_error(
                         yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
-                        LT("error : '") + val + LT("' is not a valid item of dimension '") + dims[nCol].eSym->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+                        LT("error : '") + val + LT("' is not a valid sub value id '") + val.c_str() + LT("' in initializer for parameter '") + i_param->name + LT("'"));
 
-                    return vector<string>();    // exit on invalid dimension item
+                        return vector< pair< int, vector<string> > >(); // return error: sub value id must be integer
                 }
 
-                nCell += eIt->second * dims[nCol].shift;    // cell index of parameter value
-            }
-            else {  // parameter value column
-
-                // validate cell index: must be in range of parameter size
-                if (nCell < 0 || nCell >= (int)nParamSize) {
-                    throw HelperException(LT("error : parameter %s cell index invalid: %d"), i_param->name.c_str(), nCell);
-                }
-
-                // check if this is duplicate row
-                if (useArr[nCell]) {
+                long lv = stol(val);
+                if (lv < INT_MIN || lv > INT_MAX) {
                     Symbol::pp_error(
-                        yy::location(yy::position(&i_pathCsv, nLine)),
-                        LT("error : duplicate dimension items: '") + line + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        LT("error : '") + val + LT("' is not a valid sub value id '") + val.c_str() + LT("' in initializer for parameter '") + i_param->name + LT("'"));
 
-                    return vector<string>();    // exit on invalid dimension item
+                    return vector< pair< int, vector<string> > >(); // return error: sub value id out of range
                 }
 
-                valArr[nCell] = val;    // store cell value
-                useArr[nCell] = true;
+                nSubId = (int)lv;
+                nCol++;
+                continue;   // done with sub id
+            }
+            // else not a sub id column, it is dimension enum item or parameter value
+
+            // find sub value index by sub value id
+            const auto subIt = subIdIndexMap.find(nSubId);
+            if (subIt != subIdIndexMap.cend()) {
+                nSubIndex = subIt->second;
+            }
+            else {  // sub value id not found: add new sub value
+                subValArr.emplace_back(pair< int, vector<string> >(nSubId, vector<string>(nParamSize)));
+                nSubIndex = subValArr.size() - 1;
+                subIdIndexMap[nSubId] = nSubIndex;
+                useArr.emplace_back(vector<bool>(nParamSize, false));
             }
 
+            // find csv dimension item in dimension enum item array
+            if (nDim < (int)nRank) {
+
+                const auto eIt = dims[nDim].nameIdxMap.find(val);
+                if (eIt == dims[nDim].nameIdxMap.cend()) {
+                    Symbol::pp_error(
+                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        LT("error : '") + val + LT("' is not a valid item of dimension '") + dims[nDim].eSym->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+
+                    return vector< pair< int, vector<string> > >(); // return error: invalid dimension item
+                }
+
+                nCell += eIt->second * dims[nDim].shift;    // cell index of parameter value
+                nDim++;
+                nCol++;
+                continue;   // done with dimension
+            }
+            // else parameter value column
+
+            // validate cell index: must be in range of parameter size
+            if (nCell < 0 || nCell >= (int)nParamSize) {
+                throw HelperException(LT("error : parameter %s cell index invalid: %d"), i_param->name.c_str(), nCell);
+            }
+
+            // check if this is duplicate row
+            if (useArr[nSubIndex][nCell]) {
+                Symbol::pp_error(
+                    yy::location(yy::position(&i_pathCsv, nLine)),
+                    LT("error : duplicate dimension items: '") + line + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+
+                return vector< pair< int, vector<string> > >(); // return error: invalid dimension item
+            }
+
+            subValArr[nSubIndex].second[nCell] = val;   // store cell value
+            useArr[nSubIndex][nCell] = true;            // mark parameter cell of this sub value as "found" to avoid duplicates
             nCol++;
         }
     }
 
-    return valArr;
+    return subValArr;
 }
 
 // get parameter dimensions and items for each dimension
-vector<Dim> getDims(const ParameterSymbol * i_param)
+vector<PDim> getDims(const ParameterSymbol * i_param)
 {
-    vector<Dim> dims;
+    vector<PDim> dims;
     dims.reserve(i_param->rank());
 
     // enumeration of each dimension
@@ -312,12 +384,11 @@ vector<Dim> getDims(const ParameterSymbol * i_param)
     for (const auto dim : i_param->dimension_list) {
 
         const EnumerationSymbol * et = dim->pp_enumeration;
-        Dim d = {
+        PDim d = {
             Symbol::mangle_name(dim->dim_name, dim->index),
             et,
             et->pp_size(),
-            1,
-            vector<EItem>(et->pp_size())
+            1
         };
 
         // dimension expected to be classification, partition or range
@@ -327,7 +398,6 @@ vector<Dim> getDims(const ParameterSymbol * i_param)
             int k = 0;
             for (const auto e : eLst) {
                 string name = e->db_name();
-                d.enums[k] = { e->ordinal, name };
                 d.nameIdxMap[name] = k++;
             }
         }
@@ -339,7 +409,6 @@ vector<Dim> getDims(const ParameterSymbol * i_param)
             }
             for (int n = er->lower_bound, k = 0; n <= er->upper_bound; n++, k++) {
                 string name = to_string(n);
-                d.enums[k] = { k,  name };
                 d.nameIdxMap[name] = k;
             }
         }

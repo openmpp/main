@@ -496,7 +496,7 @@ int main(int argc, char * argv[])
         }
         catch(exception & ex) {
             theLog->logErr(ex);
-            // An error count of zero means something went seriously worng in the post-parse phase
+            // An error count of zero means something went seriously wrong in the post-parse phase
             // and an exception was thrown without first incrementing the error count and log message.
             if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
         }
@@ -632,10 +632,8 @@ int main(int argc, char * argv[])
             WorksetParamRow wsParam;
             wsParam.paramId = param->pp_parameter_id;
             //
-            wsParam.subCount = 1;       // number of parameter sub-values in the scenario
-            wsParam.defaultSubId = 0;   // sub-value id to be used by default for that parameter
-            // default parameter sub id can be any int, including negative, but it must exist in the input data
-            // as it is today omc insert only sub id = 0
+            wsParam.subCount = param->sub_count();          // number of parameter sub-values in the scenario
+            wsParam.defaultSubId = param->default_sub_id;   // sub-value id to be used by default for that parameter
             //
             metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
             // value notes for the parameter
@@ -667,8 +665,10 @@ int main(int argc, char * argv[])
             chrono::system_clock::time_point start = chrono::system_clock::now();
             for (auto param : Symbol::pp_all_parameters) {
                 if (param->source != ParameterSymbol::scenario_parameter) continue;
-                auto lst = param->initializer_for_storage();
-                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);  // it does insert parameter value(s) with sub-value id=0
+                for (int k = 0; k < param->sub_count(); k++) {
+                    pair< int, list<string> > subValue = param->initializer_for_storage(k);
+                    builder->addWorksetParameter(metaRows, metaSet, param->name, subValue.first, subValue.second); // insert parameter sub-value(s)
+                }
                 scenario_parameters_done++;
                 chrono::system_clock::time_point now = chrono::system_clock::now();
                 if (chrono::duration_cast<chrono::seconds>(now - start).count() >= 3) {     // report not more often than every 3 seconds

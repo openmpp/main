@@ -484,54 +484,69 @@ void ParameterSymbol::validate_initializer()
         return;
     }
 
-    // Presence check
-    if (0 == initializer_list.size()) {
+    // Presence check: parameter must have at least one sub-value (default sub-value)
+    if (0 == sub_initial_list.size()) {
         pp_error(LT("error : missing initializer for parameter '") + name + LT("'"));
         return;
     }
 
-    // Size check
-    if (initializer_list.size() > size()) {
-        pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", exceeds ") + to_string(size()));
-    }
-    if (is_extendable) {
-        // check that last slice of initializer is complete
-        int first_dim_size = pp_shape.front();
-        int slice_size = size() / first_dim_size;
-        if (0 != (initializer_list.size() % slice_size)) {
-            pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", last slice incomplete"));
-        }
-    }
-    else {
-        // not extendable, number of initializers must match exactly
-        if (initializer_list.size() != size()) {
-            pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", must be ") + to_string(size()));
-        }
-    }
+    // for each parameter sub-value
+    for (const auto & sv : sub_initial_list) {
+        const auto & lst = sv.second;
 
-    // Element check
-    for (auto iel : initializer_list) {
-        if (!iel->is_valid_constant(*pp_datatype)) {
-            string msg = LT("error : '") + iel->value() + LT("' is not a valid '") + pp_datatype->name + LT("' in initializer for parameter '") + name + LT("'");
-            pp_error(iel->decl_loc, msg);
+        // Presence check
+        if (0 == lst.size()) {
+            pp_error(LT("error : missing initializer for parameter '") + name + LT("'"));
+            return;
+        }
+
+        // Size check
+        if (lst.size() > size()) {
+            pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", exceeds ") + to_string(size()));
+        }
+        if (is_extendable) {
+            // check that last slice of initializer is complete
+            int first_dim_size = pp_shape.front();
+            int slice_size = size() / first_dim_size;
+            if (0 != (lst.size() % slice_size)) {
+                pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", last slice incomplete"));
+            }
+        }
+        else {
+            // not extendable, number of initializers must match exactly
+            if (lst.size() != size()) {
+                pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", must be ") + to_string(size()));
+            }
+        }
+
+        // Element check
+        for (auto iel : lst) {
+            if (!iel->is_valid_constant(*pp_datatype)) {
+                string msg = LT("error : '") + iel->value() + LT("' is not a valid '") + pp_datatype->name + LT("' in initializer for parameter '") + name + LT("'");
+                pp_error(iel->decl_loc, msg);
+            }
         }
     }
 }
 
-list<string> ParameterSymbol::initializer_for_storage()
+pair< int, list<string> > ParameterSymbol::initializer_for_storage(int i_sub_index)
 {
+    if (i_sub_index < 0 || i_sub_index >= (int)sub_initial_list.size()) {
+        throw HelperException(LT("error : parameter %s sub-value index invalid: %d"), name.c_str(), i_sub_index);
+    }
+
     list<string> values;
-    for (auto k : initializer_list) {
+    for (auto k : sub_initial_list[i_sub_index].second) {
         values.push_back(k->format_for_storage(*pp_datatype));
     }
     if (is_extendable) {
         // if an extendable parameter has unspecified trailing values, append NULL's
-        int unspecified_count = size() - initializer_list.size();
+        int unspecified_count = size() - sub_initial_list[i_sub_index].second.size();
         for (int k = 0; k < unspecified_count; ++k) {
             values.push_back("NULL");
         }
     }
-    return values;
+    return { sub_initial_list[i_sub_index].first, values };
 }
 
 CodeBlock ParameterSymbol::dat_definition() const

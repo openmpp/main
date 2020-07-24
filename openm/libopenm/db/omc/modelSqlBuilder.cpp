@@ -493,7 +493,7 @@ void ModelSqlBuilder::endWorkset(const MetaModelHolder & /* i_metaRows */, const
 
 // append scalar parameter value to sql script for new working set creation 
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value
+    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, int i_subId, const string & i_value
     )
 {
     // check parameters
@@ -516,7 +516,7 @@ void ModelSqlBuilder::addWorksetParameter(
     if (paramInfo == paramInfoVec.cend()) throw DbException(LT("parameter not found in parameters dictionary: %s"), i_name.c_str());
 
     // create sql to insert value of scalar paarameter
-    doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_value);
+    doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_subId, i_value);
 
     paramInfo->isAdded = true;  // done
 }
@@ -527,7 +527,8 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
     int i_setId,
     const string & i_name, 
     const string & i_dbTableName, 
-    const vector<ParamTblInfo>::const_iterator & i_paramInfo, 
+    const vector<ParamTblInfo>::const_iterator & i_paramInfo,
+    int i_subId,
     const string & i_value
     )
 {
@@ -539,7 +540,8 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
     //  INSERT INTO StartingSeed_w20120819 (set_id, sub_id, param_value) VALUES (1234, 0, 0.014)
     dbExec->update(
         "INSERT INTO " + i_dbTableName + " (set_id, sub_id, param_value) VALUES (" + 
-        to_string(i_setId) + ", 0, " +
+        to_string(i_setId) + ", " +
+        to_string(i_subId) + ", " +
         (i_paramInfo->valueTypeIt->isString() ? toQuoted(i_value) : i_value) +
         ")");
 }
@@ -547,7 +549,7 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
 // append parameter values to sql script for new working set creation 
 // it does insert into sub-value id = 0
 void ModelSqlBuilder::addWorksetParameter(
-    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
+    const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, int i_subId, const list<string> & i_valueLst
     )
 {
     // check parameters
@@ -573,7 +575,7 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // if this is scalar parameter then use simplified version of sql
     if (dimCount <= 0) {
-        doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_valueLst.front());
+        doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_subId, i_valueLst.front());
         paramInfo->isAdded = true;
         return;                     // done with this scalar parameter
     }
@@ -599,56 +601,65 @@ void ModelSqlBuilder::addWorksetParameter(
 
     // get dimensions type and size, calculate total size
     size_t totalSize = 1;
-    vector<int> dimSizeVec;
+
+    struct PDim {
+        vector<ParamDimsRow>::const_iterator dimIt;
+        int size = 0;
+        vector<TypeDicRow>::const_iterator typeIt;
+        vector<TypeEnumLstRow>::const_iterator beginEnumIt;
+        vector<TypeEnumLstRow>::const_iterator endEnumIt;
+    };
+    vector<PDim> dims;
 
     for (vector<ParamDimsRow>::const_iterator dRow = dimRange.first; dRow != dimRange.second; dRow++) {
 
+        PDim d = { dRow, 0, i_metaRows.typeDic.cend(), i_metaRows.typeEnum.cend(), i_metaRows.typeEnum.cbegin() };
+
         // find dimension type
         TypeDicRow tRow(mId, dRow->typeId);
-        auto dimTypeRow = std::lower_bound(
+        d.typeIt = std::lower_bound(
             i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
-            );
-        if (dimTypeRow == i_metaRows.typeDic.cend()) throw DbException(LT("type not found for dimension %s of parameter: %s"), dRow->name.c_str(), i_name.c_str());
+        );
+        if (d.typeIt == i_metaRows.typeDic.cend()) throw DbException(LT("type not found for dimension %s, parameter: %s"), dRow->name.c_str(), i_name.c_str());
+        if (d.typeIt->isBuiltIn()) throw DbException(LT("invalid (built-in) type of dimension %s, parameter: %s"), dRow->name.c_str(), i_name.c_str());
 
         // find dimension size as number of enums in type_enum_lst table, if type is not simple type
-        int dimSize = 0;
-        if (!dimTypeRow->isBuiltIn()) {
+        TypeEnumLstRow eRow(mId, d.typeIt->typeId, 0);
+        auto enumRange = std::equal_range(
+            i_metaRows.typeEnum.cbegin(),
+            i_metaRows.typeEnum.cend(),
+            eRow,
+            [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
+                return
+                    i_left.modelId < i_right.modelId ||
+                    (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId);
+            }
+        );
+        if (enumRange.first == i_metaRows.typeEnum.cend() || enumRange.first == enumRange.second)
+            throw DbException(LT("invalid dimension size (no enums found), dimension: %s of parameter: %s"), dRow->name.c_str(), i_name.c_str());
 
-            TypeEnumLstRow eRow(mId, dimTypeRow->typeId, 0);
-            auto enumRange = std::equal_range(
-                i_metaRows.typeEnum.cbegin(), 
-                i_metaRows.typeEnum.cend(), 
-                eRow, 
-                [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {
-                    return
-                        i_left.modelId < i_right.modelId ||
-                        (i_left.modelId == i_right.modelId && i_left.typeId < i_right.typeId);
-                }
-                );
-            if (enumRange.first == i_metaRows.typeEnum.cend())
-                throw DbException(LT("invalid dimension size (no enums found), dimension: %s of parameter: %s"), dRow->name.c_str(), i_name.c_str());
+        d.size = (int)(enumRange.second - enumRange.first);
+        d.beginEnumIt = enumRange.first;
+        d.endEnumIt = enumRange.second;
 
-            dimSize = (int)(enumRange.second - enumRange.first);
-        }
-
-        // store dimension name, size and calculate total parameter size
-        dimSizeVec.push_back(dimSize);
-        if (dimSize > 0) totalSize *= dimSize;
+        // append to dimension list and calculate total parameter size
+        dims.push_back(d);
+        if (d.size > 0) totalSize *= d.size;
     }
 
     if (totalSize <= 0) throw DbException(LT("invalid size of the parameter: %s"), i_name.c_str());
-    if (totalSize != i_valueLst.size()) throw DbException(LT("invalid value array size: %ld, expected: %ld for parameter: %s"), i_valueLst.size(), totalSize, i_name.c_str());
+    if (totalSize != i_valueLst.size()) throw DbException(LT("invalid value array size: %zd, expected: %zd for parameter: %s"), i_valueLst.size(), totalSize, i_name.c_str());
 
     // make sql to insert parameter dimesion enums and parameter value
     // if parameter value is string type then it must be sql-quoted
     // INSERT INTO ageSex_w20120817 (set_id, sub_id, dim0, dim1, param_value) VALUES (1234, 0, 1, 2, 0.014)
     {
-        // storage for dimension enum_id items
+        // storage for dimension enums index
         unique_ptr<int> cellArrUptr(new int[dimCount]);
         int * cellArr = cellArrUptr.get();
 
         for (int k = 0; k < dimCount; k++) {
-            cellArr[k] = 0;     // initial enum_id is zero for all enums
+            cellArr[k] = 0;     // initial enumindex is zero
         }
 
         // make constant portion of insert
@@ -657,7 +668,7 @@ void ModelSqlBuilder::addWorksetParameter(
         for (const string & dimName : paramInfo->dimNameVec) {
             insertPrefix += dimName + ", ";
         }
-        insertPrefix += "param_value) VALUES (" + to_string(i_metaSet.worksetRow.setId) + ", 0, ";
+        insertPrefix += "param_value) VALUES (" + to_string(i_metaSet.worksetRow.setId) + ", " + to_string(i_subId) + ", ";
 
         // loop through all enums for each dimension and write sql inserts
         list<string>::const_iterator valueIt = i_valueLst.cbegin();
@@ -672,13 +683,13 @@ void ModelSqlBuilder::addWorksetParameter(
 
             // write dimension enum_id items
             for (int k = 0; k < dimCount; k++) {
-                snprintf(cellBuf, OM_STR_DB_MAX, "%d, ", cellArr[k]);
+                snprintf(cellBuf, OM_STR_DB_MAX, "%d, ", dims[k].beginEnumIt[cellArr[k]].enumId);
                 sql += cellBuf;
             }
 
             // validate and write parameter value
             if (isQuote) {
-                 sql += toQuoted(*valueIt);
+                sql += toQuoted(*valueIt);
             }
             else {
                 if (valueIt->empty()) throw DbException(LT("invalid (empty) parameter value, parameter: %s"), i_name.c_str());
@@ -691,7 +702,7 @@ void ModelSqlBuilder::addWorksetParameter(
 
             // get next cell indices
             for (int nDim = dimCount - 1; nDim >= 0; nDim--) {
-                if (nDim > 0 && cellArr[nDim] >= dimSizeVec[nDim] - 1) {
+                if (nDim > 0 && cellArr[nDim] >= dims[nDim].size - 1) {
                     cellArr[nDim] = 0;
                 }
                 else {
@@ -699,7 +710,7 @@ void ModelSqlBuilder::addWorksetParameter(
                     break;
                 }
             }
-            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dimSizeVec[0]) throw DbException(LT("invalid value array size, parameter: %s"), i_name.c_str());
+            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dims[0].size) throw DbException(LT("invalid value array size, parameter: %s"), i_name.c_str());
 
             valueIt++;     // next value
         }

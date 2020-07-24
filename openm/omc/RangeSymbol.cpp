@@ -141,6 +141,6 @@ string RangeSymbol::format_for_storage(const Constant &k) const
 {
     long value = stol(k.value());
 
-    string result = to_string(value);
+    string result = to_string(value - lower_bound); // store zero based enum id
     return result;
 }
