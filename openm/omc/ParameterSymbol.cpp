@@ -678,6 +678,16 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         c_adjust_code += "value = - log(1.0 - value);";
     }
 
+    if (pp_datatype->is_range()) {
+        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
+        assert(rng);
+        if (rng->lower_bound != 0) {
+            adjust = true;
+            c_adjust_comment = "// Parameter '" + name + "' is declared range and requires transformation.";
+            c_adjust_code += "value += " + to_string(rng->lower_bound) + ";";
+        }
+    }
+
     if (rank() > 0) {
         // om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
         c += alternate_name() + " = std::move("
