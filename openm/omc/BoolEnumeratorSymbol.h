@@ -20,7 +20,7 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     explicit BoolEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal)
         : EnumeratorSymbol(unm, enumeration, ordinal)

@@ -70,20 +70,21 @@ string StringTypeSymbol::format_for_storage(const Constant &k) const
 {
     string lit = k.value(); // The constant as a C++ string literal
 
-    // string constants are stored as C++ string literals
+    // string constants may be a C++ string literals
     // e.g. "C:\\MyFolder\\TheFile.dat"
     // including surrounding double quotes and internal C++ escape sequences,
     // such as \\ for \.
     // For DB storage, the quotes need to be removed, and the escapes expanded.
 
     assert(is_string()); // logic guarantee
-    assert(lit.length() >= 2 && lit[0] == '"' && lit[lit.length() - 1] == '"'); // logic guarantee - string literal is enclosed in "
 
-    string inside = lit.substr(1, lit.length() - 2);
+    if (lit.length() >= 2 && lit[0] == '"' && lit[lit.length() - 1] == '"') {   // remove "quotes"
+        lit = lit.substr(1, lit.length() - 2);
+    }
 
     string result;
     bool in_escape = false;
-    for (auto ch : inside) {
+    for (auto ch : lit) {
         if (in_escape) {
             switch (ch) {
             case '"':

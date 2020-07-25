@@ -18,7 +18,7 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     explicit PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point, yy::location decl_loc = yy::location())
         : EnumeratorSymbol(unm, enumeration, ordinal, decl_loc)

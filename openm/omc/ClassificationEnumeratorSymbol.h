@@ -19,7 +19,7 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     explicit ClassificationEnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
         : EnumeratorSymbol(sym, enumeration, ordinal, decl_loc)

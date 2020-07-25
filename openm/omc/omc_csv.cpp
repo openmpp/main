@@ -11,12 +11,6 @@
 using namespace std;
 using namespace openm;
 
-// dimension item
-struct EItem {
-    int id;         // enum id
-    string name;    // enum name
-};
-
 // parameter dimension
 struct PDim {
     string name;                        // dimension name
@@ -28,7 +22,8 @@ struct PDim {
 
 static const vector< pair< int, vector<string> > > parseSimpleCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv);
 static const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv);
-static vector<PDim> getDims(const ParameterSymbol * i_param);
+static const vector<PDim> getDims(const ParameterSymbol * i_param);
+static const map<string, int> getParamEnums(const ParameterSymbol * i_param);
 
 // read parameters data from .csv or .tsv files from fixed directory and parameter directory
 extern void omc::readParameterCsvFiles(
@@ -83,7 +78,7 @@ extern void omc::readParameterCsvFiles(
                 continue;   // skip this csv file
             }
             else {
-                theLog->logFormatted("scenario parameter %s re-initialized from: %s", param->name.c_str(), pathCsv.c_str());
+                theLog->logFormatted("re-initialize scenario parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
             }
         }
         // if parameter already initialized as scenario parameter then csv file must be in parameter directory
@@ -94,7 +89,7 @@ extern void omc::readParameterCsvFiles(
                 continue;   // skip this csv file
             }
             else {
-                theLog->logFormatted("fixed parameter %s re-initialized from: %s", param->name.c_str(), pathCsv.c_str());
+                theLog->logFormatted("re-initialize fixed parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
             }
         }
 
@@ -168,13 +163,23 @@ extern void omc::readParameterCsvFiles(
         }
     }
 
-    if (i_isFixed && nFiles) theLog->logFormatted("Compiled fixed parameters: %d .csv/.tsv file(s) from: %s", nFiles, i_srcDir.c_str());
-    if (!i_isFixed && nFiles) theLog->logFormatted("Compiled scenario parameters: %d .csv/.tsv file(s) from: %s", nFiles, i_srcDir.c_str());
+    if (nFiles && i_isFixed) theLog->logFormatted("Processed %d fixed parameter .csv file(s) from: %s", nFiles, i_srcDir.c_str());
+    if (nFiles && !i_isFixed) theLog->logFormatted("Processed %d scenario parameter .csv file(s) from: %s", nFiles, i_srcDir.c_str());
 }
 
 // parse "simple" parameter csv file: simple file contains only parameter values, no dimensions
 const vector< pair< int, vector<string> > > parseSimpleCsv(const ParameterSymbol * i_param, const list<string> & i_csvLines, const char * i_separator, string & i_pathCsv)
 {
+    // if parameter type is partition then get a map from database enum name to c++ enum id
+    TypeSymbol * pt = i_param->pp_datatype;
+    bool isPartition = false;
+    map<string, int> enumValueMap;
+
+    if (auto pe = dynamic_cast<const PartitionSymbol *>(pt); pe) {
+        isPartition = true;
+        enumValueMap = getParamEnums(i_param);
+    }
+
     // append csv string values to output list
     // skip empty lines from csv file and skip empty values after parameter size
     size_t nParamSize = i_param->size();
@@ -206,11 +211,27 @@ const vector< pair< int, vector<string> > > parseSimpleCsv(const ParameterSymbol
                 return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
             }
 
-            valArr.emplace_back(val);
+            if (!isPartition || val.empty() || equalNoCase(val.c_str(), "NULL")) {
+                valArr.emplace_back(val);
+            }
+            else {  // parameter value is a partion type, convert from database name to c++ enum id: [-10, 0) => 7
+
+                const auto eIt = enumValueMap.find(val);
+                if (eIt == enumValueMap.cend()) {
+                    Symbol::pp_error(
+                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        LT("error : '") + val + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+
+                    return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
+                }
+
+                valArr.emplace_back(val) = to_string(eIt->second);  // store enum id as parameter value
+            }
+
         }
     }
 
-    return { {i_param->default_sub_id, valArr } };
+    return { { i_param->default_sub_id, valArr } };
 }
 
 // parse "dimension" parameter csv file
@@ -225,9 +246,13 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
         theLog->logFormatted("error : invalid (empty) parameter file : %s", i_pathCsv.c_str());
         return vector< pair< int, vector<string> > >();    // return error: parameter file must have header line
     }
+    // get dimensions and dimension items
+    vector<PDim> dims = getDims(i_param);
 
-    vector<PDim> dims = getDims(i_param);    // get dimensions and dimension items sorted by enum id's
-    size_t nRank = dims.size();
+    size_t nRank = i_param->rank();
+    if (dims.size() != nRank) {
+        throw HelperException(LT("error : parameter %s must have %zd dimension(s), but found only %zd"), i_param->name.c_str(), dims.size(), nRank);
+    }
 
     // verify file header
     list<string> hCols = splitCsv(i_csvLines.front(), i_separator, true, '"');  // split csv columns, separated by comma or tab, "unquoute" column values
@@ -256,6 +281,16 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
     if (!equalNoCase(hCols.back().c_str(), "param_value")) {
         theLog->logFormatted("error : invalid header (first line) in parameter file : %s, expected: %s, found: %s", i_pathCsv.c_str(), "param_value", hCols.back().c_str());
         return vector< pair< int, vector<string> > >();     // return error: parameter header line must have rank + 1 columns
+    }
+
+    // if parameter type is partition then get a map from database enum name to c++ enum id
+    TypeSymbol * pt = i_param->pp_datatype;
+    bool isPartition = false;
+    map<string, int> enumValueMap;
+
+    if (auto pe = dynamic_cast<const PartitionSymbol *>(pt); pe) {
+        isPartition = true;
+        enumValueMap = getParamEnums(i_param);
     }
 
     // append csv string values to output list, skip empty lines from csv file
@@ -355,7 +390,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
                 throw HelperException(LT("error : parameter %s cell index invalid: %d"), i_param->name.c_str(), nCell);
             }
 
-            // check if this is duplicate row
+            // check if this is duplicate row: if that cell already found by sub value id and dimension(s) items
             if (useArr[nSubIndex][nCell]) {
                 Symbol::pp_error(
                     yy::location(yy::position(&i_pathCsv, nLine)),
@@ -364,7 +399,26 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
                 return vector< pair< int, vector<string> > >(); // return error: invalid dimension item
             }
 
-            subValArr[nSubIndex].second[nCell] = val;   // store cell value
+            // convert cell value, if required and store it
+            if (!val.empty() && !equalNoCase(val.c_str(), "NULL")) {
+
+                if (!isPartition) {
+                    subValArr[nSubIndex].second[nCell] = val;   // store cell value
+                }
+                else {  // parameter value is a partion type, convert from database name to c++ enum id: [-10, 0) => 7
+
+                    const auto eIt = enumValueMap.find(val);
+                    if (eIt == enumValueMap.cend()) {
+                        Symbol::pp_error(
+                            yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                            LT("error : '") + val + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+
+                        return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
+                    }
+                    subValArr[nSubIndex].second[nCell] = to_string(eIt->second);    // store cell value
+                }
+            }
+
             useArr[nSubIndex][nCell] = true;            // mark parameter cell of this sub value as "found" to avoid duplicates
             nCol++;
         }
@@ -374,7 +428,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
 }
 
 // get parameter dimensions and items for each dimension
-vector<PDim> getDims(const ParameterSymbol * i_param)
+const vector<PDim> getDims(const ParameterSymbol * i_param)
 {
     vector<PDim> dims;
     dims.reserve(i_param->rank());
@@ -424,4 +478,32 @@ vector<PDim> getDims(const ParameterSymbol * i_param)
     }
 
     return dims;
+}
+
+// get parameter values if parameter type is enumeration (classification, partition, range, boolean) 
+// return map from database name to integer c++ enum value
+const map<string, int> getParamEnums(const ParameterSymbol * i_param)
+{
+    TypeSymbol * pt = i_param->pp_datatype;
+    if (!pt->is_enumeration()) return map<string, int>();   // empty result: parameter value is not a one of enumeration types
+
+    map<string, int> eMap;
+
+    if (auto ee = dynamic_cast<const EnumerationWithEnumeratorsSymbol *>(pt); ee) { // classification, partition or boolean
+
+        const auto eLst = ee->pp_enumerators;
+        for (const auto e : eLst) {
+            eMap[e->db_name()] = e->ordinal;
+        }
+        return eMap;
+    }
+    // else must be range type
+
+    auto er = dynamic_cast<const RangeSymbol *>(pt);
+    if (!er) throw HelperException(LT("error : parameter %s has invalid type of EnumerationSymbol"), i_param->name.c_str());
+
+    for (int n = er->lower_bound; n <= er->upper_bound; n++) {
+        eMap[to_string(n)] = n;
+    }
+    return eMap;
 }
