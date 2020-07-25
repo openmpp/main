@@ -55,7 +55,7 @@ public:
         return result;
     }
 
-	string db_name() const
+	string db_name() const override
 	{
 		// The 'name' in the data store is the formatted partition, e.g. "[14,20)"
 		return formatted_interval();
@@ -71,7 +71,7 @@ public:
 	*
 	* @return A string.
 	*/
-	string label(const LanguageSymbol & language) const
+	string label(const LanguageSymbol & language) const override
 	{
 		return formatted_interval();
 	}
@@ -85,7 +85,7 @@ public:
      *
      * @return A string.
      */
-    string note(const LanguageSymbol & language) const
+    string note(const LanguageSymbol & language) const override
     {
         return "";
     }

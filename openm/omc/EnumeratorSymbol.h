@@ -36,7 +36,7 @@ public:
     {
     }
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
 
 	/**

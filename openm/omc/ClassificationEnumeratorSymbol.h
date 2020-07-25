@@ -26,7 +26,7 @@ public:
     {
     }
 
-	string db_name() const
+	string db_name() const override
 	{
 		// The 'name' in the data store is the same as the classification level in model code
 		return name;
