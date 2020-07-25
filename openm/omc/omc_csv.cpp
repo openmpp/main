@@ -361,7 +361,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
             }
             else {  // sub value id not found: add new sub value
                 subValArr.emplace_back(pair< int, vector<string> >(nSubId, vector<string>(nParamSize)));
-                nSubIndex = subValArr.size() - 1;
+                nSubIndex = (int)subValArr.size() - 1;
                 subIdIndexMap[nSubId] = nSubIndex;
                 useArr.emplace_back(vector<bool>(nParamSize, false));
             }
