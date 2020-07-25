@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D807DC6424CBC765002E55F6 /* Literal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D807DC6224CBC765002E55F6 /* Literal.cpp */; };
+		D807DC6524CBC765002E55F6 /* omc_csv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D807DC6324CBC765002E55F6 /* omc_csv.cpp */; };
 		D893973E247EB25300D61DAA /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973D247EB20600D61DAA /* libiconv.tbd */; };
 		D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973F247EB25E00D61DAA /* liblibsqlite.a */; };
 		D8939742247EB26400D61DAA /* liblibopenm_omc_db.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */; };
@@ -97,6 +99,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D807DC6124CBC765002E55F6 /* omc_csv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_csv.h; sourceTree = "<group>"; };
+		D807DC6224CBC765002E55F6 /* Literal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Literal.cpp; sourceTree = "<group>"; };
+		D807DC6324CBC765002E55F6 /* omc_csv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_csv.cpp; sourceTree = "<group>"; };
 		D893973D247EB20600D61DAA /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		D893973F247EB25E00D61DAA /* liblibsqlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibsqlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibopenm_omc_db.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -345,6 +350,7 @@
 				D8FD88B2247D846C0006D608 /* LinkToAttributeSymbol.cpp */,
 				D8FD88A2247D846B0006D608 /* LinkToAttributeSymbol.h */,
 				D8FD889A247D846A0006D608 /* Literal.h */,
+				D807DC6224CBC765002E55F6 /* Literal.cpp */,
 				D8FD88AE247D846C0006D608 /* MaintainedAttributeSymbol.cpp */,
 				D8FD889E247D846B0006D608 /* MaintainedAttributeSymbol.h */,
 				D8FD88AA247D846B0006D608 /* ModelSymbol.cpp */,
@@ -360,6 +366,8 @@
 				D8FD88A0247D846B0006D608 /* omc_file.cpp */,
 				D8FD88A3247D846B0006D608 /* omc_file.h */,
 				D8FD88AD247D846C0006D608 /* omc.cpp */,
+				D807DC6124CBC765002E55F6 /* omc_csv.h */,
+				D807DC6324CBC765002E55F6 /* omc_csv.cpp */,
 				D8FD88B3247D846C0006D608 /* ParameterGroupSymbol.cpp */,
 				D8FD88A4247D846B0006D608 /* ParameterGroupSymbol.h */,
 				D8FD884C247D84300006D608 /* BoolSymbol.h */,
@@ -610,12 +618,14 @@
 				D8FD8883247D84330006D608 /* EntityHookSymbol.cpp in Sources */,
 				D8FD88F9247D84B30006D608 /* RangeSymbol.cpp in Sources */,
 				D8FD8907247D84B30006D608 /* SimpleAttributeEnumSymbol.cpp in Sources */,
+				D807DC6424CBC765002E55F6 /* Literal.cpp in Sources */,
 				D8FD8885247D84330006D608 /* EntityTableSymbol.cpp in Sources */,
 				D8FD888A247D84330006D608 /* EntityMemberSymbol.cpp in Sources */,
 				D8FD8906247D84B30006D608 /* VersionSymbol.cpp in Sources */,
 				D8FD888E247D84330006D608 /* Constant.cpp in Sources */,
 				D8FD88C4247D846C0006D608 /* ParameterGroupSymbol.cpp in Sources */,
 				D8FD8900247D84B30006D608 /* ScenarioSymbol.cpp in Sources */,
+				D807DC6524CBC765002E55F6 /* omc_csv.cpp in Sources */,
 				D8FD888D247D84330006D608 /* ConstantSymbol.cpp in Sources */,
 				D8FD88C3247D846C0006D608 /* LinkToAttributeSymbol.cpp in Sources */,
 				D8FD888B247D84330006D608 /* DerivedTableSymbol.cpp in Sources */,
