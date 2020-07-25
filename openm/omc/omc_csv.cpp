@@ -308,7 +308,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
         list<string> cols = splitCsv(line, i_separator, true, '"'); // split csv columns, separated by comma or tab, "unquoute" column values
 
         // skip empty lines
-        if (cols.size() <= 0 || cols.size() == 1 && cols.front().empty()) {
+        if (cols.size() <= 0 || (cols.size() == 1 && cols.front().empty())) {
             continue;   // skip all empty values after end of parameter
         }
 

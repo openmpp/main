@@ -142,7 +142,7 @@ bool TypeSymbol::is_numeric_floating() const
 
 bool TypeSymbol::is_numeric_integer() const
 {
-    if (auto ns = dynamic_cast<const NumericSymbol *>(this)) {
+    if (dynamic_cast<const NumericSymbol *>(this)) {
         return !is_numeric_floating() && !is_time();
     }
     return false;
