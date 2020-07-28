@@ -300,23 +300,30 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
     vector< pair< int, vector<string> > > subValArr;    // parameter sub values (parameter cells) for each sub value id
     vector< vector<bool> > useArr;                      // if true then parameter cell value already found in csv
 
+    list<string> csvCols;               // csv columns buffer
+    for (int k = 0; k < colCount; k++) {
+        string s;
+        s.reserve(255);
+        csvCols.push_back(std::move(s));
+    }
+
     unsigned int nLine = 0;
     for (const string & line : i_csvLines) {
 
         if (nLine++ == 0) continue; // skip header line
 
-        list<string> cols = splitCsv(line, i_separator, true, '"'); // split csv columns, separated by comma or tab, "unquoute" column values
+        splitCsv(line, csvCols, i_separator, true, '"'); // split csv columns, separated by comma or tab, "unquoute" column values
 
         // skip empty lines
-        if (cols.size() <= 0 || (cols.size() == 1 && cols.front().empty())) {
+        if (csvCols.size() <= 0 || (csvCols.size() == 1 && csvCols.front().empty())) {
             continue;   // skip all empty values after end of parameter
         }
 
         // each non-empty line in csv file must have rank + 1 or rank + 2 columns
-        if (cols.size() != colCount) {
+        if (csvCols.size() != colCount) {
             Symbol::pp_error(
                 yy::location(yy::position(&i_pathCsv, nLine)),
-                LT("error : line of parameter file '") + i_param->name + LT("' has ") + to_string(cols.size()) + LT(" columns, expected: ") + to_string(colCount));
+                LT("error : line of parameter file '") + i_param->name + LT("' has ") + to_string(csvCols.size()) + LT(" columns, expected: ") + to_string(colCount));
 
             return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
         }
@@ -327,14 +334,14 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
         int nCell = 0;
         int nSubId = i_param->default_sub_id;
         int nSubIndex = 0;
-        for (const string & val : cols) {
+        for (const string & val : csvCols) {
 
             if (isSubIdFile && nCol == 0) {
 
                 if (!IntegerLiteral::is_valid_literal(val.c_str())) {
                     Symbol::pp_error(
                         yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
-                        LT("error : '") + val + LT("' is not a valid sub value id '") + val.c_str() + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+                        LT("error : '") + val + LT("' is not a valid sub value id in initializer for parameter '") + i_param->name + LT("'"));
 
                         return vector< pair< int, vector<string> > >(); // return error: sub value id must be integer
                 }
@@ -343,7 +350,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
                 if (lv < INT_MIN || lv > INT_MAX) {
                     Symbol::pp_error(
                         yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
-                        LT("error : '") + val + LT("' is not a valid sub value id '") + val.c_str() + LT("' in initializer for parameter '") + i_param->name + LT("'"));
+                        LT("error : '") + val + LT("' is not a valid sub value id in initializer for parameter '") + i_param->name + LT("'"));
 
                     return vector< pair< int, vector<string> > >(); // return error: sub value id out of range
                 }
@@ -400,7 +407,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const ParameterSymbol * 
             }
 
             // convert cell value, if required and store it
-            if (!val.empty() && !equalNoCase(val.c_str(), "NULL")) {
+            if (!val.empty() && val.c_str() != "NULL" && val.c_str() != "null") {
 
                 if (!isPartition) {
                     subValArr[nSubIndex].second[nCell] = val;   // store cell value

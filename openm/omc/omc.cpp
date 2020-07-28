@@ -631,11 +631,9 @@ int main(int argc, char * argv[])
             scenario_parameters_count++;
             WorksetParamRow wsParam;
             wsParam.paramId = param->pp_parameter_id;
-            //
             wsParam.subCount = param->sub_count();          // number of parameter sub-values in the scenario
             wsParam.defaultSubId = param->default_sub_id;   // sub-value id to be used by default for that parameter
-            //
-            metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
+            metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
             // value notes for the parameter
             for (auto lang : Symbol::pp_all_languages) {
                 WorksetParamTxtLangRow worksetParamTxt;
@@ -709,6 +707,7 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
 {
     using namespace openm;
     for (auto it = start_it; it != files.cend(); it++) {
+
         string full_name = *it;
         try {
             string file_ext = getFileNameExt(full_name);

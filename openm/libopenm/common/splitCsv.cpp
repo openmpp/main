@@ -27,8 +27,6 @@ list<string> openm::splitCsv(const string & i_values, const char * i_delimiters,
     return resultLst;
 }
 
-#include "libopenm/omLog.h"
-
 /**
 * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
 *
