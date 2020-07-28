@@ -106,8 +106,8 @@ extern void omc::readParameterCsvFiles(
         // re-initialize parameter: clear previous values from .dat file
         param->source = i_isFixed ? ParameterSymbol::fixed_parameter : ParameterSymbol::scenario_parameter;
         param->sub_initial_list.resize(1);
-        param->sub_initial_list[0].first = param->default_sub_id;
-        param->sub_initial_list[0].second.clear();
+        param->sub_initial_list.front().first = 0;
+        param->sub_initial_list.front().second.clear();
         param->post_parse_mark_enumerations();  // mark all dimensions and dimension enum items as dependency of parameter
 
         // create list of string literal parameter values from csv lines
@@ -124,17 +124,15 @@ extern void omc::readParameterCsvFiles(
             continue;     // skip invalid parameter csv
         }
 
-        param->default_sub_id = subValArr[0].first; // default parameter sub value is a first sub value from csv file
-
         // convert string literal values to parameter type constants and append to initializer list
         TypeSymbol * pt = param->pp_datatype;
 
         for (size_t nSub = 0; nSub < subValArr.size(); nSub++) {
 
             // clear first sub-value (default sub-value) or append additional sub-values
-            if (nSub < param->sub_initial_list.size()) {
-                param->sub_initial_list[nSub].first = subValArr[nSub].first;
-                param->sub_initial_list[nSub].second.clear();
+            if (nSub == 0) {
+                param->sub_initial_list.front().first = subValArr[nSub].first;
+                param->sub_initial_list.front().second.clear();
             }
             else {
                 param->sub_initial_list.push_back({ subValArr[nSub].first, list<Constant *>() });
@@ -153,12 +151,12 @@ extern void omc::readParameterCsvFiles(
                         yy::location(yy::position(&pathCsv)),
                         LT("error : '") + v + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + param->name + LT("'"));
 
-                    param->sub_initial_list[nSub].second.clear();   // parameter value invalid
+                    param->sub_initial_list.back().second.clear();   // parameter value invalid
                     break;
                 }
 
                 io_cpLst.push_front(unique_ptr<Constant>(c));
-                param->sub_initial_list[nSub].second.push_back(c);
+                param->sub_initial_list.back().second.push_back(c);
             }
         }
     }

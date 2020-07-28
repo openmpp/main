@@ -12,7 +12,6 @@
 #include "libopenm/db/metaModelHolder.h"
 
 #include "location.hh"
-#include "libopenm/omLog.h"
 
 using namespace std;
 using namespace openm;

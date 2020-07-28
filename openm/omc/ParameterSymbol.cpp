@@ -534,19 +534,24 @@ pair< int, list<string> > ParameterSymbol::initializer_for_storage(int i_sub_ind
     if (i_sub_index < 0 || i_sub_index >= (int)sub_initial_list.size()) {
         throw HelperException(LT("error : parameter %s sub-value index invalid: %d"), name.c_str(), i_sub_index);
     }
+    auto slIt = sub_initial_list.cbegin();
+    for (int k = 0; k < i_sub_index; ++slIt, ++k) {
+        if (slIt == sub_initial_list.cend())
+            throw HelperException(LT("error : parameter %s sub-value index invalid: %d"), name.c_str(), i_sub_index);
+    }
 
     list<string> values;
-    for (auto k : sub_initial_list[i_sub_index].second) {
+    for (auto k : slIt->second) {
         values.push_back(k->format_for_storage(*pp_datatype));
     }
     if (is_extendable) {
         // if an extendable parameter has unspecified trailing values, append NULL's
-        int unspecified_count = size() - sub_initial_list[i_sub_index].second.size();
+        int unspecified_count = size() - slIt->second.size();
         for (int k = 0; k < unspecified_count; ++k) {
             values.push_back("NULL");
         }
     }
-    return { sub_initial_list[i_sub_index].first, values };
+    return { slIt->first, values };
 }
 
 CodeBlock ParameterSymbol::dat_definition() const

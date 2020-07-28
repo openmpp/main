@@ -316,17 +316,17 @@ public:
     * List of initializers for each parameter sub-value.
     * First elelemnt is default sub-value id and 'initializer_list' created by parser.
     */
-    vector< pair<int, list<Constant *> > > sub_initial_list = { { 0, list<Constant *>() } };
+    list< pair<int, list<Constant *> > > sub_initial_list = { { 0, list<Constant *>() } };
 
     /**
      * List of initializers, if parameter has multiple sub-values then it is initializer for default sub-value.
      */
-    list<Constant *> & initializer_list = sub_initial_list[0].second;
+    list<Constant *> & initializer_list = sub_initial_list.front().second;
 
     /**
     * Default sub-value id for the parameter.
     */
-    int & default_sub_id = sub_initial_list[0].first;
+    int & default_sub_id = sub_initial_list.front().first;
 
     /**
     * Number of sub-values in parameter initializer.
