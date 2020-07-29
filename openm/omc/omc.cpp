@@ -680,6 +680,7 @@ int main(int argc, char * argv[])
 
             for (auto pdIt = ++paramDirLst.cbegin(); pdIt != paramDirLst.cend(); ++pdIt) {
 
+                // if scenario name supplied then use it else by default name is equal to directory stem
                 string scName = "";
                 if (snIt != scNameLst.cend()) scName = *snIt++;
 
@@ -757,6 +758,12 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
 static void processExtraParamDir(const string & i_paramDir, const string & i_scenarioName, const MetaModelHolder & i_metaRows, IModelBuilder * i_builder)
 {
     theLog->logFormatted("Compile scenario parameters from: %s", i_paramDir.c_str());
+
+    // only .csv or .tsv files allowed in additional parameters directory
+    list<string> dat_files = listSourceFiles(i_paramDir, { ".dat", ".odat" });
+    if (dat_files.size() > 0) {
+        theLog->logFormatted("warning : skip %zd .dat or .odat parameter file(s) in %s", dat_files.size(), i_paramDir.c_str());
+    }
 
     // clean previous parameter data
     for (const auto param : Symbol::pp_all_parameters) {
