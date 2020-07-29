@@ -292,8 +292,8 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
     // if parameter type is partition then get a map from database enum name to c++ enum id
     TypeSymbol * pt = i_param->pp_datatype;
     bool isEnumVal = 
-        i_isIdCsv && (pt->is_classification() || pt->is_partition() || pt->is_range()) || 
-        !i_isIdCsv && pt->is_partition();
+        (i_isIdCsv && (pt->is_classification() || pt->is_partition() || pt->is_range())) || 
+        (!i_isIdCsv && pt->is_partition());
 
     map<string, string> enumValueMap;
     if (isEnumVal) enumValueMap = getEnumToCppId(i_isIdCsv, i_param);
@@ -306,7 +306,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
     vector< vector<bool> > useArr;                      // if true then parameter cell value already found in csv
 
     list<string> csvCols;               // csv columns buffer
-    for (int k = 0; k < colCount; k++) {
+    for (size_t k = 0; k < colCount; k++) {
         string s;
         s.reserve(255);
         csvCols.push_back(std::move(s));
