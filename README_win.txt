@@ -34,7 +34,7 @@ various options to find the dialogue to modify environment variables.
 Verifying the OpenM++ installation
 ========================================
 
-OpenM++ model development requires at least Visual Studio 2017.  Here are steps to verify the
+OpenM++ model development requires at least Visual Studio 2017. Here are steps to verify the
 OpenM++ installation using the RiskPaths model, which is shipped with the OpenM++ installation.
 
 1. Double-click the solution file C:\OpenM++\models\RiskPaths\RiskPaths-ompp.sln to open the solution
