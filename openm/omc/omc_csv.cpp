@@ -31,7 +31,7 @@ extern void omc::readParameterCsvFiles(
     const string & i_srcDir,
     forward_list<unique_ptr<Constant> > & io_cpLst)
 {
-    theLog->logFormatted("Process parameters .csv or .tsv files from: %s", i_srcDir.c_str());
+    theLog->logFormatted("Read parameters from .csv or .tsv files: %s", i_srcDir.c_str());
 
     // to filter csv files make map of parameter name in lower case to parameter symbol
     map<string, ParameterSymbol *> paramNameMap;
@@ -74,6 +74,7 @@ extern void omc::readParameterCsvFiles(
         // if parameter is a missing then it can can be initialized as either scenario or fixed parameter by reading csv file
         // it is an error to change parameter from fixed to scenario (or other way around: scenario to fixed) using csv file
         // if parameter already initialized as fixed parameter then csv file must be in fixed directory
+        bool isMsgDone = false;
         if (param->source == ParameterSymbol::scenario_parameter) {
             if (i_isFixed) {
                 theLog->logFormatted("error : scenario parameter %s cannot be re-initialized as fixed parameter by csv file: %s", param->name.c_str(), pathCsv.c_str());
@@ -81,7 +82,8 @@ extern void omc::readParameterCsvFiles(
                 continue;   // skip this csv file
             }
             else {
-                theLog->logFormatted("re-initialize scenario parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
+                theLog->logFormatted("Re-initialize scenario parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
+                bool isMsgDone = true;
             }
         }
         // if parameter already initialized as scenario parameter then csv file must be in parameter directory
@@ -92,12 +94,11 @@ extern void omc::readParameterCsvFiles(
                 continue;   // skip this csv file
             }
             else {
-                theLog->logFormatted("re-initialize fixed parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
+                theLog->logFormatted("Re-initialize fixed parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
+                bool isMsgDone = true;
             }
         }
-        if (param->source == ParameterSymbol::missing_parameter) {
-            theLog->logFormatted("processing %s", pathCsv.c_str());
-        }
+        if (!isMsgDone) theLog->logFormatted("Reading %s", pathCsv.c_str());
 
         // read csv file, it must not be empty
         list<string> csvLines = fileToUtf8Lines(pathCsv.c_str(), Symbol::code_page.c_str());
@@ -167,8 +168,8 @@ extern void omc::readParameterCsvFiles(
         nFiles++;
     }
 
-    if (nFiles && i_isFixed) theLog->logFormatted("Processed %d fixed parameter .csv file(s) from: %s", nFiles, i_srcDir.c_str());
-    if (nFiles && !i_isFixed) theLog->logFormatted("Processed %d scenario parameter .csv file(s) from: %s", nFiles, i_srcDir.c_str());
+    if (nFiles && i_isFixed) theLog->logFormatted("Found %d fixed parameter file(s) at: %s", nFiles, i_srcDir.c_str());
+    if (nFiles && !i_isFixed) theLog->logFormatted("Found %d scenario parameter file(s) at: %s", nFiles, i_srcDir.c_str());
 }
 
 // parse "simple" parameter csv file: simple file contains only parameter values, no dimensions
