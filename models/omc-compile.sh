@@ -15,7 +15,7 @@ if [ ! -x ${OMC_EXE} ]; then
 fi
 
 OMC_SCENARIO_OPT=
-if [ -d ${OMC_SCENARIO_PARAM_DIR} ] && [ -n "$(ls ${OMC_SCENARIO_PARAM_DIR})" ]; then
+if [ -n ${OMC_SCENARIO_PARAM_DIR} ]; then
   OMC_SCENARIO_OPT="-p ${OMC_SCENARIO_PARAM_DIR}"
 fi
 
