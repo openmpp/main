@@ -19,9 +19,9 @@ int RunController::createTaskRun(int i_taskId, IDbExec * i_dbExec)
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
     // get next task run id
-    i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'task_run_id'");
+    i_dbExec->update("UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'run_id_set_id'");
 
-    int taskRunId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'task_run_id'", 0);
+    int taskRunId = i_dbExec->selectToInt("SELECT id_value FROM id_lst WHERE id_key = 'run_id_set_id'", 0);
     if (taskRunId <= 0)
         throw DbException("invalid task run id: %d", taskRunId);
 
