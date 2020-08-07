@@ -20,12 +20,12 @@ using namespace openm;
 //   use value of parameter from working set of model parameters
 //   if working set based on model run then search by base run id to get parameter value
 //   else raise an exception
-void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const
+void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunId, IDbExec * i_dbExec) const
 {
     // find input parameters workset
     if (i_setId <= 0) throw DbException("invalid set id or model working sets not found in database");
 
-    // increase read only flag to "lock" workset until parameters copy not done
+    // increase read only flag to "lock" workset until parameters copy is done
     string sSetId = to_string(i_setId);
     i_dbExec->update(
         "UPDATE workset_lst SET is_readonly = is_readonly + 1 WHERE set_id = " + sSetId
@@ -33,33 +33,26 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     int nReadonly = i_dbExec->selectToInt(
         "SELECT is_readonly FROM workset_lst WHERE set_id = " + sSetId,
         0);
-    if (nReadonly <= 1) throw DbException("workset must be read-only (set id: %d)", i_setId);
 
-    // workset must exist
+    // workset must exist and must be read-only
     vector<WorksetLstRow> wsVec = IWorksetLstTable::byKey(i_dbExec, i_setId);
     if (wsVec.empty()) throw DbException("workset must exist (set id: %d)", i_setId);
+    if (nReadonly <= 1) throw DbException("workset must be read-only (set id: %d)", i_setId);
 
     const WorksetLstRow & wsRow = wsVec[0];
 
     // validate workset: it must be read-only and must be from the same model
     if (wsRow.modelId != modelId) throw DbException("invalid workset model id: %d, expected: %d (set id: %d)", wsRow.modelId, modelId, i_setId);
-    // if (!wsRow.isReadonly) throw DbException("workset must be read-only (set id: %d)", i_setId);
 
     // get list of model parameters and list of parameters included into workset
     vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
     vector<WorksetParamRow> wsParamVec = IWorksetParamTable::select(i_dbExec, i_setId);
 
-    // if base run does not exist then workset must include all model parameters
-    int baseWsRunId = wsRow.baseRunId;
-    bool isBaseWsRun = baseWsRunId > 0;
-    // if base run does not exist then workset must include all model parameters
-    // if (!isBaseRunExist && paramVec.size() != wsParamVec.size()) throw DbException("workset must include all model parameters (set id: %d)", setId);
-
     // check if parameters csv directory specified and accessible
     string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
     bool isParamDir = !paramDir.empty() && isFileExists(paramDir.c_str());
 
-    // is csv conatins enum id's or enum codes
+    // is csv contains enum id's or enum codes
     bool isIdCsv = argOpts().boolOption(RunOptionsKey::useIdCsv);
     bool isIdValue = argOpts().boolOption(RunOptionsKey::useIdParamValue);
 
@@ -78,12 +71,14 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
     //   from parameter.csv file if exist
-    //   from workset parameter value table
-    //   if workset based on run then as link to base run of workset
+    //   if base run speified use base run parameter table
+    //   else
+    //   workset parameter value table
+    //   if workset based on run then base run of workset
     // calculate parameter values digest and store only single copy of parameter values
     string sRunId = to_string(i_runId);
     string sModelId = to_string(modelId);
-    string sBaseWsRunId = to_string(baseWsRunId);
+    int nBaseRunId = (i_baseRunId > 0) ? i_baseRunId : wsRow.baseRunId;
     string paramDot = string(RunOptionsKey::parameterPrefix) + ".";
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
@@ -96,9 +91,14 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         int nParamSubCount = parameterSubCount(paramIt->paramId);   // if >1 then multiple sub-values expected
         int nRank = paramIt->rank;
 
-        auto wsParamRowIt = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec);
-        bool isExistInWs = wsParamRowIt != wsParamVec.cend();
-        int defaultSubId = isExistInWs ? wsParamRowIt->defaultSubId : 0;    // default sub-value id for workset parameter, use 0 if parameter exist in base run
+        // if no base run specified then check if parameter exist in workset
+        bool isExistInWs = false;
+        int defaultSubId = 0;
+        if (i_baseRunId <= 0) {
+            auto wsParamRowIt = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec);
+            isExistInWs = wsParamRowIt != wsParamVec.cend();
+            defaultSubId = isExistInWs ? wsParamRowIt->defaultSubId : 0;    // default sub-value id for workset parameter, use 0 if parameter exist in base run
+        }
 
         ParamSubOpts subOpts = subOptsById(*paramIt, nParamSubCount, defaultSubId);
         bool isFromDb = subOpts.from == RunOptionsKey::dbSubValue;
@@ -175,7 +175,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             isInserted = true;
         }
 
-        // insert from parameter.csv file if sub-value from option = "csv" or from is default and csv directory specified
+        // insert from parameter.csv file if sub-value from option either "csv" or "default" and csv directory specified
         if (!isInserted && (isFromCsv || (isFromDefault && isParamDir))) {
 
             // if parameter.csv exist then copy it into parameter value table
@@ -234,9 +234,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             }
         }
 
-        // copy parameter from workset parameter value table
-        // copy parameter value notes from workset parameter text table
-        if (!isInserted && (isFromDb || isFromDefault) && isExistInWs) {
+        // if no base run specified and parameter exist in workset then copy from workset:
+        //   copy parameter from workset parameter value table
+        //   copy parameter value notes from workset parameter text table
+        if (!isInserted && (isFromDb || isFromDefault) && i_baseRunId <= 0 && isExistInWs) {
 
             // validate: parameter must exist in workset and must have enough sub-values
             int nSub = i_dbExec->selectToInt(
@@ -280,21 +281,21 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
             isCheckSubCount = true;
         }
 
-        // insert parameter values from workset base run:
+        // insert parameter values from base run:
         // if base run has same number of sub-values 
-        // then insert link to parameter values from workset base run
+        // then insert link to parameter values from base run
         // else copy only part of source sub-values as new parameter values
-        if (!isInserted && (isFromDb || isFromDefault) && isBaseWsRun) {
+        if (!isInserted && (isFromDb || isFromDefault) && nBaseRunId > 0) {
 
-            // validate: parameter must exist in workset base run and must have enough sub-values
+            // validate: parameter must exist in base run and must have enough sub-values
             int nSub = i_dbExec->selectToInt(
                 "SELECT sub_count FROM run_parameter" \
-                " WHERE run_id = " + sBaseWsRunId + " AND parameter_hid = " + to_string(paramIt->paramHid),
+                " WHERE run_id = " + to_string(nBaseRunId) + " AND parameter_hid = " + to_string(paramIt->paramHid),
                 0);
             if (nSub <= 0)
-                throw DbException("parameter %d: %s must be included in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), baseWsRunId);
+                throw DbException("parameter %d: %s must be included in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), nBaseRunId);
             if (nSub < nParamSubCount)
-                throw DbException("parameter %d: %s must have %d sub-values in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), nParamSubCount, baseWsRunId);
+                throw DbException("parameter %d: %s must have %d sub-values in base run (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), nParamSubCount, nBaseRunId);
 
             // if base run has same number of sub-values and it is in range [0, sub count - 1] then copy all else only part of source sub-values
             isBaseRunFullCopy = nParamSubCount == nSub &&
@@ -306,11 +307,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                     "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, value_digest)" \
                     " SELECT " + sRunId + ", parameter_hid, base_run_id, sub_count, value_digest" \
                     " FROM run_parameter"
-                    " WHERE run_id = " + sBaseWsRunId +
+                    " WHERE run_id = " + to_string(nBaseRunId) +
                     " AND parameter_hid = " + to_string(paramIt->paramHid)
                 );
             }
-            else {      // copy only required number of sub-values from base run of workset
+            else {      // copy only required number of sub-values from base run
 
                 // use sub id options to make where sub_id filter and map source sub id's to parameter run sub id's
                 string flt = makeWhereSubId(subOpts);
@@ -329,7 +330,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
                     "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sDimLst + " param_value)" +
                     " SELECT " + sRunId + ", " + subFlds + ", " + sDimLst + " param_value" +
                     " FROM " + paramIt->dbRunTable +
-                    " WHERE run_id = " + sBaseWsRunId +
+                    " WHERE run_id = " + to_string(nBaseRunId) +
                     (!flt.empty() ? " AND " + flt : "")
                 );
                 isCheckSubCount = true;
@@ -370,7 +371,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, IDbExec * i_db
         ri.second.meta.reset(nullptr);
     }
 
-    // unlock workset
+    // "unlock" workset: parameters copy completed.
     i_dbExec->update("UPDATE workset_lst SET is_readonly = 1 WHERE set_id = " + sSetId);
 }
 

@@ -189,6 +189,12 @@ run:
 		-OpenM.RunName "Import_from_Default_run" \
 		-EN.RunDescription "Import parameters from Default run" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.BaseRunName "Sub-values_2_from_csv" \
+		-OpenM.SubValues 2 -SubFrom.salaryFull db \
+		-OpenM.RunName "Base_run_is_Sub-values_2_from_csv" \
+		-EN.RunDescription "Parameters from base run Sub-values_2_from_csv" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:

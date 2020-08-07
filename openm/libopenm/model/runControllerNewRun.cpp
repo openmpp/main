@@ -184,6 +184,9 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     // else (not a task) then set specified by model run options or it is model default set
     nSetId = findWorkset(nSetId, i_dbExec);
 
+    // find base run id if base run options specified or if workset based on run
+    int nBaseRunId = findBaseRun(i_dbExec);
+
     // make new run name or use name specified by model run options
     string rn = cleanPathChars(argOpts().strOption(RunOptionsKey::runName), OM_NAME_DB_MAX);
     if (rn.empty()) {
@@ -244,7 +247,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     createRunOptions(nRunId, i_dbExec);
 
     // copy input parameters from "base" run and working set into new run id
-    createRunParameters(nRunId, nSetId, i_dbExec);
+    createRunParameters(nRunId, nSetId, nBaseRunId, i_dbExec);
 
     // insert run description and text
     createRunText(nRunId, nSetId, i_dbExec);
@@ -288,9 +291,9 @@ int RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
         setId = i_dbExec->selectToInt(
             "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(modelId), 0
         );
-        if (setId <= 0)
-            throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
     }
+    if (setId <= 0)
+        throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
 
     // update run options: actual set id and set name can be different
     setName = i_dbExec->selectToStr("SELECT set_name FROM workset_lst WHERE set_id = " + to_string(setId));
@@ -298,6 +301,58 @@ int RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
     setArgOpt(RunOptionsKey::setName, setName);
 
     return setId;
+}
+
+// find base run to get model parameters, it can be any existing run, including not completed run (in progress or failed).
+//   if base run id specified then check is it exist and use it
+//   else if run digest specified then use it to find base run id
+//   else if base run name specified then select first run with that name to find base run id
+int RunController::findBaseRun(IDbExec * i_dbExec)
+{
+    // find base run by id if specified as run options
+    int baseId = argOpts().intOption(RunOptionsKey::baseRunId, 0);
+    string dg;
+
+    if (baseId > 0) {
+        dg = i_dbExec->selectToStr(
+            "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(baseId) + " AND model_id = " + to_string(modelId)
+        );
+        if (dg.empty()) throw DbException("base run id not found for the model where id: %d", baseId, modelId);
+    }
+
+    // if base run digest specified then find base run id by run digest
+    if (baseId <= 0) {
+        dg = argOpts().strOption(RunOptionsKey::baseRunDigest);
+        if (!dg.empty()) {
+            baseId = i_dbExec->selectToInt(
+                "SELECT run_id FROM run_lst WHERE run_digest = " + toQuoted(dg) + " AND model_id = " + to_string(modelId),
+                0);
+            if (baseId <= 0) throw DbException("base run digest: %s not found for the model where id: %d", dg.c_str(), modelId);
+        }
+    }
+
+    // if base run name specified then find base run id as first run with that name
+    if (baseId <= 0) {
+        if (string rn = argOpts().strOption(RunOptionsKey::baseRunName); !rn.empty()) {
+            baseId = i_dbExec->selectToInt(
+                "SELECT MIN(run_id) FROM run_lst WHERE run_name = " + toQuoted(rn) + " AND model_id = " + to_string(modelId),
+                0);
+            if (baseId <= 0) throw DbException("base run name %s not found for the model where id: %d", rn.c_str(), modelId);
+        }
+    }
+
+    // if base run found then add it to run options
+    if (baseId > 0) {
+        setArgOpt(RunOptionsKey::baseRunId, to_string(baseId));
+        if (dg.empty()) {
+            dg = i_dbExec->selectToStr(
+                "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(baseId)
+            );
+        }
+        if (!dg.empty()) setArgOpt(RunOptionsKey::baseRunDigest, dg);
+    }
+
+    return baseId;
 }
 
 /** save run options by inserting into run_option table */

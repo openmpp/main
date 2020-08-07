@@ -141,11 +141,14 @@ namespace openm
         /** find source working set for input parameters */
         int findWorkset(int i_setId, IDbExec * i_dbExec);
 
+        /** find base run to get model parameters, if base run option(s) specified */
+        int findBaseRun(IDbExec * i_dbExec);
+
         /** save run options by inserting into run_option table */
         void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
-        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;
+        void createRunParameters(int i_runId, int i_setId, int i_baseRunId, IDbExec * i_dbExec) const;
 
         // cretate run description and notes using run options or by copy it from workset text
         void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
