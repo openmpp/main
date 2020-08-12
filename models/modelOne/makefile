@@ -195,6 +195,12 @@ run:
 		-OpenM.RunName "Base_run_is_Sub-values_2_from_csv" \
 		-EN.RunDescription "Parameters from base run Sub-values_2_from_csv" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.BaseRunName "Sub-values_2_from_csv" \
+		-OpenM.SetName modelOne_partial \
+		-OpenM.RunName "Base_run_and_partial_input_set" \
+		-EN.RunDescription "Parameters from base run and from partial input set" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:

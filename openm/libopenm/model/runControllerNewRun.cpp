@@ -182,7 +182,8 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     // find set id and make sure this set exist in database:
     // if this is a task then check is next set of modeling task exist in database
     // else (not a task) then set specified by model run options or it is model default set
-    nSetId = findWorkset(nSetId, i_dbExec);
+    auto[nId, isWsDefault] = findWorkset(nSetId, i_dbExec);
+    nSetId = nId;
 
     // find base run id if base run options specified or if workset based on run
     int nBaseRunId = findBaseRun(i_dbExec);
@@ -247,7 +248,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     createRunOptions(nRunId, i_dbExec);
 
     // copy input parameters from "base" run and working set into new run id
-    createRunParameters(nRunId, nSetId, nBaseRunId, i_dbExec);
+    createRunParameters(nRunId, nSetId, isWsDefault, nBaseRunId, i_dbExec);
 
     // insert run description and text
     createRunText(nRunId, nSetId, i_dbExec);
@@ -262,11 +263,12 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
 //   if set id specified as run option then use such set id
 //   if set name specified as run option then find set id by name
 //   else use min(set id) as default set of model parameters
-int RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
+tuple<int, bool> RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
 {
     // find set id of parameters workset, default is first set id for that model
     int setId = (i_setId > 0) ? i_setId : argOpts().intOption(RunOptionsKey::setId, 0);
     string setName = argOpts().strOption(RunOptionsKey::setName);
+    bool isWsDefault = false;
 
     if (setId > 0) {
         int cnt = i_dbExec->selectToInt(
@@ -291,6 +293,7 @@ int RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
         setId = i_dbExec->selectToInt(
             "SELECT MIN(set_id) FROM workset_lst WHERE model_id = " + to_string(modelId), 0
         );
+        isWsDefault = true;
     }
     if (setId <= 0)
         throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
@@ -300,7 +303,7 @@ int RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
     setArgOpt(RunOptionsKey::setId, to_string(setId));
     setArgOpt(RunOptionsKey::setName, setName);
 
-    return setId;
+    return { setId, isWsDefault };
 }
 
 // find base run to get model parameters, it can be any existing run, including not completed run (in progress or failed).
@@ -315,7 +318,7 @@ int RunController::findBaseRun(IDbExec * i_dbExec)
 
     if (baseId > 0) {
         dg = i_dbExec->selectToStr(
-            "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(baseId) + " AND model_id = " + to_string(modelId)
+            "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(baseId)
         );
         if (dg.empty()) throw DbException("base run id not found for the model where id: %d", baseId, modelId);
     }
@@ -325,7 +328,7 @@ int RunController::findBaseRun(IDbExec * i_dbExec)
         dg = argOpts().strOption(RunOptionsKey::baseRunDigest);
         if (!dg.empty()) {
             baseId = i_dbExec->selectToInt(
-                "SELECT run_id FROM run_lst WHERE run_digest = " + toQuoted(dg) + " AND model_id = " + to_string(modelId),
+                "SELECT MIN(run_id) FROM run_lst WHERE run_digest = " + toQuoted(dg) + " AND model_id = " + to_string(modelId),
                 0);
             if (baseId <= 0) throw DbException("base run digest: %s not found for the model where id: %d", dg.c_str(), modelId);
         }

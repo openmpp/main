@@ -7,8 +7,9 @@
 -- list of ids: values < 10 reserved for development and testing
 --   model id = 1 is modelOne
 --   set id = 2 is default set of input parameters for modelOne
---   set id = 3 invalid set of input parameters, for test only
+--   set id = 3 partial set of input parameters, not based on run and contain only one parameter value
 --   set id = 4 modified set of input parameters
+--   set id = 5 read-write set of input parameters, not based on run and contain only one parameter value
 --
 
 -- 
@@ -49,24 +50,23 @@ INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES 
 INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 50, 0, 'Is old age default values');
 
 --
--- modelOne modified set of parameters
--- INVALID set: only for test use
--- workset must either contain all parameters or have base run_id not null
+-- modelOne partial set of parameters
+-- it contain only one parameter value Age by Sex with default sub id 32
 --
 INSERT INTO workset_lst 
   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
 VALUES 
-  (3, NULL, 1, 'modelOne_set', 0, '2013-05-30 23:55:07.123');
+  (3, NULL, 1, 'modelOne_partial', 1, '2013-05-30 23:55:07.123');
 
-INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (3, 0, 'modelOne modified set of parameters', NULL);
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (3, 0, 'modelOne partial set of parameters', NULL);
 
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (3, 44, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (3, 44, 1, 32);
 
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (3, 44, 0, 'Age by Sex modified values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (3, 44, 0, 'Age by Sex partial values');
 
 --
 -- modelOne other set of parameters
--- it is not based on model run and therefore must include ALL model parameters
+-- it is not based on model run and does include ALL model parameters
 --
 INSERT INTO workset_lst 
   (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
@@ -83,6 +83,21 @@ INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id)
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 48, 1, 0);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 49, 1, 0);
 INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 50, 1, 0);
+
+--
+-- modelOne updated set of parameters, it contain only one parameter value
+-- it is read-write workset
+--
+INSERT INTO workset_lst 
+  (set_id, base_run_id, model_id, set_name, is_readonly, update_dt) 
+VALUES 
+  (5, NULL, 1, 'modelOne_updated', 0, '2013-05-30 23:55:07.123');
+
+INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (5, 0, 'modelOne updated set of parameters', NULL);
+
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (5, 45, 1, 0);
+
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (5, 45, 0, 'Salary by Age updated values');
 
 --
 -- modelOne modelling tasks
@@ -189,14 +204,15 @@ INSERT INTO isOldAge_w_2012815 (set_id, sub_id, dim0, param_value) VALUES (2, 3,
 -- set id = 3
 -- age by sex
 -- enum ids for age not a zero based
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 10, 0, 1.1);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 10, 1, 1.2);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 20, 0, 1.3);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 20, 1, 1.4);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 30, 0, 1.5);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 30, 1, 1.6);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 40, 0, 1.7);
-INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 0, 40, 1, 1.8);
+-- default sub-value id = 32
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 10, 0, 32.1);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 10, 1, 32.2);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 20, 0, 32.3);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 20, 1, 32.4);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 30, 0, 32.5);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 30, 1, 32.6);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 40, 0, 32.7);
+INSERT INTO ageSex_w_2012817 (set_id, sub_id, dim0, dim1, param_value) VALUES (3, 32, 40, 1, 32.8);
 
 -- set id = 4
 -- age by sex values
@@ -242,3 +258,11 @@ SELECT
   4, sub_id, dim0, param_value
 FROM isOldAge_w_2012815 WHERE set_id = 2 AND sub_id = 0;
 
+-- set id = 5
+-- salary by age values
+INSERT INTO salaryAge_w_2012818 
+  (set_id, sub_id, dim0, dim1, param_value) 
+SELECT 
+  5, sub_id, dim0, dim1, param_value + 32
+FROM salaryAge_w_2012818 WHERE set_id = 2;
+  

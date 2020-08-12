@@ -18,9 +18,12 @@ using namespace openm;
 //   use parameter.csv file if SubFrom.Parameter == csv or by default if parameters csv directory specified
 //   import parameter from upstream model run if any of Import.* specified
 //   use value of parameter from working set of model parameters
-//   if working set based on model run then search by base run id to get parameter value
-//   else raise an exception
-void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunId, IDbExec * i_dbExec) const
+//   else search workset or base run:
+//     if base run id not specified or workset is not default then search workset to get parameter value
+//     else or if not found in workset then search base run:
+//       if base run explicitly specified then search this base run else serach workset base run
+//   if parameter value not found then raise an exception
+void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDefault, int i_baseRunId, IDbExec * i_dbExec) const
 {
     // find input parameters workset
     if (i_setId <= 0) throw DbException("invalid set id or model working sets not found in database");
@@ -91,15 +94,15 @@ void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunI
         int nParamSubCount = parameterSubCount(paramIt->paramId);   // if >1 then multiple sub-values expected
         int nRank = paramIt->rank;
 
-        // if no base run specified then check if parameter exist in workset
-        bool isExistInWs = false;
-        int defaultSubId = 0;
-        if (i_baseRunId <= 0) {
-            auto wsParamRowIt = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec);
-            isExistInWs = wsParamRowIt != wsParamVec.cend();
-            defaultSubId = isExistInWs ? wsParamRowIt->defaultSubId : 0;    // default sub-value id for workset parameter, use 0 if parameter exist in base run
-        }
+        // check if parameter exist in workset
+        auto wsParamRowIt = WorksetParamRow::byKey(i_setId, paramIt->paramId, wsParamVec);
+        bool isExistInWs = wsParamRowIt != wsParamVec.cend();
 
+        // default sub-value id for parameter, use 0 if parameter exist in base run
+        int defaultSubId = (isExistInWs && (i_baseRunId <= 0 || !i_isWsDefault)) ? wsParamRowIt->defaultSubId : 0;
+
+        // find sub-value rule to get parameter sub-values
+        // if parameter does not have sub-values then it would be "default" rule
         ParamSubOpts subOpts = subOptsById(*paramIt, nParamSubCount, defaultSubId);
         bool isFromDb = subOpts.from == RunOptionsKey::dbSubValue;
         bool isFromCsv = subOpts.from == RunOptionsKey::csvSubValue;
@@ -234,10 +237,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunI
             }
         }
 
-        // if no base run specified and parameter exist in workset then copy from workset:
+        // if parameter exist in workset and
+        //   if base run not specified or workset is not default then copy from workset:
         //   copy parameter from workset parameter value table
         //   copy parameter value notes from workset parameter text table
-        if (!isInserted && (isFromDb || isFromDefault) && i_baseRunId <= 0 && isExistInWs) {
+        if (!isInserted && (isFromDb || isFromDefault) && isExistInWs && (i_baseRunId <= 0 || !i_isWsDefault)) {
 
             // validate: parameter must exist in workset and must have enough sub-values
             int nSub = i_dbExec->selectToInt(
@@ -250,7 +254,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunI
                 throw DbException("parameter %d: %s must have %d sub-values in workset (id: %d)", paramIt->paramId, paramIt->paramName.c_str(), nParamSubCount, i_setId);
 
             // use sub id options to make where sub_id filter and map source sub id's to parameter run sub id's
-            string flt = makeWhereSubId(subOpts);
+            string flt = makeWhereSubId(subOpts, defaultSubId);
             string subFlds = mapSelectedSubId(subOpts);
 
             vector<ParamDimsRow> paramDimVec = metaStore->paramDims->byModelIdParamId(modelId, paramIt->paramId);
@@ -302,7 +306,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunI
                 ((nParamSubCount == 1 && ((subOpts.kind == KindSubIds::single && subOpts.subIds[0] == 0) || subOpts.kind == KindSubIds::defaultId) && subOpts.subIds[0] == defaultSubId) ||
                 (nParamSubCount > 1 && subOpts.kind == KindSubIds::range && subOpts.subIds[0] == 0 && subOpts.subIds.back() == nParamSubCount - 1));
 
-            if (isBaseRunFullCopy) {            // copy parameter from base run of workset
+            if (isBaseRunFullCopy) {            // copy parameter from base run
                 i_dbExec->update(
                     "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, value_digest)" \
                     " SELECT " + sRunId + ", parameter_hid, base_run_id, sub_count, value_digest" \
@@ -314,7 +318,8 @@ void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunI
             else {      // copy only required number of sub-values from base run
 
                 // use sub id options to make where sub_id filter and map source sub id's to parameter run sub id's
-                string flt = makeWhereSubId(subOpts);
+                // default sub-value id =0 for parameters from base run
+                string flt = makeWhereSubId(subOpts, 0);
                 string subFlds = mapSelectedSubId(subOpts);
 
                 vector<ParamDimsRow> paramDimVec = metaStore->paramDims->byModelIdParamId(modelId, paramIt->paramId);
@@ -376,12 +381,14 @@ void RunController::createRunParameters(int i_runId, int i_setId, int i_baseRunI
 }
 
 // make part of where clause to select sub_id's
-const string RunController::makeWhereSubId(const MetaLoader::ParamSubOpts & i_subOpts) const
+const string RunController::makeWhereSubId(const MetaLoader::ParamSubOpts & i_subOpts, int i_defaultSubId) const
 {
     switch (i_subOpts.kind) {
     case KindSubIds::single:
-    case KindSubIds::defaultId:
         return "sub_id = " + to_string(i_subOpts.subIds[0]);
+
+    case KindSubIds::defaultId:
+        return "sub_id = " + to_string(i_defaultSubId);
 
     case KindSubIds::range:
         return "sub_id BETWEEN " + to_string(i_subOpts.subIds[0]) + " AND " + to_string(i_subOpts.subIds[i_subOpts.subIds.size() - 1]);
@@ -776,7 +783,8 @@ bool RunController::importParameter(
         }
 
         // use sub id options to make where sub_id filter and map source sub id's to parameter run sub id's
-        string flt = makeWhereSubId(i_subOpts);
+        // default sub-value id =0 for parameters from base run
+        string flt = makeWhereSubId(i_subOpts, 0);
         string subFlds = mapSelectedSubId(i_subOpts);
 
         // find actual run id (base run id) for source parameter values
