@@ -138,9 +138,15 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
             string sVal = argOpts().strOption((paramDot + paramIt->paramName).c_str());
             if (typeRow->isString()) sVal = toQuoted(sVal);  // "file" type is VARCHAR
 
+            if ((typeRow->isInt() || typeRow->isBigInt()) && !TypeDicRow::isIntValid(sVal.c_str()))
+                throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
+            
+            if ((typeRow->isFloat() || typeRow->isTime()) && !TypeDicRow::isFloatValid(sVal.c_str()))
+                throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
+
             if (typeRow->isBool()) {
                 if (!TypeDicRow::isBoolValid(sVal.c_str())) 
-                    throw DbException("invalid value of parameter: %s", paramIt->paramName.c_str());
+                    throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
 
                 sVal = TypeDicRow::isBoolTrue(sVal.c_str()) ? "1" : "0";
             }
@@ -148,7 +154,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
             if (!typeRow->isBuiltIn() && !isIdValue) {
                 const TypeEnumLstRow * enumRow = metaStore->typeEnumLst->byName(modelId, paramIt->typeId, sVal.c_str());
                 if (enumRow == nullptr) 
-                    throw DbException("invalid value of parameter: %s", paramIt->paramName.c_str());
+                    throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
 
                 sVal = to_string(enumRow->enumId);
             }

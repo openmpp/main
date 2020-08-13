@@ -312,14 +312,20 @@ namespace openm
         /** return true if model type is string (varchar) */
         bool isString(void) const;
 
-        /** return true if model type is float (float, real, numeric) */
-        bool isFloat(void) const;
-
         /** return true if model type is bigint (64 bit) */
         bool isBigInt(void) const;
 
         /** return true if model type is integer (not float, string, boolean or bigint) */
         bool isInt(void) const;
+
+        /** return true if i_value string represent valid integer constant */
+        static bool isIntValid(const char * i_value);
+
+        /** return true if model type is float (float, real, double or time) */
+        bool isFloat(void) const;
+
+        /** return true if i_value string represent valid floating point constant */
+        static bool isFloatValid(const char * i_value);
 
         /** return true if model type is Time */
         bool isTime(void) const;
