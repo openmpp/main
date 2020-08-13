@@ -33,17 +33,15 @@ const size_t N_SALARY = 3;
 const size_t N_FULL = 2;
 
 // model parameters
-extern thread_local int om_value_startSeed;
-extern thread_local int om_value_baseSalary;
-extern thread_local string om_value_filePath;
+extern thread_local const int & startSeed;
+extern thread_local const int & baseSalary;
+extern thread_local const string & filePath;
+
 extern thread_local double * om_value_ageSex;
 extern thread_local int * om_value_salaryAge;
 extern thread_local int * om_value_salaryFull;
 extern thread_local bool * om_value_isOldAge;
 
-#define startSeed   (reinterpret_cast<const int>(om_value_startSeed))
-#define baseSalary  (reinterpret_cast<const int>(om_value_baseSalary))
-#define filePath    (reinterpret_cast<const string>(om_value_filePath))
 #define ageSex      (*reinterpret_cast<const double(*)[N_AGE][N_SEX]>(om_value_ageSex))
 #define salaryAge   (*reinterpret_cast<const int(*)[N_SALARY][N_AGE]>(om_value_salaryAge))
 #define salaryFull  (*reinterpret_cast<const int(*)[N_SALARY]>(om_value_salaryFull))

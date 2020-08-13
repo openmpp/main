@@ -15,22 +15,25 @@ enum jobKind : int
 // model parameters
 //
 static vector<int> om_param_startSeed;
-thread_local int om_value_startSeed = { 0 };
-
-static vector<unique_ptr<double[]>> om_param_ageSex; 
-thread_local double * om_value_ageSex = nullptr;
-
-static vector<unique_ptr<int[]>> om_param_salaryAge; 
-thread_local int * om_value_salaryAge = nullptr;
-
-static vector<unique_ptr<int[]>> om_param_salaryFull; 
-thread_local int * om_value_salaryFull = nullptr;
+static thread_local int om_value_startSeed = { 0 };
+thread_local const int & startSeed = om_value_startSeed;
 
 static vector<int> om_param_baseSalary;
-thread_local int om_value_baseSalary = { jobKind::partTime };
+static thread_local int om_value_baseSalary = { jobKind::partTime };
+thread_local const int & baseSalary = om_value_baseSalary;
 
 static vector<string> om_param_filePath;
-thread_local string om_value_filePath;
+static thread_local string om_value_filePath;
+thread_local const string & filePath = om_value_filePath;
+
+static vector<unique_ptr<double[]>> om_param_ageSex;
+thread_local double * om_value_ageSex = nullptr;
+
+static vector<unique_ptr<int[]>> om_param_salaryAge;
+thread_local int * om_value_salaryAge = nullptr;
+
+static vector<unique_ptr<int[]>> om_param_salaryFull;
+thread_local int * om_value_salaryFull = nullptr;
 
 static vector<unique_ptr<bool[]>> om_param_isOldAge;
 thread_local bool * om_value_isOldAge = nullptr;
@@ -175,7 +178,9 @@ void RunInit(IRunBase * const i_runBase)
 // Model startup method: initialize sub-value
 void ModelStartup(IModel * const i_model)
 {
-    theTrace->logMsg("Start model sub-value");      // trace output: disabled by default, use command-line or model.ini to enable it
+    // trace output: disabled by default, use command-line or model.ini to enable it
+    // for example: -OpenM.TraceToConsole true
+    theTrace->logFormatted("Start model sub-value %d", i_model->subValueId());
 
     // bind parameters reference thread local values
     // at this point parameter values undefined and cannot be used by the model
