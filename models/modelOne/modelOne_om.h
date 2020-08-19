@@ -32,6 +32,13 @@ const size_t N_SEX = 2;
 const size_t N_SALARY = 3;
 const size_t N_FULL = 2;
 
+// model type "full": full or part time job
+enum jobKind : int
+{
+    fullTime = 22,
+    partTime = 33
+};
+
 // model parameters
 extern thread_local const int & startSeed;
 extern thread_local const int & baseSalary;
@@ -49,6 +56,7 @@ extern thread_local bool * om_value_isOldAge;
 
 // model output tables
 //
+
 // salary by sex
 class SalarySex
 {
@@ -167,5 +175,11 @@ public:
         std::fill(acc[ACC_ID], &acc[ACC_ID][N_CELL], 0.0);
     }
 };
+
+// model output tables
+extern thread_local unique_ptr<SalarySex> theSalarySex;         // salary by sex
+extern thread_local unique_ptr<FullAgeSalary> theFullAgeSalary; // full time by age by salary bracket
+extern thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;   // age by sex income
+extern thread_local unique_ptr<SeedOldAge> theSeedOldAge;       // age by sex income
 
 #endif  // MODEL_ONE_H

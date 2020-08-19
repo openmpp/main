@@ -333,36 +333,91 @@ void CodeGen::do_aggregations()
 
 void CodeGen::do_parameters()
 {
-	// parameter declarations
-	h += "// model parameters";
+    // parameter declarations
+    h += "// model scenario parameters";
+    h += "";
+    h += "#ifdef OM_DEBUG_PARAMETERS";
+    h += "";
     for ( auto parameter : Symbol::pp_all_parameters ) {
-        h += parameter->cxx_declaration_global();
+        if (parameter->source == ParameterSymbol::scenario_parameter) {
+            h += parameter->cxx_declaration_global_scenario_debug();
+        }
+    }
+    h += "";
+    h += "#else // OM_DEBUG_PARAMETERS";
+    h += "";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter) {
+            h += parameter->cxx_declaration_global_scenario_release();
+        }
+    }
+    h += "";
+    h += "#endif // OM_DEBUG_PARAMETERS";
+    h += "";
+    
+    h += "// model parameters (fixed, derived, missing)";
+    h += "";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source != ParameterSymbol::scenario_parameter) {
+            h += parameter->cxx_declaration_global();
+        }
+    }
+    h += "";
+
+    for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->cumrate) {
             h += parameter->lookup_fn->cxx_declaration_global();
         }
     }
-	h += "";
+    h += "";
+    
+    // parameter definitions & initializers
+	c += "// model scenario parameters";
+    c += "";
+    c += "#ifdef OM_DEBUG_PARAMETERS";
 
-	// parameter definitions & initializers
-	c += "// model parameters (scenario, derived, missing)";
-	z += "// model parameters (fixed)";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter) {
+            c += "";
+            c += parameter->cxx_definition_global_scenario_debug();
+        }
+    }
+    c += "";
+    c += "#else // OM_DEBUG_PARAMETERS";
+
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter) {
+            c += "";
+            c += parameter->cxx_definition_global_scenario_release();
+        }
+    }
+    c += "";
+    c += "#endif // OM_DEBUG_PARAMETERS";
+    c += "";
+
+    c += "// model parameters (derived, missing)";
+    z += "// model parameters (fixed)";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::fixed_parameter) {
             // place definition (with initializer) in the cpp module for fixed parameters
             z += parameter->cxx_definition_global();
         }
-        else {
+        if (parameter->source == ParameterSymbol::derived_parameter || parameter->source == ParameterSymbol::missing_parameter) {
             c += "";
             c += parameter->cxx_definition_global();
         }
+    }
+    c += "";
+
+    for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->cumrate) {
             c += parameter->cxx_definition_cumrate();
             c += parameter->lookup_fn->cxx_definition_global();
         }
     }
-	c += "";
+    c += "";
 
-	// populate meta-data for parameters
+    // populate meta-data for parameters
     for ( auto parameter : Symbol::pp_all_parameters ) {
         parameter->populate_metadata(metaRows);
     }
@@ -416,15 +471,13 @@ void CodeGen::do_RunInit()
     c += "// Model run initialization";
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
-
     c += "theLog->logMsg(\"Get scenario parameters for process\");";
+    c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
             c += parameter->cxx_read_parameter();
         }
     }
-    c += "";
-
 	c += "}";
 	c += "";
 }
@@ -441,15 +494,21 @@ void CodeGen::do_ModelStartup()
     c += "// Until this is done scenario parameter values are undefined and cannot be used by the model.";
     c += "";
     c += "theLog->logFormatted(\"member=%d Bind scenario parameters\", simulation_member);";
+
+    c += "";
+    c += "#ifdef OM_DEBUG_PARAMETERS";
+    c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only scenario parameters in this for loop
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
         if (parameter->size() > 1) {
-            // om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
-            c += 
-                "om_value_" + parameter->name + " = " 
-                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
+            // memcpy(om_value_UnionDurationBaseline, om_param_UnionDurationBaseline[i_model->parameterSubValueIndex("UnionDurationBaseline")].get(), 12 * sizeof(double));
+            c +=
+                "memcpy(" \
+                "om_value_" + parameter->name + ", "
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get(), " +
+                to_string(parameter->size()) + " * sizeof(" + parameter->cxx_type_of_parameter() + "));";
         }
         else {
             // om_value_startSeed = om_param_startSeed[i_model->parameterSubValueIndex("startSeed")];
@@ -463,28 +522,38 @@ void CodeGen::do_ModelStartup()
         }
     }
     c += "";
+    c += "#else // OM_DEBUG_PARAMETERS";
+    c += "";
+    for (auto parameter : Symbol::pp_all_parameters) {
+        // Process only scenario parameters in this for loop
+        if (parameter->source != ParameterSymbol::scenario_parameter) continue;
+
+        if (parameter->size() > 1) {
+            // om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
+            c +=
+                "om_value_" + parameter->name + " = "
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")].get();";
+        }
+        else {
+            // om_value_startSeed = om_param_startSeed[i_model->parameterSubValueIndex("startSeed")];
+            c +=
+                "om_value_" + parameter->name + " = "
+                + parameter->alternate_name() + "[i_model->parameterSubValueIndex(\"" + parameter->name + "\")];";
+        }
+        if (parameter->cumrate) {
+            // prepare cumrate for scenario parameter
+            c += parameter->cxx_initialize_cumrate();
+        }
+    }
+    c += "";
+    c += "#endif // OM_DEBUG_PARAMETERS";
+    c += "";
 
     // A second pass of scenario parameters is required to extend parameters
     // because index series parameter(s) must first be bound in first pass above.
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter && parameter->is_extendable) {
             c += parameter->cxx_extend();
-        }
-    }
-
-    c += "";
-    c += "// Bind derived parameter references to thread local values (if derived parameter is an array).";
-    c += "";
-    for (auto parameter : Symbol::pp_all_parameters) {
-
-        // Process only derived parameters in this for loop
-        if (parameter->source != ParameterSymbol::derived_parameter) continue;
-
-        if (parameter->size() > 1) {
-            // om_value_NearestCity = reinterpret_cast<CITY *>(om_param_NearestCity);
-            c += "om_value_" + parameter->name + " = "
-                + "reinterpret_cast<" + parameter->pp_datatype->name + " *>" +
-                +"(" + parameter->alternate_name() + ");";
         }
     }
 
@@ -498,16 +567,14 @@ void CodeGen::do_ModelStartup()
 
         if (parameter->size() > 1) {
             // array
-            // std::memset(om_value_BreastScreeningProtocol, 0, 5200 * sizeof(double));
-            c += "std::memset(om_value_" + parameter->name + ", 0, "
-                + to_string(parameter->size())
-                + " * sizeof(" + parameter->pp_datatype->name + ")"
-                + ");";
+            // std::memset(BreastScreeningProtocol, 0, 5200 * sizeof(double));
+            c += "std::memset(" + parameter->name + ", " \
+                "0, " +
+                to_string(parameter->size()) + " * sizeof(" + parameter->pp_datatype->name + "));";
         }
         else {
             // scalar
-            c += parameter->name
-                + " = (" + parameter->pp_datatype->name + ") 0;";
+            c += parameter->name + " = (" + parameter->pp_datatype->name + ") 0;";
         }
     }
 

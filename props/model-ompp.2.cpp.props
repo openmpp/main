@@ -39,6 +39,11 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   
+  <!--
+  OM_DEBUG_PARAMETERS:
+    if defined then parameter values visible in debug variable view (suitable for debug)
+    else parameters consume significantly less memory (suitable for release)
+  -->
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -47,7 +52,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OM_DEBUG_PARAMETERS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
@@ -70,7 +75,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OM_DEBUG_PARAMETERS;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>

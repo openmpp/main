@@ -61,9 +61,12 @@ public:
         return "om_param_" + name;
     }
 
-    CodeBlock cxx_declaration_global();
-
-    CodeBlock cxx_definition_global();
+    CodeBlock cxx_declaration_global(void);
+    CodeBlock cxx_declaration_global_scenario_debug(void);
+    CodeBlock cxx_declaration_global_scenario_release(void);
+    CodeBlock cxx_definition_global(void);
+    CodeBlock cxx_definition_global_scenario_debug(void);
+    CodeBlock cxx_definition_global_scenario_release(void);
 
     /**
      * C++ initializer list for parameter
