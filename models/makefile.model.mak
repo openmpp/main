@@ -103,6 +103,18 @@ ifdef OMC_NO_LINE
   OMC_NO_LINE_OPT = -Omc.NoLineDirectives $(OMC_NO_LINE)
 endif
 
+# OM_DEBUG_PARAMETERS:
+#   if defined then parameter values visible in debug variable view (suitable for debug)
+#   else parameters consume significantly less memory (suitable for release)
+#
+ifdef OM_DEBUG_PARAMETERS
+    OM_DEBUG_PARAM_OPT = -DOM_DEBUG_PARAMETERS
+else
+  ifndef RELEASE
+    OM_DEBUG_PARAM_OPT = -DOM_DEBUG_PARAMETERS
+  endif
+endif
+
 #
 # build directories
 # if model build directory defined globally 
@@ -115,16 +127,16 @@ else
 endif
 
 ifndef RELEASE
-  BD_CFLAGS = -g -D_DEBUG -Og
+  BD_CFLAGS = -g -D_DEBUG -Og $(OM_DEBUG_PARAM_OPT)
   ifeq ($(PLATFORM_UNAME), Linux)
-    BD_CFLAGS = -g -D_DEBUG -O0
+    BD_CFLAGS = -g -D_DEBUG -O0 $(OM_DEBUG_PARAM_OPT)
   endif
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/debug/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   BIN_POSTFIX = D
 else
-  BD_CFLAGS = -DNDEBUG -O3
+  BD_CFLAGS = -DNDEBUG -O3 $(OM_DEBUG_PARAM_OPT)
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/release/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
