@@ -40,6 +40,7 @@
     <OMC_EXE>omc.exe</OMC_EXE>
     <OMPP_EXPORT_EXCEL_EXE>ompp_export_excel.exe</OMPP_EXPORT_EXCEL_EXE>
     <OMPP_EXPORT_CSV_EXE>ompp_export_csv.exe</OMPP_EXPORT_CSV_EXE>
+    <DBCOPY_EXE>dbcopy.exe</DBCOPY_EXE>
     <MPIEXEC_EXE>mpiexec.exe</MPIEXEC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
     <SQLITE_EXE_DIR Condition="'$(SQLITE_EXE_DIR)'==''">$(OM_BIN_DIR)</SQLITE_EXE_DIR>
@@ -76,6 +77,8 @@
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     
     <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
+    
+    <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
     
     <!--
     If this is Debug under Visual Studio then PUBLISH_DIR, TargetDir, LocalDebuggerWorkingDirectory must be identical

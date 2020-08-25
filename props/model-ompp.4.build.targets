@@ -250,9 +250,47 @@
   </Target>
   
   <!--
+  DbcopyExportCsv
+  -->
+  
+  <PropertyGroup>
+    <!-- path to dbcopy must be relative to PUBLISH_DIR -->
+    <COMPLETE_DBCOPY_EXE>&quot;$(OM_ROOT)/../bin/$(DBCOPY_EXE)&quot;</COMPLETE_DBCOPY_EXE>
+    <DBCOPY_CSV_OUTPUT_DIR>$(PUBLISH_DIR)/$(MODEL_NAME).last.run</DBCOPY_CSV_OUTPUT_DIR>
+  </PropertyGroup>
+
+  <Target Name="DbcopyExportCsv"
+          Condition="'$(DBCOPY_EXPORT_CSV)'=='true'"
+          AfterTargets="RunModel"
+          >
+    <Message Text="Exporting model run results into csv..." />
+    <RemoveDir Directories="$(DBCOPY_CSV_OUTPUT_DIR)" />
+
+    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv -->
+    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv"/>
+    <Exec 
+      WorkingDirectory="$(PUBLISH_DIR)"
+      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv"
+      ContinueOnError="true"/>
+
+    <!-- move *.id.csv into separate directory -->
+    <ItemGroup> 
+      <DBCOPY_CSV_OUTPUT_SRC Include="$(DBCOPY_CSV_OUTPUT_DIR)/last.run/*.*" />
+    </ItemGroup>
+
+    <Move SourceFiles="@(DBCOPY_CSV_OUTPUT_SRC)"  DestinationFolder="$(DBCOPY_CSV_OUTPUT_DIR)/id.last.run" />
+
+    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv -->
+    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false"/>
+    <Exec 
+      WorkingDirectory="$(PUBLISH_DIR)"
+      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false"
+      ContinueOnError="true"/>
+  </Target>
+  
+  <!--
   ExportCsv
   -->
-
   
   <PropertyGroup>
     <CSV_EXPORT_DIR>$(PUBLISH_DIR)/$(SCENARIO_NAME)</CSV_EXPORT_DIR>
@@ -267,12 +305,10 @@
     <Message Text="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
     <Exec Command="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
   </Target>
-
   
   <!--
   ExportExcel
   -->
-
   
   <PropertyGroup>
     <EXCEL_EXPORT_OUT>$(PUBLISH_DIR)/$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
