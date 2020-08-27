@@ -1,8 +1,18 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_08_27:
+  improve model debug experience: support parameter values inspection in IDEs debugger
+  replace Visual Studio CSV output tools to support parameters and output tables output after model run
+  deprecated: existing Visual Studio tools for CSV output and Excel output are deprecated
+  allow to explicitly specify "base" model run to get parameters from previous model run
+  add command line options to choose first or last model run without knowing run id
+  add command line options to rename model input sets (a.k.a. scenarios), model run results or modeling tasks
+  multiple bug fixes
+
 2020_07_30:
   allow to use .csv or .tsv files to initialize parameters during model build
+  allow to publish multiple input set (a.k.a. scenarios) during model build
   MSBuild: fix OM_ROOT environment variable issue
   Linux: resolve GDB breakpoint issue
   multiple minor changes and bug fixes
