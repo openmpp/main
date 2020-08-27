@@ -160,7 +160,7 @@
   
   <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
-    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
+    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).publish.tickle</PUBLISH_TICKLE>
     <PUBLISH_SQLITE_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(PUBLISH_SQLITE)))</PUBLISH_SQLITE_REL>
     <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
     <!--  Replace back slash by forward slash. -->
@@ -205,14 +205,16 @@
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
     <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
+    <FIRST_SCENARIO_NAME>$(SCENARIO_NAME.Split(';')[0])</FIRST_SCENARIO_NAME>
+    <MODEL_OPTS>$(MODEL_OPTS) -s $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -OpenM.SubValues $(MEMBERS)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -OpenM.Threads $(THREADS)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
-    <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
+    <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME)_$(FIRST_SCENARIO_NAME).run.tickle</RUN_MODEL_TICKLE>
     <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
 
@@ -222,7 +224,7 @@
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
-    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
     <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
           WorkingDirectory="$(TargetDir)"
@@ -238,7 +240,7 @@
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
-    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
     <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
           WorkingDirectory="$(TargetDir)"

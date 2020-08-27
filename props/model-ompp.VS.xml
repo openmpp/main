@@ -24,8 +24,8 @@
                   />
   <StringProperty Category="Names"
                   Name="SCENARIO_NAME"
-                  DisplayName="Scenario Name"
-                  Description="The name of the default scenario published in the database. The default is Default."
+                  DisplayName="Scenario Name(s)"
+                  Description="The  scenario name or list of names to publish in the database. The default is Default. It can be list of names separated by semicolon"
                   />
   
   <!-- Folders -->
@@ -38,8 +38,8 @@
   <StringProperty Category="Folders"
                   Subtype="folder"
                   Name="SCENARIO_PARAMETERS_FOLDER"
-                  DisplayName="Scenario Parameter Folder"
-                  Description="The folder containing modifiable parameter values (*.dat and *.odat) for the published scenario. The path is relative to the project file. The default is ../parameters/$(SCENARIO_NAME)."
+                  DisplayName="Scenario Parameter Folder(s)"
+                  Description="The folder or folder list containing modifiable parameter values (*.dat, *.odat, *.csv, *.tsv) for the published scenario(s). The path is relative to the project file. The default is ../parameters/Default. It can be list of folders separated by semicolon."
                   />
   <StringProperty Category="Folders"
                   Subtype="folder"
@@ -97,7 +97,7 @@
   <BoolProperty Category="RunOptions"
                 Name="RUN_SCENARIO"
                 DisplayName="Run the scenario after build"
-                Description="Run the scenario after building and publishing the model and scenario."
+                Description="Run the scenario after building and publishing the model and scenario(s)."
                 />
   <IntProperty  Category="RunOptions"
                 Name="MEMBERS"
