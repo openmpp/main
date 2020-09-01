@@ -73,30 +73,28 @@ extern void omc::readParameterCsvFiles(
         }
         // if parameter is a missing then it can can be initialized as either scenario or fixed parameter by reading csv file
         // it is an error to change parameter from fixed to scenario (or other way around: scenario to fixed) using csv file
-        // if parameter already initialized as fixed parameter then csv file must be in fixed directory
+        // if parameter already initialized as scenario parameter then csv file must be in parameter directory
         bool isMsgDone = false;
         if (param->source == ParameterSymbol::scenario_parameter) {
             if (i_isFixed) {
                 theLog->logFormatted("error : scenario parameter %s cannot be re-initialized as fixed parameter by csv file: %s", param->name.c_str(), pathCsv.c_str());
                 Symbol::post_parse_errors++;
-                continue;   // skip this csv file
+                continue;   // skip this csv file, it is an error
             }
-            else {
-                theLog->logFormatted("Re-initialize scenario parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
-                bool isMsgDone = true;
-            }
+            // else
+            theLog->logFormatted("Re-initialize scenario parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
+            bool isMsgDone = true;
         }
-        // if parameter already initialized as scenario parameter then csv file must be in parameter directory
+        // if parameter already initialized as fixed parameter then csv file must be in fixed directory
         if (param->source == ParameterSymbol::fixed_parameter) {
             if (!i_isFixed) {
                 theLog->logFormatted("error : fixed parameter %s cannot be re-initialized as scenario parameter by csv file: %s", param->name.c_str(), pathCsv.c_str());
                 Symbol::post_parse_errors++;
-                continue;   // skip this csv file
+                continue;   // skip this csv file, it is an error
             }
-            else {
-                theLog->logFormatted("Re-initialize fixed parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
-                bool isMsgDone = true;
-            }
+            // else
+            theLog->logFormatted("Re-initialize fixed parameter %s from: %s", param->name.c_str(), pathCsv.c_str());
+            bool isMsgDone = true;
         }
         if (!isMsgDone) theLog->logFormatted("Reading %s", pathCsv.c_str());
 
@@ -312,13 +310,14 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
         s.reserve(255);
         csvCols.push_back(std::move(s));
     }
+    const locale csvLocale("");     // user default locale for csv
 
     unsigned int nLine = 0;
     for (const string & line : i_csvLines) {
 
         if (nLine++ == 0) continue; // skip header line
 
-        splitCsv(line, csvCols, i_separator, true, '"'); // split csv columns, separated by comma or tab, "unquoute" column values
+        splitCsv(line, csvCols, i_separator, true, '"', csvLocale); // split csv columns, separated by comma or tab, "unquoute" column values
 
         // skip empty lines
         if (csvCols.size() <= 0 || (csvCols.size() == 1 && csvCols.front().empty())) {
