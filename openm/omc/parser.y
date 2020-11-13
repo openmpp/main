@@ -117,6 +117,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 // NB: There is an exact one-to-one correspondence with code in Symbol.cpp
 
 // top level om keywords, in alphabetic order
+%token <val_token>    TK_accept         "accept"
 %token <val_token>    TK_aggregation    "aggregation"
 %token <val_token>    TK_big_counter_type "big_counter_type"
 %token <val_token>    TK_classification "classification"
@@ -560,6 +561,7 @@ ompp_declarative_island:
 	| decl_string           { pc.InitializeForCxx(); }
 	| decl_options          { pc.InitializeForCxx(); }
 	| decl_import           { pc.InitializeForCxx(); }
+	| decl_accept           { pc.InitializeForCxx(); }
 	| decl_model_type       { pc.InitializeForCxx(); }
 	| decl_time_type        { pc.InitializeForCxx(); }
 	| decl_real_type        { pc.InitializeForCxx(); }
@@ -727,8 +729,18 @@ option:
  * import
  */
 
-decl_import: // just parse old-style syntax, and assume a single table name, not a list
-          "import"[tok]
+decl_import:    // DEPRECATED: import is a reserved keyword in c++20
+          "import" do_decl_import
+        | "import" error ";"
+        ;
+
+decl_accept:    // "accept" is a synonym for "import" keyword to avoid c++20 conflict
+          "accept" do_decl_import
+        | "accept" error ";"
+        ;
+
+do_decl_import: // just parse old-style syntax, and assume a single table name, not a list
+          [tok]
               SYMBOL[param] "("
                         {
                             pc.next_word_is_string = true;
@@ -756,7 +768,6 @@ decl_import: // just parse old-style syntax, and assume a single table name, not
                             // finished import statement, return to normal symbol processing
                             pc.next_word_is_string = false;
                         }
-        | "import" error ";"
         ;
 
 sample_dimension_opt:
