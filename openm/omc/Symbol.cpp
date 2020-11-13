@@ -139,7 +139,6 @@ map<string, yy::location> Symbol::memfunc_defn_loc;
 unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 {
     // top level om keywords, in alphabetic order
-    { token::TK_accept, "accept" },
     { token::TK_aggregation, "aggregation" },
     { token::TK_big_counter_type, "big_counter_type" },
     { token::TK_classification, "classification" },
@@ -161,6 +160,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_parameter_group, "parameter_group" },
     { token::TK_parameters, "parameters" },
     { token::TK_partition, "partition" },
+    { token::TK_pull, "pull" },
     { token::TK_range, "range" },
     { token::TK_real_type, "real_type" },
     { token::TK_string, "string" },
@@ -465,7 +465,6 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 // and in parser.y. Maintain exactly the same order.
 unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 {
-    token::TK_accept,
     token::TK_aggregation,
     token::TK_big_counter_type,
     token::TK_classification,
@@ -487,6 +486,7 @@ unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
     token::TK_parameter_group,
     token::TK_parameters,
     token::TK_partition,
+    token::TK_pull,
     token::TK_range,
     token::TK_real_type,
     token::TK_string,
