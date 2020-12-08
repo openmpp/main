@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_12_08:
+  create "pull" synonym for model "import" keyword because import is reserved in c++20
+  significant increase of omc CSV scenario processing performance 
+  use Go modules
+  minor bug fixes
+
 2020_08_27:
   improve model debug experience: support parameter values inspection in IDEs debugger
   replace Visual Studio CSV output tools to support parameters and output tables output after model run
