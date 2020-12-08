@@ -17,11 +17,17 @@ using namespace openm;
 //   use value of parameter specified in run options: (command-line, ini-file, profile_option table)
 //   use parameter.csv file if SubFrom.Parameter == csv or by default if parameters csv directory specified
 //   import parameter from upstream model run if any of Import.* specified
-//   use value of parameter from working set of model parameters
-//   else search workset or base run:
-//     if base run id not specified or workset is not default then search workset to get parameter value
-//     else or if not found in workset then search base run:
-//       if base run explicitly specified then search this base run else serach workset base run
+//   get parameter value from workset or base run in following order:
+//     explicitly specified workset (not a default workset)
+//     explicitly specified base run
+//     base run of explicitly specified workset
+//     default workset
+//  above workset and base run rules implemented by if-then-else:
+//     if no base run explicitly specified or if workset explicitly specified (not by default)
+//     then search workset to get parameter value
+//     else or if parameter not found in workset
+//     then search base run:
+//       if base run explicitly specified then search this base run else search workset base run
 //   if parameter value not found then raise an exception
 void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDefault, int i_baseRunId, IDbExec * i_dbExec) const
 {
@@ -74,10 +80,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
     //   from parameter.csv file if exist
-    //   if base run speified use base run parameter table
-    //   else
-    //   workset parameter value table
-    //   if workset based on run then base run of workset
+    //   import parameter from upstream model run if any of Import.* specified
+    //   form workset and base run:
+    //     non-default workset, base run if explicitly specified or (if not) base run of workset
+    //     if no base run and no explicit workset then use default workset
     // calculate parameter values digest and store only single copy of parameter values
     string sRunId = to_string(i_runId);
     string sModelId = to_string(modelId);
