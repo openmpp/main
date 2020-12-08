@@ -263,7 +263,6 @@ Log::~Log(void) noexcept
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
 * @param[in]   i_noMsgTime     if true then not prefix log messages with date-time
-* @param[in]   i_isNoMsgTime   if true then not prefix log messgaes with date-time
 * @param[in]   i_isLogSql      if true then log SQL into log file
 */
 void Log::init(

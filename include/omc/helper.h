@@ -53,9 +53,9 @@ namespace omr {
                         std::stringstream ss;
                         ss << "error : Cannot extend parameter '" << name << "' when first value is missing ";
                         ss << "(at flattened slice " << j << ")";;
-                        auto msg = ss.str().c_str();
-                        theLog->logMsg(msg);
-                        throw openm::SimulationException(msg);
+                        auto msg = ss.str();
+                        theLog->logMsg(msg.c_str());
+                        throw openm::SimulationException(msg.c_str());
                     }
                     else {
                         if (index_series) {
@@ -65,9 +65,9 @@ namespace omr {
                                 std::stringstream ss;
                                 ss << "error : Cannot extend parameter '" << name << "' when when index series value is 0 ";
                                 ss << "(at flattened slice " << j << " and series index" << (index_offset + k - 1) << ")";;
-                                auto msg = ss.str().c_str();
-                                theLog->logMsg(msg);
-                                throw openm::SimulationException(msg);
+                                auto msg = ss.str();
+                                theLog->logMsg(msg.c_str());
+                                throw openm::SimulationException(msg.c_str());
                             }
                             value = prev * (num / den); // grow previous value
                         }
