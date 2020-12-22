@@ -14,7 +14,7 @@ Oms web-service process this template as:
 Result of template processing is a command line to run model_mpi.exe
 
 Example of result:
-mpiexec -n 16 -wdir models/bin -env key value ../bin/modelName_mpi -OpenM.LogToFile true
+mpiexec -n 16 -wdir models\bin -env key value ..\bin\modelName_mpi -OpenM.LogToFile true
 
 Arguments of template:
 struct {
@@ -41,7 +41,7 @@ mpiexec
 {{$key}}
 {{$val}}
 {{end}}
-{{.BinDir}}/{{.ExeStem}}_mpi
+{{.BinDir}}\{{.ExeStem}}_mpi
 {{range .Args}}
 {{.}}
 {{end}}
