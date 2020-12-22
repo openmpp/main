@@ -1,6 +1,10 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2020_12_22:
+  beta version of bi-lingual UI
+  fix in model runtime to run the model if default scenario not read-only
+
 2020_12_08:
   create "pull" synonym for model "import" keyword because import is reserved in c++20
   significant increase of omc CSV scenario processing performance 
