@@ -502,7 +502,7 @@ void CodeGen::do_ModelStartup()
         // Process only scenario parameters in this for loop
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
-        if (parameter->size() > 1) {
+        if (parameter->size() > 1 || parameter->cumrate) {
             // memcpy(om_value_UnionDurationBaseline, om_param_UnionDurationBaseline[i_model->parameterSubValueIndex("UnionDurationBaseline")].get(), 12 * sizeof(double));
             c +=
                 "memcpy(" \
@@ -528,7 +528,7 @@ void CodeGen::do_ModelStartup()
         // Process only scenario parameters in this for loop
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
-        if (parameter->size() > 1) {
+        if (parameter->size() > 1 || parameter->cumrate) {
             // om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
             c +=
                 "om_value_" + parameter->name + " = "
