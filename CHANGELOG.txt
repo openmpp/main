@@ -3,7 +3,7 @@ Please note:
 
 2021_01_12:
   fix single cumrate problem
-  UI: update axios version to fix security CVE idettified by GitHub
+  UI: update axios version to fix security CVE identified by GitHub
 
 2020_12_22:
   beta version of bi-lingual UI
