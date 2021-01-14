@@ -1,0 +1,294 @@
+/**
+* @file    case_based_core.ompp
+* Framework implementation for case-based models - core portions
+*
+*/
+// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+parameters {
+    //EN Simulation starting seed
+    int SimulationSeed;
+};
+
+/**
+ * The fmk namespace protects the global namespace for model use.
+ */
+namespace fmk {
+
+    /**
+     * Helper function to output a case checksum message to the trace log.
+     * 
+     * @param case_seed     The case seed.
+     * @param case_sample   The case sample.
+     */
+    void case_checksum_msg(double case_seed, int case_sample)
+    {
+        // The case checksum format reproduces the Modgen format precisely.
+        theTrace->logFormatted("Case seed : %.0f\t-\tCase sample: %d\t-\tCheckSum : %.6f",
+                           GetCaseSeed(),
+                           case_sample,
+                           BaseEvent::get_event_checksum());
+    }
+
+    /**
+     * The total number of cases in the run (sum over all sample members).
+     */
+    long long all_cases = 0;
+
+    /**
+     * The number of cases to simulate in this member.
+     */
+    thread_local long long member_cases = 0;
+
+    /**
+     * The case counter in this simulation member.
+     */
+    thread_local long long member_case_counter = 0;
+
+} // namespace fmk
+
+/**
+ * Report simulation progress for case-based model.
+ * 
+ */
+void report_simulation_progress(int member, int percent, long long cases)
+{
+    theLog->logFormatted("member=%d Simulation progress=%d%% cases=%lld", member, percent, cases);
+    report_simulation_progress_beat(percent, (double)cases);
+}
+
+/**
+* Called after invocation of PreSimulation functions.
+*/
+void after_presimulation()
+{
+    fmk::master_seed = 0;
+
+    // Free stream generator objects
+    // delete_streams is generator-specific - defined in random/random_YYY.ompp
+    delete_streams();
+}
+
+void SimulateEvents()
+{
+    // Simulate the case
+    while (true) {
+        if (!BaseEvent::do_next_event()) {
+            // no more events
+            break;
+        }
+    }
+}
+
+/**
+ * Simulates the specified simulation (aka run) member
+ *
+ * @param mem_id    Identifier of the member to be simulated (sub-sample).
+ * @param mem_count Total number of members (sub-samples).
+ */
+void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
+{
+    // member count and current member previously assigned in before_simulation
+    assert(fmk::simulation_members == mem_count);
+    assert(fmk::simulation_member == mem_id);
+
+    // The following functions are usually defined in the main simulation module, e.g. model.mpp
+    // case_info is usually declared in the model-specific include file custom_early.h
+    extern void Simulation_start(case_info &ci);
+    extern void Simulation_end(case_info &ci);
+    extern void CaseSimulation(case_info &ci);
+
+    using namespace fmk;
+
+    auto clock_time_start = std::chrono::system_clock::now();
+
+    // note API object for subsequent use in modeling thread
+    fmk::i_model = i_model;
+
+    // Initialize the entity counter for this simulation member
+    fmk::member_entity_counter = 0;
+
+    // The member to simulate of the sample of simulations
+
+    // if run option ProgressStep >0 then progress report must be done by number of cases completed
+    // if run option ProgressPercent >0 then progress report must be done by percent completed
+    // if none of above explicitly specified then progress report done by percent completed default value
+    
+    // for case based models progress step must be positive integer, if not zero default
+    // casting between double and long long may produce incorrect result if value > 0x6fffffffffffffffi64
+    bool is_step_progress = i_model->runOptions()->progressStep > 1.0;
+
+    if (i_model->runOptions()->progressStep != 0.0  && 
+        (i_model->runOptions()->progressStep < 1.0 || 
+            i_model->runOptions()->progressStep > (double)0x3fffffffffffffffLL ||
+            (i_model->runOptions()->progressStep - (long long)i_model->runOptions()->progressStep)) != 0.0) {
+        is_step_progress = false;
+        theLog->logFormatted("Warning: incorrect value of progress step reporting: %g", i_model->runOptions()->progressStep);
+    }
+    long long step_progress = is_step_progress ? (long long)i_model->runOptions()->progressStep : 0;
+
+    // progress percent, if not zero, must be positive
+    // if no options specified then by default do percent progress reporting
+    bool is_percent_progress = i_model->runOptions()->progressPercent > 0;
+
+    if (i_model->runOptions()->progressPercent < 0) {
+        theLog->logFormatted("Warning: incorrect value of progress percent reporting: %d", i_model->runOptions()->progressPercent);
+    }
+    int percent_progress = is_percent_progress ? i_model->runOptions()->progressPercent : progress_percent_default;
+
+    is_percent_progress |= !is_step_progress;   // by default report progress percent completed
+
+    // next progress values to trigger reporting
+    long long next_step_progress = step_progress;
+    int next_percent_progress = percent_progress;
+    bool is_100_percent_done = false;
+    int64_t next_progress_beat = 0;
+    int64_t next_ms_progress_beat = getMilliseconds() + OM_STATE_BEAT_TIME;
+
+    report_simulation_progress(simulation_member, 0, 0);    // initial progress report 
+
+    // Create the case information communication object
+    case_info ci;
+
+    // Initialize CaseInfo API
+    CaseInfo(&ci);
+
+	// Perform operations at the start of Simulation
+	Simulation_start(ci);
+
+    // For simulation member values greater than the number of lcg generators,
+    // re-use case seed generators cyclically and increment the starting
+    // master_seed for the simulation of the sample.
+    fmk::master_seed = SimulationSeed + (int)simulation_member / max_case_seed_generators;
+    long case_seed_generator = case_seed_generators[simulation_member % max_case_seed_generators];
+
+	// Create stream generator objects
+	// new_streams is generator-specific - defined in random/random_YYY.ompp
+	new_streams();
+
+    for (long long thisCase = 0; thisCase < member_cases; thisCase++) {
+
+        initialize_model_streams(); //defined in common.ompp
+
+        // Initialize global time for the case (can override in StartSimulation)
+        BaseEvent::set_global_time(0);
+
+        // record the encoded case seed (case_seed + simulation_member in high order bits)
+        fmk::combined_seed = fmk::master_seed + simulation_member * ((long long)lcg_modulus + 1);
+
+        // record the case counter within the current simulation member
+        member_case_counter = thisCase;
+
+        // Reset the running event checksum
+        BaseEvent::event_checksum_reset();
+
+        // Simulate the case
+        CaseSimulation(ci);
+
+        // Log the case checksum if activated
+        if (BaseEvent::event_checksum_enabled) case_checksum_msg(fmk::master_seed, simulation_member);
+
+        // Debug check for no left-over agents for which Finish was not called (possible model error)
+        // TODO - consider making an optional warning activated by a model option
+        //  which could be turned on/off.
+        assert(0 == BaseAgent::om_active_agents());
+
+        // cleanup entities and event queue after case has completed.
+        BaseAgent::exit_simulation_all();
+        BaseEvent::clean_all();
+        BaseAgent::free_all_zombies();
+
+        {
+            // generate the master seed for the next case
+            long long product = case_seed_generator;
+            product *= fmk::master_seed;
+            fmk::master_seed = product % lcg_modulus;
+        }
+
+        // Compute progress and report periodically
+        {
+            bool is_do_percent_progress = false;
+            bool is_do_step_progress = false;
+
+            int percent_done = (int)(100 * ((double)thisCase / (double)member_cases));
+
+            if (is_percent_progress) {
+                is_do_percent_progress = percent_done >= next_percent_progress;
+                if (is_do_percent_progress) {
+                    next_percent_progress = (percent_done / percent_progress) * percent_progress + percent_progress;
+                }
+            }
+            if (!is_do_percent_progress && is_step_progress) {
+                is_do_step_progress = thisCase >= next_step_progress;
+                if (is_do_step_progress) {
+                    next_step_progress = (thisCase / step_progress) * step_progress + step_progress;
+                }
+            }
+            if (is_do_percent_progress || is_do_step_progress) {
+                is_100_percent_done = percent_done >= 100;
+                report_simulation_progress(simulation_member, percent_done, thisCase);
+                next_progress_beat = 0;
+                next_ms_progress_beat = getMilliseconds() + OM_STATE_BEAT_TIME;
+            }
+            else {
+                if (++next_progress_beat > 1000) {
+                    next_progress_beat = 0;
+                    int64_t ms = getMilliseconds();
+                    if (ms > next_ms_progress_beat) {
+                        report_simulation_progress_beat(percent_done, (double)thisCase);
+                        next_ms_progress_beat = ms + OM_STATE_BEAT_TIME;
+                    }
+                }
+            }
+        }
+    } // cases
+
+	// Perform operations at the end of Simulation
+	Simulation_end(ci);
+
+	// Free stream generator objects
+	// delete_streams is generator-specific - defined in random/random_YYY.ompp
+	delete_streams();
+
+    // Reset CaseInfo API
+    CaseInfo(nullptr, true);
+
+    // final progress message
+    if (!is_100_percent_done) {
+        report_simulation_progress(simulation_member, 100, fmk::member_cases);
+    }
+
+    {
+        // report simulation summary information for member
+        auto clock_time_end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = clock_time_end - clock_time_start;
+        double clock_time_delta = (double)elapsed_seconds.count();
+
+        auto event_count = BaseEvent::global_event_counter;
+        double events_per_case = (double)event_count / (double)fmk::member_cases;
+        double entities_per_case = (double)fmk::member_entity_counter / (double)fmk::member_cases;
+        // double seconds_per_case = clock_time_delta / (double)fmk::member_cases;
+        theLog->logFormatted(
+            "member=%d Simulation summary: cases=%lld, events/case=%.1f, entities/case=%.1f, elapsed=%.6fs",
+            fmk::simulation_member,
+            fmk::member_cases,
+            events_per_case,
+            entities_per_case,
+            clock_time_delta
+        );
+    }
+}
+
+case_info* CaseInfo(case_info* ci, bool reset)
+{
+    static thread_local case_info* ci_stored = nullptr;
+
+    if (reset) {
+        ci_stored = nullptr;
+    }
+    else if (ci) {
+        ci_stored = ci;
+    }
+    return ci_stored;
+}
