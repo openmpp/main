@@ -24,7 +24,7 @@ private:
     typedef EnumerationSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -41,24 +41,31 @@ public:
     {
     }
 
-    const string default_initial_value() const;
+    const string default_initial_value() const override;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_global();
+    CodeBlock cxx_declaration_global() override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
-    bool is_valid_constant(const Constant &k) const;
+    bool is_valid_constant(const Constant &k) const override;
 
-    string format_for_storage(const Constant &k) const;
+    /**
+    * Create new range Constant from 'i_value' enum literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
+    string format_for_storage(const Constant &k) const override;
 
     /**
      * Gets the size of the enumeration (specialization for RangeSymbol)
      *
      * @return An int.
      */
-    int pp_size() const
+    int pp_size() const override
     {
         return upper_bound - lower_bound + 1;
     }
@@ -73,5 +80,12 @@ public:
      */
     int upper_bound;
 
+private:
+    /**
+    * Range value literal validator.
+    *
+    * @return true if 'i_value' string represent valid literal of the range type
+    */
+    bool is_valid_literal(const char * i_value) const;
 };
 

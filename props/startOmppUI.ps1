@@ -6,6 +6,11 @@ $publish_dir = "$env:PUBLISH_DIR"
 $oms_url_tickle = "$env:OMS_URL_TICKLE"
 $start_ompp_ui_log = "$env:START_OMPP_UI_LOG"
 
+if (!"$env:OM_ROOT") {
+  $env:OM_ROOT = Resolve-Path -Path "$publish_dir/../../../.."
+  Write-Host "OM_ROOT: $env:OM_ROOT"
+}
+
 "Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList ""-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.LogRequest""" | Out-File -FilePath $start_ompp_ui_log
 
 $oms_proc = Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList "-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.LogRequest"

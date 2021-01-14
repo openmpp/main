@@ -392,7 +392,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> 
     bool isBool = paramTypeRow->isBool();
     bool isStr = paramTypeRow->isString();
     bool isEnum = !paramTypeRow->isBuiltIn();
-    bool isNullable = paramRow->isExtendable;
+    bool isNullable = paramRow->isExtendable || paramTypeRow->isTime();
 
     // if csv file contain enum codes then sort type enum by unique key: model id, type id, enum name
     auto enumNameCmp = [](const TypeEnumLstRow & i_left, const TypeEnumLstRow & i_right) -> bool {

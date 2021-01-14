@@ -270,6 +270,9 @@
     <ClInclude Include="ImportSymbol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="omc_csv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -480,6 +483,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImportSymbol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Literal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="omc_csv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

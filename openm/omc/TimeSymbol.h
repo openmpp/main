@@ -14,7 +14,7 @@ private:
     typedef NumericSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -34,9 +34,9 @@ public:
      */
     bool is_wrapped();
 
-    CodeBlock cxx_declaration_global();
+    CodeBlock cxx_declaration_global() override;
 
-    CodeBlock cxx_definition_global();
+    CodeBlock cxx_definition_global() override;
 
     /**
      * Type used for time, ex. TK_double.
@@ -49,4 +49,20 @@ public:
      * @return null if it fails, else the TimeSymbol.
      */
     static TimeSymbol * find();
+
+    /**
+    * Create new Time Constant from 'i_value' literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
+    /**
+     * Formats the constant for the data store.
+     *
+     * @param k The constant to be formatted.
+     *
+     * @return The formatted for storage.
+     */
+    string format_for_storage(const Constant & k) const override;
 };

@@ -6,6 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
+#include "libopenm/omError.h"
 #include "Symbol.h"
 #include "Constant.h"
 
@@ -19,7 +20,7 @@ private:
     typedef Symbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -57,14 +58,14 @@ public:
      *
      * @return true if unknown, else false.
      */
-    bool is_unknown();
+    bool is_unknown() const;
 
     /**
      * Determines derived type.
      *
      * @return true if bool, else false.
      */
-    bool is_bool();
+    bool is_bool() const;
 
     /**
      * Determines derived type.
@@ -78,42 +79,42 @@ public:
      *
      * @return true if classification, else false.
      */
-    bool is_classification();
+    bool is_classification() const;
 
     /**
      * Determines derived type.
      *
      * @return true if range, else false.
      */
-    bool is_range();
+    bool is_range() const;
 
     /**
      * Determines derived type.
      *
      * @return true if partition, else false.
      */
-    bool is_partition();
+    bool is_partition() const;
 
     /**
      * Determines derived type.
      *
      * @return true if time type, else false
      */
-    bool is_time();
+    bool is_time() const;
 
     /**
      * Determines derived type.
      *
      * @return true if numeric or bool, else false (classification, range, or partition).
      */
-    bool is_numeric_or_bool();
+    bool is_numeric_or_bool() const;
 
     /**
      * Determines derived type.
      *
      * @return true if is enumeration (includes bool), false otherwise.
      */
-    bool is_enumeration();
+    bool is_enumeration() const;
 
     /**
      * Determines derived type.
@@ -123,17 +124,40 @@ public:
     bool is_floating() const;
 
     /**
+     * Determines derived type.
+     *
+     * @return true if the type is numeric and one of: "real", "float", "double" or "ldouble".
+     */
+    bool is_numeric_floating() const;
+
+    /**
+     * Determines derived type.
+     *
+     * @return true if the type is numeric but neither floating nor time.
+     */
+    bool is_numeric_integer() const;
+
+    /**
      * Determines if the type is a wrapped type, e.g. time, cassificaiton, etc.
      *
      * @return true if the type is wrapped, false otherwise
      */
-    bool is_wrapped()
+    bool is_wrapped() const
     {
         return is_time()
             || is_classification()
             || is_range()
             || is_partition()
             ;
+    }
+
+    /**
+    * Create new Constant from 'i_value' literal.
+    *
+    * @return new Constant or NULL on error.
+    */
+    virtual Constant * make_constant(const string & i_value) const {
+        return nullptr;
     }
 
     /**

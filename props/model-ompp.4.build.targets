@@ -160,7 +160,7 @@
   
   <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
-    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
+    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).publish.tickle</PUBLISH_TICKLE>
     <PUBLISH_SQLITE_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(PUBLISH_SQLITE)))</PUBLISH_SQLITE_REL>
     <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
     <!--  Replace back slash by forward slash. -->
@@ -205,14 +205,16 @@
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
     <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(SCENARIO_NAME)</MODEL_OPTS>
+    <FIRST_SCENARIO_NAME>$(SCENARIO_NAME.Split(';')[0])</FIRST_SCENARIO_NAME>
+    <MODEL_OPTS>$(MODEL_OPTS) -s $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -OpenM.SubValues $(MEMBERS)</MODEL_OPTS>
     <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -OpenM.Threads $(THREADS)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
-    <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
+    <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME)_$(FIRST_SCENARIO_NAME).run.tickle</RUN_MODEL_TICKLE>
     <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
 
@@ -222,9 +224,10 @@
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
-    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
-    <Exec WorkingDirectory="$(TargetDir)"
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
+          WorkingDirectory="$(TargetDir)"
           Command="$(TargetPath) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
@@ -237,21 +240,59 @@
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
-    <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
+    <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
-    <Exec WorkingDirectory="$(TargetDir)"
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
+          WorkingDirectory="$(TargetDir)"
           Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
             AlwaysCreate="true"
             />
   </Target>
+  
+  <!--
+  DbcopyExportCsv
+  -->
+  
+  <PropertyGroup>
+    <!-- path to dbcopy must be relative to PUBLISH_DIR -->
+    <COMPLETE_DBCOPY_EXE>&quot;$(OM_ROOT)/../bin/$(DBCOPY_EXE)&quot;</COMPLETE_DBCOPY_EXE>
+    <DBCOPY_CSV_OUTPUT_DIR>$(PUBLISH_DIR)/$(MODEL_NAME).last.run</DBCOPY_CSV_OUTPUT_DIR>
+  </PropertyGroup>
 
+  <Target Name="DbcopyExportCsv"
+          Condition="'$(DBCOPY_EXPORT_CSV)'=='true'"
+          AfterTargets="RunModel"
+          >
+    <Message Text="Exporting model run results into csv..." />
+    <RemoveDir Directories="$(DBCOPY_CSV_OUTPUT_DIR)" />
+
+    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv -->
+    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv"/>
+    <Exec 
+      WorkingDirectory="$(PUBLISH_DIR)"
+      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv"
+      ContinueOnError="true"/>
+
+    <!-- move *.id.csv into separate directory -->
+    <ItemGroup> 
+      <DBCOPY_CSV_OUTPUT_SRC Include="$(DBCOPY_CSV_OUTPUT_DIR)/last.run/*.*" />
+    </ItemGroup>
+
+    <Move SourceFiles="@(DBCOPY_CSV_OUTPUT_SRC)"  DestinationFolder="$(DBCOPY_CSV_OUTPUT_DIR)/id.last.run" />
+
+    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv -->
+    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false"/>
+    <Exec 
+      WorkingDirectory="$(PUBLISH_DIR)"
+      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false"
+      ContinueOnError="true"/>
+  </Target>
   
   <!--
   ExportCsv
   -->
-
   
   <PropertyGroup>
     <CSV_EXPORT_DIR>$(PUBLISH_DIR)/$(SCENARIO_NAME)</CSV_EXPORT_DIR>
@@ -266,12 +307,10 @@
     <Message Text="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
     <Exec Command="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
   </Target>
-
   
   <!--
   ExportExcel
   -->
-
   
   <PropertyGroup>
     <EXCEL_EXPORT_OUT>$(PUBLISH_DIR)/$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>

@@ -24,7 +24,7 @@ private:
     typedef EnumerationSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Morphing constructor.
@@ -51,18 +51,18 @@ public:
     {
     }
 
-    const string default_initial_value() const;
+    const string default_initial_value() const override;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
     /**
      * Gets the number of enumerators in the enumeration.
      *
      * @return An int.
      */
-    int pp_size() const;
+    int pp_size() const override;
 
     /**
      * The enumerators of this enumeration
@@ -77,4 +77,12 @@ public:
      * Created after parsing is complete.
      */
     map<string, int> pp_name_to_int;
+
+protected:
+    /**
+    * Enumerator name literal validator.
+    *
+    * @return true if 'i_value' string represent valid enumerator name
+    */
+    bool is_valid_enum_name(const char * i_value) const;
 };

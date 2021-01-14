@@ -4,16 +4,16 @@
 *  
 * @mainpage OpenM++ compiler (omc)
 * 
-* The OpenM++ compiler produces c++ (.cpp and .h) files and SQL files (.sql) from model source files (.ompp, .mpp) and parameter value files (.dat, .odat). \n
+* The OpenM++ compiler produces c++ (.cpp and .h) files and SQL files (.sql) from model source files (.ompp, .mpp) and parameter value files (.dat, .odat, .csv, .tsv). \n
 * 
 *
 * The following command line arguments are supported by omc:
 * * -Omc.ModelName      name/of/model/executable, e.g. RiskPaths
-* * -Omc.ScenarioName   name/of/base/scenario, e.g. Base
+* * -Omc.ScenarioName   name/of/base/scenario, e.g. Base (can be list of names if there is more than one parameter directory specified)
 * * -Omc.InputDir       input/dir/to/find/source/files
 * * -Omc.OutputDir      output/dir/to/place/compiled/cpp_and_h_and_sql/files
 * * -Omc.UseDir         use/dir/with/ompp/files
-* * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario
+* * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario (can be list of directories)
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
 * * -Omc.CodePage       code page for converting source files, e.g. windows-1252
 * * -Omc.MessageLanguage    language to display output messages, default: user environment settings
@@ -59,6 +59,7 @@
 #include "libopenm/common/omFile.h"
 #include "libopenm/db/modelBuilder.h"
 #include "omc_file.h"
+#include "omc_csv.h"
 
 using namespace std;
 using namespace openm;
@@ -72,7 +73,7 @@ namespace openm
         /** omc model name */
         static const char * modelName;
 
-        /** omc scenario name */
+        /** omc scenario name (or list of names) */
         static const char * scenarioName;
 
         /** omc input directory with openM++ source files */
@@ -84,7 +85,7 @@ namespace openm
         /** omc use directory to resolve 'use' statements */
         static const char * useDir;
 
-        /** omc input directory with OpenM++ scenario parameter files */
+        /** omc input directory with OpenM++ scenario parameter files (or list of directories) */
         static const char * paramDir;
 
         /** omc input directory with OpenM++ fixed parameter files */
@@ -146,7 +147,7 @@ namespace openm
     /** omc model name */
     const char * OmcArgKey::modelName = "Omc.ModelName";
 
-    /** omc scenario name */
+    /** omc scenario name (or list of names) */
     const char * OmcArgKey::scenarioName = "Omc.ScenarioName";
 
     /** omc input directory with openM++ source files */
@@ -158,7 +159,7 @@ namespace openm
     /** omc use directory to resolve 'use' statements */
     const char * OmcArgKey::useDir = "Omc.UseDir";
 
-    /** omc input directory for OpenM++ parameter files */
+    /** omc input directory (or list of directories) for OpenM++ parameter files */
     const char * OmcArgKey::paramDir = "Omc.ParamDir";
 
     /** omc input directory for OpenM++ fixed parameter files */
@@ -256,9 +257,9 @@ namespace openm
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
 
-// Parse a list of files
 static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
-
+static void processExtraParamDir(const string & i_paramDir, const string & i_scenarioName, const MetaModelHolder & i_metaRows, IModelBuilder * i_builder);
+static void createWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet, IModelBuilder * i_builder);
 
 int main(int argc, char * argv[])
 {
@@ -292,7 +293,11 @@ int main(int argc, char * argv[])
         }
 
         // get scenario name
-        string scenario_name = argStore.strOption(OmcArgKey::scenarioName);
+        list<string> scNameLst = splitCsv(argStore.strOption(OmcArgKey::scenarioName), ",;");
+
+        string scenario_name;
+        if (scNameLst.size() > 0) scenario_name = scNameLst.front();
+
         if (scenario_name.empty()) {
             scenario_name = "Default";
             theLog->logMsg("Scenario name not specified - using default name 'Default'. Use -s option to specify scenario name.");
@@ -437,10 +442,13 @@ int main(int argc, char * argv[])
         parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
 
         // Parse parameter scenario directory if specified
-        string paramDir; // make visible for possible later use for Missing.dat
-        if (argStore.isOptionExist(OmcArgKey::paramDir)) {
+        list<string> paramDirLst = splitCsv(argStore.strOption(OmcArgKey::paramDir), ",;");
+
+        string paramDir;
+        if (paramDirLst.size() > 0) paramDir = paramDirLst.front();
+
+        if (!paramDir.empty()) {
             // -p scenario parameters specified
-            paramDir = argStore.strOption(OmcArgKey::paramDir);
             pc.is_scenario_parameter_value = true;
             pc.is_fixed_parameter_value = false;
             if (paramDir != ".") theLog->logFormatted("Compile scenario parameters from: %s", paramDir.c_str());
@@ -460,9 +468,10 @@ int main(int argc, char * argv[])
         }
 
         // Parse fixed parameter directory if specified
+        string fixedDir = argStore.strOption(OmcArgKey::fixedDir);
+
         if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
             // -f fixed parameters specified
-            string fixedDir = argStore.strOption(OmcArgKey::fixedDir);
             pc.is_scenario_parameter_value = false;
             pc.is_fixed_parameter_value = true;
             if (fixedDir != ".") theLog->logFormatted("Compile fixed parameters from: %s", fixedDir.c_str());
@@ -492,9 +501,19 @@ int main(int argc, char * argv[])
         }
         catch(exception & ex) {
             theLog->logErr(ex);
-            // An error count of zero means something went seriously worng in the post-parse phase
+            // An error count of zero means something went seriously wrong in the post-parse phase
             // and an exception was thrown without first incrementing the error count and log message.
             if (Symbol::post_parse_errors == 0) Symbol::post_parse_errors = 1;
+        }
+
+        // load parameters data from .csv or .tsv files
+        forward_list<unique_ptr<Constant> > cpLst;
+
+        if (!paramDir.empty()) {
+            readParameterCsvFiles(false, paramDir, cpLst);
+        }
+        if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
+            readParameterCsvFiles(true, fixedDir, cpLst);
         }
 
         // validate parameter initializers
@@ -563,12 +582,12 @@ int main(int argc, char * argv[])
             );
         cg.do_all();
 
-        string Missing_dat_name = "Missing.dat.tmp";
+        const string Missing_dat_name = "Missing.dat.tmp";
         if (missing_param_defs.size() > 0) {
             // Some generated output for one or more missing parameters present.
             if (argStore.isOptionExist(OmcArgKey::paramDir)) {
                 // open output stream for generated definitions for missing parameters
-                ofstream Missing_dat(paramDir + Missing_dat_name, ios::out | ios::trunc | ios::binary);
+                ofstream Missing_dat(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()), ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
                 if (Missing_dat.fail()) throw HelperException(LT("error : unable to open %s for writing"), "Missing.dat.tmp");
                 Missing_dat << missing_param_defs;
@@ -582,8 +601,7 @@ int main(int argc, char * argv[])
         else {
             // Model contains no missing parameters, so delete obsolete Missing.dat.tmp if present
             if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-                string full_name = paramDir + Missing_dat_name;
-                remove(full_name.c_str());
+                remove(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()).c_str());
             }
         }
 
@@ -595,7 +613,7 @@ int main(int argc, char * argv[])
         builder->build(metaRows);
         
         // Create working set for published scenario
-        theLog->logMsg("Scenario processing");
+        theLog->logFormatted("Scenario processing: %s", scenario_name.c_str());
 
         // Get the scenario symbol
         ScenarioSymbol *scenario_symbol = dynamic_cast<ScenarioSymbol *>(Symbol::find_a_symbol(typeid(ScenarioSymbol)));
@@ -618,13 +636,9 @@ int main(int argc, char * argv[])
             scenario_parameters_count++;
             WorksetParamRow wsParam;
             wsParam.paramId = param->pp_parameter_id;
-            //
-            wsParam.subCount = 1;       // number of parameter sub-values in the scenario
-            wsParam.defaultSubId = 0;   // sub-value id to be used by default for that parameter
-            // default parameter sub id can be any int, including negative, but it must exist in the input data
-            // as it is today omc insert only sub id = 0
-            //
-            metaSet.worksetParam.push_back(wsParam);  // add parameter to workset
+            wsParam.subCount = param->sub_count();          // number of parameter sub-values in the scenario
+            wsParam.defaultSubId = param->default_sub_id;   // sub-value id to be used by default for that parameter
+            metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
             // value notes for the parameter
             for (auto lang : Symbol::pp_all_languages) {
                 WorksetParamTxtLangRow worksetParamTxt;
@@ -646,32 +660,33 @@ int main(int argc, char * argv[])
             theLog->logMsg("warning : model SQLite database not created");
         }
         else {
-            // start model default working set
-            builder->beginWorkset(metaRows, metaSet);
-
-            // add values for all scenario model parameters into default working set
-            int scenario_parameters_done = 0;
-            chrono::system_clock::time_point start = chrono::system_clock::now();
-            for (auto param : Symbol::pp_all_parameters) {
-                if (param->source != ParameterSymbol::scenario_parameter) continue;
-                auto lst = param->initializer_for_storage();
-                builder->addWorksetParameter(metaRows, metaSet, param->name, lst);  // it does insert parameter value(s) with sub-value id=0
-                scenario_parameters_done++;
-                chrono::system_clock::time_point now = chrono::system_clock::now();
-                if (chrono::duration_cast<chrono::seconds>(now - start).count() >= 3) {     // report not more often than every 3 seconds
-                    start = now;
-                    theLog->logFormatted("%d of %d parameters processed (%s)", scenario_parameters_done, scenario_parameters_count, param->name.c_str());
-                }
-            }
-            theLog->logFormatted("%d of %d parameters processed", scenario_parameters_count, scenario_parameters_count);
-
-            // complete model default working set
-            theLog->logMsg("Finalize scenario processing");
-            builder->endWorkset(metaRows, metaSet);
+            // create new workset in model database from scenario parameters
+            createWorkset(metaRows, metaSet, builder.get());
         }
 
         // build Modgen compatibilty views sql script
         builder->buildCompatibilityViews(metaRows);
+
+        // cleanup literals created from csv files
+        for (auto & cp : cpLst) {
+            if (cp->literal != nullptr) delete cp->literal;
+        }
+
+        // process additional scenario parameter directories
+        if (paramDirLst.size() > 1) {
+
+            auto snIt = scNameLst.cbegin();
+            if (snIt != scNameLst.cend()) ++snIt;
+
+            for (auto pdIt = ++paramDirLst.cbegin(); pdIt != paramDirLst.cend(); ++pdIt) {
+
+                // if scenario name supplied then use it else by default name is equal to directory stem
+                string scName = "";
+                if (snIt != scNameLst.cend()) scName = *snIt++;
+
+                processExtraParamDir(*pdIt, scName, metaRows, builder.get());
+            }
+        }
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
@@ -691,6 +706,7 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
 {
     using namespace openm;
     for (auto it = start_it; it != files.cend(); it++) {
+
         string full_name = *it;
         try {
             string file_ext = getFileNameExt(full_name);
@@ -735,5 +751,97 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
         theLog->logFormatted("%d syntax errors in parse phase", pc.parse_errors);
         throw HelperException(LT("Finish omc"));
     }
+}
+
+// process extra parameter directory: 
+// if any parameter csv files exist then read it and create additional (not default) workset in model database
+static void processExtraParamDir(const string & i_paramDir, const string & i_scenarioName, const MetaModelHolder & i_metaRows, IModelBuilder * i_builder)
+{
+    theLog->logFormatted("Compile scenario parameters from: %s", i_paramDir.c_str());
+
+    // only .csv or .tsv files allowed in additional parameters directory
+    list<string> dat_files = listSourceFiles(i_paramDir, { ".dat", ".odat" });
+    if (dat_files.size() > 0) {
+        theLog->logFormatted("warning : skip %zd .dat or .odat parameter file(s) in %s", dat_files.size(), i_paramDir.c_str());
+    }
+
+    // clean previous parameter data
+    for (const auto param : Symbol::pp_all_parameters) {
+        if (param->source != ParameterSymbol::scenario_parameter && param->source != ParameterSymbol::missing_parameter) continue;
+
+        param->source = ParameterSymbol::missing_parameter;
+        param->sub_initial_list.resize(1);
+        param->sub_initial_list.front().first = 0;
+        param->sub_initial_list.front().second.clear();
+    }
+
+    // load parameters data from .csv or .tsv files
+    forward_list<unique_ptr<Constant> > cpLst;
+
+    readParameterCsvFiles(false, i_paramDir, cpLst);
+
+    // Create working set for published scenario
+    MetaSetLangHolder metaSet;
+    metaSet.worksetRow.name = !i_scenarioName.empty() ? i_scenarioName : getFileNameStem(i_paramDir);
+
+    for (auto param : Symbol::pp_all_parameters) {
+        if (param->source != ParameterSymbol::scenario_parameter) continue; // write into db only scenario parameters
+
+        WorksetParamRow wsParam;
+        wsParam.paramId = param->pp_parameter_id;
+        wsParam.subCount = param->sub_count();          // number of parameter sub-values in the scenario
+        wsParam.defaultSubId = param->default_sub_id;   // sub-value id to be used by default for that parameter
+        metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
+    }
+
+    // if any scenario parameters found in create new workset in model database from scenario parameters
+    if (metaSet.worksetParam.size() > 0) {
+        theLog->logFormatted("Scenario processing: %s", metaSet.worksetRow.name.c_str());
+        createWorkset(i_metaRows, metaSet, i_builder);
+    }
+    else {
+        theLog->logFormatted("No scenario parameters found in: %s", i_paramDir.c_str());
+    }
+
+    // cleanup literals created from csv files
+    for (auto & cp : cpLst) {
+        if (cp->literal != nullptr) delete cp->literal;
+    }
+}
+
+// create new workset in the model database from scenario parameters
+static void createWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet, IModelBuilder * i_builder)
+{
+    // start model working set
+    i_builder->beginWorkset(i_metaRows, io_metaSet);
+
+    // add values for all scenario model parameters into working set
+    size_t scenario_parameters_count = io_metaSet.worksetParam.size();
+    int scenario_parameters_done = 0;
+
+    chrono::system_clock::time_point start = chrono::system_clock::now();
+    for (auto param : Symbol::pp_all_parameters) {
+
+        if (param->source != ParameterSymbol::scenario_parameter) continue; // write into db only scenario parameters
+
+        // insert all parameter sub-values, each parameter has atleast one (default) sub-value
+        for (int k = 0; k < param->sub_count(); k++) {
+            pair< int, list<string> > subValue = param->initializer_for_storage(k);
+            i_builder->addWorksetParameter(i_metaRows, io_metaSet, param->name, subValue.first, subValue.second); // insert parameter sub-value(s)
+        }
+        scenario_parameters_done++;
+
+        // report not more often than every 3 seconds
+        chrono::system_clock::time_point now = chrono::system_clock::now();
+        if (chrono::duration_cast<chrono::seconds>(now - start).count() >= 3) {
+            start = now;
+            theLog->logFormatted("%d of %zd parameters processed (%s)", scenario_parameters_done, scenario_parameters_count, param->name.c_str());
+        }
+    }
+    theLog->logFormatted("%d of %zd parameters processed", scenario_parameters_done, scenario_parameters_count);
+
+    // complete model working set
+    theLog->logFormatted("Finalize scenario processing: %s", io_metaSet.worksetRow.name.c_str());
+    i_builder->endWorkset(i_metaRows, io_metaSet);
 }
 

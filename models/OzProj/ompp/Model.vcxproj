@@ -25,6 +25,7 @@
     <MEMBERS>1</MEMBERS>
     <PROCESSES>1</PROCESSES>
     <THREADS>1</THREADS>
+    <DBCOPY_EXPORT_CSV>false</DBCOPY_EXPORT_CSV>
     <EXPORT_CSV>false</EXPORT_CSV>
     <EXPORT_EXCEL>false</EXPORT_EXCEL>
     <EXPORT_EXCEL_LANG>
@@ -64,12 +65,14 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <LocalDebuggerEnvironment>OM_ROOT=$(OM_ROOT)/..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <LocalDebuggerEnvironment>OM_ROOT=$(OM_ROOT)/..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -106,7 +109,6 @@
   <Import Project="$(OM_ROOT)/props/model-ompp.1.build.props" />
   <Import Project="$(OM_ROOT)/props/model-ompp.2.cpp.props" />
   <Import Project="$(OM_ROOT)/props/model-ompp.3.items.props" />
-  
   <!-- VS will expand wild cards in the None group on the first open of this project
    and will replace, in this file, the None group with that expanded list -->
   <ItemGroup>
@@ -115,7 +117,6 @@
     <None Include="../parameters/*/*.dat" />
     <None Include="../parameters/*/*.odat" />
   </ItemGroup>
-  
   <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

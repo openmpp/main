@@ -49,12 +49,14 @@ namespace openm
         void beginWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet) override;
 
         /** append scalar parameter value to sql script for new working set creation */
-        void addWorksetParameter(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value) override;
+        void addWorksetParameter(
+            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, int i_subId, const string & i_value
+        ) override;
 
         /** append parameter values to sql script for new working set creation */
         void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
-            ) override;
+            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, int i_subId, const list<string> & i_valueLst
+        ) override;
 
         /** finish sql script to create new working set */
         void endWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) override;
@@ -143,7 +145,8 @@ namespace openm
             int i_setId,
             const string & i_name, 
             const string & i_dbTableName, 
-            const vector<ParamTblInfo>::const_iterator & i_paramInfo, 
+            const vector<ParamTblInfo>::const_iterator & i_paramInfo,
+            int i_subId,
             const string & i_value
         );
 

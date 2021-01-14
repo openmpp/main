@@ -8,7 +8,6 @@
 #include <cassert>
 #include "DerivedTableSymbol.h"
 #include "TableMeasureSymbol.h"
-#include "libopenm/common/omHelper.h"
 
 using namespace std;
 using namespace openm;
@@ -50,6 +49,8 @@ void TableMeasureSymbol::post_parse(int pass)
         // Process additional information in expression label
         // Symbols labels are only complete after pass eAssignMembers,
         // so do this in the next pass, which is eResolveDataTypes
+        regex rm_decimals("[[:space:]]+decimals=[[:digit:]]+");
+        regex rm_scale("(^|[[:space:]]+)scale=-?[[:digit:]]+");
 
         for (auto & lbl : pp_labels) {
 
@@ -72,7 +73,7 @@ void TableMeasureSymbol::post_parse(int pass)
                         }
                     }
                     // remove decimals=nnn from label
-                    lbl = regexReplace(lbl, "[[:space:]]+decimals=[[:digit:]]+", "");
+                    lbl = regex_replace(lbl, rm_decimals, "");
                 }
             }
 
@@ -101,7 +102,7 @@ void TableMeasureSymbol::post_parse(int pass)
                         }
                     }
                     // remove scale=nnn from label
-                    lbl = regexReplace(lbl, "(^|[[:space:]]+)scale=-?[[:digit:]]+", "");
+                    lbl = regex_replace(lbl, rm_scale, "");
                 }
             }
 

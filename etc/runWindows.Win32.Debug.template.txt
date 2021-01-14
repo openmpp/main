@@ -14,7 +14,7 @@ Oms web-service process this template as:
 Result of template processing is a command line to run model.exe
 
 Example of result:
-  ./modelNameD -OpenM.LogToFile true
+  .\modelNameD -OpenM.LogToFile true
 
 Arguments of template:
 struct {
@@ -42,7 +42,7 @@ Example of result from custom template above:
 
 */}}
 
-{{.BinDir}}/{{.ExeStem}}D
+{{.BinDir}}\{{.ExeStem}}D
 {{range .Args}}
 {{.}}
 {{end}}

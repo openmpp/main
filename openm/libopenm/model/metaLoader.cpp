@@ -32,7 +32,16 @@ namespace openm
 
     /** short name for: -s working set name to get input parameters */
     const char * RunShortKey::setName = "s";
-    
+
+    /** base run name to get input parameters */
+    const char * RunOptionsKey::baseRunName = "OpenM.BaseRunName";
+
+    /** model run id to get input parameters */
+    const char * RunOptionsKey::baseRunId = "OpenM.BaseRunId";
+
+    /** model run digest to get input parameters */
+    const char * RunOptionsKey::baseRunDigest = "OpenM.BaseRunDigest";
+
     /** modeling task id */
     const char * RunOptionsKey::taskId = "OpenM.TaskId";
 
@@ -182,6 +191,9 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::restartRunId,
     RunOptionsKey::setId,
     RunOptionsKey::setName,
+    RunOptionsKey::baseRunName,
+    RunOptionsKey::baseRunId,
+    RunOptionsKey::baseRunDigest,
     RunOptionsKey::taskId,
     RunOptionsKey::taskName,
     RunOptionsKey::taskRunName,

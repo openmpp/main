@@ -19,9 +19,6 @@ using namespace std;
  * For example, a FloatingPointLiteral might encapsulate a string
  * consisting of the 7 characters in 2.71828.
  * 
- * The sub-classes of Literal have no additional members or functions - 
- * they just provide RTTI used by the parser and code generator.
- * 
  * The sub-class TimeLiteral is the only literal which is not a C++ literal.
  */
 
@@ -63,6 +60,13 @@ public:
         : Literal (tok)
     {
     }
+
+    /**
+    * Integer literal validator.
+    *
+    * @return true if 'i_value' string represent valid integer literal
+    */
+    static bool is_valid_literal(const char * i_value);
 };
 
 /**
@@ -85,6 +89,13 @@ public:
         : Literal(tok)
     {
     }
+
+    /**
+    * Floating point literal validator.
+    *
+    * @return true if 'i_value' string represent valid floating point literal
+    */
+    static bool is_valid_literal(const char * i_value);
 };
 
 /**
@@ -115,6 +126,13 @@ public:
         : Literal (tok)
     {
     }
+
+    /**
+    * String literal validator.
+    *
+    * @return true if 'i_value' string is not a NULL.
+    */
+    static bool is_valid_literal(const char * i_value) { return i_value != nullptr; };
 };
 
 /**
@@ -129,6 +147,13 @@ public:
     BooleanLiteral( const string& tok ) : Literal (tok) 
     { 
     }
+
+    /**
+    * Boolean literal validator.
+    *
+    * @return true if 'i_value' string represent valid boolean literal
+    */
+    static bool is_valid_literal(const char * i_value);
 };
 
 /**
@@ -161,5 +186,12 @@ public:
         : Literal (tok) 
     {
     }
+
+    /**
+    * Time literal validator.
+    *
+    * @return true if 'i_value' string represent valid Time literal
+    */
+    static bool is_valid_literal(const char * i_value);
 };
 

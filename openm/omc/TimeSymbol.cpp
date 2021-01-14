@@ -85,3 +85,37 @@ TimeSymbol * TimeSymbol::find()
     assert(ts); // only called when valid
     return ts;
 }
+
+Constant * TimeSymbol::make_constant(const string & i_value) const
+{
+    return TimeLiteral::is_valid_literal(i_value.c_str()) ? new Constant(new TimeLiteral(i_value)) : nullptr;
+}
+
+string TimeSymbol::format_for_storage(const Constant & k) const
+{
+    if (openm::equalNoCase(k.value().c_str(), "time_undef")) {
+        return (is_floating() && !Symbol::option_time_undef_is_minus_one) ? "NULL" : "-1";
+    }
+    
+    if (openm::equalNoCase(k.value().c_str(), "time_infinite")) {
+        if (is_floating() && !Symbol::option_time_infinite_is_32767) {
+            // using max instead of infinity because it must be float value and not 'inf' string
+            switch (time_type) {
+            case token::TK_float:
+                return to_string(numeric_limits<float>::max());
+            case token::TK_double:
+                return to_string(numeric_limits<double>::max());
+            case token::TK_ldouble:
+                return to_string(numeric_limits<long double>::max());
+            default:
+                return k.value();    // unexpected Time floating type
+            }
+            // return k.value();   // unexpected Time floating type
+        }
+        else {
+            return "32767";
+        }
+    }
+
+    return NumericSymbol::format_for_storage(k);
+}

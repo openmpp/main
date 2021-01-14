@@ -13,6 +13,7 @@
     <Category Name="Folders"      DisplayName="2. Folders" />
     <Category Name="BuildOptions" DisplayName="3. Build Options" />
     <Category Name="RunOptions"   DisplayName="4. Run Options" />
+    <Category Name="Deprecated"   DisplayName="5. DEPRECATED" />
   </Rule.Categories>
   
   <!-- Names -->
@@ -23,8 +24,8 @@
                   />
   <StringProperty Category="Names"
                   Name="SCENARIO_NAME"
-                  DisplayName="Scenario Name"
-                  Description="The name of the default scenario published in the database. The default is Default."
+                  DisplayName="Scenario Name(s)"
+                  Description="The  scenario name or list of names to publish in the database. The default is Default. It can be list of names separated by semicolon"
                   />
   
   <!-- Folders -->
@@ -37,8 +38,8 @@
   <StringProperty Category="Folders"
                   Subtype="folder"
                   Name="SCENARIO_PARAMETERS_FOLDER"
-                  DisplayName="Scenario Parameter Folder"
-                  Description="The folder containing modifiable parameter values (*.dat and *.odat) for the published scenario. The path is relative to the project file. The default is ../parameters/$(SCENARIO_NAME)."
+                  DisplayName="Scenario Parameter Folder(s)"
+                  Description="The folder or folder list containing modifiable parameter values (*.dat, *.odat, *.csv, *.tsv) for the published scenario(s). The path is relative to the project file. The default is ../parameters/Default. It can be list of folders separated by semicolon."
                   />
   <StringProperty Category="Folders"
                   Subtype="folder"
@@ -96,7 +97,7 @@
   <BoolProperty Category="RunOptions"
                 Name="RUN_SCENARIO"
                 DisplayName="Run the scenario after build"
-                Description="Run the scenario after building and publishing the model and scenario."
+                Description="Run the scenario after building and publishing the model and scenario(s)."
                 />
   <IntProperty  Category="RunOptions"
                 Name="MEMBERS"
@@ -114,28 +115,35 @@
                 Description="To follow"
                 />
   <BoolProperty Category="RunOptions"
-                Name="EXPORT_CSV"
-                DisplayName="Export results to csv files"
-                Description="To follow"
-                />
-  <BoolProperty Category="RunOptions"
-                Name="EXPORT_EXCEL"
-                DisplayName="Export results to Excel"
-                Description="To follow"
-                />
-  <StringProperty Category="RunOptions"
-                  Name="EXPORT_EXCEL_LANG"
-                  DisplayName="Language for export to Excel"
-                  Description="To follow"
-                  />
-  <BoolProperty Category="RunOptions"
-                Name="EXPORT_EXCEL_LAUNCH"
-                DisplayName="Launch Excel after export to Excel"
-                Description="To follow"
+                Name="DBCOPY_EXPORT_CSV"
+                DisplayName="Export model run results into csv files"
+                Description="Export model run parameters and output tables into csv files"
                 />
   <BoolProperty Category="RunOptions"
                 Name="OPEN_MODEL_WEB_UI"
                 DisplayName="Open model web UI"
                 Description="Publish model in web-service and open model web UI using default browser"
+                />
+
+  <!-- Deprecated -->
+  <BoolProperty Category="Deprecated"
+                Name="EXPORT_CSV"
+                DisplayName="Export results to csv files"
+                Description="This functionality is deprecated and will be removed in future release."
+                />
+  <BoolProperty Category="Deprecated"
+                Name="EXPORT_EXCEL"
+                DisplayName="Export results to Excel"
+                Description="This functionality is deprecated and will be removed in future release."
+                />
+  <StringProperty Category="Deprecated"
+                  Name="EXPORT_EXCEL_LANG"
+                  DisplayName="Language for export to Excel"
+                Description="This functionality is deprecated and will be removed in future release."
+                  />
+  <BoolProperty Category="Deprecated"
+                Name="EXPORT_EXCEL_LAUNCH"
+                DisplayName="Launch Excel after export to Excel"
+                Description="This functionality is deprecated and will be removed in future release."
                 />
 </Rule>

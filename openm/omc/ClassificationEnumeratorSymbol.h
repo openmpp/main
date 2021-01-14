@@ -19,14 +19,14 @@ private:
     typedef EnumeratorSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     explicit ClassificationEnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
         : EnumeratorSymbol(sym, enumeration, ordinal, decl_loc)
     {
     }
 
-	string db_name() const
+	string db_name() const override
 	{
 		// The 'name' in the data store is the same as the classification level in model code
 		return name;

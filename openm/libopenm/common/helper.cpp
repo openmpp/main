@@ -326,8 +326,6 @@ const char * openm::elliptString(const char * i_src, size_t i_size, char * io_bu
     return io_buffer;
 }
 
-// this function exists only because g++ below 4.9 does not support std::regex
-//
 // replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty
 const string openm::replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue)
 {
@@ -348,66 +346,6 @@ const string openm::replaceAll(const string & i_src, const char * i_oldValue, co
 
     return dst;
 }
-
-// this function exists only because g++ below 4.9 does not support std::regex
-#ifdef _WIN32
-
-string openm::regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)
-{
-    regex pat(i_pattern);
-    return regex_replace(i_srcText, pat, i_replaceWith);
-}
-
-#else
-
-#include <regex.h>
-#include "libopenm/omError.h"
-
-#define MAX_RE_ERROR_MSG    1024
-
-string openm::regexReplace(const string & i_srcText, const char * i_pattern, const char * i_replaceWith)
-{
-    // prepare regex
-    regex_t re;
-
-    int nRet = regcomp(&re, i_pattern, REG_EXTENDED | REG_NEWLINE);
-    if (nRet != 0) {
-        char errMsg[MAX_RE_ERROR_MSG + 1];
-        regerror(nRet, &re, errMsg, sizeof(errMsg));
-        throw HelperException("Regular expression error: %s", errMsg);
-    }
-
-    // replace first occurrence of pattern in source text
-    string sResult;
-    regmatch_t matchPos;
-
-    nRet = regexec(&re, i_srcText.c_str(), 1, &matchPos, 0);
-    if (nRet == REG_NOMATCH) {
-        regfree(&re);           // cleanup
-        return i_srcText;       // pattern not found - return source text as is
-    }
-    if (nRet != 0) {            // error 
-        regfree(&re);           // cleanup
-        throw HelperException("Regular expression FAILED: %s", i_pattern);
-    }
-    // at this point nRet == 0 and we can replace first occurrence with replacement string
-    if (matchPos.rm_so >= 0 && matchPos.rm_so < (int)i_srcText.length()) {
-
-        string sResult =
-            i_srcText.substr(0, matchPos.rm_so) +
-            i_replaceWith +
-            ((matchPos.rm_eo >= 0 && matchPos.rm_eo < (int)i_srcText.length()) ? i_srcText.substr(matchPos.rm_eo) : "");
-
-        regfree(&re);       // cleanup
-        return sResult;
-    }
-    else {                  // starting offset out of range - pattern not found
-        regfree(&re);       // cleanup
-        return i_srcText;   // return source text as is
-    }
-}
-
-#endif // _WIN32
 
 // normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8"
 const string openm::normalizeLanguageName(const string & i_srcLanguage)

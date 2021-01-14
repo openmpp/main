@@ -1,0 +1,5 @@
+sub_id,dim0,dim1,param_value
+0,EAST,EAST,"[10,20)"
+0,EAST,WEST,"[20,30)"
+0,WEST,EAST,"[20,30)"
+0,WEST,WEST,"[10,20)"

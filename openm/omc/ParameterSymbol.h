@@ -45,6 +45,9 @@ public:
 
     void post_parse(int pass);
 
+    /** Mark enumerations required for metadata support for this parameter. */
+    void post_parse_mark_enumerations(void);
+
     /**
      * Alternate name
      * 
@@ -58,9 +61,12 @@ public:
         return "om_param_" + name;
     }
 
-    CodeBlock cxx_declaration_global();
-
-    CodeBlock cxx_definition_global();
+    CodeBlock cxx_declaration_global(void);
+    CodeBlock cxx_declaration_global_scenario_debug(void);
+    CodeBlock cxx_declaration_global_scenario_release(void);
+    CodeBlock cxx_definition_global(void);
+    CodeBlock cxx_definition_global_scenario_debug(void);
+    CodeBlock cxx_definition_global_scenario_release(void);
 
     /**
      * C++ initializer list for parameter
@@ -83,11 +89,14 @@ public:
     /**
      * Initializer list for storage.
      * 
-     * Builds a list of strings containing initializer values suitable for the data store.
+     * Builds a list of strings containing initializer values of parameter sub-value suitable for the data store.
+     * Each parameter has at least one sub-value with index zero.
      *
-     * @return a list of strings;
+     * @param i_sub_index (Optional) sub-value index.
+     *
+     * @return sub-value id and list of strings;
      */
-    list<string> initializer_for_storage();
+    pair< int, list<string> > initializer_for_storage(int i_sub_index = 0);
 
     /**
      * Definition of the parameter in .dat format
@@ -307,9 +316,28 @@ public:
     list<EnumerationSymbol *> pp_enumeration_list2;
 
     /**
-     * List of initializers.
+    * List of initializers for each parameter sub-value.
+    * First elelemnt is default sub-value id and 'initializer_list' created by parser.
+    */
+    list< pair<int, list<Constant *> > > sub_initial_list = { { 0, list<Constant *>() } };
+
+    /**
+     * List of initializers, if parameter has multiple sub-values then it is initializer for default sub-value.
      */
-    list<Constant *> initializer_list;
+    list<Constant *> & initializer_list = sub_initial_list.front().second;
+
+    /**
+    * Default sub-value id for the parameter.
+    */
+    int & default_sub_id = sub_initial_list.front().first;
+
+    /**
+    * Number of sub-values in parameter initializer.
+    */
+    int sub_count()
+    {
+        return (int)sub_initial_list.size();
+    }
 
     /**
      * The lookup function for cumrate parameters

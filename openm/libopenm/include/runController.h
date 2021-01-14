@@ -139,13 +139,16 @@ namespace openm
         RunStateHolder runStateHolder;
 
         /** find source working set for input parameters */
-        int findWorkset(int i_setId, IDbExec * i_dbExec);
+        tuple<int, bool, bool> findWorkset(int i_setId, IDbExec * i_dbExec);
+
+        /** find base run to get model parameters, if base run option(s) specified */
+        int findBaseRun(IDbExec * i_dbExec);
 
         /** save run options by inserting into run_option table */
         void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
-        void createRunParameters(int i_runId, int i_setId, IDbExec * i_dbExec) const;
+        void createRunParameters(int i_runId, int i_setId, bool i_isWsDefault, bool i_isReadonlyWsDefault, int i_baseRunId, IDbExec * i_dbExec) const;
 
         // cretate run description and notes using run options or by copy it from workset text
         void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
@@ -157,7 +160,7 @@ namespace openm
         void checkParamSubCounts(int i_runId, int i_subCount, const ParamDicRow & i_paramRow, IDbExec * i_dbExec) const;
 
         // make part of where clause to select sub_id's
-        const string makeWhereSubId(const MetaLoader::ParamSubOpts & i_subOpts) const;
+        const string makeWhereSubId(const MetaLoader::ParamSubOpts & i_subOpts, int i_defaultSubId) const;
 
         // make part of select columns list to map source sub id's to run parameter sub_id's
         const string mapSelectedSubId(const MetaLoader::ParamSubOpts & i_subOpts) const;

@@ -17,8 +17,6 @@ INSERT INTO id_lst (id_key, id_value) VALUES ('type_hid',      100);
 INSERT INTO id_lst (id_key, id_value) VALUES ('parameter_hid', 100);
 INSERT INTO id_lst (id_key, id_value) VALUES ('table_hid',     100);
 INSERT INTO id_lst (id_key, id_value) VALUES ('run_id_set_id', 100);
-INSERT INTO id_lst (id_key, id_value) VALUES ('task_id',       100);
-INSERT INTO id_lst (id_key, id_value) VALUES ('task_run_id',   100);
 
 --
 -- Languages and word list

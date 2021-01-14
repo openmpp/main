@@ -22,9 +22,7 @@ void DoneVector::init(size_t i_size)
 void DoneVector::reset(void)
 {
     lock_guard<recursive_mutex> lck(theMutex);
-    for (auto && isV : isDoneVec) {
-        isV = false;
-    }
+    std::fill(isDoneVec.begin(), isDoneVec.end(), false);
 }
 
 // return true if all values are set to true

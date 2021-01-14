@@ -40,13 +40,13 @@ namespace openm
 
         /** append scalar parameter value to sql script for new working set creation */
         virtual void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const string & i_value
+            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, int i_subId, const string & i_value
         ) = 0;
 
         /** append parameter values to sql script for new working set creation */
         virtual void addWorksetParameter(
-            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, const list<string> & i_valueLst
-            ) = 0;
+            const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet, const string & i_name, int i_subId, const list<string> & i_valueLst
+        ) = 0;
 
         /** finish sql script to create new working set */
         virtual void endWorkset(const MetaModelHolder & i_metaRows, const MetaSetLangHolder & i_metaSet) = 0;

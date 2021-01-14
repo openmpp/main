@@ -34,6 +34,15 @@ namespace openm
         /** working set name to get input parameters */
         static const char * setName;
 
+        /** base run name to get input parameters */
+        static const char * baseRunName;
+
+        /** model run id to get input parameters */
+        static const char * baseRunId;
+
+        /** model run digest to get input parameters */
+        static const char * baseRunDigest;
+
         /** modeling task id */
         static const char * taskId;
 

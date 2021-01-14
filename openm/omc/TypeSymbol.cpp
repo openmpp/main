@@ -19,9 +19,9 @@
 
 using namespace std;
 
-bool TypeSymbol::is_unknown()
+bool TypeSymbol::is_unknown() const
 {
-    if (dynamic_cast<UnknownTypeSymbol *>(this)) {
+    if (dynamic_cast<const UnknownTypeSymbol *>(this)) {
         return true;
     }
     else {
@@ -29,9 +29,9 @@ bool TypeSymbol::is_unknown()
     }
 }
 
-bool TypeSymbol::is_bool()
+bool TypeSymbol::is_bool() const
 {
-    if (dynamic_cast<BoolSymbol *>(this)) {
+    if (dynamic_cast<const BoolSymbol *>(this)) {
         return true;
     }
     else {
@@ -49,9 +49,9 @@ bool TypeSymbol::is_string() const
     }
 }
 
-bool TypeSymbol::is_classification()
+bool TypeSymbol::is_classification() const
 {
-    if (dynamic_cast<ClassificationSymbol *>(this)) {
+    if (dynamic_cast<const ClassificationSymbol *>(this)) {
         return true;
     }
     else {
@@ -59,9 +59,9 @@ bool TypeSymbol::is_classification()
     }
 }
 
-bool TypeSymbol::is_range()
+bool TypeSymbol::is_range() const
 {
-    if (dynamic_cast<RangeSymbol *>(this)) {
+    if (dynamic_cast<const RangeSymbol *>(this)) {
         return true;
     }
     else {
@@ -69,9 +69,9 @@ bool TypeSymbol::is_range()
     }
 }
 
-bool TypeSymbol::is_partition()
+bool TypeSymbol::is_partition() const
 {
-    if (dynamic_cast<PartitionSymbol *>(this)) {
+    if (dynamic_cast<const PartitionSymbol *>(this)) {
         return true;
     }
     else {
@@ -79,9 +79,9 @@ bool TypeSymbol::is_partition()
     }
 }
 
-bool TypeSymbol::is_time()
+bool TypeSymbol::is_time() const
 {
-    if (dynamic_cast<TimeSymbol *>(this)) {
+    if (dynamic_cast<const TimeSymbol *>(this)) {
         return true;
     }
     else {
@@ -89,26 +89,26 @@ bool TypeSymbol::is_time()
     }
 }
 
-bool TypeSymbol::is_numeric_or_bool()
+bool TypeSymbol::is_numeric_or_bool() const
 {
-    if (dynamic_cast<NumericSymbol *>(this) || dynamic_cast<BoolSymbol *>(this)) {
+    if (dynamic_cast<const NumericSymbol *>(this) || dynamic_cast<const BoolSymbol *>(this)) {
         return true;
     }
     else {
-        assert(dynamic_cast<ClassificationSymbol *>(this)
-            || dynamic_cast<RangeSymbol *>(this)
-            || dynamic_cast<PartitionSymbol *>(this)
-            || dynamic_cast<StringTypeSymbol *>(this)); // grammar guarantee
+        assert(dynamic_cast<const ClassificationSymbol *>(this)
+            || dynamic_cast<const RangeSymbol *>(this)
+            || dynamic_cast<const PartitionSymbol *>(this)
+            || dynamic_cast<const StringTypeSymbol *>(this)); // grammar guarantee
         return false;
     }
 }
 
-bool TypeSymbol::is_enumeration()
+bool TypeSymbol::is_enumeration() const
 {
-    if (dynamic_cast<ClassificationSymbol *>(this)
-     || dynamic_cast<BoolSymbol *>(this)
-     || dynamic_cast<RangeSymbol *>(this)
-     || dynamic_cast<PartitionSymbol *>(this)) {
+    if (dynamic_cast<const ClassificationSymbol *>(this)
+     || dynamic_cast<const BoolSymbol *>(this)
+     || dynamic_cast<const RangeSymbol *>(this)
+     || dynamic_cast<const PartitionSymbol *>(this)) {
         return true;
     }
     else {
@@ -118,16 +118,32 @@ bool TypeSymbol::is_enumeration()
 
 bool TypeSymbol::is_floating() const
 {
+    if (is_numeric_floating()) {
+        return true;
+    }
+    if (auto ts = dynamic_cast<const TimeSymbol *>(this)) {
+        auto tt = ts->time_type;
+        if (tt == token::TK_float || tt == token::TK_double || tt == token::TK_ldouble ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TypeSymbol::is_numeric_floating() const
+{
     if (auto ns = dynamic_cast<const NumericSymbol *>(this)) {
         if (ns->name == "real" || ns->name == "float" || ns->name == "double" || ns->name == "ldouble") {
             return true;
         }
-        if (auto ts = dynamic_cast<const TimeSymbol *>(this)) {
-            auto tt = ts->time_type;
-            if (tt == token::TK_float || tt == token::TK_double || tt == token::TK_ldouble ) {
-                return true;
-            }
-        }
+    }
+    return false;
+}
+
+bool TypeSymbol::is_numeric_integer() const
+{
+    if (dynamic_cast<const NumericSymbol *>(this)) {
+        return !is_numeric_floating() && !is_time();
     }
     return false;
 }
@@ -146,7 +162,6 @@ TypeSymbol * TypeSymbol::summing_type()
         return sym;
     }
 }
-
 
 string TypeSymbol::exposed_type()
 {

@@ -61,7 +61,6 @@ void NumericSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     typeDic.dicId = kind_of_type::simple_type;          // simple types
     typeDic.totalEnumId = 1;
     metaRows.typeDic.push_back(typeDic);
-
 }
 
 NumericSymbol *NumericSymbol::find(token_type type)
@@ -84,6 +83,14 @@ bool NumericSymbol::is_valid_constant(const Constant &k) const
     return true;
 }
 
+Constant * NumericSymbol::make_constant(const string & i_value) const
+{
+    if (is_numeric_integer()) return IntegerLiteral::is_valid_literal(i_value.c_str()) ? new Constant(new IntegerLiteral(i_value)) : nullptr;
+    if (is_numeric_floating()) return FloatingPointLiteral::is_valid_literal(i_value.c_str()) ? new Constant(new FloatingPointLiteral(i_value)) : nullptr;
+
+    throw HelperException(LT("Validator is not defined for this type of NumericSymbol"));
+}
+
 string NumericSymbol::format_for_storage(const Constant &k) const
 {
     string result = k.value();
@@ -96,3 +103,4 @@ string NumericSymbol::format_for_storage(const Constant &k) const
 
     return result;
 }
+

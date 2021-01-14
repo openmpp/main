@@ -25,7 +25,7 @@ private:
     typedef TypeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -108,15 +108,15 @@ public:
         keywords.push_back(kw3);
     }
 
-    const string default_initial_value() const {
+    const string default_initial_value() const override {
         return initial_value;
     }
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_global();
+    CodeBlock cxx_declaration_global() override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
     /**
      * The type, e.g. TK_uint.
@@ -151,7 +151,14 @@ public:
      *
      * @return true if valid constant, false if not.
      */
-    bool is_valid_constant(const Constant &k) const;
+    bool is_valid_constant(const Constant &k) const override;
+    
+    /**
+    * Create new numeric Constant of float or integer type from 'i_value' literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
 
     /**
      * Formats the constant for the data store.
@@ -160,5 +167,5 @@ public:
      *
      * @return The formatted for storage.
      */
-    string format_for_storage(const Constant &k) const;
+    string format_for_storage(const Constant &k) const override;
 };

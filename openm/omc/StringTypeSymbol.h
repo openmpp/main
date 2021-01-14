@@ -22,7 +22,7 @@ private:
     typedef TypeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
     * Constructor for the string type symbol
@@ -32,13 +32,20 @@ public:
     {
     }
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
-    bool is_valid_constant(const Constant &k) const;
+    bool is_valid_constant(const Constant &k) const override;
 
-    const string default_initial_value() const {
+    /**
+    * Create new string Constant from 'i_value' literal.
+    *
+    * @return pointer to a new Constant or nullptr on error.
+    */
+    Constant * make_constant(const string & i_value) const override;
+
+    const string default_initial_value() const override {
         return "";
     };
 
@@ -56,6 +63,6 @@ public:
      *
      * @return The formatted for storage.
      */
-    string format_for_storage(const Constant &k) const;
+    string format_for_storage(const Constant &k) const override;
 };
 

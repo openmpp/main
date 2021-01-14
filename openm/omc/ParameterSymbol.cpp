@@ -183,18 +183,7 @@ void ParameterSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // Mark enumerations required for metadata support for this parameter
-        if (source == scenario_parameter) {
-            // The storage type if an enumeration
-            if (pp_datatype->is_enumeration()) {
-                auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
-                assert(es); // compiler guarantee
-                es->metadata_needed = true;
-            }
-            // The enumeration of each dimension
-            for (auto es : pp_enumeration_list) {
-                es->metadata_needed = true;
-            }
-        }
+        post_parse_mark_enumerations();
 
         // Generate body of lookup function
         if (cumrate) {
@@ -242,7 +231,25 @@ void ParameterSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock ParameterSymbol::cxx_declaration_global()
+// Mark enumerations required for metadata support for this parameter
+void ParameterSymbol::post_parse_mark_enumerations(void)
+{
+    // Mark enumerations required for metadata support for this parameter
+    if (source == scenario_parameter) {
+        // The storage type if an enumeration
+        if (pp_datatype->is_enumeration()) {
+            auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
+            assert(es); // compiler guarantee
+            es->metadata_needed = true;
+        }
+        // The enumeration of each dimension
+        for (auto es : pp_enumeration_list) {
+            es->metadata_needed = true;
+        }
+    }
+}
+
+CodeBlock ParameterSymbol::cxx_declaration_global_scenario_debug(void)
 {
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_global();
@@ -250,38 +257,58 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     // Perform operations specific to this level in the Symbol hierarchy.
     assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
 
-    if (source == scenario_parameter) {
-        if (rank() > 0) {
-            // extern thread_local double * om_value_ageSex;
-            // #define ageSex (*reinterpret_cast<const double(*)[N_AGE][N_SEX]>(om_value_ageSex))
-            h += "extern thread_local " + cxx_type_of_parameter() + " * om_value_" + name + ";";
-            h += "#define " +
-                name +
-                " (*reinterpret_cast<const " + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
-                "(om_value_" + name + ")" +
-                ")";
-        }
-        else {
-            // extern thread_local int om_value_startSeed;
-            // #define startSeed (static_cast<const int>>(om_value_startSeed))
-            h += "extern thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
-            h += "#define " +
-                name +
-                " (static_cast<const " + pp_datatype->name + ">" +
-                "(om_value_" + name + ")" +
-                ")";
-        }
+    if (source != scenario_parameter) return h;
+
+    if (rank() > 0) {
+        // extern thread_local const double (& UnionDurationBaseline)[2][6];
+        h += "extern thread_local const " + cxx_type_of_parameter() + " (& " + name + ")" + cxx_dimensions() + ";";
     }
+    else {
+        // extern thread_local const int & startSeed;
+        h += "extern thread_local const " + cxx_type_of_parameter() + " & " + name + ";";
+    }
+    return h;
+}
+
+CodeBlock ParameterSymbol::cxx_declaration_global_scenario_release(void)
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
+
+    if (source != scenario_parameter) return h;
+
+    if (rank() > 0) {
+        // extern thread_local double * om_value_UnionDurationBaseline;
+        // #define UnionDurationBaseline (*reinterpret_cast<const double(*)[2][6]>(om_value_UnionDurationBaseline))
+        h += "extern thread_local " + cxx_type_of_parameter() + " * om_value_" + name + ";";
+        h += "#define " +
+            name +
+            " (*reinterpret_cast<const " + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
+            "(om_value_" + name + ")" +
+            ")";
+    }
+    else {
+        // extern thread_local const int & startSeed;
+        h += "extern thread_local const " + cxx_type_of_parameter() + " & " + name + ";";
+    }
+    return h;
+}
+
+CodeBlock ParameterSymbol::cxx_declaration_global(void)
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock h = super::cxx_declaration_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
+
     if (source == derived_parameter) {
         if (rank() > 0) {
-            // extern thread_local CITY * om_value_NearestCity;
-            // #define NearestCity (*reinterpret_cast<CITY(*)[N_CITY]>(om_value_NearestCity))
-            h += "extern thread_local " + pp_datatype->name + " * om_value_" + name + ";";
-            h += "#define " +
-                name +
-                " (*reinterpret_cast<" + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
-                "(om_value_" + name + ")" +
-                ")";
+            // extern thread_local CITY NearestCity[N_CITY];
+            h += "extern thread_local " + pp_datatype->name + " " + name + cxx_dimensions() + ";";
         }
         else {
             // extern thread_local CITY oneCity;
@@ -294,7 +321,7 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
             // declare non-const version for extension at run-time
             h += "extern "
                 + pp_datatype->name + " "
-                  "om_value_" + name
+                "om_value_" + name
                 + cxx_dimensions() + "; // non-const version for extension";
             // declare const version (reference) for use in model code
             h += "extern const "
@@ -318,7 +345,7 @@ CodeBlock ParameterSymbol::cxx_declaration_global()
     return h;
 }
 
-CodeBlock ParameterSymbol::cxx_definition_global()
+CodeBlock ParameterSymbol::cxx_definition_global_scenario_debug(void)
 {
     // Hook into the hierarchical calling chain
     CodeBlock c = super::cxx_definition_global();
@@ -326,30 +353,66 @@ CodeBlock ParameterSymbol::cxx_definition_global()
     // Perform operations specific to this level in the Symbol hierarchy.
     assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
 
-    if (source == missing_parameter) {
-        c += "// WARNING - No data for the following parameter:";
-    }
+    if (source != scenario_parameter) return c;
 
-    if (source == scenario_parameter) {
-        if (rank() > 0) {
-            // static vector<unique_ptr<double[]>> om_param_ageSex;
-            // thread_local double * om_value_ageSex = nullptr;
-            c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
-            c += "thread_local " + cxx_type_of_parameter() + " * " + "om_value_" + name + " = nullptr;";
-        }
-        else {
-            // static vector<int> om_param_startSeed;
-            // thread_local int om_value_startSeed;
-            c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
-            c += "thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
-        }
+    if (rank() > 0) {
+        // static vector<unique_ptr<double[]>> om_param_UnionDurationBaseline;
+        // static thread_local double om_value_UnionDurationBaseline[2][6];
+        // thread_local const double (& UnionDurationBaseline)[2][6] = om_value_UnionDurationBaseline;
+        c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
+        c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + cxx_dimensions() + ";";
+        c += "thread_local const " + cxx_type_of_parameter() + " (& " + name + ")" + cxx_dimensions() + " = " + "om_value_" + name + ";";
     }
+    else {
+        // static vector<int> om_param_startSeed;
+        // static thread_local int om_value_startSeed;
+        // thread_local const int & startSeed = om_value_startSeed;
+        c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
+        c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
+        c += "thread_local const " + cxx_type_of_parameter() + " & " + name + " = om_value_" + name + ";";
+    }
+    return c;
+}
+
+CodeBlock ParameterSymbol::cxx_definition_global_scenario_release(void)
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
+
+    if (source != scenario_parameter) return c;
+
+    if (rank() > 0) {
+        // static vector<unique_ptr<double[]>> om_param_ageSex;
+        // thread_local double * om_value_ageSex = nullptr;
+        c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
+        c += "thread_local " + cxx_type_of_parameter() + " * " + "om_value_" + name + " = nullptr;";
+    }
+    else {
+        // static vector<int> om_param_startSeed;
+        // static thread_local int om_value_startSeed;
+        // thread_local const int & startSeed = om_value_startSeed;
+        c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
+        c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
+        c += "thread_local const " + cxx_type_of_parameter() + " & " + name + " = om_value_" + name + ";";
+    }
+    return c;
+}
+
+CodeBlock ParameterSymbol::cxx_definition_global(void)
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+    assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
+
     if (source == derived_parameter) {
         if (rank() > 0) {
-            // static thread_local CITY om_param_NearestCity[N_CITY];
-            // thread_local CITY * om_value_NearestCity = nullptr;
-            c += "static thread_local " + pp_datatype->name + " " + alternate_name() + cxx_dimensions() + ";";
-            c += "thread_local " + pp_datatype->name + " * " + "om_value_" + name + " = nullptr;";
+            // thread_local CITY NearestCity[N_CITY];
+            c += "thread_local " + pp_datatype->name + " " + name + cxx_dimensions() + ";";
         }
         else {
             // thread_local CITY oneCity;
@@ -385,10 +448,10 @@ CodeBlock ParameterSymbol::cxx_definition_global()
             c += cxx_initializer();
             c += ";";
         }
-
     }
     if (source == missing_parameter) {
         // Initialize using the default value for a type of this kind.
+        c += "// WARNING - No data for the following parameter:";
         c += "extern const "
             + pp_datatype->name + " "
             + name
@@ -477,54 +540,74 @@ void ParameterSymbol::validate_initializer()
         return;
     }
 
-    // Presence check
-    if (0 == initializer_list.size()) {
+    // Presence check: parameter must have at least one sub-value (default sub-value)
+    if (0 == sub_initial_list.size()) {
         pp_error(LT("error : missing initializer for parameter '") + name + LT("'"));
         return;
     }
 
-    // Size check
-    if (initializer_list.size() > size()) {
-        pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", exceeds ") + to_string(size()));
-    }
-    if (is_extendable) {
-        // check that last slice of initializer is complete
-        int first_dim_size = pp_shape.front();
-        int slice_size = size() / first_dim_size;
-        if (0 != (initializer_list.size() % slice_size)) {
-            pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", last slice incomplete"));
-        }
-    }
-    else {
-        // not extendable, number of initializers must match exactly
-        if (initializer_list.size() != size()) {
-            pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(initializer_list.size()) + LT(", must be ") + to_string(size()));
-        }
-    }
+    // for each parameter sub-value
+    for (const auto & sv : sub_initial_list) {
+        const auto & lst = sv.second;
 
-    // Element check
-    for (auto iel : initializer_list) {
-        if (!iel->is_valid_constant(*pp_datatype)) {
-            string msg = LT("error : '") + iel->value() + LT("' is not a valid '") + pp_datatype->name + LT("' in initializer for parameter '") + name + LT("'");
-            pp_error(iel->decl_loc, msg);
+        // Presence check
+        if (0 == lst.size()) {
+            pp_error(LT("error : missing initializer for parameter '") + name + LT("'"));
+            return;
+        }
+
+        // Size check
+        if (lst.size() > size()) {
+            pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", exceeds ") + to_string(size()));
+        }
+        if (is_extendable) {
+            // check that last slice of initializer is complete
+            int first_dim_size = pp_shape.front();
+            int slice_size = size() / first_dim_size;
+            if (0 != (lst.size() % slice_size)) {
+                pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", last slice incomplete"));
+            }
+        }
+        else {
+            // not extendable, number of initializers must match exactly
+            if (lst.size() != size()) {
+                pp_error(redecl_loc, LT("error : initializer for parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", must be ") + to_string(size()));
+            }
+        }
+
+        // Element check
+        for (auto iel : lst) {
+            if (!iel->is_valid_constant(*pp_datatype)) {
+                string msg = LT("error : '") + iel->value() + LT("' is not a valid '") + pp_datatype->name + LT("' in initializer for parameter '") + name + LT("'");
+                pp_error(iel->decl_loc, msg);
+            }
         }
     }
 }
 
-list<string> ParameterSymbol::initializer_for_storage()
+pair< int, list<string> > ParameterSymbol::initializer_for_storage(int i_sub_index)
 {
+    if (i_sub_index < 0 || i_sub_index >= (int)sub_initial_list.size()) {
+        throw HelperException(LT("error : parameter %s sub-value index invalid: %d"), name.c_str(), i_sub_index);
+    }
+    auto slIt = sub_initial_list.cbegin();
+    for (int k = 0; k < i_sub_index; ++slIt, ++k) {
+        if (slIt == sub_initial_list.cend())
+            throw HelperException(LT("error : parameter %s sub-value index invalid: %d"), name.c_str(), i_sub_index);
+    }
+
     list<string> values;
-    for (auto k : initializer_list) {
+    for (auto k : slIt->second) {
         values.push_back(k->format_for_storage(*pp_datatype));
     }
     if (is_extendable) {
         // if an extendable parameter has unspecified trailing values, append NULL's
-        int unspecified_count = size() - initializer_list.size();
+        int unspecified_count = size() - slIt->second.size();
         for (int k = 0; k < unspecified_count; ++k) {
             values.push_back("NULL");
         }
     }
-    return values;
+    return { slIt->first, values };
 }
 
 CodeBlock ParameterSymbol::dat_definition() const
@@ -654,6 +737,16 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
         c_adjust_code += "ModelExit(msg.c_str());";
         c_adjust_code += "}";
         c_adjust_code += "value = - log(1.0 - value);";
+    }
+
+    if (pp_datatype->is_range()) {
+        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
+        assert(rng);
+        if (rng->lower_bound != 0) {
+            adjust = true;
+            c_adjust_comment = "// Parameter '" + name + "' is declared range and requires transformation.";
+            c_adjust_code += "value += " + to_string(rng->lower_bound) + ";";
+        }
     }
 
     if (rank() > 0) {

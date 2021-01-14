@@ -1,6 +1,36 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2021_01_12:
+  fix single cumrate problem
+  UI: update axios version to fix security CVE identified by GitHub
+
+2020_12_22:
+  beta version of bi-lingual UI
+  fix in model runtime to run the model if default scenario not read-only
+
+2020_12_08:
+  create "pull" synonym for model "import" keyword because import is reserved in c++20
+  significant increase of omc CSV scenario processing performance 
+  use Go modules
+  minor bug fixes
+
+2020_08_27:
+  improve model debug experience: support parameter values inspection in IDEs debugger
+  replace Visual Studio CSV output tools to support parameters and output tables output after model run
+  deprecated: existing Visual Studio tools for CSV output and Excel output are deprecated
+  allow to explicitly specify "base" model run to get parameters from previous model run
+  add command line options to choose first or last model run without knowing run id
+  add command line options to rename model input sets (a.k.a. scenarios), model run results or modeling tasks
+  multiple bug fixes
+
+2020_07_30:
+  allow to use .csv or .tsv files to initialize parameters during model build
+  allow to publish multiple input set (a.k.a. scenarios) during model build
+  MSBuild: fix OM_ROOT environment variable issue
+  Linux: resolve GDB breakpoint issue
+  multiple minor changes and bug fixes
+
 2020_07_04:
   fix c++ issue with Range.h, Partition.h, Classification.h
   MacOS: start openM++ UI by double click on bin/ompp_ui.command

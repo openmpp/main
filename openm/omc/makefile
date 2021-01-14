@@ -109,12 +109,14 @@ ImportSymbol.cpp \
 LanguageSymbol.cpp \
 LinkAttributeSymbol.cpp \
 LinkToAttributeSymbol.cpp \
+Literal.cpp \
 MaintainedAttributeSymbol.cpp \
 ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
 MultilinkAttributeSymbol.cpp \
 NumericSymbol.cpp \
 omc.cpp \
+omc_csv.cpp \
 omc_file.cpp \
 ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
