@@ -1,0 +1,280 @@
+/**
+* @file    time_based_core.ompp
+* Implementation of framework for time-based models
+* 
+*/
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+parameters {
+    //EN Simulation starting seed
+    int SimulationSeed;
+
+    //EN Simulation end time
+    Time SimulationEnd;
+};
+
+namespace fmk {
+
+    /**
+     * The simulation end.
+     */
+    Time simulation_end;
+
+    /**
+     * The clock time at which event simulation started.
+     */
+    thread_local std::chrono::system_clock::time_point clock_time_start_events;
+
+} // namespace fmk
+
+/**
+ * Report simulation progress for time-based model.
+ * 
+ */
+void report_simulation_progress(int member, int percent, Time i_time)
+{
+    theLog->logFormatted("member=%d Simulation progress=%d%% time=%g", member, percent, i_time);
+    report_simulation_progress_beat(percent, (double)i_time);
+}
+
+/**
+* Called before invocation of PreSimulation functions.
+*/
+void before_presimulation(int mem_id, int mem_count)
+{
+    // The number of member simulations in the sample of simulations
+    fmk::simulation_members = mem_count;
+
+    // The member to simulate of the sample of simulations
+    fmk::simulation_member = mem_id;
+
+    // In PreSimulation, the master seed is the same for all simulation members.
+    // For lcg-style generators, a different generator is used for each member.
+    // For other generators, the actual starting seed is generated from the master seed
+    // and the simulation member number.
+    fmk::master_seed = SimulationSeed;
+
+    // Create stream generator objects
+    // new_streams is generator-specific - defined in random/random_YYY.ompp
+    new_streams();
+
+    // Note that streams vary by simulation member as well as SimulationSeed and stream number.
+    initialize_model_streams(); //defined in common.ompp
+}
+
+/**
+* Called after invocation of PreSimulation functions.
+*/
+void after_presimulation()
+{
+    fmk::master_seed = 0;
+
+    // Free stream generator objects
+    // delete_streams is generator-specific - defined in random/random_YYY.ompp
+    delete_streams();
+}
+
+void LogSimulationStart()
+{
+    // Initial global start time
+    BaseEvent::set_global_time(-time_infinite);
+    theLog->logFormatted("Member=%d Create starting population", fmk::simulation_member);
+}
+
+void SimulateEvents()
+{
+    using namespace fmk;
+
+    theLog->logFormatted("Member=%d Simulate events", fmk::simulation_member);
+
+    // Note clock time at which event simulation started.
+    // This allows separating simulation time into portion for creation
+    // of starting population, and portion for events.
+    fmk::clock_time_start_events = std::chrono::system_clock::now();
+
+    bool is_first_event = true;
+    Time time_first_event(0); // used to calculate progress
+
+    // if run option ProgressStep >0 then progress report must be done by number of cases completed
+    // if run option ProgressPercent >0 then progress report must be done by percent completed
+    // if none of above explicitly specified then progress report done by percent completed default value
+    
+    // for time based models progress step must be positive, if not zero default
+    // it cannot be too small to avoid loss on update
+    bool is_step_progress = i_model->runOptions()->progressStep > 1.0;
+
+    if (i_model->runOptions()->progressStep != 0.0  && i_model->runOptions()->progressStep < FLT_MIN) {
+        is_step_progress = false;
+        theLog->logFormatted("Warning: incorrect value of progress step reporting: %g", i_model->runOptions()->progressStep);
+    }
+    double step_progress = is_step_progress ? i_model->runOptions()->progressStep : 0.0;
+
+    // progress percent, if not zero, must be positive
+    // if no options specified then by default do percent progress reporting
+    bool is_percent_progress = i_model->runOptions()->progressPercent > 0;
+
+    if (i_model->runOptions()->progressPercent < 0) {
+        theLog->logFormatted("Warning: incorrect value of progress percent reporting: %d", i_model->runOptions()->progressPercent);
+    }
+    int percent_progress = is_percent_progress ? i_model->runOptions()->progressPercent : progress_percent_default;
+
+    is_percent_progress |= !is_step_progress;   // by default report progress percent completed
+
+    // next progress values to trigger reporting
+    double next_step_progress = step_progress;
+    int next_percent_progress = percent_progress;
+    bool is_100_percent_done = false;
+    int64_t next_progress_beat = 0;
+    int64_t next_ms_progress_beat = getMilliseconds() + OM_STATE_BEAT_TIME;
+    
+    report_simulation_progress(simulation_member, 0);   // initial 0% progress report 
+    
+    // Simulate the population
+    while ( true ) {
+        // get the time of the next event in the event queue
+        Time the_time = BaseEvent::time_next_event();
+
+        if (is_first_event) {
+            // Note the time of the first event to compute % progress subsequently
+            time_first_event = the_time;
+            is_first_event = false;
+        }
+
+        if (the_time > simulation_end) {
+            // The next event would exceed the maximum simulation time
+            BaseAgent::age_all_agents(simulation_end);
+            break;
+        }
+
+        // Implement the event
+        if (!BaseEvent::do_next_event()) {
+            // no more events
+            break;
+        }
+
+        // Compute progress and report periodically
+        if (simulation_end - time_first_event > 0) {
+
+            bool is_do_percent_progress = false;
+            bool is_do_step_progress = false;
+
+            double td = the_time - time_first_event;
+            int percent_done = (int)(100.0 * (td / (simulation_end - time_first_event)));
+
+            if (is_percent_progress) {
+                is_do_percent_progress = percent_done >= next_percent_progress;
+                if (is_do_percent_progress) {
+                    next_percent_progress = (percent_done / percent_progress) * percent_progress + percent_progress;
+                }
+            }
+            if (!is_do_percent_progress && is_step_progress) {
+                is_do_step_progress = td >= next_step_progress;
+                if (is_do_step_progress) {
+                    next_step_progress = floor(td / step_progress) * step_progress + step_progress;
+                }
+            }
+            if (is_do_percent_progress || is_do_step_progress) {
+                is_100_percent_done = percent_done >= 100;
+                report_simulation_progress(simulation_member, percent_done, the_time);
+                next_progress_beat = 0;
+                next_ms_progress_beat = getMilliseconds() + OM_STATE_BEAT_TIME;
+            }
+            else {
+                if (++next_progress_beat > 1000) {
+                    next_progress_beat = 0;
+                    int64_t ms = getMilliseconds();
+                    if (ms > next_ms_progress_beat) {
+                        report_simulation_progress_beat(percent_done, (double)the_time);
+                        next_ms_progress_beat = ms + OM_STATE_BEAT_TIME;
+                    }
+                }
+            }
+        }
+    }
+
+    // cleanup
+    BaseAgent::exit_simulation_all();
+    BaseEvent::clean_all();
+    BaseAgent::free_all_zombies();
+
+    // final progress message
+    if (!is_100_percent_done) {
+        report_simulation_progress(simulation_member, 100, simulation_end);
+    }
+}
+
+/**
+ * Simulates the specified simulation member (replicate)
+ *
+ * @param mem_id    Identifier of the member to be simulated (replicate).
+ * @param mem_count Total number of members (replicates).
+ */
+void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
+{
+    using namespace fmk;
+
+    auto clock_time_start = std::chrono::system_clock::now();
+
+    // note API object for subsequent use in modeling thread
+    fmk::i_model = i_model;
+
+    // Initialize the entity counter for this simulation member
+    member_entity_counter = 0;
+
+    // The number of simulations in the sample of simulations (not used)
+    simulation_members = mem_count;
+
+    // The member to simulate of the sample of simulations
+    simulation_member = mem_id;
+
+    simulation_end = SimulationEnd; // framework input parameter
+
+    // The master seed to simulate each simulation member
+    // is the same for all simulation members.
+    // For lcg-style generators, a different generator is used for each member.
+    // For other generators, the actual starting seed is generated from the master seed
+    // and the simulation member number.
+    fmk::master_seed = SimulationSeed;
+
+    // record the encoded combined seed (master_seed + simulation_member in high order bits)
+    fmk::combined_seed = fmk::master_seed + simulation_member * ((long long)lcg_modulus + 1);
+
+	// Create stream generator objects
+	// new_streams is generator-specific - defined in random/random_YYY.ompp
+	new_streams();
+
+    initialize_model_streams(); //defined in common.ompp
+
+    // Initialize global time (can override in StartSimulation)
+    BaseEvent::set_global_time(-time_infinite);
+     
+    // Model-specific, calls SimulateEvents() after creating starting population
+    Simulation();
+
+	// Free random stream generator objects
+	// delete_streams is generator-specific - defined in random/random_YYY.ompp
+	delete_streams();
+
+    {
+        // report simulation summary information for member
+        auto clock_time_end = std::chrono::system_clock::now();
+        std::chrono::duration<double> startpop_seconds = fmk::clock_time_start_events - clock_time_start;
+        double clock_time_startpop = (double)startpop_seconds.count();
+        std::chrono::duration<double> events_seconds = clock_time_end - fmk::clock_time_start_events;
+        double clock_time_events = (double)events_seconds.count();
+
+        auto event_count = BaseEvent::global_event_counter;
+        double events_per_entity = (double)event_count / (double)fmk::member_entity_counter;
+        theLog->logFormatted(
+            "member=%d Simulation summary: entities=%ld, events/entity=%.1f, elapsed(startpop)=%.6fs, elapsed(events)=%.6fs",
+            fmk::simulation_member,
+            fmk::member_entity_counter,
+            events_per_entity,
+            clock_time_startpop,
+            clock_time_events
+        );
+    }
+
+}
+

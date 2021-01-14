@@ -171,8 +171,8 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
         initialize_model_streams(); //defined in common.ompp
 
-        // Initialize global time for the case (can override in StartSimulation)
-        BaseEvent::set_global_time(0);
+        // Initial global time for the case
+        BaseEvent::set_global_time(-time_infinite);
 
         // record the encoded case seed (case_seed + simulation_member in high order bits)
         fmk::combined_seed = fmk::master_seed + simulation_member * ((long long)lcg_modulus + 1);

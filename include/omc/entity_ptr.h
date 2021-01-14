@@ -49,9 +49,14 @@ public:
     A* operator->()
     {
         if (ptr) {
-            // update time of target agent at *ptr
-            // using the global time (just-in-time algorithm)
-            if (BaseEvent::just_in_time) ptr->time.set(BaseEvent::get_global_time());
+            // update time of target entity at *ptr with the global time
+            // if using the just-in-time algorithm
+            if (BaseEvent::just_in_time) {
+                auto current_global_time = BaseEvent::get_global_time();
+                if (ptr->time < current_global_time) {
+                    ptr->time.set(current_global_time);
+                }
+            }
             // return pointer to agent
             return ptr;
         }
@@ -65,9 +70,14 @@ public:
     A& operator*()
     {
         if (ptr) {
-            // update time of target agent at *ptr
-            // using the global time (just-in-time algorithm)
-            if (BaseEvent::just_in_time) ptr->time.set(BaseEvent::get_global_time());
+            // update time of target entity at *ptr with the global time
+            // if using the just-in-time algorithm
+            if (BaseEvent::just_in_time) {
+                auto current_global_time = BaseEvent::get_global_time();
+                if (ptr->time < current_global_time) {
+                    ptr->time.set(current_global_time);
+                }
+            }
             // return reference to agent
             return *ptr;
         }
