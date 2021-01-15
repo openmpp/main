@@ -1,0 +1,50 @@
+/**
+* @file    case_based_cases_per_member.ompp
+* Framework implementation for case-based models - CasesPerMember fives number of cases in each member
+*
+*/
+// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+parameters {
+    //EN Number of cases in each member
+    long long CasesPerMember;
+};
+
+/**
+* Called before model PreSimulation functions.
+*/
+void before_presimulation(int mem_id, int mem_count)
+{
+    // Code block for number of cases
+    {
+        // The number of members in the run
+        fmk::simulation_members = mem_count;
+
+        // The member being simulated
+        fmk::simulation_member = mem_id;
+
+        // For this style of model, the parameter CasesPerMember
+        // gives the number of cases in each member
+        fmk::member_cases = CasesPerMember;
+
+        fmk::all_cases = fmk::member_cases * fmk::simulation_members;
+    }
+
+    // Code block for random number support in PreSimulation
+    {
+        // In PreSimulation, the master seed is the same for all simulation members.
+        // For lcg-style generators, a different generator is used for each member.
+        // For other generators, the actual starting seed is generated from the master seed
+        // and the simulation member number.
+        fmk::master_seed = SimulationSeed;
+
+        // Create stream generator objects
+        // new_streams is generator-specific - defined in random/random_YYY.ompp
+        new_streams();
+
+        // Note that streams vary by simulation_member, master_seed and stream number.
+        initialize_model_streams(); //defined in common.ompp
+    }
+}
+

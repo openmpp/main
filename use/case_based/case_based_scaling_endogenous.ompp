@@ -6,6 +6,11 @@
 // Copyright (c) 2013 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+// forward declarations of fmk variables
+namespace fmk {
+    extern thread_local long long member_cases;
+}
+
 /**
  * The population scaling factor to use for this member of the simulation.
  * 

@@ -10,4 +10,54 @@
       <Extensions>dat;odat</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(PCH_CXX)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="@(MODGEN_CPP_OUTPUTS)" />
+    <ClCompile Include="$(CUSTOM_CPP)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="@(MODGEN_H_OUTPUTS)" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/custom_early.h" />
+    <ClInclude Include="$(MODEL_CODE_DIR)/custom.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\code\languages.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="..\code\model_core.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="..\code\model_info.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="..\code\modgen_case_based.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="..\code\ompp_framework.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="..\code\PersonCore.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="..\parameters\Default\Framework.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="..\parameters\Default\PersonCore.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="..\parameters\Default\scenario_info.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

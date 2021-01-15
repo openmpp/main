@@ -12,11 +12,12 @@
 #if 0 // Hide from IDE
 // The following modules will be compiled and assembled in this order
 // after all model-specific modules.
-use "common.ompp";
-use "common_modgen.ompp";
-use "random/random_lcg41.ompp";
-use "time_based/time_based_common.ompp";
-use "time_based/time_based_scaling_none.ompp";
+use "common.ompp";                              // Required
+use "random/random_lcg41.ompp";                 // Other choices available for random number generation
+use "time_based/time_based_core.ompp";          // Required
+use "time_based/time_based_scaling_none.ompp";  // Other choices available for population scaling
+use "common_modgen.ompp";                       // Modgen API for x-compatible models
+use "time_based/time_based_modgen.ompp";        // Modgen API for time-based x-compatible models
 #endif
 
 namespace fmk {

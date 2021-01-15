@@ -1,5 +1,5 @@
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(ompp_framework, EN) OpenM++ simulation framework
 
@@ -10,15 +10,31 @@
 
 #include "omc/omSimulation.h" // For IDE
 #if 0 // Hide from IDE
-// The following modules will be compiled and assembled in this order
-// after all model-specific modules.
-use "common.ompp";
-use "common_modgen.ompp";
-use "random/random_lcg41.ompp";
-use "case_based/case_based_lcg41.ompp";
-use "case_based/case_based_common.ompp";
-use "case_based/case_based_scaling_none.ompp";
-#endif
+
+// The following modules in OM_ROOT/use will be compiled
+// after all model-specific source code modules, in this order.
+
+use "common.ompp";                              // Required
+
+// Select exactly one of the following lines and comment the others
+use "random/random_lcg41.ompp";                 // Stream RNGs use 41 linear congruential generators (Modgen-compatible)
+
+// Select exactly one of the following lines and comment the others
+use "case_based/case_based_lcg41.ompp";         // Case seed RNGs use 41 linear congruential generators (Modgen-compatible)
+
+use "case_based/case_based_core.ompp";          // Required for case-based models
+
+// Select exactly one of the following lines and comment the others
+use "case_based/case_based_cases_per_run_exogenous.ompp"; // Specify number of cases as cases per run in parameter SimulationCases
+//use "case_based/case_based_cases_per_member_exogenous.ompp"; // Specify number of cases as cases per member in parameter CasesPerMember
+ 
+// Select exactly one of the following lines and comment the others
+use "case_based/case_based_scaling_none.ompp";  // No population scaling
+
+use "common_modgen.ompp";                       // Modgen API implementation for x-compatible models (optional)
+use "case_based/case_based_modgen.ompp";        // Modgen API implementation for x-compatible case-based models (optional)
+
+#endif // Hide from IDE
 
 namespace fmk {
 

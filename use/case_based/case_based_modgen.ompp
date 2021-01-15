@@ -1,0 +1,125 @@
+/**
+* @file    case_based_modgen.ompp
+* Framework implementation for case-based models - Modgen API
+*
+*/
+// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+
+/**
+ * Gets the numeric case identifier of the current case.
+ * 
+ * See Modgen Developer's Guide. The case identifier is unique, sequential, and starts at 0.
+ * Values are interleaved among simulation members.  For example, if there are 4 simulation
+ * members, member 0 would have case identifiers 0,4,8,... member 1 would have case identifiers 1,5,9,...
+ *
+ * @return The case identifier.
+ */
+long long GetCaseID()
+{
+    return fmk::member_case_counter * fmk::simulation_members + fmk::simulation_member;
+}
+
+/**
+ * Gets the case seed of the current case (encoded with sample number).
+ * 
+ * See Modgen Developer's Guide.
+ *
+ * @return The case seed.
+ */
+double GetCaseSeed()
+{
+    return (double) get_combined_seed();
+}
+
+/**
+ * Gets the sample number of the current case.
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return The case sample.
+ */
+int GetCaseSample()
+{
+    return fmk::simulation_member;
+}
+
+/**
+ * Gets the sample number of the current call to UserTable
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return The case sample.
+ */
+int GetUserTableSubSample()
+{
+    return fmk::simulation_member;
+}
+
+/**
+ * Gets the total number of cases, summed over all samples.
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return all cases.
+ */
+long long GetAllCases()
+{
+    return fmk::all_cases;
+}
+
+/**
+ * Gets the number of "sub-samples" in the simulation.
+ *
+ * See Modgen Developer's Guide.
+ *
+ * @return The sub samples.
+ */
+int GetSubSamples()
+{
+    return fmk::simulation_members;
+}
+
+/**
+ * Sets the weight of all entities in a case.
+ * 
+ * See Modgen Developer's Guide. Entity weighting is not yet implemented in ompp. A call to this
+ * function will cause a run-time fatal error if weight is not equal to 1.0.
+ *
+ * @param weight The weight.
+ */
+void SetCaseWeight(double weight)
+{
+    if (weight == 1.0) {
+        return;
+    }
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+       << LT("error : Entity weight not implemented.  Argument to SetCaseWeight must be 1.0, is ") << weight
+       ;
+    ModelExit(ss.str().c_str());
+}
+
+/**
+ * Gets case counter in thread.
+ *
+ * @return The case counter in thread.
+ */
+long long GetCaseCounterInThread()
+{
+    return fmk::member_case_counter;
+}
+
+void Set_actor_weight(double weight)
+{
+    // not implemented
+    // TODO emit run-time warning once 
+}
+
+void Set_actor_subsample_weight(double weight)
+{
+    // not implemented
+    // TODO emit run-time warning once 
+}
+

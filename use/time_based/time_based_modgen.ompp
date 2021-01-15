@@ -1,0 +1,70 @@
+/**
+* @file    time_based_modgen.ompp
+* Implementation of framework for time-based models - Modgen API
+* 
+*/
+// Copyright (c) 2013-2016 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+double GetCaseSeed()
+{
+    // Time-based models have no concept of case seed.
+    // Return 0 for compatibility with Modgen trace output.
+    // and for run-time errors or warnings.
+    return 0;
+}
+
+/**
+ * Gets the replicate.
+ *
+ * See Modgen Developer's Guide.
+ *  
+ * @return The replicate.
+ */
+int GetReplicate()
+{
+    return fmk::simulation_member;
+}
+
+/**
+ * Gets the replicate.
+ *
+ * See Modgen Developer's Guide.
+ *  
+ * @return The replicate.
+ */
+int GetUserTableReplicate()
+{
+    return fmk::simulation_member;
+}
+
+/**
+ * Gets the number of replicates.
+ *
+ * See Modgen Developer's Guide.
+ *  
+ * @return The number of replicates.
+ */
+int GetReplicates()
+{
+    return fmk::simulation_members;
+}
+
+double SIMULATION_END()
+{
+    return SimulationEnd;
+}
+
+void Set_actor_weight(double weight)
+{
+    // Do nothing.
+    // OpenM++ models use population scaling for time-based models
+    // since entities in time-based models have identical weights.
+}
+
+void Set_actor_subsample_weight(double weight)
+{
+    // Do nothing.
+    // OpenM++ models use population scaling for time-based models
+    // since entities in time-based models have identical weights.
+}

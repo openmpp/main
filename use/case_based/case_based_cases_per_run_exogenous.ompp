@@ -1,0 +1,56 @@
+/**
+* @file    case_based_cases_per_run.ompp
+* Framework implementation for case-based models - SimulationCases gives number of cases for run (total over all members)
+*
+*/
+// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+parameters {
+    //EN Number of cases in run (over all members)
+    long long SimulationCases;
+};
+
+/**
+* Called before model PreSimulation functions.
+*/
+void before_presimulation(int mem_id, int mem_count)
+{
+    // Code block for number of cases
+    {
+        // The number of members in the run
+        fmk::simulation_members = mem_count;
+
+        // The member being simulated
+        fmk::simulation_member = mem_id;
+
+        // For this style of model, the parameter SimulationCases
+        // gives the number of cases in the run (over all members)
+        fmk::all_cases = SimulationCases;
+
+        // The number of cases to simulate for this sample member.
+        // Divide the total cases for the entire run by the number of members
+        // and spread any cases in the remainder among the first members (one extra case each)
+        fmk::member_cases = fmk::all_cases / fmk::simulation_members;
+        if (fmk::simulation_member < (fmk::all_cases % fmk::simulation_members)) {
+            fmk::member_cases++;
+        };
+    }
+
+    // Code block for random number support in PreSimulation
+    {
+        // In PreSimulation, the master seed is the same for all simulation members.
+        // For lcg-style generators, a different generator is used for each member.
+        // For other generators, the actual starting seed is generated from the master seed
+        // and the simulation member number.
+        fmk::master_seed = SimulationSeed;
+
+        // Create stream generator objects
+        // new_streams is generator-specific - defined in random/random_YYY.ompp
+        new_streams();
+
+        // Note that streams vary by simulation_member, master_seed and stream number.
+        initialize_model_streams(); //defined in common.ompp
+    }
+}
+

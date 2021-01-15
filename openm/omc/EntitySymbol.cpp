@@ -228,6 +228,8 @@ void EntitySymbol::create_auxiliary_symbols()
         assert(initialize_data_members_fn); // out of memory check
         initialize_data_members_fn->doc_block = doxygen_short("Initialization of data members before the entity enters simulation.");
         // function body is generated in post-parse phase
+        // Indicate that function body may contain line directives requiring subsequent restoration
+        initialize_data_members_fn->has_line_directive = true;
     }
 
     // The initialize_data_members0 member function
@@ -237,6 +239,8 @@ void EntitySymbol::create_auxiliary_symbols()
         assert(initialize_data_members0_fn); // out of memory check
         initialize_data_members0_fn->doc_block = doxygen_short("Initialization of data members of the 'zero' entity to default values for the type (0).");
         // function body is generated in post-parse phase
+        // Indicate that function body may contain line directives requiring subsequent restoration
+        initialize_data_members0_fn->has_line_directive = true;
     }
 
     // The om_initialize_events member function
