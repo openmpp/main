@@ -4,12 +4,18 @@ IF "%CD%\" == "%~dp0" (
   cd ..
 )
 IF "%OM_ROOT%" == "" (
-  SET OM_ROOT=%CD%
+  set OM_ROOT=%CD%
 )
 
 if not exist %OM_ROOT%\models\bin (
   @echo ERROR: missing models bin directory: %OM_ROOT%\models\bin
-  PAUSE
+  exit
+  EXIT 1
+)
+
+if not exist %OM_ROOT%\html (
+  @echo ERROR: missing UI html directory: %OM_ROOT%\html
+  exit
   EXIT 1
 )
 
