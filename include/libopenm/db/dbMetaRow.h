@@ -1128,7 +1128,7 @@ namespace openm
             tableId(i_tableId), 
             exprId(i_exprId), 
             name(""),
-            decimals(0),
+            decimals(-1),
             srcExpr(""),
             sqlExpr("")
         { }

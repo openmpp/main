@@ -35,7 +35,7 @@ public:
         , index(index)
         , table(table->stable_rp())
         , pp_table(nullptr)
-        , decimals(0)
+        , decimals(-1)
         , scale(0)
     {
     }

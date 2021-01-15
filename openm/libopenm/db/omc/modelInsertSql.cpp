@@ -718,7 +718,7 @@ void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_t
     if (i_row.sqlExpr.empty()) throw DbException(LT("invalid (empty) output expression sql, id: %d, output table: %s"), i_row.exprId, i_tableRow.tableName.c_str());
     if (i_row.sqlExpr.length() > 2048) throw DbException(LT("invalid (longer than 2048) output expression sql, id: %d, output table: %s"), i_row.exprId, i_tableRow.tableName.c_str());
 
-    if (i_row.decimals < 0 || i_row.decimals > DBL_DIG)
+    if (i_row.decimals < -1 || i_row.decimals > DBL_DIG)
         throw DbException(LT("invalid output expression decimals: %d, id: %d, output table: %s"), i_row.decimals, i_row.exprId, i_tableRow.tableName.c_str());
 
     // INSERT INTO table_expr (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql)
