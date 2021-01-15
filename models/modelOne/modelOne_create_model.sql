@@ -240,7 +240,7 @@ INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (82, 
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (82, 0, 'expr0', 4, 'OM_AVG(acc0)', 
+  (82, 0, 'expr0', -1, 'OM_AVG(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr0 FROM salarySex_a_2012882 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
@@ -252,13 +252,13 @@ VALUES
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (82, 2, 'expr2', 2, 'OM_MIN(acc0)', 
+  (82, 2, 'expr2', 0, 'OM_MIN(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, MIN(M1.acc_value) AS expr2 FROM salarySex_a_2012882 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (82, 3, 'expr3', 3, 'OM_AVG(acc0 * acc1)', 
+  (82, 3, 'expr3', 2, 'OM_AVG(acc0 * acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value * A1.acc1) AS expr3 FROM salarySex_a_2012882 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a_2012882 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
   
@@ -307,7 +307,7 @@ INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (83, 
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (83, 0, 'expr0', 2, 'OM_AVG(acc0)', 
+  (83, 0, 'expr0', -1, 'OM_AVG(acc0)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, M1.dim2, AVG(M1.acc_value) AS expr0 FROM fullAgeSalary_a_2012883 M1 WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1, M1.dim2'
   );
 
@@ -358,7 +358,7 @@ VALUES
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (84, 1, 'expr1', 3, 'OM_AVG(acc1)', 
+  (84, 1, 'expr1', -1, 'OM_AVG(acc1)', 
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr1 FROM ageSexIncome_a_2012884 M1 WHERE M1.acc_id = 1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 
