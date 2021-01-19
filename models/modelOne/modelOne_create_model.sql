@@ -172,7 +172,7 @@ INSERT INTO parameter_dims (parameter_hid, dim_id, dim_name, type_hid) VALUES (5
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 0, 0, 'Age Dim', 'Age Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 1, 0, 'Sex Dim', 'Sex Dim notes');
-INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 1, 1, 'Sex Dim', NULL);
+INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (44, 1, 1, '(FR) Sex Dim', NULL);
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (47, 0, 0, 'Full Dim', NULL);
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (50, 0, 0, 'Age Dim', 'Age Dim notes');
 INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (50, 0, 1, '(FR) Age Dim', '(FR) Age Dim notes');
@@ -332,7 +332,7 @@ VALUES
 INSERT INTO table_dic_txt
   (table_hid, lang_id, descr, note, expr_descr, expr_note)
 VALUES
-  (84, 1, '(FR) Age by Sex Income', '(FR) Age by Sex Income notes', '(FR) Income Measure notes', NULL);
+  (84, 1, '(FR) Age by Sex Income', '(FR) Age by Sex Income notes', '(FR) Income Measure', NULL);
 
 -- total enum disabled for all dimensions to be imported into ageSex parameter
 INSERT INTO table_dims (table_hid, dim_id, dim_name, type_hid, is_total, dim_size) VALUES (84, 0, 'dim0', 96, 0, 4);
