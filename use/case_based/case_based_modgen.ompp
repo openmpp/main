@@ -94,11 +94,22 @@ void SetCaseWeight(double weight)
     if (weight == 1.0) {
         return;
     }
-    std::stringstream ss;
-    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
-       << LT("error : Entity weight not implemented.  Argument to SetCaseWeight must be 1.0, is ") << weight
-       ;
-    ModelExit(ss.str().c_str());
+    static bool isFirst = true; // to produce warning only once
+    if (isFirst) {
+        isFirst = false;
+        theLog->logFormatted("warning : Entity weight not implemented.");
+    }
+}
+void SetCaseWeight(double weight, double weight2)
+{
+    if (weight == 1.0 && weight2 == 1.0) {
+        return;
+    }
+    static bool isFirst = true; // to produce warning only once
+    if (isFirst) {
+        isFirst = false;
+        theLog->logFormatted("warning : Entity weight not implemented.");
+    }
 }
 
 /**
