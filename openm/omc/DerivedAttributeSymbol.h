@@ -71,6 +71,7 @@ public:
         validate();
         assign_sorting_group();
         create_auxiliary_symbols();
+        code_label_allowed = false; // derived attributes are not declared in model code so can have no label from model code
     }
 
     /**
