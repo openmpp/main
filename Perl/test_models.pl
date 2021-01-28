@@ -680,6 +680,7 @@ for my $model_dir (@model_dirs) {
 					"/p:GRID_COMPUTING=${grid_computing}",
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
+					"/p:OPEN_MODEL_WEB_UI=false",
 					"/p:RUN_SCENARIO=false",
 					"/p:EXPORT_CSV=false",
 					"/p:EXPORT_EXCEL=false",
