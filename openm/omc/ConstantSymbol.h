@@ -36,6 +36,7 @@ public:
         , is_literal(false)
         , literal(nullptr)
     {
+        code_label_allowed = false; // constants are not declared in model code so can have no label from model code
     }
 
     /**
@@ -51,6 +52,7 @@ public:
         , is_literal(true)
         , literal(literal)
     {
+        code_label_allowed = false; // constants are not declared in model code so can have no label from model code
     }
 
     /**

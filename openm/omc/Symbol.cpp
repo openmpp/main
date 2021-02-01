@@ -593,8 +593,8 @@ void Symbol::post_parse(int pass)
         }
 
         // Check for presence of a comment label on the same lines as the symbol declaration.
-        if (decl_loc != yy::location()) {
-            // This symbol has a declaration location.
+        if (decl_loc != yy::location() && code_label_allowed) {
+            // This symbol has a declaration location in model code which can have an associated source code label
             // Check all lines of the declaration for a valid comment label
             int line_count = decl_loc.end.line - decl_loc.begin.line + 1;
             for (int j = 0; j < line_count; ++j) {

@@ -174,6 +174,7 @@ public:
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
+        , code_label_allowed(true)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -216,6 +217,7 @@ public:
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
+        , code_label_allowed(true)
     {
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
@@ -252,6 +254,7 @@ public:
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
+        , code_label_allowed(true)
     {
         // find symbol table entry for the existing symbol
         auto it = symbols.find( unique_name );
@@ -597,6 +600,11 @@ public:
      * The order for code insertion (higher values insert first).
      */
     int code_order;
+
+    /**
+     * Indicates if a label from model source code is allowed for this symbol
+     */
+    bool code_label_allowed;
 
     /**
      * Check for existence of symbol with this unique name.
