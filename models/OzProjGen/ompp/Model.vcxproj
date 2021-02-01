@@ -65,14 +65,14 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <LocalDebuggerEnvironment>OM_ROOT=$(OM_ROOT)/..</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <LocalDebuggerEnvironment>OM_ROOT=$(OM_ROOT)/..</LocalDebuggerEnvironment>
+    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -80,6 +80,7 @@
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -87,6 +88,7 @@
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <!-- Import standard master properties for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
