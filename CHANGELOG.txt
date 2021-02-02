@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2021_02_02:
+  start simulation (or case) with global time set to -time_infinite
+  protect inappropriate just-in-time time syncs through entity links (entity_ptr)
+  add new framework modules to control cases, refactor framework modules
+  fix: label for a table measure or an identity attribute was sometimes ignored
+  UI: persistent veiw for model parameters, save and restore default parameter view
+
 2021_01_12:
   fix single cumrate problem
   UI: update axios version to fix security CVE identified by GitHub
