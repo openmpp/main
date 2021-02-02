@@ -1,13 +1,16 @@
 From: Cherkassky, Anatoly (STATCAN) <anatoly.cherkassky@canada.ca>
-Date: Mon, 1 Feb 2021 at 16:04
-Subject: Contribution to OpenM++
+Date: Tue, 2 Feb 2021 at 10:56
+Subject: RE: Contribution to OpenM++
 To: openmpp99@gmail.com <openmpp99@gmail.com>
+Cc: Moore, Kevin (STATCAN) <kevin.moore@canada.ca>
+
 
 Hello,
 
-I am a part time principal research at Statistics Canada and I would like to contribute to the OpenM++ project.
-All IP I will contribute to the project as GitHub user “anatoly-statcan”
-or from e-mail Anatoly.Cherkassky@canada.ca is owned by the Government of Canada.
+I am a part time principal research at Statistics Canada and I would like
+to contribute to the OpenM++ project. All IP I will contribute to the project
+as GitHub user "anatoly-statcan" or from e-mail Anatoly.Cherkassky@canada.ca
+is owned by the Government of Canada.
 
 As requested on the Open M++ wiki, please find below a verbatim copy of the DCO:
 
