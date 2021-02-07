@@ -93,6 +93,8 @@ void Person::Start()
     // Initialize all attributes (OpenM++).
     initialize_attributes();
 
+	time = 0;
+
     sex = (RandUniform(11) < 0.50) ? MALE : FEMALE;
 
     hook_Start(); // for OpenM++

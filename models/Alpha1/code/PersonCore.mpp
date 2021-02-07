@@ -90,6 +90,8 @@ void Person::Start()
     // Initialize all attributes (OpenM++).
     initialize_attributes();
 
+	time = 0;
+
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 
