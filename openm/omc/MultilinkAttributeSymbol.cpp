@@ -30,31 +30,34 @@ void MultilinkAttributeSymbol::build_body_evaluate()
     }
     else if (func == token::TK_sum_over) {
         assert(agentvar.size());  // grammar guarantee
-        c += pp_data_type->name + " val = 0;";
+        c += pp_data_type->name + " val_result = 0;";
         c += "for (auto &item : " + multilink->name + ".storage) {";
         c += "if (item.get() != nullptr) {";
-        c += "val += item->" + agentvar + ";";
+        c += pp_data_type->name + " val_item = item->" + agentvar + "; ";
+        c += "val_result += val_item;";
         c += "}";
         c += "}";
-        c += name + ".set(val);";
+        c += name + ".set(val_result);";
     }
     else if (func == token::TK_min_over || func == token::TK_max_over ) {
         assert(agentvar.size());  // grammar guarantee
         string op = (func == token::TK_min_over) ? " < " : " > ";
-        c += pp_data_type->name + " val = 0;";
+        string initializer = " = " + pp_agentvar->initialization_value(true);
+        c += pp_data_type->name + " val_result" + initializer + ";  // default value for the type";
         c += "bool found = false;";
         c += "for (auto &item : " + multilink->name + ".storage) {";
         c += "if (item.get() != nullptr) {";
+        c += pp_data_type->name + " val_item = item->" + agentvar + "; ";
         c += "if (!found) {";
-        c += "val = item->" + agentvar + ";";
+        c += "val_result = val_item;";
         c += "found = true;";
         c += "}";
         c += "else {";
-        c += "if (item->" + agentvar + op + "val) val = item->" + agentvar + ";";
+        c += "if (val_item" + op + "val_result) val_result = val_item;";
         c += "}";
         c += "}";
         c += "}";
-        c += name + ".set(val);";
+        c += name + ".set(val_result);";
     }
     else {
         assert(false); // logic guarantee

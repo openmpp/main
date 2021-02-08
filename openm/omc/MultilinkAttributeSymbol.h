@@ -17,7 +17,7 @@ using namespace std;
 /**
  * MultilinkAttributeSymbol
  * 
- * Symbol for multilink agentvars of the form count(multilink), sum_over(multilink, agentvar),
+ * Symbol for multilink attributes of the form count(multilink), sum_over(multilink, agentvar),
  * etc.
  */
 class MultilinkAttributeSymbol : public AttributeSymbol
