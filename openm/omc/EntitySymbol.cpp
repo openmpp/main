@@ -315,6 +315,27 @@ void EntitySymbol::create_auxiliary_symbols()
         // function body is generated through code injection by attributes in post-parse phase
     }
 
+    // The check_starting_time() member function
+    {
+        auto* fn = new EntityFuncSymbol("om_check_starting_time", this);
+        fn->doc_block = doxygen_short("Check that starting value of time is valid and raise run-time error if not.");
+        CodeBlock& c = fn->func_body;
+        c += "if (!std::isfinite((double)time)) {";
+        // The following code block similar to handle_backwards_time() in use/common.ompp.
+        c += "std::stringstream ss;";
+        c += "ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision";
+        c += "   << std::showpoint // show decimal point";
+        c += "   << LT(\"error : invalid starting time \") << (double)time";
+        c += "   << LT(\" in new \") << \"" + name + "\"";
+        c += "   << LT(\" with entity_id \") << entity_id";
+        c += "   << LT(\" at global time \") << (double)BaseEvent::get_global_time()";
+        c += "   << LT(\" in simulation member \") << get_simulation_member()";
+        c += "   << LT(\" with combined seed \") << get_combined_seed()";
+        c += "    ;";
+        c += "throw openm::SimulationException(ss.str().c_str());";
+        c += "}";
+    }
+
     // The reset_derived_attributes_fn member function
     {
         assert(nullptr == reset_derived_attributes_fn); // initialization guarantee
