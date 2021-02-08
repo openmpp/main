@@ -65,9 +65,23 @@ void Person::SpawnEvent()
 	spawning_done = TRUE;
 }
 
+range TROUBLE_SCORE //EN trouble score
+{
+    1, 10
+};
+
+classification TROUBLE_CATEGORY //EN trouble category
+{
+    TC_ANGEL,   //EN Angel
+    TC_IN_BETWEEN,  //EN In between
+    TC_DEVIL    //EN Devil
+};
+
 actor Thing {
 	logical alive = {TRUE};
 	logical making_trouble = { TRUE };
+    TROUBLE_SCORE trouble_score;
+    TROUBLE_CATEGORY trouble_category;
 
 	void Start();
 	void Finish();
@@ -81,6 +95,23 @@ void Thing::Start()
 {
     // Initialize all attributes (OpenM++).
     initialize_attributes();
+
+    // draw trouble score from 1 to 10, uniformly
+    trouble_score = MIN(TROUBLE_SCORE) + int(SIZE(TROUBLE_SCORE) * RandUniform(13));
+
+    // ranges of trouble scores determine trouble category
+    if (trouble_score < 3) {
+        // 1 to 3
+        trouble_category = TC_ANGEL;
+    }
+    else if (trouble_score < 7) {
+        // 4 to 6
+        trouble_category = TC_IN_BETWEEN;
+    }
+    else {
+        // 7 to 10
+        trouble_category = TC_DEVIL;
+    }
 
     for (int j=0; j<10; j++) {
         Toy *my_toy = new Toy;
@@ -242,28 +273,46 @@ actor Thing
 
 actor Person
 {
-    counter multilink1 = count(things);
-    counter multilink2 = min_over(things, actor_id);
-    counter multilink3 = max_over(things, actor_id);
-    counter multilink4 = sum_over(things, actor_id);
-    real    multilink5 = min_over(things, real_actor_id);
-    real    multilink6 = max_over(things, real_actor_id);
-    real    multilink7 = sum_over(things, real_actor_id);
-    logical multilink8 = min_over(things, making_trouble);
+    counter multilink1  = count(things);
+    counter multilink2  = min_over(things, actor_id);
+    counter multilink3  = max_over(things, actor_id);
+    counter multilink4  = sum_over(things, actor_id);
+    real    multilink5  = min_over(things, real_actor_id);
+    real    multilink6  = max_over(things, real_actor_id);
+    real    multilink7  = sum_over(things, real_actor_id);
+    logical multilink8  = min_over(things, making_trouble);
+    logical multilink9  = max_over(things, making_trouble);
+    counter multilink10 = sum_over(things, making_trouble);
+
+    TROUBLE_SCORE multilink11 = min_over(things, trouble_score);
+    TROUBLE_SCORE multilink12 = max_over(things, trouble_score);
+    counter multilink13 = sum_over(things, trouble_score);
+
+    //TROUBLE_CATEGORY multilink14 = min_over(things, trouble_category);  // breaks in Modgen, works in ompp
+    //TROUBLE_CATEGORY multilink15 = max_over(things, trouble_category);   // breaks in Modgen, works in ompp
+    counter multilink16 = sum_over(things, trouble_category); // works in both, but probably shouldn't
 };
 
 table Person LinkTest6
 [ alive == FALSE ]
 {
     {
-        value_out(multilink1),
-        value_out(multilink2),
-        value_out(multilink3),
-        value_out(multilink4),
-        value_out(multilink5),
-        value_out(multilink6),
-        value_out(multilink7),
-        value_out(multilink8)
+         value_out(multilink1)
+        ,value_out(multilink2)
+        ,value_out(multilink3)
+        ,value_out(multilink4)
+        ,value_out(multilink5)
+        ,value_out(multilink6)
+        ,value_out(multilink7)
+        ,value_out(multilink8)
+        ,value_out(multilink9)
+        ,value_out(multilink10)
+        ,value_out(multilink11)
+        ,value_out(multilink12)
+        ,value_out(multilink13)
+        //,value_out(multilink14)
+        //,value_out(multilink15)
+        ,value_out(multilink16)
     }
 };
 
