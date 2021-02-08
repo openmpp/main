@@ -64,9 +64,9 @@ public:
     }
 
     // For Modgen compatibility
-    size_t Count()
+    int Count()
     {
-        return size();
+        return (int)size();
     }
 
     entity_ptr<E> at(size_t index)
