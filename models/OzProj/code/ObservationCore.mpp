@@ -51,6 +51,9 @@ void Observation::Start(case_info *ci)
   // Initialize all attributes (OpenM++).
   initialize_attributes();
 
+  // A valid starting time is required but the value is unimportant because an Observation has no events.
+  time = 0;
+
   // Process sex
   int nSex = 0;
   nSex = (int) ci->in_csv[PMC_SEX];

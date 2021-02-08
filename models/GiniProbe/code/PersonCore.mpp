@@ -27,6 +27,8 @@ void Person::Start()
     // Initialize all attributes.
     initialize_attributes();
 
+    time = 0;
+
     // Draw from a log-normal distribution 
     x = exp(mu + sigma * RandNormal(0));
 
