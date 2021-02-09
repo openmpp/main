@@ -1,6 +1,11 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2021_02_09:
+  raise runtime error if entity time uninialized (non-finite when entering simulation)
+  fix: c++ compiler error sometimes occurred with min_over, max_over
+  eliminate spurious c++ signed/unsinged warnings using count() in entity sets
+
 2021_02_02:
   start simulation (or case) with global time set to -time_infinite
   protect inappropriate just-in-time time syncs through entity links (entity_ptr)
