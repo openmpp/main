@@ -73,6 +73,10 @@ if [ -z "${OM_X_TERMINAL}" ] && command -v x-terminal-emulator >/dev/null 2>&1 ;
 then
   OM_X_TERMINAL="x-terminal-emulator"
 fi
+if [ -z "${OM_X_TERMINAL}" ] && command -v xfce4-terminal >/dev/null 2>&1 ;
+then
+  OM_X_TERMINAL="xfce4-terminal"
+fi
 if [ -z "${OM_X_TERMINAL}" ] && command -v gnome-terminal >/dev/null 2>&1 ;
 then
   OM_X_TERMINAL="gnome-terminal"
