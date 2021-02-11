@@ -34,8 +34,6 @@ then
 
 fi
 
-[ "$OM_ROOT" != "$PWD" ] && pushd $OM_ROOT
-
 echo "OM_ROOT = $OM_ROOT"
 
 # check if OM_ROOT directory exist
@@ -48,7 +46,8 @@ then
   exit 1
 fi
 
-pushd "$OM_ROOT"
+[ "$OM_ROOT" != "$PWD" ] && pushd $OM_ROOT
+
 export OM_ROOT="$PWD"
 
 # check if OM_ROOT is openM++ root
@@ -68,9 +67,8 @@ OMPP_UI_SH_LOG="${OM_ROOT}/log/${self}.log"
 echo "Log:       $OMPP_UI_SH_LOG"
 echo "OM_ROOT  = $OM_ROOT" >"$OMPP_UI_SH_LOG"
 
-# which x-terminal to use: x-terminal-emulator or gnome-terminal
+# which x-terminal to use: x-terminal-emulator, gnome-terminal, konsole
 #
-
 if [ -z "${OM_X_TERMINAL}" ] && command -v x-terminal-emulator >/dev/null 2>&1 ;
 then
   OM_X_TERMINAL="x-terminal-emulator"
@@ -79,9 +77,13 @@ if [ -z "${OM_X_TERMINAL}" ] && command -v gnome-terminal >/dev/null 2>&1 ;
 then
   OM_X_TERMINAL="gnome-terminal"
 fi
+if [ -z "${OM_X_TERMINAL}" ] && command -v konsole >/dev/null 2>&1 ;
+then
+  OM_X_TERMINAL="konsole"
+fi
 if [ -z "${OM_X_TERMINAL}" ] ;
 then
-  echo "ERROR not found: x-terminal-emulator, gnome-terminal and OM_X_TERMINAL not set" | tee -a "$OMPP_UI_SH_LOG"
+  echo "ERROR not found any of: x-terminal-emulator, gnome-terminal, konsole and OM_X_TERMINAL not set" | tee -a "$OMPP_UI_SH_LOG"
   echo -n "Press Enter to exit..."
   read any
   exit 1
@@ -106,18 +108,29 @@ fi
 
 # start oms web-service
 #
-echo "${OM_X_TERMINAL} -e bin/start_oms.sh" | tee -a "$OMPP_UI_SH_LOG"
+status=0
 
-${OM_X_TERMINAL} -e bin/start_oms.sh
+if [ "${OM_X_TERMINAL}" != "konsole" ] ;
+then
+  echo "${OM_X_TERMINAL} -e ./bin/start_oms.sh" | tee -a "$OMPP_UI_SH_LOG"
 
-if [ $? -ne 0 ] ;
+  ${OM_X_TERMINAL} -e ./bin/start_oms.sh
+  status=$?
+else
+  echo bash -c "konsole -e ./bin/start_oms.sh &" | tee -a "$OMPP_UI_SH_LOG"
+
+  bash -c "konsole -e ./bin/start_oms.sh &"
+  status=$?
+fi
+
+if [ $status -ne 0 ] ;
 then
   echo "FAILED to start oms web-service using ${OM_X_TERMINAL}" | tee -a "$OMPP_UI_SH_LOG"
   echo -n "Press Enter to exit..."
   read any
   exit 1
 fi
-# known issue: test above does not check exit code of start_oms.sh
+# known issue: test above does not catch exit code of start_oms.sh
 
 # start browser and open UI
 #
@@ -136,8 +149,6 @@ fi
 # known issue: xdg-open may return 0 when it is not able to start browser
 
 echo "Done." | tee -a "$OMPP_UI_SH_LOG"
-
-popd
 
 echo -n "Press Enter to exit..."
 read any
