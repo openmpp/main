@@ -6,7 +6,7 @@ Please note:
   add Linux shell script to start ompp_ui
   pass browser user language to backend web-service
   fix language code bug in openMpp R package
-  use OS independent build of openMPP R package
+  use OS independent build of openMpp R package
 
 2021_02_09:
   raise runtime error if entity time uninitialized (non-finite when entering simulation)
