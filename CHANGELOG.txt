@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2021_03_02:
+  make sure model trace file truncated on new model run
+  add Linux shell script to start ompp_ui
+  pass browser user language to backend web-service
+  fix language code bug in openMpp R package
+  use OS independent build of openMPP R package
+
 2021_02_09:
   raise runtime error if entity time uninitialized (non-finite when entering simulation)
   fix: c++ compiler error sometimes occurred with min_over, max_over
