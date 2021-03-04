@@ -1,6 +1,10 @@
 Please note:
   not all changes commented here, please use GitHub commits history for more details.
 
+2021_03_04:
+  Resolve specification ambiguity in event processing.
+  Event times are recalculated using the same ordering as that used for events, ignoring event time.
+
 2021_03_02:
   make sure model trace file truncated on new model run
   add Linux shell script to start ompp_ui
