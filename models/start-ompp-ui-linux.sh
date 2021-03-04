@@ -8,7 +8,7 @@
 # It does:
 #   cd $OM_ROOT
 #   # start oms, listen on free port:
-#   bin/oms -oms.Listen http://localhost:0 .... &
+#   bin/oms -oms.Listen localhost:0 .... &
 #   # use lsof to find oms port:
 #   lsof -i -a -sTCP:LISTEN -a -p $OMS_PID ....
 #   # write oms URL into file:

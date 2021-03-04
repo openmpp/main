@@ -474,10 +474,10 @@ TraceLog::~TraceLog(void) noexcept
     catch (...) { }
 }
 
-/** re-initialize log file name(s) and other log settings.
+/** re-initialize trace file name(s) and other log settings, it is also create or truncate existing trace file.
 *
 * @param[in]   i_logToConsole  if true then log to console
-* @param[in]   i_basePath      path to "last" log file, if NULL or empty "" then no log file
+* @param[in]   i_basePath      path to "last" trace file, if NULL or empty "" then no trace file
 * @param[in]   i_logToFile     if true then enable log to "last" file
 * @param[in]   i_useTimeStamp  if true then use timestamp suffix in "stamped" file name
 * @param[in]   i_usePidStamp   if true then use PID suffix in "stamped" file name
@@ -488,6 +488,11 @@ void TraceLog::init(
     ) noexcept
 {
     LogBase::init(i_logToConsole, i_basePath, i_logToFile, i_useTimeStamp, i_usePidStamp, i_noMsgTime);
+
+    // create or truncate trace file
+    if (isLastEnabled && !isLastCreated) {
+        isLastEnabled = isLastCreated = logFileCreate(lastPath);
+    }
 }
 
 /** log message */
