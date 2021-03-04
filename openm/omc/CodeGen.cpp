@@ -1019,7 +1019,7 @@ void CodeGen::do_event_queue()
     c += "thread_local set<BaseEvent *, less_deref<BaseEvent *> > *BaseEvent::event_queue = nullptr;";
     c += "";
     c += "// definition of dirty_events (declaration in Event.h)";
-    c += "thread_local tailed_forward_list<BaseEvent *> *BaseEvent::dirty_events = nullptr;";
+    c += "thread_local set<BaseEvent *, decltype(BaseEvent::dirty_cmp)* > *BaseEvent::dirty_events = nullptr;";
     c += "";
     c += "// definition of global_event_counter (declaration in Event.h)";
     c += "thread_local big_counter BaseEvent::global_event_counter;";
