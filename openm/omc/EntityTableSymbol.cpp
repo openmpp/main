@@ -316,7 +316,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
 
     if (n_collections > 0) {
         c += "// process each cell";
-        c += "for (size_t cell = 0; cell < n_cells; ++cell) {";
+        c += "for (int cell = 0; cell < n_cells; ++cell) {";
 
         c += "";
         c += "// Compute statistics for each observation collection in the cell.";
