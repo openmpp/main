@@ -117,9 +117,9 @@ void Ticker::MaintainAggregates()
 	double adIncomeTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
 	double adHealthTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
     double adAgeTotalByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)]; 
-	double anAdultCountByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
-	double anChildCountByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)]; 
-	double anPersonCountByAgeByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+	int anAdultCountByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
+	int anChildCountByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)]; 
+	int anPersonCountByAgeByNeighborhood[SIZE(RANGE_NEIGHBORHOOD)];
 	// initialize neighborhood working arrays
 	int nNeighborhood = asAllNeighborhood->Count();
 	for ( int nN = 0; nN < nNeighborhood; nN++ ) 
@@ -132,7 +132,7 @@ void Ticker::MaintainAggregates()
 		adIncomeTotalByNeighborhood[nN] = 0.0;
 		adHealthTotalByNeighborhood[nN] = 0.0;
 		adAgeTotalByNeighborhood[nN] = 0.0; 
-		anPersonCountByAgeByNeighborhood[nN] = 0.0; 
+		anPersonCountByAgeByNeighborhood[nN] = 0; 
 	}
 
 	// working arrays for age totals
