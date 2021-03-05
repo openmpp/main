@@ -15,7 +15,7 @@
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
 #define RANGE_POS( rname, val )     (rname::to_index(val))
-#define COERCE( rname, val )        (rname::bound(val))
+#define COERCE( rname, val )        (rname::clamp(val))
 
 #define WITHIN( rname, val )        (rname::within(val))
 #define POINTS( symbol )		   	(symbol::upper_bounds())

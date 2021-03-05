@@ -186,24 +186,32 @@ public:
         return (value >= min) && (value <= max);
     }
 
-    // bound a quantity to the limits of a range, with 'int' argument returning 'int' result
-    static int bound(int val)
+    // clamp a quantity to the limits of a range, with 'int' argument returning 'int' result
+    static int clamp(int val)
     {
         if (val < min) return min;
         if (val > max) return max;
         else return val;
     }
 
-    // bound a quantity to the limits of a range, with 'double' argument returning 'double' result
-    static double bound(double val)
+    // clamp a quantity to the limits of a range, with 'double' argument returning 'double' result
+    static double clamp(double val)
     {
         if (val < min) return min;
         if (val > max) return max;
         else return val;
     }
 
-    // bound a quantity to the limits of a range, with 'long long' argument returning 'long long' result
-    static long long bound(long long val)
+    // clamp a quantity to the limits of a range, with 'float' argument returning 'float' result
+    static float clamp(float val)
+    {
+        if (val < min) return min;
+        if (val > max) return max;
+        else return val;
+    }
+
+    // clamp a quantity to the limits of a range, with 'long long' argument returning 'long long' result
+    static long long clamp(long long val)
     {
         // TODO - throw exception if limit of int exceeded?
         if (val < min) return min;
