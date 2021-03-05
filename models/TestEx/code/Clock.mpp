@@ -255,7 +255,6 @@ actor Person
 	void DayStart();   			//EN Start of day
 	void DayEnd();				//EN End of day
 
-	TIME RoundUpToDay(TIME dTime);			//EN Rounds a time up to next day boundary
 	event timeClockEvent, ClockEvent, 127;	//EN General-purpose clock
 
 
