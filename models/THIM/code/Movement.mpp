@@ -64,7 +64,7 @@ actor Person
 
 	//EN Move on birthday
 	void Move();
-	hook Move, GetIncome;   // ultimately hooked to BirthdayEvent through an ordered chain
+	hook Move, GetIncome, 2;   // ultimately hooked to BirthdayEvent through an ordered chain
 
 };
 

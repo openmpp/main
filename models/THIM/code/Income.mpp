@@ -196,7 +196,7 @@ actor Person
 	hook GetIncome, BirthdayEvent;		// start of an ordered chain hooked to BirthdayEvent
 	
 	void Start_StartPop_Income();		//EN Set income for Person in starting population
-	hook Start_StartPop_Income, Start_StartPop;
+	hook Start_StartPop_Income, Start_StartPop, 3;
 };
 
 void Person::LognormalRV()

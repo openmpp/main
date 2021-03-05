@@ -38,15 +38,15 @@ actor Person
 
 	//EN Set health for newborn
 	void Start_Newborn_Health();
-	hook Start_Newborn_Health, Start_Newborn;
+	hook Start_Newborn_Health, Start_Newborn, 2;
 
 	//EN Set health for Person in starting population
 	void Start_StartPop_Health();
-	hook Start_StartPop_Health, Start_StartPop;
+	hook Start_StartPop_Health, Start_StartPop, 2;
 
 	//EN Change health on birthday
 	void ChangeHealth();
-	hook ChangeHealth, GetIncome;   // ultimately hooked to BirthdayEvent through an ordered chain
+	hook ChangeHealth, GetIncome, 1;   // ultimately hooked to BirthdayEvent through an ordered chain
 };
 
 void Person::Start_Newborn_Health()

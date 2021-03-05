@@ -66,10 +66,10 @@ actor Person
 
 
 	void Start_Newborn_Education();			//EN Set education for newborn
-	hook Start_Newborn_Education, Start_Newborn;
+	hook Start_Newborn_Education, Start_Newborn, 1;
 
 	void Start_StartPop_Education();		//EN Set education for Person in starting population
-	hook Start_StartPop_Education, Start_StartPop;
+	hook Start_StartPop_Education, Start_StartPop, 1;
 };
 
 void Person::Start_Newborn_Education()

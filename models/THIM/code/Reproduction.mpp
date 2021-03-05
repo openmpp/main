@@ -82,11 +82,11 @@ actor Person
 
 	//EN Set gs for newborn
 	void Start_Newborn_Heredity();
-	hook Start_Newborn_Heredity, Start_Newborn; 
+	hook Start_Newborn_Heredity, Start_Newborn, 3; 
 
 	//EN Set gs for the starting adult population
 	void Start_StartPop_Heredity();
-	hook Start_StartPop_Heredity, Start_StartPop; 
+	hook Start_StartPop_Heredity, Start_StartPop, 4; 
 
 	event timeReproductionEvent, ReproductionEvent;	//EN Reproduction event
 };

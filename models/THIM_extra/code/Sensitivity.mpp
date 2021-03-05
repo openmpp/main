@@ -23,15 +23,15 @@ actor Person
 
 	//EN Set sensitivity for newborn
 	void Start_Newborn_Sensitivity();
-	hook Start_Newborn_Sensitivity, Start_Newborn;
+	hook Start_Newborn_Sensitivity, Start_Newborn, 4;
 
 	//EN Set sensitivity for Person in starting population
 	void Start_StartPop_Sensitivity();
-	hook Start_StartPop_Sensitivity, Start_StartPop;
+	hook Start_StartPop_Sensitivity, Start_StartPop, 5;
 
 	//EN Change sensitivity on birthday
 	void ChangeSensitivity();
-	hook ChangeSensitivity, ChangeHealth;   // ultimately hooked to BirthdayEvent through a chain
+	hook ChangeSensitivity, ChangeHealth, 2;   // ultimately hooked to BirthdayEvent through a chain
 
 };
 

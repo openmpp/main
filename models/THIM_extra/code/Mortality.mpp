@@ -70,7 +70,7 @@ actor Person            //EN Individual
 	double relRisk; //EN for M: relative mRisk based on H and Y
 	int dieNow; 
 	void MortalityCalc();
-	hook MortalityCalc, ChangeHealth; 
+	hook MortalityCalc, ChangeHealth, 1; 
 	event timeMortalityEvent, MortalityEvent;	//EN Mortality event
 };
 
