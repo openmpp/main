@@ -13,7 +13,7 @@ parameters
 	model_generated double EmigrationHazard[SEX][RANGE_AGE][YEAR];
 };
 
-void PreSimulation(void)
+void PreSimulation1(void)
 {
   for (int nS = 0; nS < SIZE(SEX); nS++ ) {
     for (int nA = 0; nA < SIZE(RANGE_AGE); nA++ ) {
