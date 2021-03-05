@@ -1,4 +1,4 @@
-//LABEL(RiskPaths) RiskPaths
+//LABEL(RiskPaths, EN) RiskPaths
 parameters {
 	logical	CanDie = FALSE; // Switch to turn mortality on
 
