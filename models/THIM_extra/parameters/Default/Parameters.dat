@@ -17,7 +17,6 @@ parameters {
 	int	mortalityAgeBand = 10; //EN Mortality age band
 	int	MinAgeToReproduce = 20; //EN Minimum age to reproduce
 	int	MaxAgeToReproduce = 40; //EN Maximum age to reproduce
-	double	BirthRate = 0.05; //EN Annual birth rate
 	int	MinimumYearsOfEducation = 10; //EN Minimum years of education
 	int	MaximumYearsOfEducation = 10; //EN Maximum years of education
 	double	EBa = 0; //EN Influence of relative neighbourhood income
