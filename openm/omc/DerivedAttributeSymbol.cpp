@@ -1624,14 +1624,14 @@ void DerivedAttributeSymbol::create_side_effects()
         init_cxx += injection_description();
         init_cxx += "{";
         init_cxx += "// Set initial value based on dependent attribute";
-        init_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";;
+        init_cxx += name + ".set(" + pp_prt->name + "::value_to_interval((real)" + av->name + "));";;
         init_cxx += "}";
 
         CodeBlock& observed_cxx = av->side_effects_fn->func_body;
         observed_cxx += injection_description();
         observed_cxx += "{";
         observed_cxx += "// Maintain " + pretty_name();
-        observed_cxx += name + ".set(" + pp_prt->name + "::value_to_interval(" + av->name + "));";
+        observed_cxx += name + ".set(" + pp_prt->name + "::value_to_interval((real)" + av->name + "));";
         observed_cxx += "}";
         break;
     }
