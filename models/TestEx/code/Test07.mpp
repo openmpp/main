@@ -11,7 +11,7 @@
 
 actor Person {
 	event timeTest07Event, 	Test07Event;
-	hook Test07Start, 		Start;
+	hook Test07Start, 		Start, 7;
 	void Test07Start();
 
 	TIME next_test07 	= {0};

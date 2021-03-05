@@ -269,7 +269,7 @@ actor Person {
 
 	void t03_user_func();
 
-	hook t03_user_func, BirthdayEvent;
+	hook t03_user_func, BirthdayEvent, 3;
 	
 };
 

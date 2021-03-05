@@ -15,7 +15,7 @@ link Person.mlTestActors[] TestActor06.mlTest;
 
 actor Person {
 	event timeTest06Event, Test06Event;
-	hook Test06Start, Start;
+	hook Test06Start, Start, 6;
 	void Test06Start();
 	void CreateLinks();
 	//CC. second test of count(link_name)

@@ -126,7 +126,7 @@ actor Person {
 	logical t04_cisFaking        = undergone_change( t04_health );
 	
 	void t04_update_vars();
-	hook t04_update_vars, BirthdayEvent;
+	hook t04_update_vars, BirthdayEvent, 4;
 };
 
 // Called on BirthdayEvent. Update testing variables appropriately.

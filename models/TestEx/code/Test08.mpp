@@ -11,7 +11,7 @@
 
 actor Person {
 	event timeTest08Event, 	Test08Event;
-	hook Test08Start, 		Start;
+	hook Test08Start, 		Start, 8;
 	void Test08Start();
 
 	TIME next_test08 	= {0};

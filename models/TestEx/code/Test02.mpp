@@ -52,7 +52,7 @@ actor Person {
 
 	void t02_user_func();
 
-	hook t02_user_func, BirthdayEvent;
+	hook t02_user_func, BirthdayEvent, 2;
 	
 };
 

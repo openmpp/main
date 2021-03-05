@@ -11,7 +11,7 @@
 
 actor Person {
 	event timeTest09Event, 	Test09Event;
-	hook Test09Start, 		Start;
+	hook Test09Start, 		Start, 9;
 	void Test09Start();
 
 	double valueHolder09 = {0};
