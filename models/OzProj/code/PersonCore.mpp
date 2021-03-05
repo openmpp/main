@@ -51,7 +51,7 @@ parameters
   double NativeToIndigenous;
 };
 
-void PreSimulation4()
+void PreSimulation()
 {
   input_csv inCsv;
   inCsv.open(MicroDataInputFile);

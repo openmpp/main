@@ -21,7 +21,7 @@ parameters
   */
 };
 
-void PreSimulation3(void)
+void PreSimulation(void)
 {
   for (int nS = 0; nS < SIZE(SEX); nS++ ) {
     for (int nA = 0; nA < SIZE(RANGE_AGE); nA++ ) {
