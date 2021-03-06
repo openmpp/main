@@ -537,7 +537,7 @@ void EntitySymbol::build_body_initialize_tables()
 
     for (auto tbl : pp_entity_tables) {
         c += "// " + tbl->name;
-        c += "{";
+        c += "if (" + tbl->cxx_instance + ") {";
         if (tbl->filter) {
             c += "auto & filter = " + tbl->filter->name + ";";
         }
@@ -561,7 +561,7 @@ void EntitySymbol::build_body_finalize_tables()
 
     for (auto tbl : pp_entity_tables) {
         c += "// " + tbl->name;
-        c += "{";
+        c += "if (" + tbl->cxx_instance + ") {";
         c += "auto & incr = " + tbl->increment->name + ";";
         c += "incr.finalize_increment();";
         c += "}";

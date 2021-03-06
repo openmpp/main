@@ -131,7 +131,7 @@ void EntityTableSymbol::post_parse(int pass)
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
             c += "// Cell change in " + name;
-            c += "if (om_active) {";
+            c += "if (om_active && " + cxx_instance + ") {";
             c += "// Check and start pending increment in entity table " + name;
             c += "auto cell = " + current_cell_fn->name + "();";
             c += "auto & incr = " + increment->name + ";";
@@ -145,7 +145,7 @@ void EntityTableSymbol::post_parse(int pass)
             CodeBlock& c = filter->side_effects_fn->func_body;
             c += injection_description();
             c += "// filter change in " + name;
-            c += "if (om_active) {";
+            c += "if (om_active && " + cxx_instance + ") {";
             c += "// Check and start pending increment in entity table " + name;
             c += "auto & incr = " + increment->name + ";";
             c += "incr.set_filter(om_new);";
@@ -176,7 +176,7 @@ void EntityTableSymbol::post_parse(int pass)
                 CodeBlock& c = attr->notify_fn->func_body;
                 c += injection_description();
                 c += "// Check for and finish pending increment in entity table " + name;
-                c += "if (om_active) {";
+                c += "if (om_active && " + cxx_instance + ") {";
                 c += "auto & incr = " + increment->name + ";";
                 c += "incr.finish_pending();";
                 c += "}";
@@ -252,11 +252,14 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "";
     // table definition
     // E.g. DurationOfLife theDurationOfLife;
-    c += "thread_local " + name + " * the" + name + " = nullptr;";
+    c += "thread_local " + name + " * " + cxx_instance + " = nullptr;";
+    c += "";
 
     // definition of initialize_accumulators()
     c += "void " + name + "::initialize_accumulators()";
     c += "{";
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
 
     for (auto acc : pp_accumulators) {
         string initial_value = "";
@@ -314,6 +317,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     // definition of extract_accumulators()
     c += "void " + name + "::extract_accumulators()";
     c += "{";
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
 
     if (n_collections > 0) {
         c += "// process each cell";
@@ -485,6 +490,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     // definition of scale_accumulators()
     c += "void " + name + "::scale_accumulators()";
     c += "{";
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
     c += "double scale_factor = population_scaling_factor();";
     c += "if (scale_factor != 1.0) {";
     for (auto acc : pp_accumulators) {
@@ -509,6 +516,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     // E.g. void DurationOfLife::compute_expressions()
     c += "void " + name + "::compute_expressions()";
     c += "{";
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
     for (auto measure : pp_measures) {
         auto etm = dynamic_cast<EntityTableMeasureSymbol *>(measure);
         assert(etm); // logic guarantee
@@ -537,6 +546,9 @@ string EntityTableSymbol::cxx_initializer() const
 void EntityTableSymbol::build_body_current_cell()
 {
     CodeBlock& c = current_cell_fn->func_body;
+
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
 
     int rank = dimension_list.size();
 
@@ -575,10 +587,13 @@ void EntityTableSymbol::build_body_current_cell()
     c += "";
     c += "// Encode the dimension coordinates of the margin cell into flattened index";
     c += "int cell = coordinates[0];";
-    c += "for (int j = 1; j < rank; ++j) {";
-    c += "cell *= shape[j];";
-    c += "cell += coordinates[j];";
-    c += "}";
+    if (dimension_count() > 1) {
+        // suppress do-nothing loop if rank 1 to avoid C++ compiler warning
+        c += "for (int j = 1; j < rank; ++j) {";
+        c += "cell *= shape[j];";
+        c += "cell += coordinates[j];";
+        c += "}";
+    }
     c += "";
     c += "assert(cell >= 0 && cell < " + to_string(cell_count()) + "); // logic guarantee";
     c += "return cell;";
@@ -587,6 +602,9 @@ void EntityTableSymbol::build_body_current_cell()
 void EntityTableSymbol::build_body_init_increment()
 {
     CodeBlock& c = init_increment_fn->func_body;
+
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
 
     for (auto ma : pp_measure_attributes) {
         if (!ma->need_value_in && !ma->need_value_in_event) {
@@ -632,7 +650,10 @@ void EntityTableSymbol::build_body_push_increment()
 {
     CodeBlock& c = push_increment_fn->func_body;
 
-    c += "auto& table = the" + name + ";";
+    c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
+    c += "";
+
+    c += "auto& table = " + cxx_instance + ";";
     bool has_margins = margin_count() > 0;
     if (!has_margins) {
         c += "";

@@ -637,14 +637,18 @@ void CodeGen::do_ModelStartup()
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
         c += "assert(!" + et->cxx_instance + "); ";
+        c += "if (!i_model->isSuppressed(\"" + et->name + "\")) {";
         c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
+        c += "}";
     }
     c += "";
 
     c += "// Derived table instantiation";
     for (auto dt : Symbol::pp_all_derived_tables) {
         c += "assert(!" + dt->cxx_instance + "); ";
+        c += "if (!i_model->isSuppressed(\"" + dt->name + "\")) {";
         c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
+        c += "}";
     }
     c += "";
 
@@ -681,14 +685,14 @@ void CodeGen::do_ModelShutdown()
     c += "";
     c += "// extract accumulators, and scale them to population size";
     for ( auto table : Symbol::pp_all_entity_tables ) {
-	    c += "the" + table->name + "->extract_accumulators();";
-	    c += "the" + table->name + "->scale_accumulators();";
+	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
+	    c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";
     }
 	c += "";
 
     c += "// compute table expressions using accumulators";
     for ( auto table : Symbol::pp_all_entity_tables ) {
-	    c += "the" + table->name + "->compute_expressions();";
+	    c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->compute_expressions();";
     }
     c += "";
 
@@ -724,8 +728,8 @@ void CodeGen::do_ModelShutdown()
     c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
         if (!table->is_internal) {
-            c += "i_model->writeOutputTable(\"" +
-                table->name + "\", the" + table->name + "->n_cells, the" + table->name + "->acc_storage);";
+            c += "if (" + table->cxx_instance + ") i_model->writeOutputTable(\"" +
+                table->name + "\", " + table->cxx_instance + "->n_cells, " + table->cxx_instance + "->acc_storage);";
         }
     }
     c += "// at this point table->acc[k][j] will cause memory access violation";
@@ -734,7 +738,7 @@ void CodeGen::do_ModelShutdown()
     c += "// write derived tables (measures) and release measures memory";
     for ( auto derived_table : Symbol::pp_all_derived_tables ) {
         if (!derived_table->is_internal) {
-            c += "i_model->writeOutputTable(\"" +
+            c += "if (" + derived_table->cxx_instance + ") i_model->writeOutputTable(\"" +
                 derived_table->name + "\", " + 
                 derived_table->cxx_instance + "->n_cells, " + 
                 derived_table->cxx_instance + "->measure_storage);";
@@ -746,17 +750,19 @@ void CodeGen::do_ModelShutdown()
 
     c += "// Entity table destruction";
     for (auto table : Symbol::pp_all_entity_tables) {
-        c += "assert(the" + table->name + "); ";
-        c += "delete the" + table->name + ";";
-        c += "the" + table->name + " = nullptr;";
+        c += "if (" + table->cxx_instance + ") {";
+        c += "delete " + table->cxx_instance + ";";
+        c += table->cxx_instance + " = nullptr;";
+        c += "}";
     }
     c += "";
 
     c += "// Derived table destruction";
     for (auto derived_table : Symbol::pp_all_derived_tables) {
-        c += "assert(" + derived_table->cxx_instance + "); ";
+        c += "if (" + derived_table->cxx_instance + ") {";
         c += "delete " + derived_table->cxx_instance + ";";
         c += derived_table->cxx_instance + " = nullptr;";
+        c += "}";
     }
     c += "";
 
@@ -1001,7 +1007,7 @@ void CodeGen::do_table_interface()
     c += "{";
     c += "switch (table_id) {";
     for (auto table : Symbol::pp_all_tables) {
-        c += "case " + to_string(table->pp_table_id) + ": return " + table->cxx_instance + "->get_measure_address(measure_id, indices);";
+        c += "case " + to_string(table->pp_table_id) + ": return " + table->cxx_instance + " ? " + table->cxx_instance + "->get_measure_address(measure_id, indices) : nullptr;";
     }
     c += "default: assert(false); // logic guarantee";
     c += "}";
@@ -1055,7 +1061,7 @@ void CodeGen::do_RunModel()
 
     c += "// initialize entity tables";
 	for ( auto table : Symbol::pp_all_entity_tables ) {
-        c += "the" + table->name + "->initialize_accumulators();";
+        c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->initialize_accumulators();";
     }
     c += "";
     c += "BaseEvent::initialize_simulation_runtime();";

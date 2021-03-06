@@ -261,8 +261,9 @@ double GetTableValue(const string measure_name, Items... args)
     if (0 == sizeof...(Items)) indices.clear();
     auto it = om_table_measure.find(measure_name);
     if (it == om_table_measure.end()) {
-        //TODO - run time error - invalid table.measure
-        return 0.0;
+        theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to GetTableValue",
+            measure_name.c_str());
+        return numeric_limits<double>::quiet_NaN();
     }
     auto pr = it->second;
     auto table_id = pr.first;
@@ -305,8 +306,9 @@ void SetTableValue(const string measure_name, double value, Items... args)
             *address = value;
         }
         else {
-            theLog->logFormatted("Warning : Invalid indices in call to SetTableValue(\"%s\", ... )",
-                measure_name.c_str());
+            // silently do nothing, to avoid producing error on write to suppressed derived table in UserTables()
+            //theLog->logFormatted("Warning : Invalid indices in call to SetTableValue(\"%s\", ... )",
+            //    measure_name.c_str());
         }
     }
 }
