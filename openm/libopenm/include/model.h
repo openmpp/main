@@ -52,6 +52,12 @@ namespace openm
         /** return model run options */
         const RunOptions * runOptions(void) const override { return &runOpts; }
 
+        /** return id of output table by name */
+        int tableIdByName(const char * i_name) const override { return runCtrl->tableIdByName(i_name); };
+
+        /** check by name if output table suppressed. */
+        bool isSuppressed(const char * i_name) const override { return runCtrl->isSuppressed(i_name); };
+
         /** write result into output table and release accumulators memory. */
         void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) override;
 

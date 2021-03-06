@@ -140,7 +140,7 @@ OutputTableWriter::OutputTableWriter(
     modelId = i_metaStore->modelRow->modelId;
 
     tableRow = i_metaStore->tableDic->byModelIdName(modelId, i_name);
-    if (tableRow == nullptr) throw DbException("output table not found in table dictionary: %s", i_name);
+    if (tableRow == nullptr) throw DbException("output table not found in tables dictionary: %s", i_name);
 
     tableId = tableRow->tableId;
     dimCount = tableRow->rank;

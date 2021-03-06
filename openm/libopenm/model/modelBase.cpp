@@ -76,6 +76,8 @@ int ModelBase::parameterSubValueIndex(const char * i_name) const
 * @param[in]     i_name         output table name
 * @param[in]     i_size         number of cells for each accumulator
 * @param[in,out] io_accValues   accumulator values
+* 
+* if table is suppressed then write into database suppressed but it is expected to have memory allocated.
 *
 * usage example: \n
 * @code
@@ -110,7 +112,7 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
 
         // find output table db row
         const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-        if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
+        if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", i_name);
 
         int tblId = tblRow->tableId;
 

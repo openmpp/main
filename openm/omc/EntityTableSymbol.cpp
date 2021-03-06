@@ -229,6 +229,7 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     h += cxx_class + "(initializer_list<int> shape) : " + cxx_template + "(shape)";
     h += "{";
     h += "}";
+    h += "static constexpr const char * NAME = \"" + cxx_type + "\";";
     h += "void initialize_accumulators();";
     h += "void extract_accumulators();";
     h += "void scale_accumulators();";

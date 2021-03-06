@@ -34,13 +34,10 @@ namespace openm
         virtual ~RunController(void) noexcept = 0;
 
         /** return index of parameter by name */
-        int parameterIdByName(const char * i_name) const override;
+        int parameterIdByName(const char * i_name) const override { return MetaLoader::parameterIdByName(i_name); };
 
         /** number of parameter sub-values for current model run */
-        int parameterSubCount(int i_paramId) const override
-        {
-            return MetaLoader::parameterSubCount(i_paramId);
-        }
+        int parameterSubCount(int i_paramId) const override { return MetaLoader::parameterSubCount(i_paramId); }
 
         /** number of parameter sub-values for current process */
         int parameterSelfSubCount(int i_paramId) const override
@@ -118,7 +115,7 @@ namespace openm
         /** implementation model process shutdown. */
         void doShutdownAll(int i_taskRunId, IDbExec * i_dbExec);
 
-        /** write output table accumulators. */
+        /** write output table accumulators if table is not suppressed. */
         void doWriteAccumulators(
             int i_runId,
             IDbExec * i_dbExec,
@@ -153,7 +150,7 @@ namespace openm
         // cretate run description and notes using run options or by copy it from workset text
         void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
-        /** write output tables aggregated values into database */
+        /** write output tables aggregated values into database, skip suppressed tables */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
 
         // check sub-value id's and count: sub id must be zero in range [0, sub count -1] and count must be equal to parameter size

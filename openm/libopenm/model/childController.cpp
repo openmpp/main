@@ -241,7 +241,7 @@ void ChildController::writeAccumulators(
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-    if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
+    if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", i_name);
 
     int accIndex = (int)metaStore->tableAcc->indexOf(
         [&](const TableAccRow & i_row) -> bool { return i_row.modelId == modelId && i_row.tableId == tblRow->tableId; }

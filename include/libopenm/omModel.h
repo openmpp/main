@@ -61,7 +61,7 @@ namespace openm
     {
         virtual ~IRunBase(void) noexcept = 0;
 
-        /** return index of parameter by name */
+        /** return id of parameter by name */
         virtual int parameterIdByName(const char * i_name) const = 0;
 
         /** number of parameter sub-values */
@@ -90,6 +90,12 @@ namespace openm
 
         /** sub-value index of current modeling thread */
         virtual int subValueId(void) const noexcept = 0;
+
+        /** return id of output table by name */
+        virtual int tableIdByName(const char * i_name) const = 0;
+
+        /** check by name if output table suppressed. */
+        virtual bool isSuppressed(const char * i_name) const = 0;
 
         /** return model run options */
         virtual const RunOptions * runOptions(void) const = 0;

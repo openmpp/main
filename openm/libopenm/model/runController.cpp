@@ -55,17 +55,6 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
     return ctrl.release();
 }
 
-/** return index of parameter by name */
-int RunController::parameterIdByName(const char * i_name) const
-{
-    if (i_name == nullptr || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
-
-    const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
-    if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", i_name);
-
-    return paramRow->paramId;
-}
-
 /** impelementation of model process shutdown if exiting without completion. */
 void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_taskRunId, IDbExec * i_dbExec)
 {
@@ -234,12 +223,15 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
     }
 }
 
-/** write output tables aggregated values into database */
+/** write output tables aggregated values into database, skip suppressed tables */
 void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
 {
     const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
 
     for (const TableDicRow & tblRow : tblVec) {
+
+        if (isSuppressed(tblRow.tableId)) continue;     // skip suppressed table
+
         unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
             i_runId,
             tblRow.tableName.c_str(),
@@ -255,7 +247,7 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
     }
 }
 
-/** write output table accumulators. */
+/** write output table accumulators if table is not suppressed. */
 void RunController::doWriteAccumulators(
     int i_runId,
     IDbExec * i_dbExec,
@@ -267,7 +259,7 @@ void RunController::doWriteAccumulators(
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-    if (tblRow == nullptr) throw new DbException("output table not found in table dictionary: %s", i_name);
+    if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", i_name);
 
     // find index of first accumulator: table rows ordered by model id, table id and accumulators id
     int nAcc = (int)metaStore->tableAcc->indexOf(
@@ -276,21 +268,24 @@ void RunController::doWriteAccumulators(
     if (nAcc < 0) throw new DbException("output table accumulators not found: %s", i_name);
 
     // write accumulators into database
-    unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
-        i_runId,
-        i_name,
-        i_dbExec,
-        meta(),
-        subValueCount,
-        i_runOpts.useSparse,
-        i_runOpts.nullValue
-    ));
+    if (!isSuppressed(tblRow->tableId)) {
 
-    for (const auto & apc : io_accValues) {
-        writer->writeAccumulator(
-            i_dbExec, i_runOpts.subValueId, metaStore->tableAcc->byIndex(nAcc)->accId, i_size, apc.get()
-        );
-        nAcc++;
+        unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
+            i_runId,
+            i_name,
+            i_dbExec,
+            meta(),
+            subValueCount,
+            i_runOpts.useSparse,
+            i_runOpts.nullValue
+        ));
+
+        for (const auto & apc : io_accValues) {
+            writer->writeAccumulator(
+                i_dbExec, i_runOpts.subValueId, metaStore->tableAcc->byIndex(nAcc)->accId, i_size, apc.get()
+            );
+            nAcc++;
+        }
     }
 }
 

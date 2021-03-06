@@ -139,6 +139,18 @@ namespace openm
         /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
         static const char * runDescrSuffix;
 
+        /** options started with "Suppress." used to exclude output table from run resuluts, ex: -Suppress.AgeTable true */
+        static const char * suppressPrefix;
+
+        /** options started with "SuppressGroup." used to exclude output table group from run resuluts, ex: -SuppressGroup.Income true */
+        static const char * suppressGroupPrefix;
+
+        /** options started with "NotSuppress." used to include only output table in run results, ex: -NotSuppress.AgeTable true */
+        static const char * notSuppressPrefix;
+
+        /** options started with "NotSuppressGroup." used to include only output table group in run results, ex: -NotSuppressGroup.Income true */
+        static const char * notSuppressGroupPrefix;
+
         /** trace log to console */
         static const char * traceToConsole;
 
@@ -226,10 +238,20 @@ namespace openm
             return binary_search(paramIdSubArr.cbegin(), paramIdSubArr.cend(), i_paramId) ? subValueCount : 1;
         }
 
+        /** return index of parameter by name */
+        int parameterIdByName(const char * i_name) const;
+
+        /** return id of output table by name */
+        int tableIdByName(const char * i_name) const;
+
+        /** check by name if output table suppressed */
+        bool isSuppressed(const char * i_name) const { return isSuppressed(tableIdByName(i_name)); }
+
     protected:
         int modelId;                        // model id in database
         unique_ptr<MetaHolder> metaStore;   // metadata tables
         vector<int> paramIdSubArr;          // ids of parameters where sub-values count same as model run sub-values count
+        vector<int> tableIdSuppressArr;     // id's of tables to suppress from calculation and output
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
@@ -260,6 +282,12 @@ namespace openm
 
         /** insert new or update existing argument option. */
         void setArgOpt(const string & i_key, const string & i_value) { argStore.args[i_key] = i_value; }
+
+        /** check by id if output table suppressed */
+        bool isSuppressed(int i_tableId) const
+        {
+            return binary_search(tableIdSuppressArr.cbegin(), tableIdSuppressArr.cend(), i_tableId);
+        }
 
         // enum to indicate what kind of sub id's selected: single, default, range or list
         enum class KindSubIds : int
@@ -345,11 +373,14 @@ namespace openm
         /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo" */
         void parseParamSubOpts(void);
 
-        // return name of parameters by model group name
+        // return names of all parameters included in parameter group
         const vector<string> expandParamGroup(int i_modelId, const string & i_groupName) const;
 
         /** parse parameters import options: get source run to import parameters */
         void parseImportOptions(void);
+
+        /** parse suppression options to build list of tables to exclude from calculation and run output results */
+        void parseSuppressOptions(void);
 
         /** parse language-specific options to get language code and option value */
         void parseLangOptions(void);

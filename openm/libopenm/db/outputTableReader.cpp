@@ -188,7 +188,7 @@ tuple<int, int, int, const TableDicRow *, const vector<TableDimsRow>> OutputTabl
     int mId = i_metaStore->modelRow->modelId;
 
     const TableDicRow * tableRow = i_metaStore->tableDic->byModelIdName(mId, i_name);
-    if (tableRow == nullptr) throw DbException("output table not found in table dictionary: %s", i_name);
+    if (tableRow == nullptr) throw DbException("output table not found in tables dictionary: %s", i_name);
 
     int tableId = tableRow->tableId;
     int dimCount = tableRow->rank;

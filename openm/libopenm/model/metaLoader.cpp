@@ -141,6 +141,18 @@ namespace openm
     /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
     const char * RunOptionsKey::runDescrSuffix = "RunDescription";
 
+    /** options started with "Suppress." used to exclude output table from run resuluts, ex: -Suppress.AgeTable true */
+    const char * RunOptionsKey::suppressPrefix = "Suppress";
+
+    /** options started with "SuppressGroup." used to exclude output table group from run resuluts, ex: -SuppressGroup.Income true */
+    const char * RunOptionsKey::suppressGroupPrefix = "SuppressGroup";
+
+    /** options started with "NotSuppress." used to include only output table in run results, ex: -NotSuppress.AgeTable true */
+    const char * RunOptionsKey::notSuppressPrefix = "NotSuppress";
+
+    /** options started with "NotSuppressGroup." used to include only output table group in run results, ex: -NotSuppressGroup.Income true */
+    const char * RunOptionsKey::notSuppressGroupPrefix = "NotSuppressGroup";
+
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
 
@@ -256,7 +268,11 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::importModelDigestPrefix,
     RunOptionsKey::importModelIdPrefix,
     RunOptionsKey::importDbPrefix,
-    RunOptionsKey::importExprPrefix
+    RunOptionsKey::importExprPrefix,
+    RunOptionsKey::suppressPrefix,
+    RunOptionsKey::suppressGroupPrefix,
+    RunOptionsKey::notSuppressPrefix,
+    RunOptionsKey::notSuppressGroupPrefix
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
@@ -268,6 +284,28 @@ static const size_t langSuffixOptSize = sizeof(langSuffixOptArr) / sizeof(const 
 
 /** last cleanup */
 MetaLoader::~MetaLoader(void) noexcept { }
+
+/** return id of parameter by name */
+int MetaLoader::parameterIdByName(const char * i_name) const
+{
+    if (i_name == nullptr || i_name[0] == '\0') throw ModelException("invalid (empty) input parameter name");
+
+    const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, i_name);
+    if (paramRow == nullptr) throw DbException("parameter not found in parameters dictionary: %s", i_name);
+
+    return paramRow->paramId;
+}
+
+/** return id of output table by name */
+int MetaLoader::tableIdByName(const char * i_name) const
+{
+    if (i_name == nullptr || i_name[0] == '\0') throw ModelException("invalid (empty) output table name");
+
+    const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
+    if (tblRow == nullptr) throw DbException("output table not found in tables dictionary: %s", i_name);
+
+    return tblRow->tableId;
+}
 
 /** initialize run options from command line and ini-file. */
 const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
@@ -417,6 +455,7 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
 * - validate scalar parameter value option, eg: Parameter.Age 42
 * - parse parameter sub-values options, eg: SubFrom.Age csv  SubValues.Age 8 SubValues.Sex default
 * - parse parameter import options
+* - parse output tables suppress options
 */
 void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 {
@@ -508,6 +547,9 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
     // parse parameters import options
     parseImportOptions();
 
+    // parse suppression options to build list of tables to exclude from calculation and run output results
+    parseSuppressOptions();
+
     // parse language-specific options
     parseLangOptions();
 
@@ -533,12 +575,13 @@ namespace
         return true;
     }
 
-    // return parameter name or group name from sub-values option
-    const string parseParamOrGroupName(const string & i_optKey, size_t i_prefixLen)
+    // remove option prefix and the rest, for example from Parameter.Age remove "Parameter." and Age
+    const string removeOptPrefix(const string & i_optKey, const string & i_prefix)
     {
-        if (i_optKey.length() <= i_prefixLen) throw ModelException("invalid (empty) parameter name or group specified: %s", i_optKey.c_str());
+        size_t nLen = i_prefix.length();
+        if (i_optKey.length() <= nLen) throw ModelException("invalid (empty) name or group name specified: %s", i_optKey.c_str());
 
-        return i_optKey.substr(i_prefixLen);
+        return i_optKey.substr(nLen);
     }
 
 }
@@ -579,10 +622,10 @@ void MetaLoader::parseParamSubOpts(void)
 
         // check option key: parameter name or group name must not be empty
         string argName;
-        if (isFromOpt) argName = parseParamOrGroupName(optIt->first, fromPrefix.length());
-        if (isValuesOpt) argName = parseParamOrGroupName(optIt->first, valPrefix.length());
-        if (isFromGroupOpt) argName = parseParamOrGroupName(optIt->first, fromGroupPrefix.length());
-        if (isValuesGroupOpt) argName = parseParamOrGroupName(optIt->first, valGroupPrefix.length());
+        if (isFromOpt) argName = removeOptPrefix(optIt->first, fromPrefix);
+        if (isValuesOpt) argName = removeOptPrefix(optIt->first, valPrefix);
+        if (isFromGroupOpt) argName = removeOptPrefix(optIt->first, fromGroupPrefix);
+        if (isValuesGroupOpt) argName = removeOptPrefix(optIt->first, valGroupPrefix);
 
         if (argName.empty()) throw ModelException("invalid (empty) parameter name or group name: %s", optIt->first.c_str());
 
@@ -755,7 +798,7 @@ void MetaLoader::parseParamSubOpts(void)
     }
 }
 
-// return name of parameters by model group name
+// return names of all parameters included in parameter group
 const vector<string> MetaLoader::expandParamGroup(int i_modelId, const string & i_groupName) const
 {
     // find parameters group
@@ -964,6 +1007,101 @@ void MetaLoader::parseImportOptions(void)
         if (it == piArr.cend()) throw ModelException("invalid model name specified: %s", impOptsIt->first.c_str());
 
         ++impOptsIt;
+    }
+}
+
+/** parse suppression options to build list of tables to exclude from calculation and run output results.
+*
+* There are two ways to specify tables suppression: \n
+*   Suppress.AgeTable    true       \n
+*   SuppressGroup.Income true       \n
+* this means suppress only AgeTable and Income group of tables. \n
+* Or:                               \n
+*   NotSuppress.AgeTable    true    \n
+*   NotSuppressGroup.Income true    \n
+* result in suppression of all output tables except of AgeTable and Income group of tables. \n
+*
+* Suppress and not suppress options are mutually excluse and cannot be mixed.
+* For example, if model run options are: -Suppress.A true -NotSuppress.B true
+* then result is an error (model run exception).
+*/
+void MetaLoader::parseSuppressOptions(void)
+{
+    string suppPrefix = string(RunOptionsKey::suppressPrefix) + ".";
+    string suppGroupPrefix = string(RunOptionsKey::suppressGroupPrefix) + ".";
+    string notSuppPrefix = string(RunOptionsKey::notSuppressPrefix) + ".";
+    string notSuppGroupPrefix = string(RunOptionsKey::notSuppressGroupPrefix) + ".";
+
+    bool isAnySupp = false;
+    bool isAnyNotSupp = false;
+    set<int> tblIds;
+
+    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
+
+        // check is it one of suppress option
+        bool isSupp = equalNoCase(optIt->first.c_str(), suppPrefix.c_str(), suppPrefix.length());
+        bool isSuppGroup = equalNoCase(optIt->first.c_str(), suppGroupPrefix.c_str(), suppGroupPrefix.length());
+        bool isNotSupp = equalNoCase(optIt->first.c_str(), notSuppPrefix.c_str(), notSuppPrefix.length());
+        bool isNotSuppGroup = equalNoCase(optIt->first.c_str(), notSuppGroupPrefix.c_str(), notSuppGroupPrefix.length());
+
+        if (!isSupp && !isSuppGroup && !isNotSupp && !isNotSuppGroup) continue; // it is not a suppress option
+
+        isAnySupp = isAnySupp || isSupp || isSuppGroup;
+        isAnyNotSupp = isAnyNotSupp || isNotSupp || isNotSuppGroup;
+
+        if (isAnySupp && isAnyNotSupp)
+            throw ModelException("run optins %s and %s are mutually exclusive and cannot be mixed: %s",
+                RunOptionsKey::suppressPrefix, RunOptionsKey::notSuppressPrefix, optIt->first.c_str());
+
+        // check option key: table name or group name must not be empty
+        string argName;
+        if (isSupp) argName = removeOptPrefix(optIt->first, suppPrefix);
+        if (isSuppGroup) argName = removeOptPrefix(optIt->first, suppGroupPrefix);
+        if (isNotSupp) argName = removeOptPrefix(optIt->first, notSuppPrefix);
+        if (isNotSuppGroup) argName = removeOptPrefix(optIt->first, notSuppGroupPrefix);
+
+        if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", optIt->first.c_str());
+
+        // find table id by name
+        // or expand table group to get id's of all table members
+        if (isSupp || isNotSupp) {
+
+            const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, argName);
+            if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", argName.c_str());
+
+            tblIds.insert(tblRow->tableId);
+        }
+        else {
+            // find ouput table group
+            const GroupLstRow * grpRow = metaStore->groupLst->findFirst(
+                [this, &argName](const GroupLstRow & i_row) -> bool {
+                    return !i_row.isParam && i_row.modelId == modelId && i_row.name == argName;
+                }
+            );
+            if (grpRow == nullptr)
+                throw DbException("output tables group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+
+            vector<int> idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);   // get all members id of that group
+
+            tblIds.insert(idArr.cbegin(), idArr.cend());
+        }
+    }
+
+    // build sorted vector of table id's to suppress
+    // if not suppress options are used then
+    // build list of table id's to suppress by excluding "not suppress" id from the model table list
+    if (isAnySupp) {
+        tableIdSuppressArr.assign(tblIds.cbegin(), tblIds.cend());
+    }
+    else {
+        tableIdSuppressArr.clear();
+        for (ptrdiff_t nRow = 0; nRow < metaStore->tableDic->rowCount(); nRow++) {
+
+            const TableDicRow * tRow = metaStore->tableDic->byIndex(nRow);
+
+            const auto it = tblIds.find(tRow->tableId);
+            if (tblIds.find(tRow->tableId) == tblIds.cend()) tableIdSuppressArr.push_back(tRow->tableId);
+        }
     }
 }
 
