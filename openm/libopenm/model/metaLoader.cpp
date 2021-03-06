@@ -1093,7 +1093,7 @@ void MetaLoader::parseSuppressOptions(void)
     if (isAnySupp) {
         tableIdSuppressArr.assign(tblIds.cbegin(), tblIds.cend());
     }
-    else {
+    else if (isAnyNotSupp) {
         tableIdSuppressArr.clear();
         for (ptrdiff_t nRow = 0; nRow < metaStore->tableDic->rowCount(); nRow++) {
 
@@ -1102,6 +1102,9 @@ void MetaLoader::parseSuppressOptions(void)
             const auto it = tblIds.find(tRow->tableId);
             if (tblIds.find(tRow->tableId) == tblIds.cend()) tableIdSuppressArr.push_back(tRow->tableId);
         }
+    }
+    else {
+        tableIdSuppressArr.clear();
     }
 }
 
