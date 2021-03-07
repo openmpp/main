@@ -387,14 +387,14 @@ CodeBlock ParameterSymbol::cxx_definition_global_scenario_release(void)
     if (rank() > 0) {
         // static vector<unique_ptr<double[]>> om_param_ageSex;
         // thread_local double * om_value_ageSex = nullptr;
-        c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
+        c += "static std::vector<std::unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
         c += "thread_local " + cxx_type_of_parameter() + " * " + "om_value_" + name + " = nullptr;";
     }
     else {
         // static vector<int> om_param_startSeed;
         // static thread_local int om_value_startSeed;
         // thread_local const int & startSeed = om_value_startSeed;
-        c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
+        c += "static std::vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
         c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
         c += "thread_local const " + cxx_type_of_parameter() + " & " + name + " = om_value_" + name + ";";
     }
@@ -815,8 +815,8 @@ const string ParameterSymbol::cxx_type_of_parameter(void) const
         typ = pp_datatype->name;
     }
     else if (pp_datatype->is_string()) {
-        // For the string type, the type is "string"
-        typ = "string";
+        // For the string type, the type is "std::string"
+        typ = "std::string";
     }
     else {
         // for parameters of type classification, range, or partition

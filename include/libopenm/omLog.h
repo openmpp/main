@@ -12,8 +12,6 @@
 #include <list>
 #include <unordered_map>
 
-using namespace std;
-
 namespace openm
 {
     /** base for log public interface */
@@ -31,7 +29,7 @@ namespace openm
         *
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
-        virtual const string timeStamp(void) noexcept = 0;
+        virtual const std::string timeStamp(void) noexcept = 0;
     };
 
     /** log public interface: log to console and into log files */
@@ -40,7 +38,7 @@ namespace openm
         virtual ~ILog(void) noexcept = 0;
 
         /** log exception */
-        virtual void logErr(const exception & i_ex, const char * i_msg = NULL) noexcept = 0;
+        virtual void logErr(const std::exception & i_ex, const char * i_msg = NULL) noexcept = 0;
 
         /** log sql query */
         virtual void logSql(const char * i_sql) noexcept = 0;
@@ -65,22 +63,22 @@ namespace openm
             ) noexcept = 0;
 
         /** if log to file enabled return "last" log file path. */
-        virtual const string lastLogPath(void) noexcept = 0;
+        virtual const std::string lastLogPath(void) noexcept = 0;
 
         /** if log to "stamped" file enabled return "stamped" log file path. */
-        virtual const string stampedLogPath(void) noexcept = 0;
+        virtual const std::string stampedLogPath(void) noexcept = 0;
 
         /** get language-specific message by source non-translated message */
-        virtual const string getMessage(const char * i_sourceMsg) noexcept = 0;
+        virtual const std::string getMessage(const char * i_sourceMsg) noexcept = 0;
 
         /** get list of language name for the messages, eg: (en-ca, en) */
-        virtual const list<string> getLanguages(void) noexcept = 0;
+        virtual const std::list<std::string> getLanguages(void) noexcept = 0;
 
         /** get copy of language-specific messages */
-        virtual const unordered_map<string, string> getLanguageMessages(void) noexcept = 0;
+        virtual const std::unordered_map<std::string, std::string> getLanguageMessages(void) noexcept = 0;
 
         /** set language-specific messages and update list of languages */
-        virtual void swapLanguageMessages(const list<string> & i_langLst, unordered_map<string, string> & io_msgMap) noexcept = 0;
+        virtual void swapLanguageMessages(const std::list<std::string> & i_langLst, std::unordered_map<std::string, std::string> & io_msgMap) noexcept = 0;
     };
 
     /** trace log public interface: model event log to console and into log files */

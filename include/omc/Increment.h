@@ -8,8 +8,6 @@
 
 #pragma once
 
-using namespace std;
-
 /**
  * A table increment.
  *
@@ -19,7 +17,7 @@ using namespace std;
  */
 template<
     typename A,
-    string const *NT_name,
+    std::string const *NT_name,
     void(A::*NT_init_increment)(int, big_counter),
     void(A::*NT_push_increment)(int, int, big_counter)
 >
@@ -195,7 +193,7 @@ public:
  */
 template<
     typename A,
-    string const *NT_name,
+    std::string const *NT_name,
     void(A::*NT_init_increment)(int, big_counter),
     void(A::*NT_push_increment)(int, int, big_counter)
 >

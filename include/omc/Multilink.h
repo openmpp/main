@@ -176,7 +176,7 @@ public:
     // TODO provide access to embedded iterator in std::vector
 
     // storage
-    vector<entity_ptr<B>> storage;
+    std::vector<entity_ptr<B>> storage;
 
 	// offset to containing agent
 	static size_t offset_in_agent;

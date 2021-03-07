@@ -24,7 +24,7 @@ template<int Tdimensions, int Tcells, int Tmeasures>
 class Table
 {
 public:
-    Table(initializer_list<int> shape)
+    Table(std::initializer_list<int> shape)
         : shape(shape)
     {
         // There are one or more measures.
@@ -39,7 +39,7 @@ public:
         // allocate and initialize measures
         auto it = measure_storage.before_begin();
         for (int msr = 0; msr < n_measures; ++msr) {
-            it = measure_storage.insert_after(it, unique_ptr<double>(new double[Tcells]));
+            it = measure_storage.insert_after(it, std::unique_ptr<double>(new double[Tcells]));
             measure[msr] = it->get();
         }
 
@@ -53,7 +53,7 @@ public:
     {
         for (int msr = 0; msr < n_measures; ++msr) {
             for (int cell = 0; cell < n_cells; ++cell) {
-                measure[msr][cell] = numeric_limits<double>::quiet_NaN();
+                measure[msr][cell] = std::numeric_limits<double>::quiet_NaN();
             }
         }
     }
@@ -63,7 +63,7 @@ public:
      *
      * @return The index of the cell.
      */
-    int get_cell_index(vector<int> indices) const
+    int get_cell_index(std::vector<int> indices) const
     {
         int cell = 0;
         for (int dim = 0; dim < n_dimensions; ++dim) {
@@ -82,7 +82,7 @@ public:
      *
      * @return null if it fails, else the measure address.
      */
-    double * get_measure_address(int measure_index, vector<int> indices)
+    double * get_measure_address(int measure_index, std::vector<int> indices)
     {
         assert(measure_index < n_measures); // logic guarantee
         if (indices.size() != shape.size()) {
@@ -120,13 +120,13 @@ public:
     /**
      * The size of each dimension in the table.
      */
-    const vector<int> shape;
+    const std::vector<int> shape;
 
     /**
      * Measure storage.
      */
     double * measure[Tmeasures];            // measure[Tmeasures][Tcells];
-    forward_list<unique_ptr<double> > measure_storage;
+    std::forward_list<std::unique_ptr<double> > measure_storage;
 };
 
 /**
@@ -141,11 +141,11 @@ template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    EntityTable(initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
+    EntityTable(std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
     {
         auto it = acc_storage.before_begin();
         for (int k = 0; k < Taccumulators; k++) {
-            it = acc_storage.insert_after(it, unique_ptr<double>(new double[Tcells]));
+            it = acc_storage.insert_after(it, std::unique_ptr<double>(new double[Tcells]));
             acc[k] = it->get();
         }
     };
@@ -161,7 +161,7 @@ public:
      * Accumulator storage.
      */
     double * acc[Taccumulators];            // acc[Taccumulators][Tcells];
-    forward_list<unique_ptr<double> > acc_storage;
+    std::forward_list<std::unique_ptr<double> > acc_storage;
 };
 
 /**
@@ -178,7 +178,7 @@ class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Ta
 {
 public:
 
-    EntityTableWithObs(initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(shape)
+    EntityTableWithObs(std::initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(shape)
     {
     };
 
@@ -198,7 +198,7 @@ public:
     static const int n_collections = Tcollections;
 
     // observation collection storage
-    forward_list<double> coll[Tcells][Tcollections];
+    std::forward_list<double> coll[Tcells][Tcollections];
 };
 
 /**
@@ -211,7 +211,7 @@ template<int Tdimensions, int Tcells, int Tmeasures>
 class DerivedTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    DerivedTable(initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
+    DerivedTable(std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
     {
     };
 };
@@ -225,7 +225,7 @@ public:
  * value of the map is a pair containing the numeric table identifier and the numeric measure
  * identifier within the table.
  */
-extern const map<string, pair<int, int>> om_table_measure;
+extern const std::map<std::string, std::pair<int, int>> om_table_measure;
 
 /**
  * Get the address of a cell of a table.
@@ -241,7 +241,7 @@ extern const map<string, pair<int, int>> om_table_measure;
  *
  * @return null if it fails, else a double*.
  */
-double * om_get_table_measure_address(int table_id, int measure_id, vector<int> indices);
+double * om_get_table_measure_address(int table_id, int measure_id, std::vector<int> indices);
 
 /**
  * Interface to read a table from model code.
@@ -252,16 +252,16 @@ double * om_get_table_measure_address(int table_id, int measure_id, vector<int> 
  * @return The value of the given table cell.
  */
 template<typename ...Items>
-double GetTableValue(const string measure_name, Items... args)
+double GetTableValue(const std::string measure_name, Items... args)
 {
-    vector<int> indices = {{ args ... }};
+    std::vector<int> indices = {{ args ... }};
     // Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0
     if (0 == sizeof...(Items)) indices.clear();
     auto it = om_table_measure.find(measure_name);
     if (it == om_table_measure.end()) {
         theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to GetTableValue",
             measure_name.c_str());
-        return numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<double>::quiet_NaN();
     }
     auto pr = it->second;
     auto table_id = pr.first;
@@ -271,7 +271,7 @@ double GetTableValue(const string measure_name, Items... args)
         return *address;
     }
     else {
-        return numeric_limits<double>::quiet_NaN();
+        return std::numeric_limits<double>::quiet_NaN();
     }
 }
 
@@ -285,9 +285,9 @@ double GetTableValue(const string measure_name, Items... args)
  * @return The value of the given table cell.
  */
 template<typename ...Items>
-void SetTableValue(const string measure_name, double value, Items... args)
+void SetTableValue(const std::string measure_name, double value, Items... args)
 {
-    vector<int> indices = {{ args ... }};
+    std::vector<int> indices = {{ args ... }};
     // Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0
     if (0 == sizeof...(Items)) indices.clear();
     auto it = om_table_measure.find(measure_name);

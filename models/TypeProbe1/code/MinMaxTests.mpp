@@ -119,7 +119,7 @@ void Person::MinMaxClampTests()
     assert(e3 == e4);
     if (upper > e0) {
         if (e0 != e3) {
-            stringstream ss;
+            std::stringstream ss;
             ss << "error: e0=" << e0 << " e3=" << e3;
             ModelExit(ss.str().c_str());
         }

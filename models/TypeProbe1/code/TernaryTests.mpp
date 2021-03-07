@@ -61,7 +61,7 @@ void Person::SomeTernaryTests()
     if (a_t1 < l_i2) {
         if (t9 != a_t1) {
             std::cout << "return type of ternary is " << typeid(t9).name() << std::endl;
-            stringstream ss;
+            std::stringstream ss;
             ss << "error: t9=" << t9 << " a_t1=" << a_t1;
             ModelExit(ss.str().c_str());
         }

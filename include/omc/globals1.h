@@ -9,7 +9,7 @@
 #include <limits>
 
 // Undefined value for a table cell
-const double UNDEF_VALUE = numeric_limits<double>::quiet_NaN();
+const double UNDEF_VALUE = std::numeric_limits<double>::quiet_NaN();
 
 // The following global functions are defined in framework modules,
 // as indicated. They are mostly documented in the Modgen Developer's Guide.

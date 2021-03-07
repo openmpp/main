@@ -371,7 +371,7 @@ actor Person
 	void SomeThingThatTakesAConstDoublePointer(const double* thing);
 	void SomeThingThatTakesARef(std::vector<double>& thing);
 	void SomeThingThatTakesAConstRef(const CString& thing);
-	void SomeThingThatTakesANamespaceQualifiedConstRef(const std::basic_string<char, char_traits<char>, allocator<char>>& thing);
+	void SomeThingThatTakesANamespaceQualifiedConstRef(const std::basic_string<char, std::char_traits<char>, std::allocator<char>>& thing);
 	void SomeReallyLongName(const Some::Really::Long::Thingee& thing);
 	void SomeReallyLongModifiableName(Some::Really::Long::Thingee& thing);
 	void GlobalNamespaceRef(::GlobalThing& thing);

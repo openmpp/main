@@ -42,7 +42,7 @@ template<
     typename T2,
     typename A,
     typename B,
-    string const *NT_name,
+    std::string const *NT_name,
     void (A::*NT_side_effects)(T old_value, T new_value),
     bool NT_se_present,
     void (A::*NT_notify)(),

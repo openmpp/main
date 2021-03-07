@@ -103,7 +103,7 @@ namespace openm
         virtual int parameterSubValueIndex(const char * i_name) const = 0;
 
         /** write output result table: sub values */
-        virtual void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) = 0;
+        virtual void writeOutputTable(const char * i_name, size_t i_size, std::forward_list<std::unique_ptr<double> > & io_accValues) = 0;
 
         /** set modeling progress count and value */
         virtual void updateProgress(int i_count, double i_value = 0.0) = 0;
@@ -141,7 +141,7 @@ namespace openm
     typedef OpenmException<4000, simulationUnknownErrorMessage> SimulationException;
 
     /** read scalar parameter value or all sub-values for the current process */
-    template<typename TVal> vector<TVal> read_om_parameter(IRunBase * const i_runBase, const char * i_name)
+    template<typename TVal> std::vector<TVal> read_om_parameter(IRunBase * const i_runBase, const char * i_name)
     {
         int paramId = i_runBase->parameterIdByName(i_name);
         int allCount = i_runBase->parameterSubCount(paramId);       // number of parameter sub-values
@@ -149,16 +149,16 @@ namespace openm
 
         // storage array: parameter values for current process
         // extra parameter value for exchange between root and child process
-        vector<TVal> valueVec(selfCount);
+        std::vector<TVal> valueVec(selfCount);
         TVal extraVal;
-        bool isStr = typeid(TVal) == typeid(string);    // no default null values for string parameters
+        bool isStr = typeid(TVal) == typeid(std::string);    // no default null values for string parameters
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
 
             void * pData = &extraVal;
             if (!isStr) {
-                extraVal = numeric_limits<TVal>::quiet_NaN();   // set default null value
+                extraVal = std::numeric_limits<TVal>::quiet_NaN();   // set default null value
             }
             i_runBase->readParameter(i_name, nSub, typeid(TVal), 1, pData);
 
@@ -173,7 +173,7 @@ namespace openm
     }
 
     /** read array parameter value or all sub-values for the current process */
-    template<typename TVal> vector<unique_ptr<TVal[]>> read_om_parameter(IRunBase * const i_runBase, const char * i_name, size_t i_size)
+    template<typename TVal> std::vector<std::unique_ptr<TVal[]>> read_om_parameter(IRunBase * const i_runBase, const char * i_name, size_t i_size)
     {
         int paramId = i_runBase->parameterIdByName(i_name);
         int allCount = i_runBase->parameterSubCount(paramId);       // number of parameter sub-values
@@ -182,16 +182,16 @@ namespace openm
         if (i_size <= 0) throw ModelException("invalid size: %zd of parameter %s", i_size, i_name);
 
         // storage array: parameter values for current process
-        vector<unique_ptr<TVal[]>> valueVec(selfCount);
+        std::vector<std::unique_ptr<TVal[]>> valueVec(selfCount);
         for (auto & p : valueVec) {
             p.reset(new TVal[i_size]);
         }
 
-        unique_ptr<TVal> extraVal;  // extra parameter value for exchange between root and child process
+        std::unique_ptr<TVal> extraVal;  // extra parameter value for exchange between root and child process
         if (allCount > 1) {
             extraVal.reset(new TVal[i_size]);
         }
-        bool isStr = typeid(TVal) == typeid(string);    // no default null values for string parameters
+        bool isStr = typeid(TVal) == typeid(std::string);    // no default null values for string parameters
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
@@ -205,7 +205,7 @@ namespace openm
             }
             // set default null values and read parameter
             if (!isStr) {
-                fill(static_cast<TVal *>(pData), &(static_cast<TVal *>(pData))[i_size], numeric_limits<TVal>::quiet_NaN());
+                std::fill(static_cast<TVal *>(pData), &(static_cast<TVal *>(pData))[i_size], std::numeric_limits<TVal>::quiet_NaN());
             }
             i_runBase->readParameter(i_name, nSub, typeid(TVal), i_size, pData);
         }

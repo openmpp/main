@@ -348,7 +348,7 @@ public:
         if (output_stream.is_open()) {
             output_stream.close();
         }
-        output_stream.open(file_name.c_str(), ios_base::out | ios_base::trunc);
+        output_stream.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
         if (!output_stream.is_open()) {
             std::stringstream ss;
             ss << "Unable to open csv file '" << fname <<"' for output.";

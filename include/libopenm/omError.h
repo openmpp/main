@@ -10,13 +10,12 @@
 
 #include <cstdarg>
 #include "common/omHelper.h"
-using namespace std;
 
 namespace openm
 {
     /** openM++ exceptions */
     template <size_t maxMsgSize, const char * defaultMessage>
-    class OpenmException : public exception
+    class OpenmException : public std::exception
     {
     public:
 
@@ -68,7 +67,7 @@ namespace openm
         /** if source string exceed max size than return ellipted copy.
         * it may return pointer to shared buffer and can be used only once per error message.
         */
-        const char * ellipt(const string & i_src) { return elliptString(i_src.c_str(), maxItemSize, msgItem); }
+        const char * ellipt(const std::string & i_src) { return elliptString(i_src.c_str(), maxItemSize, msgItem); }
 
     private:
         static const size_t maxItemSize = 40;   // max size of string item inside of error message

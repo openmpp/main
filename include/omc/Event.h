@@ -210,8 +210,8 @@ public:
      */
     static void initialize_simulation_runtime()
     {
-        event_queue = new set<BaseEvent *, less_deref<BaseEvent *> > ;
-        dirty_events = new set<BaseEvent *, decltype(dirty_cmp)*>(dirty_cmp) ;
+        event_queue = new std::set<BaseEvent *, less_deref<BaseEvent *> > ;
+        dirty_events = new std::set<BaseEvent *, decltype(dirty_cmp)*>(dirty_cmp) ;
         global_time = new Time(0);
         global_event_counter = 0;
         trace_event_on = trace_event_enabled;

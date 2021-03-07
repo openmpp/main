@@ -50,7 +50,7 @@ CodeBlock AttributeSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    h += "static const string om_name_" + name + ";";
+    h += "static const std::string om_name_" + name + ";";
 
     return h;
 }
@@ -61,7 +61,7 @@ CodeBlock AttributeSymbol::cxx_definition_agent()
     CodeBlock c = super::cxx_definition_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += "const string " + pp_agent->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
+    c += "const std::string " + pp_agent->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
 
     return c;
 }

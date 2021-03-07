@@ -264,9 +264,9 @@ void CodeGen::do_model_strings()
     c += "};";
     c += "";
     c += "// get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)";
-    c += "static list<string> langLst = theLog->getLanguages();";
+    c += "static std::list<std::string> langLst = theLog->getLanguages();";
     c += "";
-    c += "for (const string & lang : langLst) {";
+    c += "for (const std::string & lang : langLst) {";
     c += "auto search = string_map.find(lang + \"@\" + string_name);";
     c += "if (search != string_map.end()) {";
     c += "return search->second.c_str();";
@@ -889,11 +889,11 @@ void CodeGen::do_agents()
 
     c += "void BaseAgent::initialize_simulation_runtime()";
     c += "{";
-    c += "agents = new list<BaseAgent *>;";
+    c += "agents = new std::list<BaseAgent *>;";
     for ( auto agent : Symbol::pp_all_agents ) {
         // e.g. Person::zombies = new forward_list<Person *>;";
-        c += agent->name + "::zombies = new forward_list<" + agent->name + " *>;";
-        c += agent->name + "::available = new forward_list<" + agent->name + " *>;";
+        c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
+        c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
     }
     c += "}";
     c += "";
@@ -991,7 +991,7 @@ void CodeGen::do_groups()
 
 void CodeGen::do_table_interface()
 {
-    c += "const map<string, pair<int, int>> om_table_measure = {";
+    c += "const std::map<std::string, std::pair<int, int>> om_table_measure = {";
     for (auto table : Symbol::pp_all_tables) {
         for (auto measure : table->pp_measures) {
             auto key = table->name + "." + measure->measure_name;
@@ -1003,7 +1003,7 @@ void CodeGen::do_table_interface()
     c += "};";
     c += "";
 
-    c += "double * om_get_table_measure_address(int table_id, int measure_id, vector<int> indices)";
+    c += "double * om_get_table_measure_address(int table_id, int measure_id, std::vector<int> indices)";
     c += "{";
     c += "switch (table_id) {";
     for (auto table : Symbol::pp_all_tables) {
@@ -1022,10 +1022,10 @@ void CodeGen::do_table_interface()
 void CodeGen::do_event_queue()
 {
     c += "// definition of event_queue (declaration in Event.h)";
-    c += "thread_local set<BaseEvent *, less_deref<BaseEvent *> > *BaseEvent::event_queue = nullptr;";
+    c += "thread_local std::set<BaseEvent *, less_deref<BaseEvent *> > *BaseEvent::event_queue = nullptr;";
     c += "";
     c += "// definition of dirty_events (declaration in Event.h)";
-    c += "thread_local set<BaseEvent *, decltype(BaseEvent::dirty_cmp)* > *BaseEvent::dirty_events = nullptr;";
+    c += "thread_local std::set<BaseEvent *, decltype(BaseEvent::dirty_cmp)* > *BaseEvent::dirty_events = nullptr;";
     c += "";
     c += "// definition of global_event_counter (declaration in Event.h)";
     c += "thread_local big_counter BaseEvent::global_event_counter;";
@@ -1034,7 +1034,7 @@ void CodeGen::do_event_queue()
     c += "thread_local Time *BaseEvent::global_time = nullptr;";
     c += "";
     c += "// definition of active agent list (declaration in Agent.h)";
-    c += "thread_local list<BaseAgent *> *BaseAgent::agents = nullptr;";
+    c += "thread_local std::list<BaseAgent *> *BaseAgent::agents = nullptr;";
     c += "";
 }
 

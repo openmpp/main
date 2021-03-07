@@ -11,8 +11,6 @@
 #include <chrono>
 #include "common/omHelper.h"   // define IRowBase
 
-using namespace std;
-
 namespace openm
 {
     /** model exit status */
@@ -103,10 +101,10 @@ namespace openm
         double progressValue;
 
         /** process start time */
-        chrono::system_clock::time_point startTime;
+        std::chrono::system_clock::time_point startTime;
 
         /** last update time */
-        chrono::system_clock::time_point updateTime;
+        std::chrono::system_clock::time_point updateTime;
 
         /** initialize model run state data with default values */
         RunState(void);
@@ -124,10 +122,10 @@ namespace openm
         static bool isShutdownOrFinal(ModelStatus i_status) { return i_status == ModelStatus::shutdown || isFinal(i_status); }
 
         /** convert run status to model status code */
-        static ModelStatus fromRunStatus(const string & i_runStatus);
+        static ModelStatus fromRunStatus(const std::string & i_runStatus);
 
         /** convert model status to run status code */
-        static string toRunStatus(ModelStatus i_modelStatus);
+        static std::string toRunStatus(ModelStatus i_modelStatus);
 
         /** set model status if not already set as one of final status values */
         ModelStatus setStatus(ModelStatus i_status);
