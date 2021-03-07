@@ -12,8 +12,6 @@
 #include "omc/Entity.h"
 #include "omc/Event.h"
 
-using namespace std;
-
 template <class A>
 class entity_ptr
 {

@@ -359,7 +359,7 @@ CodeBlock ParameterSymbol::cxx_definition_global_scenario_debug(void)
         // static vector<unique_ptr<double[]>> om_param_UnionDurationBaseline;
         // static thread_local double om_value_UnionDurationBaseline[2][6];
         // thread_local const double (& UnionDurationBaseline)[2][6] = om_value_UnionDurationBaseline;
-        c += "static vector<unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
+        c += "static std::vector<std::unique_ptr<" + cxx_type_of_parameter() + "[]>> " + alternate_name() + ";";
         c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + cxx_dimensions() + ";";
         c += "thread_local const " + cxx_type_of_parameter() + " (& " + name + ")" + cxx_dimensions() + " = " + "om_value_" + name + ";";
     }
@@ -367,7 +367,7 @@ CodeBlock ParameterSymbol::cxx_definition_global_scenario_debug(void)
         // static vector<int> om_param_startSeed;
         // static thread_local int om_value_startSeed;
         // thread_local const int & startSeed = om_value_startSeed;
-        c += "static vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
+        c += "static std::vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
         c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
         c += "thread_local const " + cxx_type_of_parameter() + " & " + name + " = om_value_" + name + ";";
     }

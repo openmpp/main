@@ -9,8 +9,6 @@
 #pragma once
 #include "omc/integer_counter.h"
 
-using namespace std;
-
 /**
 * A range.
 *

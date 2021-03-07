@@ -170,9 +170,9 @@ void CodeGen::do_preamble()
     z += "#include \"omc/cumrate.h\"";
     z += "#include \"om_types1.h\"";
 	z += "";
-    z += "const double QNAN_F = numeric_limits<float>::quiet_NaN();";
-    z += "const double QNAN_D = numeric_limits<double>::quiet_NaN();";
-    z += "const double QNAN_LD = numeric_limits<long double>::quiet_NaN();";
+    z += "const double QNAN_F = std::numeric_limits<float>::quiet_NaN();";
+    z += "const double QNAN_D = std::numeric_limits<double>::quiet_NaN();";
+    z += "const double QNAN_LD = std::numeric_limits<long double>::quiet_NaN();";
     z += "";
 }
 

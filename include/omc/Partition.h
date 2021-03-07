@@ -13,8 +13,6 @@
 #include "omc/integer_counter.h"
 #include "om_types0.h"  // for real
 
-using namespace std;
-
 /**
     * A partition.
     *
@@ -28,9 +26,9 @@ using namespace std;
 template<
     typename T,
     T T_size,
-    const array<real, T_size> &T_lower,
-    const array<real, T_size> &T_upper,
-    const map<real, T> &T_splitter
+    const std::array<real, T_size> &T_lower,
+    const std::array<real, T_size> &T_upper,
+    const std::map<real, T> &T_splitter
 >
 class Partition
 {
@@ -163,13 +161,13 @@ public:
     }
 
     // return reference to array containing lower value of intervals
-    static const array<real, T_size> lower_bounds()
+    static const std::array<real, T_size> lower_bounds()
     {
         return T_lower;
     }
 
     // return reference to array containing upper value of intervals
-    static const array<real, T_size> upper_bounds()
+    static const std::array<real, T_size> upper_bounds()
     {
         return T_upper;
     }

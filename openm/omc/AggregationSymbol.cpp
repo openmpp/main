@@ -131,7 +131,7 @@ CodeBlock AggregationSymbol::cxx_declaration_global()
     string from_type = pp_from->name;
     string to_type = pp_to->name;
     h += doxygen_short("Helper map to implement the aggregation from " + from_type + " to " + to_type);
-    h += "extern const map<" + from_type +", " + to_type + "> " + name + ";";
+    h += "extern const std::map<" + from_type +", " + to_type + "> " + name + ";";
     if (pp_generate_To) {
         h += doxygen_short("Map an enumerator in " + from_type + " to the corresponding enumerator in " + to_type);
         h += to_type + " " + pp_helper_name() + "(" + from_type + " level);";
@@ -150,7 +150,7 @@ CodeBlock AggregationSymbol::cxx_definition_global()
     string from_type = pp_from->name;
     string to_type = pp_to->name;
     string helper_name = from_type + "_To_" + to_type; // name of the generated XX_To_YY function
-    c += "const map<" + from_type +", " + to_type + "> " + name + " = {";
+    c += "const std::map<" + from_type +", " + to_type + "> " + name + " = {";
     for (auto from_enumerator : pp_from->pp_enumerators) {
         auto element = pp_enumerator_map.find(from_enumerator);
         assert(element != pp_enumerator_map.end()); // guarantee - aggregation validated

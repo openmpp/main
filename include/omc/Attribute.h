@@ -8,8 +8,6 @@
 
 #pragma once
 
-using namespace std;
-
 /**
  * Base template for attributes.
  * 

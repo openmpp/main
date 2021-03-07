@@ -10,8 +10,6 @@
 
 #include "entity_ptr.h"
 
-using namespace std;
-
 /**
  * Template for multilink agent member.
  * 

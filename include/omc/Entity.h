@@ -14,8 +14,6 @@
 #include "globals0.h" // for ModelExit
 #include "om_types0.h" // for Time
 
-using namespace std;
-
 /**
  * Base agent.
  */
@@ -313,12 +311,12 @@ private:
     /**
      * The iterator of this agent in BaseAgent::agents.
      */
-    list<BaseAgent *>::iterator iter_in_agents;
+    std::list<BaseAgent *>::iterator iter_in_agents;
 
     /**
      * Active agents.
      */
-    static thread_local list<BaseAgent *> *agents;
+    static thread_local std::list<BaseAgent *> *agents;
 };
 
 /**
@@ -373,8 +371,8 @@ public:
         }
     }
 
-    static thread_local forward_list<A *> *zombies;
-    static thread_local forward_list<A *> *available;
+    static thread_local std::forward_list<A *> *zombies;
+    static thread_local std::forward_list<A *> *available;
 
 };
 
@@ -384,12 +382,12 @@ public:
 */
 
 template<typename A>
-thread_local forward_list<A *> *Agent<A>::zombies;
+thread_local std::forward_list<A *> *Agent<A>::zombies;
 
 /**
 * Agent available list (definition)
 */
 
 template<typename A>
-thread_local forward_list<A *> *Agent<A>::available;
+thread_local std::forward_list<A *> *Agent<A>::available;
 

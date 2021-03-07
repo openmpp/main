@@ -26,8 +26,6 @@
 #include <climits>
 #include <vector>
 
-using namespace std;
-
 // define max size of file path
 #ifdef PATH_MAX
     #define OM_PATH_MAX (FILENAME_MAX < PATH_MAX ? FILENAME_MAX : PATH_MAX)
@@ -53,16 +51,16 @@ using namespace std;
 namespace openm
 {
     /** convert string to lower case */
-    extern void toLower(string & io_str, const locale & i_locale = locale(""));
+    extern void toLower(std::string & io_str, const std::locale & i_locale = std::locale(""));
 
     /** convert string to lower case */
-    extern void toLower(char * io_str, const locale & i_locale = locale(""));
+    extern void toLower(char * io_str, const std::locale & i_locale = std::locale(""));
 
     /** convert string to upper case */
-    extern void toUpper(string & io_str, const locale & i_locale = locale(""));
+    extern void toUpper(std::string & io_str, const std::locale & i_locale = std::locale(""));
 
     /** convert string to upper case */
-    extern void toUpper(char * io_str, const locale & i_locale = locale(""));
+    extern void toUpper(char * io_str, const std::locale & i_locale = std::locale(""));
 
     /** case neutral string comparison */
     extern int compareNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
@@ -71,49 +69,49 @@ namespace openm
     extern bool equalNoCase(const char * i_left, const char * i_right, size_t i_length = 0);
 
     /** check if string start with i_start, using case neutral string comparison */
-    extern bool startWithNoCase(const string & i_str, const char * i_start);
+    extern bool startWithNoCase(const std::string & i_str, const char * i_start);
 
     /** check if string end with i_end, using case neutral string comparison */
-    extern bool endWithNoCase(const string & i_str, const char * i_end);
+    extern bool endWithNoCase(const std::string & i_str, const char * i_end);
 
     /** trim leading blank and space characters */
-    extern string trimLeft(const string & i_str, const locale & i_locale = locale(""));
+    extern std::string trimLeft(const std::string & i_str, const std::locale & i_locale = std::locale(""));
 
     /** trim trailing blank and space characters */
-    extern string trimRight(const string & i_str, const locale & i_locale = locale(""));
+    extern std::string trimRight(const std::string & i_str, const std::locale & i_locale = std::locale(""));
 
     /** trim leading and trailing blank and space characters */
-    extern string trim(const string & i_str, const locale & i_locale = locale(""));
+    extern std::string trim(const std::string & i_str, const std::locale & i_locale = std::locale(""));
 
     /** replace all <cr> or <lf> with blank space character */
-    extern void blankCrLf(string & io_str);
+    extern void blankCrLf(std::string & io_str);
 
     /** make quoted string using sql single ' quote by default, ie: 'O''Brien' */
-    extern const string toQuoted(const string & i_str, char i_quote = '\'');
+    extern const std::string toQuoted(const std::string & i_str, char i_quote = '\'');
 
     /** make unquoted string using sql single ' quote by default, ie: 'O''Brien' into O'Brien */
-    extern const string toUnQuoted(const string & i_str, char i_quote = '\'', const locale & i_locale = locale(""));
+    extern const std::string toUnQuoted(const std::string & i_str, char i_quote = '\'', const std::locale & i_locale = std::locale(""));
 
     /** convert float type to string: exist to fix std::to_string conversion losses. */
-    extern const string toString(double i_val);
+    extern const std::string toString(double i_val);
 
     /** replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores. */
-    const string toAlphaNumeric(const string & i_str, int i_maxSize = 0);
+    const std::string toAlphaNumeric(const std::string & i_str, int i_maxSize = 0);
 
     /** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
-    const string cleanPathChars(const string & i_str, int i_maxSize = 0);
+    const std::string cleanPathChars(const std::string & i_str, int i_maxSize = 0);
 
     /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
-    extern const string replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue);
+    extern const std::string replaceAll(const std::string & i_src, const char * i_oldValue, const char * i_newValue);
 
     /** make date-time string, ie: 2012-08-17 16:04:59.148 */
-    extern const string makeDateTime(const chrono::system_clock::time_point & i_time);
+    extern const std::string makeDateTime(const std::chrono::system_clock::time_point & i_time);
 
     /** make timestamp string, ie: 2012_08_17_16_04_59_148 */
-    extern const string makeTimeStamp(const chrono::system_clock::time_point & i_time);
+    extern const std::string makeTimeStamp(const std::chrono::system_clock::time_point & i_time);
 
     /** make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148 */
-    extern const string toDateTimeString(const string & i_timestamp);
+    extern const std::string toDateTimeString(const std::string & i_timestamp);
 
     /** return number of milliseconds since epoch to measure intervals */
     extern int64_t getMilliseconds(void);
@@ -125,13 +123,13 @@ namespace openm
     extern const char * elliptString(const char * i_src, size_t i_size, char * io_buffer);
 
     /** normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8" */
-    extern const string normalizeLanguageName(const string & i_srcLanguage);
+    extern const std::string normalizeLanguageName(const std::string & i_srcLanguage);
 
     /** normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
-    extern const list<string> splitLanguageName(const string & i_srcLanguage);
+    extern const std::list<std::string> splitLanguageName(const std::string & i_srcLanguage);
 
     /**  get user prefered locale name: en-CA en-CA or empty "" string on error */
-    extern const string getDefaultLocaleName(void);
+    extern const std::string getDefaultLocaleName(void);
 
     /**
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).
@@ -143,8 +141,8 @@ namespace openm
     * @param[in] i_isUnquote    if true then do "unquote ""csv"" ", default: false.
     * @param[in] i_quote        quote character, default: sql single ' quote.
     */
-    extern list<string> splitCsv(
-        const string & i_values, const char * i_delimiters = ",", bool i_isUnquote = false, char i_quote = '\''
+    extern std::list<std::string> splitCsv(
+        const std::string & i_values, const char * i_delimiters = ",", bool i_isUnquote = false, char i_quote = '\''
     );
 
     /**
@@ -160,27 +158,27 @@ namespace openm
     * @param[in] i_locale         locale to trim space characters, defaut: user default locale.
     */
     extern void splitCsv(
-        const string & i_values, 
-        list<string> & io_resultLst, 
+        const std::string & i_values,
+        std::list<std::string> & io_resultLst,
         const char * i_delimiters = ",", 
         bool i_isUnquote = false, 
         char i_quote = '\'', 
-        const locale & i_locale = locale(""));
+        const std::locale & i_locale = std::locale(""));
 
     /** case neutral less comparator for strings */
     struct LessNoCase
     {
-        bool operator() (const string & i_left, const string & i_right) const
+        bool operator() (const std::string & i_left, const std::string & i_right) const
         {
             return compareNoCase(i_left.c_str(), i_right.c_str()) < 0;
         }
     };
 
     /** map of key-value strings with case neutral key search */
-    typedef map<string, string, LessNoCase> NoCaseMap;
+    typedef std::map<std::string, std::string, LessNoCase> NoCaseMap;
 
     /** set of strings with case neutral key search */
-    typedef set<string, LessNoCase> NoCaseSet;
+    typedef std::set<std::string, LessNoCase> NoCaseSet;
 
     /** db-row abstract base */
     struct IRowBase
@@ -189,13 +187,13 @@ namespace openm
     };
 
     /** unique pointer to db row */
-    typedef unique_ptr<IRowBase> IRowBaseUptr;
+    typedef std::unique_ptr<IRowBase> IRowBaseUptr;
 
     /** db rows: vector of unique pointers to db row */
-    typedef vector<IRowBaseUptr> IRowBaseVec;
+    typedef std::vector<IRowBaseUptr> IRowBaseVec;
 
     /** db rows: list of unique pointers to db row */
-    typedef list<IRowBaseUptr> IRowBaseList;
+    typedef std::list<IRowBaseUptr> IRowBaseList;
 
     /** final model run state public interface: thread safe */
     struct IFinalState
@@ -225,7 +223,7 @@ namespace openm
             cleanup(i_cleanupFnc)
         { }
 
-        /** release resource if exit guad hold() was not called */
+        /** release resource if exit guard hold() was not called */
         ~exit_guard(void) noexcept
         {
             try {

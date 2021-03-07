@@ -19,9 +19,6 @@
 #include "omc/less_deref.h"
 #include "omc/entity_ptr.h"
 
-using namespace std;
-
-
 /** Comparison operator for link<E> */
 template<typename E>
 struct linkE_comp {

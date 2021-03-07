@@ -13,8 +13,6 @@
 #include <numeric>
 #include <memory>
 
-using namespace std;
-
 /**
  * A table.
  *

@@ -14,7 +14,6 @@
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
-using namespace std;
 
 #include "omModelRunState.h"
 #include "omLog.h"

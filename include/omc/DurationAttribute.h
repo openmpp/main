@@ -10,8 +10,6 @@
 
 #include "Attribute.h"
 
-using namespace std;
-
 /**
  * Template for duration attributes.
  * 

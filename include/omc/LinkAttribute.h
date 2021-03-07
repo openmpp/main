@@ -11,8 +11,6 @@
 #include "Attribute.h"
 #include "entity_ptr.h"
 
-using namespace std;
-
 /**
  * Template for link attributes.
  * 

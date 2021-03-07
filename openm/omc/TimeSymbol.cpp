@@ -57,8 +57,8 @@ CodeBlock TimeSymbol::cxx_definition_global()
     // Time 'literals'
     if (is_floating() && !Symbol::option_time_infinite_is_32767) {
         string typ = token_to_string(time_type);
-        c += "const Time_t time_infinite = numeric_limits<" + typ + ">::infinity();";
-        c += "const Time_t TIME_INFINITE = numeric_limits<" + typ + ">::infinity(); // for Modgen compatibility";
+        c += "const Time_t time_infinite = std::numeric_limits<" + typ + ">::infinity();";
+        c += "const Time_t TIME_INFINITE = std::numeric_limits<" + typ + ">::infinity(); // for Modgen compatibility";
     }
     else {
         c += "const Time_t time_infinite = 32767;";
@@ -66,8 +66,8 @@ CodeBlock TimeSymbol::cxx_definition_global()
     }
     if (is_floating() && !Symbol::option_time_undef_is_minus_one) {
         string typ = token_to_string(time_type);
-        c += "const Time_t time_undef = numeric_limits<" + typ + ">::quiet_NaN();";
-        c += "const Time_t TIME_UNDEF = numeric_limits<" + typ + ">::quiet_NaN(); // for Modgen compatibility";
+        c += "const Time_t time_undef = std::numeric_limits<" + typ + ">::quiet_NaN();";
+        c += "const Time_t TIME_UNDEF = std::numeric_limits<" + typ + ">::quiet_NaN(); // for Modgen compatibility";
     }
     else {
         c += "const Time_t time_undef = -1;";
@@ -102,11 +102,11 @@ string TimeSymbol::format_for_storage(const Constant & k) const
             // using max instead of infinity because it must be float value and not 'inf' string
             switch (time_type) {
             case token::TK_float:
-                return to_string(numeric_limits<float>::max());
+                return to_string(std::numeric_limits<float>::max());
             case token::TK_double:
-                return to_string(numeric_limits<double>::max());
+                return to_string(std::numeric_limits<double>::max());
             case token::TK_ldouble:
-                return to_string(numeric_limits<long double>::max());
+                return to_string(std::numeric_limits<long double>::max());
             default:
                 return k.value();    // unexpected Time floating type
             }

@@ -17,8 +17,6 @@
 #include "om_types0.h" // for Time
 
 
-using namespace std;
-
 // for testing
 #define OPTIMIZE_DISABLED_EVENTS 1
 

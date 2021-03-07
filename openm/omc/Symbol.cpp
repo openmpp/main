@@ -1770,8 +1770,8 @@ const size_t Symbol::storage_size(token_type tok)
  */
 
 #define OST_HELPER(TYPE) \
-if ( numeric_limits<TYPE>::min() <= min_value \
-  && numeric_limits<TYPE>::max() >= max_value \
+if ( std::numeric_limits<TYPE>::min() <= min_value \
+  && std::numeric_limits<TYPE>::max() >= max_value \
   && sizeof(TYPE) < best_size) { \
     best_type = token::TK_##TYPE; \
     best_size = sizeof(TYPE); \

@@ -90,11 +90,11 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
     h += doxygen("Partition: " + name);
 
     // lower bounds of intervals in partition
-    h += "extern const array<real, " + to_string(pp_size()) + "> om_" + name + "_lower;";
+    h += "extern const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_lower;";
     // upper bounds of intervals in partition
-    h += "extern const array<real, " + to_string(pp_size()) + "> om_" + name + "_upper;";
+    h += "extern const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_upper;";
     // splitter map for partition
-    h += "extern const map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter;";
+    h += "extern const std::map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter;";
 
     h += "typedef Partition<" + token_to_string(storage_type) + ", "
         + to_string(pp_size()) + ", "
@@ -121,7 +121,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     int index;  // index of interval in partition
 
     h += "// lower bounds of intervals in partition";
-    h += "const array<real, " + to_string(pp_size()) + "> om_" + name + "_lower = {";
+    h += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_lower = {";
     index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         if (index > 0) {
@@ -138,7 +138,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     h += "};";
 
     h += "// upper bounds of intervals in partition";
-    h += "const array<real, " + to_string(pp_size()) + "> om_" + name + "_upper = {";
+    h += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_upper = {";
     index = 0;
     for (auto enumerator : pp_enumerators) {
         if (index < (pp_size() - 1)) {
@@ -155,7 +155,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     h += "};";
 
     h += "// splitter map for partition";
-    h += "const map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter = {";
+    h += "const std::map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter = {";
     index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);

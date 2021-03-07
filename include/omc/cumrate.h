@@ -13,8 +13,6 @@
 #include <functional>
 #include <array>
 
-using namespace std;
-
 /**
  * A finite discrete distribution.
  * 
@@ -115,12 +113,12 @@ public:
     /**
      * The value corresponding to each cumulated probability
      */
-    array<size_t,N> value;
+    std::array<size_t,N> value;
 
     /**
      * The cumulated probabilities (partial sums)
      */
-    array<double,N> cumprob;
+    std::array<double,N> cumprob;
 
     /**
      * true if distribution has been initialized
