@@ -17,17 +17,18 @@ set -m
 
 # set openM++ root folder 
 #
-self=$(basename $0)
+self="$(basename "$0")"
+sd="$(dirname "$0")"
 
 if [ -z "$OM_ROOT" ] ;
 then
 
   echo "Set openM++ root directory: OM_ROOT"
 
-  if [ -x "${self}" ] ;
+  if [ -d "${sd}/.." ] ;
   then
-    echo "pushd .."
-    pushd ..
+    echo pushd "${sd}/.."
+    pushd "${sd}/.."
   fi
   
   OM_ROOT="$PWD"
@@ -52,7 +53,7 @@ export OM_ROOT="$PWD"
 
 # check if OM_ROOT is openM++ root
 #
-if [ ! -x "bin/oms" ] || [ ! -d "log" ] || [ ! -d "models/bin" ] ;
+if [ ! -x "bin/oms" ] || [ ! -d "html" ] || [ ! -d "models/bin" ] || [ ! -d "log" ] ;
 then
   echo "ERROR: openM++ UI not found at: $OM_ROOT"
   echo -n "Press Enter to exit..."
