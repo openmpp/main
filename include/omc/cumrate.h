@@ -42,10 +42,10 @@ public:
         is_initialized = false;
 
         // initialize the permutation vector
-        iota(value.begin(), value.end(), 0);
+        std::iota(value.begin(), value.end(), 0);
 
         // determine the permutation required to sort the frequencies in descending order, breaking ties using the value of the index
-        sort(
+        std::sort(
                 value.begin(),
                 value.end(),
                 [freq](size_t a, size_t b) {
@@ -96,12 +96,12 @@ public:
             return value[0];
         }
 
-        auto it = lower_bound(
+        auto it = std::lower_bound(
                    cumprob.begin(),
                    cumprob.end(),
                    uniform
         );
-        size_t index = distance(cumprob.begin(), it);
+        size_t index = std::distance(cumprob.begin(), it);
         return value[index];
     }
 

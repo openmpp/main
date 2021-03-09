@@ -212,27 +212,27 @@ private:
 template<
     typename T,
     T T_size,
-    const array<real, T_size> &T_lower,
-    const array<real, T_size> &T_upper,
-    const map<real, T> &T_splitter
+    const std::array<real, T_size> &T_lower,
+    const std::array<real, T_size> &T_upper,
+    const std::map<real, T> &T_splitter
 >
 const T Partition<T, T_size, T_lower, T_upper, T_splitter>::min = 0;
 
 template<
     typename T,
     T T_size,
-    const array<real, T_size> &T_lower,
-    const array<real, T_size> &T_upper,
-    const map<real, T> &T_splitter
+    const std::array<real, T_size> &T_lower,
+    const std::array<real, T_size> &T_upper,
+    const std::map<real, T> &T_splitter
 >
 const T Partition<T, T_size, T_lower, T_upper, T_splitter>::max = T_size - 1;
 
 template<
     typename T,
     T T_size,
-    const array<real, T_size> &T_lower,
-    const array<real, T_size> &T_upper,
-    const map<real, T> &T_splitter
+    const std::array<real, T_size> &T_lower,
+    const std::array<real, T_size> &T_upper,
+    const std::map<real, T> &T_splitter
 >
 const int Partition<T, T_size, T_lower, T_upper, T_splitter>::size = T_size;
 #else // defined(_MSC_VER)

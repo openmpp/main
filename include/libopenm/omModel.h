@@ -76,7 +76,7 @@ namespace openm
         virtual bool isUseSubValue(int i_subId) const = 0;
 
         /** read model parameter */
-        virtual void readParameter(const char * i_name, int i_subId, const type_info & i_type, size_t i_size, void * io_valueArr) = 0;
+        virtual void readParameter(const char * i_name, int i_subId, const std::type_info & i_type, size_t i_size, void * io_valueArr) = 0;
     };
 
     /** model sub-value run public interface */
@@ -116,7 +116,7 @@ namespace openm
         const char * name;
 
         /** value type */
-        const type_info & typeOf;
+        const std::type_info & typeOf;
 
         /** parameter size (number of parameter values) */
         const size_t size;

@@ -48,7 +48,7 @@ namespace omr {
             T prev = 0;
             for (size_t k = 0; k < dim0_size; ++k) {
                 auto& value = target[idx];
-                if (isnan(value)) {
+                if (std::isnan(value)) {
                     if (k == 0) {
                         std::stringstream ss;
                         ss << "error : Cannot extend parameter '" << name << "' when first value is missing ";
