@@ -247,6 +247,12 @@ namespace openm
         /** check by name if output table suppressed */
         bool isSuppressed(const char * i_name) const { return isSuppressed(tableIdByName(i_name)); }
 
+        /** check by id if output table suppressed */
+        bool isSuppressed(int i_tableId) const
+        {
+            return binary_search(tableIdSuppressArr.cbegin(), tableIdSuppressArr.cend(), i_tableId);
+        }
+
     protected:
         int modelId;                        // model id in database
         unique_ptr<MetaHolder> metaStore;   // metadata tables
@@ -282,12 +288,6 @@ namespace openm
 
         /** insert new or update existing argument option. */
         void setArgOpt(const string & i_key, const string & i_value) { argStore.args[i_key] = i_value; }
-
-        /** check by id if output table suppressed */
-        bool isSuppressed(int i_tableId) const
-        {
-            return binary_search(tableIdSuppressArr.cbegin(), tableIdSuppressArr.cend(), i_tableId);
-        }
 
         // enum to indicate what kind of sub id's selected: single, default, range or list
         enum class KindSubIds : int

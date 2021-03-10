@@ -637,18 +637,28 @@ void CodeGen::do_ModelStartup()
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
         c += "assert(!" + et->cxx_instance + "); ";
-        c += "if (!i_model->isSuppressed(\"" + et->name + "\")) {";
-        c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
-        c += "}";
+        if (!et->is_internal) {
+            c += "if (!i_model->isSuppressed(\"" + et->name + "\")) {";
+            c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
+            c += "}";
+        }
+        else {
+            c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
+        }
     }
     c += "";
 
     c += "// Derived table instantiation";
     for (auto dt : Symbol::pp_all_derived_tables) {
         c += "assert(!" + dt->cxx_instance + "); ";
-        c += "if (!i_model->isSuppressed(\"" + dt->name + "\")) {";
-        c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
-        c += "}";
+        if (!dt->is_internal) {
+            c += "if (!i_model->isSuppressed(\"" + dt->name + "\")) {";
+            c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
+            c += "}";
+        }
+        else {
+            c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
+        }
     }
     c += "";
 
