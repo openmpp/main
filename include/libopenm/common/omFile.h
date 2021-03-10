@@ -15,10 +15,10 @@ namespace openm
     /** return true if file or directory exists */
     extern bool isFileExists(const char * i_filePath);
 
-    /** return base directory of the path or empty string if no / or \ in the path. */
+    /** return base directory of the path or empty string if path is "." or ".." */
     extern const std::string baseDirOf(const std::string & i_path);
 
-    /** return base directory of the path or empty string if no / or \ in the path. */
+    /** return base directory of the path or empty string if path is "." or ".." */
     extern const std::string baseDirOf(const char * i_path);
 
     /** make path from current working directory, executable name and specified extension. */
