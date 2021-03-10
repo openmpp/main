@@ -203,6 +203,18 @@ run:
 		-OpenM.RunName "Base_run_and_partial_input_set" \
 		-EN.RunDescription "Parameters from base run and from partial input set" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.TaskName taskOne \
+		-OpenM.TaskRunName "Task Run with Suppressed Tables" \
+		-OpenM.SubValues 2 -OpenM.Threads 2 \
+		-Suppress.ageSexIncome true -SuppressGroup.AdditionalTables true \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.TaskName taskOne \
+		-OpenM.TaskRunName "Task Run with NotSuppressed Tables" \
+		-OpenM.SubValues 2 -OpenM.Threads 2 \
+		-NotSuppress.ageSexIncome true -NotSuppressGroup.AdditionalTables true \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:

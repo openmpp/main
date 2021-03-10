@@ -41,11 +41,6 @@ thread_local bool * om_value_isOldAge = nullptr;
 
 // model output tables
 //
-const char * SalarySex::NAME = "salarySex";
-const char * FullAgeSalary::NAME = "fullAgeSalary";
-const char * AgeSexIncome::NAME = "ageSexIncome";
-const char * SeedOldAge::NAME = "seedOldAge";
-
 thread_local unique_ptr<SalarySex> theSalarySex;         // salary by sex
 thread_local unique_ptr<FullAgeSalary> theFullAgeSalary; // full time by age by salary bracket
 thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;   // age by sex income
@@ -94,15 +89,16 @@ void ModelStartup(IModel * const i_model)
     // parameters ready now and can be used by the model
 
     // clear existing output table(s) - release memory if allocated by previous run
-    theSalarySex.reset(new SalarySex());
-    theFullAgeSalary.reset(new FullAgeSalary());
-    theAgeSexIncome.reset(new AgeSexIncome());
-    theSeedOldAge.reset(new SeedOldAge());
+    if (!i_model->isSuppressed(SalarySex::NAME)) theSalarySex.reset(new SalarySex());
+    if (!i_model->isSuppressed(FullAgeSalary::NAME)) theFullAgeSalary.reset(new FullAgeSalary());
+    if (!i_model->isSuppressed(AgeSexIncome::NAME)) theAgeSexIncome.reset(new AgeSexIncome());
+    if (!i_model->isSuppressed(SeedOldAge::NAME)) theSeedOldAge.reset(new SeedOldAge());
 
     // allocate and initialize new output table(s)
-    theSalarySex->initialize_accumulators();
-    theFullAgeSalary->initialize_accumulators();
-    theSeedOldAge->initialize_accumulators();
+    if (theSalarySex) theSalarySex->initialize_accumulators();
+    if (theFullAgeSalary) theFullAgeSalary->initialize_accumulators();
+    if (theAgeSexIncome) theAgeSexIncome->initialize_accumulators();
+    if (theSeedOldAge) theSeedOldAge->initialize_accumulators();
 }
 
 // Model shutdown method: write output tables
@@ -111,10 +107,15 @@ void ModelShutdown(IModel * const i_model)
     // write output result tables: salarySex and fullAgeSalary sub-value accumulators
     theLog->logMsg("Writing output tables");
 
-    i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
-    i_model->writeOutputTable(FullAgeSalary::NAME, FullAgeSalary::N_CELL, theFullAgeSalary->acc_storage);
-    i_model->writeOutputTable(AgeSexIncome::NAME, AgeSexIncome::N_CELL, theAgeSexIncome->acc_storage);
-    i_model->writeOutputTable(SeedOldAge::NAME, SeedOldAge::N_CELL, theSeedOldAge->acc_storage);
+    if (theSalarySex) i_model->writeOutputTable(SalarySex::NAME, SalarySex::N_CELL, theSalarySex->acc_storage);
+    if (theFullAgeSalary) i_model->writeOutputTable(FullAgeSalary::NAME, FullAgeSalary::N_CELL, theFullAgeSalary->acc_storage);
+    if (theAgeSexIncome) i_model->writeOutputTable(AgeSexIncome::NAME, AgeSexIncome::N_CELL, theAgeSexIncome->acc_storage);
+    if (theSeedOldAge) i_model->writeOutputTable(SeedOldAge::NAME, SeedOldAge::N_CELL, theSeedOldAge->acc_storage);
+
+    if (theSalarySex) theSalarySex.release();
+    if (theFullAgeSalary) theFullAgeSalary.release();
+    if (theAgeSexIncome) theAgeSexIncome.release();
+    if (theSeedOldAge) theSeedOldAge.release();
 }
 
 namespace openm

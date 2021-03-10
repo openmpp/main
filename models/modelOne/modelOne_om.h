@@ -65,7 +65,7 @@ public:
     static const size_t N_ACC = 2;                          // number of accumulators
     static const size_t ACC_SUM_ID = 0;                     // accumulator 0: sum
     static const size_t ACC_COUNT_ID = 1;                   // accumulator 1: count
-    static const char * NAME;                               // output table name: salarySex
+    static constexpr const char * NAME = "salarySex";       // output table name: salarySex
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
@@ -94,7 +94,7 @@ public:
     static const size_t N_CELL = N_FULL * (N_AGE + 1) * N_SALARY;   // number of cells, "age" dimension has total enabled
     static const size_t N_ACC = 1;                                  // number of accumulators
     static const size_t ACC_ID = 0;                                 // accumulator 0: only one accumulator in that table
-    static const char * NAME;                                       // output table name: fullAgeSalary
+    static constexpr const char * NAME = "fullAgeSalary";           // output table name: fullAgeSalary
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
@@ -120,11 +120,11 @@ public:
 class AgeSexIncome
 {
 public:
-    static const size_t N_CELL = N_AGE * N_SEX;     // number of cells, total emuns disabled for all dimensions
-    static const size_t N_ACC = 2;                  // number of accumulators
-    static const size_t ACC_INCOME_ID = 0;          // accumulator 0: income
-    static const size_t ACC_OLD_AGE_ID = 1;         // accumulator 1: income adjusted for old age
-    static const char * NAME;                       // output table name: ageSexIncome
+    static const size_t N_CELL = N_AGE * N_SEX;             // number of cells, total emuns disabled for all dimensions
+    static const size_t N_ACC = 2;                          // number of accumulators
+    static const size_t ACC_INCOME_ID = 0;                  // accumulator 0: income
+    static const size_t ACC_OLD_AGE_ID = 1;                 // accumulator 1: income adjusted for old age
+    static constexpr const char * NAME = "ageSexIncome";    // output table name: ageSexIncome
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
@@ -151,10 +151,10 @@ public:
 class SeedOldAge
 {
 public:
-    static const size_t N_CELL = 1;     // number of cells =1 for scalar parameter
-    static const size_t N_ACC = 1;      // number of accumulators
-    static const size_t ACC_ID = 0;     // accumulator 0: seed value
-    static const char * NAME;           // output table name: seedOldAge
+    static const size_t N_CELL = 1;                     // number of cells =1 for scalar parameter
+    static const size_t N_ACC = 1;                      // number of accumulators
+    static const size_t ACC_ID = 0;                     // accumulator 0: seed value
+    static constexpr const char * NAME = "seedOldAge";  // output table name: seedOldAge
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
