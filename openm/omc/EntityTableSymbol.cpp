@@ -562,9 +562,12 @@ void EntityTableSymbol::build_body_current_cell()
     c += "// Dimensionality of table (does not include measure dimension)";
     c += "const size_t rank = " + to_string(dimension_count()) + ";";
     c += "";
-    c += "// Size of each dimension of table (includes margin if present)";
-    c += "const std::array<size_t, rank> shape = " + cxx_shape_initializer_list() + ";";
-    c += "";
+    if (dimension_count() > 1) {
+        // suppress declaration of shape (unused) unless rank > 1 to avoid C++ compiler warning
+        c += "// Size of each dimension of table (includes margin if present)";
+        c += "const std::array<size_t, rank> shape = " + cxx_shape_initializer_list() + ";";
+        c += "";
+    }
     c += "// Dimension coordinates of current cell";
     c += "const std::array<size_t, rank> coordinates = {";
     for (auto dim : dimension_list) {
@@ -586,10 +589,10 @@ void EntityTableSymbol::build_body_current_cell()
     c += "};";
     c += "";
     c += "// Encode the dimension coordinates of the margin cell into flattened index";
-    c += "int cell = coordinates[0];";
+    c += "size_t cell = coordinates[0];";
     if (dimension_count() > 1) {
         // suppress do-nothing loop if rank 1 to avoid C++ compiler warning
-        c += "for (int j = 1; j < rank; ++j) {";
+        c += "for (size_t j = 1; j < rank; ++j) {";
         c += "cell *= shape[j];";
         c += "cell += coordinates[j];";
         c += "}";
@@ -689,36 +692,38 @@ void EntityTableSymbol::build_body_push_increment()
         c += "";
         c += "// The margin cells";
         c += "{";
-        c += "// Dimension coordinates of the body cell being incremented";
-        c += "std::array<size_t, rank> body_coordinates;";
-        c += "// Decode dimension coordinates of the body cell";
-        c += "for (int j = rank - 1, w = cell_in; j >= 0; --j) {";
-        c += "body_coordinates[j] = w % shape[j];";
-        c += "w /= shape[j];";
-        c += "}";
-        c += "// Working coordinates of a margin cell";
-        c += "std::array<size_t, rank> margin_coordinates;";
-        c += "for (int combo = 1; combo <= margin_combos; ++combo) {";
-        c += "// The binary bits of combo select the margin dimensions for the combination.";
-        c += "margin_coordinates = body_coordinates;";
-        c += "int bits = combo;";
-        c += "for (int margin = 0; margin < margin_count; ++margin) {";
-        c += "// read out the bits in combo";
-        c += "if (bits & 1) {";
-        c += "// low order bit set, so replace coordinate from body cell by margin coordinate";
-        c += "margin_coordinates[margin_dims[margin]] = shape[margin_dims[margin]] - 1;";
-        c += "}";
-        c += "bits >>= 1;";
-        c += "}";
-        c += "// Encode the dimension coordinates of the margin cell into flattened index";
-        c += "int margin_cell = margin_coordinates[0];";
-        c += "for (int j = 1; j < rank; ++j) {";
-        c += "margin_cell *= shape[j];";
-        c += "margin_cell += margin_coordinates[j];";
-        c += "}";
-        c += "assert(margin_cell >= 0 && margin_cell < " + to_string(cell_count()) + "); // logic guarantee";
-        c += "cells_to_increment[combo] = margin_cell;";
-        c += "}";
+        c +=     "// Dimension coordinates of the body cell being incremented";
+        c +=     "std::array<size_t, rank> body_coordinates;";
+        c +=     "// Decode dimension coordinates of the body cell";
+        c +=     "for (int j = rank - 1, w = cell_in; j >= 0; --j) {";
+        c +=         "body_coordinates[j] = w % shape[j];";
+        c +=         "w /= shape[j];";
+        c +=     "}";
+        c +=     "// Working coordinates of a margin cell";
+        c +=     "std::array<size_t, rank> margin_coordinates;";
+        c +=     "for (size_t combo = 1; combo <= margin_combos; ++combo) {";
+        c +=         "// The binary bits of combo select the margin dimensions for the combination.";
+        c +=         "margin_coordinates = body_coordinates;";
+        c +=         "size_t bits = combo;";
+        c +=         "for (size_t margin = 0; margin < margin_count; ++margin) {";
+        c +=             "// read out the bits in combo";
+        c +=             "if (bits & 1) {";
+        c +=                 "// low order bit is 1, so replace coordinate from body cell by margin coordinate";
+        c +=                 "margin_coordinates[margin_dims[margin]] = shape[margin_dims[margin]] - 1;";
+        c +=             "}";
+        c +=             "bits >>= 1;";
+        c +=         "}";
+        c +=         "// Encode the dimension coordinates of the margin cell into flattened index";
+        c +=         "size_t margin_cell = margin_coordinates[0];";
+        if (dimension_count() > 1) { // suppress do-nothing code which would generate a warning if rank < 2
+            c +=     "for (size_t j = 1; j < rank; ++j) {";
+            c +=         "margin_cell *= shape[j];";
+            c +=         "margin_cell += margin_coordinates[j];";
+            c +=     "}";
+        }
+        c +=         "assert(margin_cell >= 0 && margin_cell < " + to_string(cell_count()) + "); // logic guarantee";
+        c +=         "cells_to_increment[combo] = margin_cell;";
+        c +=     "}";
         c += "}";
     }
 
