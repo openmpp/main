@@ -1,23 +1,24 @@
 @echo off
 
-IF "%CD%\" == "%~dp0" (
-  cd ..
-)
 IF "%OM_ROOT%" == "" (
-  set OM_ROOT=%CD%
+  set OM_ROOT=%~dp0..
 )
+
+cd /d %OM_ROOT%
+set OM_ROOT=%CD%
+echo "OM_ROOT:" %OM_ROOT%
 
 if not exist %OM_ROOT%\models\bin (
   @echo ERROR: missing models bin directory: %OM_ROOT%\models\bin
-  exit
+  pause
   EXIT 1
 )
 
 if not exist %OM_ROOT%\html (
   @echo ERROR: missing UI html directory: %OM_ROOT%\html
-  exit
+  pause
   EXIT 1
 )
 
-START "oms" /MIN bin\oms
+START "oms" /MIN %OM_ROOT%\bin\oms
 START http://localhost:4040
