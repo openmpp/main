@@ -38,7 +38,7 @@ ModelBase::ModelBase(
     const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
 
     for (const TableDicRow & tblRow : tblVec) {
-        tableDoneVec.push_back(TableDoneItem(tblRow));
+        if (!runCtrl->isSuppressed(tblRow.tableId)) tableDoneVec.push_back(TableDoneItem(tblRow));
     }
 }
 
@@ -77,8 +77,6 @@ int ModelBase::parameterSubValueIndex(const char * i_name) const
 * @param[in]     i_size         number of cells for each accumulator
 * @param[in,out] io_accValues   accumulator values
 * 
-* if table is suppressed then write into database suppressed but it is expected to have memory allocated.
-*
 * usage example: \n
 * @code
 *      // allocate model output table accumulators: [N_accumulators][N_cells]

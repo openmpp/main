@@ -5,11 +5,13 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include <filesystem>
 #include "libopenm/common/omFile.h"
 #include "helper.h"
 #include "log.h"
 
 using namespace openm;
+namespace fs = std::filesystem;
 
 #ifdef _WIN32
     #include <direct.h>
@@ -30,19 +32,16 @@ bool openm::isFileExists(const char * i_filePath)
 }
 
 /**
- * return base directory of the path or empty string if no / or \ in the path.
+ * return base directory of the path or empty string if path is "." or ".."
  *          
- * For example: C:\bin\modelOne.exe => C:\bin \n
- * It is very primitive function and results incorrect if: "special\ path" => "special
+ * For example: C:\bin\modelOne.exe => C:\bin
  */
 const string openm::baseDirOf(const string & i_path)
 {
-    string::size_type nLast = i_path.find_last_of("/\\");
-    if (nLast != string::npos) return i_path.substr(0, nLast);
-    return "";
+    return fs::path(i_path).parent_path().generic_string();
 }
 
-/** return base directory of the path or empty string if no / or \ in the path. */
+/** return base directory of the path or empty string if path is "." or ".." */
 const string openm::baseDirOf(const char * i_path)
 {
     if (i_path != nullptr) {
@@ -64,25 +63,23 @@ const string openm::baseDirOf(const char * i_path)
  */
 const string openm::makeDefaultPath(const char * i_exePath, const char * i_extension)
 {
-char cwd[OM_PATH_MAX + 1];
-
     // get current working directory
+    char cwd[OM_PATH_MAX + 1];
+
     string curDir;
     if (getcwd(cwd, OM_PATH_MAX) != nullptr) curDir = cwd;
 
-    // get executable basename
-    string baseName = i_exePath != nullptr ? i_exePath : "";
-
-    string::size_type namePos = baseName.find_last_of("/\\");
-    if (namePos != string::npos && namePos + 1 < baseName.length()) baseName = baseName.substr(namePos + 1);
+    // get executable basename and remove extension if extension is ".exe" case insensitive
+    string baseName = (i_exePath != nullptr) ? fs::path(i_exePath).filename().generic_string() : "";
 
     if (endWithNoCase(baseName, ".exe")) baseName = baseName.substr(0, baseName.length() - 4);
 
-    // combine: current/working/directory/basename.log
-    string sPath = 
-        (!curDir.empty() ? curDir + "/" : "") + 
-        (!baseName.empty() ? baseName : "openm") + 
-        (i_extension != nullptr ? i_extension : "");
+    // do not allow . or .. as file name
+    if (baseName == "." || baseName == "..") baseName = "";
+
+    // combine: current/working/directory/basename.log and return with generic / path separator
+    fs::path p(curDir);
+    string sPath = p.append((!baseName.empty() ? baseName : "openm")).concat((i_extension != nullptr ? i_extension : "")).generic_string();
 
     return sPath;
 }
@@ -96,48 +93,45 @@ char cwd[OM_PATH_MAX + 1];
  *
  * @return  path combined as directory/name.extension
  *
- * It does replace all \ with / even in "special\ path/", except of leading \\ slashes
- * For example: 
- *   input\ ageSex csv => input/ageSex.csv
-*    \\host\share ageSex.csv => \\host/share.ageSex.csv
+ * It does remove all trailing dots ... from file name.
+ * If i_dirPath not empty file name expected to be a relative path, not an absolute
+ * and any leading / or \ are removed.
  */
 const string openm::makeFilePath(const char * i_dirPath, const char * i_name, const char * i_extension)
 {
-    // make directory: replace all \ by / except of leading \\ and append trailng/ separator
-    string path = (i_dirPath != nullptr) ? i_dirPath : "";
+    string dir = (i_dirPath != nullptr) ? i_dirPath : "";
 
-    if (path.length() > 0) {
-        std::replace(
-            ((path.length() >= 2 && path[0] == '\\' && path[1] == '\\') ? path.begin() + 2 : path.begin()),
-            path.end(),
-            '\\', '/'
-        );
-        if (path.length() >= 2 && path != "\\\\" && path.back() != '/') path += '/';
-        if (path.length() == 1 && path.back() != '/') path += '/';
-    }
-
-    // make name: remove final dot. 
-    // if path not empty then remove leading / and replace all \ by / separator
-    // if path empty then replace all \ by / except of leading \\ slashes
+    // make name: remove all final dots 
     string name = (i_name != nullptr) ? i_name : "";
 
-    if (!name.empty() && name != "." && name != ".." && name.back() == '.') name = name.substr(0, name.length() - 1);
-
-    if (!path.empty()) {
-        std::replace(name.begin(), name.end(), '\\', '/');
-        if (!name.empty() && name[0] == '/') name = name.substr(1);
+    if (!name.empty()) {
+        size_t n = name.find_last_not_of(".");
+        if (n != string::npos) {
+            name = name.erase(n + 1);
+        }
+        else {
+            name.clear();
+        }
     }
-    else {
-        std::replace(
-            ((name.length() >= 2 && name[0] == '\\' && name[1] == '\\') ? name.begin() + 2 : name.begin()),
-            name.end(),
-            '\\', '/'
-        );
+
+    // make name: if directory not empty then remove all leading / or \ separators
+    if (!dir.empty() && !name.empty()) {
+        size_t n = name.find_first_not_of("/\\");
+        if (n != string::npos) {
+            name = name.substr(n);
+        }
+        else {
+            name.clear();
+        }
     }
 
     // make extension: add leading .dot
     string ext = (i_extension != nullptr) ? i_extension : "";
     if (!ext.empty() && ext[0] != '.') ext = '.' + ext;
 
-    return path + name + ext;
+    // combine: dir/name.ext and return with generic / path separator
+    fs::path p(dir);
+    string sPath = p.append(name).concat(ext).generic_string();
+
+    return sPath;
 }
