@@ -139,17 +139,8 @@ namespace openm
         /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
         static const char * runDescrSuffix;
 
-        /** options started with "Suppress." used to exclude output table from run resuluts, ex: -Suppress.AgeTable true */
+        /** options started with "Suppress." used to exclude output table or tables group from run results, ex: -Suppress.AgeTable true */
         static const char * suppressPrefix;
-
-        /** options started with "SuppressGroup." used to exclude output table group from run resuluts, ex: -SuppressGroup.Income true */
-        static const char * suppressGroupPrefix;
-
-        /** options started with "NotSuppress." used to include only output table in run results, ex: -NotSuppress.AgeTable true */
-        static const char * notSuppressPrefix;
-
-        /** options started with "NotSuppressGroup." used to include only output table group in run results, ex: -NotSuppressGroup.Income true */
-        static const char * notSuppressGroupPrefix;
 
         /** trace log to console */
         static const char * traceToConsole;

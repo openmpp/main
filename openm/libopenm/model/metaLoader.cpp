@@ -141,17 +141,8 @@ namespace openm
     /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
     const char * RunOptionsKey::runDescrSuffix = "RunDescription";
 
-    /** options started with "Suppress." used to exclude output table from run resuluts, ex: -Suppress.AgeTable true */
+    /** options started with "Suppress." used to exclude output table or tables group from run results, ex: -Suppress.AgeTable true */
     const char * RunOptionsKey::suppressPrefix = "Suppress";
-
-    /** options started with "SuppressGroup." used to exclude output table group from run resuluts, ex: -SuppressGroup.Income true */
-    const char * RunOptionsKey::suppressGroupPrefix = "SuppressGroup";
-
-    /** options started with "NotSuppress." used to include only output table in run results, ex: -NotSuppress.AgeTable true */
-    const char * RunOptionsKey::notSuppressPrefix = "NotSuppress";
-
-    /** options started with "NotSuppressGroup." used to include only output table group in run results, ex: -NotSuppressGroup.Income true */
-    const char * RunOptionsKey::notSuppressGroupPrefix = "NotSuppressGroup";
 
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -269,10 +260,7 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::importModelIdPrefix,
     RunOptionsKey::importDbPrefix,
     RunOptionsKey::importExprPrefix,
-    RunOptionsKey::suppressPrefix,
-    RunOptionsKey::suppressGroupPrefix,
-    RunOptionsKey::notSuppressPrefix,
-    RunOptionsKey::notSuppressGroupPrefix
+    RunOptionsKey::suppressPrefix
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
@@ -1010,65 +998,53 @@ void MetaLoader::parseImportOptions(void)
     }
 }
 
-/** parse suppression options to build list of tables to exclude from calculation and run output results.
+/** parse suppress options to build list of tables to exclude from calculation and run output results.
 *
 * There are two ways to specify tables suppression: \n
 *   Suppress.AgeTable    true       \n
-*   SuppressGroup.Income true       \n
-* this means suppress only AgeTable and Income group of tables. \n
+*   Suppress.IncomeGroup true       \n
+* this means suppress only AgeTable and IncomeGroup of tables. \n
 * Or:                               \n
-*   NotSuppress.AgeTable    true    \n
-*   NotSuppressGroup.Income true    \n
-* result in suppression of all output tables except of AgeTable and Income group of tables. \n
+*   Suppress.AgeTable    false      \n
+*   Suppress.IncomeGroup false      \n
+* result in suppression of all output tables except of AgeTable and Income group of tables.
 *
-* Suppress and not suppress options are mutually excluse and cannot be mixed.
-* For example, if model run options are: -Suppress.A true -NotSuppress.B true
-* then result is an error (model run exception).
+* Suppress true and false values are mutually excluse and cannot be mixed, for example:
+*   model.exe -Suppress.A true -Suppress.B false
+* is an error (model run exception).
 */
 void MetaLoader::parseSuppressOptions(void)
 {
     string suppPrefix = string(RunOptionsKey::suppressPrefix) + ".";
-    string suppGroupPrefix = string(RunOptionsKey::suppressGroupPrefix) + ".";
-    string notSuppPrefix = string(RunOptionsKey::notSuppressPrefix) + ".";
-    string notSuppGroupPrefix = string(RunOptionsKey::notSuppressGroupPrefix) + ".";
 
-    bool isAnySupp = false;
-    bool isAnyNotSupp = false;
+    bool isSupp = false;
+    bool isNotSupp = false;
     set<int> tblIds;
 
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
         // check is it one of suppress option
-        bool isSupp = equalNoCase(optIt->first.c_str(), suppPrefix.c_str(), suppPrefix.length());
-        bool isSuppGroup = equalNoCase(optIt->first.c_str(), suppGroupPrefix.c_str(), suppGroupPrefix.length());
-        bool isNotSupp = equalNoCase(optIt->first.c_str(), notSuppPrefix.c_str(), notSuppPrefix.length());
-        bool isNotSuppGroup = equalNoCase(optIt->first.c_str(), notSuppGroupPrefix.c_str(), notSuppGroupPrefix.length());
-
-        if (!isSupp && !isSuppGroup && !isNotSupp && !isNotSuppGroup) continue; // it is not a suppress option
-
-        isAnySupp = isAnySupp || isSupp || isSuppGroup;
-        isAnyNotSupp = isAnyNotSupp || isNotSupp || isNotSuppGroup;
-
-        if (isAnySupp && isAnyNotSupp)
-            throw ModelException("run optins %s and %s are mutually exclusive and cannot be mixed: %s",
-                RunOptionsKey::suppressPrefix, RunOptionsKey::notSuppressPrefix, optIt->first.c_str());
+        const char * argKey = optIt->first.c_str();
+        if (!equalNoCase(argKey, suppPrefix.c_str(), suppPrefix.length())) continue;    // it is not a suppress option
 
         // check option key: table name or group name must not be empty
-        string argName;
-        if (isSupp) argName = removeOptPrefix(optIt->first, suppPrefix);
-        if (isSuppGroup) argName = removeOptPrefix(optIt->first, suppGroupPrefix);
-        if (isNotSupp) argName = removeOptPrefix(optIt->first, notSuppPrefix);
-        if (isNotSuppGroup) argName = removeOptPrefix(optIt->first, notSuppGroupPrefix);
+        string argName = removeOptPrefix(optIt->first, suppPrefix);
 
-        if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", optIt->first.c_str());
+        if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", argKey);
+
+        // check option value, all values must be identical: all true or all false, it can not a mix
+        bool isYes = argStore.boolOption(argKey);
+        isSupp = isSupp || isYes;
+        isNotSupp = isNotSupp || !isYes;
+
+        if (isSupp && isNotSupp)
+            throw ModelException("all %s run optins must have same value and cannot be mixed: %s %s",
+                RunOptionsKey::suppressPrefix, argKey, optIt->second.c_str());
 
         // find table id by name
         // or expand table group to get id's of all table members
-        if (isSupp || isNotSupp) {
-
-            const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, argName);
-            if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", argName.c_str());
-
+        const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, argName);
+        if (tblRow != nullptr) {
             tblIds.insert(tblRow->tableId);
         }
         else {
@@ -1079,7 +1055,7 @@ void MetaLoader::parseSuppressOptions(void)
                 }
             );
             if (grpRow == nullptr)
-                throw DbException("output tables group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+                throw DbException("output table or tables group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
             vector<int> idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);   // get all members id of that group
 
@@ -1090,11 +1066,10 @@ void MetaLoader::parseSuppressOptions(void)
     // build sorted vector of table id's to suppress
     // if not suppress options are used then
     // build list of table id's to suppress by excluding "not suppress" id from the model table list
-    if (isAnySupp) {
+    if (isSupp) {
         tableIdSuppressArr.assign(tblIds.cbegin(), tblIds.cend());
     }
-    else if (isAnyNotSupp) {
-        tableIdSuppressArr.clear();
+    if (isNotSupp) {
         for (ptrdiff_t nRow = 0; nRow < metaStore->tableDic->rowCount(); nRow++) {
 
             const TableDicRow * tRow = metaStore->tableDic->byIndex(nRow);
@@ -1102,9 +1077,6 @@ void MetaLoader::parseSuppressOptions(void)
             const auto it = tblIds.find(tRow->tableId);
             if (tblIds.find(tRow->tableId) == tblIds.cend()) tableIdSuppressArr.push_back(tRow->tableId);
         }
-    }
-    else {
-        tableIdSuppressArr.clear();
     }
 }
 
