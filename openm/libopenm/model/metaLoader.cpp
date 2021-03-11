@@ -1007,11 +1007,11 @@ void MetaLoader::parseImportOptions(void)
 * Or:                               \n
 *   Suppress.AgeTable    false      \n
 *   Suppress.IncomeGroup false      \n
-* result in suppression of all output tables except of AgeTable and Income group of tables.
+* result in suppression of all output tables except of AgeTable and IncomeGroup of tables.
 *
-* Suppress true and false values are mutually excluse and cannot be mixed, for example:
+* Suppress true and false values are mutually exclusive and cannot be mixed.
+* For example, this model run will fail:             \n
 *   model.exe -Suppress.A true -Suppress.B false
-* is an error (model run exception).
 */
 void MetaLoader::parseSuppressOptions(void)
 {
@@ -1032,7 +1032,7 @@ void MetaLoader::parseSuppressOptions(void)
 
         if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", argKey);
 
-        // check option value, all values must be identical: all true or all false, it can not a mix
+        // check option value, all values must be identical: all true or all false, it can not be a mix
         bool isYes = argStore.boolOption(argKey);
         isSupp = isSupp || isYes;
         isNotSupp = isNotSupp || !isYes;
