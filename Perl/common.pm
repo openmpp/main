@@ -267,7 +267,13 @@ sub ompp_tables_to_csv
 
 	# Normalize the numeric value (last field in each line) for comparison purposes
 	for my $table (@tables) {
-		my $in_csv = "${dir}/in_${table}.csv";
+		my $in_csv = "${dir}/in_${table}.csv";	
+		if (-z $in_csv) {
+			# remove and skip zero-size files caused by table suppression
+			unlink $in_csv;
+			next;
+		}
+
 		if (!open IN_CSV, "<${in_csv}") {
 			logmsg error, "unable to open ${in_csv}";
 			return 1;
