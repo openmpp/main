@@ -1502,7 +1502,7 @@ void Symbol::post_parse_all()
     default_sort_pp_symbols();
 #endif
 
-    // Pass 6: populate additional collections for subsequent code generation, e.g. for side_effect functions.
+    // Pass 7: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
     // This includes code insertion in callback functions.
     // Symbols will be processed in lexicographical order within sorting group.

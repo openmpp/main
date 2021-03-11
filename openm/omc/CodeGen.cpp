@@ -30,7 +30,8 @@ void CodeGen::do_all()
     do_imports();
     do_groups();
     do_table_interface();
-	do_agents();
+    do_table_dependencies();
+    do_agents();
 	do_entity_sets();
     do_event_queue();
     do_event_names();
@@ -638,7 +639,7 @@ void CodeGen::do_ModelStartup()
     for (auto et : Symbol::pp_all_entity_tables) {
         c += "assert(!" + et->cxx_instance + "); ";
         if (!et->is_internal) {
-            c += "if (!i_model->isSuppressed(\"" + et->name + "\")) {";
+            c += "if (!is_suppressed_compute(\"" + et->name + "\", i_model)) {";
             c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
             c += "}";
         }
@@ -652,7 +653,7 @@ void CodeGen::do_ModelStartup()
     for (auto dt : Symbol::pp_all_derived_tables) {
         c += "assert(!" + dt->cxx_instance + "); ";
         if (!dt->is_internal) {
-            c += "if (!i_model->isSuppressed(\"" + dt->name + "\")) {";
+            c += "if (!is_suppressed_compute(\"" + dt->name + "\", i_model)) {";
             c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
             c += "}";
         }
@@ -738,7 +739,7 @@ void CodeGen::do_ModelShutdown()
     c += "// write entity tables (accumulators) and release accumulators memory";
     for ( auto table : Symbol::pp_all_entity_tables ) {
         if (!table->is_internal) {
-            c += "if (" + table->cxx_instance + ") i_model->writeOutputTable(\"" +
+            c += "if (!is_suppressed_write(\"" + table->name + "\", i_model)) i_model->writeOutputTable(\"" +
                 table->name + "\", " + table->cxx_instance + "->n_cells, " + table->cxx_instance + "->acc_storage);";
         }
     }
@@ -1061,6 +1062,59 @@ void CodeGen::do_event_names()
     c += "return event_name[event_id];";
     c += "}";
     c += "";
+}
+
+void CodeGen::do_table_dependencies()
+{
+    c += "// table dependencies";
+
+    c += "std::map<std::string, std::set<std::string>> om_tables_required =";
+    c += "{";
+    for (auto tbl_required : Symbol::pp_all_tables) {
+        if (tbl_required->pp_tables_requiring.size()) {
+            // if no tables require this table, omit it from the map
+            c += "{";
+            c += "\"" + tbl_required->name + "\", // is required by";
+            c += "{";
+            for (auto tbl_requiring : tbl_required->pp_tables_requiring) {
+                c += "\"" + tbl_requiring->name + "\",";
+            }
+            c += "},";
+            c += "},";
+        }
+    }
+    c += "};";
+    c += "";
+
+    c += "bool is_suppressed_compute(std::string table_name, IModel* const i_model)";
+    c += "{";
+    c +=     "bool is_suppressed = i_model->isSuppressed(table_name.c_str()); ";
+    c +=     "if (is_suppressed) {";
+    c +=         "auto search = om_tables_required.find(table_name);";
+    c +=         "if (search == om_tables_required.end()) {";
+    c +=             "return true;  // no other tables require this table";
+    c +=         "}";
+    c +=         "else {";
+    c +=             "for (auto tbl_requiring : search->second) {";
+    c +=                 "if (!i_model->isSuppressed(tbl_requiring.c_str())) { ";
+    c +=                     "return false; // a non-suppressed table requires this table";
+    c +=                 "}";
+    c +=             "}";
+    c +=             "return true; // no non-suppressed table requires this table";
+    c +=         "}";
+    c +=     "}";
+    c +=     "else {";
+    c +=         "return false; // this table is not suppressed";
+    c +=     "}";
+    c += "}";
+    c += "";
+
+    c += "bool is_suppressed_write(std::string table_name, IModel* const i_model)";
+    c += "{";
+    c +=     "return i_model->isSuppressed(table_name.c_str()); ";
+    c += "}";
+    c += "";
+
 }
 
 void CodeGen::do_RunModel()

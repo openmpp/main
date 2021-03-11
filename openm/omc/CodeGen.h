@@ -61,13 +61,10 @@ public:
     void do_imports();
     void do_groups();
     void do_name_digest(void);
-
-    /**
-     * Generate model-specific helper code for the table read/write model developer API.
-     */
     void do_table_interface();
     void do_event_queue();
     void do_event_names();
+    void do_table_dependencies();
     void do_RunOnce();
     void do_RunInit();
     void do_ModelStartup();

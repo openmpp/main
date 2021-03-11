@@ -158,6 +158,18 @@ public:
     bool is_internal;
 
     /**
+     * Other tables required by this table.
+     * Comes from dependency statements in model code.
+     */
+    set<TableSymbol *> pp_tables_required;
+
+    /**
+     * Other tables requiring this table.
+     * Comes from dependency statements in model code.
+     */
+    set<TableSymbol*> pp_tables_requiring;
+
+    /**
      * Numeric identifier. Used for communicating with metadata API.
      */
     int pp_table_id;

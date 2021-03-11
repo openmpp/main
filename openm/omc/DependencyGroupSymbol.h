@@ -7,6 +7,7 @@
 
 #pragma once
 #include "GroupSymbol.h"
+#include "TableSymbol.h"
 
 /**
 * DependencyGroupSymbol.
@@ -27,10 +28,17 @@ public:
     */
     DependencyGroupSymbol(yy::location decl_loc = yy::location())
         : GroupSymbol("om_dependency_" + to_string(++counter), decl_loc)
+        , pp_table_requiring(nullptr)
     {
     }
 
     void post_parse(int pass);
+
+    /**
+    * The requiring table.
+    * First symbol in the dependency statement.
+    */
+    TableSymbol *pp_table_requiring;
 
     static int counter;
 };
