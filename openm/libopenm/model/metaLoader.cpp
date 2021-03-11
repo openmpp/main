@@ -99,17 +99,11 @@ namespace openm
     /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
-    /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: -SubFrom.Age csv */
+    /** options started with "SubFrom." used to specify where to get sub-values of input parameter or group of pararmeters, ex: -SubFrom.Age csv */
     const char * RunOptionsKey::subFromPrefix = "SubFrom";
 
-    /** options started with "SubValues." used specify sub-values of input parameter, ex: -SubValues.Age [1,4] */
+    /** options started with "SubValues." used specify sub-values of input parameter or group of parameters, ex: -SubValues.Age [1,4] */
     const char * RunOptionsKey::subValuesPrefix = "SubValues";
-
-    /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: -SubGroupFrom.Geo csv */
-    const char * RunOptionsKey::subGroupFromPrefix = "SubGroupFrom";
-
-    /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: -SubGroupValues.Geo [1,4] */
-    const char * RunOptionsKey::subGroupValuesPrefix = "SubGroupValues";
 
     /** import parameters from all upstream models last runs, ex: -Import.All true */
     const char * RunOptionsKey::importAll = "Import.All";
@@ -250,8 +244,6 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::parameterPrefix, 
     RunOptionsKey::subFromPrefix,
     RunOptionsKey::subValuesPrefix,
-    RunOptionsKey::subGroupFromPrefix,
-    RunOptionsKey::subGroupValuesPrefix,
     RunOptionsKey::importPrefix,
     RunOptionsKey::importRunDigestPrefix,
     RunOptionsKey::importRunIdPrefix,
@@ -574,69 +566,68 @@ namespace
 
 }
 
-/** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo"
+/** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age"
 *
 * parse and validate parameter sub-values options, for example:     \n
 *   SubFrom.Age        csv          \n
 *   SubValues.Age      [0,15]       \n
 *   SubValues.Sex      default      \n
-*   SubGroupFrom.Geo   csv          \n
-*   SubGroupValues.Geo [0,15]       \n
 *
-* validate "SubFrom." and "SubGroupFrom." options value, it must one of "db", "csv" or "iota".  \n
-* "SubValues." and "SubGroupValues." option can be:     \n
-*   list of id's: SubValues.Age 2,1,4,3                 \n
-*   range:        SubValues.Age [1,4]                   \n
-*   mask:         SubValues.Age x0F                     \n
-*   single id:    SubValues.Age 7                       \n
+* validate "SubFrom." options value, it must one of "db", "csv" or "iota".  \n
+* "SubValues." for example:                     \n
+*   list of id's: SubValues.Age 2,1,4,3         \n
+*   range:        SubValues.Age [1,4]           \n
+*   mask:         SubValues.Age x0F             \n
+*   single id:    SubValues.Age 7               \n
 *   default id:   SubValues.Age default
 */
 void MetaLoader::parseParamSubOpts(void)
 {
     string fromPrefix = string(RunOptionsKey::subFromPrefix) + ".";
     string valPrefix = string(RunOptionsKey::subValuesPrefix) + ".";
-    string fromGroupPrefix = string(RunOptionsKey::subGroupFromPrefix) + ".";
-    string valGroupPrefix = string(RunOptionsKey::subGroupValuesPrefix) + ".";
 
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
         // check is it sub-values option
         bool isFromOpt = equalNoCase(optIt->first.c_str(), fromPrefix.c_str(), fromPrefix.length());
         bool isValuesOpt = equalNoCase(optIt->first.c_str(), valPrefix.c_str(), valPrefix.length());
-        bool isFromGroupOpt = equalNoCase(optIt->first.c_str(), fromGroupPrefix.c_str(), fromGroupPrefix.length());
-        bool isValuesGroupOpt = equalNoCase(optIt->first.c_str(), valGroupPrefix.c_str(), valGroupPrefix.length());
 
-        if (!isFromOpt && !isValuesOpt && !isFromGroupOpt && !isValuesGroupOpt) continue; // it is not a parameter sub-value option
+        if (!isFromOpt && !isValuesOpt) continue; // it is not a parameter sub-value option
 
         // check option key: parameter name or group name must not be empty
         string argName;
         if (isFromOpt) argName = removeOptPrefix(optIt->first, fromPrefix);
         if (isValuesOpt) argName = removeOptPrefix(optIt->first, valPrefix);
-        if (isFromGroupOpt) argName = removeOptPrefix(optIt->first, fromGroupPrefix);
-        if (isValuesGroupOpt) argName = removeOptPrefix(optIt->first, valGroupPrefix);
 
         if (argName.empty()) throw ModelException("invalid (empty) parameter name or group name: %s", optIt->first.c_str());
 
         // make list of parameters name for that sub-value option
         // if this is a group of parameters then expand it as to include names of all parameter members
-        vector<string> pnArr;
-        if (isFromOpt || isValuesOpt) {
-            pnArr.push_back(argName);
+        vector<int> idArr;
+
+        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, argName);
+        if (paramRow != nullptr) {
+            idArr.push_back(paramRow->paramId);
         }
         else {
-            pnArr = expandParamGroup(modelId, argName);
+            // find parameters group
+            const GroupLstRow * grpRow = metaStore->groupLst->findFirst(
+                [this, &argName](const GroupLstRow & i_row) -> bool {
+                    return i_row.isParam && i_row.modelId == modelId && i_row.name == argName;
+                }
+            );
+            if (grpRow != nullptr) {
+                idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);
+            }
         }
+        if (idArr.empty())
+            throw DbException("parameter or parameters group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
-        // validate "SubFrom." or "SubGroupFrom.", it must have value as one of: "db", "iota", "csv"
-        if (isFromOpt || isFromGroupOpt) {
-            for (const string & pName : pnArr) {
+        // validate "SubFrom.", it must have value as one of: "db", "iota", "csv"
+        if (isFromOpt) {
+            for (const int pId : idArr) {
 
-                // find parameter by name: it must be a model parameter
-                const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, pName);
-                if (paramRow == nullptr)
-                    throw DbException("parameter %s is not an input parameter of model %s, id: %d", pName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-                ParamSubOpts & ps = subOptsMap[paramRow->paramId];  // insert new or get existing options
+                ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
 
                 if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = RunOptionsKey::dbSubValue;
                 if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = RunOptionsKey::iotaSubValue;
@@ -648,23 +639,18 @@ void MetaLoader::parseParamSubOpts(void)
             }
         }
 
-        // validate "SubValues." or "SubGroupValues." options, it must have parameter name and value as range or comma-separated list or hex mask or "default":
+        // validate "SubValues." options, it must have parameter name and value as range or comma-separated list or hex mask or "default":
         //  range:      SubValues.Age [4,7]
         //  list:       SubValues.Age 4,5,6,7
         //  mask:       SubValues.Age xF0
         //  single id:  SubValues.Age 7
         //  default id: SubValues.Age default
         // number of sub-values must be 1 or exactly equal to number of sub-values in that model run
-        if (isValuesOpt || isValuesGroupOpt) {
+        if (isValuesOpt) {
 
-            for (const string & pName : pnArr) {
+            for (const int pId : idArr) {
 
-                // find parameter by name: it must be a model parameter
-                const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, pName);
-                if (paramRow == nullptr)
-                    throw DbException("parameter %s is not an input parameter of model %s, id: %d", pName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-                ParamSubOpts & ps = subOptsMap[paramRow->paramId];  // insert new or get existing options
+                ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
 
                 // convert option value to get sub-value id's: range or mask or comma-separated list
                 string sVal = trim(optIt->second);
@@ -784,33 +770,6 @@ void MetaLoader::parseParamSubOpts(void)
         // collect parameter id's with multiple sub-values
         if (ps.second.subCount > 1) paramIdSubArr.push_back(ps.first);
     }
-}
-
-// return names of all parameters included in parameter group
-const vector<string> MetaLoader::expandParamGroup(int i_modelId, const string & i_groupName) const
-{
-    // find parameters group
-    const GroupLstRow * grpRow = metaStore->groupLst->findFirst(
-        [i_modelId, &i_groupName](const GroupLstRow & i_row) -> bool {
-            return i_row.isParam && i_row.modelId == i_modelId && i_row.name == i_groupName;
-        }
-    );
-    if (grpRow == nullptr)
-        throw DbException("parameters group not found: %s in the model %s, id: %d", i_groupName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-    vector<int> idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);   // get all members parameter id of that group
-
-    // get array of parameters name by id's
-    vector<string> pnArr;
-    for (int nId : idArr) {
-
-        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, nId);
-        if (paramRow == nullptr)
-            throw DbException("parameter id: %d not found in the group: %s of model %s, id: %d", nId, i_groupName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-        pnArr.push_back(paramRow->paramName);
-    }
-    return pnArr;
 }
 
 /** parse parameter import options.

@@ -182,7 +182,7 @@ run:
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 2 \
-		-SubGroupFrom.AgeSexParameters csv -SubGroupValues.AgeSexParameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
+		-SubFrom.AgeSexParameters csv -SubValues.AgeSexParameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
 		-OpenM.RunName "Group_sub-values_2_from_csv" \
 		-EN.RunDescription "Parameter group sub-values 2 from csv" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"

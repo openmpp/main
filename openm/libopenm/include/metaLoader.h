@@ -97,17 +97,11 @@ namespace openm
         /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
         static const char * parameterPrefix;
 
-        /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: -SubFrom.Age csv */
+        /** options started with "SubFrom." used to specify where to get sub-values of input parameter or group of parameters, ex: -SubFrom.Age csv */
         static const char * subFromPrefix;
 
-        /** options started with "SubValues." used specify sub-values of input parameter, ex: -SubValues.Age [1,4] */
+        /** options started with "SubValues." used specify sub-values of input parameter or group of parameters, ex: -SubValues.Age [1,4] */
         static const char * subValuesPrefix;
-
-        /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: -SubGroupFrom.Geo csv */
-        static const char * subGroupFromPrefix;
-
-        /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: -SubGroupValues.Geo [1,4] */
-        static const char * subGroupValuesPrefix;
 
         /** import parameters from all upstream models last runs, ex: -Import.All true */
         static const char * importAll;
@@ -361,11 +355,8 @@ namespace openm
             const string & i_profileName, const char * i_prefix, const IProfileOptionTable * i_profileOpt, const vector<ParamDicRow> & i_paramRs
         );
 
-        /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo" */
+        /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age" */
         void parseParamSubOpts(void);
-
-        // return names of all parameters included in parameter group
-        const vector<string> expandParamGroup(int i_modelId, const string & i_groupName) const;
 
         /** parse parameters import options: get source run to import parameters */
         void parseImportOptions(void);
