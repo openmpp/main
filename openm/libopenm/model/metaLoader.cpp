@@ -99,17 +99,11 @@ namespace openm
     /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
     const char * RunOptionsKey::parameterPrefix = "Parameter";
 
-    /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: -SubFrom.Age csv */
+    /** options started with "SubFrom." used to specify where to get sub-values of input parameter or group of pararmeters, ex: -SubFrom.Age csv */
     const char * RunOptionsKey::subFromPrefix = "SubFrom";
 
-    /** options started with "SubValues." used specify sub-values of input parameter, ex: -SubValues.Age [1,4] */
+    /** options started with "SubValues." used specify sub-values of input parameter or group of parameters, ex: -SubValues.Age [1,4] */
     const char * RunOptionsKey::subValuesPrefix = "SubValues";
-
-    /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: -SubGroupFrom.Geo csv */
-    const char * RunOptionsKey::subGroupFromPrefix = "SubGroupFrom";
-
-    /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: -SubGroupValues.Geo [1,4] */
-    const char * RunOptionsKey::subGroupValuesPrefix = "SubGroupValues";
 
     /** import parameters from all upstream models last runs, ex: -Import.All true */
     const char * RunOptionsKey::importAll = "Import.All";
@@ -141,17 +135,8 @@ namespace openm
     /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
     const char * RunOptionsKey::runDescrSuffix = "RunDescription";
 
-    /** options started with "Suppress." used to exclude output table from run resuluts, ex: -Suppress.AgeTable true */
+    /** options started with "Suppress." used to exclude output table or tables group from run results, ex: -Suppress.AgeTable true */
     const char * RunOptionsKey::suppressPrefix = "Suppress";
-
-    /** options started with "SuppressGroup." used to exclude output table group from run resuluts, ex: -SuppressGroup.Income true */
-    const char * RunOptionsKey::suppressGroupPrefix = "SuppressGroup";
-
-    /** options started with "NotSuppress." used to include only output table in run results, ex: -NotSuppress.AgeTable true */
-    const char * RunOptionsKey::notSuppressPrefix = "NotSuppress";
-
-    /** options started with "NotSuppressGroup." used to include only output table group in run results, ex: -NotSuppressGroup.Income true */
-    const char * RunOptionsKey::notSuppressGroupPrefix = "NotSuppressGroup";
 
     /** trace log to console */
     const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
@@ -259,8 +244,6 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::parameterPrefix, 
     RunOptionsKey::subFromPrefix,
     RunOptionsKey::subValuesPrefix,
-    RunOptionsKey::subGroupFromPrefix,
-    RunOptionsKey::subGroupValuesPrefix,
     RunOptionsKey::importPrefix,
     RunOptionsKey::importRunDigestPrefix,
     RunOptionsKey::importRunIdPrefix,
@@ -269,10 +252,7 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::importModelIdPrefix,
     RunOptionsKey::importDbPrefix,
     RunOptionsKey::importExprPrefix,
-    RunOptionsKey::suppressPrefix,
-    RunOptionsKey::suppressGroupPrefix,
-    RunOptionsKey::notSuppressPrefix,
-    RunOptionsKey::notSuppressGroupPrefix
+    RunOptionsKey::suppressPrefix
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
@@ -586,69 +566,68 @@ namespace
 
 }
 
-/** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo"
+/** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age"
 *
 * parse and validate parameter sub-values options, for example:     \n
 *   SubFrom.Age        csv          \n
 *   SubValues.Age      [0,15]       \n
 *   SubValues.Sex      default      \n
-*   SubGroupFrom.Geo   csv          \n
-*   SubGroupValues.Geo [0,15]       \n
 *
-* validate "SubFrom." and "SubGroupFrom." options value, it must one of "db", "csv" or "iota".  \n
-* "SubValues." and "SubGroupValues." option can be:     \n
-*   list of id's: SubValues.Age 2,1,4,3                 \n
-*   range:        SubValues.Age [1,4]                   \n
-*   mask:         SubValues.Age x0F                     \n
-*   single id:    SubValues.Age 7                       \n
+* validate "SubFrom." options value, it must one of "db", "csv" or "iota".  \n
+* "SubValues." for example:                     \n
+*   list of id's: SubValues.Age 2,1,4,3         \n
+*   range:        SubValues.Age [1,4]           \n
+*   mask:         SubValues.Age x0F             \n
+*   single id:    SubValues.Age 7               \n
 *   default id:   SubValues.Age default
 */
 void MetaLoader::parseParamSubOpts(void)
 {
     string fromPrefix = string(RunOptionsKey::subFromPrefix) + ".";
     string valPrefix = string(RunOptionsKey::subValuesPrefix) + ".";
-    string fromGroupPrefix = string(RunOptionsKey::subGroupFromPrefix) + ".";
-    string valGroupPrefix = string(RunOptionsKey::subGroupValuesPrefix) + ".";
 
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
         // check is it sub-values option
         bool isFromOpt = equalNoCase(optIt->first.c_str(), fromPrefix.c_str(), fromPrefix.length());
         bool isValuesOpt = equalNoCase(optIt->first.c_str(), valPrefix.c_str(), valPrefix.length());
-        bool isFromGroupOpt = equalNoCase(optIt->first.c_str(), fromGroupPrefix.c_str(), fromGroupPrefix.length());
-        bool isValuesGroupOpt = equalNoCase(optIt->first.c_str(), valGroupPrefix.c_str(), valGroupPrefix.length());
 
-        if (!isFromOpt && !isValuesOpt && !isFromGroupOpt && !isValuesGroupOpt) continue; // it is not a parameter sub-value option
+        if (!isFromOpt && !isValuesOpt) continue; // it is not a parameter sub-value option
 
         // check option key: parameter name or group name must not be empty
         string argName;
         if (isFromOpt) argName = removeOptPrefix(optIt->first, fromPrefix);
         if (isValuesOpt) argName = removeOptPrefix(optIt->first, valPrefix);
-        if (isFromGroupOpt) argName = removeOptPrefix(optIt->first, fromGroupPrefix);
-        if (isValuesGroupOpt) argName = removeOptPrefix(optIt->first, valGroupPrefix);
 
         if (argName.empty()) throw ModelException("invalid (empty) parameter name or group name: %s", optIt->first.c_str());
 
         // make list of parameters name for that sub-value option
         // if this is a group of parameters then expand it as to include names of all parameter members
-        vector<string> pnArr;
-        if (isFromOpt || isValuesOpt) {
-            pnArr.push_back(argName);
+        vector<int> idArr;
+
+        const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, argName);
+        if (paramRow != nullptr) {
+            idArr.push_back(paramRow->paramId);
         }
         else {
-            pnArr = expandParamGroup(modelId, argName);
+            // find parameters group
+            const GroupLstRow * grpRow = metaStore->groupLst->findFirst(
+                [this, &argName](const GroupLstRow & i_row) -> bool {
+                    return i_row.isParam && i_row.modelId == modelId && i_row.name == argName;
+                }
+            );
+            if (grpRow != nullptr) {
+                idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);
+            }
         }
+        if (idArr.empty())
+            throw DbException("parameter or parameters group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
-        // validate "SubFrom." or "SubGroupFrom.", it must have value as one of: "db", "iota", "csv"
-        if (isFromOpt || isFromGroupOpt) {
-            for (const string & pName : pnArr) {
+        // validate "SubFrom.", it must have value as one of: "db", "iota", "csv"
+        if (isFromOpt) {
+            for (const int pId : idArr) {
 
-                // find parameter by name: it must be a model parameter
-                const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, pName);
-                if (paramRow == nullptr)
-                    throw DbException("parameter %s is not an input parameter of model %s, id: %d", pName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-                ParamSubOpts & ps = subOptsMap[paramRow->paramId];  // insert new or get existing options
+                ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
 
                 if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = RunOptionsKey::dbSubValue;
                 if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = RunOptionsKey::iotaSubValue;
@@ -660,23 +639,18 @@ void MetaLoader::parseParamSubOpts(void)
             }
         }
 
-        // validate "SubValues." or "SubGroupValues." options, it must have parameter name and value as range or comma-separated list or hex mask or "default":
+        // validate "SubValues." options, it must have parameter name and value as range or comma-separated list or hex mask or "default":
         //  range:      SubValues.Age [4,7]
         //  list:       SubValues.Age 4,5,6,7
         //  mask:       SubValues.Age xF0
         //  single id:  SubValues.Age 7
         //  default id: SubValues.Age default
         // number of sub-values must be 1 or exactly equal to number of sub-values in that model run
-        if (isValuesOpt || isValuesGroupOpt) {
+        if (isValuesOpt) {
 
-            for (const string & pName : pnArr) {
+            for (const int pId : idArr) {
 
-                // find parameter by name: it must be a model parameter
-                const ParamDicRow * paramRow = metaStore->paramDic->byModelIdName(modelId, pName);
-                if (paramRow == nullptr)
-                    throw DbException("parameter %s is not an input parameter of model %s, id: %d", pName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-                ParamSubOpts & ps = subOptsMap[paramRow->paramId];  // insert new or get existing options
+                ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
 
                 // convert option value to get sub-value id's: range or mask or comma-separated list
                 string sVal = trim(optIt->second);
@@ -796,33 +770,6 @@ void MetaLoader::parseParamSubOpts(void)
         // collect parameter id's with multiple sub-values
         if (ps.second.subCount > 1) paramIdSubArr.push_back(ps.first);
     }
-}
-
-// return names of all parameters included in parameter group
-const vector<string> MetaLoader::expandParamGroup(int i_modelId, const string & i_groupName) const
-{
-    // find parameters group
-    const GroupLstRow * grpRow = metaStore->groupLst->findFirst(
-        [i_modelId, &i_groupName](const GroupLstRow & i_row) -> bool {
-            return i_row.isParam && i_row.modelId == i_modelId && i_row.name == i_groupName;
-        }
-    );
-    if (grpRow == nullptr)
-        throw DbException("parameters group not found: %s in the model %s, id: %d", i_groupName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-    vector<int> idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);   // get all members parameter id of that group
-
-    // get array of parameters name by id's
-    vector<string> pnArr;
-    for (int nId : idArr) {
-
-        const ParamDicRow * paramRow = metaStore->paramDic->byKey(modelId, nId);
-        if (paramRow == nullptr)
-            throw DbException("parameter id: %d not found in the group: %s of model %s, id: %d", nId, i_groupName.c_str(), metaStore->modelRow->name.c_str(), modelId);
-
-        pnArr.push_back(paramRow->paramName);
-    }
-    return pnArr;
 }
 
 /** parse parameter import options.
@@ -1010,65 +957,53 @@ void MetaLoader::parseImportOptions(void)
     }
 }
 
-/** parse suppression options to build list of tables to exclude from calculation and run output results.
+/** parse suppress options to build list of tables to exclude from calculation and run output results.
 *
 * There are two ways to specify tables suppression: \n
 *   Suppress.AgeTable    true       \n
-*   SuppressGroup.Income true       \n
-* this means suppress only AgeTable and Income group of tables. \n
+*   Suppress.IncomeGroup true       \n
+* this means suppress only AgeTable and IncomeGroup of tables. \n
 * Or:                               \n
-*   NotSuppress.AgeTable    true    \n
-*   NotSuppressGroup.Income true    \n
-* result in suppression of all output tables except of AgeTable and Income group of tables. \n
+*   Suppress.AgeTable    false      \n
+*   Suppress.IncomeGroup false      \n
+* result in suppression of all output tables except of AgeTable and IncomeGroup of tables.
 *
-* Suppress and not suppress options are mutually excluse and cannot be mixed.
-* For example, if model run options are: -Suppress.A true -NotSuppress.B true
-* then result is an error (model run exception).
+* Suppress true and false values are mutually exclusive and cannot be mixed.
+* For example, this model run will fail:             \n
+*   model.exe -Suppress.A true -Suppress.B false
 */
 void MetaLoader::parseSuppressOptions(void)
 {
     string suppPrefix = string(RunOptionsKey::suppressPrefix) + ".";
-    string suppGroupPrefix = string(RunOptionsKey::suppressGroupPrefix) + ".";
-    string notSuppPrefix = string(RunOptionsKey::notSuppressPrefix) + ".";
-    string notSuppGroupPrefix = string(RunOptionsKey::notSuppressGroupPrefix) + ".";
 
-    bool isAnySupp = false;
-    bool isAnyNotSupp = false;
+    bool isSupp = false;
+    bool isNotSupp = false;
     set<int> tblIds;
 
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
         // check is it one of suppress option
-        bool isSupp = equalNoCase(optIt->first.c_str(), suppPrefix.c_str(), suppPrefix.length());
-        bool isSuppGroup = equalNoCase(optIt->first.c_str(), suppGroupPrefix.c_str(), suppGroupPrefix.length());
-        bool isNotSupp = equalNoCase(optIt->first.c_str(), notSuppPrefix.c_str(), notSuppPrefix.length());
-        bool isNotSuppGroup = equalNoCase(optIt->first.c_str(), notSuppGroupPrefix.c_str(), notSuppGroupPrefix.length());
-
-        if (!isSupp && !isSuppGroup && !isNotSupp && !isNotSuppGroup) continue; // it is not a suppress option
-
-        isAnySupp = isAnySupp || isSupp || isSuppGroup;
-        isAnyNotSupp = isAnyNotSupp || isNotSupp || isNotSuppGroup;
-
-        if (isAnySupp && isAnyNotSupp)
-            throw ModelException("run optins %s and %s are mutually exclusive and cannot be mixed: %s",
-                RunOptionsKey::suppressPrefix, RunOptionsKey::notSuppressPrefix, optIt->first.c_str());
+        const char * argKey = optIt->first.c_str();
+        if (!equalNoCase(argKey, suppPrefix.c_str(), suppPrefix.length())) continue;    // it is not a suppress option
 
         // check option key: table name or group name must not be empty
-        string argName;
-        if (isSupp) argName = removeOptPrefix(optIt->first, suppPrefix);
-        if (isSuppGroup) argName = removeOptPrefix(optIt->first, suppGroupPrefix);
-        if (isNotSupp) argName = removeOptPrefix(optIt->first, notSuppPrefix);
-        if (isNotSuppGroup) argName = removeOptPrefix(optIt->first, notSuppGroupPrefix);
+        string argName = removeOptPrefix(optIt->first, suppPrefix);
 
-        if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", optIt->first.c_str());
+        if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", argKey);
+
+        // check option value, all values must be identical: all true or all false, it can not be a mix
+        bool isYes = argStore.boolOption(argKey);
+        isSupp = isSupp || isYes;
+        isNotSupp = isNotSupp || !isYes;
+
+        if (isSupp && isNotSupp)
+            throw ModelException("all %s run optins must have same value and cannot be mixed: %s %s",
+                RunOptionsKey::suppressPrefix, argKey, optIt->second.c_str());
 
         // find table id by name
         // or expand table group to get id's of all table members
-        if (isSupp || isNotSupp) {
-
-            const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, argName);
-            if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", argName.c_str());
-
+        const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, argName);
+        if (tblRow != nullptr) {
             tblIds.insert(tblRow->tableId);
         }
         else {
@@ -1079,7 +1014,7 @@ void MetaLoader::parseSuppressOptions(void)
                 }
             );
             if (grpRow == nullptr)
-                throw DbException("output tables group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+                throw DbException("output table or tables group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
             vector<int> idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);   // get all members id of that group
 
@@ -1090,11 +1025,10 @@ void MetaLoader::parseSuppressOptions(void)
     // build sorted vector of table id's to suppress
     // if not suppress options are used then
     // build list of table id's to suppress by excluding "not suppress" id from the model table list
-    if (isAnySupp) {
+    if (isSupp) {
         tableIdSuppressArr.assign(tblIds.cbegin(), tblIds.cend());
     }
-    else if (isAnyNotSupp) {
-        tableIdSuppressArr.clear();
+    if (isNotSupp) {
         for (ptrdiff_t nRow = 0; nRow < metaStore->tableDic->rowCount(); nRow++) {
 
             const TableDicRow * tRow = metaStore->tableDic->byIndex(nRow);
@@ -1102,9 +1036,6 @@ void MetaLoader::parseSuppressOptions(void)
             const auto it = tblIds.find(tRow->tableId);
             if (tblIds.find(tRow->tableId) == tblIds.cend()) tableIdSuppressArr.push_back(tRow->tableId);
         }
-    }
-    else {
-        tableIdSuppressArr.clear();
     }
 }
 

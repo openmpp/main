@@ -13,7 +13,7 @@
 
 --
 -- modelOne metadata
--- model digest: not a real digest (32 digits hex)
+-- digest values below are a test values and not a real digests, real digests are 32 digits hex
 --
 INSERT INTO model_dic
   (model_id, model_name, model_digest, model_type, model_ver, create_dt, default_lang_id)

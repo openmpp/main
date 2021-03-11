@@ -182,7 +182,7 @@ run:
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 2 \
-		-SubGroupFrom.AgeSexParameters csv -SubGroupValues.AgeSexParameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
+		-SubFrom.AgeSexParameters csv -SubValues.AgeSexParameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
 		-OpenM.RunName "Group_sub-values_2_from_csv" \
 		-EN.RunDescription "Parameter group sub-values 2 from csv" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
@@ -202,6 +202,18 @@ run:
 		-OpenM.SetName modelOne_partial \
 		-OpenM.RunName "Base_run_and_partial_input_set" \
 		-EN.RunDescription "Parameters from base run and from partial input set" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.TaskName taskOne \
+		-OpenM.TaskRunName "Task Run with Suppressed Tables" \
+		-OpenM.SubValues 2 -OpenM.Threads 2 \
+		-Suppress.ageSexIncome true -Suppress.AdditionalTables true \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.TaskName taskOne \
+		-OpenM.TaskRunName "Task Run with NotSuppressed Tables" \
+		-OpenM.SubValues 2 -OpenM.Threads 2 \
+		-Suppress.ageSexIncome false -Suppress.AdditionalTables false \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean

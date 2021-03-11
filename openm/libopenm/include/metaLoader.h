@@ -97,17 +97,11 @@ namespace openm
         /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
         static const char * parameterPrefix;
 
-        /** options started with "SubFrom." used to specify where to get sub-values of input parameter, ex: -SubFrom.Age csv */
+        /** options started with "SubFrom." used to specify where to get sub-values of input parameter or group of parameters, ex: -SubFrom.Age csv */
         static const char * subFromPrefix;
 
-        /** options started with "SubValues." used specify sub-values of input parameter, ex: -SubValues.Age [1,4] */
+        /** options started with "SubValues." used specify sub-values of input parameter or group of parameters, ex: -SubValues.Age [1,4] */
         static const char * subValuesPrefix;
-
-        /** options started with "SubGroupFrom." used to specify where to get sub-values for a group of input parameter, ex: -SubGroupFrom.Geo csv */
-        static const char * subGroupFromPrefix;
-
-        /** options started with "SubGroupValues." used specify sub-values for a group of input parameter, ex: -SubGroupValues.Geo [1,4] */
-        static const char * subGroupValuesPrefix;
 
         /** import parameters from all upstream models last runs, ex: -Import.All true */
         static const char * importAll;
@@ -139,17 +133,8 @@ namespace openm
         /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
         static const char * runDescrSuffix;
 
-        /** options started with "Suppress." used to exclude output table from run resuluts, ex: -Suppress.AgeTable true */
+        /** options started with "Suppress." used to exclude output table or tables group from run results, ex: -Suppress.AgeTable true */
         static const char * suppressPrefix;
-
-        /** options started with "SuppressGroup." used to exclude output table group from run resuluts, ex: -SuppressGroup.Income true */
-        static const char * suppressGroupPrefix;
-
-        /** options started with "NotSuppress." used to include only output table in run results, ex: -NotSuppress.AgeTable true */
-        static const char * notSuppressPrefix;
-
-        /** options started with "NotSuppressGroup." used to include only output table group in run results, ex: -NotSuppressGroup.Income true */
-        static const char * notSuppressGroupPrefix;
 
         /** trace log to console */
         static const char * traceToConsole;
@@ -370,11 +355,8 @@ namespace openm
             const string & i_profileName, const char * i_prefix, const IProfileOptionTable * i_profileOpt, const vector<ParamDicRow> & i_paramRs
         );
 
-        /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age", "SubGroupFrom.Geo", "SubGroupValues.Geo" */
+        /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age" */
         void parseParamSubOpts(void);
-
-        // return names of all parameters included in parameter group
-        const vector<string> expandParamGroup(int i_modelId, const string & i_groupName) const;
 
         /** parse parameters import options: get source run to import parameters */
         void parseImportOptions(void);
