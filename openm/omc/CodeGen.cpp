@@ -1068,7 +1068,7 @@ void CodeGen::do_table_dependencies()
 {
     c += "// table dependencies";
 
-    c += "std::map<std::string, std::set<std::string>> om_tables_required =";
+    c += "const std::map<std::string, std::set<std::string>> om_tables_required =";
     c += "{";
     for (auto tbl_required : Symbol::pp_all_tables) {
         if (tbl_required->pp_tables_requiring.size()) {
