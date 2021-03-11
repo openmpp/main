@@ -33,6 +33,8 @@ my ($opt, $usage) = describe_options(
 		{ default => 'release' } ],
 	[ 'ompp_deploy_mpi=s' => 'OpenM++ Windows MPI deployment build: yes or no (default)',
 		{ default => 'no' } ],
+	[ 'ompp_ini=s' => 'OpenM++ ini file to pass to model (relative to model folder, default is none)',
+		{ default => '' } ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
 	[ 'modgen_version=s' => 'Modgen version: 11 or 12 or 12.1(default)',
 		{ default => '12.1' } ],
@@ -69,6 +71,9 @@ my $significant_digits = $opt->significant_digits;
 # Also create an non-rounded version of each output csv table
 my $unrounded_tables = 1;
 $unrounded_tables = 0 if $opt->nounroundedtables;
+
+# Path to optional ini file (relative to model folder) to pass to ompp model
+my $ompp_ini = $opt->ompp_ini;
 
 
 #####################
@@ -165,6 +170,7 @@ else {
 my $models_root = $opt->models_root;
 chdir $models_root || die "Folder ${models_root} not found";
 $models_root = getcwd; # to ensure is absolute path
+
 
 #####################
 # file locations
@@ -385,6 +391,14 @@ for my $model_dir (@model_dirs) {
 
 	# Location of parameter folder
 	my $parameters_dir = "${model_path}/parameters";
+
+	# Location of optional ompp_ini file to pass to model (empty if none)
+	my $ompp_ini_path = '';
+	
+	if ($ompp_ini ne '') {
+		$ompp_ini_path = "${model_path}/${ompp_ini}";
+		-f $ompp_ini_path || die "File ompp_ini ${ompp_ini_path} not found";
+	}	
 
 	##############
 	# Process each flavour
@@ -814,6 +828,12 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.Threads", $threads,
 					"-OpenM.ProgressPercent", "25",
 					);
+				if ($ompp_ini_path ne '') {
+					push @args,
+						(
+						"-ini", $ompp_ini_path
+						);
+				}
 				system(@args);
 			};
 			if ($retval != 0) {
@@ -1012,6 +1032,12 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.SubValues", $members,
 					"-OpenM.Threads", $threads,
 					);
+				if ($ompp_ini_path ne '') {
+					push @args,
+						(
+						"-ini", $ompp_ini_path
+						);
+				}
 				system(@args);
 			};
 			if ($retval != 0) {
