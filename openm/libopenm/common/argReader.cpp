@@ -102,15 +102,35 @@ string ArgReader::strOption(const char * i_key, const string & i_default) const 
     }
 }
 
-/** return boolean value by key or false if not found or value not "yes", "1", "true". */
+/** return boolean value by key or false if not found or value not "yes", "1", "true" (case insensitive). */
 bool ArgReader::boolOption(const char * i_key) const noexcept
 {
     try {
-        string sVal = strOption(i_key);
-        return 
-            equalNoCase(sVal.c_str(), "1") || equalNoCase(sVal.c_str(), "yes") || equalNoCase(sVal.c_str(), "true");
+        return boolOptionToInt(i_key) > 0;
     }
     catch (...) { 
+        return false;
+    }
+}
+
+/** 
+* return  1 if key found and value is one of: "yes", "1", "true" or empty value,
+* return  0 if key found and value is one of: "no", "0", "false",
+* return -1 if key not found, 
+* return -2 otherwise.
+*/
+int ArgReader::boolOptionToInt(const char * i_key) const noexcept
+{
+    try {
+        if (!isOptionExist(i_key)) return -1;   // not found
+
+        string sVal = strOption(i_key);
+        if (sVal.empty() || equalNoCase(sVal.c_str(), "1") || equalNoCase(sVal.c_str(), "yes") || equalNoCase(sVal.c_str(), "true")) return 1;
+        if (equalNoCase(sVal.c_str(), "0") || equalNoCase(sVal.c_str(), "no") || equalNoCase(sVal.c_str(), "false")) return 0;
+
+        return -2;  // incorrect value
+    }
+    catch (...) {
         return false;
     }
 }
@@ -203,11 +223,11 @@ void ArgReader::parseCommandLine(
     // find keys in the names array and append key-value pairs into result
     for (int nArg = 1; nArg < argc; nArg++) {
 
-        // command line key must start from - or /
+        // command line key must start from -
         string sKey = toUtf8(argv[nArg]);
-        if (sKey.empty() || (sKey[0] != '-' && sKey[0] != '/')) throw HelperException(LT("Invalid command line parameter %s"), argv[nArg]);
+        if (sKey.empty() || sKey[0] != '-') throw HelperException(LT("Invalid command line option %s"), argv[nArg]);
 
-        sKey = sKey.substr(1);  // remove leading - or /
+        sKey = sKey.substr(1);  // remove leading -
 
         // if this is short name then replace it with full name
         const pair<const char *, const char *> * pairIt = std::find_if(
@@ -238,15 +258,17 @@ void ArgReader::parseCommandLine(
                 isUnk = !endWithNoCase(sKey, it->c_str());
             }
             if (isUnk) {
-                if (i_isThrowUnknown) throw HelperException(LT("Invalid command line parameter %s"), argv[nArg]);
+                if (i_isThrowUnknown) throw HelperException(LT("Invalid command line option %s"), argv[nArg]);
                 if (!i_isStoreUnknown) continue;
             }
         }
         
         // get parameter value and save it in the run options map
+        // if next command line argument starts with - then it is a next key, store "" empty value for current key
         string sVal = "";
-        if (nArg + 1 < argc) sVal = toUtf8(argv[++nArg]);
-
+        if (nArg + 1 < argc) {
+            if (argv[nArg + 1] != nullptr && argv[nArg + 1][0] != '-') sVal = toUtf8(argv[++nArg]);
+        }
         args[sKey] = sVal;
     }
 }

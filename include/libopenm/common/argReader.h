@@ -76,9 +76,17 @@ namespace openm
         /** return string value by key or default value if not found. */
         string strOption(const char * i_key, const string & i_default = "") const noexcept;
 
-        /** return boolean value by key or false if not found or value not "yes", "1", "true". */
+        /** return boolean value by key or false if not found or value not "yes", "1", "true" (case insensitive). */
         bool boolOption(const char * i_key) const noexcept;
 
+        /**
+        * return  1 if key found and value is one of: "yes", "1", "true" or empty value,
+        * return  0 if key found and value is one of: "no", "0", "false",
+        * return -1 if key not found,
+        * return -2 otherwise.
+        */
+        int boolOptionToInt(const char * i_key) const noexcept;
+           
         /** return int value by key or default if not found or can not be converted to int. */
         int intOption(const char * i_key, int i_default) const noexcept { return (int)longOption(i_key, i_default); }
 
