@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 my $script_name = "test_models";
-my $script_version = '1.3';
+my $script_version = '1.4';
 
 use Getopt::Long::Descriptive;
 
@@ -1126,12 +1126,26 @@ for my $model_dir (@model_dirs) {
 		# Report on differences between current and reference outputs
 		my $digests_txt_1 = "${reference_outputs_dir}/digests.txt";
 		my $digests_txt_2 = "${current_outputs_dir}/digests.txt";
-		my $different_files = digest_differences($digests_txt_1, $digests_txt_2);
-		if ($different_files eq '') {
+		my ($not_in_1, $not_in_2, $differs) = digest_differences($digests_txt_1, $digests_txt_2);
+		if ('' eq $not_in_1.$not_in_2.$differs) {
 			logmsg info, $model_dir, $flavour, "Current outputs identical to reference outputs" if $verbosity >= 1;
         }
 		else {
-			logmsg warning, $model_dir, $flavour, "Current outputs differ: ${different_files}";
+			if ('' ne $not_in_2) {
+				foreach my $table (split(',',$not_in_2)) {
+					logmsg warning, $model_dir, $flavour, "Only in reference: ${table}" ;
+				}
+			}
+			if ('' ne $not_in_1) {
+				foreach my $table (split(',',$not_in_1)) {
+					logmsg warning, $model_dir, $flavour, "Only in current:   ${table}" ;
+				}
+			}
+			if ('' ne $differs) {
+				foreach my $table (split(',',$differs)) {
+					logmsg warning, $model_dir, $flavour, "Differs:           ${table}" ;
+				}
+			}
 		}
 	} # flavour
 
@@ -1151,24 +1165,38 @@ for my $model_dir (@model_dirs) {
 			$flavour2 = 'ompp-mac';
 		}
 		my $which_flavours = $flavour2.' vs. '.$flavour1;
-		# Check for differences in outputs between Modgen and ompp
+		# Check for differences in outputs between two flavours
 		foreach my $which ('reference', 'current') {
 			my $which_proper = ucfirst($which);
 			my $digests_txt_1 = "${model_path}/test_models/${which}/${flavour1}/outputs/digests.txt";
 			my $digests_txt_2 = "${model_path}/test_models/${which}/${flavour2}/outputs/digests.txt";
 			if (! -e $digests_txt_1) {
-				logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour1} digest" if $verbosity >= 2;
+				#logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour1} digest" if $verbosity >= 2;
 			}
 			elsif (! -e $digests_txt_2) {
-				logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour2} digest" if $verbosity >= 2;
+				#logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour2} digest" if $verbosity >= 2;
 			}
 			else {
-				my $different_files = digest_differences($digests_txt_1, $digests_txt_2);
-				if ($different_files eq '') {
+				my ($not_in_1, $not_in_2, $differs) = digest_differences($digests_txt_1, $digests_txt_2);
+				if ('' eq $not_in_1.$not_in_2.$differs) {
 					logmsg info, $model_dir, $which_flavours, "${which_proper} outputs identical";
 				}
 				else {
-					logmsg warning, $model_dir, $which_flavours, "${which_proper} outputs differ: ${different_files}";
+					if ('' ne $not_in_2) {
+						foreach my $table (split(',',$not_in_2)) {
+							logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour1}: ${table}" ;
+						}
+					}
+					if ('' ne $not_in_1) {
+						foreach my $table (split(',',$not_in_1)) {
+							logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour2}: ${table}" ;
+						}
+					}
+					if ('' ne $differs) {
+						foreach my $table (split(',',$differs)) {
+							logmsg warning, $model_dir, $which_flavours, "${which_proper} differs: ${table}" ;
+						}
+					}
 				}
 			}
 		}

@@ -523,7 +523,7 @@ sub create_digest
 # Report differences between two digest files
 # arg0 - digest file #1
 # arg1 - digest file #2
-# returns - comma-separated string of file names whose digests differ
+# returns - 3-element list with not in 1, not in 2, differs.  Each element is a comma-separated string of file names
 sub digest_differences {
 	my $in_digest1 = shift(@_);
 	my $in_digest2 = shift(@_);
@@ -560,16 +560,30 @@ sub digest_differences {
 	# Create amalgamated map of union of files in digest1 and digest2
 	my %all_files = (%digest1, %digest2);
 	
+	
+	my $not_in_1 = '';
+	my $not_in_2 = '';
+	my $differs = '';
 	foreach my $file (sort(keys %all_files)) {
-		my $value1 = $digest1{$file};
-		my $value2 = $digest2{$file};
-		if ( $value1 ne $value2) {
-			$result .= ', ' if length($result);
-			$result .= $file;
+		if (!exists $digest1{$file}) {
+			$not_in_1 .= ',' if length($not_in_1);
+			$not_in_1 .= $file;
+		}
+		elsif (!exists $digest2{$file}) {
+			$not_in_2 .= ',' if length($not_in_2);
+			$not_in_2 .= $file;
+		}
+		else {
+			my $value1 = $digest1{$file};
+			my $value2 = $digest2{$file};
+			if ( $value1 ne $value2) {
+				$differs .= ',' if length($differs);
+				$differs .= $file;
+			}
 		}
 	}
 	
-	return $result;
+	return ($not_in_1, $not_in_2, $differs);
 }
 
 # Normalise event trace for comparability
