@@ -564,6 +564,19 @@ namespace
         return i_optKey.substr(nLen);
     }
 
+    // check boolean option for correct value and return true, false or exception
+    // return true if option value is "true", "1", "yes" (case insensitive) or empty "" value
+    // return false if option is not specified or one of: "false", "0", "no"
+    // raise exception otherwise
+    static bool parseBoolOption(const char * i_key, const ArgReader & i_argStore)
+    {
+        int nOpt = i_argStore.boolOptionToInt(i_key);
+        if (nOpt < -1) {
+            string sOpt = i_argStore.strOption(i_key);
+            if (nOpt < 0) throw HelperException(LT("Invalid option value %s %s"), i_key, sOpt.c_str());
+        }
+        return nOpt > 0;
+    }
 }
 
 /** parse sub-value options for input parameters: "SubFrom.Age", "SubValues.Age"
@@ -824,7 +837,7 @@ void MetaLoader::parseImportOptions(void)
     // if Import.All is true then for each model set import source as last run of the model with that name
     vector<ParamImportRow> piArr = metaStore->paramImport->byModelId(modelId);
 
-    if (argStore.boolOption(RunOptionsKey::importAll)) {
+    if (parseBoolOption(RunOptionsKey::importAll, argStore)) {
         for (const ParamImportRow & pi : piArr) {
             importOptsMap[pi.fromModel].kind = ImportKind::modelName;
         }
@@ -899,7 +912,7 @@ void MetaLoader::parseImportOptions(void)
         if (equalNoCase(optIt->first.c_str(), modelNamePrefix.c_str(), modelNamePrefix.length())) {
             string mName = nameKey(optIt->first, modelNamePrefix.length());
 
-            if (argStore.boolOption(optIt->first.c_str())) {
+            if (parseBoolOption(optIt->first.c_str(), argStore)) {
                 if (auto it = importOptsMap.find(mName); it != importOptsMap.end()) {
                     if (it->second.kind == ImportKind::none) importOptsMap[mName].kind = ImportKind::modelName;
                 }
@@ -992,7 +1005,7 @@ void MetaLoader::parseSuppressOptions(void)
         if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", argKey);
 
         // check option value, all values must be identical: all true or all false, it can not be a mix
-        bool isYes = argStore.boolOption(argKey);
+        bool isYes = parseBoolOption(argKey, argStore);
         isSupp = isSupp || isYes;
         isNotSupp = isNotSupp || !isYes;
 

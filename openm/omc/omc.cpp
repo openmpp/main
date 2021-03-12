@@ -257,6 +257,7 @@ namespace openm
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
 
+static bool parseBoolOption(const char * i_key, const ArgReader & i_argStore);
 static void parseFiles(list<string> & files, const list<string>::iterator start_it, ParseContext & pc, ofstream *markup_stream);
 static void processExtraParamDir(const string & i_paramDir, const string & i_scenarioName, const MetaModelHolder & i_metaRows, IModelBuilder * i_builder);
 static void createWorkset(const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet, IModelBuilder * i_builder);
@@ -378,13 +379,13 @@ int main(int argc, char * argv[])
         Symbol::code_page = argStore.strOption(OmcArgKey::codePage);
 
         // Obtain information on generation of #line directives, default: false
-        Symbol::no_line_directives = argStore.boolOption(OmcArgKey::noLineDirectives);
+        Symbol::no_line_directives = parseBoolOption(OmcArgKey::noLineDirectives, argStore);
 
         // Obtain information on detailed parsing option, default: false
-        Symbol::trace_parsing = argStore.boolOption(OmcArgKey::traceParsing);
+        Symbol::trace_parsing = parseBoolOption(OmcArgKey::traceParsing, argStore);
 
         // Obtain information on detailed scanning option, default: false
-        Symbol::trace_scanning = argStore.boolOption(OmcArgKey::traceScanning);
+        Symbol::trace_scanning = parseBoolOption(OmcArgKey::traceScanning, argStore);
 
         // get sql script directory where SQLite create_db.sql is located
         string sqlDir;
@@ -699,6 +700,20 @@ int main(int argc, char * argv[])
 
     theLog->logMsg("Finish omc");
     return EXIT_SUCCESS;
+}
+
+// check boolean option for correct value and return true, false or exception
+// return true if option value is "true", "1", "yes" (case insensitive) or empty "" value
+// return false if option is not specified or one of: "false", "0", "no"
+// raise exception otherwise
+static bool parseBoolOption(const char * i_key, const ArgReader & i_argStore)
+{
+    int nOpt = i_argStore.boolOptionToInt(i_key);
+    if (nOpt < -1) {
+        string sOpt = i_argStore.strOption(i_key);
+        if (nOpt < 0) throw HelperException(LT("Invalid option value %s %s"), i_key, sOpt.c_str());
+    }
+    return nOpt > 0;
 }
 
 // Parse a list of files
