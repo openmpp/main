@@ -166,7 +166,7 @@ void UserTables()
 
 		for ( int nN = 0; nN < nNeighbourhoods; nN++ )
 		{
-			double dValue = GetTableValue(szName, nN);
+			double dValue = FixedGetTableValue(szName, nN);
 			dNbhdValues[nN] = dValue;
 		}
 
@@ -176,17 +176,17 @@ void UserTables()
 		for ( int nN = 0; nN < nNeighbourhoods; nN++ )
 		{
 			double dValue = dNbhdValues[nN];
-			SetTableValue("NbhdAvgsForComp_Sorted.VALUE", dValue, nI, nN);
+			FixedSetTableValue("NbhdAvgsForComp_Sorted.VALUE", dValue, nI, nN);
 		}
 
 		// values for selected neighbourhoods
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,0 )], nI, NR_1);
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,4 )], nI, NR_5);
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,9 )], nI, NR_10);
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,24)], nI, NR_25);
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,39)], nI, NR_40);
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,44)], nI, NR_45);
-		SetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,49)], nI, NR_50);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,0 )], nI, NR_1);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,4 )], nI, NR_5);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,9 )], nI, NR_10);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,24)], nI, NR_25);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,39)], nI, NR_40);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,44)], nI, NR_45);
+		FixedSetTableValue("NbhdAvgsForComp.VALUE", dNbhdValues[COERCE(RANGE_NEIGHBORHOOD,49)], nI, NR_50);
 	}
 }
 

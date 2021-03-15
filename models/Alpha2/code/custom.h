@@ -7,7 +7,6 @@
  */
 
 #pragma once
-
 #include <cassert>
-
 #include "case_based.h"
+#include "omc/fixed_modgen_api.h"

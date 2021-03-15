@@ -7,3 +7,5 @@
  * files in this file, for correct placement in compiler-generated files.
  */
 
+#pragma once
+#include "omc/fixed_modgen_api.h"

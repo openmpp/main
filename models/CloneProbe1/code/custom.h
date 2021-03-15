@@ -8,6 +8,7 @@
 
 #pragma once
 #include "case_based.h"
+#include "omc/fixed_modgen_api.h"
 
 #if defined(MODGEN)
 namespace mm {

@@ -230,16 +230,16 @@ void UserTables()
 			double dTotalIncome = 0;
 			for ( int nY = 0; nY < nIncomeGroups; nY++ )
 			{
-				double dPersons = GetTableValue("YdistByDecNbhd_Fine.Expr0", nN, nY, nT);
-				double dAvgIncome = GetTableValue("YByDecNbhd_Fine.Expr0", nN, nY, nT);
+				double dPersons = FixedGetTableValue("YdistByDecNbhd_Fine.Expr0", nN, nY, nT);
+				double dAvgIncome = FixedGetTableValue("YByDecNbhd_Fine.Expr0", nN, nY, nT);
 				double dIncome = dAvgIncome * dPersons;
 				if ( dPersons > 0 ) {
 					dTotalPersons += dPersons;
 					dTotalIncome += dIncome;
 				}
 			}
-			SetTableValue("YstatsByDecNbhd.TOTAL_PERSONS", dTotalPersons, nN, nT);
-			SetTableValue("YstatsByDecNbhd.TOTAL_INCOME", dTotalIncome, nN, nT);
+			FixedSetTableValue("YstatsByDecNbhd.TOTAL_PERSONS", dTotalPersons, nN, nT);
+			FixedSetTableValue("YstatsByDecNbhd.TOTAL_INCOME", dTotalIncome, nN, nT);
 
 			// Income pass #2: compute median-related quantities
 			
@@ -250,13 +250,13 @@ void UserTables()
 				double dCumIncome = 0;
 				for ( int nY = 0; nY < nIncomeGroups; nY++ )
 				{
-					double dPersons = GetTableValue("YdistByDecNbhd_Fine.Expr0", nN, nY, nT);
-					double dAvgIncome = GetTableValue("YByDecNbhd_Fine.Expr0", nN, nY, nT);
+					double dPersons = FixedGetTableValue("YdistByDecNbhd_Fine.Expr0", nN, nY, nT);
+					double dAvgIncome = FixedGetTableValue("YByDecNbhd_Fine.Expr0", nN, nY, nT);
 					double dIncome = dAvgIncome * dPersons;
 					if ( dPersons > 0 ) {
 						if ( dCumPersons + dPersons > dMedianPersons ) {
 							// this is the interval containing the median, write that info to the table
-							SetTableValue("YstatsByDecNbhd.MEDIAN_N", (double)nY, nN, nT);
+							FixedSetTableValue("YstatsByDecNbhd.MEDIAN_N", (double)nY, nN, nT);
 							// cannot estimate median if in first or last interval, since interval is unbounded.
 							if ( nY > 0 && nY < nIncomeGroups - 1 ) {
 								// Determine the lower and upper limits of this interval
@@ -269,17 +269,17 @@ void UserTables()
 								// The following formula is the value of the median,
 								// under the assumption that income varies linearly with rank within the interval.
 								double dMedian = dLower + dProportion * ( dUpper - dLower);
-								SetTableValue("YstatsByDecNbhd.MEDIAN_INCOME", dMedian, nN, nT);
+								FixedSetTableValue("YstatsByDecNbhd.MEDIAN_INCOME", dMedian, nN, nT);
 
 								// The following formula is total income less than dMedian within the interval,
 								// under the assumption that income varies linearly with rank within the interval.
 								// This formula can be derived by integration, or geometrically as the area of a trapezoid.
 								double dIncomeLTMedian_interval = dPersons * (dLower * dProportion + 0.5 * (dUpper - dLower) * dProportion * dProportion);
 								double dIncomeLTMedian = dCumIncome + dIncomeLTMedian_interval;
-								SetTableValue("YstatsByDecNbhd.TOTAL_INCOME_LT_MEDIAN", dIncomeLTMedian, nN, nT);
+								FixedSetTableValue("YstatsByDecNbhd.TOTAL_INCOME_LT_MEDIAN", dIncomeLTMedian, nN, nT);
 
 								double dMedianYShare = dIncomeLTMedian / dTotalIncome;
-								SetTableValue("YstatsByDecNbhd.MEDIAN_Y_SHARE", dMedianYShare, nN, nT);
+								FixedSetTableValue("YstatsByDecNbhd.MEDIAN_Y_SHARE", dMedianYShare, nN, nT);
 							}
 							// break out of income loop
 							break;

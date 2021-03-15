@@ -76,28 +76,28 @@ void UserTables()
     // TEP_Target1
     for (int nY = 0; nY < nYears; ++nY) {
         double dValue = TEP_Target1[nY];
-        SetTableValue("TET_Target1.VALUE", dValue, nY);
+        FixedSetTableValue("TET_Target1.VALUE", dValue, nY);
     }
 
     // TEP_Target2
     for (int nC = 0; nC < nColours; ++nC) {
         for (int nY = 0; nY < nYears; ++nY) {
             double dValue = TEP_Target2[nY][nC];
-            SetTableValue("TET_Target2.VALUE", dValue, nY, nC);
+            FixedSetTableValue("TET_Target2.VALUE", dValue, nY, nC);
         }
     }
 
     // TEP_Target1b
     for (int nY = 0; nY < nYears; ++nY) {
         double dValue = TEP_Target1b[nY];
-        SetTableValue("TET_Target1b.VALUE", dValue, nY);
+        FixedSetTableValue("TET_Target1b.VALUE", dValue, nY);
     }
 
     // TEP_Target2b
     for (int nC = 0; nC < nColours; ++nC) {
         for (int nY = 0; nY < nYears; ++nY) {
             double dValue = TEP_Target2b[nY][nC];
-            SetTableValue("TET_Target2b.VALUE", dValue, nY, nC);
+            FixedSetTableValue("TET_Target2b.VALUE", dValue, nY, nC);
         }
     }
 };

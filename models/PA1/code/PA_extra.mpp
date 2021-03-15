@@ -90,15 +90,15 @@ void UserTables()
 {
     {
         double dValue = RR_with;
-        SetTableValue("A_RR_with.VALUE", dValue);
+        FixedSetTableValue("A_RR_with.VALUE", dValue);
     }
     {
         double dValue = RR_without;
-        SetTableValue("A_RR_without.VALUE", dValue);
+        FixedSetTableValue("A_RR_without.VALUE", dValue);
     }
     {
         double dValue = RR_treated;
-        SetTableValue("A_RR_treated.VALUE", dValue);
+        FixedSetTableValue("A_RR_treated.VALUE", dValue);
     }
 };
 

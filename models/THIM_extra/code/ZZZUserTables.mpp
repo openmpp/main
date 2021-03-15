@@ -52,35 +52,35 @@ void UserTables()
 		{
 			// from NbhdAvgsByDec
 
-			double dOccupancyFactor  = GetTableValue("NbhdAvgsByDec.Expr0", nT, nN);
-			double dAverageHealth    = GetTableValue("NbhdAvgsByDec.Expr6", nT, nN);
-			double dAverageEducation = GetTableValue("NbhdAvgsByDec.Expr2", nT, nN);
-			double dAverageIncome    = GetTableValue("NbhdAvgsByDec.Expr4", nT, nN);
-			double dAdultCount       = GetTableValue("NbhdAvgsByDec.Expr7", nT, nN);
-			double dChildCount       = GetTableValue("NbhdAvgsByDec.Expr8", nT, nN);
-			double dAverageAge       = GetTableValue("NbhdAvgsByDec.Expr9", nT, nN);
+			double dOccupancyFactor  = FixedGetTableValue("NbhdAvgsByDec.Expr0", nT, nN);
+			double dAverageHealth    = FixedGetTableValue("NbhdAvgsByDec.Expr6", nT, nN);
+			double dAverageEducation = FixedGetTableValue("NbhdAvgsByDec.Expr2", nT, nN);
+			double dAverageIncome    = FixedGetTableValue("NbhdAvgsByDec.Expr4", nT, nN);
+			double dAdultCount       = FixedGetTableValue("NbhdAvgsByDec.Expr7", nT, nN);
+			double dChildCount       = FixedGetTableValue("NbhdAvgsByDec.Expr8", nT, nN);
+			double dAverageAge       = FixedGetTableValue("NbhdAvgsByDec.Expr9", nT, nN);
 
-			SetTableValue("NbhdStatsbyDec.OCCUPANCY_FACTOR",  dOccupancyFactor, nN, nT);
-			SetTableValue("NbhdStatsbyDec.AVERAGE_HEALTH",    dAverageHealth, nN, nT);
-			SetTableValue("NbhdStatsbyDec.AVERAGE_EDUCATION", dAverageEducation, nN, nT);
-			SetTableValue("NbhdStatsbyDec.AVERAGE_INCOME",    dAverageIncome, nN, nT);
-			SetTableValue("NbhdStatsbyDec.ADULT_COUNT",       dAdultCount, nN, nT);
-			SetTableValue("NbhdStatsbyDec.CHILD_COUNT",       dChildCount, nN, nT);
-			SetTableValue("NbhdStatsbyDec.AVERAGE_AGE",       dAverageAge, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.OCCUPANCY_FACTOR",  dOccupancyFactor, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.AVERAGE_HEALTH",    dAverageHealth, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.AVERAGE_EDUCATION", dAverageEducation, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.AVERAGE_INCOME",    dAverageIncome, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.ADULT_COUNT",       dAdultCount, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.CHILD_COUNT",       dChildCount, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.AVERAGE_AGE",       dAverageAge, nN, nT);
 
 			// from YstatsByDecNbhd
 
-			double dTotalPersons        = GetTableValue("YstatsByDecNbhd.TOTAL_PERSONS", nN, nT);
-			double dTotalIncome         = GetTableValue("YstatsByDecNbhd.TOTAL_INCOME", nN, nT);
-			double dMedianIncome        = GetTableValue("YstatsByDecNbhd.MEDIAN_INCOME", nN, nT);
-			double dTotaIncomeLtMedian  = GetTableValue("YstatsByDecNbhd.TOTAL_INCOME_LT_MEDIAN", nN, nT);
-			double dMedianYShare        = GetTableValue("YstatsByDecNbhd.MEDIAN_Y_SHARE", nN, nT);
+			double dTotalPersons        = FixedGetTableValue("YstatsByDecNbhd.TOTAL_PERSONS", nN, nT);
+			double dTotalIncome         = FixedGetTableValue("YstatsByDecNbhd.TOTAL_INCOME", nN, nT);
+			double dMedianIncome        = FixedGetTableValue("YstatsByDecNbhd.MEDIAN_INCOME", nN, nT);
+			double dTotaIncomeLtMedian  = FixedGetTableValue("YstatsByDecNbhd.TOTAL_INCOME_LT_MEDIAN", nN, nT);
+			double dMedianYShare        = FixedGetTableValue("YstatsByDecNbhd.MEDIAN_Y_SHARE", nN, nT);
 
-			SetTableValue("NbhdStatsbyDec.TOTAL_PERSONS",          dTotalPersons, nN, nT);
-			SetTableValue("NbhdStatsbyDec.TOTAL_INCOME",           dTotalIncome, nN, nT);
-			SetTableValue("NbhdStatsbyDec.MEDIAN_INCOME",          dMedianIncome, nN, nT);
-			SetTableValue("NbhdStatsbyDec.TOTAL_INCOME_LT_MEDIAN", dTotaIncomeLtMedian, nN, nT);
-			SetTableValue("NbhdStatsbyDec.MEDIAN_Y_SHARE",         dMedianYShare, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.TOTAL_PERSONS",          dTotalPersons, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.TOTAL_INCOME",           dTotalIncome, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.MEDIAN_INCOME",          dMedianIncome, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.TOTAL_INCOME_LT_MEDIAN", dTotaIncomeLtMedian, nN, nT);
+			FixedSetTableValue("NbhdStatsbyDec.MEDIAN_Y_SHARE",         dMedianYShare, nN, nT);
 
 		}
 	}

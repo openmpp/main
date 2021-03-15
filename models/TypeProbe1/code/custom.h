@@ -11,6 +11,7 @@
 #include <cassert>
 #include <iostream>
 #include "case_based.h"
+#include "omc/fixed_modgen_api.h"
 
 #if defined(MODGEN)
 namespace mm {

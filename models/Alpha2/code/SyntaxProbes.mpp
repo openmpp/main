@@ -333,13 +333,13 @@ void UserTables()
     const int nEyeColours = SIZE(EYE_COLOUR);
     for (int nA = 0; nA < nAgeGroups; ++nA) {
         for (int nC = 0; nC < nEyeColours; ++nC) {
-            double dValue = GetTableValue("ut1_feeder.Expr0", nA, nC);
+            double dValue = FixedGetTableValue("ut1_feeder.Expr0", nA, nC);
             double dValue1 = 1.0 + dValue;
             double dValue2 = 2.0 + dValue;
             double dValue3 = 3.0 + dValue;
-            SetTableValue("ut1.ANALYSIS1", dValue1, nA, nC);
-            SetTableValue("ut1.ANALYSIS2", dValue2, nA, nC);
-            SetTableValue("ut1.ANALYSIS3", dValue3, nA, nC);
+            FixedSetTableValue("ut1.ANALYSIS1", dValue1, nA, nC);
+            FixedSetTableValue("ut1.ANALYSIS2", dValue2, nA, nC);
+            FixedSetTableValue("ut1.ANALYSIS3", dValue3, nA, nC);
         }
     }
 }

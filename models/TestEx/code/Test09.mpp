@@ -52,12 +52,12 @@ void UserTables()
 	int nCount = SIZE(SIMYEAR);
 
 	for ( nYear=0; nYear < nCount; nYear++ ) {
-		double dVH   	= GetTableValue( "T09_TABLE01.Expr0", 0, nYear );
-		double dAge 	= GetTableValue( "T09_TABLE01.Expr1", 0, nYear );
-		double dAgeUnit = GetTableValue( "T09_TABLE01.Expr2", 0, nYear );
-		SetTableValue( "TEST09.VALUE_HOLDER", 	dVH,  nYear );
-		SetTableValue( "TEST09.AGE", 			dAge, nYear );
-		SetTableValue( "TEST09.AGE_UNIT", 		dAgeUnit, nYear );
+		double dVH   	= FixedGetTableValue( "T09_TABLE01.Expr0", 0, nYear );
+		double dAge 	= FixedGetTableValue( "T09_TABLE01.Expr1", 0, nYear );
+		double dAgeUnit = FixedGetTableValue( "T09_TABLE01.Expr2", 0, nYear );
+		FixedSetTableValue( "TEST09.VALUE_HOLDER", 	dVH,  nYear );
+		FixedSetTableValue( "TEST09.AGE", 			dAge, nYear );
+		FixedSetTableValue( "TEST09.AGE_UNIT", 		dAgeUnit, nYear );
 	}
 }
 
