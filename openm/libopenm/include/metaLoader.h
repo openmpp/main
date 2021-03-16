@@ -20,176 +20,179 @@ namespace openm
     struct RunOptionsKey
     {
         /** number of sub-values */
-        static const char * subValueCount;
+        static constexpr const char * subValueCount = "OpenM.SubValues";
 
         /** model run name in database */
-        static const char * runName;
+        static constexpr const char * runName = "OpenM.RunName";
 
         /** model run id to restart model run */
-        static const char * restartRunId;
+        static constexpr const char * restartRunId = "OpenM.RestartRunId";
 
         /** working set id to get input parameters */
-        static const char * setId;
+        static constexpr const char * setId = "OpenM.SetId";
 
         /** working set name to get input parameters */
-        static const char * setName;
+        static constexpr const char * setName = "OpenM.SetName";
 
         /** base run name to get input parameters */
-        static const char * baseRunName;
+        static constexpr const char * baseRunName = "OpenM.BaseRunName";
 
         /** model run id to get input parameters */
-        static const char * baseRunId;
+        static constexpr const char * baseRunId = "OpenM.BaseRunId";
 
         /** model run digest to get input parameters */
-        static const char * baseRunDigest;
+        static constexpr const char * baseRunDigest = "OpenM.BaseRunDigest";
 
         /** modeling task id */
-        static const char * taskId;
+        static constexpr const char * taskId = "OpenM.TaskId";
 
         /** modeling task name */
-        static const char * taskName;
+        static constexpr const char * taskName = "OpenM.TaskName";
 
         /** modeling task run name in database */
-        static const char * taskRunName;
+        static constexpr const char * taskRunName = "OpenM.TaskRunName";
 
         /** modeling task run id */
-        static const char * taskRunId;
+        static constexpr const char * taskRunId = "OpenM.TaskRunId";
 
         /** modeling task under external supervision */
-        static const char * taskWait;
+        static constexpr const char * taskWait = "OpenM.TaskWait";
 
         /** profile name to get run options */
-        static const char * profile;
+        static constexpr const char * profile = "OpenM.Profile";
 
         /** number of modeling threads */
-        static const char * threadCount;
+        static constexpr const char * threadCount = "OpenM.Threads";
 
         /** if true then do not run modeling threads at root process */
-        static const char * notOnRoot;
+        static constexpr const char * notOnRoot = "OpenM.NotOnRoot";
 
         /** database connection string */
-        static const char * dbConnStr;
+        static constexpr const char * dbConnStr = "OpenM.Database";
 
         /** use sparse output tables */
-        static const char * useSparse;
+        static constexpr const char * useSparse = "OpenM.SparseOutput";
 
         /** sparse null value */
-        static const char * sparseNull;
+        static constexpr const char * sparseNull = "OpenM.SparseNullValue";
 
         /** convert to string format for float, double, long double */
-        static const char * doubleFormat;
+        static constexpr const char * doubleFormat = "OpenM.DoubleFormat";
 
         /** dir/to/read/input/parameter.csv */
-        static const char * paramDir;
+        static constexpr const char * paramDir = "OpenM.ParamDir";
 
         /** if true then parameter(s) csv file(s) contain enum id's, default: enum code */
-        static const char * useIdCsv;
+        static constexpr const char * useIdCsv = "OpenM.IdCsv";
 
         /** if true then parameter value is enum id, default: enum code */
-        static const char * useIdParamValue;
+        static constexpr const char * useIdParamValue = "OpenM.IdParameterValue";
 
         /** if positive then used for simulation progress reporting, ex: every 10% */
-        static const char * progressPercent;
+        static constexpr const char * progressPercent = "OpenM.ProgressPercent";
 
         /** if positive then used for simulation progress reporting, ex: every 1000 cases or every 0.1 time step */
-        static const char * progressStep;
+        static constexpr const char * progressStep = "OpenM.ProgressStep";
 
         /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
-        static const char * parameterPrefix;
+        static constexpr const char * parameterPrefix = "Parameter";
 
         /** options started with "SubFrom." used to specify where to get sub-values of input parameter or group of parameters, ex: -SubFrom.Age csv */
-        static const char * subFromPrefix;
+        static constexpr const char * subFromPrefix = "SubFrom";
 
         /** options started with "SubValues." used specify sub-values of input parameter or group of parameters, ex: -SubValues.Age [1,4] */
-        static const char * subValuesPrefix;
+        static constexpr const char * subValuesPrefix = "SubValues";
+
+        /** exclude output tables or tables group from run results, ex: -Tables.Suppress AgeTable,IncomeGroup */
+        static constexpr const char * tableSuppress = "Tables.Suppress";
+
+        /** include only specified output tables or tables group into run results, ex: -Tables.Retain AgeTable,IncomeGroup */
+        static constexpr const char * tableRetain = "Tables.Retain";
 
         /** import parameters from all upstream models last runs, ex: -Import.All true */
-        static const char * importAll;
+        static constexpr const char * importAll = "Import.All";
 
         /** options started with "Import." used to specify parameters import from upstream model run, ex: -Import.modelOne true */
-        static const char * importPrefix;
+        static constexpr const char * importPrefix = "Import";
 
         /** options started with "ImportRunDigest." used to specify run name to import parameters from, ex: -ImportRunDigest.modelOne abcdef */
-        static const char * importRunDigestPrefix;
+        static constexpr const char * importRunDigestPrefix = "ImportRunDigest";
 
         /** options started with "ImportRunId." used to specify run id to import parameters from, ex: -ImportRunId.modelOne 101 */
-        static const char * importRunIdPrefix;
+        static constexpr const char * importRunIdPrefix = "ImportRunId";
 
         /** options started with "ImportRunName." used to specify run name to import parameters from, ex: -ImportRunName.modelOne GoodRun */
-        static const char * importRunNamePrefix;
+        static constexpr const char * importRunNamePrefix = "ImportRunName";
 
         /** options started with "ImportDigest." used to specify model digest to import parameters from last run of that model, ex: -ImportModelDigest.modelOne fedcba */
-        static const char * importModelDigestPrefix;
+        static constexpr const char * importModelDigestPrefix = "ImportModelDigest";
 
         /** options started with "ImportId." used to specify model id to import parameters from last run of that model, ex: -ImportModelId.modelOne 123 */
-        static const char * importModelIdPrefix;
+        static constexpr const char * importModelIdPrefix = "ImportModelId";
 
         /** options started with "ImportExpr." used to specify expression name to import from output table, ex: -ImportExpr.AgeTable expr2 */
-        static const char * importExprPrefix;
+        static constexpr const char * importExprPrefix = "ImportExpr";
 
-        /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDatabase.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
-        static const char * importDbPrefix;
+        /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDb.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
+        static constexpr const char * importDbPrefix = "ImportDb";
 
         /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
-        static const char * runDescrSuffix;
-
-        /** options started with "Suppress." used to exclude output table or tables group from run results, ex: -Suppress.AgeTable true */
-        static const char * suppressPrefix;
+        static constexpr const char * runDescrSuffix = "RunDescription";
 
         /** trace log to console */
-        static const char * traceToConsole;
+        static constexpr const char * traceToConsole = "OpenM.TraceToConsole";
 
         /** trace log to file */
-        static const char * traceToFile;
+        static constexpr const char * traceToFile = "OpenM.TraceToFile";
 
         /** trace log file path */
-        static const char * traceFilePath;
+        static constexpr const char * traceFilePath = "OpenM.TraceFilePath";
 
         /** trace log to "stamped" file */
-        static const char * traceToStamped;
+        static constexpr const char * traceToStamped = "OpenM.TraceToStampedFile";
 
         /** trace use time-stamp in log "stamped" file name */
-        static const char * traceUseTs;
+        static constexpr const char * traceUseTs = "OpenM.TraceUseTimeStamp";
 
         /** trace use pid-stamp in log "stamped" file name */
-        static const char * traceUsePid;
+        static constexpr const char * traceUsePid = "OpenM.TraceUsePidStamp";
 
         /** do not prefix trace log messages with date-time */
-        static const char * traceNoMsgTime;
+        static constexpr const char * traceNoMsgTime = "OpenM.TraceNoMsgTime";
                                        
         /** language to display output messages */
-        static const char * messageLang;
+        static constexpr const char * messageLang = "OpenM.MessageLanguage";
         
         /** log version info */
-        static const char * version;
+        static constexpr const char * version = "OpenM.Version";
 
         /** sub-value of parameter must be in the input workset */
-        static const char * dbSubValue;
+        static constexpr const char * dbSubValue = "db";
 
         /** sub-value of parameter created as integer from 0 to sub-value count */
-        static const char * iotaSubValue;
+        static constexpr const char * iotaSubValue = "iota";
 
         /** all parameter sub-values must be in parameter.csv file */
-        static const char * csvSubValue;
+        static constexpr const char * csvSubValue = "csv";
 
         /** default value for any option */
-        static const char * defaultValue;
+        static constexpr const char * defaultValue = "default";
 
         /** all value for any option */
-        static const char * allValue;
+        static constexpr const char * allValue = "All";
     };
 
     /** keys for model run options (short form) */
     struct RunShortKey
     {
         /** short name for ini file name: -ini fileName.ini */
-        static const char * iniFile;
+        static constexpr const char * iniFile = "ini";
 
         /** short name for: -s working set name to get input parameters */
-        static const char * setName;
+        static constexpr const char * setName = "s";
 
         /** short name for: -p dir/to/read/input/parameter.csv */
-        static const char * paramDir;
+        static constexpr const char * paramDir = "p";
     };
 
     /** model metadata loader: read and broadcast metadata and run options. */

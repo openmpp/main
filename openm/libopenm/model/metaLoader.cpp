@@ -10,177 +10,6 @@
 using namespace std;
 using namespace openm;
 
-namespace openm
-{
-    /** short name for ini file name: -ini fileName.ini */
-    const char * RunShortKey::iniFile = "ini";
-
-    /** number of sub-values */
-    const char * RunOptionsKey::subValueCount = "OpenM.SubValues";
-
-    /** model run name in database */
-    const char * RunOptionsKey::runName = "OpenM.RunName";
-
-    /** model run id to restart model run */
-    const char * RunOptionsKey::restartRunId = "OpenM.RestartRunId";
-
-    /** working set id to get input parameters */
-    const char * RunOptionsKey::setId = "OpenM.SetId";
-
-    /** working set name to get input parameters */
-    const char * RunOptionsKey::setName = "OpenM.SetName";
-
-    /** short name for: -s working set name to get input parameters */
-    const char * RunShortKey::setName = "s";
-
-    /** base run name to get input parameters */
-    const char * RunOptionsKey::baseRunName = "OpenM.BaseRunName";
-
-    /** model run id to get input parameters */
-    const char * RunOptionsKey::baseRunId = "OpenM.BaseRunId";
-
-    /** model run digest to get input parameters */
-    const char * RunOptionsKey::baseRunDigest = "OpenM.BaseRunDigest";
-
-    /** modeling task id */
-    const char * RunOptionsKey::taskId = "OpenM.TaskId";
-
-    /** modeling task name */
-    const char * RunOptionsKey::taskName = "OpenM.TaskName";
-
-    /** modeling task run name in database */
-    const char * RunOptionsKey::taskRunName = "OpenM.TaskRunName";
-
-    /** modeling task run id */
-    const char * RunOptionsKey::taskRunId = "OpenM.TaskRunId";
-
-    /** modeling task under external supervision */
-    const char * RunOptionsKey::taskWait = "OpenM.TaskWait";
-
-    /** profile name to get run options */
-    const char * RunOptionsKey::profile = "OpenM.Profile";
-
-    /** number of modeling threads */
-    const char * RunOptionsKey::threadCount = "OpenM.Threads";
-
-    /** if true then do not run modeling threads at root process */
-    const char * RunOptionsKey::notOnRoot = "OpenM.NotOnRoot";
-
-    /** database connection string */
-    const char * RunOptionsKey::dbConnStr = "OpenM.Database";
-
-    /** use sparse output tables */
-    const char * RunOptionsKey::useSparse = "OpenM.SparseOutput";
-
-    /** sparse NULL value */
-    const char * RunOptionsKey::sparseNull = "OpenM.SparseNullValue";
-
-    /** convert to string format for float, double, long double */
-    const char * RunOptionsKey::doubleFormat = "OpenM.DoubleFormat";
-
-    /** dir/to/read/input/parameter.csv */
-    const char * RunOptionsKey::paramDir = "OpenM.ParamDir";
-
-    /** short version: -p dir/to/read/input/parameter.csv */
-    const char * RunShortKey::paramDir = "p";
-
-    /** if true then parameter(s) csv file(s) contain enum id's, default: enum code */
-    const char * RunOptionsKey::useIdCsv = "OpenM.IdCsv";
-
-    /** if true then parameter value is enum id, default: enum code */
-    const char * RunOptionsKey::useIdParamValue = "OpenM.IdParameterValue";
-    
-    /** if positive then used for simulation progress reporting, ex: every 10% */
-    const char * RunOptionsKey::progressPercent = "OpenM.ProgressPercent";
-
-    /** if positive then used for simulation progress reporting, ex: every 1000 cases or every 0.1 time step */
-    const char * RunOptionsKey::progressStep = "OpenM.ProgressStep";
-
-    /** options started with "Parameter." treated as value of model scalar input parameter, ex: -Parameter.Age 42 */
-    const char * RunOptionsKey::parameterPrefix = "Parameter";
-
-    /** options started with "SubFrom." used to specify where to get sub-values of input parameter or group of pararmeters, ex: -SubFrom.Age csv */
-    const char * RunOptionsKey::subFromPrefix = "SubFrom";
-
-    /** options started with "SubValues." used specify sub-values of input parameter or group of parameters, ex: -SubValues.Age [1,4] */
-    const char * RunOptionsKey::subValuesPrefix = "SubValues";
-
-    /** import parameters from all upstream models last runs, ex: -Import.All true */
-    const char * RunOptionsKey::importAll = "Import.All";
-
-    /** options started with "Import." used to specify parameters import from upstream model run, ex: -Import.modelOne true */
-    const char * RunOptionsKey::importPrefix = "Import";
-
-    /** options started with "ImportRunDigest." used to specify run name to import parameters from, ex: -ImportRunDigest.modelOne abcdef */
-    const char * RunOptionsKey::importRunDigestPrefix = "ImportRunDigest";
-
-    /** options started with "ImportRunId." used to specify run id to import parameters from, ex: -ImportRunId.modelOne 101 */
-    const char * RunOptionsKey::importRunIdPrefix = "ImportRunId";
-
-    /** options started with "ImportRunName." used to specify run name to import parameters from, ex: -ImportRunName.modelOne GoodRun */
-    const char * RunOptionsKey::importRunNamePrefix = "ImportRunName";
-
-    /** options started with "ImportDigest." used to specify model digest to import parameters from last run of that model, ex: -ImportModelDigest.modelOne fedcba */
-    const char * RunOptionsKey::importModelDigestPrefix = "ImportModelDigest";
-
-    /** options started with "ImportId." used to specify model id to import parameters from last run of that model, ex: -ImportModelId.modelOne 123 */
-    const char * RunOptionsKey::importModelIdPrefix = "ImportModelId";
-
-    /** options started with "ImportExpr." used to specify expression name to import from output table, ex: -ImportExpr.AgeTable expr2 */
-    const char * RunOptionsKey::importExprPrefix = "ImportExpr";
-
-    /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDatabase.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
-    const char * RunOptionsKey::importDbPrefix = "ImportDb";
-
-    /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
-    const char * RunOptionsKey::runDescrSuffix = "RunDescription";
-
-    /** options started with "Suppress." used to exclude output table or tables group from run results, ex: -Suppress.AgeTable true */
-    const char * RunOptionsKey::suppressPrefix = "Suppress";
-
-    /** trace log to console */
-    const char * RunOptionsKey::traceToConsole = "OpenM.TraceToConsole";
-
-    /** trace log to file */
-    const char * RunOptionsKey::traceToFile = "OpenM.TraceToFile";
-
-    /** trace log file path */
-    const char * RunOptionsKey::traceFilePath = "OpenM.TraceFilePath";
-
-    /** trace log to "stamped" file */
-    const char * RunOptionsKey::traceToStamped = "OpenM.TraceToStampedFile";
-
-    /** trace use time-stamp in log "stamped" file name */
-    const char * RunOptionsKey::traceUseTs = "OpenM.TraceUseTimeStamp";
-
-    /** trace use pid-stamp in log "stamped" file name */
-    const char * RunOptionsKey::traceUsePid = "OpenM.TraceUsePidStamp";
-
-    /** do not prefix trace log messages with date-time */
-    const char * RunOptionsKey::traceNoMsgTime = "OpenM.TraceNoMsgTime";
-
-    /** language to display output messages */
-    const char * RunOptionsKey::messageLang = "OpenM.MessageLanguage";
-
-    /** log version info */
-    const char* RunOptionsKey::version = "OpenM.Version";
-
-    /** sub-value of parameter must be in the input workset */
-    const char * RunOptionsKey::dbSubValue = "db";
-
-    /** sub-value of parameter created as integer from 0 to sub-value count */
-    const char * RunOptionsKey::iotaSubValue = "iota";
-
-    /** all parameter sub-values must be in parameter.csv file */
-    const char * RunOptionsKey::csvSubValue = "csv";
-
-    /** default value of any option */
-    const char * RunOptionsKey::defaultValue = "default";
-
-    /** all value for any option */
-    const char * RunOptionsKey::allValue = "All";
-}
-
 /** array of model run option keys. */
 static const char * runOptKeyArr[] = {
     RunOptionsKey::subValueCount,
@@ -195,6 +24,9 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::taskName,
     RunOptionsKey::taskRunName,
     RunOptionsKey::taskWait,
+    RunOptionsKey::profile,
+    RunOptionsKey::tableSuppress,
+    RunOptionsKey::tableRetain,
     RunOptionsKey::profile,
     RunOptionsKey::importAll,
     RunOptionsKey::threadCount,
@@ -251,8 +83,7 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::importModelDigestPrefix,
     RunOptionsKey::importModelIdPrefix,
     RunOptionsKey::importDbPrefix,
-    RunOptionsKey::importExprPrefix,
-    RunOptionsKey::suppressPrefix
+    RunOptionsKey::importExprPrefix
 };
 static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
@@ -972,62 +803,46 @@ void MetaLoader::parseImportOptions(void)
 
 /** parse suppress options to build list of tables to exclude from calculation and run output results.
 *
-* There are two ways to specify tables suppression: \n
-*   Suppress.AgeTable    true       \n
-*   Suppress.IncomeGroup true       \n
-* this means suppress only AgeTable and IncomeGroup of tables. \n
-* Or:                               \n
-*   Suppress.AgeTable    false      \n
-*   Suppress.IncomeGroup false      \n
+* There are two ways to specify tables suppression:             \n
+*   Suppress.AgeTable,IncomeGroup           \n
+* this means suppress only AgeTable and IncomeGroup of tables.  \n
+* Or:                                       \n
+*   Retain.AgeTable,IncomeGroup             \n
 * result in suppression of all output tables except of AgeTable and IncomeGroup of tables.
 *
 * Suppress true and false values are mutually exclusive and cannot be mixed.
-* For example, this model run will fail:             \n
-*   model.exe -Suppress.A true -Suppress.B false
+* For example, this model run will fail:    \n
+*   model.exe -Suppress A -Retain B
 */
 void MetaLoader::parseSuppressOptions(void)
 {
-    string suppPrefix = string(RunOptionsKey::suppressPrefix) + ".";
+    bool isSuppress = argStore.isOptionExist(RunOptionsKey::tableSuppress);
+    bool isRetain = argStore.isOptionExist(RunOptionsKey::tableRetain);
+    if (isSuppress && isRetain)
+        throw ModelException("run options %s and %s are mutually exclusive and cannot be used at the same time", RunOptionsKey::tableSuppress, RunOptionsKey::tableRetain);
 
-    bool isSupp = false;
-    bool isNotSupp = false;
+    if (!isSuppress && !isRetain) return;    // exit: no suppression, all tables included into output
+
+    // find table id by name
+    // or expand table group to get id's of all table members
+    list<string> nameLst = splitCsv(argStore.strOption(isSuppress ? RunOptionsKey::tableSuppress : RunOptionsKey::tableRetain));
+
     set<int> tblIds;
+    for (const string & name : nameLst) {
 
-    for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
-
-        // check is it one of suppress option
-        const char * argKey = optIt->first.c_str();
-        if (!equalNoCase(argKey, suppPrefix.c_str(), suppPrefix.length())) continue;    // it is not a suppress option
-
-        // check option key: table name or group name must not be empty
-        string argName = removeOptPrefix(optIt->first, suppPrefix);
-
-        if (argName.empty()) throw ModelException("invalid (empty) output table name or group name: %s", argKey);
-
-        // check option value, all values must be identical: all true or all false, it can not be a mix
-        bool isYes = parseBoolOption(argKey, argStore);
-        isSupp = isSupp || isYes;
-        isNotSupp = isNotSupp || !isYes;
-
-        if (isSupp && isNotSupp)
-            throw ModelException("all %s run optins must have same value and cannot be mixed: %s %s",
-                RunOptionsKey::suppressPrefix, argKey, optIt->second.c_str());
-
-        // find table id by name
-        // or expand table group to get id's of all table members
-        const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, argName);
+        const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, name);
         if (tblRow != nullptr) {
             tblIds.insert(tblRow->tableId);
         }
         else {
             // find ouput table group
             const GroupLstRow * grpRow = metaStore->groupLst->findFirst(
-                [this, &argName](const GroupLstRow & i_row) -> bool {
-                    return !i_row.isParam && i_row.modelId == modelId && i_row.name == argName;
+                [this, &name](const GroupLstRow & i_row) -> bool {
+                    return !i_row.isParam && i_row.modelId == modelId && i_row.name == name;
                 }
             );
             if (grpRow == nullptr)
-                throw DbException("output table or tables group not found: %s in the model %s, id: %d", argName.c_str(), metaStore->modelRow->name.c_str(), modelId);
+                throw DbException("output table or tables group not found: %s in the model %s, id: %d", name.c_str(), metaStore->modelRow->name.c_str(), modelId);
 
             vector<int> idArr = metaStore->groupPc->groupLeafs(modelId, grpRow->groupId);   // get all members id of that group
 
@@ -1038,10 +853,10 @@ void MetaLoader::parseSuppressOptions(void)
     // build sorted vector of table id's to suppress
     // if not suppress options are used then
     // build list of table id's to suppress by excluding "not suppress" id from the model table list
-    if (isSupp) {
+    if (isSuppress) {
         tableIdSuppressArr.assign(tblIds.cbegin(), tblIds.cend());
     }
-    if (isNotSupp) {
+    else {
         for (ptrdiff_t nRow = 0; nRow < metaStore->tableDic->rowCount(); nRow++) {
 
             const TableDicRow * tRow = metaStore->tableDic->byIndex(nRow);
