@@ -207,13 +207,13 @@ run:
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "Task Run with Suppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Suppress.ageSexIncome -Suppress.AdditionalTables \
+		-Tables.Suppress ageSexIncome,AdditionalTables \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "Task Run with NotSuppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Suppress.ageSexIncome false -Suppress.AdditionalTables false \
+		-Tables.Retain ageSexIncome,AdditionalTables \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
