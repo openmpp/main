@@ -181,14 +181,18 @@ void omc::buildMessageIni(
 
         iniFs << "; Translated messages for model: " << i_metaRows.modelDic.name << "\r\n" <<
             "; \r\n" <<
-            "; Each message must be on a single line, multi-line messages NOT supported \r\n" <<
             "; Each message must be Key = Value \r\n" <<
+            "; Value can be a multi-line with \\ at the end for continuation \r\n" <<
             "; If message starts or end with blank space then put it inside of \"quotes\" or 'single' quotes \r\n" <<
             "; Part of the line after ; or # is just a comment \r\n" <<
+            "; Multi-line \"quoted values\" cannot have ; or # comment at the end \r\n" <<
             "; Examples: \r\n" <<
             "; some message = message in English                                    ; this part is a comment \r\n" <<
             "; \" space can be preserved \" = \" space can be preserved in English \" \r\n" <<
             "; ' you can use single quote ' = ' you can use single quote or '' combine \"quotes\" ' \r\n" <<
+            "; it can be =\\ \r\n" <<
+            ";             \" a multilpe lines \\ \r\n" <<
+            ";             value\" \r\n" <<
             "\r\n";
 
         for (const auto & iniSect : iniMap) {
