@@ -56,25 +56,36 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
 
         // read ini-file into UTF-8 string
         string fileContent = fileToUtf8(i_filePath, i_codePageName);
+        string::size_type fileLen = fileContent.length();
 
         // parse file content into vector of entries
         string::size_type nStart = 0;
+        int nLine = 1;
+        int nNext = nLine;
         string section;
         string sKey;
         string sValue;
-        int nLine = 0;
         bool isContinue = false;
 
-        while (nStart < fileContent.length()) {
+        while (nStart < fileLen) {
 
-            // get the line
+            // get the line, find start of next line and count line numbers by counting \n
             string::size_type nextPos = fileContent.find_first_of("\r\n", nStart);
-            if (nextPos != string::npos) nextPos = fileContent.find_first_not_of("\r\n", nextPos);
-            if (nextPos == string::npos) nextPos = fileContent.length();
+
+            nLine = nNext;
+            if (nextPos == string::npos) {
+                nextPos = fileLen;
+            }
+            else {
+                while (nextPos < fileLen) {
+                    char c = fileContent[++nextPos];
+                    if (c != '\r' && c != '\n') break;
+                    if (c == '\n') nNext++;
+                }
+            }
 
             string sLine = trim(fileContent.substr(nStart, nextPos - nStart));
             nStart = nextPos;   // to start of the next line
-            nLine++;
 
             // skip empty lines
             string::size_type nLen = sLine.length();
