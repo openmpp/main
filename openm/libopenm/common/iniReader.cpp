@@ -27,20 +27,20 @@ using namespace openm;
 * non =
 * val = no comments
 * dsn = "DSN='server'; UID='user'; PWD='secret';"   ; comment: database connection string
-* lst = "the # quick" brown 'fox # jumps ; over'    # use "quote" and 'apostrofe' to escape characters and keep spaces
+* lst = "the # quick" brown 'fox # jumps ; over'    # use "quote" and 'apostrophe' to escape characters and keep spaces
 * unb = "unbalanced quote                           ; this is not a comment: it is a value started from " quote
 *
-* trim = Aname,Bname, \     ; comment: multi-line value joined with right spaces trimmed
+* trim = Aname,Bname, \     ; comment: multi-line value joined with spaces trimmed
 *        Cname,DName        ; comment: result is: Aname,Bname,Cname,DName
 *
-* ; multi-line value started with " quote or ' apostrofe
+* ; multi-line value started with " quote or ' apostrophe
 * ; right spaces before \ is not trimmed, result is:
 * ; Multi line   text with spaces
 * ;
 * keep = "Multi line   \
 *        text with spaces"
 *
-* ; multi-line value started with " quote or ' apostrofe
+* ; multi-line value started with " quote or ' apostrophe
 * ; result is the same as above:
 * ; Multi line   text with spaces
 * ;

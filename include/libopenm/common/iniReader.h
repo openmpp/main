@@ -45,7 +45,7 @@ namespace openm
         // set key name: remove = if present, unquote and trim
         void setKey(const string & i_key);
 
-        // set value: space trimed, comment removed and unquoted ("quotes" or 'apostrophes' removed)
+        // set value: trim space and remove "quotes" or 'apostrophes'
         void setValue(const string & i_value);
     };
 
