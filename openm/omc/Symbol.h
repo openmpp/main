@@ -1265,6 +1265,11 @@ public:
     static bool option_allow_time_travel;
 
     /**
+     * true if allow_clairvoyance activated in options statement.
+     */
+    static bool option_allow_clairvoyance;
+
+    /**
      * true if time_infinite_is_32767 activated in options statement.
      */
     static bool option_time_infinite_is_32767;

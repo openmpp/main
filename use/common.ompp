@@ -133,15 +133,17 @@ void initialize_model_streams()
 
 /**
  * Handles situation where time is running backwards within an entity.
+ * 
+ * An event about to be implemented in an entity has a time in the local past of the entity
  */
 void handle_backwards_time(
+    double the_current_time,
     double the_event_time,
-    double the_current_time, 
-    int the_event, 
+    int the_event,
     int the_entity)
 {
     // The time of this event is in the local past of the entity within which the event occurs.
-    // This is an error in model logic.
+    // This is caused by an error in model logic.
     extern const char * event_id_to_name(int event_id); // omc generated function defined in om_definitions.cpp
     std::stringstream ss;
     ss  << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
@@ -149,6 +151,28 @@ void handle_backwards_time(
         << LT(" is earlier than current time ") << the_current_time
         << LT(" in event ") << event_id_to_name(the_event)
         << LT(" in entity_id ") << the_entity
+        << LT(" in simulation member ") << get_simulation_member()
+        << LT(" with combined seed ") << get_combined_seed()
+        ;
+    ModelExit(ss.str().c_str());
+}
+
+/**
+ * Handles situation where an entity attempts to access another entity in the local future.
+ */
+void handle_clairvoyance(
+    double the_current_time,
+    double the_future_time,
+    int the_future_entity
+    )
+{
+    // This is caused by an error in model logic.
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+        << std::showpoint // show decimal point
+        << LT("error : Attempt to access entity_id ") << the_future_entity
+        << LT(" with future time ") << the_future_time
+        << LT(" when current time is  ") << the_current_time
         << LT(" in simulation member ") << get_simulation_member()
         << LT(" with combined seed ") << get_combined_seed()
         ;

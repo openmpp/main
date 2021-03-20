@@ -164,6 +164,14 @@ void CodeGen::do_preamble()
         c += "const bool BaseEvent::allow_time_travel = false;";
     }
 
+    if (Symbol::option_allow_clairvoyance) {
+        // Let the run-time know that clairvoyance is allowed
+        c += "const bool BaseEvent::allow_clairvoyance = true;";
+    }
+    else {
+        c += "const bool BaseEvent::allow_clairvoyance = false;";
+    }
+
     c += "";
 
     // om_fixed_parms.cpp
