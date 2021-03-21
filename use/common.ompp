@@ -173,6 +173,8 @@ void handle_clairvoyance(
         << LT("error : Attempt to access entity_id ") << the_future_entity
         << LT(" with future time ") << the_future_time
         << LT(" when current time is  ") << the_current_time
+        << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id)
+        << LT(" in entity_id ") << BaseEvent::current_entity_id
         << LT(" in simulation member ") << get_simulation_member()
         << LT(" with combined seed ") << get_combined_seed()
         ;
@@ -304,8 +306,8 @@ void SetMaxTime(double max_value)
  */
 void StartEventTrace()
 {
-    if (BaseEvent::trace_event_enabled) {
-        BaseEvent::trace_event_on = true;
+    if (BaseAgent::event_trace_enabled) {
+        BaseAgent::event_trace_on = true;
     }
 }
 
@@ -316,8 +318,8 @@ void StartEventTrace()
  */
 void StopEventTrace()
 {
-    if (BaseEvent::trace_event_enabled) {
-        BaseEvent::trace_event_on = false;
+    if (BaseAgent::event_trace_enabled) {
+        BaseAgent::event_trace_on = false;
     }
 }
 

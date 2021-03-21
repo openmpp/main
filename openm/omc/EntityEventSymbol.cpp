@@ -25,7 +25,6 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
         // Create an EntityFuncSymbol for the time function ('true' means the definition is developer-supplied, so suppress definition)
         time_func = new EntityFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
         time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
-        time_func_model_code = time_func;
 
         // Create an EntityFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
         implement_func = new EntityFuncSymbol(ifs, agent, "void", "", true, decl_loc);
@@ -38,6 +37,8 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
         implement_func = dynamic_cast<EntityFuncSymbol *>(ifs);
         assert(implement_func);
     }
+    time_func_original = time_func;
+    implement_func_original = implement_func;
 }
 
 void EntityEventSymbol::post_parse(int pass)
@@ -110,9 +111,9 @@ void EntityEventSymbol::post_parse(int pass)
         if (Symbol::option_event_trace) {
             // The event_trace option is on, so create cover functions
             // for the time and implement functions of the event,
-            // and use them instead of the developer-supplied functions.
-            // The cover functions will perform logging and then call
-            // the original developer functions.
+            // and use them instead of the original functions.
+            // The cover functions perform logging and then call
+            // the original functions.
 
             // Create an EntityFuncSymbol for the time 'cover' function
             string cover_time_func_name = "om_cover_" + time_func->name;
@@ -124,18 +125,8 @@ void EntityEventSymbol::post_parse(int pass)
                 false
             );
             cover_time_func->doc_block = doxygen_short("Logging cover function: Return the time to the event " + event_name + " in the " + agent->name + " agent.");
-            CodeBlock & ct = cover_time_func->func_body;
-            ct += "Time event_time = " + time_func->name + (event_memory ? "(p_event_mem);" : "();");
-            ct += "if (BaseEvent::trace_event_on) "
-                "BaseEvent::event_trace_msg("
-                "\"" + agent->name + "\", "
-                "(int)entity_id, "
-                "GetCaseSeed(), "
-                "\"" + time_func->name + "\", "
-                " (double)event_time);"
-                ;
-            ct += "return event_time;";
-            // Plug it in
+            // Note that the body of the cover time function is supplied in a subsequent pass below
+            // Plug in the cover time function to replace the original function
             time_func = cover_time_func;
 
             // Create an EntityFuncSymbol for the implement 'cover' function
@@ -148,17 +139,8 @@ void EntityEventSymbol::post_parse(int pass)
                 false
             );
             cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " agent.");
-            CodeBlock & ci = cover_implement_func->func_body;
-            ci += "if (BaseEvent::trace_event_on) "
-                "BaseEvent::event_trace_msg("
-                "\"" + agent->name + "\", "
-                "(int)entity_id, "
-                "GetCaseSeed(), "
-                "\"" + agent->name + "." + event_name + "\", "
-                "time);"
-                ;
-            ci += implement_func->name + (event_memory ? "(event_mem);" : "();");
-            // Plug it in
+            // Note that the body of the cover implement function is supplied in a subsequent pass below
+            // Plug in the cover implement function to replace the original function
             implement_func = cover_implement_func;
 			// Push the names into the post parse ignore hash for the current pass.
 			pp_symbols_ignore.insert(cover_time_func->unique_name);
@@ -182,7 +164,7 @@ void EntityEventSymbol::post_parse(int pass)
         if (!is_developer_supplied) break;
         // Iterate through list of identifiers in the body of the time function
         // whose name matches an agentvar.
-        for (auto identifier : time_func_model_code->body_identifiers) {
+        for (auto identifier : time_func_original->body_identifiers) {
             if (exists(identifier, pp_agent)) {
                 auto sym = get_symbol(identifier, pp_agent);
                 auto av = dynamic_cast<AttributeSymbol *>(sym);
@@ -194,6 +176,35 @@ void EntityEventSymbol::post_parse(int pass)
                     c += "if (om_active) " + name + ".make_dirty();";
                 }
             }
+        }
+
+        if (Symbol::option_event_trace) {
+            // Provide the function body for each cover event trace function.
+            // Done in this pass rather than earlier because the logging functions need pp_event_id.
+            CodeBlock& ct = time_func->func_body;
+            ct += "Time event_time = " + time_func_original->name + (event_memory ? "(p_event_mem);" : "();");
+            ct += "if (event_trace_on) "
+                "event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "GetCaseSeed(), "
+                + std::to_string(pp_event_id) + ","
+                "\"" + time_func_original->name + "\", "
+                " (double)event_time, (double)BaseEvent::get_global_time(), eEventScheduledTime);"
+                ;
+            ct += "return event_time;";
+
+            CodeBlock& ci = implement_func->func_body;
+            ci += "if (event_trace_on) "
+                "event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "GetCaseSeed(), "
+                + std::to_string(pp_event_id) + ","
+                "\"" + agent->name + "." + event_name + "\", "
+                "(double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                ;
+            ci += implement_func_original->name + (event_memory ? "(event_mem);" : "();");
         }
         break;
     }

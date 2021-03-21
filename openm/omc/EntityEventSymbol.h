@@ -80,15 +80,23 @@ public:
     EntityFuncSymbol *time_func;
 
     /**
-     * The time function of the event (model code).
+     * The time function of the event (original).
      *
      * A cover version of the time function is created for event logging if event_trace is activated.
-     * This member retains the original function in model code for dependency analysis.
+     * This member contains the original function.
      */
-    EntityFuncSymbol *time_func_model_code;
+    EntityFuncSymbol *time_func_original;
 
     /** The implement function of the event.*/
     EntityFuncSymbol *implement_func;
+
+    /**
+     * The implement function of the event (original).
+     *
+     * A cover version of the implement function is created for event logging if event_trace is activated.
+     * This member contains the original function.
+     */
+    EntityFuncSymbol *implement_func_original;
 
     /**
      * The event priority.

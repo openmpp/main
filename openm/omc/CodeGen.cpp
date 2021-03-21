@@ -135,16 +135,25 @@ void CodeGen::do_preamble()
 
     if (Symbol::option_event_trace) {
         // Let the run-time know if trace event is enabled
-        c += "const bool BaseEvent::trace_event_enabled = true;";
+        c += "const bool BaseAgent::event_trace_enabled = true;";
         // if event_trace option is on, tracing is active unless turned off
-        c += "thread_local bool BaseEvent::trace_event_on = true;";
+        c += "thread_local bool BaseAgent::event_trace_on = true;";
     }
     else {
         // Let the run-time know if trace event is enabled
-        c += "const bool BaseEvent::trace_event_enabled = false;";
+        c += "const bool BaseAgent::event_trace_enabled = false;";
         // independent of the event_trace option, this static member must be defined
-        c += "thread_local bool BaseEvent::trace_event_on = false;";
+        c += "thread_local bool BaseAgent::event_trace_on = false;";
     }
+
+    // static members for event trace control
+    c += "enum BaseAgent::et_report_style BaseAgent::event_trace_report_style = BaseAgent::eModgen;";
+    c += "bool BaseAgent::event_trace_show_scheduling = true;";
+    c += "double BaseAgent::event_trace_minimum_time = -std::numeric_limits<double>::infinity();";
+    c += "double BaseAgent::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
+    c += "std::unordered_set<int> BaseAgent::event_trace_selected_entities;";
+    c += "std::unordered_set<int> BaseAgent::event_trace_selected_events;";
+    c += "";
 
     // Let the run-time know whether to generate a running checksum for events
     if (Symbol::option_case_checksum) {
@@ -914,6 +923,7 @@ void CodeGen::do_agents()
         c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
         c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
     }
+    c += "event_trace_on = event_trace_enabled;";
     c += "}";
     c += "";
 
@@ -1052,23 +1062,55 @@ void CodeGen::do_event_queue()
     c += "// definition of global_time (declaration in Event.h)";
     c += "thread_local Time *BaseEvent::global_time = nullptr;";
     c += "";
-    c += "// definition of active agent list (declaration in Agent.h)";
+    c += "// definition of active entity list (declaration in Entity.h)";
     c += "thread_local std::list<BaseAgent *> *BaseAgent::agents = nullptr;";
+    c += "";
+    c += "// definition of event_id of current event (declaration in Event.h)";
+    c += "thread_local int BaseEvent::current_event_id;";
+    c += "";
+    c += "// definition of entity_id of current event (declaration in Event.h)";
+    c += "thread_local int BaseEvent::current_entity_id;";
     c += "";
 }
 
 void CodeGen::do_event_names()
 {
-    c += "// get event name given event id";
-    c += "const char * event_id_to_name(int event_id) {";
-    c += "static const char * event_name[] = {";
-    for (auto nm : Symbol::pp_all_event_names) {
-        c += "\"" + nm + "\",";
+    {
+        c += "// get event name given event id";
+        c += "const char * event_id_to_name(int event_id) {";
+        c += "static const char * event_name[] = {";
+        int id = 0;
+        for (auto nm : Symbol::pp_all_event_names) {
+            c += "\"" + nm + "\", // event_id " + std::to_string(id);
+            ++id;
+        }
+        if (id == 0) {
+            c += "\"\", // no events in model ";
+        }
+        c += "};";
+        if (id > 0) {
+            c += "return (event_id < " + std::to_string(id) + ") ? event_name[event_id] : \"\";";
+        }
+        else {
+            c += "return \"\"; // no events in model";
+        }
+        c += "}";
     }
-    c += "\"\", // unused - terminating entry";
-    c += "};";
-    c += "return event_name[event_id];";
-    c += "}";
+    c += "";
+    {
+        c += "// get event id given event name";
+        c += "const int event_name_to_id(const char *event_name) {";
+        c += "static const std::map<const char *, int> name_to_id = {";
+        int id = 0;
+        for (auto nm : Symbol::pp_all_event_names) {
+            c += "{\"" + nm + "\", " + std::to_string(id) + "},";
+            ++id;
+        }
+        c += "};";
+        c += "auto srch = name_to_id.find(event_name);";
+        c += "return (srch != name_to_id.end()) ? srch->second : -1;";
+        c += "}";
+    }
     c += "";
 }
 
