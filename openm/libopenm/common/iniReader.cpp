@@ -17,6 +17,37 @@ using namespace openm;
 *
 * @param[in] i_filePath     path to ini-file.
 * @param[in] i_codePageName (optional) name of encoding or Windows code page, ie: English_US.1252
+* 
+* Ini file example: 
+* 
+* [section]     ; section is required, global entries are not allowed
+*               # this is also a comment
+* rem =         ; comment only and empty value
+*               ; next line is empty value without comment
+* non =
+* val = no comments
+* dsn = "DSN='server'; UID='user'; PWD='secret';"   ; comment: database connection string
+* lst = "the # quick" brown 'fox # jumps ; over'    # use "quote" and 'apostrophe' to escape characters and keep spaces
+* unb = "unbalanced quote                           ; this is not a comment: it is a value started from " quote
+*
+* trim = Aname,Bname, \     ; comment: multi-line value joined with spaces trimmed
+*        Cname,DName        ; comment: result is: Aname,Bname,Cname,DName
+*
+* ; multi-line value started with " quote or ' apostrophe
+* ; right spaces before \ is not trimmed, result is:
+* ; Multi line   text with spaces
+* ;
+* keep = "Multi line   \
+*        text with spaces"
+*
+* ; multi-line value started with " quote or ' apostrophe
+* ; result is the same as above:
+* ; Multi line   text with spaces
+* ;
+* same = "\
+*        Multi line   \
+*        text with spaces\
+*        "
 */
 IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageName) : is_loaded(false)
 {
@@ -25,45 +56,49 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
 
         // read ini-file into UTF-8 string
         string fileContent = fileToUtf8(i_filePath, i_codePageName);
+        string::size_type fileLen = fileContent.length();
 
         // parse file content into vector of entries
         string::size_type nStart = 0;
+        int nLine = 1;
+        int nNext = nLine;
         string section;
+        string sKey;
+        string sValue;
+        bool isContinue = false;
 
-        while (nStart < fileContent.length()) {
+        while (nStart < fileLen) {
 
-            // get the line
+            // get the line, find start of next line and count line numbers by counting \n
             string::size_type nextPos = fileContent.find_first_of("\r\n", nStart);
-            if (nextPos != string::npos) nextPos = fileContent.find_first_not_of("\r\n", nextPos);
-            if (nextPos == string::npos) nextPos = fileContent.length();
+
+            nLine = nNext;
+            if (nextPos == string::npos) {
+                nextPos = fileLen;
+            }
+            else {
+                while (nextPos < fileLen) {
+                    char c = fileContent[++nextPos];
+                    if (c != '\r' && c != '\n') break;
+                    if (c == '\n') nNext++;
+                }
+            }
 
             string sLine = trim(fileContent.substr(nStart, nextPos - nStart));
             nStart = nextPos;   // to start of the next line
 
-            // skip empty lines and ; commnets or # Linux comments
+            // skip empty lines
             string::size_type nLen = sLine.length();
-            if (nLen < 2) continue;                   // at least k= or [] expected
-            if (sLine[0] == ';' || sLine[0] == '#') continue;
+            if (nLen <= 0) continue;
 
-            // check for the [section] ; and comment (optional)
-            if (sLine[0] == '[') {
-
-                string::size_type nEnd = sLine.find(']');   // [[potential end] of section name]
-
-                if (nEnd != string::npos) {
-                    string::size_type nRem = sLine.find_first_of(";#", nEnd);           // start of the ; comment
-                    section = (nRem != string::npos) ? sLine.substr(0, nRem) : sLine;   // [SectionName]
-
-                    continue;   // done with section header
-                }
-            }
-
-            if (section.empty()) continue;  // if no [section] found then skip until first section
-
-            // get key: find first = outside of "quote" or 'single quote'
+            // remove ; comments or # Linux comments:
+            //   comment starts with ; or # outside of "quote" or 'single quote'
+            // find the key:
+            //   find first = outside of "quote" or 'single quote'
             bool isIn = false;
             char cq = '\0';
-            string::size_type nEq = 0;
+            string::size_type nRem = nLen + 1;
+            string::size_type nEq = nLen + 1;
 
             for (string::size_type n = 0; n < nLen; n++) {
 
@@ -76,21 +111,93 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
                     continue;               // done with quote char
                 }
 
-                // if not 'inside' of quoted key then check for = as end of key
-                if (!isIn && c == '=') {
-                    nEq = n;
-                    break;      // found end of key=
+                // if not 'inside' of quoted key then check for ; or # as start of the comment
+                if (!isIn) {
+                    if (c == '=' && nEq >= nLen) nEq = n;   // found end of key=
+
+                    if (c == ';' || c == '#') {
+                        nRem = n;
+                        break;      // found start of the comment
+                    }
                 }
             }
-            if (nEq <= 0 || nEq >= nLen) continue;  // skip invalid line: expected at least key=
+            if (nRem == 0) continue;    // skip line: it is a comment only line
 
-            // get key and value
-            string key = sLine.substr(0, nEq);
-            string val = (nEq + 1 < sLine.length()) ? sLine.substr(nEq + 1) : "";
+            if (nRem < nLen) {          // remove comment from the end of the line
+                sLine = trimRight(sLine.substr(0, nRem));
+                nLen = sLine.length();
+            }
+            if (nLen <= 0) continue;    // skip empty line (unexpected)
 
-            // make new entry, unquote [section] and key if key is "quoted" or 'single quoted'
-            IniEntry newEntry(section, key, val);
-            if (newEntry.section.empty() || newEntry.key.empty()) continue;   // skip empty sections and keys
+            // check for the [section]
+            // section is not allowed after previous line \ continuation
+            // section cannot have empty [] name
+            if (sLine[0] == '[') {
+
+                if (isContinue) {
+                    theLog->logFormatted("Skip incorrect section header as line continuation, ini file line %d: %s", nLine, sLine.c_str());
+                    continue;
+                }
+                if (sLine[nLen - 1] != ']') {   // incorrect line: [section] expected
+                    theLog->logFormatted("Skip incorrect ini file line %d: %s", nLine, sLine.c_str());
+                    continue;
+                }
+
+                // set section name: remove [brackets] and trim
+                section = trim(sLine.substr(1, nLen - 2));
+                if (section.empty()) {
+                    theLog->logFormatted("Skip incorrect (empty) section header at line %d of ini file: %s", nLine, sLine.c_str());
+                }
+                continue;       // done with section header
+            }
+            // skip incorrect line: before the first [section] only comments are allowed
+            if (section.empty()) {
+                theLog->logFormatted("Skip incorrect line %d of ini file: %s", nLine, sLine.c_str());
+                continue;
+            }
+
+            // get key and value or continuation of previous line value
+            string v = "";
+
+            if (isContinue) {
+                v = sLine;
+            }
+            else {
+                // line must start from key=
+                if (nEq <= 0 || nEq >= nLen) {
+                    theLog->logFormatted("Skip incorrect line %d of ini file: %s", nLine, sLine.c_str());
+                    continue;
+                }
+
+                sKey = sLine.substr(0, nEq);
+                v = (nEq + 1 < nLen) ? trimLeft(sLine.substr(nEq + 1)) : "";
+            }
+
+            // check if there is a continuation \ at the end of current line
+            // right trim continuation line if value not started with " quote or ' apostrophe
+            if (string::size_type lv = v.length(); lv <= 0 || v[lv - 1] != '\\') {
+                isContinue = false;
+            }
+            else {
+                isContinue = true;  // next line is a value continuation
+
+                string::size_type n = sValue.length();
+                bool isFirstQuote =
+                    (n > 0 && (sValue[0] == '"' || sValue[0] == '\'')) ||
+                    (n <= 0 && (v[0] == '"' || v[0] == '\''));
+
+                v = isFirstQuote ? v.substr(0, lv - 1) : trimRight(v.substr(0, lv - 1));
+            }
+            sValue = sValue + v;        // append current line value to result value
+
+            if (isContinue) continue;   // done with this line, next line is a value continuation
+
+            // make new entry, unquote key and value if "quoted" or 'single quoted'
+            IniEntry newEntry(section, sKey, sValue);
+            if (newEntry.section.empty() || newEntry.key.empty()) {     // skip empty sections or empty keys
+                theLog->logFormatted("Skip incorrect empty section or empty key at line %d of ini file: %s", nLine, sLine.c_str());
+                continue;
+            }
 
             // add to the entry list or replace existing entry with new value
             IniEntryVec::const_iterator entryIt = std::find_if(
@@ -99,11 +206,16 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
                 [&newEntry](const IniEntry & i_entry) -> bool { return i_entry.equalTo(newEntry.section.c_str(), newEntry.key.c_str()); }
             );
             if (entryIt != entryVec.cend()) {
-                entryVec[entryIt - entryVec.cbegin()].val = val;
+                entryVec[entryIt - entryVec.cbegin()].val = sValue;
             }
             else {
                 entryVec.push_back(newEntry);
             }
+
+            // reset key and value
+            sKey = "";
+            sValue = "";
+            isContinue = false;
         }
 
         is_loaded = true;   // ini-file loaded correctly
@@ -240,18 +352,9 @@ const NoCaseMap IniFileReader::getSection(const char * i_section) const noexcept
 /** initialize ini-file entry. */
 IniEntry::IniEntry(const string & i_section, const string & i_key, const string & i_value)
 {
-    setSection(i_section);
+    section = i_section;
     setKey(i_key);
     if (!i_value.empty()) setValue(i_value);
-}
-
-// set section name: remove [brackets] and trim
-void IniEntry::setSection(const string & i_section)
-{
-    section = trim(i_section);
-    string::size_type len = section.length();
-    if (len >= 2 && section[0] == '[' && section[len - 1] == ']') section = section.substr(1, len - 2);
-    section = trim(section);
 }
 
 // set key name: remove = if present, unquote and trim
@@ -265,63 +368,10 @@ void IniEntry::setKey(const string & i_key)
     if (len >= 2 && (key[0] == '"' || key[0] == '\'') && key[len - 1] == key[0]) key = key.substr(1, len - 2);
 }
 
-// set value: space trimed, comment removed and unquoted ("quotes" or 'apostrophes' removed)
-// 
-// rem = ; comment only and no value
-// val = no comments
-// nul =
-// dsn = "DSN='server'; UID='user'; PWD='secret';"      ; comment: database connection string
-// lst = "the # quick" brown 'fox # jumps ; over'       # comment: list of test words
-// unb = "unbalanced quote                              ; comment: just in case
-// 
+// set value: trim space and remove "quotes" or 'apostrophes'
 void IniEntry::setValue(const string & i_value)
 {
     val = trim(i_value);    // trim source value
-
-    // search for begin of the comment outside of "quotes" or 'apostrophes'
-    bool isInside = false;
-    char chQuote = '\0';
-    string::size_type quotePos = 0;
-    string::size_type remPos = 0;
-
-    for (string::size_type pos = 0; pos < val.length(); pos++) {
-
-        char chNow = val[pos];
-
-        // if comment char found outside of the quotes
-        if (!isInside && (chNow == ';' || chNow == '#')) {
-            val = val.substr(0, pos);
-            val = trim(val);
-            break;          // done: comment removed
-        }
-
-        // if comment char found inside of the quotes then save position to detect unbalanced quotes
-        if (isInside && (chNow == ';' || chNow == '#')) {
-            remPos = pos;
-            continue;       // save start of the comment position inside of the quotes
-        }
-
-        // check for begin of the "quotes" or 'apostrophes'
-        if (!isInside && (chNow == '"' || chNow == '\'')) {
-            isInside = true;
-            chQuote = chNow;
-            quotePos = pos;
-            continue;       // done with quote opening
-        }
-    
-        // check for end of the "quotes" or 'apostrophes'
-        if (isInside && chNow == chQuote) {
-            isInside = false;
-            chQuote = '\0';
-            quotePos = pos;
-            continue;       // done with quote closing
-        }
-    }
-    // if unbalanced "quotes or 'apostrophes and also ; comment found then strip the comment
-    if (isInside && remPos > quotePos) {
-        val = val.substr(0, remPos);
-        val = trim(val);
-    }
 
     // remove value "quotes" or 'apostrophes' if present
     string::size_type len = val.length();

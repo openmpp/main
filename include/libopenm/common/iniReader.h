@@ -42,13 +42,10 @@ namespace openm
         bool equalTo(const char * i_section, const char * i_key) const;
 
     private:
-        // set section name: remove [brackets] and trim
-        void setSection(const string & i_section);
-
         // set key name: remove = if present, unquote and trim
         void setKey(const string & i_key);
 
-        // set value: space trimed, comment removed and unquoted ("quotes" or 'apostrophes' removed)
+        // set value: trim space and remove "quotes" or 'apostrophes'
         void setValue(const string & i_value);
     };
 
