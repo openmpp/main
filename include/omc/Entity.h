@@ -19,14 +19,14 @@
 /**
  * Base agent.
  */
-class BaseAgent
+class BaseEntity
 {
 public:
     /**
      * Explicitly declared virtual destructor
      * to allow safe delete of isntances of derived classes.
      */
-    virtual ~BaseAgent() = default;
+    virtual ~BaseEntity() = default;
 
     /**
      * Assign initial value to all data members in agent, with no side-effects. The function
@@ -478,14 +478,14 @@ public:
 private:
 
     /**
-     * The iterator of this agent in BaseAgent::agents.
+     * The iterator of this agent in BaseEntity::agents.
      */
-    std::list<BaseAgent *>::iterator iter_in_agents;
+    std::list<BaseEntity *>::iterator iter_in_agents;
 
     /**
      * Active agents.
      */
-    static thread_local std::list<BaseAgent *> *agents;
+    static thread_local std::list<BaseEntity *> *agents;
 };
 
 /**
@@ -494,7 +494,7 @@ private:
  * @tparam A Type of a.
  */
 template<typename A>
-class Agent : public BaseAgent
+class Agent : public BaseEntity
 {
 public:
 

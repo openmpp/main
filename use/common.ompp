@@ -306,8 +306,8 @@ void SetMaxTime(double max_value)
  */
 void StartEventTrace()
 {
-    if (BaseAgent::event_trace_enabled) {
-        BaseAgent::event_trace_on = true;
+    if (BaseEntity::event_trace_enabled) {
+        BaseEntity::event_trace_on = true;
     }
 }
 
@@ -318,8 +318,8 @@ void StartEventTrace()
  */
 void StopEventTrace()
 {
-    if (BaseAgent::event_trace_enabled) {
-        BaseAgent::event_trace_on = false;
+    if (BaseEntity::event_trace_enabled) {
+        BaseEntity::event_trace_on = false;
     }
 }
 

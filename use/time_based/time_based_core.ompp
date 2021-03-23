@@ -143,7 +143,7 @@ void SimulateEvents()
 
         if (the_time > simulation_end) {
             // The next event would exceed the maximum simulation time
-            BaseAgent::age_all_agents(simulation_end);
+            BaseEntity::age_all_agents(simulation_end);
             break;
         }
 
@@ -199,9 +199,9 @@ void SimulateEvents()
     }
 
     // cleanup
-    BaseAgent::exit_simulation_all();
+    BaseEntity::exit_simulation_all();
     BaseEvent::clean_all();
-    BaseAgent::free_all_zombies();
+    BaseEntity::free_all_zombies();
 }
 
 /**

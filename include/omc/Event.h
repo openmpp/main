@@ -260,7 +260,7 @@ public:
     static BaseEvent * peek_next_event()
     {
         BaseEvent::clean_all();
-        BaseAgent::free_all_zombies();
+        BaseEntity::free_all_zombies();
 
         return *BaseEvent::event_queue->begin();
     }
@@ -276,7 +276,7 @@ public:
     static Time time_next_event()
     {
         BaseEvent::clean_all();
-        BaseAgent::free_all_zombies();
+        BaseEntity::free_all_zombies();
 
         assert(event_queue);
         if ( BaseEvent::event_queue->empty() ) {
@@ -297,7 +297,7 @@ public:
     static bool do_next_event()
     {
         BaseEvent::clean_all();
-        BaseAgent::free_all_zombies();
+        BaseEntity::free_all_zombies();
 
         assert(event_queue);
         if ( BaseEvent::event_queue->empty() ) {
@@ -328,7 +328,7 @@ public:
             // The third argument is the event_id of the event in entity_id.
             // The second argument allows age_all_agents to detect the model error condition
             // in which time is running backwards in the entity within which the event occurred.
-            BaseAgent::age_all_agents(evt->event_time, evt->get_entity_id(), evt->get_event_id());
+            BaseEntity::age_all_agents(evt->event_time, evt->get_entity_id(), evt->get_event_id());
         }
 
         // update the global event checksum

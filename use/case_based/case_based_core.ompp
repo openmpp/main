@@ -192,12 +192,12 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         // Debug check for no left-over agents for which Finish was not called (possible model error)
         // TODO - consider making an optional warning activated by a model option
         //  which could be turned on/off.
-        assert(0 == BaseAgent::om_active_agents());
+        assert(0 == BaseEntity::om_active_agents());
 
         // cleanup entities and event queue after case has completed.
-        BaseAgent::exit_simulation_all();
+        BaseEntity::exit_simulation_all();
         BaseEvent::clean_all();
-        BaseAgent::free_all_zombies();
+        BaseEntity::free_all_zombies();
 
         {
             // generate the master seed for the next case
