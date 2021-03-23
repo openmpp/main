@@ -436,12 +436,13 @@ public:
                         //    event_description,
                         //    entity_name,
                         //    entity_id);
-                        theTrace->logFormatted("%13.6f     %13.6f %s (%s %d)",
+                        theTrace->logFormatted("%13.6f     %13.6f %8d %s (%s)",
                             global_time,
                             reported_time,
+                            entity_id,
                             event_description,
-                            entity_name,
-                            entity_id);
+                            entity_name
+                        );
                     }
                     break;
                 default:
