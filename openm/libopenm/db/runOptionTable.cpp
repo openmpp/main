@@ -168,17 +168,10 @@ string RunOptionTable::strValue(int i_runId, const char * i_key, const string & 
 int RunOptionTable::boolValueToInt(int i_runId, const char * i_key) const noexcept
 {
     try {
-        if (!isExist(i_runId, i_key)) return -1;    // not found
-
-        string sVal = strValue(i_runId, i_key);
-
-        if (sVal.empty() || equalNoCase(sVal.c_str(), "1") || equalNoCase(sVal.c_str(), "yes") || equalNoCase(sVal.c_str(), "true")) return 1;
-        if (equalNoCase(sVal.c_str(), "0") || equalNoCase(sVal.c_str(), "no") || equalNoCase(sVal.c_str(), "false")) return 0;
-
-        return -2;  // incorrect value
+        return isExist(i_runId, i_key) ? boolStringToInt(strValue(i_runId, i_key).c_str()) : -1;
     }
     catch (...) {
-        return false;
+        return -2;
     }
 }
 

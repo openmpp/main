@@ -96,10 +96,19 @@ namespace openm
     extern const std::string toString(double i_val);
 
     /** replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores. */
-    const std::string toAlphaNumeric(const std::string & i_str, int i_maxSize = 0);
+    extern const std::string toAlphaNumeric(const std::string & i_str, int i_maxSize = 0);
 
     /** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
-    const std::string cleanPathChars(const std::string & i_str, int i_maxSize = 0);
+    extern const std::string cleanPathChars(const std::string & i_str, int i_maxSize = 0);
+
+
+    /** convert i_value string represnting boolean option and return one of:    \n
+    * return  1 if i_value is one of: "yes", "1", "true" or empty "" value,     \n
+    * return  0 if i_value is one of: "no", "0", "false",                       \n
+    * return -1 if i_value is nullptr,                                          \n
+    * return -2 otherwise.
+    */
+    extern int boolStringToInt(const char * i_value);
 
     /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
     extern const std::string replaceAll(const std::string & i_src, const char * i_oldValue, const char * i_newValue);

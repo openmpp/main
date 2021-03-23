@@ -59,7 +59,15 @@ void RunInit(IRunBase * const i_runBase)
     theLog->logMsg("Reading parameters");
     theModelRunState->updateProgress(0);            // update modeling process-wide progress: 0% completed
 
-    /* 
+    om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
+    om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
+    om_param_salaryAge = std::move(read_om_parameter<int>(i_runBase, "salaryAge", N_SALARY * N_AGE));
+    om_param_salaryFull = std::move(read_om_parameter<int>(i_runBase, "salaryFull", N_SALARY));
+    om_param_baseSalary = std::move(read_om_parameter<int>(i_runBase, "baseSalary"));
+    om_param_filePath = std::move(read_om_parameter<string>(i_runBase, "filePath"));
+    om_param_isOldAge = std::move(read_om_parameter<bool>(i_runBase, "isOldAge", N_AGE));
+
+    /*
     // read model development run options from model.ini
     //
     // [EventTrace]
@@ -75,15 +83,8 @@ void RunInit(IRunBase * const i_runBase)
     double minTime = i_runBase->doubleOption("EventTrace.MinimumTime", -numeric_limits<double>::infinity());
     double maxTime = i_runBase->doubleOption("EventTrace.MaximumTime", numeric_limits<double>::infinity());
     list<string> evtList = splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
+    vector<pair<string, string>> kvLst = i_runBase->allOptions();
     */
-
-    om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
-    om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
-    om_param_salaryAge = std::move(read_om_parameter<int>(i_runBase, "salaryAge", N_SALARY * N_AGE));
-    om_param_salaryFull = std::move(read_om_parameter<int>(i_runBase, "salaryFull", N_SALARY));
-    om_param_baseSalary = std::move(read_om_parameter<int>(i_runBase, "baseSalary"));
-    om_param_filePath = std::move(read_om_parameter<string>(i_runBase, "filePath"));
-    om_param_isOldAge = std::move(read_om_parameter<bool>(i_runBase, "isOldAge", N_AGE));
 }
 
 // Model startup method: initialize sub-value

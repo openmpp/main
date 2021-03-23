@@ -126,6 +126,9 @@ namespace openm
             return metaStore->runOptionTable ? metaStore->runOptionTable->doubleValue(currentRunId(), i_key, i_default) : i_default;
         }
 
+        /** return a copy of all run options as [key, value] pairs, ordered by key. */
+        vector<pair<string, string>> allOptions(void) const noexcept override;
+
     protected:
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),

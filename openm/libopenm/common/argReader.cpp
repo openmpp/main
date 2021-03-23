@@ -89,16 +89,10 @@ bool ArgReader::boolOption(const char * i_key) const noexcept
 int ArgReader::boolOptionToInt(const char * i_key) const noexcept
 {
     try {
-        if (!isOptionExist(i_key)) return -1;   // not found
-
-        string sVal = strOption(i_key);
-        if (sVal.empty() || equalNoCase(sVal.c_str(), "1") || equalNoCase(sVal.c_str(), "yes") || equalNoCase(sVal.c_str(), "true")) return 1;
-        if (equalNoCase(sVal.c_str(), "0") || equalNoCase(sVal.c_str(), "no") || equalNoCase(sVal.c_str(), "false")) return 0;
-
-        return -2;  // incorrect value
+        return isOptionExist(i_key) ? boolStringToInt(strOption(i_key).c_str()) : -1;
     }
     catch (...) {
-        return false;
+        return -2;
     }
 }
 
