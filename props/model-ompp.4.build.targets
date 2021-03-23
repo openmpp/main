@@ -198,6 +198,14 @@
       Condition="Exists('%(FullPath)')"
     />
     
+    <Message Text="Copy $(MODEL_INI) to $(MODEL_BIN_DIR)" Condition="Exists('$(ProjectDir)/$(MODEL_INI)')" />
+    <Copy 
+      SourceFiles="$(ProjectDir)/$(MODEL_INI)" 
+      DestinationFolder="$(MODEL_BIN_DIR)" 
+      SkipUnchangedFiles="true" 
+      Condition="Exists('$(ProjectDir)/$(MODEL_INI)')"
+    />
+    
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
             />
