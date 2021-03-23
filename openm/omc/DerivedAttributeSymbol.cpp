@@ -1922,13 +1922,14 @@ void DerivedAttributeSymbol::create_side_effects()
             if (Symbol::option_event_trace) {
                 ss_implement_cxx += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
-                ss_implement_cxx += "if (BaseEvent::trace_event_on) "
-                    "BaseEvent::event_trace_msg("
+                ss_implement_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double) time);"
+                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
                     ;
             }
             ss_implement_cxx += "}";  // end of the block started at "if (current_time == ..."
@@ -2089,13 +2090,14 @@ void DerivedAttributeSymbol::create_side_effects()
             if (Symbol::option_event_trace) {
                 ss_implement_cxx += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
-                ss_implement_cxx += "if (BaseEvent::trace_event_on) "
-                    "BaseEvent::event_trace_msg("
+                ss_implement_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double) time);"
+                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
                     ;
             }
             ss_implement_cxx += "}";
@@ -2325,13 +2327,14 @@ void DerivedAttributeSymbol::create_side_effects()
             if (Symbol::option_event_trace) {
                 ss_implement_cxx += "// Dump event time information to trace log";
                 string evt_name = "scheduled - " + to_string(numeric_id);
-                ss_implement_cxx += "if (BaseEvent::trace_event_on) "
-                    "BaseEvent::event_trace_msg("
+                ss_implement_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double) time);"
+                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
                     ;
             }
             ss_implement_cxx += "}";

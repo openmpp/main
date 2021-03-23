@@ -3,19 +3,20 @@
  * Declares the entity_ptr class and associated classes and templates
  *         
  */
-// Copyright (c) 2013-2016 OpenM++ contributors
+// Copyright (c) 2013-2021 OpenM++ contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 
 #include <vector>
+#include <cmath>
 #include "omc/Entity.h"
 #include "omc/Event.h"
 
 template <class A>
 class entity_ptr
 {
-    // Storage for the real pointer to the agent
+    // Storage for the real pointer to the entity
     A* ptr;
 
 public:
@@ -47,15 +48,29 @@ public:
     A* operator->()
     {
         if (ptr) {
-            // update time of target entity at *ptr with the global time
-            // if using the just-in-time algorithm
+            // Update time of target entity at *ptr with the global time
+            // if using the just-in-time algorithm.
             if (BaseEvent::just_in_time) {
                 auto current_global_time = BaseEvent::get_global_time();
-                if (ptr->time < current_global_time) {
-                    ptr->time.set(current_global_time);
+                // Do not synchronize time if the global time is -inf.
+                // Global time is -inf before the first event in the simulation.
+                if (!std::isinf(current_global_time)) {
+                    if (ptr->time < current_global_time) {
+                        // Synchronize time of the entity referred to through the pointer.
+                        ptr->time.set(current_global_time);
+                    }
+                    else if (!BaseEvent::allow_clairvoyance && ptr->time > current_global_time) {
+                        // This is an attempt to access an entity in the local future of the current entity.
+                        // Write error message to log and throw run-time exception.
+                        handle_clairvoyance(current_global_time, ptr->time, ptr->entity_id);
+                    }
+                    else {
+                        // Time is already synchronized between the two entities.
+                        // Nothing to do.
+                    }
                 }
             }
-            // return pointer to agent
+            // return pointer to entity
             return ptr;
         }
         else {
@@ -67,20 +82,35 @@ public:
     // overload of dereference operator *
     A& operator*()
     {
+        // a nearly exact copy of the -> operator defined above
         if (ptr) {
-            // update time of target entity at *ptr with the global time
-            // if using the just-in-time algorithm
+            // Update time of target entity at *ptr with the global time
+            // if using the just-in-time algorithm.
             if (BaseEvent::just_in_time) {
                 auto current_global_time = BaseEvent::get_global_time();
-                if (ptr->time < current_global_time) {
-                    ptr->time.set(current_global_time);
+                // Do not synchronize time if the global time is -inf.
+                // Global time is -inf before the first event in the simulation.
+                if (!std::isinf(current_global_time)) {
+                    if (ptr->time < current_global_time) {
+                        // Synchronize time of the entity referred to through the pointer.
+                        ptr->time.set(current_global_time);
+                    }
+                    else if (!BaseEvent::allow_clairvoyance && ptr->time > current_global_time) {
+                        // This is an attempt to access an entity in the local future of the current entity.
+                        // Write error message to log and throw run-time exception.
+                        handle_clairvoyance(current_global_time, ptr->time, ptr->entity_id);
+                    }
+                    else {
+                        // Time is already synchronized between the two entities.
+                        // Nothing to do.
+                    }
                 }
             }
-            // return reference to agent
+            // return reference to entity
             return *ptr;
         }
         else {
-            // entity_ptr is nullptr, return reference to the 'null' agent
+            // entity_ptr is nullptr, return reference to the 'null' entity
             return A::om_null_agent;
         }
     }

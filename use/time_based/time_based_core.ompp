@@ -193,15 +193,15 @@ void SimulateEvents()
         }
     }
 
-    // cleanup
-    BaseAgent::exit_simulation_all();
-    BaseEvent::clean_all();
-    BaseAgent::free_all_zombies();
-
     // final progress message
     if (!is_100_percent_done) {
         report_simulation_progress(simulation_member, 100, simulation_end);
     }
+
+    // cleanup
+    BaseAgent::exit_simulation_all();
+    BaseEvent::clean_all();
+    BaseAgent::free_all_zombies();
 }
 
 /**
