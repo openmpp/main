@@ -163,6 +163,9 @@ int SingleController::nextRun(void)
         return 0;   // all done: all sets from task or single run completed
     }
 
+    // read new run options
+    metaStore->runOptionTable.reset(IRunOptionTable::create(dbExec, runId));
+
     // reset write status for sub-values
     isSubDone.reset();
 

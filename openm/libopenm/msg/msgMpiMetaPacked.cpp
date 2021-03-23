@@ -438,7 +438,6 @@ namespace openm
             MpiPacked::packedSize(val->sqlExpr);
     }
 
-    /*
     // group_lst: pack db row into MPI message
     template<>
     void RowMpiPackedAdapter<GroupLstRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
@@ -516,7 +515,6 @@ namespace openm
             MpiPacked::packedSize(typeid(val->childGroupId)) +
             MpiPacked::packedSize(typeid(val->leafId));
     }
-    */
 
     // run_option: pack db row into MPI message
     template<>

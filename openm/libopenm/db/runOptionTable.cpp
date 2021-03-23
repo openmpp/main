@@ -25,56 +25,34 @@ namespace openm
         // find row by primary key: run id, option key
         const RunOptionRow * byKey(int i_runId, const string & i_key) const override;
 
-        // get list of rows by run id
-        vector<RunOptionRow> byRunId(int i_runId) const override;
-
         /** return true if primary key (run id, option key) found. */
         bool isExist(int i_runId, const char * i_key) const noexcept override;
-        
-        /** return true if option key found. */
-        bool isExist(const char * i_key) const noexcept override;
 
         /** return string value by primary key (run id, option key) or default value if not found. */
-        string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept override { return strValue(true, i_runId, i_key, i_default); }
+        string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept override;
 
-        /** return string value by option key (first found) or default value if not found. */
-        string strValue(const char * i_key, const string & i_default = "") const noexcept override { return strValue(false, 0, i_key, i_default); }
+        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true" or empty "" string. */
+        bool boolValue(int i_runId, const char * i_key) const noexcept override { return boolValueToInt(i_runId, i_key) > 0; };
 
-        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
-        bool boolValue(int i_runId, const char * i_key) const noexcept override { return boolValue(true, i_runId, i_key); }
+        /** search for boolean value by primary key (run id, option key) and return one of: \n
+        * return  1 if key found and value is one of: "yes", "1", "true" or empty value,    \n
+        * return  0 if key found and value is one of: "no", "0", "false",                   \n
+        * return -1 if key not found,                                                       \n
+        * return -2 otherwise.
+        */
+        int boolValueToInt(int i_runId, const char * i_key) const noexcept override;
 
-        /** return boolean value by option key (first found) or false if not found or value not "yes", "1", "true". */
-        bool boolValue(const char * i_key) const noexcept override { return boolValue(false, 0, i_key); }
+        /** return int value by primary key (run id, option key) or default if not found or can not be converted to int. */
+        int intValue(int i_runId, const char * i_key, int i_default) const noexcept override;
 
         /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
-        long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept override { return longValue(true, i_runId, i_key, i_default); }
-
-        /** return long value by option key (first found) or default if not found or can not be converted to long. */
-        long long longValue(const char * i_key, long long i_default) const noexcept override { return longValue(false, 0, i_key, i_default); }
+        long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept override;
 
         /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
-        double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept override { return doubleValue(true, i_runId, i_key, i_default); }
-
-        /** return double value by option key (first found) or default if not found or can not be converted to double. */
-        double doubleValue(const char * i_key, double i_default) const noexcept override { return doubleValue(false, 0, i_key, i_default); }
+        double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept override;
 
     private:
         IRowBaseVec rowVec;     // table rows
-
-        // Find first row by option key
-        const RunOptionRow * firstOptionKey(const string & i_key) const;
-
-        // return string value by primary key (run id, option key) or by option key only, return default value if not found
-        string strValue(bool i_useRunId, int i_runId, const char * i_key, const string & i_default = "") const noexcept;
-
-        // return boolean value by primary key (run id, option key) or by option key only, return false if not found or value not "yes", "1", "true"
-        bool boolValue(bool i_useRunId, int i_runId, const char * i_key) const noexcept;
-
-        // return long value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to long
-        long long longValue(bool i_useRunId, int i_runId, const char * i_key, long long i_default) const noexcept;
-
-        // return double value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to double
-        double doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const noexcept;
 
     private:
         RunOptionTable(const RunOptionTable & i_table) = delete;
@@ -156,27 +134,6 @@ const RunOptionRow * RunOptionTable::byKey(int i_runId, const string & i_key) co
     return findKey(keyRow);
 }
 
-// Find first row by option key
-const RunOptionRow * RunOptionTable::firstOptionKey(const string & i_key) const
-{
-    IRowBaseVec::const_iterator rowIt =
-        find_if(
-        rowVec.cbegin(),
-        rowVec.cend(),
-        [i_key](const IRowBaseUptr & i_row) -> bool { return dynamic_cast<RunOptionRow *>(i_row.get())->key == i_key; }
-    );
-    return
-        (rowIt != rowVec.cend()) ? dynamic_cast<RunOptionRow *>(rowIt->get()) : NULL;
-}
-
-// get list of rows by run id
-vector<RunOptionRow> RunOptionTable::byRunId(int i_runId) const
-{
-    return findAll(
-        [i_runId](const RunOptionRow & i_row) -> bool { return i_row.runId == i_runId; }
-    );
-}
-
 /** return true if primary key (run id, option key) found. */
 bool RunOptionTable::isExist(int i_runId, const char * i_key) const noexcept
 { 
@@ -188,24 +145,13 @@ bool RunOptionTable::isExist(int i_runId, const char * i_key) const noexcept
     }
 }
 
-/** return true if option key found. */
-bool RunOptionTable::isExist(const char * i_key) const noexcept
-{
-    try {
-        return i_key != NULL && firstOptionKey(i_key) != NULL;
-    }
-    catch (...) {
-        return false;
-    }
-}
-
 // return string value by primary key (run id, option key) or by option key only, return default value if not found
-string RunOptionTable::strValue(bool i_useRunId, int i_runId, const char * i_key, const string & i_default) const noexcept
+string RunOptionTable::strValue(int i_runId, const char * i_key, const string & i_default) const noexcept
 {
     try {
         if (i_key == NULL) return i_default;    // invalid key
 
-        const RunOptionRow * optRow = i_useRunId ? byKey(i_runId, i_key) : firstOptionKey(i_key);
+        const RunOptionRow * optRow = byKey(i_runId, i_key);
         return
             (optRow != NULL) ? optRow->value : i_default;
     }
@@ -214,37 +160,59 @@ string RunOptionTable::strValue(bool i_useRunId, int i_runId, const char * i_key
     }
 }
 
-// return boolean value by primary key (run id, option key) or by option key only, return false if not found or value not "yes", "1", "true"
-bool RunOptionTable::boolValue(bool i_useRunId, int i_runId, const char * i_key) const noexcept
+// search for boolean value by primary key (run id, option key) or by option key only and return one of:
+// return  1 if key found and value is one of: "yes", "1", "true" or empty value,
+// return  0 if key found and value is one of: "no", "0", "false",
+// return -1 if key not found,
+// return -2 otherwise.
+int RunOptionTable::boolValueToInt(int i_runId, const char * i_key) const noexcept
 {
     try {
-        string sVal = strValue(i_useRunId, i_runId, i_key);
-        return 
-            equalNoCase(sVal.c_str(), "1") || equalNoCase(sVal.c_str(), "yes") || equalNoCase(sVal.c_str(), "true");
+        if (!isExist(i_runId, i_key)) return -1;    // not found
+
+        string sVal = strValue(i_runId, i_key);
+
+        if (sVal.empty() || equalNoCase(sVal.c_str(), "1") || equalNoCase(sVal.c_str(), "yes") || equalNoCase(sVal.c_str(), "true")) return 1;
+        if (equalNoCase(sVal.c_str(), "0") || equalNoCase(sVal.c_str(), "no") || equalNoCase(sVal.c_str(), "false")) return 0;
+
+        return -2;  // incorrect value
     }
-    catch (...) { 
+    catch (...) {
         return false;
     }
 }
 
-// return long value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to long
-long long RunOptionTable::longValue(bool i_useRunId, int i_runId, const char * i_key, long long i_default) const noexcept
+// return int value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to int
+int RunOptionTable::intValue(int i_runId, const char * i_key, int i_default) const noexcept
 {
     try {
-        string sVal = strValue(i_useRunId, i_runId, i_key);
+        string sVal = strValue(i_runId, i_key);
         return
-            (sVal != "") ? std::stoll(sVal) : i_default;
+            (sVal != "") ? std::stoi(sVal) : i_default;
     }
     catch (...) { 
         return i_default;
     }
 }
 
-// return double value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to double
-double RunOptionTable::doubleValue(bool i_useRunId, int i_runId, const char * i_key, double i_default) const noexcept
+// return long value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to long
+long long RunOptionTable::longValue(int i_runId, const char * i_key, long long i_default) const noexcept
 {
     try {
-        string sVal = strValue(i_useRunId, i_runId, i_key);
+        string sVal = strValue(i_runId, i_key);
+        return
+            (sVal != "") ? std::stoll(sVal) : i_default;
+    }
+    catch (...) {
+        return i_default;
+    }
+}
+
+// return double value by primary key (run id, option key) or by option key only, return default if not found or can not be converted to double
+double RunOptionTable::doubleValue(int i_runId, const char * i_key, double i_default) const noexcept
+{
+    try {
+        string sVal = strValue(i_runId, i_key);
         return
             (sVal != "") ? std::stod(sVal) : i_default;
     }

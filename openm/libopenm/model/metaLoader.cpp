@@ -50,6 +50,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::messageLang,
     RunOptionsKey::version,
     ArgKey::iniFile,
+    ArgKey::iniAnyKey,
     ArgKey::runStamp,
     ArgKey::logToConsole,
     ArgKey::logToFile,
@@ -129,7 +130,7 @@ const ArgReader MetaLoader::getRunOptions(int argc, char ** argv)
 
     // load options from ini-file and append parameters section
     ar.loadIniFile(
-        ar.strOption(ArgKey::iniFile).c_str(), runOptKeySize, runOptKeyArr, prefixOptSize, prefixOptArr, langSuffixOptSize, langSuffixOptArr
+        ar.strOption(ArgKey::iniFile).c_str(), runOptKeySize, runOptKeyArr, ar.boolOption(ArgKey::iniAnyKey), prefixOptSize, prefixOptArr, langSuffixOptSize, langSuffixOptArr
     );
 
     // dependency in log options: if LogToFile is true then file name must be non-empty else must be empty

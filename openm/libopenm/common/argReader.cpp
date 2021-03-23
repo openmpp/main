@@ -14,39 +14,6 @@
 using namespace std;
 using namespace openm;
 
-namespace openm
-{
-    /** run options file name, ie: model.ini */
-    const char * ArgKey::iniFile = "OpenM.IniFile";
-
-    /** process run stamp, usually time stamp  */
-    const char * ArgKey::runStamp = "OpenM.RunStamp";
-
-    /** log to console */
-    const char * ArgKey::logToConsole = "OpenM.LogToConsole";
-
-    /** log to file */
-    const char * ArgKey::logToFile = "OpenM.LogToFile";
-
-    /** log file path */
-    const char * ArgKey::logFilePath = "OpenM.LogFilePath";
-
-    /** log to "stamped" file */
-    const char * ArgKey::logToStamped = "OpenM.LogToStampedFile";
-
-    /** use time-stamp in log "stamped" file name */
-    const char * ArgKey::logUseTs = "OpenM.LogUseTimeStamp";
-
-    /** use pid-stamp in log "stamped" file name */
-    const char * ArgKey::logUsePid = "OpenM.LogUsePidStamp";
-
-    /** do not prefix log messages with date-time */
-    const char * ArgKey::logNoMsgTime = "OpenM.LogNoMsgTime";
-
-    /** log sql */
-    const char * ArgKey::logSql = "OpenM.LogSql";
-}
-
 /**
  * initialize run arguments from command line and ini-file.
  * 
@@ -279,6 +246,7 @@ void ArgReader::parseCommandLine(
 * @param[in] i_filePath           path to ini-file
 * @param[in] i_keyArrSize         size of i_keyArr, must be positive
 * @param[in] i_keyArr             array of allowed keys: full key names
+* @param[in] i_isStoreUnknown     if true then store unknown key values
 * @param[in] i_sectionToMergeSize number of section names to merge
 * @param[in] i_sectionToMergeArr  if not NULL then merge section from ini-file, ex: "Parameter" or "SubValue"
 * @param[in] i_multiKeySize       size of i_multiKeyArr array
@@ -288,6 +256,7 @@ void ArgReader::loadIniFile(
     const char * i_filePath,
     const size_t i_keyArrSize,
     const char ** i_keyArr,
+    bool i_isStoreUnknown,
     const size_t i_sectionToMergeSize,
     const char ** i_sectionToMergeArr,
     const size_t i_multiKeySize,
@@ -331,6 +300,14 @@ void ArgReader::loadIniFile(
             }
             if (!isFound) continue;     // skip this ini key, it is not a suffix-based option
 
+            string optKey = ini.section + "." + ini.key;
+            if (args.find(optKey) == args.cend()) args[optKey] = ini.val;   // add from ini-file to options map
+        }
+    }
+
+    // if unknown keys are allowed then store all ini-file entries
+    if (i_isStoreUnknown) {
+        for (const auto & ini : iniRd.rowsCRef()) {
             string optKey = ini.section + "." + ini.key;
             if (args.find(optKey) == args.cend()) args[optKey] = ini.val;   // add from ini-file to options map
         }

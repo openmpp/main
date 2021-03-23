@@ -61,6 +61,9 @@ namespace openm
         /** group_pc table rows */
         unique_ptr<IGroupPcTable> groupPc;
 
+        /** run_option table rows */
+        unique_ptr<IRunOptionTable> runOptionTable;
+
         /** create empty model metadata holder */
         MetaHolder(void) : modelRow(nullptr) { }
         

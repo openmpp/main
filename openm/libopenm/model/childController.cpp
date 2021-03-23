@@ -76,7 +76,7 @@ void ChildController::init(void)
     }
 
     // receive metadata tables from root process
-    // receive model run options
+    // receive basic model run options
     // receive broadcasted model messages from root
     metaStore.reset(new MetaHolder);
     modelId = broadcastMetaData();
@@ -115,7 +115,7 @@ void ChildController::broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & 
     io_tableUptr.reset(MetaTbl::create(rv));
 }
 
-/** receive broadcasted run options from root process. */
+/** receive broadcasted basic model run options from root process. */
 void ChildController::broadcastRunOptions(void)
 {
     RunOptions opts;
@@ -170,6 +170,15 @@ int ChildController::nextRun(void)
     ModelStatus mStatus;
     msgExec->bcastInt(groupDef.groupOne, (int *)&mStatus);
     msgExec->bcastInt(groupDef.groupOne, &runId);
+
+    // receive run options from root process
+    if (runId > 0) {
+        unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::runOption));
+
+        IRowBaseVec rv;
+        msgExec->bcastReceivePacked(groupDef.groupOne, rv, *packAdp);
+        metaStore->runOptionTable.reset(IRunOptionTable::create(rv));
+    }
 
     theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit
     return runId;

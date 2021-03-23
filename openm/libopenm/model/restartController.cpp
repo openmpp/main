@@ -147,6 +147,9 @@ int RestartController::nextRun(void)
         return 0;           // run completed
     }
 
+    // read model run options
+    metaStore->runOptionTable.reset(IRunOptionTable::create(dbExec, runId));
+
     // reset write status for sub-values and set for sub-values below restart
     isSubDone.init(subValueCount);
     for (int k = 0; k < subFirstId; k++) {

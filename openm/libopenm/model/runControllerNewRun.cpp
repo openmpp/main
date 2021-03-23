@@ -378,7 +378,7 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
 
         i_dbExec->update(
             "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
-            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second) + ")"
+            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second.substr(0, OM_OPTION_DB_MAX)) + ")"
         );
     }
 

@@ -69,6 +69,9 @@ namespace openm
         /** initialize root modeling process. */
         virtual void init(void) override;
 
+        /** get run id of the current model run. */
+        int currentRunId(void) const noexcept override { return runId; }
+
     private:
         int runId;              // if > 0 then model run id
         int taskId;             // if > 0 then modeling task id
@@ -137,6 +140,16 @@ namespace openm
         /** initialize root modeling process. */
         virtual void init(void) override;
 
+        /** return run id of root process model run, if root process is doing any model runs */
+        int currentRunId(void) const noexcept override {
+            try {
+                return (rootGroupDef.isRootActive && !runGroupLst.empty()) ? runGroupLst.crbegin()->runId : 0;
+            }
+            catch (...) {
+                return 0;
+            }
+        }
+
     private:
         int taskId;                     // if > 0 then modeling task id
         int taskRunId;                  // if > 0 then modeling task run id
@@ -157,7 +170,7 @@ namespace openm
         template <class MetaTbl>
         void broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
 
-        /** broadcast run options from root to group of modeling processes. */
+        /** broadcast basic model run options from root to group of modeling processes. */
         void broadcastRunOptions(void);
 
         /** broadcast model messages from root to all child processes. */
@@ -248,6 +261,9 @@ namespace openm
         /** initialize child modeling process. */
         virtual void init(void) override;
 
+        /** get run id of the current model run. */
+        int currentRunId(void) const noexcept override { return runId; }
+
         /** receive broadcasted metadata tables from root process. */
         int broadcastMetaData(void);
 
@@ -255,7 +271,7 @@ namespace openm
         template <class MetaTbl>
         void broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & io_tableUptr);
 
-        /** receive broadcasted run options from root process. */
+        /** receive broadcasted basic model run options from root process. */
         void broadcastRunOptions(void);
 
         /** receive broadcasted model messages from root process. */
@@ -321,6 +337,9 @@ namespace openm
 
         /** initialize "restart run" modeling process. */
         virtual void init(void) override;
+
+        /** get run id of the current model run. */
+        int currentRunId(void) const noexcept override { return runId; }
 
         // find sub-value to restart the run and update run status
         bool cleanupRestartSubValue(void);

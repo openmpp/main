@@ -841,38 +841,31 @@ namespace openm
         /** binary search row by primary key: run id and option key, return NULL if not found. */
         virtual const RunOptionRow * byKey(int i_runId, const string & i_key) const = 0;
 
-        /** get list of rows by run id. */
-        virtual vector<RunOptionRow> byRunId(int i_runId) const = 0;
-
         /** return true if primary key (run id, option key) found. */
         virtual bool isExist(int i_runId, const char * i_key) const noexcept = 0;
-
-        /** return true if option key found. */
-        virtual bool isExist(const char * i_key) const noexcept = 0;
 
         /** return string value by primary key (run id, option key) or default value if not found. */
         virtual string strValue(int i_runId, const char * i_key, const string & i_default = "") const noexcept = 0;
 
-        /** return string value by option key (first found) or default value if not found. */
-        virtual string strValue(const char * i_key, const string & i_default = "") const noexcept = 0;
-
-        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true". */
+        /** return boolean value by primary key (run id, option key) or false if not found or value not "yes", "1", "true" or empty "" string. */
         virtual bool boolValue(int i_runId, const char * i_key) const noexcept = 0;
 
-        /** return booleanvalue by option key (first found) or false if not found or value not "yes", "1", "true". */
-        virtual bool boolValue(const char * i_key) const noexcept = 0;
+        /** search for boolean value by primary key (run id, option key) and return one of: \n
+        * return  1 if key found and value is one of: "yes", "1", "true" or empty value,    \n
+        * return  0 if key found and value is one of: "no", "0", "false",                   \n
+        * return -1 if key not found,                                                       \n
+        * return -2 otherwise.
+        */
+        virtual int boolValueToInt(int i_runId, const char * i_key) const noexcept = 0;
+
+        /** return int value by primary key (run id, option key) or default if not found or can not be converted to int. */
+        virtual int intValue(int i_runId, const char * i_key, int i_default) const noexcept = 0;
 
         /** return long value by primary key (run id, option key) or default if not found or can not be converted to long. */
         virtual long long longValue(int i_runId, const char * i_key, long long i_default) const noexcept = 0;
 
-        /** return long value by option key (first found) or default if not found or can not be converted to long. */
-        virtual long long longValue(const char * i_key, long long i_default) const noexcept = 0;
-
         /** return double value by primary key (run id, option key) or default if not found or can not be converted to double. */
         virtual double doubleValue(int i_runId, const char * i_key, double i_default) const noexcept = 0;
-
-        /** return double value by option key (first found) or default if not found or can not be converted to double. */
-        virtual double doubleValue(const char * i_key, double i_default) const noexcept = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static IRunOptionTable * create(IRowBaseVec & io_rowVec);

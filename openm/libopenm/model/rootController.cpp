@@ -180,7 +180,7 @@ void RootController::broadcastMetaTable(MsgTag i_msgTag, unique_ptr<MetaTbl> & i
     msgExec->bcastSendPacked(ProcessGroupDef::all, rv, *packAdp);
 }
 
-// broadcast run options from root to group of modeling processes
+// broadcast basic model run options from root to group of modeling processes
 void RootController::broadcastRunOptions(void)
 {
     RunOptions opts = modelRunOptions();
@@ -293,8 +293,18 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
         return 0;   // task "wait" for next input set or all done: all sets from task or single run completed
     }
 
+    // read new run options and broadcast from root to all other processes
+    unique_ptr<IRunOptionTable> roTable(IRunOptionTable::create(dbExec, nRunId));
+    unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::runOption));
+
+    IRowBaseVec & rv = roTable->rowsRef();
+    msgExec->bcastSendPacked(i_runGroup.groupOne, rv, *packAdp);
+
     // create list of accumulators to be received from child modeling processes 
     appendAccReceiveList(nRunId, i_runGroup);
+
+    // if this is a root modeling group then store run options in root metadata holder
+    if (i_runGroup.groupOne == rootRunGroup().groupOne) metaStore->runOptionTable.swap(roTable);
 
     return nRunId;
 }

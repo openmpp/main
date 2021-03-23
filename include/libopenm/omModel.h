@@ -22,7 +22,7 @@
 
 namespace openm
 {
-    /** model run options */
+    /** basic model run options */
     struct RunOptions
     {
         /** number of sub-values */
@@ -77,6 +77,32 @@ namespace openm
 
         /** read model parameter */
         virtual void readParameter(const char * i_name, int i_subId, const std::type_info & i_type, size_t i_size, void * io_valueArr) = 0;
+
+        /** return true if run option found by i_key in run_option table for the current run id. */
+        virtual bool isOptionExist(const char * i_key) const noexcept = 0;
+
+        /** return string value of run option by i_key or default value if not found. */
+        virtual std::string strOption(const char * i_key, const std::string & i_default = "") const noexcept = 0;
+
+        /** return boolean value of run option by i_key or false if not found or value is not "yes", "1", "true" or empty "" string. */
+        virtual bool boolOption(const char * i_key) const noexcept = 0;
+
+        /** search for boolean value of run option by i_key and return one of:              \n
+        * return  1 if key found and value is one of: "yes", "1", "true" or empty value,    \n
+        * return  0 if key found and value is one of: "no", "0", "false",                   \n
+        * return -1 if key not found,                                                       \n
+        * return -2 otherwise.
+        */
+        virtual int boolOptionToInt(const char * i_key) const noexcept = 0;
+
+        /** return int value of run option by i_key or default if not found or can not be converted to int. */
+        virtual int intOption(const char * i_key, int i_default) const noexcept = 0;
+
+        /** return long value of run option by i_key or default if not found or can not be converted to long. */
+        virtual long long longOption(const char * i_key, long long i_default) const noexcept = 0;
+
+        /** return double value of run option by i_key or default if not found or can not be converted to double. */
+        virtual double doubleOption(const char * i_key, double i_default) const noexcept = 0;
     };
 
     /** model sub-value run public interface */
@@ -96,7 +122,7 @@ namespace openm
         /** check by name if output table suppressed. */
         virtual bool isSuppressed(const char * i_name) const = 0;
 
-        /** return model run options */
+        /** return basic model run options */
         virtual const RunOptions * runOptions(void) const = 0;
 
         /** return index of parameter sub-value in the storage array for current modeling thread */

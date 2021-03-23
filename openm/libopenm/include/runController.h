@@ -86,6 +86,46 @@ namespace openm
             forward_list<unique_ptr<double> > & io_accValues
             ) = 0;
 
+        /** return true if run option found by i_key in run_option table for the current run id. */
+        bool isOptionExist(const char * i_key) const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->isExist(currentRunId(), i_key) : false;
+        }
+
+        /** return string value of run option by i_key or default value if not found. */
+        string strOption(const char * i_key, const string & i_default = "") const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->strValue(currentRunId(), i_key) : i_default;
+        }
+
+        /** return boolean value of run option by i_key or false if not found or value is not "yes", "1", "true" or empty "" string. */
+        bool boolOption(const char * i_key) const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->boolValue(currentRunId(), i_key) : false;
+        }
+
+        /** search for boolean value of run option by i_key and return one of:              \n
+        * return  1 if key found and value is one of: "yes", "1", "true" or empty value,    \n
+        * return  0 if key found and value is one of: "no", "0", "false",                   \n
+        * return -1 if key not found,                                                       \n
+        * return -2 otherwise.
+        */
+        int boolOptionToInt(const char * i_key) const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->boolValueToInt(currentRunId(), i_key) : false;
+        }
+
+        /** return int value of run option by i_key or default if not found or can not be converted to int. */
+        int intOption(const char * i_key, int i_default) const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->intValue(currentRunId(), i_key, i_default) : i_default;
+        }
+
+        /** return long value of run option by i_key or default if not found or can not be converted to long. */
+        long long longOption(const char * i_key, long long i_default) const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->longValue(currentRunId(), i_key, i_default) : i_default;
+        }
+
+        /** return double value of run option by i_key or default if not found or can not be converted to double. */
+        double doubleOption(const char * i_key, double i_default) const noexcept override {
+            return metaStore->runOptionTable ? metaStore->runOptionTable->doubleValue(currentRunId(), i_key, i_default) : i_default;
+        }
+
     protected:
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
@@ -96,6 +136,9 @@ namespace openm
 
         /** get number of sub-values, read and broadcast metadata. */
         virtual void init(void) = 0;
+
+        /** get run id of the current model run. */
+        virtual int currentRunId(void) const noexcept = 0;
 
         /** create task run entry in database */
         int createTaskRun(int i_taskId, IDbExec * i_dbExec);

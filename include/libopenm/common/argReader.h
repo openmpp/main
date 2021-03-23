@@ -18,34 +18,37 @@ namespace openm
     struct ArgKey
     {
         /** run ini file name, ie: model.ini */
-        static const char * iniFile;
+        static constexpr const char * iniFile = "OpenM.IniFile";
+
+        /** if true then allow any key in the ini-file, read all ini-file entries and pass it to the model */
+        static constexpr const char * iniAnyKey = "OpenM.IniAnyKey";
 
         /** process run stamp, usually time stamp  */
-        static const char * runStamp;
+        static constexpr const char * runStamp = "OpenM.RunStamp";
 
         /** log to console */
-        static const char * logToConsole;
+        static constexpr const char * logToConsole = "OpenM.LogToConsole";
 
         /** log to file */
-        static const char * logToFile;
+        static constexpr const char * logToFile = "OpenM.LogToFile";
 
         /** log file path */
-        static const char * logFilePath;
+        static constexpr const char * logFilePath = "OpenM.LogFilePath";
 
         /** log to "stamped" file */
-        static const char * logToStamped;
+        static constexpr const char * logToStamped = "OpenM.LogToStampedFile";
 
         /** use time-stamp in log "stamped" file name */
-        static const char * logUseTs;
+        static constexpr const char * logUseTs = "OpenM.LogUseTimeStamp";
 
         /** use pid-stamp in log "stamped" file name */
-        static const char * logUsePid;
+        static constexpr const char * logUsePid = "OpenM.LogUsePidStamp";
 
         /** do not prefix log messages with date-time */
-        static const char * logNoMsgTime;
+        static constexpr const char * logNoMsgTime = "OpenM.LogNoMsgTime";
 
         /** log sql */
-        static const char * logSql;
+        static constexpr const char * logSql = "OpenM.LogSql";
     };
 
     /** arguments reader to get runtime arguments from command line and ini-file. */
@@ -117,6 +120,7 @@ namespace openm
             const char * i_filePath,
             const size_t i_keyArrSize, 
             const char ** i_keyArr,
+            bool i_isStoreUnknown = false,
             const size_t i_sectionToMergeSize = 0,
             const char ** i_sectionToMergeArr = nullptr,
             const size_t i_multiKeySize = 0,
