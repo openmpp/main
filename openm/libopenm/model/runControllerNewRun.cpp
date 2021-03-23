@@ -373,7 +373,7 @@ vector<pair<string, string>> RunController::allOptions(void) const noexcept
         int nRunId = currentRunId();
         size_t n = metaStore->runOptionTable->rowCount();
 
-        for (ptrdiff_t k = 0; k < n; k++) {
+        for (size_t k = 0; k < n; k++) {
             const RunOptionRow * r = metaStore->runOptionTable->byIndex(k);
 
             if (r != nullptr && r->runId == nRunId) kvLst.push_back(pair(r->key, r->value));
