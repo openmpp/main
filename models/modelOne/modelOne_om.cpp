@@ -60,7 +60,7 @@ void RunInit(IRunBase * const i_runBase)
     theModelRunState->updateProgress(0);            // update modeling process-wide progress: 0% completed
 
     /* 
-    // read model developement run options from model.ini
+    // read model development run options from model.ini
     //
     // [EventTrace]
     // ReportStyle = readable
