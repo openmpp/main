@@ -59,6 +59,24 @@ void RunInit(IRunBase * const i_runBase)
     theLog->logMsg("Reading parameters");
     theModelRunState->updateProgress(0);            // update modeling process-wide progress: 0% completed
 
+    /* 
+    // read model developement run options from model.ini
+    //
+    // [EventTrace]
+    // ReportStyle = readable
+    // ShowScheduling = yes
+    // MinimumTime = ; double value, default: -inf
+    // MaximumTime = ; double value, default: +inf
+    // SelectedEntities = ; comma separated list of integers
+    // SelectedEvents = ; comma separated list of event names
+
+    string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
+    bool isShowSch = i_runBase->boolOption("EventTrace.ShowScheduling");
+    double minTime = i_runBase->doubleOption("EventTrace.MinimumTime", -numeric_limits<double>::infinity());
+    double maxTime = i_runBase->doubleOption("EventTrace.MaximumTime", numeric_limits<double>::infinity());
+    list<string> evtList = splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
+    */
+
     om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
     om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
     om_param_salaryAge = std::move(read_om_parameter<int>(i_runBase, "salaryAge", N_SALARY * N_AGE));
