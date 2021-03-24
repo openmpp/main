@@ -7,6 +7,7 @@
 
 #pragma once
 #include <limits>
+#include "libopenm/omModel.h" // for openm::IRunBase
 
 // Undefined value for a table cell
 const double UNDEF_VALUE = std::numeric_limits<double>::quiet_NaN();
@@ -36,6 +37,7 @@ void ProgressMsg(const char *msg);
 void TimeReport(double dTime);
 void initialize_model_streams();
 void handle_streams_exceeded(int strm, int model_streams);
+void process_trace_options(openm::IRunBase* const i_runBase);
 
 // defined in use/random/random_*.ompp
 typedef std::vector<std::string> random_state; // type used to store state of all streams
@@ -103,5 +105,5 @@ extern double population_scaling_factor();
 
 // defined in generated code om_definitions.cpp
 extern const char * ModelString(const char * string_name);
-extern const int event_name_to_id(const char* event_name);
+extern const int event_name_to_id(const std::string event_name);
 extern const char* event_id_to_name(int event_id);

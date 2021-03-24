@@ -135,13 +135,13 @@ void CodeGen::do_preamble()
 
     if (Symbol::option_event_trace) {
         // Let the run-time know if trace event is enabled
-        c += "const bool BaseEntity::event_trace_enabled = true;";
+        c += "const bool BaseEntity::event_trace_capable = true;";
         // if event_trace option is on, tracing is active unless turned off
         c += "thread_local bool BaseEntity::event_trace_on = true;";
     }
     else {
         // Let the run-time know if trace event is enabled
-        c += "const bool BaseEntity::event_trace_enabled = false;";
+        c += "const bool BaseEntity::event_trace_capable = false;";
         // independent of the event_trace option, this static member must be defined
         c += "thread_local bool BaseEntity::event_trace_on = false;";
     }
@@ -489,6 +489,10 @@ void CodeGen::do_RunInit()
     c += "// Model run initialization";
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
+    c += "extern void process_trace_options(IRunBase* const i_runBase);";
+    c += "// Process model dev options for EventTrace";
+    c += "process_trace_options(i_runBase);";
+    c += "";
     c += "theLog->logMsg(\"Get scenario parameters for process\");";
     c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -496,8 +500,8 @@ void CodeGen::do_RunInit()
             c += parameter->cxx_read_parameter();
         }
     }
-	c += "}";
-	c += "";
+    c += "}";
+    c += "";
 }
 
 void CodeGen::do_ModelStartup()
@@ -923,7 +927,7 @@ void CodeGen::do_agents()
         c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
         c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
     }
-    c += "event_trace_on = event_trace_enabled;";
+    c += "event_trace_on = event_trace_capable;";
     c += "}";
     c += "";
 
@@ -1099,8 +1103,8 @@ void CodeGen::do_event_names()
     c += "";
     {
         c += "// get event id given event name";
-        c += "const int event_name_to_id(const char *event_name) {";
-        c += "static const std::map<const char *, int> name_to_id = {";
+        c += "const int event_name_to_id(const std::string event_name) {";
+        c += "static const std::unordered_map<std::string, int> name_to_id = {";
         int id = 0;
         for (auto nm : Symbol::pp_all_event_names) {
             c += "{\"" + nm + "\", " + std::to_string(id) + "},";
