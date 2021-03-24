@@ -226,6 +226,24 @@ const string openm::cleanPathChars(const string & i_str, int i_maxSize)
     return sRet;
 }
 
+/** convert i_value string represnting boolean option and return one of:    \n
+* return  1 if i_value is one of: "yes", "1", "true" or empty "" value,     \n
+* return  0 if i_value is one of: "no", "0", "false",                       \n
+* return -1 if i_value is nullptr,                                          \n
+* return -2 otherwise.
+*/
+int openm::boolStringToInt(const char * i_value)
+{
+    if (i_value == nullptr) return -1;  // NULL value: option not found
+
+    if (i_value[0] == '\0' || equalNoCase(i_value, "1") || equalNoCase(i_value, "yes") || equalNoCase(i_value, "true")) return 1;
+    if (equalNoCase(i_value, "0") || equalNoCase(i_value, "no") || equalNoCase(i_value, "false")) return 0;
+
+    return -2;  // incorrect value
+}
+
+
+
 // make date-time string, ie: 2012-08-17 16:04:59.148
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {

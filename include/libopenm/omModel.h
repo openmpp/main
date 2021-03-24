@@ -103,6 +103,9 @@ namespace openm
 
         /** return double value of run option by i_key or default if not found or can not be converted to double. */
         virtual double doubleOption(const char * i_key, double i_default) const noexcept = 0;
+
+        /** return a copy of all run options as [key, value] pairs, ordered by key. */
+        virtual std::vector<std::pair<std::string, std::string>> allOptions(void) const noexcept = 0;
     };
 
     /** model sub-value run public interface */

@@ -59,24 +59,6 @@ void RunInit(IRunBase * const i_runBase)
     theLog->logMsg("Reading parameters");
     theModelRunState->updateProgress(0);            // update modeling process-wide progress: 0% completed
 
-    /* 
-    // read model development run options from model.ini
-    //
-    // [EventTrace]
-    // ReportStyle = readable
-    // ShowScheduling = yes
-    // MinimumTime = ; double value, default: -inf
-    // MaximumTime = ; double value, default: +inf
-    // SelectedEntities = ; comma separated list of integers
-    // SelectedEvents = ; comma separated list of event names
-
-    string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
-    bool isShowSch = i_runBase->boolOption("EventTrace.ShowScheduling");
-    double minTime = i_runBase->doubleOption("EventTrace.MinimumTime", -numeric_limits<double>::infinity());
-    double maxTime = i_runBase->doubleOption("EventTrace.MaximumTime", numeric_limits<double>::infinity());
-    list<string> evtList = splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
-    */
-
     om_param_startSeed = std::move(read_om_parameter<int>(i_runBase, "StartingSeed"));
     om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));
     om_param_salaryAge = std::move(read_om_parameter<int>(i_runBase, "salaryAge", N_SALARY * N_AGE));
@@ -84,6 +66,35 @@ void RunInit(IRunBase * const i_runBase)
     om_param_baseSalary = std::move(read_om_parameter<int>(i_runBase, "baseSalary"));
     om_param_filePath = std::move(read_om_parameter<string>(i_runBase, "filePath"));
     om_param_isOldAge = std::move(read_om_parameter<bool>(i_runBase, "isOldAge", N_AGE));
+
+    /*
+    // read model development run options from model.ini
+    //
+    // [ModelTrace]
+    // ReportStyle = readable          ; string option
+    // ShowScheduling = yes            ; true if: "yes", "1", "true" or empty value, false if missing
+    // MinimumTime = 1234.56           ; double value, default: -inf
+    // MaximumTime =                   ; double value, default: +inf
+    // LineCount = 4321                ; integer
+    // EntityId = 1234567890123456789  ; long long integer
+    // SelectedEvents = e1,e2,e3       ; comma separated list of event names
+
+    // read model development run options from model.ini
+    string rptStyle = i_runBase->strOption("ModelTrace.ReportStyle");
+    bool isShowSch = i_runBase->boolOption("ModelTrace.ShowScheduling");
+    double minTime = i_runBase->doubleOption("ModelTrace.MinimumTime", -numeric_limits<double>::infinity());
+    double maxTime = i_runBase->doubleOption("ModelTrace.MaximumTime", numeric_limits<double>::infinity());
+    int lineCount = i_runBase->intOption("ModelTrace.LineCount", 0);
+    long long entityId = i_runBase->longOption("ModelTrace.EntityId", 0);
+    list<string> evtList = splitCsv(i_runBase->strOption("ModelTrace.SelectedEvents"));
+
+    if (!i_runBase->isOptionExist("ModelTrace.ReportStyle")) {
+        // if report style option is not specified at all
+    }
+
+    // get a copy of all options
+    vector<pair<string, string>> kvLst = i_runBase->allOptions();
+    */
 }
 
 // Model startup method: initialize sub-value
