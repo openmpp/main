@@ -70,7 +70,7 @@ void RunInit(IRunBase * const i_runBase)
     /*
     // read model development run options from model.ini
     //
-    // [ModelTrace]
+    // [EventTrace]
     // ReportStyle = readable          ; string option
     // ShowScheduling = yes            ; true if: "yes", "1", "true" or empty value, false if missing
     // MinimumTime = 1234.56           ; double value, default: -inf
@@ -80,15 +80,15 @@ void RunInit(IRunBase * const i_runBase)
     // SelectedEvents = e1,e2,e3       ; comma separated list of event names
 
     // read model development run options from model.ini
-    string rptStyle = i_runBase->strOption("ModelTrace.ReportStyle");
-    bool isShowSch = i_runBase->boolOption("ModelTrace.ShowScheduling");
-    double minTime = i_runBase->doubleOption("ModelTrace.MinimumTime", -numeric_limits<double>::infinity());
-    double maxTime = i_runBase->doubleOption("ModelTrace.MaximumTime", numeric_limits<double>::infinity());
-    int lineCount = i_runBase->intOption("ModelTrace.LineCount", 0);
-    long long entityId = i_runBase->longOption("ModelTrace.EntityId", 0);
-    list<string> evtList = splitCsv(i_runBase->strOption("ModelTrace.SelectedEvents"));
+    string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
+    bool isShowSch = i_runBase->boolOption("EventTrace.ShowScheduling");
+    double minTime = i_runBase->doubleOption("EventTrace.MinimumTime", -numeric_limits<double>::infinity());
+    double maxTime = i_runBase->doubleOption("EventTrace.MaximumTime", numeric_limits<double>::infinity());
+    int lineCount = i_runBase->intOption("EventTrace.LineCount", 0);
+    long long entityId = i_runBase->longOption("EventTrace.EntityId", 0);
+    list<string> evtList = splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
 
-    if (!i_runBase->isOptionExist("ModelTrace.ReportStyle")) {
+    if (!i_runBase->isOptionExist("EventTrace.ReportStyle")) {
         // if report style option is not specified at all
     }
 

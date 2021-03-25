@@ -133,7 +133,7 @@ namespace openm
         /** options started with "ImportExpr." used to specify expression name to import from output table, ex: -ImportExpr.AgeTable expr2 */
         static constexpr const char * importExprPrefix = "ImportExpr";
 
-        /** options started with "ImportDatabase." used to specify database connection string to import parameters from, ex: -ImportDb.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
+        /** options started with "ImportDb." used to specify database connection string to import parameters from, ex: -ImportDb.modelOne "Database=m1.sqlite;OpenMode=RedaOnly;" */
         static constexpr const char * importDbPrefix = "ImportDb";
 
         /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
