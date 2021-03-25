@@ -152,7 +152,7 @@ public:
     virtual void make_zombie() = 0;
 
     /**
-     * Age all agents to the given time.
+     * Age all entities to the given time.
      * 
      * If originating_entity_id is not supplied, no check for time running backwards is performed
      * 
@@ -180,6 +180,8 @@ public:
             }
             agent->age_agent( t );
         }
+        // Note that global time is updated in framework module
+        // by calling BaseEvent::set_global_time(t);
     }
 
     /**
