@@ -491,17 +491,17 @@ private:
 };
 
 /**
- * Agent. Only instances of derived classes of Agent are actually created.
+ * Entity. Only instances of derived classes of Entity are actually created.
  *
  * @tparam A Type of a.
  */
-template<typename A>
-class Agent : public BaseEntity
+template<typename E>
+class Entity : public BaseEntity
 {
 public:
 
     /**
-     * Agent allocation operator. This allocator recycles agents of the given type. Note that the
+     * Entity allocation operator. This allocator recycles entities of the given type. Note that the
      * argument of new() is required for the correct signature but is not required or used.
      *
      * @param count Size of object (required for correct signature)
@@ -510,23 +510,23 @@ public:
      */
     void *operator new( size_t count )
     {
-		A *agent = nullptr;
+		E *entity = nullptr;
         assert(available);
         if ( available->empty() ) {
-			agent = ::new A;
+			entity = ::new E;
         }
         else {
-            agent = available->front();
+            entity = available->front();
             available->pop_front();
         }
 
-        return agent;
+        return entity;
     }
 
     void make_zombie()
     {
         assert(zombies);
-        zombies->push_front( (A *)this );
+        zombies->push_front( (E *)this );
     }
 
     /**
@@ -542,8 +542,8 @@ public:
         }
     }
 
-    static thread_local std::forward_list<A *> *zombies;
-    static thread_local std::forward_list<A *> *available;
+    static thread_local std::forward_list<E *> *zombies;
+    static thread_local std::forward_list<E *> *available;
 
 };
 
@@ -552,13 +552,13 @@ public:
 * Agent zombie list (definition)
 */
 
-template<typename A>
-thread_local std::forward_list<A *> *Agent<A>::zombies;
+template<typename E>
+thread_local std::forward_list<E *> *Entity<E>::zombies;
 
 /**
 * Agent available list (definition)
 */
 
-template<typename A>
-thread_local std::forward_list<A *> *Agent<A>::available;
+template<typename E>
+thread_local std::forward_list<E *> *Entity<E>::available;
 

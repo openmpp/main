@@ -839,9 +839,9 @@ void CodeGen::do_agents()
     h += "";
     for ( auto agent : Symbol::pp_all_agents ) {
 
-	    h += "// model agent classes";
-        // e.g. class Person : public Agent<Person>
-	    h += "class " + agent->name + " : public Agent<" + agent->name + ">";
+	    h += "// model entity classes";
+        // e.g. class Person : public Entity<Person>
+	    h += "class " + agent->name + " : public Entity<" + agent->name + ">";
         h += "{";
 	    h += "public:";
 
