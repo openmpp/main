@@ -139,7 +139,7 @@ public:
      * Assigns offsets of attributes and increments within the entity.
      * 
      * This function has the fixed name om_assign_member_offsets().  It is called in the run-
-     * time support class BaseAgent exactly once for each kind of entity.
+     * time support class BaseEntity exactly once for each kind of entity.
      */
     EntityFuncSymbol *assign_member_offsets_fn;
 
@@ -147,7 +147,7 @@ public:
      * The agent function which initializes the values of all data members in the agent.
      * 
      * This function has the fixed name om_initialize_data_members().  It is called in the run-time
-     * support class BaseAgent before the agent enters the simulation.
+     * support class BaseEntity before the agent enters the simulation.
      */
     EntityFuncSymbol *initialize_data_members_fn;
 
@@ -156,7 +156,7 @@ public:
      * default values.
      * 
      * This function has the fixed name om_initialize_data_members().  It is called in the run-time
-     * support class BaseAgent before the agent enters the simulation.
+     * support class BaseEntity before the agent enters the simulation.
      */
     EntityFuncSymbol *initialize_data_members0_fn;
 
@@ -164,7 +164,7 @@ public:
      * The agent function which initializes all events in the agent.
      * 
      * This function has the fixed name om_initialize_events().  It is used in the run-time support
-     * class BaseAgent before the agent enters the simulation.
+     * class BaseEntity before the agent enters the simulation.
      */
     EntityFuncSymbol *initialize_events_fn;
 
@@ -172,7 +172,7 @@ public:
      * The agent function which finalizes all events in the agent.
      * 
      * This function has the fixed name om_events_tables(). It is used in the run-time support class
-     * BaseAgent before the agent leaves the simulation.
+     * BaseEntity before the agent leaves the simulation.
      */
     EntityFuncSymbol *finalize_events_fn;
 
@@ -180,7 +180,7 @@ public:
      * The agent function which initializes all entity sets in the agent.
      * 
      * This function has the fixed name om_initialize_entity_sets().  It is used in the run-time support
-     * class BaseAgent before the agent enters the simulation.
+     * class BaseEntity before the agent enters the simulation.
      */
     EntityFuncSymbol *initialize_entity_sets_fn;
 
@@ -188,7 +188,7 @@ public:
      * The agent function which finalizes all entity sets in the agent.
      * 
      * This function has the fixed name om_finalize_entity_sets(). It is used in the run-time support
-     * class BaseAgent before the agent leaves the simulation.
+     * class BaseEntity before the agent leaves the simulation.
      */
     EntityFuncSymbol *finalize_entity_sets_fn;
 
@@ -196,7 +196,7 @@ public:
      * The agent function which initializes all tables in the agent.
      * 
      * This function has the fixed name om_initialize_tables().  It is used in the run-time support
-     * class BaseAgent before the agent enters the simulation.
+     * class BaseEntity before the agent enters the simulation.
      */
     EntityFuncSymbol *initialize_tables_fn;
 
@@ -204,7 +204,7 @@ public:
      * The agent function which finalizes all tables in the agent.
      * 
      * This function has the fixed name om_finalize_tables(). It is used in the run-time support
-     * class BaseAgent before the agent leaves the simulation.
+     * class BaseEntity before the agent leaves the simulation.
      */
     EntityFuncSymbol *finalize_tables_fn;
 
@@ -212,7 +212,7 @@ public:
      * The agent function which initializes all identity attributes in the agent.
      * 
      * This function has the fixed name om_initialize_identity_attributes().  It is used in the run-
-     * time support class BaseAgent before the agent enters the simulation.
+     * time support class BaseEntity before the agent enters the simulation.
      */
     EntityFuncSymbol *initialize_identity_attributes_fn;
 
@@ -220,7 +220,7 @@ public:
      * The agent function which initializes derived attributes in the agent.
      * 
      * This function has the fixed name om_initialize_derived_attributes().  It is used in the run-
-     * time support class BaseAgent to initialize values as part of the entity lifecycle.
+     * time support class BaseEntity to initialize values as part of the entity lifecycle.
      */
     EntityFuncSymbol *initialize_derived_attributes_fn;
 
@@ -228,7 +228,7 @@ public:
      * The agent function which resets derived attributes in the agent.
      * 
      * This function has the fixed name om_reset_derived_attributes().  It is used in the run-
-     * time support class BaseAgent as part of the entity lifecycle.
+     * time support class BaseEntity as part of the entity lifecycle.
      */
     EntityFuncSymbol *reset_derived_attributes_fn;
 

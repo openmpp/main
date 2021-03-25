@@ -135,24 +135,24 @@ void CodeGen::do_preamble()
 
     if (Symbol::option_event_trace) {
         // Let the run-time know if trace event is enabled
-        c += "const bool BaseAgent::event_trace_enabled = true;";
+        c += "const bool BaseEntity::event_trace_capable = true;";
         // if event_trace option is on, tracing is active unless turned off
-        c += "thread_local bool BaseAgent::event_trace_on = true;";
+        c += "thread_local bool BaseEntity::event_trace_on = true;";
     }
     else {
         // Let the run-time know if trace event is enabled
-        c += "const bool BaseAgent::event_trace_enabled = false;";
+        c += "const bool BaseEntity::event_trace_capable = false;";
         // independent of the event_trace option, this static member must be defined
-        c += "thread_local bool BaseAgent::event_trace_on = false;";
+        c += "thread_local bool BaseEntity::event_trace_on = false;";
     }
 
     // static members for event trace control
-    c += "enum BaseAgent::et_report_style BaseAgent::event_trace_report_style = BaseAgent::eModgen;";
-    c += "bool BaseAgent::event_trace_show_scheduling = true;";
-    c += "double BaseAgent::event_trace_minimum_time = -std::numeric_limits<double>::infinity();";
-    c += "double BaseAgent::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
-    c += "std::unordered_set<int> BaseAgent::event_trace_selected_entities;";
-    c += "std::unordered_set<int> BaseAgent::event_trace_selected_events;";
+    c += "enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::eModgen;";
+    c += "bool BaseEntity::event_trace_show_scheduling = true;";
+    c += "double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();";
+    c += "double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
+    c += "std::unordered_set<int> BaseEntity::event_trace_selected_entities;";
+    c += "std::unordered_set<int> BaseEntity::event_trace_selected_events;";
     c += "";
 
     // Let the run-time know whether to generate a running checksum for events
@@ -489,6 +489,10 @@ void CodeGen::do_RunInit()
     c += "// Model run initialization";
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
+    c += "extern void process_trace_options(IRunBase* const i_runBase);";
+    c += "// Process model dev options for EventTrace";
+    c += "process_trace_options(i_runBase);";
+    c += "";
     c += "theLog->logMsg(\"Get scenario parameters for process\");";
     c += "";
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -496,8 +500,8 @@ void CodeGen::do_RunInit()
             c += parameter->cxx_read_parameter();
         }
     }
-	c += "}";
-	c += "";
+    c += "}";
+    c += "";
 }
 
 void CodeGen::do_ModelStartup()
@@ -906,7 +910,7 @@ void CodeGen::do_agents()
     }
 
     c += doxygen("Free all zombie agents");
-    c += "void BaseAgent::free_all_zombies()";
+    c += "void BaseEntity::free_all_zombies()";
     c += "{";
     for ( auto agent : Symbol::pp_all_agents ) {
         // e.g. Person::free_zombies();
@@ -915,19 +919,19 @@ void CodeGen::do_agents()
     c += "}";
     c += "";
 
-    c += "void BaseAgent::initialize_simulation_runtime()";
+    c += "void BaseEntity::initialize_simulation_runtime()";
     c += "{";
-    c += "agents = new std::list<BaseAgent *>;";
+    c += "agents = new std::list<BaseEntity *>;";
     for ( auto agent : Symbol::pp_all_agents ) {
         // e.g. Person::zombies = new forward_list<Person *>;";
         c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
         c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
     }
-    c += "event_trace_on = event_trace_enabled;";
+    c += "event_trace_on = event_trace_capable;";
     c += "}";
     c += "";
 
-    c += "void BaseAgent::finalize_simulation_runtime()";
+    c += "void BaseEntity::finalize_simulation_runtime()";
     c += "{";
     c += "assert(agents->empty());";
     c += "delete agents;";
@@ -1063,7 +1067,7 @@ void CodeGen::do_event_queue()
     c += "thread_local Time *BaseEvent::global_time = nullptr;";
     c += "";
     c += "// definition of active entity list (declaration in Entity.h)";
-    c += "thread_local std::list<BaseAgent *> *BaseAgent::agents = nullptr;";
+    c += "thread_local std::list<BaseEntity *> *BaseEntity::agents = nullptr;";
     c += "";
     c += "// definition of event_id of current event (declaration in Event.h)";
     c += "thread_local int BaseEvent::current_event_id;";
@@ -1099,8 +1103,8 @@ void CodeGen::do_event_names()
     c += "";
     {
         c += "// get event id given event name";
-        c += "const int event_name_to_id(const char *event_name) {";
-        c += "static const std::map<const char *, int> name_to_id = {";
+        c += "const int event_name_to_id(const std::string event_name) {";
+        c += "static const std::unordered_map<std::string, int> name_to_id = {";
         int id = 0;
         for (auto nm : Symbol::pp_all_event_names) {
             c += "{\"" + nm + "\", " + std::to_string(id) + "},";
@@ -1179,14 +1183,14 @@ void CodeGen::do_RunModel()
     }
     c += "";
     c += "BaseEvent::initialize_simulation_runtime();";
-    c += "BaseAgent::initialize_simulation_runtime();";
+    c += "BaseEntity::initialize_simulation_runtime();";
     c += "";
     c += "int mem_id = i_model->subValueId();";
     c += "int mem_count = i_model->subValueCount();";
     c += "RunSimulation(mem_id, mem_count, i_model); // Defined by the model framework, generally in a 'use' module";
     c += "";
     c += "BaseEvent::finalize_simulation_runtime();";
-    c += "BaseAgent::finalize_simulation_runtime();";
+    c += "BaseEntity::finalize_simulation_runtime();";
     c += "}";
     c += "";
 }

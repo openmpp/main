@@ -306,8 +306,8 @@ void SetMaxTime(double max_value)
  */
 void StartEventTrace()
 {
-    if (BaseAgent::event_trace_enabled) {
-        BaseAgent::event_trace_on = true;
+    if (BaseEntity::event_trace_capable) {
+        BaseEntity::event_trace_on = true;
     }
 }
 
@@ -318,8 +318,8 @@ void StartEventTrace()
  */
 void StopEventTrace()
 {
-    if (BaseAgent::event_trace_enabled) {
-        BaseAgent::event_trace_on = false;
+    if (BaseEntity::event_trace_capable) {
+        BaseEntity::event_trace_on = false;
     }
 }
 
@@ -462,3 +462,73 @@ double PieceLinearLookup(double x, const double *axy, int n)
     }
     return y;
 }
+
+/**
+ * Process event trace options
+ *
+ * Called in RunInit
+ */
+void process_trace_options(IRunBase* const i_runBase)
+{
+    {
+        // Process model dev options for EventTrace
+        if (BaseEntity::event_trace_capable) {
+            // Model was compiled with event trace capability
+
+            if (i_runBase->isOptionExist("EventTrace.ReportStyle")) {
+                std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
+                openm::toLower(rptStyle);
+                if (rptStyle == "modgen") {
+                    BaseEntity::event_trace_report_style = BaseEntity::eModgen;
+                }
+                else if (rptStyle == "readable") {
+                    BaseEntity::event_trace_report_style = BaseEntity::eReadable;
+                }
+                else {
+                    // ignore unrecognized option
+                }
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowScheduling")) {
+                bool isShowSch = i_runBase->boolOption("EventTrace.ShowScheduling");
+                BaseEntity::event_trace_show_scheduling = isShowSch;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.MinimumTime")) {
+                double minTime = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
+                BaseEntity::event_trace_minimum_time = minTime;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.MaximumTime")) {
+                double maxTime = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
+                BaseEntity::event_trace_maximum_time = maxTime;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.SelectedEntities")) {
+                std::list<std::string> entList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEntities"));
+                for (auto str : entList) {
+                    int id = std::stoi(str);
+                    BaseEntity::event_trace_selected_entities.insert(id);
+                }
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.SelectedEvents")) {
+                std::list<std::string> evtList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
+                for (auto str : evtList) {
+                    int id = event_name_to_id(str);
+                    if (id >= 0) {
+                        BaseEntity::event_trace_selected_events.insert(id);
+                    }
+                    else {
+                        // ignore unrecognized event name
+                    }
+                }
+            }
+        }
+        else {
+            // Model was not compiled with event trace capability.
+            // Ignore any EventTrace options.
+        }
+    }
+}
+
