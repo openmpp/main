@@ -97,6 +97,10 @@
     <ModelIni Include="$(MODEL_SRC_DIR)/modelOne.ini" />
     <ModelIni Include="$(MODEL_SRC_DIR)/modelOne.message.ini" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\modelOne.ini" />
+    <None Include="..\modelOne.message.ini" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
