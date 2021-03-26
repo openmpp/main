@@ -1,6 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <!-- OM_ROOT set first allows indirection to folder containing props files -->
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+  </PropertyGroup>
+
   <ItemGroup>
     <Filter Include="C++ Files">
       <UniqueIdentifier>{0e7866a6-65b3-41a1-b201-3b7d043e1098}</UniqueIdentifier>
@@ -73,11 +78,11 @@
   <!--                       -->
   <!-- SQLite source filters -->
   <!--                       -->
-  <Import Project="$(ProjectDir)model-ompp.3.items-sqlite-filters.props" />
+  <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.3.items-sqlite-filters.props" />
 
   <!--                                -->
   <!-- OpenM++ runtime source filters -->
   <!--                                -->
-  <Import Project="$(ProjectDir)model-ompp.3.items-openm-filters.props" />
+  <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.3.items-openm-filters.props" />
  
 </Project>
