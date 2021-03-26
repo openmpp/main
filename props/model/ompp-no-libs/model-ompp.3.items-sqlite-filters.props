@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!--                       -->
+  <!-- SQLite source filters -->
+  <!--                       -->
+  <ItemGroup>
+    <Filter Include="libsqlite">
+      <UniqueIdentifier>{e8e88b1e-c236-4da5-bf5e-28a203e0a0e8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  
+  <!--                     -->
+  <!-- SQLite source files -->
+  <!--                     -->
+  <ItemGroup>
+    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/extension_functions.h">
+      <Filter>libsqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/sqlite3.h">
+      <Filter>libsqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/sqlite3ext.h">
+      <Filter>libsqlite</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="$(OM_ROOT)/openm/libsqlite/sqlite3.c">
+      <Filter>libsqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libsqlite/extension-functions.c">
+      <Filter>libsqlite</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+</Project>

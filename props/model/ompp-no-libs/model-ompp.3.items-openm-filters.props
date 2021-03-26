@@ -1,0 +1,404 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!--                                -->
+  <!-- OpenM++ runtime source filters -->
+  <!--                                -->
+  <ItemGroup>
+    <Filter Include="openm-include">
+      <UniqueIdentifier>{81bac949-4200-490c-850b-60394f625619}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="openm-include\db">
+      <UniqueIdentifier>{b9d9a219-5b05-4cc5-b216-3e96be64452f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="openm-include\common">
+      <UniqueIdentifier>{1b272370-b63d-45af-be8c-6e862d2d7e8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libopenm">
+      <UniqueIdentifier>{278fb9bd-3cdd-4198-97c1-e19fc2258bdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libopenm\common">
+      <UniqueIdentifier>{72411fce-368c-4b11-8885-a8af8dc1fe68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libopenm\db">
+      <UniqueIdentifier>{0d49564b-4029-405b-9773-c39622b65fe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libopenm\include">
+      <UniqueIdentifier>{17ed2313-8c82-4e8b-a612-3cdd39fd698a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libopenm\model">
+      <UniqueIdentifier>{820d3529-5df3-4b9f-a791-6f6897878a63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libopenm\msg">
+      <UniqueIdentifier>{e7581c7d-925a-4111-b2bd-951a6bec81c1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  
+  <!--                              -->
+  <!-- OpenM++ runtime source files -->
+  <!--                              -->
+  <ItemGroup>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/common/argReader.h">
+      <Filter>openm-include\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/common/iniReader.h">
+      <Filter>openm-include\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/common/omHelper.h">
+      <Filter>openm-include\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/common/omFile.h">
+      <Filter>openm-include\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/db/dbCommon.h">
+      <Filter>openm-include\db</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/db/dbMetaRow.h">
+      <Filter>openm-include\db</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/omError.h">
+      <Filter>openm-include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/omModel.h">
+      <Filter>openm-include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/omModelRunState.h">
+      <Filter>openm-include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/omLog.h">
+      <Filter>openm-include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/omVersion.h">
+      <Filter>openm-include</Filter>
+    </ClInclude>
+
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/crc32.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/dbExec.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/dbMetaTable.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/dbOutputTable.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/dbParameter.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/dbValue.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/helper.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/md5.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/metaHolder.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/metaLoader.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/model.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/modelRunState.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/msg.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/include/runController.h">
+      <Filter>libopenm\include</Filter>
+    </ClInclude>
+
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/common/log.h">
+      <Filter>libopenm\common</Filter>
+    </ClInclude>
+
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/db/dbExecBase.h">
+      <Filter>libopenm\db</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/db/dbExecSqlite.h">
+      <Filter>libopenm\db</Filter>
+    </ClInclude>
+
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/model/modelHelper.h">
+      <Filter>libopenm\model</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/model/runControllerImpl.h">
+      <Filter>libopenm\model</Filter>
+    </ClInclude>
+
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgCommon.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgEmpty.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgExecBase.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiExec.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiPacked.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiRecv.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiSend.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/openm/libopenm/msg/msgMpi.h">
+      <Filter>libopenm\msg</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/main.cpp">
+      <Filter>libopenm</Filter>
+    </ClCompile>
+    
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/file.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/helper.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/iniReader.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/log.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/utf8Convert.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/argReader.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/md5.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/splitCsv.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbExecSqlite.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbMetaRow.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupPcTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/langLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/langWordTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/modelDicTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/modelDicTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/modelWordTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/outputTableWriter.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/paramDicTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/paramDicTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/paramDimsTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/parameterReader.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/profileLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/profileOptionTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runOptionTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableAccTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableAccTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableDicTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableDicTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableDimsTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableDimsTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableExprTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableExprTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/typeDicTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/typeDicTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/typeEnumLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/typeEnumTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/worksetLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/worksetParamTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/worksetParamTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/worksetTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/parameterWriter.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/taskLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/taskTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/paramDimsTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/taskSetTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/taskRunSetTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/taskRunLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbExecProvider.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbExec.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runParamTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbValue.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbExecBase.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/paramImportTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/outputTableReader.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/modelBase.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/runController.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/modelRunState.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/childController.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/restartController.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/rootController.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/singleController.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/modelHelper.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/runControllerNewRun.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/metaHolder.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/metaLoader.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/runControllerParams.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgCommon.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgExecBase.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiExec.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiPacked.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiRecv.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiSend.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/msg/msgMpiMetaPacked.cpp">
+      <Filter>libopenm\msg</Filter>
+    </ClCompile>
+
+  </ItemGroup>
+
+</Project>
