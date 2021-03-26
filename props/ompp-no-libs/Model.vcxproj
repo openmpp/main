@@ -108,7 +108,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  
+  <!--                                            -->
   <!-- Import openM properties for model projects -->
+  <!--                                            -->
   <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.1.build.props" />
   <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.2.cpp.props" />
   <Import Project="$(OM_ROOT)/props/model-ompp.3.items.props" />
@@ -130,6 +133,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  
+  <!--                                         -->
   <!-- Import openM targets for model projects -->
+  <!--                                         -->
   <Import Project="$(OM_ROOT)/props/model-ompp.4.build.targets" />
 </Project>
