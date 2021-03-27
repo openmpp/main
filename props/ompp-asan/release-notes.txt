@@ -1,0 +1,74 @@
+2021-03-26:
+
+To enable AddressSanitizer: EnableASAN == true
+
+Required options:
+DebugInformationFormat:     /Zi == ProgramDatabase,    not /ZI
+Linker:                     LinkIncremental == false,  /INCREMENTAL:NO
+BasicRuntimeChecks:         Default,                   /RTC1 must be off
+WholeProgramOptimization:   false,                     /LTCG must be off
+
+For better reports use:
+  Link -> AdditionalOptions: /DEBUG
+
+To avoid asan DLLs at run time solution is a static linking, 
+it should work but does not and crush Release version of model.exe:
+  RuntimeLibrary:            MultiThreaded,   /MT /MTd
+
+Current version:
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <Link>
+      <AdditionalOptions>/DEBUG %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'==....
+    ........
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <EnableASAN>true</EnableASAN>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+
+Tested multiple combinations of:
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+
+Static version of runtime may crush Release model.exe for no reason:
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  
+release model.exe works perfectly OK with DLLs version of run-time and ASAN dlls.
+
+For better ASAN reports we need link /DEBUG, but standard version may not work:
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+
+and solution is:
+    <Link>
+      <AdditionalOptions>/DEBUG %(AdditionalOptions)</AdditionalOptions>
+    </Link>

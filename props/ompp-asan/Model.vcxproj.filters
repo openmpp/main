@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- OM_ROOT set first allows indirection to folder containing props files -->
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Filter Include="C++ Files">
+      <UniqueIdentifier>{0e7866a6-65b3-41a1-b201-3b7d043e1098}</UniqueIdentifier>
+      <Extensions>cpp;h;ico;inf;rc</Extensions>
+    </Filter>
+    <Filter Include="Model Source Files">
+      <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
+      <Extensions>mpp;ompp</Extensions>
+    </Filter>
+    <Filter Include="Parameter Files">
+      <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
+      <Extensions>dat;odat</Extensions>
+    </Filter>
+    <Filter Include="IniFiles">
+      <UniqueIdentifier>{9d673919-854a-495c-b069-c7e667f5e12f}</UniqueIdentifier>
+      <Extensions>ini</Extensions>
+    </Filter>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ClCompile Include="$(PCH_CXX)" />
+    <ClCompile Include="src/om_definitions.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_developer.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src/om_fixed_parms.cpp">
+      <Filter>C++ Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(CUSTOM_CPP)" />
+    <ClCompile Include="$(PCH_CXX)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ClInclude Include="src/om_types0.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_types1.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src/om_declarations.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom_early.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../code/custom.h">
+      <Filter>C++ Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../code/*.mpp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../code/*.ompp">
+      <Filter>Model Source Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.dat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="../parameters/*/*.odat">
+      <Filter>Parameter Files</Filter>
+    </None>
+    <None Include="$(ProjectDir)$(MODEL_NAME).ini">
+      <Filter>IniFiles</Filter>
+    </None>
+  </ItemGroup>
+
+  <!--                       -->
+  <!-- SQLite source filters -->
+  <!--                       -->
+  <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.3.items-sqlite-filters.props" />
+
+  <!--                                -->
+  <!-- OpenM++ runtime source filters -->
+  <!--                                -->
+  <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.3.items-openm-filters.props" />
+ 
+</Project>
