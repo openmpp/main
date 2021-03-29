@@ -26,6 +26,12 @@ else
   BIN_POSTFIX =
 endif
 
+# address sanitizer
+CC_ASAN_FLAGS =
+ifdef USE_ASAN
+  CC_ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
+
 # libsqlite specific
 OM_DB_DEF = OM_DB_SQLITE
 
@@ -36,7 +42,7 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -pthread -fPIC -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD_EXTENSION $(BD_CFLAGS)
+CXXFLAGS = -Wall -pthread -fPIC -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD_EXTENSION $(CC_ASAN_FLAGS) $(BD_CFLAGS)
 CCFLAGS = $(CXXFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 

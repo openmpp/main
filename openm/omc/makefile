@@ -57,10 +57,18 @@ ifeq ($(PLATFORM_UNAME), Darwin)
   WL_PIE_FLAG = -Wl,-pie
 endif
 
+# address sanitizer
+CC_ASAN_FLAGS =
+LD_ASAN_FLAGS =
+ifdef USE_ASAN
+  CC_ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+  LD_ASAN_FLAGS = -fsanitize=address
+endif
+
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(BD_CFLAGS) -Wno-register
+CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(CC_ASAN_FLAGS) $(BD_CFLAGS) -Wno-register
 CPPFLAGS = $(CXXFLAGS)
 
 OMC_EXE = omc$(BIN_POSTFIX)
@@ -139,7 +147,7 @@ TypeSymbol.cpp \
 UnknownTypeSymbol.cpp \
 VersionSymbol.cpp \
   $(BUILD_SRC_DIR)/parser.cpp \
-  $(BUILD_SRC_DIR)/scanner.cpp 
+  $(BUILD_SRC_DIR)/scanner.cpp
 
 sources = $(OMC_CPPLIST)
 
@@ -148,9 +156,9 @@ DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
 
 vpath %.cpp $(CURDIR)
 vpath %.cpp $(BUILD_SRC_DIR)
-     
+
 .PHONY : all
-all: omc 
+all: omc
 
 .PHONY : omc
 omc: prepare $(OUT_BIN_DIR)/$(OMC_EXE) copy_ini
@@ -179,9 +187,9 @@ $(DEPS_DIR)/scanner.d : $(BUILD_SRC_DIR)/scanner.cpp
 
 $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-	
+
 $(OUT_BIN_DIR)/$(OMC_EXE) : $(OBJS) $(OUT_LIB_DIR)/$(LIB_OMC_A) $(OUT_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OUT_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
+	$(CXX) -pthread -L$(OUT_LIB_DIR) $(WL_PIE_FLAG) $(LD_ASAN_FLAGS) -o $@ $(OBJS) -lopenm_omc_db$(BIN_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
 
 .PHONY : copy_ini
 copy_ini:
