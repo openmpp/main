@@ -190,7 +190,9 @@ void EntityEventSymbol::post_parse(int pass)
                 "GetCaseSeed(), "
                 + std::to_string(pp_event_id) + ","
                 "\"" + time_func_original->name + "\", "
-                " (double)event_time, (double)BaseEvent::get_global_time(), eEventScheduledTime);"
+                "(double)event_time, "
+                "(double)BaseEvent::get_global_time(), "
+                "eEventScheduledTime);"
                 ;
             ct += "return event_time;";
 
@@ -202,7 +204,9 @@ void EntityEventSymbol::post_parse(int pass)
                 "GetCaseSeed(), "
                 + std::to_string(pp_event_id) + ","
                 "\"" + agent->name + "." + event_name + "\", "
-                "(double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                "(double)age, "
+                "(double)BaseEvent::get_global_time(), "
+                "eEventOccurrence);"
                 ;
             ci += implement_func_original->name + (event_memory ? "(event_mem);" : "();");
         }

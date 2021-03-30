@@ -134,13 +134,13 @@ void CodeGen::do_preamble()
 	c += "";
 
     if (Symbol::option_event_trace) {
-        // Let the run-time know if trace event is enabled
+        // Let the run-time know that model is capable of event trace
         c += "const bool BaseEntity::event_trace_capable = true;";
         // if event_trace option is on, tracing is active unless turned off
         c += "thread_local bool BaseEntity::event_trace_on = true;";
     }
     else {
-        // Let the run-time know if trace event is enabled
+        // Let the run-time know that model is not capable of event trace
         c += "const bool BaseEntity::event_trace_capable = false;";
         // independent of the event_trace option, this static member must be defined
         c += "thread_local bool BaseEntity::event_trace_on = false;";

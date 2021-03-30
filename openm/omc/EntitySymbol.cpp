@@ -212,6 +212,14 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "return time.get();" ;
     }
 
+    // The om_get_age() member function
+    {
+        auto* fn = new EntityFuncSymbol("om_get_age", this, "Time", "");
+        fn->doc_block = doxygen_short("Return current age of this entity.");
+        CodeBlock& c = fn->func_body;
+        c += "return age.get();";
+    }
+
     // The assign_member_offsets member function
     {
         assert(!assign_member_offsets_fn); // initialization guarantee

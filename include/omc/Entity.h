@@ -50,6 +50,11 @@ public:
     virtual Time om_get_time() = 0;
 
     /**
+     * Get current age of agent.
+     */
+    virtual Time om_get_age() = 0;
+
+    /**
      * Initialize time and age as part of entity initialization.
      */
     virtual void om_initialize_time_and_age() = 0;
@@ -234,6 +239,22 @@ public:
      */
     void enter_simulation()
     {
+        if (event_trace_capable) { // is constexpr
+            extern double GetCaseSeed();
+            //extern double BaseEvent::get_global_time();
+            if (event_trace_on) {
+                event_trace_msg(
+                    "theEntityName", //SFG placeholder
+                    (int)om_get_entity_id(),
+                    GetCaseSeed(),
+                    -1, // no associated event
+                    "enter_simulation",
+                    om_get_time(), // the value of time in the entity before it enters the simulation
+                    -1, //(double)BaseEvent::get_global_time(), 
+                    eEnterSimulation 
+                );
+            }
+        }
         om_check_starting_time();
         om_reset_derived_attributes();
         om_initialize_identity_attributes();
@@ -318,7 +339,13 @@ public:
         eEventOccurrence,
 
         // event scheduled time
-        eEventScheduledTime
+        eEventScheduledTime,
+
+        // enter simulation
+        eEnterSimulation,
+
+        // enter simulation
+        eExitSimulation,
     };
 
     /**
@@ -407,6 +434,10 @@ public:
 
         switch (event_trace_report_style) {
         case eModgen:
+        {
+            switch (msg_type) {
+            case eEventOccurrence:
+            case eEventScheduledTime:
             {
                 theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
                     entity_name,
@@ -416,37 +447,55 @@ public:
                     reported_time);
             }
             break;
+            // ignore all other message types for modgen style output
+            default:
+                break;
+            }
+        }
+        break;
         case eReadable:
             {
                 // style is similar to that produced by test_models
                 // using normalize_event_trace in common.pm
                 switch (msg_type) {
                 case eEventOccurrence:
-                    {
-                        assert(global_time == reported_time);
-                        theTrace->logFormatted("%13.6f %s (%s %d)",
-                            reported_time,
-                            event_description,
-                            entity_name,
-                            entity_id);
-                    }
-                    break;
+                {
+                    assert(global_time == reported_time);
+                    theTrace->logFormatted("%13.6f   =====EVENT===== %8d %s (age=%.6f)",
+                        global_time,
+                        entity_id,
+                        event_description,
+                        reported_time
+                    );
+                }
+                break;
                 case eEventScheduledTime:
-                    {
-                        //theTrace->logFormatted("                  %13.6f %s (%s %d)",
-                        //    reported_time,
-                        //    event_description,
-                        //    entity_name,
-                        //    entity_id);
-                        theTrace->logFormatted("%13.6f     %13.6f %8d %s (%s)",
-                            global_time,
-                            reported_time,
-                            entity_id,
-                            event_description,
-                            entity_name
-                        );
-                    }
-                    break;
+                {
+                    //theTrace->logFormatted("                  %13.6f %s (%s %d)",
+                    //    reported_time,
+                    //    event_description,
+                    //    entity_name,
+                    //    entity_id);
+                    theTrace->logFormatted("%13.6f     %13.6f %8d     %s.%s",
+                        global_time,
+                        reported_time,
+                        entity_id,
+                        entity_name,
+                        event_description
+                    );
+                }
+                break;
+                case eEnterSimulation:
+                {
+                    theTrace->logFormatted("%13.6f   =====ENTRY===== %8d %s.%s (time=%.6f)",
+                        global_time,
+                        entity_id,
+                        entity_name,
+                        event_description,
+                        reported_time
+                    );
+                }
+                break;
                 default:
                     {
                         assert(false);
