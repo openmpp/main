@@ -141,10 +141,11 @@ void ModelShutdown(IModel * const i_model)
     if (theAgeSexIncome) i_model->writeOutputTable(AgeSexIncome::NAME, AgeSexIncome::N_CELL, theAgeSexIncome->acc_storage);
     if (theSeedOldAge) i_model->writeOutputTable(SeedOldAge::NAME, SeedOldAge::N_CELL, theSeedOldAge->acc_storage);
 
-    if (theSalarySex) theSalarySex.release();
-    if (theFullAgeSalary) theFullAgeSalary.release();
-    if (theAgeSexIncome) theAgeSexIncome.release();
-    if (theSeedOldAge) theSeedOldAge.release();
+    // release output tables memory
+    if (theSalarySex) theSalarySex.reset(nullptr);
+    if (theFullAgeSalary) theFullAgeSalary.reset(nullptr);
+    if (theAgeSexIncome) theAgeSexIncome.reset(nullptr);
+    if (theSeedOldAge) theSeedOldAge.reset(nullptr);
 }
 
 namespace openm
