@@ -108,7 +108,7 @@ void RunModel(IModel * const i_model)
     // if SeedOldAge output table not suppressed
     if (theSeedOldAge) {
 
-        for (size_t nAge = 0; nAge < N_AGE + 1; nAge++) {
+        for (size_t nAge = 0; nAge < N_AGE; nAge++) {
             theSeedOldAge->acc[SeedOldAge::ACC_ID][0] += (double)(i_model->subValueId() + (isOldAge[nAge] ? 10 : 1));
         }
     }

@@ -39,7 +39,7 @@ public:
         // allocate and initialize measures
         auto it = measure_storage.before_begin();
         for (int msr = 0; msr < n_measures; ++msr) {
-            it = measure_storage.insert_after(it, std::unique_ptr<double>(new double[Tcells]));
+            it = measure_storage.insert_after(it, std::unique_ptr<double[]>(new double[Tcells]));
             measure[msr] = it->get();
         }
 
@@ -126,7 +126,7 @@ public:
      * Measure storage.
      */
     double * measure[Tmeasures];            // measure[Tmeasures][Tcells];
-    std::forward_list<std::unique_ptr<double> > measure_storage;
+    std::forward_list<std::unique_ptr<double[]> > measure_storage;
 };
 
 /**
@@ -145,7 +145,7 @@ public:
     {
         auto it = acc_storage.before_begin();
         for (int k = 0; k < Taccumulators; k++) {
-            it = acc_storage.insert_after(it, std::unique_ptr<double>(new double[Tcells]));
+            it = acc_storage.insert_after(it, std::unique_ptr<double[]>(new double[Tcells]));
             acc[k] = it->get();
         }
     };
@@ -161,7 +161,7 @@ public:
      * Accumulator storage.
      */
     double * acc[Taccumulators];            // acc[Taccumulators][Tcells];
-    std::forward_list<std::unique_ptr<double> > acc_storage;
+    std::forward_list<std::unique_ptr<double[]> > acc_storage;
 };
 
 /**

@@ -83,7 +83,7 @@ namespace openm
             bool i_isLastTable,
             const char * i_name,
             size_t i_size,
-            forward_list<unique_ptr<double> > & io_accValues
+            forward_list<unique_ptr<double[]> > & io_accValues
             ) = 0;
 
         /** return true if run option found by i_key in run_option table for the current run id. */
@@ -168,7 +168,7 @@ namespace openm
             const RunOptions & i_runOpts,
             const char * i_name,
             size_t i_size,
-            forward_list<unique_ptr<double> > & io_accValues
+            forward_list<unique_ptr<double[]> > & io_accValues
             ) const;
 
         /** update sub-value index to restart the run */

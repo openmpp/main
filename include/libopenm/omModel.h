@@ -132,7 +132,7 @@ namespace openm
         virtual int parameterSubValueIndex(const char * i_name) const = 0;
 
         /** write output result table: sub values */
-        virtual void writeOutputTable(const char * i_name, size_t i_size, std::forward_list<std::unique_ptr<double> > & io_accValues) = 0;
+        virtual void writeOutputTable(const char * i_name, size_t i_size, std::forward_list<std::unique_ptr<double[]> > & io_accValues) = 0;
 
         /** set modeling progress count and value */
         virtual void updateProgress(int i_count, double i_value = 0.0) = 0;

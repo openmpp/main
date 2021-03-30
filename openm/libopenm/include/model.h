@@ -59,7 +59,7 @@ namespace openm
         bool isSuppressed(const char * i_name) const override { return runCtrl->isSuppressed(i_name); };
 
         /** write result into output table and release accumulators memory. */
-        void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues) override;
+        void writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double[]> > & io_accValues) override;
 
         /** set modeling progress count and value */
         void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->runStateStore().updateProgress(runId, runOpts.subValueId, i_count, i_value); }

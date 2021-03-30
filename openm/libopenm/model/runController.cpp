@@ -254,7 +254,7 @@ void RunController::doWriteAccumulators(
     const RunOptions & i_runOpts,
     const char * i_name,
     size_t i_size,
-    forward_list<unique_ptr<double> > & io_accValues
+    forward_list<unique_ptr<double[]> > & io_accValues
 ) const
 {
     // find output table db row and accumulators

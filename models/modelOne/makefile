@@ -79,10 +79,18 @@ ifeq ($(PLATFORM_UNAME), Darwin)
   WL_PIE_FLAG = -Wl,-pie
 endif
 
+# address sanitizer
+CC_ASAN_FLAGS =
+LD_ASAN_FLAGS =
+ifdef USE_ASAN
+  CC_ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+  LD_ASAN_FLAGS = -fsanitize=address
+endif
+
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -I$(OM_INC_DIR) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -I$(OM_INC_DIR) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
@@ -96,11 +104,11 @@ sources = $(MODEL_CPPLIST)
 
 OBJS := $(foreach root,$(sources:.cpp=.o),$(OBJ_DIR)/$(root))
 DEPS := $(foreach root,$(sources:.cpp=.d),$(DEPS_DIR)/$(root))
-    
+
 # vpath %.cpp $(MODEL_PATH)
-     
+
 .PHONY : all
-all: model 
+all: model
 
 .PHONY : model
 model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
@@ -113,9 +121,9 @@ $(DEPS_DIR)/%.d : %.cpp
 
 $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-	
+
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
+	$(CXX) -pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) $(LD_ASAN_FLAGS) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
 
 #
 # create model SQLite database

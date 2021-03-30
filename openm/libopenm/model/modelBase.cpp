@@ -99,13 +99,13 @@ int ModelBase::parameterSubValueIndex(const char * i_name) const
 *      // at this point any kind of table->acc[k][j] will cause memory access violation
 * @endcode
 */
-void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double> > & io_accValues)
+void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_list<unique_ptr<double[]> > & io_accValues)
 {
     if (i_name == NULL || i_name[0] == '\0') throw ModelException("invalid (empty) output table name");
     if (io_accValues.empty() || i_size <= 0) throw ModelException("invalid (empty) accumulators or size: %zd for output table %s", i_size, i_name);
 
     try {
-        forward_list<unique_ptr<double> > accValLst;
+        forward_list<unique_ptr<double[]> > accValLst;
         accValLst.swap(io_accValues);                   // release accumulators memory at return
 
         // find output table db row

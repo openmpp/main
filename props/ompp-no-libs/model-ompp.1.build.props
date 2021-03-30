@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+
+    <!-- 
+    The following properties are set through the VS UI in project properties:
+    
+    -->
+
+    <!-- 
+    Begin: Set default values for user-specified properties
+    -->
+    
+    <!--  Default value for MODEL_NAME -->
+    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME> <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
+    <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>     <!--  Remove trailing backslash -->
+    <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
+    
+    <!--  Default value for SCENARIO_NAME -->
+    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
+
+    <!--  Default value for MODEL_CODE_DIR -->
+    <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
+
+    <!--  Default value for SCENARIO_PARAMETERS_FOLDER -->
+    <SCENARIO_PARAMETERS_FOLDER Condition="'$(SCENARIO_PARAMETERS_FOLDER)'==''">../parameters/$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
+    
+    <!--  Default value for OMC_USE_DIR -->
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
+
+    <!-- 
+    End: Set default values for user-specified properties
+    -->
+
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+
+    <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
+
+    <OMC_EXE>omc.exe</OMC_EXE>
+    <OMPP_EXPORT_EXCEL_EXE>ompp_export_excel.exe</OMPP_EXPORT_EXCEL_EXE>
+    <OMPP_EXPORT_CSV_EXE>ompp_export_csv.exe</OMPP_EXPORT_CSV_EXE>
+    <DBCOPY_EXE>dbcopy.exe</DBCOPY_EXE>
+    <MPIEXEC_EXE>mpiexec.exe</MPIEXEC_EXE>
+    <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
+    <SQLITE_EXE_DIR Condition="'$(SQLITE_EXE_DIR)'==''">$(OM_BIN_DIR)</SQLITE_EXE_DIR>
+
+    <COMPLETE_OMC_EXE>&quot;$(OM_BIN_DIR)/$(OMC_EXE)&quot;</COMPLETE_OMC_EXE>
+    <COMPLETE_SQLITE_EXE>&quot;$(SQLITE_EXE_DIR)/$(SQLITE_EXE)&quot;</COMPLETE_SQLITE_EXE>
+    <COMPLETE_OMPP_EXPORT_EXCEL_EXE>&quot;$(OM_BIN_DIR)/$(OMPP_EXPORT_EXCEL_EXE)&quot;</COMPLETE_OMPP_EXPORT_EXCEL_EXE>
+    <COMPLETE_OMPP_EXPORT_CSV_EXE>&quot;$(OM_BIN_DIR)/$(OMPP_EXPORT_CSV_EXE)&quot;</COMPLETE_OMPP_EXPORT_CSV_EXE>
+    <COMPLETE_MPIEXEC_EXE>&quot;$(MSMPI_BIN)/$(MPIEXEC_EXE)&quot;</COMPLETE_MPIEXEC_EXE>
+
+    <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include</OM_INC_DIR>
+    <OM_LIB_INC_DIR Condition="'$(OM_LIB_INC_DIR)'==''">$(OM_ROOT)/openm/libopenm/include</OM_LIB_INC_DIR>
+
+    <OM_SQL_DIR Condition="'$(OM_SQL_DIR)'==''">$(OM_ROOT)/sql</OM_SQL_DIR>
+
+    <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
+
+    <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>
+    <ENABLE_FIXED_PARAMETERS Condition="'$(FIXED_PARAMETERS_FOLDER)'!=''">true</ENABLE_FIXED_PARAMETERS>
+    
+    <PUBLISH_DIR>$(ProjectDir)bin</PUBLISH_DIR>
+    
+    <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
+
+    <OMC_OUT_DIR>$(ProjectDir)src</OMC_OUT_DIR>
+    <PCH_CXX>$(OMC_OUT_DIR)/pch.cxx</PCH_CXX>
+
+    <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
+
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
+    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+
+    <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
+    
+    <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
+    <MODEL_INI>$(MODEL_NAME).ini</MODEL_INI>
+    
+    <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
+    
+    <!--
+    If this is Debug under Visual Studio then PUBLISH_DIR, TargetDir, LocalDebuggerWorkingDirectory must be identical
+    otherwise debug model.exe always fail to find model.sqlite in current directory.
+    -->
+    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
+
+    <!-- 
+    The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,
+    and do it right for more complex dependencies.  If this is not set VS sometimes thinks things are up-to-date
+    when they are not, and does not launch MSBuild.
+    -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <!-- omc -p option to supply parameters -->
+    <OMC_IN_SCENARIO_OPT>-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
+    <!-- omc -f option to supply fixed parameter -->
+    <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
+    <!-- omc -noLineDirectives option -->
+    <OMC_NO_LINE_DIRECTIVES_OPT Condition="'$(NO_LINE_DIRECTIVES)'=='true'">-Omc.noLineDirectives 1</OMC_NO_LINE_DIRECTIVES_OPT>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    
+    <!-- 
+    Use this to disable #line directives in generated cpp files (0=use, 1=disable)
+    -->
+    <NO_LINE_DIRECTIVES Condition="'$(NO_LINE_DIRECTIVES)'==''">0</NO_LINE_DIRECTIVES>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose database library provider, now only SQlite supported
+    SQLITE - use SQlite version
+  Pass through the value from the User Macro DB_PROVIDER in OpenM++.props.
+  -->
+  <PropertyGroup Condition="'$(DB_PROVIDER)'==''">
+    <DB_PROVIDER>SQLITE</DB_PROVIDER>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OM_DB_USE>$(DB_PROVIDER)</OM_DB_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
+    <OM_DB_DEF>OM_DB_SQLITE</OM_DB_DEF>
+    <OM_LIB_DB_INC>$(OM_ROOT)/openm/libsqlite</OM_LIB_DB_INC>
+    <OM_DB_CPP_DEF>SQLITE_ENABLE_COLUMN_METADATA;SQLITE_OMIT_LOAD_EXTENSION;HAVE_ACOSH;HAVE_ASINH;HAVE_ATANH;</OM_DB_CPP_DEF>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose message passing library provider
+    MPI   - use MPI-based version (you must have MS-MPI installed)
+    EMPTY - use empty version of the library which does nothing
+  Pass through the value from the User Macro GRID_COMPUTING in OpenM++.props.
+  -->
+  <PropertyGroup Condition="'$(GRID_COMPUTING)'==''">
+    <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OM_MSG_USE>$(GRID_COMPUTING)</OM_MSG_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='EMPTY'">
+    <OM_MSG_DEF>OM_MSG_EMPTY</OM_MSG_DEF>
+    <OM_MSG_INC></OM_MSG_INC>
+    <OM_MSG_LIB></OM_MSG_LIB>
+    <OM_MSG_LIB_DIR></OM_MSG_LIB_DIR>
+    <MPI_SUFFIX></MPI_SUFFIX>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI'">
+    <OM_MSG_DEF>OM_MSG_MPI</OM_MSG_DEF>
+    <OM_MSG_INC>$(MSMPI_INC)</OM_MSG_INC>
+    <OM_MSG_LIB>msmpi.lib;</OM_MSG_LIB>
+    <MPI_SUFFIX>_mpi</MPI_SUFFIX>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI' And '$(Platform)'=='Win32'">
+    <OM_MSG_LIB_DIR>$(MSMPI_LIB32)</OM_MSG_LIB_DIR>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_MSG_USE)'=='MPI' And '$(Platform)'=='x64'">
+    <OM_MSG_LIB_DIR>$(MSMPI_LIB64)</OM_MSG_LIB_DIR>
+  </PropertyGroup>
+
+  <!-- 
+  Use this to choose UTF-8 conversion library
+    MSSTL - use MS VC++ wstring_convert and codecvt_utf8
+    ICONV - use libiconv
+  -->
+  <PropertyGroup>
+    <OM_UCVT_USE>MSSTL</OM_UCVT_USE>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_UCVT_USE)'=='MSSTL'">
+    <OM_UCVT_DEF>OM_UCVT_MSSTL</OM_UCVT_DEF>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OM_UCVT_USE)'=='ICONV'">
+    <OM_UCVT_DEF>OM_UCVT_ICONV</OM_UCVT_DEF>
+  </PropertyGroup>
+
+</Project>

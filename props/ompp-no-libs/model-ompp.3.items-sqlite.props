@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <!--                     -->
+  <!-- SQLite source files -->
+  <!--                     -->
+  <ItemGroup>
+    <ClCompile Include="$(OM_ROOT)/openm/libsqlite/extension-functions.c" />
+    <ClCompile Include="$(OM_ROOT)/openm/libsqlite/sqlite3.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/extension_functions.h" />
+    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/sqlite3.h" />
+    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/sqlite3ext.h" />
+  </ItemGroup>
+
+</Project>

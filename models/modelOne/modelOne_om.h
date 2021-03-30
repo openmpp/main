@@ -69,13 +69,13 @@ public:
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
-    forward_list<unique_ptr<double> > acc_storage;
+    forward_list<unique_ptr<double[]> > acc_storage;
 
     SalarySex(void)
     {
         auto it = acc_storage.before_begin();
         for (size_t k = 0; k < N_ACC; k++) {
-            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            it = acc_storage.insert_after(it, unique_ptr<double[]>(new double[N_CELL]));
             acc[k] = it->get();
         }
     }
@@ -98,13 +98,13 @@ public:
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
-    forward_list<unique_ptr<double> > acc_storage;
+    forward_list<unique_ptr<double[]> > acc_storage;
 
     FullAgeSalary(void)
     {
         auto it = acc_storage.before_begin();
         for (size_t k = 0; k < N_ACC; k++) {
-            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            it = acc_storage.insert_after(it, unique_ptr<double[]>(new double[N_CELL]));
             acc[k] = it->get();
         }
     }
@@ -128,13 +128,13 @@ public:
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
-    forward_list<unique_ptr<double> > acc_storage;
+    forward_list<unique_ptr<double[]> > acc_storage;
 
     AgeSexIncome(void)
     {
         auto it = acc_storage.before_begin();
         for (size_t k = 0; k < N_ACC; k++) {
-            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            it = acc_storage.insert_after(it, unique_ptr<double[]>(new double[N_CELL]));
             acc[k] = it->get();
         }
     }
@@ -158,13 +158,13 @@ public:
 
 public:
     double * acc[N_ACC];                // acc[N_ACC][N_CELL];
-    forward_list<unique_ptr<double> > acc_storage;
+    forward_list<unique_ptr<double[]> > acc_storage;
 
     SeedOldAge(void)
     {
         auto it = acc_storage.before_begin();
         for (size_t k = 0; k < N_ACC; k++) {
-            it = acc_storage.insert_after(it, unique_ptr<double>(new double[N_CELL]));
+            it = acc_storage.insert_after(it, unique_ptr<double[]>(new double[N_CELL]));
             acc[k] = it->get();
         }
     }
