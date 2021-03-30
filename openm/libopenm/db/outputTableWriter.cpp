@@ -257,7 +257,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subId, int i_
         i_dbExec->createStatement(sql, (int)tv.size(), tv.data());
 
         // storage for dimension enum indexes
-        unique_ptr<int> cellArrUptr(new int[dimCount]);
+        unique_ptr<int[]> cellArrUptr(new int[dimCount]);
         int * cellArr = cellArrUptr.get();
 
         for (int k = 0; k < dimCount; k++) {
@@ -266,7 +266,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subId, int i_
 
         // storage for dimension items and db row values
         int rowSize = dimCount + 1;
-        unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
+        unique_ptr<DbValue[]> valVecUptr(new DbValue[rowSize]);
         DbValue * valVec = valVecUptr.get();
 
         // loop through all dimensions and store cell values

@@ -245,7 +245,7 @@ void ChildController::writeAccumulators(
     bool /*i_isLastTable*/,
     const char * i_name, 
     size_t i_size, 
-    forward_list<unique_ptr<double> > & io_accValues
+    forward_list<unique_ptr<double[]> > & io_accValues
     )
 {
     // find output table db row and accumulators
