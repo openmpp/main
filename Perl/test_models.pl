@@ -420,7 +420,7 @@ for my $model_dir (@model_dirs) {
 			remove_tree($reference_dir);
 		}
 		
-		remove_tree $current_dir;
+		remove_tree $current_dir || next FLAVOUR;
 		
 		# Folder for current model outputs
 		my $current_outputs_dir = "${current_dir}/outputs";
@@ -831,7 +831,8 @@ for my $model_dir (@model_dirs) {
 				if ($ompp_ini_path ne '') {
 					push @args,
 						(
-						"-ini", $ompp_ini_path
+						"-ini", $ompp_ini_path,
+                        "-OpenM.IniAnyKey", "true"
 						);
 				}
 				system(@args);
@@ -1035,7 +1036,8 @@ for my $model_dir (@model_dirs) {
 				if ($ompp_ini_path ne '') {
 					push @args,
 						(
-						"-ini", $ompp_ini_path
+						"-ini", $ompp_ini_path,
+                        "-OpenM.IniAnyKey", "true"
 						);
 				}
 				system(@args);
