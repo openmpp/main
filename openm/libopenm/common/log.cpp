@@ -222,7 +222,7 @@ void LogBase::writeToLog(
     if (i_msg != nullptr && i_extra == nullptr) i_ost << i_msg;
     if (i_msg != nullptr && i_extra != nullptr) i_ost << i_msg << ": " << i_extra;
     if (i_msg == nullptr && i_extra != nullptr) i_ost << i_extra;
-    i_ost << endl;
+    i_ost << "\n";
 }
 
 /**
