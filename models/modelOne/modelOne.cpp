@@ -2,6 +2,8 @@
 // Copyright (c) 2013-2014 OpenM++
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
+// #include <chrono>
+
 #include "modelOne_om.h"
 using namespace openm;
 
@@ -115,4 +117,22 @@ void RunModel(IModel * const i_model)
 
     i_model->updateProgress(100);               // update sub-value progress: 100% completed
     theTrace->logMsg("Event loop completed");   // trace output: disabled by default, use command-line or model.ini to enable it
+
+    /*
+    // trace performance test
+    theLog->logFormatted("Test trace, line count: %d", startSeed);
+
+    chrono::time_point start_time = chrono::system_clock::now();
+
+    for (int k = 0; k < startSeed; k++) {
+        if (k % (200 * 1000) == 0) theLog->logFormatted("Trace at: %d", k);
+
+        theTrace->logFormatted("[%d]:  -1=%d +1=%d 2k=%d", k, k - 1, k + 1, k + k);
+    }
+    chrono::time_point end_time = chrono::system_clock::now();
+    chrono::minutes m = chrono::duration_cast<chrono::minutes>(end_time - start_time);
+    auto sec = chrono::duration_cast<chrono::seconds>(end_time - start_time) % chrono::minutes(1);
+
+    theLog->logFormatted("Test trace done: %ld minutes %ld seconds", m, sec);
+    */
 }
