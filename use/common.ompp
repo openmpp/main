@@ -267,13 +267,13 @@ void report_simulation_progress_beat(int percent, double value)
  * In Modgen, displays a progress message in the UI.
  *
  * See Modgen Developer's Guide for more information.
- * Not used in ompp.
+ * Write the message to the log in ompp.
  * 
  * @param fmt The format string
  */
-void ProgressMsg(const char* msg)
+void ProgressMessage(const char* msg)
 {
-    // not implemented
+    theLog->logMsg(msg);
 }
 
 /**
