@@ -500,6 +500,13 @@ void CodeGen::do_RunInit()
             c += parameter->cxx_read_parameter();
         }
     }
+    // if ProcessDevelopmentOptions() defined by model developer
+    if (Symbol::identifiers_in_model_source.find("ProcessDevelopmentOptions") != Symbol::identifiers_in_model_source.cend()) {
+        c += "";
+        c += "extern void ProcessDevelopmentOptions(const IRunOptions * const i_options);";
+        c += "// Process model development options";
+        c += "ProcessDevelopmentOptions(i_runBase);";
+    }
     c += "}";
     c += "";
 }

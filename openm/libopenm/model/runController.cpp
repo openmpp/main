@@ -13,6 +13,7 @@ using namespace std;
 using namespace openm;
 
 // model run basic support public interface
+IRunOptions::~IRunOptions() noexcept { }
 IRunBase::~IRunBase() noexcept { }
 
 /** last cleanup */
