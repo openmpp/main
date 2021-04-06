@@ -11,9 +11,9 @@ if (!"$env:OM_ROOT") {
   Write-Host "OM_ROOT: $env:OM_ROOT"
 }
 
-"Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList ""-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.LogRequest""" | Out-File -FilePath $start_ompp_ui_log
+"Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList ""-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.HomeDir models/home -oms.LogRequest""" | Out-File -FilePath $start_ompp_ui_log
 
-$oms_proc = Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList "-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.LogRequest"
+$oms_proc = Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList "-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.HomeDir models/home -oms.LogRequest"
 
 if (!$oms_proc -or $oms_proc.ExitCode -ne $null) {
   Write-Host "Failed to start oms web-service"

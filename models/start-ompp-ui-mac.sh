@@ -88,9 +88,9 @@ fi
 
 # start oms web-service
 #
-echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
+echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.HomeDir models/home -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
 
-"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.LogRequest \
+"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.HomeDir models/home -oms.LogRequest \
   >> "$START_OMPP_UI_LOG" 2>&1 & \
   status=$? \
   OMS_PID=$!

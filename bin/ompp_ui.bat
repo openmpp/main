@@ -20,5 +20,5 @@ if not exist %OM_ROOT%\html (
   EXIT 1
 )
 
-START "oms" /MIN %OM_ROOT%\bin\oms
+START "oms" /MIN %OM_ROOT%\bin\oms -oms.HomeDir models\home -oms.LogRequest
 START http://localhost:4040
