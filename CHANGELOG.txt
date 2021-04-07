@@ -7,9 +7,9 @@ Please note:
   SimulationSeed in the example models is now set to 1 instead of 16807
   AddressSanitizer support to detect and debug memory violation issues
   support model development run options
-  support EventTarce options to improve developemnt process
-  improve model tarce performance for network shares
-  UI: support persistent veiw for model parameters even model UI started from IDE debug session
+  support EventTrace options to improve development process
+  improve model trace performance for network shares
+  UI: support persistent view for model parameters even model UI started from IDE debug session
   support multi-line values in model ini-files
 
 2021_03_16:
