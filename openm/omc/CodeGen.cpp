@@ -134,15 +134,19 @@ void CodeGen::do_preamble()
 	c += "";
 
     if (Symbol::option_event_trace) {
-        // Let the run-time know that model is capable of event trace
-        c += "const bool BaseEntity::event_trace_capable = true;";
-        // if event_trace option is on, tracing is active unless turned off
+        t0 += doxygen_short("Model was built with event trace capability.");
+        t0 += "constexpr bool om_event_trace_capable = true;";
+        t0 += "";
+        //c += "const bool BaseEntity::event_trace_capable = true;";
+        c += "// Model has event trace capability. Event tracing is active unless turned off in model code";
         c += "thread_local bool BaseEntity::event_trace_on = true;";
     }
     else {
-        // Let the run-time know that model is not capable of event trace
-        c += "const bool BaseEntity::event_trace_capable = false;";
-        // independent of the event_trace option, this static member must be defined
+        t0 += doxygen_short("Model was not built with event trace capability.");
+        t0 += "constexpr bool om_event_trace_capable = false;";
+        t0 += "";
+        //c += "const bool BaseEntity::event_trace_capable = false;";
+        c += "// Model does not have event trace capability. Nevertheless, this static member requires a definition.";
         c += "thread_local bool BaseEntity::event_trace_on = false;";
     }
 
@@ -927,7 +931,7 @@ void CodeGen::do_agents()
         c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
         c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
     }
-    c += "event_trace_on = event_trace_capable;";
+    c += "event_trace_on = om_event_trace_capable;";
     c += "}";
     c += "";
 

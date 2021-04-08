@@ -306,7 +306,7 @@ void SetMaxTime(double max_value)
  */
 void StartEventTrace()
 {
-    if (BaseEntity::event_trace_capable) {
+    if (om_event_trace_capable) {
         BaseEntity::event_trace_on = true;
     }
 }
@@ -318,7 +318,7 @@ void StartEventTrace()
  */
 void StopEventTrace()
 {
-    if (BaseEntity::event_trace_capable) {
+    if (om_event_trace_capable) {
         BaseEntity::event_trace_on = false;
     }
 }
@@ -472,7 +472,7 @@ void process_trace_options(IRunBase* const i_runBase)
 {
     {
         // Process model dev options for EventTrace
-        if (BaseEntity::event_trace_capable) {
+        if (om_event_trace_capable) { // is constexpr
             // Model was compiled with event trace capability
 
             if (i_runBase->isOptionExist("EventTrace.ReportStyle")) {
