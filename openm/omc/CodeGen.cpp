@@ -153,6 +153,8 @@ void CodeGen::do_preamble()
     // static members for event trace control
     c += "enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::eModgen;";
     c += "bool BaseEntity::event_trace_show_scheduling = true;";
+    c += "bool BaseEntity::event_trace_show_enter_simulation = true;";
+    c += "bool BaseEntity::event_trace_show_exit_simulation = true;";
     c += "double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();";
     c += "double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
     c += "std::unordered_set<int> BaseEntity::event_trace_selected_entities;";
@@ -850,15 +852,26 @@ void CodeGen::do_agents()
 	    h += "public:";
 
 	    h += "";
-	    h += "//";
-	    h += "// function members in " + agent->name + " agent";
+        h += doxygen_short("The name of this entity");
+        h += "static constexpr const char * entity_name = \"" + agent->name + "\";";
+        h += "";
+
+        h += doxygen_short("Get the name of this entity");
+        h += "const char * om_get_entity_name()";
+        h += "{";
+        h +=     "return entity_name;";
+        h += "}";
+        h += "";
+
+        h += "//";
+	    h += "// function members in " + agent->name + " entity";
 	    h += "//";
 	    h += "";
 
-	    h += "// operator overload for entity comparison based on entity_id";
+	    h += doxygen_short("operator overload for entity comparison based on entity_id");
         h += "bool operator< ( " + agent->name + " & rhs )";
         h += "{";
-        h += "return entity_id < rhs.entity_id;";
+        h +=     "return entity_id < rhs.entity_id;";
         h += "}";
 	    h += "";
 
