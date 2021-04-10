@@ -1929,7 +1929,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "GetCaseSeed(), "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eEventOccurrence);"
                     ;
             }
             ss_implement_cxx += "}";  // end of the block started at "if (current_time == ..."
@@ -2097,7 +2097,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "GetCaseSeed(), "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eEventOccurrence);"
                     ;
             }
             ss_implement_cxx += "}";
@@ -2334,7 +2334,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "GetCaseSeed(), "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eEventOccurrence);"
                     ;
             }
             ss_implement_cxx += "}";

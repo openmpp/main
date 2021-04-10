@@ -491,19 +491,19 @@ void process_trace_options(IRunBase* const i_runBase)
                 std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
                 openm::toLower(rptStyle);
                 if (rptStyle == "modgen") {
-                    BaseEntity::event_trace_report_style = BaseEntity::eModgen;
+                    BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;
                 }
                 else if (rptStyle == "readable") {
-                    BaseEntity::event_trace_report_style = BaseEntity::eReadable;
+                    BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eReadable;
                 }
                 else {
                     // ignore unrecognized option
                 }
             }
 
-            if (i_runBase->isOptionExist("EventTrace.ShowScheduling")) {
-                bool val = i_runBase->boolOption("EventTrace.ShowScheduling");
-                BaseEntity::event_trace_show_scheduling = val;
+            if (i_runBase->isOptionExist("EventTrace.ShowQueuedEvents ")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowQueuedEvents ");
+                BaseEntity::event_trace_show_queued_events = val;
             }
 
             if (i_runBase->isOptionExist("EventTrace.ShowEnterSimulation")) {

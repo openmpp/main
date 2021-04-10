@@ -192,7 +192,7 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + time_func_original->name + "\", "
                 "(double)event_time, "
                 "(double)BaseEvent::get_global_time(), "
-                "eEventScheduledTime);"
+                "BaseEntity::et_msg_type::eQueuedEvent);"
                 ;
             ct += "return event_time;";
 
@@ -206,7 +206,7 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + agent->name + "." + event_name + "\", "
                 "(double)age, "
                 "(double)BaseEvent::get_global_time(), "
-                "eEventOccurrence);"
+                "BaseEntity::et_msg_type::eEventOccurrence);"
                 ;
             ci += implement_func_original->name + (event_memory ? "(event_mem);" : "();");
         }
