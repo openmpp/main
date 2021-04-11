@@ -153,8 +153,10 @@ void CodeGen::do_preamble()
     // static members for event trace control
     c += "enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;";
     c += "bool BaseEntity::event_trace_show_queued_events = true;";
+    c += "bool BaseEntity::event_trace_show_queued_self_scheduling_events = true;";
     c += "bool BaseEntity::event_trace_show_enter_simulation = true;";
     c += "bool BaseEntity::event_trace_show_exit_simulation = true;";
+    c += "bool BaseEntity::event_trace_show_self_scheduling_events = true;";
     c += "double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();";
     c += "double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
     c += "std::unordered_set<int> BaseEntity::event_trace_selected_entities;";

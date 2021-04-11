@@ -180,7 +180,8 @@ void EntityEventSymbol::post_parse(int pass)
 
         if (Symbol::option_event_trace) {
             // Provide the function body for each cover event trace function.
-            // Done in this pass rather than earlier because the logging functions need pp_event_id.
+            // Done in this pass rather than earlier because event_trace_msg needs pp_event_id.
+
             CodeBlock& ct = time_func->func_body;
             ct += "Time event_time = " + time_func_original->name + (event_memory ? "(p_event_mem);" : "();");
             ct += "if (event_trace_on) "
@@ -188,6 +189,7 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
                 "GetCaseSeed(), "
+                "\"" + event_name + "\", "
                 + std::to_string(pp_event_id) + ","
                 "\"" + time_func_original->name + "\", "
                 "(double)event_time, "
@@ -202,6 +204,7 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
                 "GetCaseSeed(), "
+                "\"" + event_name + "\", "
                 + std::to_string(pp_event_id) + ","
                 "\"" + agent->name + "." + event_name + "\", "
                 "(double)age, "

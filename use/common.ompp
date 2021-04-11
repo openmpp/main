@@ -501,9 +501,14 @@ void process_trace_options(IRunBase* const i_runBase)
                 }
             }
 
-            if (i_runBase->isOptionExist("EventTrace.ShowQueuedEvents ")) {
-                bool val = i_runBase->boolOption("EventTrace.ShowQueuedEvents ");
+            if (i_runBase->isOptionExist("EventTrace.ShowQueuedEvents")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowQueuedEvents");
                 BaseEntity::event_trace_show_queued_events = val;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowQueuedSelfSchedulingEvents")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowQueuedSelfSchedulingEvents");
+                BaseEntity::event_trace_show_queued_self_scheduling_events = val;
             }
 
             if (i_runBase->isOptionExist("EventTrace.ShowEnterSimulation")) {
@@ -514,6 +519,11 @@ void process_trace_options(IRunBase* const i_runBase)
             if (i_runBase->isOptionExist("EventTrace.ShowExitSimulation")) {
                 bool val = i_runBase->boolOption("EventTrace.ShowExitSimulation");
                 BaseEntity::event_trace_show_exit_simulation = val;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowSelfSchedulingEvents")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowSelfSchedulingEvents");
+                BaseEntity::event_trace_show_self_scheduling_events = val;
             }
 
             if (i_runBase->isOptionExist("EventTrace.MinimumTime")) {
