@@ -95,6 +95,11 @@
   
   <!-- Run Options -->
   <BoolProperty Category="RunOptions"
+                Name="RUN_SCENARIO"
+                DisplayName="Run the scenario after build"
+                Description="Run the scenario after building and publishing the model and scenario(s)."
+                />
+  <BoolProperty Category="RunOptions"
                 Name="DBCOPY_EXPORT_CSV"
                 DisplayName="Export model run results into csv files"
                 Description="Export model run parameters and output tables into csv files"
@@ -124,11 +129,6 @@
   <BoolProperty Category="Deprecated"
                 Name="EXPORT_EXCEL_LAUNCH"
                 DisplayName="Launch Excel after export to Excel"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
-  <BoolProperty Category="Deprecated"
-                Name="RUN_SCENARIO"
-                DisplayName="Run the scenario after build"
                 Description="This functionality is deprecated and will be removed in future release."
                 />
   <IntProperty  Category="Deprecated"
