@@ -109,20 +109,17 @@ sleep 1
 
 echo "cat ${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"
 
-oms_url=`cat ${OMS_URL_TICKLE} 2>/dev/null`
+OMS_URL=`cat ${OMS_URL_TICKLE} 2>/dev/null`
 if [ $? -ne 0 ] ;
 then
   echo "FAILED to read oms url from file: ${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"
   exit 2
 fi
 
-echo "oms URL     = $oms_url" | tee -a "$START_OMPP_UI_LOG"
+echo "oms URL     = ${OMS_URL}" | tee -a "$START_OMPP_UI_LOG"
 
 # start browser and open UI
 #
-OMS_URL="http://localhost:${OMS_PORT}" 
-echo -n "${OMS_URL}" >"$OMS_URL_TICKLE"
-
 echo "Open openM++ UI in browser:" | tee -a "$START_OMPP_UI_LOG"
 echo "open ${OMS_URL}" | tee -a "$START_OMPP_UI_LOG"
 
