@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_04_15:
+  clean shutdown of oms web-service by API post
+  update oms web-service to save URL into file
+  change ompp_ui start scripts and model build scripts to use oms URL from file
+  flush model console log output
+
 2021_04_07:
   clairvoyance detection and handling
   bug fix: update global time at the end of simulation in time-based models
