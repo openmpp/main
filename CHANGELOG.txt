@@ -6,6 +6,7 @@ Please note:
   update oms web-service to save URL into file
   change ompp_ui start scripts and model build scripts to use oms URL from file
   flush model console log output
+  openM++ ported to Apple M1 Arm CPU, natively, no x86 emulation
 
 2021_04_07:
   clairvoyance detection and handling
