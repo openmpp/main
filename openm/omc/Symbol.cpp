@@ -522,6 +522,7 @@ unordered_set<string> Symbol::om_developer_functions =
     "Finish",
     "PreSimulation",
     "UserTables",
+    "ProcessDevelopmentOptions",
 };
 
 comment_map_type Symbol::cxx_comments;

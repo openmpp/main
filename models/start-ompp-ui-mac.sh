@@ -88,9 +88,9 @@ fi
 
 # start oms web-service
 #
-echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
+echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
 
-"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.LogRequest \
+"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.LogRequest \
   >> "$START_OMPP_UI_LOG" 2>&1 & \
   status=$? \
   OMS_PID=$!
@@ -103,34 +103,23 @@ fi
 
 echo "OMS_PID     = $OMS_PID" | tee -a "$START_OMPP_UI_LOG"
 
-# get oms port: it would fail if process start failed
+# read oms url from file
 #
-echo "lsof -P -n -i -a -sTCP:LISTEN -a -p $OMS_PID -F n" | tee -a "$START_OMPP_UI_LOG"
+sleep 1
 
-sleep 1    # MacOS is slow
+echo "cat ${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"
 
-oms_lsof=`lsof -P -n -i -a -sTCP:LISTEN -a -p $OMS_PID -F n`
+OMS_URL=`cat ${OMS_URL_TICKLE} 2>/dev/null`
 if [ $? -ne 0 ] ;
 then
-  echo "FAILED to start oms web-service (port unknown)" | tee -a "$START_OMPP_UI_LOG"
+  echo "FAILED to read oms url from file: ${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"
   exit 2
 fi
 
-OMS_PORT="${oms_lsof##*:}"
-
-if [ -z "$OMS_PORT" ] ;
-then
-  echo "FAILED to start oms web-service (port unknown)" | tee -a "$START_OMPP_UI_LOG"
-  exit 3
-fi
-
-echo "OMS_PORT    = $OMS_PORT" | tee -a "$START_OMPP_UI_LOG"
+echo "oms URL     = ${OMS_URL}" | tee -a "$START_OMPP_UI_LOG"
 
 # start browser and open UI
 #
-OMS_URL="http://localhost:${OMS_PORT}" 
-echo -n "${OMS_URL}" >"$OMS_URL_TICKLE"
-
 echo "Open openM++ UI in browser:" | tee -a "$START_OMPP_UI_LOG"
 echo "open ${OMS_URL}" | tee -a "$START_OMPP_UI_LOG"
 

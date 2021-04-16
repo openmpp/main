@@ -859,10 +859,7 @@ void MetaLoader::parseSuppressOptions(void)
     }
     else {
         for (ptrdiff_t nRow = 0; nRow < metaStore->tableDic->rowCount(); nRow++) {
-
             const TableDicRow * tRow = metaStore->tableDic->byIndex(nRow);
-
-            const auto it = tblIds.find(tRow->tableId);
             if (tblIds.find(tRow->tableId) == tblIds.cend()) tableIdSuppressArr.push_back(tRow->tableId);
         }
     }

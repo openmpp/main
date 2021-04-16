@@ -182,20 +182,6 @@ bool LogBase::logFileCreate(const string & i_path) noexcept
     }
 }
 
-// log to console
-bool LogBase::logToConsole(
-    const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
-    ) noexcept
-{
-    try {
-        writeToLog(cout, i_msgTime, i_msg, i_extra);
-    }
-    catch (...) {
-        return false;   // log failed
-    }
-    return true;
-}
-
 // write date-time and message to output stream
 void LogBase::writeToLog(
     ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
@@ -437,6 +423,21 @@ void Log::logSql(const char * i_sql) noexcept
     catch (...) { }
 }
 
+// log to console and flush each line, return false on error
+bool Log::logToConsole(
+    const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
+    ) noexcept
+{
+    try {
+        writeToLog(cout, i_msgTime, i_msg, i_extra);
+        cout.flush();
+    }
+    catch (...) {
+        return false;   // log failed
+    }
+    return true;
+}
+
 // log to file, return false on error
 bool Log::logToFile(
     bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
@@ -522,6 +523,20 @@ void TraceLog::logFormatted(const char * i_format, ...) noexcept
         doLogMsg(msgBuffer, nullptr);
     }
     catch (...) { }
+}
+
+// log to console, return false on error
+bool TraceLog::logToConsole(
+    const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
+    ) noexcept
+{
+    try {
+        writeToLog(cout, i_msgTime, i_msg, i_extra);
+    }
+    catch (...) {
+        return false;   // log failed
+    }
+    return true;
 }
 
 // log to file, return false on error

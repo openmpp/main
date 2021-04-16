@@ -242,8 +242,6 @@ int openm::boolStringToInt(const char * i_value)
     return -2;  // incorrect value
 }
 
-
-
 // make date-time string, ie: 2012-08-17 16:04:59.148
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {

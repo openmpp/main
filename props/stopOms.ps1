@@ -21,7 +21,7 @@ Write-Host "Stop oms web-service: $oms_url"
 
 $oms_shutdown_url = "$oms_url/api/admin/shutdown"
 try {
-  Invoke-WebRequest -Method PUT -Uri $oms_shutdown_url
+  Invoke-WebRequest -Method PUT -Uri $oms_shutdown_url | Out-File -Append -FilePath $stop_oms_log
 } catch {
   $_  | Out-File -Append -FilePath $stop_oms_log
 }

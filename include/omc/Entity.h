@@ -540,7 +540,7 @@ public:
                 case et_msg_type::eEventOccurrence:
                 {
                     assert(global_time == reported_time);
-                    theTrace->logFormatted("%13.6f   =====EVENT===== %8d %s (age=%.6f)",
+                    theTrace->logFormatted("%13.6f   EVENT ********* %08d %s (age=%.6f)",
                         global_time,
                         entity_id,
                         event_description,
@@ -551,7 +551,7 @@ public:
                 case et_msg_type::eSelfSchedulingEventOccurrence:
                 {
                     assert(global_time == reported_time);
-                    theTrace->logFormatted("%13.6f   ==>  SS EVENT   %8d %s.%s (age=%.6f)",
+                    theTrace->logFormatted("%13.6f   EVENT(SS) ***** %08d %s.%s (age=%.6f)",
                         global_time,
                         entity_id,
                         entity_name,
@@ -561,20 +561,30 @@ public:
                 }
                 break;
                 case et_msg_type::eQueuedEvent:
-                case et_msg_type::eQueuedSelfSchedulingEvent:
                 {
-                    theTrace->logFormatted("%13.6f     %13.6f %8d     %s.%s",
+                    theTrace->logFormatted("%13.6f     %13.6f %08d     %s.%s",
                         global_time,
                         reported_time,
                         entity_id,
                         entity_name,
-                        event_description
+                        event_description // name of time function, eg timeMigrationEvent
+                    );
+                }
+                break;
+                case et_msg_type::eQueuedSelfSchedulingEvent:
+                {
+                    theTrace->logFormatted("%13.6f     %13.6f %08d     %s.%s",
+                        global_time,
+                        reported_time,
+                        entity_id,
+                        entity_name,
+                        event_name // pretty name, eg trigger_changes(calendar_year)
                     );
                 }
                 break;
                 case et_msg_type::eEnterSimulation:
                 {
-                    theTrace->logFormatted("%13.6f   ===ENTRY======= %8d %s.%s (initial time=%.6f)",
+                    theTrace->logFormatted("%13.6f  ENTER SIMULATION %08d %s.%s (initial time=%.6f)",
                         global_time,
                         entity_id,
                         entity_name,
@@ -585,7 +595,7 @@ public:
                 break;
                 case et_msg_type::eExitSimulation:
                 {
-                    theTrace->logFormatted("%13.6f   ===EXIT======== %8d %s.%s (entity time=%.6f)",
+                    theTrace->logFormatted("%13.6f  EXIT SIMULATION  %08d %s.%s (entity time=%.6f)",
                         global_time,
                         entity_id,
                         entity_name,

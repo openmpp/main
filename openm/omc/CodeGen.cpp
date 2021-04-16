@@ -508,6 +508,9 @@ void CodeGen::do_RunInit()
             c += parameter->cxx_read_parameter();
         }
     }
+    c += "";
+    c += "// Process development model run options";
+    c += "ProcessDevelopmentOptions(i_runBase);";
     c += "}";
     c += "";
 }

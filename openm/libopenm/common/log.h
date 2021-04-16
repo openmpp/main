@@ -103,9 +103,9 @@ namespace openm
         bool logFileCreate(const string & i_path) noexcept;
 
         // log to console
-        bool logToConsole(
+        virtual bool logToConsole(
             const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
-            ) noexcept;
+            ) noexcept = 0;
 
         // log to file, return false on error
         virtual bool logToFile(
@@ -210,6 +210,11 @@ namespace openm
         list<string> msgLangLst;                // list of languages, in order of user prefrences
         unordered_map<string, string> msgMap;   // language-specific messages
 
+        // log to console and flush each line, return false on error
+        bool logToConsole(
+            const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+            ) noexcept override;
+
         // log to file, return false on error
         bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
@@ -285,6 +290,11 @@ namespace openm
     private:
         ofstream lastSt;        // last log output stream
         ofstream stampedSt;     // stamped log output stream
+
+        // log to console, return false on error
+        bool logToConsole(
+            const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
+        ) noexcept override;
 
         // log to file, return false on error
         bool logToFile(

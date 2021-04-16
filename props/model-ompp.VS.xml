@@ -99,21 +99,6 @@
                 DisplayName="Run the scenario after build"
                 Description="Run the scenario after building and publishing the model and scenario(s)."
                 />
-  <IntProperty  Category="RunOptions"
-                Name="MEMBERS"
-                DisplayName="Number of members in Run"
-                Description="A run can be divided into a number of independent members (aka sub-samples or replicates)"
-                />
-  <IntProperty  Category="RunOptions"
-                Name="PROCESSES"
-                DisplayName="Number of processes to launch (requires MPI)"
-                Description="To follow"
-                />
-  <IntProperty  Category="RunOptions"
-                Name="THREADS"
-                DisplayName="Number of threads in each process"
-                Description="To follow"
-                />
   <BoolProperty Category="RunOptions"
                 Name="DBCOPY_EXPORT_CSV"
                 DisplayName="Export model run results into csv files"
@@ -144,6 +129,21 @@
   <BoolProperty Category="Deprecated"
                 Name="EXPORT_EXCEL_LAUNCH"
                 DisplayName="Launch Excel after export to Excel"
+                Description="This functionality is deprecated and will be removed in future release."
+                />
+  <IntProperty  Category="Deprecated"
+                Name="MEMBERS"
+                DisplayName="Number of members in Run"
+                Description="This functionality is deprecated and will be removed in future release."
+                />
+  <IntProperty  Category="Deprecated"
+                Name="PROCESSES"
+                DisplayName="Number of processes to launch (requires MPI)"
+                Description="This functionality is deprecated and will be removed in future release."
+                />
+  <IntProperty  Category="Deprecated"
+                Name="THREADS"
+                DisplayName="Number of threads in each process"
                 Description="This functionality is deprecated and will be removed in future release."
                 />
 </Rule>

@@ -55,28 +55,10 @@ namespace openm
         ~RunOptions(void) noexcept { }
     };
 
-    /** public interface to initialize model run and input parameters */
-    struct IRunBase
+    /** public interface to get model run options */
+    struct IRunOptions
     {
-        virtual ~IRunBase(void) noexcept = 0;
-
-        /** return id of parameter by name */
-        virtual int parameterIdByName(const char * i_name) const = 0;
-
-        /** number of parameter sub-values */
-        virtual int parameterSubCount(int i_paramId) const = 0;
-
-        /** number of parameter sub-values for current process */
-        virtual int parameterSelfSubCount(int i_paramId) const = 0;
-
-        /** return index of parameter sub-value in the storage array of sub-values */
-        virtual int parameterSubValueIndex(int i_paramId, int i_subId) const = 0;
-
-        /** return true if sub-value used by current process */
-        virtual bool isUseSubValue(int i_subId) const = 0;
-
-        /** read model parameter */
-        virtual void readParameter(const char * i_name, int i_subId, const std::type_info & i_type, size_t i_size, void * io_valueArr) = 0;
+        virtual ~IRunOptions(void) noexcept = 0;
 
         /** return true if run option found by i_key in run_option table for the current run id. */
         virtual bool isOptionExist(const char * i_key) const noexcept = 0;
@@ -106,6 +88,30 @@ namespace openm
 
         /** return a copy of all run options as [key, value] pairs, ordered by key. */
         virtual std::vector<std::pair<std::string, std::string>> allOptions(void) const noexcept = 0;
+    };
+
+    /** public interface to initialize model run and input parameters */
+    struct IRunBase : public IRunOptions
+    {
+        virtual ~IRunBase(void) noexcept = 0;
+
+        /** return id of parameter by name */
+        virtual int parameterIdByName(const char * i_name) const = 0;
+
+        /** number of parameter sub-values */
+        virtual int parameterSubCount(int i_paramId) const = 0;
+
+        /** number of parameter sub-values for current process */
+        virtual int parameterSelfSubCount(int i_paramId) const = 0;
+
+        /** return index of parameter sub-value in the storage array of sub-values */
+        virtual int parameterSubValueIndex(int i_paramId, int i_subId) const = 0;
+
+        /** return true if sub-value used by current process */
+        virtual bool isUseSubValue(int i_subId) const = 0;
+
+        /** read model parameter */
+        virtual void readParameter(const char * i_name, int i_subId, const std::type_info & i_type, size_t i_size, void * io_valueArr) = 0;
     };
 
     /** model sub-value run public interface */
