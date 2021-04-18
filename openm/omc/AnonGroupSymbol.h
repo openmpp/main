@@ -1,6 +1,6 @@
 /**
-* @file    HideGroupSymbol.h
-* Declarations for the HideGroupSymbol class.
+* @file    AnonGroupSymbol.h
+* Declarations for the AnonGroupSymbol class.
 */
 // Copyright (c) 2013-2021 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -9,13 +9,13 @@
 #include "GroupSymbol.h"
 
 /**
-* HideGroupSymbol.
+* AnonGroupSymbol.
 * 
 * An instance holds parsed information from one of the following model code statements:
 * hide, parameters_suppress, parameters_retain, tables_suppress, tables_retain, parameters_to_tables
 *
 */
-class HideGroupSymbol : public GroupSymbol
+class AnonGroupSymbol : public GroupSymbol
 {
 private:
     typedef GroupSymbol super;
@@ -46,7 +46,7 @@ public:
     * 
     * A unique name is generated using a counter.
     */
-    HideGroupSymbol(const eKind anon_kind, yy::location decl_loc = yy::location())
+    AnonGroupSymbol(const eKind anon_kind, yy::location decl_loc = yy::location())
         : GroupSymbol("om_anon_" + to_string(++counter), decl_loc)
         , anon_kind(anon_kind)
     {

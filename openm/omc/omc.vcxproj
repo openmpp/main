@@ -178,6 +178,7 @@
     <ClInclude Include="$(OM_INC_DIR)/libopenm/db/metaModelHolder.h" />
     <ClInclude Include="$(OM_INC_DIR)/libopenm/db/modelBuilder.h" />
     <ClInclude Include="AggregationSymbol.h" />
+    <ClInclude Include="AnonGroupSymbol.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="AttributeSymbol.h" />
     <ClInclude Include="BoolEnumeratorSymbol.h" />
@@ -218,7 +219,6 @@
     <ClInclude Include="ExtendParameterSymbol.h" />
     <ClInclude Include="GlobalFuncSymbol.h" />
     <ClInclude Include="GroupSymbol.h" />
-    <ClInclude Include="HideGroupSymbol.h" />
     <ClInclude Include="IdentityAttributeSymbol.h" />
     <ClInclude Include="ImportSymbol.h" />
     <ClInclude Include="LanguageSymbol.h" />
@@ -267,6 +267,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AggregationSymbol.cpp" />
+    <ClCompile Include="AnonGroupSymbol.cpp" />
     <ClCompile Include="AttributeSymbol.cpp" />
     <ClCompile Include="BoolSymbol.cpp" />
     <ClCompile Include="BuiltinAttributeSymbol.cpp" />
@@ -303,7 +304,6 @@
     <ClCompile Include="GlobalFuncSymbol.cpp" />
     <ClCompile Include="GroupSymbol.cpp" />
     <ClCompile Include="HeaderCheck.cpp" />
-    <ClCompile Include="HideGroupSymbol.cpp" />
     <ClCompile Include="IdentityAttributeSymbol.cpp" />
     <ClCompile Include="ImportSymbol.cpp" />
     <ClCompile Include="LanguageSymbol.cpp" />

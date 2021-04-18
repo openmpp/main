@@ -54,7 +54,7 @@
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
-#include "HideGroupSymbol.h"
+#include "AnonGroupSymbol.h"
 #include "DependencyGroupSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "AggregationSymbol.h"
@@ -109,7 +109,7 @@ list<ParameterGroupSymbol *> Symbol::pp_all_parameter_groups;
 
 list<TableGroupSymbol *> Symbol::pp_all_table_groups;
 
-list<HideGroupSymbol *> Symbol::pp_all_hide_groups;
+list<AnonGroupSymbol *> Symbol::pp_all_hide_groups;
 
 list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
 
@@ -1251,7 +1251,7 @@ void Symbol::post_parse_all()
     pp_all_derived_tables.sort( [] (DerivedTableSymbol *a, DerivedTableSymbol *b) { return a->name < b->name ; } );
     pp_all_parameter_groups.sort( [] (ParameterGroupSymbol *a, ParameterGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
-    pp_all_hide_groups.sort( [] (HideGroupSymbol *a, HideGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_hide_groups.sort( [] (AnonGroupSymbol *a, AnonGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_imports.sort([](ImportSymbol* a, ImportSymbol* b) { return a->name < b->name; });
     // pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });

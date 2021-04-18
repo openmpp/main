@@ -67,7 +67,7 @@
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
-#include "HideGroupSymbol.h"
+#include "AnonGroupSymbol.h"
 #include "DependencyGroupSymbol.h"
 #include "ConstantSymbol.h"
 #include "GlobalFuncSymbol.h"

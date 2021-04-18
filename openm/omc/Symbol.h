@@ -34,7 +34,7 @@ class EntityTableSymbol;
 class DerivedTableSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
-class HideGroupSymbol;
+class AnonGroupSymbol;
 class DependencyGroupSymbol;
 class GlobalFuncSymbol;
 class AggregationSymbol;
@@ -1048,7 +1048,7 @@ public:
      * 
      * Populated after parsing is complete.
      */
-    static list<HideGroupSymbol *> pp_all_hide_groups;
+    static list<AnonGroupSymbol *> pp_all_hide_groups;
 
     /**
      * The global funcs in the model

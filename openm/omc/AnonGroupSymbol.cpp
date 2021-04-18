@@ -1,18 +1,18 @@
 /**
-* @file    HideGroupSymbol.cpp
-* Definitions for the HideGroupSymbol class.
+* @file    AnonGroupSymbol.cpp
+* Definitions for the AnonGroupSymbol class.
 */
 // Copyright (c) 2013-2021 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
-#include "HideGroupSymbol.h"
+#include "AnonGroupSymbol.h"
 #include "ParameterSymbol.h"
 #include "TableSymbol.h"
 
 using namespace std;
 
-void HideGroupSymbol::post_parse(int pass)
+void AnonGroupSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
     super::post_parse(pass);
@@ -77,4 +77,4 @@ void HideGroupSymbol::post_parse(int pass)
     }
 }
 
-int HideGroupSymbol::counter = 0;
+int AnonGroupSymbol::counter = 0;
