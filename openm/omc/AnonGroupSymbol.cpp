@@ -21,9 +21,9 @@ void AnonGroupSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // add this to the complete list of hide groups
-        is_hidden = true;
-        pp_all_hide_groups.push_back(this);
+        // add this to the complete list of anon groups
+        is_hidden = true; // SFG not sure what function this serves, at the group level...
+        pp_all_anon_groups.push_back(this);
         break;
     }
     case ePopulateDependencies:

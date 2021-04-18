@@ -480,7 +480,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %type  <val_token>      table_margin_opt
 %type  <val_token>      decl_func_arg_token
 %type  <val_token>      parameter_group_token
-%type  <val_token>      decl_hide_others_kw
+%type  <val_token>      anon_group_kw
 %type  <pval_IntegerLiteral> cumrate_dimensions_opt
 
 %type  <pval_Literal>   bool_literal
@@ -583,7 +583,7 @@ ompp_declarative_island:
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
     | decl_hide             { pc.InitializeForCxx(); }
-    | decl_hide_others      { pc.InitializeForCxx(); }
+    | decl_anon_group      { pc.InitializeForCxx(); }
     | decl_dependency       { pc.InitializeForCxx(); }
     | decl_track            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
@@ -1163,24 +1163,24 @@ decl_hide:
 	| "hide" error ";"
       ;
 
-decl_hide_others:
-    decl_hide_others_kw symbol_list ";"
+decl_anon_group:
+    anon_group_kw[tok] symbol_list ";"
                         {
-                            // the originating hide-type statement, eg parameters_suppress
+                            // the originating anonymous group statement, eg parameters_suppress
                             AnonGroupSymbol::eKind anon_kind;
 
-                            // assign hide_type by translating token to enum
-                            switch ($decl_hide_others_kw) {
-                            case token::TK_parameters_suppress: { anon_kind = AnonGroupSymbol::eKind::parameters_suppress; break; }
-                            case token::TK_parameters_retain:   { anon_kind = AnonGroupSymbol::eKind::parameters_retain; break; }
-                            case token::TK_tables_suppress:     { anon_kind = AnonGroupSymbol::eKind::tables_suppress; break; }
-                            case token::TK_tables_retain:       { anon_kind = AnonGroupSymbol::eKind::tables_retain; break; }
+                            // assign anon_kind by translating token to enum
+                            switch ($tok) {
+                            case token::TK_parameters_suppress:  { anon_kind = AnonGroupSymbol::eKind::parameters_suppress; break; }
+                            case token::TK_parameters_retain:    { anon_kind = AnonGroupSymbol::eKind::parameters_retain; break; }
+                            case token::TK_tables_suppress:      { anon_kind = AnonGroupSymbol::eKind::tables_suppress; break; }
+                            case token::TK_tables_retain:        { anon_kind = AnonGroupSymbol::eKind::tables_retain; break; }
                             case token::TK_parameters_to_tables: { anon_kind = AnonGroupSymbol::eKind::parameters_to_tables; break; }
                             default: assert(false); // logic guarantee
                             }
 
                             // create new AnonGroupSymbol, first argument of constructor gives the provenance
-                            auto* grp = new AnonGroupSymbol(anon_kind, @decl_hide_others_kw);
+                            auto* grp = new AnonGroupSymbol(anon_kind, @tok);
                             assert(grp);
                             list<Symbol*>* pls = $symbol_list;
                             // move symbol list to group (transform elements to stable **)
@@ -1189,10 +1189,10 @@ decl_hide_others:
                             delete pls;
                             $symbol_list = nullptr;
                         }
-    | decl_hide_others_kw error ";"
+    | anon_group_kw error ";"
       ;
 
-decl_hide_others_kw:
+anon_group_kw:
       TK_parameters_suppress
     | TK_parameters_retain
     | TK_tables_suppress

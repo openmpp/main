@@ -1044,11 +1044,11 @@ public:
     static list<TableGroupSymbol *> pp_all_table_groups;
 
     /**
-     * The hide groups in the model
+     * The anon groups in the model
      * 
      * Populated after parsing is complete.
      */
-    static list<AnonGroupSymbol *> pp_all_hide_groups;
+    static list<AnonGroupSymbol *> pp_all_anon_groups;
 
     /**
      * The global funcs in the model
