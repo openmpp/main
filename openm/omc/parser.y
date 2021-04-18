@@ -136,6 +136,9 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_model_type     "model_type"
 %token <val_token>    TK_options        "options"
 %token <val_token>    TK_parameters     "parameters"
+%token <val_token>    TK_parameters_suppress  "parameters_suppress"
+%token <val_token>    TK_parameters_to_tables "parameters_to_tables"
+%token <val_token>    TK_parameters_retain    "parameters_retain"
 %token <val_token>    TK_parameter_group "parameter_group"
 %token <val_token>    TK_partition      "partition"
 %token <val_token>    TK_pull           "pull"
@@ -143,6 +146,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_real_type      "real_type"
 %token <val_token>    TK_string         "string"
 %token <val_token>    TK_table          "table"
+%token <val_token>    TK_tables_suppress "tables_suppress"
+%token <val_token>    TK_tables_retain   "tables_retain"
 %token <val_token>    TK_table_group    "table_group"
 %token <val_token>    TK_time_type      "time_type"
 %token <val_token>    TK_track          "track"
@@ -475,6 +480,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %type  <val_token>      table_margin_opt
 %type  <val_token>      decl_func_arg_token
 %type  <val_token>      parameter_group_token
+%type  <val_token>      decl_hide_others_kw
 %type  <pval_IntegerLiteral> cumrate_dimensions_opt
 
 %type  <pval_Literal>   bool_literal
@@ -577,6 +583,7 @@ ompp_declarative_island:
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
     | decl_hide             { pc.InitializeForCxx(); }
+    | decl_hide_others      { pc.InitializeForCxx(); }
     | decl_dependency       { pc.InitializeForCxx(); }
     | decl_track            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }
@@ -1136,14 +1143,14 @@ decl_table_group:
 
 
 /*
- * hide
+ * hide, parameters_suppress, parameters_retain, tables_suppress, tables_retain
  */
 
 decl_hide:
 	  "hide"[tok] "(" symbol_list ")" ";"
                         {
-                            // morph existing symbol to HideGroupSymbol
-                            auto *grp = new HideGroupSymbol(@tok );
+                            // create new HideGroupSymbol, of provenance 'hide'
+                            auto *grp = new HideGroupSymbol(HideGroupSymbol::eKind::hide, @tok );
                             assert(grp);
                             list<Symbol *> *pls = $symbol_list;
                             // move symbol list to group (transform elements to stable **)
@@ -1154,6 +1161,42 @@ decl_hide:
                         }
 	| "hide" "(" error ")" ";"
 	| "hide" error ";"
+      ;
+
+decl_hide_others:
+    decl_hide_others_kw symbol_list ";"
+                        {
+                            // the originating hide-type statement, eg parameters_suppress
+                            HideGroupSymbol::eKind anon_kind;
+
+                            // assign hide_type by translating token to enum
+                            switch ($decl_hide_others_kw) {
+                            case token::TK_parameters_suppress: { anon_kind = HideGroupSymbol::eKind::parameters_suppress; break; }
+                            case token::TK_parameters_retain:   { anon_kind = HideGroupSymbol::eKind::parameters_retain; break; }
+                            case token::TK_tables_suppress:     { anon_kind = HideGroupSymbol::eKind::tables_suppress; break; }
+                            case token::TK_tables_retain:       { anon_kind = HideGroupSymbol::eKind::tables_retain; break; }
+                            case token::TK_parameters_to_tables: { anon_kind = HideGroupSymbol::eKind::parameters_to_tables; break; }
+                            default: assert(false); // logic guarantee
+                            }
+
+                            // create new HideGroupSymbol, first argument of constructor gives the provenance
+                            auto* grp = new HideGroupSymbol(anon_kind, @decl_hide_others_kw);
+                            assert(grp);
+                            list<Symbol*>* pls = $symbol_list;
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
+                            delete pls;
+                            $symbol_list = nullptr;
+                        }
+    | decl_hide_others_kw error ";"
+      ;
+
+decl_hide_others_kw:
+      TK_parameters_suppress
+    | TK_parameters_retain
+    | TK_tables_suppress
+    | TK_tables_retain
       ;
 
 
