@@ -74,6 +74,7 @@ CPPFLAGS = $(CXXFLAGS)
 OMC_EXE = omc$(BIN_POSTFIX)
 
 OMC_CPPLIST = \
+AnonGroupSymbol.cpp \
 AttributeSymbol.cpp \
 AggregationSymbol.cpp \
 BoolSymbol.cpp \
@@ -111,7 +112,6 @@ ExtendParameterSymbol.cpp \
 GlobalFuncSymbol.cpp \
 GroupSymbol.cpp \
 HeaderCheck.cpp \
-HideGroupSymbol.cpp \
 IdentityAttributeSymbol.cpp \
 ImportSymbol.cpp \
 LanguageSymbol.cpp \

@@ -555,6 +555,14 @@ SpecialGlobal Symbol::post_simulation("PostSimulation");
 
 SpecialGlobal Symbol::derived_tables("UserTables");
 
+bool Symbol::any_parameters_suppress = false;
+
+bool Symbol::any_parameters_retain = false;
+
+bool Symbol::any_tables_suppress = false;
+
+bool Symbol::any_tables_retain = false;
+
 bool Symbol::measures_are_aggregated = true;
 
 int Symbol::type_changes = 0;
@@ -1304,7 +1312,7 @@ void Symbol::post_parse_all()
         enumeration->pp_enumerators.sort([](EnumeratorSymbol *a, EnumeratorSymbol *b) { return a->ordinal < b->ordinal; });
     }
 
-    // Sort collections in agents in lexicographic order
+    // Sort collections in entities in lexicographic order
     for ( auto agent : pp_all_agents ) {
         agent->pp_agent_data_members.sort( [] (EntityDataMemberSymbol *a, EntityDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_callback_members.sort( [] (EntityMemberSymbol *a, EntityMemberSymbol *b) { return a->name < b->name ; } );
@@ -1514,6 +1522,33 @@ void Symbol::post_parse_all()
     // Sort taking account of code injection order before pass 6
     default_sort_pp_symbols();
 #endif
+
+    // Check for valid combinations of parameter suppress and retain statements,
+    // and prepare scenario parameters for the subsequent ePopulateDependencies pass.
+    {
+        Symbol::any_parameters_suppress = false;
+        Symbol::any_parameters_retain = false;
+        bool error_if_both = false;
+        for (auto sym : pp_all_anon_groups) {
+            Symbol::any_parameters_suppress |= sym->anon_kind == AnonGroupSymbol::eKind::parameters_suppress;
+            Symbol::any_parameters_retain |= sym->anon_kind == AnonGroupSymbol::eKind::parameters_retain;
+            if (!error_if_both && any_parameters_suppress && any_parameters_retain) {
+                // error message done here to provide a code source location for the first statement which violated the condition
+                sym->pp_error(LT("error : a model cannot contain both parameters_suppress and parameters_retain statements"));
+                error_if_both = true;
+            }
+        }
+        if (Symbol::any_parameters_retain) {
+            // Mark all scenario parameters as fixed.
+            // Those which are retained will be changed back to scenario parameters on next pass
+            for (auto param : pp_all_parameters) {
+                if (param->source == ParameterSymbol::parameter_source::scenario_parameter) {
+                    param->source = ParameterSymbol::parameter_source::fixed_parameter;
+                }
+            }
+
+        }
+    }
 
     // Pass 7: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.

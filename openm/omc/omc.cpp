@@ -676,6 +676,10 @@ int main(int argc, char * argv[])
         // process additional scenario parameter directories
         if (paramDirLst.size() > 1) {
 
+            if (Symbol::any_parameters_suppress || Symbol::any_parameters_retain) {
+                throw HelperException(LT("Multiple scenarios are incompatible with parameters_suppress or parameters_retain"));
+            }
+
             auto snIt = scNameLst.cbegin();
             if (snIt != scNameLst.cend()) ++snIt;
 

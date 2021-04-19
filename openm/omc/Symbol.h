@@ -1219,6 +1219,26 @@ public:
     static SpecialGlobal derived_tables;
 
     /**
+     * If true, model contains one or more parameters_suppress statements
+     */
+    static bool any_parameters_suppress;
+
+    /**
+     * If true, model contains one or more parameters_retain statements
+     */
+    static bool any_parameters_retain;
+
+    /**
+     * If true, model contains one or more tables_suppress statements
+     */
+    static bool any_tables_suppress;
+
+    /**
+     * If true, model contains one or more tables_retain statements
+     */
+    static bool any_tables_retain;
+
+    /**
      * If true, table measures are aggregated across simulation members.
      * If false, table measures are averaged across simulation members.
      */

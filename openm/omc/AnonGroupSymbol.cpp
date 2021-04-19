@@ -22,7 +22,7 @@ void AnonGroupSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // add this to the complete list of anon groups
-        is_hidden = true; // SFG not sure what function this serves, at the group level...
+        is_hidden = true; // SFG not sure what purpose this serves, at the group level...
         pp_all_anon_groups.push_back(this);
         break;
     }
@@ -56,17 +56,33 @@ void AnonGroupSymbol::post_parse(int pass)
                     ps->source = ParameterSymbol::parameter_source::fixed_parameter;
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in parameters_suppress list is not a parameter"));
+                    pp_error(LT("error : '") + sym->name + LT("' in parameters_suppress statement is not a parameter"));
                 }
             }
             break;
         }
         case eKind::parameters_retain:
+        {
+            // Before this pass, code in Symbol::post_parse_all() changed all Scenario parameters to Fixed
+            // in preparation for this step, which switches selected parameters back.
+            for (auto sym : expanded_list()) {
+                auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                if (ps) {
+                    // indicate that this parameter is to be a published scenario parameter, ie not burned into the executable.
+                    ps->source = ParameterSymbol::parameter_source::scenario_parameter;
+                }
+                else {
+                    pp_error(LT("error : '") + sym->name + LT("' in parameters_retain statement is not a parameter"));
+                }
+            }
+            break;
+        }
         case eKind::tables_suppress:
         case eKind::tables_retain:
         case eKind::parameters_to_tables:
         {
             pp_error(LT("error : not implemented"));
+            break;
         }
         default:
             assert(false); // logic guarantee
