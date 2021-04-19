@@ -12,6 +12,7 @@
 #include "EntityInternalSymbol.h"
 #include "EntityFuncSymbol.h"
 #include "EntityEventSymbol.h"
+#include "DerivedAttributeSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "LinkAttributeSymbol.h"
 #include "EntityMultilinkSymbol.h"
@@ -490,6 +491,47 @@ void EntitySymbol::build_body_initialize_events()
 
     for ( auto event : pp_agent_events ) {
         c += event->name + ".make_dirty();";
+    }
+
+    // Generate event trace message for initial queue time of each self-scheduling attribute of this entity
+    if (Symbol::option_event_trace) {
+
+        bool any_ss = false; // true if this entity has any ss attributes
+        for (auto m_attr : pp_maintained_attributes) {
+            auto d_attr = static_cast<DerivedAttributeSymbol*>(m_attr);
+            if (d_attr && d_attr->is_self_scheduling()) {
+                any_ss = true;
+                break;
+            }
+        }
+
+        if (any_ss) {
+            c += "";
+            c += "// Model is event trace capable, so generate event trace message for initial queued time for each self-scheduling attribute";
+            c += "if (event_trace_on) {";
+            for (auto m_attr : pp_maintained_attributes) {
+                // SFG consider enlarging object hierarchy to distinguish ss attributes
+                auto d_attr = static_cast<DerivedAttributeSymbol*>(m_attr);
+                if (d_attr && d_attr->is_self_scheduling()) {
+                    c += "{"; // begin code block for the ss attribute
+                    auto qt_attr = d_attr->ait; // the internal attribute which holds the queued time for the ss attribute
+                    assert(qt_attr);
+                    c += "auto & ss_time = " + qt_attr->name + ";";
+                    string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
+                    c += "event_trace_msg("
+                        "\"" + name + "\", " // entity name
+                        "(int)entity_id, "
+                        "GetCaseSeed(), "
+                        "\"" + d_attr->pretty_name() + "\", "
+                        + std::to_string(ss_event->pp_event_id) + ", " // event id of the single event which handles ss attributes
+                        "\"" + evt_name + "\", "
+                        " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                        ;
+                    c += "}"; // end code block for the ss attribute
+                }
+            }
+            c += "} // if (event_trace_on)";
+        }
     }
 }
 

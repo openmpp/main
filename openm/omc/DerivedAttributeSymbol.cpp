@@ -1855,11 +1855,25 @@ void DerivedAttributeSymbol::create_side_effects()
             }
             // attribute-specific code (end)
 
+            if (Symbol::option_event_trace) {
+                observed_cxx += "// Model is event trace capable, so generate event trace message";
+                string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
+                observed_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    "\"" + evt_name + "\", "
+                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                    ;
+            }
             observed_cxx += "}";
         }
 
         {
-            // Code injection into the implement function of self-scheduling events
+            // Code injection into the self-scheduling implement function for these 6 self-scheduling attributes
 
             assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the agent
             CodeBlock& ss_implement_cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
@@ -1920,16 +1934,31 @@ void DerivedAttributeSymbol::create_side_effects()
             // attribute-specific code (end)
 
             if (Symbol::option_event_trace) {
-                ss_implement_cxx += "// Dump event time information to trace log";
+                ss_implement_cxx += "// Model is event trace capable, so generate event trace message for event of self-scheduling attribute";
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                    " (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
+                    ;
+            }
+            if (Symbol::option_event_trace) {
+                ss_implement_cxx += "// Model is event trace capable, so generate event trace message for queued time of self-scheduling attribute";
+                string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
+                ss_implement_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    "\"" + evt_name + "\", "
+                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             ss_implement_cxx += "}";  // end of the block started at "if (current_time == ..."
@@ -1937,7 +1966,7 @@ void DerivedAttributeSymbol::create_side_effects()
         }
 
         {
-            // Code injection into the time function of self-scheduling events
+            // Code injection into the time function of these 6 self-scheduling attributes
 
             assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the agent
             CodeBlock& ss_time_cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
@@ -1959,7 +1988,7 @@ void DerivedAttributeSymbol::create_side_effects()
     case token::TK_self_scheduling_int:
     case token::TK_self_scheduling_split:
     {
-        // Common variables and code for all self-scheduling attributes
+        // Common variables and code for these 2 self-scheduling attributes
         auto *av = pp_av1;
         assert(av); // the attribute being integerized or split, e.g. "age", "time", etc.
         assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling attribute
@@ -2088,16 +2117,31 @@ void DerivedAttributeSymbol::create_side_effects()
             }
 
             if (Symbol::option_event_trace) {
-                ss_implement_cxx += "// Dump event time information to trace log";
+                ss_implement_cxx += "// Model is event trace capable, so generate event trace message for event of self-scheduling attribute";
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
+                    ;
+            }
+            if (Symbol::option_event_trace) {
+                ss_implement_cxx += "// Model is event trace capable, so generate event trace message for queued time of self-scheduling attribute";
+                string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
+                ss_implement_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    "\"" + evt_name + "\", "
+                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             ss_implement_cxx += "}";
@@ -2283,6 +2327,20 @@ void DerivedAttributeSymbol::create_side_effects()
                 else {
                     assert(false);
                 }
+                if (Symbol::option_event_trace) {
+                    identity_cxx += "// Model is event trace capable, so generate event trace message";
+                    string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
+                    identity_cxx += "if (event_trace_on) "
+                        "event_trace_msg("
+                        "\"" + agent->name + "\", "
+                        "(int)entity_id, "
+                        "GetCaseSeed(), "
+                        "\"" + pretty_name() + "\", "
+                        + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                        "\"" + evt_name + "\", "
+                        " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                        ;
+                }
                 identity_cxx += "} // if (om_active)";
             }
 
@@ -2325,16 +2383,31 @@ void DerivedAttributeSymbol::create_side_effects()
             }
 
             if (Symbol::option_event_trace) {
-                ss_implement_cxx += "// Dump event time information to trace log";
+                ss_implement_cxx += "// Model is event trace capable, so generate event trace message for event of self-scheduling attribute";
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), eEventOccurrence);"
+                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
+                    ;
+            }
+            if (Symbol::option_event_trace) {
+                ss_implement_cxx += "// Model is event trace capable, so generate event trace message for queued time of self-scheduling attribute";
+                string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
+                ss_implement_cxx += "if (event_trace_on) "
+                    "event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"" + pretty_name() + "\", "
+                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    "\"" + evt_name + "\", "
+                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             ss_implement_cxx += "}";
@@ -2350,6 +2423,7 @@ void DerivedAttributeSymbol::create_side_effects()
 string DerivedAttributeSymbol::pretty_name() const
 {
     string result;
+    constexpr const char* arg_sep = ","; // could be "," or ", "
 
     switch (tok) {
     case token::TK_duration:
@@ -2358,7 +2432,7 @@ string DerivedAttributeSymbol::pretty_name() const
             result = token_to_string(tok) + "()";
         }
         else {
-            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ")";
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + ")";
         }
         break;
     }
@@ -2369,7 +2443,7 @@ string DerivedAttributeSymbol::pretty_name() const
             result = token_to_string(tok) + "(" + pp_av2->pretty_name() + ")";
         }
         else {
-            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + pp_av2->pretty_name() + ")";
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + pp_av2->pretty_name() + ")";
         }
         break;
     }
@@ -2384,7 +2458,7 @@ string DerivedAttributeSymbol::pretty_name() const
     {
         assert(pp_av1);
         assert(k1);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + ")";
         break;
     }
     case token::TK_active_spell_weighted_duration:
@@ -2401,7 +2475,7 @@ string DerivedAttributeSymbol::pretty_name() const
         assert(pp_av1);
         assert(k1);
         assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + pp_av2->pretty_name() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + pp_av2->pretty_name() + ")";
         break;
     }
     case token::TK_undergone_transition:
@@ -2412,7 +2486,7 @@ string DerivedAttributeSymbol::pretty_name() const
         assert(pp_av1);
         assert(k1);
         assert(k2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + k2->value() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + ")";
         break;
     }
     case token::TK_value_at_first_transition:
@@ -2423,7 +2497,7 @@ string DerivedAttributeSymbol::pretty_name() const
         assert(k1);
         assert(k2);
         assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + k2->value() + ", " + pp_av2->pretty_name() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + arg_sep + pp_av2->pretty_name() + ")";
         break;
     }
     case token::TK_undergone_change:
@@ -2441,7 +2515,7 @@ string DerivedAttributeSymbol::pretty_name() const
     {
         assert(pp_av1);
         assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + pp_av2->pretty_name() + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_av2->pretty_name() + ")";
         break;
     }
     case token::TK_split:
@@ -2449,14 +2523,14 @@ string DerivedAttributeSymbol::pretty_name() const
     {
         assert(pp_av1);
         assert(pp_prt);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + pp_prt->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_prt->name + ")";
         break;
     }
     case token::TK_aggregate:
     {
         assert(pp_av1);
         assert(pp_cls);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + pp_cls->name + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_cls->name + ")";
         break;
     }
     case token::TK_duration_counter:
@@ -2465,7 +2539,7 @@ string DerivedAttributeSymbol::pretty_name() const
         assert(k1);
         assert(k2);
         assert(k3 || !k3); // optional
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ", " + k1->value() + ", " + k2->value() + (k3 ? (", " + k3->value()) : "") + ")";
+        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + (k3 ? (arg_sep + k3->value()) : "") + ")";
         break;
     }
     case token::TK_self_scheduling_int:

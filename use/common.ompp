@@ -109,6 +109,18 @@ long long get_combined_seed()
 }
 
 /**
+ * Gets the global time.
+ * 
+ * This global function can be used without #include of Event.h
+ * 
+ * @return The global time
+ */
+double get_global_time()
+{
+    return (double)BaseEvent::get_global_time();
+}
+
+/**
  * Initializes the model stream generators
  *
  * For case-based models, the stream generators are initialized for each case.
@@ -306,7 +318,7 @@ void SetMaxTime(double max_value)
  */
 void StartEventTrace()
 {
-    if (BaseEntity::event_trace_capable) {
+    if (om_event_trace_capable) {
         BaseEntity::event_trace_on = true;
     }
 }
@@ -318,7 +330,7 @@ void StartEventTrace()
  */
 void StopEventTrace()
 {
-    if (BaseEntity::event_trace_capable) {
+    if (om_event_trace_capable) {
         BaseEntity::event_trace_on = false;
     }
 }
@@ -472,36 +484,56 @@ void process_trace_options(IRunBase* const i_runBase)
 {
     {
         // Process model dev options for EventTrace
-        if (BaseEntity::event_trace_capable) {
+        if (om_event_trace_capable) { // is constexpr
             // Model was compiled with event trace capability
 
             if (i_runBase->isOptionExist("EventTrace.ReportStyle")) {
                 std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
                 openm::toLower(rptStyle);
                 if (rptStyle == "modgen") {
-                    BaseEntity::event_trace_report_style = BaseEntity::eModgen;
+                    BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;
                 }
                 else if (rptStyle == "readable") {
-                    BaseEntity::event_trace_report_style = BaseEntity::eReadable;
+                    BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eReadable;
                 }
                 else {
                     // ignore unrecognized option
                 }
             }
 
-            if (i_runBase->isOptionExist("EventTrace.ShowScheduling")) {
-                bool isShowSch = i_runBase->boolOption("EventTrace.ShowScheduling");
-                BaseEntity::event_trace_show_scheduling = isShowSch;
+            if (i_runBase->isOptionExist("EventTrace.ShowQueuedEvents")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowQueuedEvents");
+                BaseEntity::event_trace_show_queued_events = val;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowQueuedSelfSchedulingEvents")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowQueuedSelfSchedulingEvents");
+                BaseEntity::event_trace_show_queued_self_scheduling_events = val;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowEnterSimulation")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowEnterSimulation");
+                BaseEntity::event_trace_show_enter_simulation = val;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowExitSimulation")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowExitSimulation");
+                BaseEntity::event_trace_show_exit_simulation = val;
+            }
+
+            if (i_runBase->isOptionExist("EventTrace.ShowSelfSchedulingEvents")) {
+                bool val = i_runBase->boolOption("EventTrace.ShowSelfSchedulingEvents");
+                BaseEntity::event_trace_show_self_scheduling_events = val;
             }
 
             if (i_runBase->isOptionExist("EventTrace.MinimumTime")) {
-                double minTime = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
-                BaseEntity::event_trace_minimum_time = minTime;
+                double val = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
+                BaseEntity::event_trace_minimum_time = val;
             }
 
             if (i_runBase->isOptionExist("EventTrace.MaximumTime")) {
-                double maxTime = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
-                BaseEntity::event_trace_maximum_time = maxTime;
+                double val = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
+                BaseEntity::event_trace_maximum_time = val;
             }
 
             if (i_runBase->isOptionExist("EventTrace.SelectedEntities")) {

@@ -134,21 +134,29 @@ void CodeGen::do_preamble()
 	c += "";
 
     if (Symbol::option_event_trace) {
-        // Let the run-time know that model is capable of event trace
-        c += "const bool BaseEntity::event_trace_capable = true;";
-        // if event_trace option is on, tracing is active unless turned off
+        t0 += doxygen_short("Model was built with event trace capability.");
+        t0 += "constexpr bool om_event_trace_capable = true;";
+        t0 += "";
+        //c += "const bool BaseEntity::event_trace_capable = true;";
+        c += "// Model has event trace capability. Event tracing is active unless turned off in model code";
         c += "thread_local bool BaseEntity::event_trace_on = true;";
     }
     else {
-        // Let the run-time know that model is not capable of event trace
-        c += "const bool BaseEntity::event_trace_capable = false;";
-        // independent of the event_trace option, this static member must be defined
+        t0 += doxygen_short("Model was not built with event trace capability.");
+        t0 += "constexpr bool om_event_trace_capable = false;";
+        t0 += "";
+        //c += "const bool BaseEntity::event_trace_capable = false;";
+        c += "// Model does not have event trace capability. Nevertheless, this static member requires a definition.";
         c += "thread_local bool BaseEntity::event_trace_on = false;";
     }
 
     // static members for event trace control
-    c += "enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::eModgen;";
-    c += "bool BaseEntity::event_trace_show_scheduling = true;";
+    c += "enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;";
+    c += "bool BaseEntity::event_trace_show_queued_events = true;";
+    c += "bool BaseEntity::event_trace_show_queued_self_scheduling_events = true;";
+    c += "bool BaseEntity::event_trace_show_enter_simulation = true;";
+    c += "bool BaseEntity::event_trace_show_exit_simulation = true;";
+    c += "bool BaseEntity::event_trace_show_self_scheduling_events = true;";
     c += "double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();";
     c += "double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
     c += "std::unordered_set<int> BaseEntity::event_trace_selected_entities;";
@@ -849,15 +857,26 @@ void CodeGen::do_agents()
 	    h += "public:";
 
 	    h += "";
-	    h += "//";
-	    h += "// function members in " + agent->name + " agent";
+        h += doxygen_short("The name of this entity");
+        h += "static constexpr const char * entity_name = \"" + agent->name + "\";";
+        h += "";
+
+        h += doxygen_short("Get the name of this entity");
+        h += "const char * om_get_entity_name()";
+        h += "{";
+        h +=     "return entity_name;";
+        h += "}";
+        h += "";
+
+        h += "//";
+	    h += "// function members in " + agent->name + " entity";
 	    h += "//";
 	    h += "";
 
-	    h += "// operator overload for entity comparison based on entity_id";
+	    h += doxygen_short("operator overload for entity comparison based on entity_id");
         h += "bool operator< ( " + agent->name + " & rhs )";
         h += "{";
-        h += "return entity_id < rhs.entity_id;";
+        h +=     "return entity_id < rhs.entity_id;";
         h += "}";
 	    h += "";
 
@@ -930,7 +949,7 @@ void CodeGen::do_agents()
         c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
         c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
     }
-    c += "event_trace_on = event_trace_capable;";
+    c += "event_trace_on = om_event_trace_capable;";
     c += "}";
     c += "";
 
