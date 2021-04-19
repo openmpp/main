@@ -29,8 +29,16 @@ void TableSymbol::post_parse(int pass)
 
         break;
     }
-    case ePopulateDependencies:
-    {
+    default:
+        break;
+    }
+}
+
+// Mark enumerations required for metadata support for this parameter
+void TableSymbol::post_parse_mark_enumerations(void)
+{
+    // Mark enumerations required for metadata support for this parameter
+    if (true) { // SFG TODO - skip if table is deleted or internal
         // Mark enumerations required for metadata support for this table
         // The enumeration of each dimension in the table is required
         for (auto dim : dimension_list) {
@@ -38,13 +46,9 @@ void TableSymbol::post_parse(int pass)
             assert(es); // logic guarantee
             es->metadata_needed = true;
         }
-
-        break;
-    }
-    default:
-        break;
     }
 }
+
 
 CodeBlock TableSymbol::cxx_declaration_global()
 {

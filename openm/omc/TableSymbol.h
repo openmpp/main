@@ -43,6 +43,9 @@ public:
 
     void post_parse(int pass);
 
+    /** Mark enumerations required for metadata support for this table. */
+    void post_parse_mark_enumerations(void);
+
     CodeBlock cxx_declaration_global();
 
     CodeBlock cxx_definition_global();

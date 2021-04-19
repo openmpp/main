@@ -1563,6 +1563,11 @@ void Symbol::post_parse_all()
         param->post_parse_mark_enumerations();
     }
 
+    // Determine enumeration metadata required by published tables
+    for (auto tbl : pp_all_tables) {
+        tbl->post_parse_mark_enumerations();
+    }
+
     // Terminate the event time function body for the self-scheduling event (if present)
     for (auto *agent : pp_all_agents) {
         agent->finish_ss_event();

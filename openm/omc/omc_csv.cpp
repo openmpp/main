@@ -112,7 +112,6 @@ extern void omc::readParameterCsvFiles(
         param->sub_initial_list.resize(1);
         param->sub_initial_list.front().first = 0;
         param->sub_initial_list.front().second.clear();
-        param->post_parse_mark_enumerations();  // mark all dimensions and dimension enum items as dependency of parameter
 
         // create list of string literal parameter values from csv lines
         vector< pair< int, vector<string> > > subValArr;
