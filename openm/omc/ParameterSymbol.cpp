@@ -182,9 +182,6 @@ void ParameterSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
-        // Mark enumerations required for metadata support for this parameter
-        post_parse_mark_enumerations();
-
         // Generate body of lookup function
         if (cumrate) {
             // Generate body of lookup function

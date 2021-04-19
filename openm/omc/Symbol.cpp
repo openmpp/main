@@ -1558,6 +1558,11 @@ void Symbol::post_parse_all()
         pr.second->post_parse( ePopulateDependencies );
     }
 
+    // Determine enumeration metadata required by published parameters
+    for (auto param : pp_all_parameters) {
+        param->post_parse_mark_enumerations();
+    }
+
     // Terminate the event time function body for the self-scheduling event (if present)
     for (auto *agent : pp_all_agents) {
         agent->finish_ss_event();
