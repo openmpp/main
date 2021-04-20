@@ -35,6 +35,7 @@ public:
         : Symbol(sym, decl_loc)
         , measures_position(0)
         , is_internal(false)
+        , is_suppressed(false)
         , pp_table_id(-1)
     {
         cxx_type = name;
@@ -157,8 +158,18 @@ public:
 
     /**
      * True if the table is internal
+     * 
+     * An internal table is computed during the simulation, but is not published to the DB.
      */
     bool is_internal;
+
+    /**
+     * True if the table is marked for suppression by tables_suppressed or tables_retain.
+     * 
+     * A suppressed table is completely removed from the model, including all generated code,
+     * eg injected code in call backs, any associated attributes, etc.
+     */
+    bool is_suppressed;
 
     /**
      * Other tables required by this table.

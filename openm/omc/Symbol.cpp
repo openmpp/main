@@ -1550,12 +1550,52 @@ void Symbol::post_parse_all()
         }
     }
 
+    // Check for valid combinations of table suppress and retain statements,
+    // and prepare tables for the subsequent ePopulateDependencies pass.
+    {
+        Symbol::any_tables_suppress = false;
+        Symbol::any_tables_retain = false;
+        bool error_if_both = false;
+        for (auto sym : pp_all_anon_groups) {
+            Symbol::any_tables_suppress |= sym->anon_kind == AnonGroupSymbol::eKind::tables_suppress;
+            Symbol::any_tables_retain |= sym->anon_kind == AnonGroupSymbol::eKind::tables_retain;
+            if (!error_if_both && any_tables_suppress && any_tables_retain) {
+                // error message done here to provide a code source location for the first statement which violated the condition
+                sym->pp_error(LT("error : a model cannot contain both tables_suppress and tables_retain statements"));
+                error_if_both = true;
+            }
+        }
+        if (Symbol::any_tables_retain) {
+            // Mark all tables as removed.
+            // Those which are retained will be changed back on next pass
+            // (as well as any required upstream tables)
+            for (auto tbl : pp_all_tables) {
+                if (!tbl->is_internal) {
+                    tbl->is_suppressed = true;
+                }
+            }
+        }
+    }
+
     // Pass 7: populate additional collections for subsequent code generation, e.g. for side_effect functions.
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
     // This includes code insertion in callback functions.
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateDependencies );
+    }
+
+    // keep tables on which non-suppressed or internal tables depend.
+    for (auto tbl : pp_all_tables) {
+        if (!tbl->is_suppressed) {
+            for (auto tbl_req : tbl->pp_tables_required) {
+                if (tbl_req->is_suppressed) {
+                    // do not suppress, make it internal instead
+                    tbl_req->is_suppressed = false;
+                    tbl_req->is_internal = true;
+                }
+            }
+        }
     }
 
     // Determine enumeration metadata required by published parameters

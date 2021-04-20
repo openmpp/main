@@ -78,7 +78,35 @@ void AnonGroupSymbol::post_parse(int pass)
             break;
         }
         case eKind::tables_suppress:
+        {
+            for (auto sym : expanded_list()) {
+                auto ts = dynamic_cast<TableSymbol*>(sym);
+                if (ts) {
+                    // indicate that this table is to be suppressed from the model
+                    ts->is_suppressed = true;
+                }
+                else {
+                    pp_error(LT("error : '") + sym->name + LT("' in tables_suppress statement is not a table"));
+                }
+            }
+            break;
+        }
         case eKind::tables_retain:
+        {
+            // Before this pass, code in Symbol::post_parse_all() changed is_suppressed to true for all non-internal tables
+            // in preparation for this step, which switches selected tables back.
+            for (auto sym : expanded_list()) {
+                auto ts = dynamic_cast<TableSymbol*>(sym);
+                if (ts) {
+                    // indicate that this table is not to be suppressed.
+                    ts->is_suppressed = false;
+                }
+                else {
+                    pp_error(LT("error : '") + sym->name + LT("' in tabless_retain statement is not a table"));
+                }
+            }
+            break;
+        }
         case eKind::parameters_to_tables:
         {
             pp_error(LT("error : not implemented"));

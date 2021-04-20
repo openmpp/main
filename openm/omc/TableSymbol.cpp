@@ -34,11 +34,10 @@ void TableSymbol::post_parse(int pass)
     }
 }
 
-// Mark enumerations required for metadata support for this parameter
 void TableSymbol::post_parse_mark_enumerations(void)
 {
-    // Mark enumerations required for metadata support for this parameter
-    if (true) { // SFG TODO - skip if table is deleted or internal
+    if (true) {
+    //SFG if (!is_internal && !is_suppressed) {
         // Mark enumerations required for metadata support for this table
         // The enumeration of each dimension in the table is required
         for (auto dim : dimension_list) {
