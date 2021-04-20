@@ -22,7 +22,7 @@ module load mpi/openmpi-x86_64
 
 More information at: 
 https://openmpp.org
-https://ompp.sourceforge.net/wiki/
+https://github.com/openmpp/openmpp.github.io/wiki
 
 Truly yours, 
 amc1999
