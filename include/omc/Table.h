@@ -254,13 +254,17 @@ double * om_get_table_measure_address(int table_id, int measure_id, std::vector<
 template<typename ...Items>
 double GetTableValue(const std::string measure_name, Items... args)
 {
+    static int warnings_left = 1;
     std::vector<int> indices = {{ args ... }};
     // Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0
     if (0 == sizeof...(Items)) indices.clear();
     auto it = om_table_measure.find(measure_name);
     if (it == om_table_measure.end()) {
-        theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to GetTableValue",
-            measure_name.c_str());
+        if (warnings_left > 0) {
+            warnings_left--;
+            theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to GetTableValue",
+                measure_name.c_str());
+        }
         return std::numeric_limits<double>::quiet_NaN();
     }
     auto pr = it->second;
@@ -287,13 +291,17 @@ double GetTableValue(const std::string measure_name, Items... args)
 template<typename ...Items>
 void SetTableValue(const std::string measure_name, double value, Items... args)
 {
+    static int warnings_left = 1;
     std::vector<int> indices = {{ args ... }};
     // Work-around to VC++ converting empty parameter pack to initializer list of size 1 with element 0
     if (0 == sizeof...(Items)) indices.clear();
     auto it = om_table_measure.find(measure_name);
     if (it == om_table_measure.end()) {
-        theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to SetTableValue",
-            measure_name.c_str());
+        if (warnings_left > 0) {
+            warnings_left--;
+            theLog->logFormatted("Warning : Invalid table/measure name '%s' in call to SetTableValue",
+                measure_name.c_str());
+        }
     }
     else {
         auto pr = it->second;
