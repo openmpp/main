@@ -52,7 +52,7 @@ Cluster version:
 It is recommended to start with desktop version.
 Do NOT download _mpi_ binaries unless you have MPI installed on your cluster.
   
-Please visit our [wiki](https://ompp.sourceforge.io/wiki/) for more information.
+Please visit our [wiki](https://github.com/openmpp/openmpp.github.io/wiki) for more information.
 
 E-mail to: _openmpp dot org at gmail dot com_.
 

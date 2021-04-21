@@ -44,7 +44,7 @@ ${OM_ROOT}/      -> openM++ "root" folder
           ompp-r/       -> openMpp R package
           ompp-ui/      -> UI front-end source code
 
-More information at: http://ompp.sourceforge.net/wiki/
+More information at: https://github.com/openmpp/openmpp.github.io/wiki
 E-mail to: _openmpp dot org at gmail dot com_.
 
 Enjoy,
