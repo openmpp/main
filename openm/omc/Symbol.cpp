@@ -50,6 +50,8 @@
 #include "EntitySetSymbol.h"
 #include "TableSymbol.h"
 #include "EntityTableSymbol.h"
+#include "EntityMemberSymbol.h"
+#include "EntityIncrementSymbol.h"
 #include "DerivedTableSymbol.h"
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"
@@ -1175,7 +1177,9 @@ void Symbol::post_parse_all()
     populate_pp_symbols();
     default_sort_pp_symbols();
 
-	// pass 1: create additional symbols for foreign types
+	//
+    // Pass 1: create additional symbols for foreign types
+    // 
 	// symbols will be processed in lexicographical order within sorting group
 	pp_symbols_ignore.clear();
 	for (auto pr : pp_symbols) {
@@ -1192,7 +1196,9 @@ void Symbol::post_parse_all()
 	populate_pp_symbols();
 	default_sort_pp_symbols();
 
-	// pass 2: create additional symbols not created during parse phase
+	//
+    // pass 2: create additional symbols not created during parse phase
+    // 
 	// symbols will be processed in lexicographical order within sorting group
 	pp_symbols_ignore.clear();
 	for (auto pr : pp_symbols) {
@@ -1209,19 +1215,25 @@ void Symbol::post_parse_all()
 	populate_pp_symbols();
 	default_sort_pp_symbols();
 
-	// pass 3: assign label using default or from comment on same lines as symbol declaration
+	//
+    // pass 3: assign label using default or from comment on same lines as symbol declaration
+    // 
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignLabel );
     }
 
+    //
     // pass 4: create pp_ members
+    // 
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignMembers );
     }
 
+    //
     // pass 5: resolve derived attribute data types
+    // 
     // Symbols will be processed in lexicographical order within sorting group.
     type_changes = 1;
     int type_change_passes = 0;
@@ -1237,7 +1249,9 @@ void Symbol::post_parse_all()
         }
     }
 
+    //
     // pass 6: create pp_ collections
+    // 
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateCollections );
@@ -1245,6 +1259,49 @@ void Symbol::post_parse_all()
 
     // invalidate the parse phase symbol table symbols
     invalidate_symbols();
+
+    //
+    // Remove suppressed tables and auxiliary symbols from collections before side-effect injection, code generation and metadata production.
+    // 
+
+    if (any_tables_retain || any_tables_suppress) {
+        // retain tables on which non-suppressed or internal tables depend.
+        for (auto tbl : pp_all_tables) {
+            if (!tbl->is_suppressed) {
+                for (auto tbl_req : tbl->pp_tables_required) {
+                    if (tbl_req->is_suppressed) {
+                        // do not suppress, make it internal instead
+                        tbl_req->is_suppressed = false;
+                        tbl_req->is_internal = true;
+                    }
+                }
+            }
+        }
+
+        for (auto et : pp_all_entity_tables) {
+            if (et->is_suppressed) {
+                // Remove the 3 auxiliary entity member functions from the table's entity
+                auto& ccf = et->current_cell_fn;
+                auto& iif = et->init_increment_fn;
+                auto& pif = et->push_increment_fn;
+                auto ent = et->pp_agent;
+                ent->pp_agent_funcs.remove_if([ccf, iif, pif](EntityFuncSymbol* x) { return x == ccf || x == iif || x == pif; });
+                // Remove this table from the entity's list of tables.
+                ent->pp_entity_tables.remove_if([et](EntityTableSymbol* x) { return x == et; });
+                // Remove the table's increment from the entity's list of callback members (used to generate offsets)
+                auto& incr = et->increment;
+                auto incr_as_ems = dynamic_cast<EntityMemberSymbol*>(incr);
+                assert(incr_as_ems); // is upcast to base type
+                ent->pp_callback_members.remove_if([incr_as_ems](EntityMemberSymbol* x) { return x == incr_as_ems; });
+            }
+        }
+        // remove all suppressed entity tables from the master list of entity tables
+        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed; });
+        // remove all suppressed derived tables from the master list of derived tables
+        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed; });
+        // remove all suppressed tables from the master list of tables
+        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed; });
+    }
 
     // Sort all global collections
     pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
@@ -1523,79 +1580,15 @@ void Symbol::post_parse_all()
     default_sort_pp_symbols();
 #endif
 
-    // Check for valid combinations of parameter suppress and retain statements,
-    // and prepare scenario parameters for the subsequent ePopulateDependencies pass.
-    {
-        Symbol::any_parameters_suppress = false;
-        Symbol::any_parameters_retain = false;
-        bool error_if_both = false;
-        for (auto sym : pp_all_anon_groups) {
-            Symbol::any_parameters_suppress |= sym->anon_kind == AnonGroupSymbol::eKind::parameters_suppress;
-            Symbol::any_parameters_retain |= sym->anon_kind == AnonGroupSymbol::eKind::parameters_retain;
-            if (!error_if_both && any_parameters_suppress && any_parameters_retain) {
-                // error message done here to provide a code source location for the first statement which violated the condition
-                sym->pp_error(LT("error : a model cannot contain both parameters_suppress and parameters_retain statements"));
-                error_if_both = true;
-            }
-        }
-        if (Symbol::any_parameters_retain) {
-            // Mark all scenario parameters as fixed.
-            // Those which are retained will be changed back to scenario parameters on next pass
-            for (auto param : pp_all_parameters) {
-                if (param->source == ParameterSymbol::parameter_source::scenario_parameter) {
-                    param->source = ParameterSymbol::parameter_source::fixed_parameter;
-                }
-            }
 
-        }
-    }
-
-    // Check for valid combinations of table suppress and retain statements,
-    // and prepare tables for the subsequent ePopulateDependencies pass.
-    {
-        Symbol::any_tables_suppress = false;
-        Symbol::any_tables_retain = false;
-        bool error_if_both = false;
-        for (auto sym : pp_all_anon_groups) {
-            Symbol::any_tables_suppress |= sym->anon_kind == AnonGroupSymbol::eKind::tables_suppress;
-            Symbol::any_tables_retain |= sym->anon_kind == AnonGroupSymbol::eKind::tables_retain;
-            if (!error_if_both && any_tables_suppress && any_tables_retain) {
-                // error message done here to provide a code source location for the first statement which violated the condition
-                sym->pp_error(LT("error : a model cannot contain both tables_suppress and tables_retain statements"));
-                error_if_both = true;
-            }
-        }
-        if (Symbol::any_tables_retain) {
-            // Mark all tables as removed.
-            // Those which are retained will be changed back on next pass
-            // (as well as any required upstream tables)
-            for (auto tbl : pp_all_tables) {
-                if (!tbl->is_internal) {
-                    tbl->is_suppressed = true;
-                }
-            }
-        }
-    }
-
-    // Pass 7: populate additional collections for subsequent code generation, e.g. for side_effect functions.
+    //
+    // Pass 7: populate additional collections for code generation and metadata publishing, and inject side-effect code.
+    // 
     // In this pass, symbols 'reach out' to dependent symbols and populate collections for implementing dependencies.
     // This includes code insertion in callback functions.
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( ePopulateDependencies );
-    }
-
-    // keep tables on which non-suppressed or internal tables depend.
-    for (auto tbl : pp_all_tables) {
-        if (!tbl->is_suppressed) {
-            for (auto tbl_req : tbl->pp_tables_required) {
-                if (tbl_req->is_suppressed) {
-                    // do not suppress, make it internal instead
-                    tbl_req->is_suppressed = false;
-                    tbl_req->is_internal = true;
-                }
-            }
-        }
     }
 
     // Determine enumeration metadata required by published parameters

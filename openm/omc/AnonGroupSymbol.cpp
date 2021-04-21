@@ -19,15 +19,65 @@ void AnonGroupSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignMembers:
+    {
+        is_hidden = true; // SFG not sure what purpose this serves, at the group level...
+
+        // assign global flags about what kinds of anon group statements are present in model code
+        switch (anon_kind) {
+        case eKind::parameters_suppress:
+            Symbol::any_parameters_suppress = true;
+            break;
+        case eKind::parameters_retain:
+            Symbol::any_parameters_retain = true;
+            break;
+        case eKind::tables_suppress:
+            Symbol::any_tables_suppress = true;
+            break;
+        case eKind::tables_retain:
+            Symbol::any_tables_retain = true;
+            break;
+        default:
+            break;
+        }
+        break;
+    }
+    case eResolveDataTypes:
+    {
+        // issue error messages if model contains incompatible combinations of anon groups
+        switch (anon_kind) {
+        case eKind::hide:
+            break;
+        case eKind::parameters_suppress:
+            if (any_parameters_retain) {
+                pp_error(LT("error : a model cannot contain both parameters_suppress and parameters_retain statements"));
+            }
+            break;
+        case eKind::parameters_retain:
+            if (any_parameters_suppress) {
+                pp_error(LT("error : a model cannot contain both parameters_suppress and parameters_retain statements"));
+            }
+            break;
+        case eKind::tables_suppress:
+            if (any_tables_retain) {
+                pp_error(LT("error : a model cannot contain both tables_suppress and tables_retain statements"));
+            }
+            break;
+        case eKind::tables_retain:
+            if (any_tables_suppress) {
+                pp_error(LT("error : a model cannot contain both tables_suppress and tables_retain statements"));
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // add this to the complete list of anon groups
-        is_hidden = true; // SFG not sure what purpose this serves, at the group level...
         pp_all_anon_groups.push_back(this);
-        break;
-    }
-    case ePopulateDependencies:
-    {
+
         switch (anon_kind) {
         case eKind::hide:
         {
@@ -63,8 +113,8 @@ void AnonGroupSymbol::post_parse(int pass)
         }
         case eKind::parameters_retain:
         {
-            // Before this pass, code in Symbol::post_parse_all() changed all Scenario parameters to Fixed
-            // in preparation for this step, which switches selected parameters back.
+            // Before this pass, all scenario parameters were changed to fixed_parameter
+            // in preparation for this step, which switches retained parameters back to scenario_parameter.
             for (auto sym : expanded_list()) {
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
@@ -93,8 +143,8 @@ void AnonGroupSymbol::post_parse(int pass)
         }
         case eKind::tables_retain:
         {
-            // Before this pass, code in Symbol::post_parse_all() changed is_suppressed to true for all non-internal tables
-            // in preparation for this step, which switches selected tables back.
+            // Before this pass is_suppressed was set to true for all non-internal tables
+            // in preparation for this step, which switches retained tables back to false.
             for (auto sym : expanded_list()) {
                 auto ts = dynamic_cast<TableSymbol*>(sym);
                 if (ts) {
@@ -115,7 +165,7 @@ void AnonGroupSymbol::post_parse(int pass)
         default:
             assert(false); // logic guarantee
         } // switch (anon_kind)
-    } // case ePopulateDependencies:
+    } // case ePopulateCollections:
     default:
         break;
     }

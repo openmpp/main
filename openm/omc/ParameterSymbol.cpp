@@ -102,6 +102,17 @@ void ParameterSymbol::post_parse(int pass)
         }
         break;
     }
+    case eResolveDataTypes:
+    {
+        if (any_parameters_retain) { // model contains a parameters_retain statement
+            // Mark all scenario parameters as fixed_parameter.
+            // Those which are retained will be changed back to scenario_parameter in a subsequent pass.
+            if (source == ParameterSymbol::parameter_source::scenario_parameter) {
+                source = ParameterSymbol::parameter_source::fixed_parameter;
+            }
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // validate dimension list

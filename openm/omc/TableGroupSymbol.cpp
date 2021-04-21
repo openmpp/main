@@ -47,6 +47,11 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     using namespace openm;
 
+    if (!contains_published_table()) {
+        // do not publish a table group which contains only non-published tables
+        return;
+    }
+
     // Hook into the hierarchical calling chain
     super::populate_metadata(metaRows);
 
@@ -77,31 +82,68 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     for (auto sym : pp_symbol_list) {
         auto tgs = dynamic_cast<TableGroupSymbol *>(sym);
         if (tgs) {
-            GroupPcRow groupPc;
-            groupPc.groupId = pp_group_id;
-            groupPc.childPos = childPos++;
-            groupPc.childGroupId = tgs->pp_group_id;
-            groupPc.leafId = -1;            // negative value treated as db-NULL
-            metaRows.groupPc.push_back(groupPc);
+            // element is a table group
+            if (tgs->contains_published_table()) {
+                GroupPcRow groupPc;
+                groupPc.groupId = pp_group_id;
+                groupPc.childPos = childPos++;
+                groupPc.childGroupId = tgs->pp_group_id;
+                groupPc.leafId = -1;            // negative value treated as db-NULL
+                metaRows.groupPc.push_back(groupPc);
 
-            continue;   // done with this child group
+                continue;   // done with this child group
+            }
+            // else do not publish a table group which contains only non-published tables
         }
         // else symbol must be a table
         auto tbl = dynamic_cast<TableSymbol *>(sym);
         if (tbl) {
+            if (!tbl->is_internal && !tbl->is_suppressed) {
 
-            GroupPcRow groupPc;
-            groupPc.groupId = pp_group_id;
-            groupPc.childPos = childPos++;
-            groupPc.childGroupId = -1;      // negative value treated as db-NULL
-            groupPc.leafId = tbl->pp_table_id;
-            metaRows.groupPc.push_back(groupPc);
+                GroupPcRow groupPc;
+                groupPc.groupId = pp_group_id;
+                groupPc.childPos = childPos++;
+                groupPc.childGroupId = -1;      // negative value treated as db-NULL
+                groupPc.leafId = tbl->pp_table_id;
+                metaRows.groupPc.push_back(groupPc);
 
-            continue;   // done with this child table
+                continue;   // done with this child table
+            }
+            // else do not publish non-published table
         }
         else {
-            pp_error(LT("error : '") + sym->name + LT("' in table group is not a table"));
+            // invalid table group member
+            // (previously detected error condition)
         }
     }
+}
+
+const bool TableGroupSymbol::contains_published_table()
+{
+    for (auto sym : pp_symbol_list) {
+        auto tgs = dynamic_cast<TableGroupSymbol*>(sym);
+        if (tgs) {
+            // element is a table group
+            // The following line contains a recursive call
+            if (tgs->contains_published_table()) {
+                return true;
+            }
+        }
+        else {
+            // element is a table
+            auto tbl = dynamic_cast<TableSymbol*>(sym);
+            if (tbl) {
+                if (!tbl->is_internal && !tbl->is_suppressed) {
+                    return true;
+                }
+            }
+            else {
+                // invalid table group member
+                // (previously detected error condition)
+                return true;
+            }
+        }
+    }
+    return false;
 }
 

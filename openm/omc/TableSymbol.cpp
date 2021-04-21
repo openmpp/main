@@ -22,6 +22,17 @@ void TableSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eResolveDataTypes:
+    {
+        if (any_tables_retain) { // model contains a tables_retain statement
+            // Mark all tables as suppressed.
+            // Those which are retained will be changed back in a subsequent pass.
+            if (!is_internal) {
+                is_suppressed = true;
+            }
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // add this table to the complete list of tables

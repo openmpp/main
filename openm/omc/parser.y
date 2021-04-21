@@ -583,7 +583,7 @@ ompp_declarative_island:
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
     | decl_hide             { pc.InitializeForCxx(); }
-    | decl_anon_group      { pc.InitializeForCxx(); }
+    | decl_anon_group       { pc.InitializeForCxx(); }
     | decl_dependency       { pc.InitializeForCxx(); }
     | decl_track            { pc.InitializeForCxx(); }
     | decl_parameters       { pc.InitializeForCxx(); }

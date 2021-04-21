@@ -33,4 +33,12 @@ public:
     void post_parse(int pass);
 
     void populate_metadata(openm::MetaModelHolder& metaRows);
+
+    /**
+     * Determine if group contains a published table
+     *
+     * @return true if group contains a published table, otherwise false
+     */
+    const bool contains_published_table();
+
 };

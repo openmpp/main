@@ -97,7 +97,7 @@ void ParameterGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
             }
             // else do not publish a parameter group which contains only non-scenario parameters
         }
-        // else element is a parameter
+        // else symbol is a parameter
         auto param = dynamic_cast<ParameterSymbol *>(sym);
         if (param) {
             if (param->source == ParameterSymbol::scenario_parameter) {

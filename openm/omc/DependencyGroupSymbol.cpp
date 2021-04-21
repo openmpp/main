@@ -53,10 +53,6 @@ void DependencyGroupSymbol::post_parse(int pass)
         // add this to the complete list of dependency groups
         pp_all_dependency_groups.push_back(this);
 
-        break;
-    }
-    case ePopulateDependencies:
-    {
         // Add the expanded list of required tables to required set of the requiring table
         // and
         // Add the requiring table to the requiring set of each table in the expanded list of required tables.
