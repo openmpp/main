@@ -12,6 +12,8 @@ if [ ${CONFIGURATION} != "Release" ]; then
 fi
 
 #
+codesign -s - ${TARGET_BUILD_DIR}/omc
+
 cp -p ${TARGET_BUILD_DIR}/omc ${OM_ROOT}/bin/
 
 [ -e ${SRCROOT}/omc.ini ] && cp -p ${SRCROOT}/omc.ini ${OM_ROOT}/bin/
