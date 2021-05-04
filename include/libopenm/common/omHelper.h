@@ -43,7 +43,8 @@
 #define OM_CODE_DB_MAX      32          /** max database length for codes: language code, digests, date-time string */
 #define OM_NAME_DB_MAX      255         /** max database length for names: parameter name, table name, etc. */
 #define OM_DESCR_DB_MAX     255         /** max database length for description: parameter description, table description, etc. */
-#define OM_OPTION_DB_MAX    2048        /** max database length for option value: profile_option, run_option */
+#define OM_OPTION_DB_MAX    32000       /** max database length for option value: profile_option, run_option */
+#define OM_SQL_EXPR_DB_MAX  2048        /** max database length for sql expression: accumulator or output table expression */
 
 #define OM_STATE_SAVE_TIME 1811L        /** msec, interval between run state save if any changes in run status */
 #define OM_STATE_BEAT_TIME 1823L        /** msec, interval between run state heart beats update */
