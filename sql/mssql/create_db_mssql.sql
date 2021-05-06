@@ -491,9 +491,9 @@ CREATE TABLE profile_lst
 --
 CREATE TABLE profile_option
 (
-  profile_name VARCHAR(255)  NOT NULL, -- master key
-  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: OpenM.Threads
-  option_value VARCHAR(2048) NOT NULL, -- option value
+  profile_name VARCHAR(255)   NOT NULL, -- master key
+  option_key   VARCHAR(255)   NOT NULL, -- section.key, ie: OpenM.Threads
+  option_value TEXT           NOT NULL, -- option value
   PRIMARY KEY (profile_name, option_key),
   CONSTRAINT profile_option_mk 
              FOREIGN KEY (profile_name) REFERENCES profile_lst(profile_name)
@@ -546,9 +546,9 @@ CREATE TABLE run_txt
 --
 CREATE TABLE run_option
 (
-  run_id       INT           NOT NULL, -- master key
-  option_key   VARCHAR(255)  NOT NULL, -- section.key, ie: OpenM.Threads
-  option_value VARCHAR(2048) NOT NULL, -- option value
+  run_id       INT            NOT NULL, -- master key
+  option_key   VARCHAR(255)   NOT NULL, -- section.key, ie: OpenM.Threads
+  option_value TEXT           NOT NULL, -- option value
   PRIMARY KEY (run_id, option_key),
   CONSTRAINT run_option_mk 
              FOREIGN KEY (run_id) REFERENCES run_lst(run_id)

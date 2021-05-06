@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_05_05:
+  model code statements to suppress or retain parameters or tables in the model executable
+  move wiki to GitHub
+  update Xcode projects for Mac M1
+  db schema change: increase option value size to 32000
+  UI: remove empty parameters and tables groups
+
 2021_04_15:
   clean shutdown of oms web-service by API post
   update oms web-service to save URL into file

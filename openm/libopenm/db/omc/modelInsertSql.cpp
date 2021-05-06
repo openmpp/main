@@ -655,7 +655,7 @@ void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_ta
         throw DbException(LT("invalid (longer than %d) accumulator expression, id: %d, output table: %s, expression: %s"), OM_NAME_DB_MAX, i_row.accId, i_tableRow.tableName.c_str(), me.ellipt(i_row.accSrc));
 
     if (i_row.accSql.empty()) throw DbException(LT("invalid (empty) accumulator sql, id: %d, output table: %s"), i_row.accId, i_tableRow.tableName.c_str());
-    if (i_row.accSql.length() > 2048) throw DbException(LT("invalid (longer than 2048) accumulator sql, id: %d, output table: %s"), i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.accSql.length() > OM_SQL_EXPR_DB_MAX) throw DbException(LT("invalid (longer than %d) accumulator sql, id: %d, output table: %s"), OM_SQL_EXPR_DB_MAX, i_row.accId, i_tableRow.tableName.c_str());
 
     // INSERT INTO table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
     // VALUES (9876, 1, 'acc1', 1, '2 * acc0', '2 * A.acc_value')
@@ -716,7 +716,7 @@ void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_t
         throw DbException(LT("invalid (longer than %d) source expression, id: %d, output table: %s, expression: %s"), OM_NAME_DB_MAX, i_row.exprId, i_tableRow.tableName.c_str(), me.ellipt(i_row.srcExpr));
 
     if (i_row.sqlExpr.empty()) throw DbException(LT("invalid (empty) output expression sql, id: %d, output table: %s"), i_row.exprId, i_tableRow.tableName.c_str());
-    if (i_row.sqlExpr.length() > 2048) throw DbException(LT("invalid (longer than 2048) output expression sql, id: %d, output table: %s"), i_row.exprId, i_tableRow.tableName.c_str());
+    if (i_row.sqlExpr.length() > OM_SQL_EXPR_DB_MAX) throw DbException(LT("invalid (longer than %d) output expression sql, id: %d, output table: %s"), OM_SQL_EXPR_DB_MAX, i_row.exprId, i_tableRow.tableName.c_str());
 
     if (i_row.decimals < -1 || i_row.decimals > DBL_DIG)
         throw DbException(LT("invalid output expression decimals: %d, id: %d, output table: %s"), i_row.decimals, i_row.exprId, i_tableRow.tableName.c_str());

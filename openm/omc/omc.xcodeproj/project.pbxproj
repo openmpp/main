@@ -542,7 +542,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/omc-copy-release.sh\n";
+			shellScript = "${SRCROOT}/omc-xcode-copy-release.sh\n";
 		};
 		D8FD8915247DA9370006D608 /* Do bison and flex */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -564,7 +564,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/omc-bison-flex.sh\n";
+			shellScript = "${SRCROOT}/omc-xcode-bison-flex.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -760,6 +760,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
 			name = Release;
