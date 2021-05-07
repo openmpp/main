@@ -1,0 +1,12 @@
+// Copyright (c) 2013-2021 OpenM++ Contributors
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(SuppressRetain, EN) Parameter and table build-time suppression/retention
+
+#include "omc/omSimulation.h" // For IDE to understand C++ code in this module
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+//tables_suppress ut1;
+
+#endif

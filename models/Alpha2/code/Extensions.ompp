@@ -207,6 +207,7 @@ table Person ut1_feeder_with_names //EN Feeder table for ut1
     }
 };
 
+dependency(ut1_with_names, ut1_feeder_with_names);
 
 // Derived table with named dimensions
 // Copy of ut1
@@ -225,6 +226,8 @@ user_table ut1_with_names //EN User table #1 (with names)
 
 void UserTables()
 {
+    if (!TablePresent("ut1_with_names")) return;
+
     const int nAgeGroups = SIZE(AGE_GROUP);
     const int nEyeColours = SIZE(EYE_COLOUR);
     for (int nA = 0; nA < nAgeGroups; ++nA) {

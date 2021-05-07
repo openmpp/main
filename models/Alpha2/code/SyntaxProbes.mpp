@@ -327,8 +327,12 @@ user_table ut1 //EN User table #1
     }
 };
 
+dependency(ut1, ut1_feeder);
+
 void UserTables()
 {
+    if (!TablePresent("ut1")) return;
+
     const int nAgeGroups = SIZE(AGE_GROUP);
     const int nEyeColours = SIZE(EYE_COLOUR);
     for (int nA = 0; nA < nAgeGroups; ++nA) {

@@ -667,6 +667,20 @@ void CodeGen::do_ModelStartup()
     }
     c += "";
 
+    c += "{";
+    c +=     "// Remove run-time suppressed tables from om_table_names";
+    c +=     "std::list<std::string> suppressed;";
+    c +=     "for (auto nm : om_table_names) {";
+    c +=         "if (is_suppressed_compute(nm, i_model)) {";
+    c +=             "suppressed.push_back(nm);";
+    c +=         "}";
+    c +=     "}";
+    c +=     "for (auto nm : suppressed) {";
+    c +=         "om_table_names.erase(nm);";
+    c +=     "}";
+    c += "}";
+    c += "";
+
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
         c += "assert(!" + et->cxx_instance + "); ";
@@ -1046,6 +1060,17 @@ void CodeGen::do_groups()
 
 void CodeGen::do_table_interface()
 {
+    h += doxygen_short("Table names in the model");
+    h += "extern std::unordered_set<std::string> om_table_names;";
+    h += "";
+
+    c += "std::unordered_set<std::string> om_table_names = {";
+    for (auto tbl : Symbol::pp_all_tables) {
+        c += "\"" + tbl->name + "\",";
+    }
+    c += "};";
+    c += "";
+
     c += "const std::map<std::string, std::pair<int, int>> om_table_measure = {";
     for (auto table : Symbol::pp_all_tables) {
         for (auto measure : table->pp_measures) {

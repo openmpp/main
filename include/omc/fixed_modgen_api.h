@@ -36,6 +36,12 @@ inline double NaN_to_UNDEF_VALUE(double x)
 #define FixedSetTableValue(table_measure, value, ...) \
     SetTableValue(table_measure, NaN_to_UNDEF_VALUE(value), ## __VA_ARGS__, -1)
 
+// Extension to Modgen derived table API
+inline bool TablePresent(const char* table_name)
+{
+    return true;
+}
+
 #else // defined(OPENM)
 
 // The use of ## to suppress the preceding comma is non-standard.
@@ -46,6 +52,12 @@ inline double NaN_to_UNDEF_VALUE(double x)
     GetTableValue(table_measure, ##__VA_ARGS__)
 #define FixedSetTableValue(table_measure, value, ...) \
     SetTableValue(table_measure, value, ##__VA_ARGS__)
+
+/** Is table present in the model (not suppressed) */
+inline bool TablePresent(const char* table_name)
+{
+    return 0 != om_table_names.count(table_name);
+}
 
 #endif
 
