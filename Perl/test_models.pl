@@ -153,8 +153,18 @@ if ($modgen_platform ne 'Win32' && $modgen_platform ne 'x64') {
 use strict;
 
 use Cwd qw(getcwd);
+use Cwd 'abs_path';
+use File::Basename;
+use File::Spec;
 
 my $om_root = $ENV{'OM_ROOT'};
+my $models_root = $opt->models_root;
+
+# if OM_ROOT not set and --models option specified then set OM_ROOT as parent of models directory
+if ( (! $om_root || $om_root eq '') && defined $models_root && $models_root ne '' && -d $models_root ) {
+	$om_root = dirname(abs_path($models_root));
+}
+
 if ( ! $om_root || $om_root eq '') {
 	# Try parent directory, assuming this script was invoked in the OM_ROOT/Perl directory
 	my $save_dir = getcwd();
@@ -167,10 +177,11 @@ else {
 }
 
 # Default location assumes script is invoked from OM_ROOT/Perl.
-my $models_root = $opt->models_root;
+if ( ! $models_root || $models_root eq '' || ! -d $models_root ) {
+	$models_root = File::Spec->catdir($om_root, 'models');
+}
 chdir $models_root || die "Folder ${models_root} not found";
 $models_root = getcwd; # to ensure is absolute path
-
 
 #####################
 # file locations

@@ -118,7 +118,11 @@ if (!defined(which($sqlite3_exe))) {
 		$sqlite3_exe = abs_path($sqlite3_exe);
 	}
 }
-if (!defined(which($sqlite3_exe))) {
+if (defined(which($sqlite3_exe))) {
+	# make absolute path to sqlite3
+	$sqlite3_exe = abs_path(which($sqlite3_exe));
+}
+if ( ! -x $sqlite3_exe ) {
 	# Too bad, so sad...
 	logmsg error, "Cannot find sqlite3.";
 	exit 1;
