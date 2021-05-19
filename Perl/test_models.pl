@@ -206,6 +206,8 @@ if ( $^O eq 'darwin') {
 
 # MSBuild command line reference:
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
+use File::Which qw(which);
+use Cwd 'abs_path';
 
 my $msbuild_exe = "";
 if ($is_windows) {
@@ -213,15 +215,28 @@ if ($is_windows) {
 		# provides a non-standard way to specify the msbuild.exe path
 		$msbuild_exe = "$ENV{MSBUILD_EXE}";
 	}
-	else {
-		# Use VS 2019 aka version 16 if present
-		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\bin\\MSBuild.exe";
-		if ( ! -f $msbuild_exe ) {
-			# fall back to VS 2017 aka version 15 if present
-			$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\bin\\MSBuild.exe";
+	if ( ! -x $msbuild_exe ) {
+		if (defined $ENV{VSINSTALLDIR}) {
+			# if VS or build tools installed then use current version location
+			$msbuild_exe = "$ENV{VSINSTALLDIR}"."MSBuild\\Current\\Bin\\MSBuild.exe";
 		}
 	}
-	if ( ! -e $msbuild_exe ) {
+	if ( ! -x $msbuild_exe ) {
+		# search msbuild.exe in the PATH
+		my $msb_exe = which("MSBuild.exe");
+		if (defined($msb_exe)) {
+			$msbuild_exe = abs_path($msb_exe);
+		}
+	}
+	if ( ! -x $msbuild_exe ) {
+		# Use VS 2019 aka version 16 if present
+		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe";
+	}
+	if ( ! -x $msbuild_exe ) {
+		# fall back to VS 2017 aka version 15 if present
+		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\MSBuild\\15.0\\bin\\MSBuild.exe";
+	}
+	if ( ! -x $msbuild_exe ) {
 		die "Missing msbuild_exe: $msbuild_exe";
 	}
 }
