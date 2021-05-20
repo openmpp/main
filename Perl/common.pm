@@ -10,10 +10,10 @@ sub warning {
 	return "  warning => ";
 }
 sub change {
-	return "DIFFERS   => ";
+	return "DIFFERS ===> ";
 }
 sub error {
-	return "ERROR     => ";
+	return "ERROR =====> ";
 }
 sub info {
 	return "             ";

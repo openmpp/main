@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 my $script_name = "test_models";
-my $script_version = '1.4';
+my $script_version = '2.0';
 
 use Getopt::Long::Descriptive;
 
@@ -18,7 +18,7 @@ my ($opt, $usage) = describe_options(
 	[ 'models_root|m=s'  => 'directory containing models (default is ../models)',
 		{ default => '../models' } ],
 	[ 'newref' => 'replace existing reference files' ],
-	[ 'nocleanup' => 'leave intermediate build files' ],
+	[ 'cleanup' => 'remove intermediate, build, and run files' ],
 	[ 'significant_digits=i' => 'significant digits (default 7)',
 		{ default => 7 } ],
 	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
@@ -282,7 +282,7 @@ if ($is_windows) {
 ###############
 
 my $new_ref = ($opt->newref) ? 1 : 0;
-my $do_cleanup = ($opt->nocleanup) ? 0 : 1;
+my $do_cleanup = ($opt->cleanup) ? 1 : 0;
 my $do_modgen = ($opt->nomodgen) ? 0 : 1;
 my $do_ompp = ($opt->noompp) ? 0 : 1;
 
