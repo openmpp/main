@@ -7,16 +7,16 @@ use strict;
 
 # Strings used as line prefixes in output
 sub warning {
-	return " Warning => ";
+	return "  warning => ";
 }
 sub change {
-	return " Change ==> ";
+	return "DIFFERS   => ";
 }
 sub error {
-	return " Error ===> ";
+	return "ERROR     => ";
 }
 sub info {
-	return "            ";
+	return "             ";
 }
 
 # Steps to install Capture::Tiny (this method requires internet connectivity, there are other ways)

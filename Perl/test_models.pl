@@ -1171,7 +1171,7 @@ for my $model_dir (@model_dirs) {
 			}
 			if ('' ne $differs) {
 				foreach my $table (split(',',$differs)) {
-					logmsg warning, $model_dir, $flavour, "Differs:           ${table}" ;
+					logmsg change, $model_dir, $flavour, "DIFFERS:           ${table}" ;
 				}
 			}
 		}
@@ -1222,7 +1222,7 @@ for my $model_dir (@model_dirs) {
 					}
 					if ('' ne $differs) {
 						foreach my $table (split(',',$differs)) {
-							logmsg warning, $model_dir, $which_flavours, "${which_proper} differs: ${table}" ;
+							logmsg change, $model_dir, $which_flavours, "${which_proper} DIFFERS: ${table}" ;
 						}
 					}
 				}
