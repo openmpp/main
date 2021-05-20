@@ -69,14 +69,14 @@
 
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
 
-    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></BUILD_SUFFIX>
-    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">D</BUILD_SUFFIX>
-    <BUILD_SUFFIX Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'">64</BUILD_SUFFIX>
-    <BUILD_SUFFIX Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">64D</BUILD_SUFFIX>
+    <PLATFORM_SUFFIX Condition="'$(Platform)'=='Win32'"></PLATFORM_SUFFIX>
+    <PLATFORM_SUFFIX Condition="'$(Platform)'=='x64'">64</PLATFORM_SUFFIX>
+    <CONFIG_SUFFIX Condition="'$(Configuration)'=='Release'"></CONFIG_SUFFIX>
+    <CONFIG_SUFFIX Condition="'$(Configuration)'=='Debug'">D</CONFIG_SUFFIX>
 
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     
-    <MODEL_EXE>$(MODEL_NAME)$(BUILD_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
+    <MODEL_EXE>$(MODEL_NAME)$(CONFIG_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
     <MODEL_INI>$(MODEL_NAME).ini</MODEL_INI>
     
     <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
@@ -129,7 +129,7 @@
   <PropertyGroup Condition="'$(OM_DB_USE)'=='SQLITE'">
     <OM_DB_DEF>OM_DB_SQLITE</OM_DB_DEF>
     <OM_DB_INC>$(OM_INC_DIR)/libsqlite</OM_DB_INC>
-    <OM_DB_LIB>libsqlite$(BUILD_SUFFIX).lib</OM_DB_LIB>
+    <OM_DB_LIB>libsqlite$(PLATFORM_SUFFIX)$(CONFIG_SUFFIX).lib</OM_DB_LIB>
     <OM_DB_LIB_DIR>$(OM_LIB_DIR)</OM_DB_LIB_DIR>
   </PropertyGroup>
 

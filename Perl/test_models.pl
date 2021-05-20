@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2017 OpenM++ Contributors
+# Copyright (c) 2013-2021 OpenM++ Contributors
 # This code is licensed under the MIT license (see LICENSE.txt for details)
 
 # Script to test multiple models in ompp, ompp-linux, ompp-mac, and modgen
@@ -25,8 +25,8 @@ my ($opt, $usage) = describe_options(
 	[ 'noompp' => 'skip OpenM++ build and run' ],
 	[ 'ompp_config=s' => 'OpenM++ config: Debug or Release(default)',
 		{ default => 'Release' } ],
-	[ 'ompp_platform=s' => 'OpenM++ platform: Win32(default) or x64',
-		{ default => 'Win32' } ],
+	[ 'windows_platform=s' => 'OpenM++ Windows platform: x64(default) or Win32',
+		{ default => 'x64' } ],
 	[ 'ompp_linux_config=s' => 'OpenM++ Linux config: debug or release(default)',
 		{ default => 'release' } ],
 	[ 'ompp_mac_config=s' => 'OpenM++ MacOS config: debug or release(default)',
@@ -90,9 +90,9 @@ if ($ompp_config ne 'Debug' && $ompp_config ne 'Release') {
 	exit 1;
 } 
 
-my $ompp_platform = $opt->ompp_platform;
-if ($ompp_platform ne 'Win32' && $ompp_platform ne 'x64') {
-	print "Invalid ompp_platform=$ompp_platform must be Win32 or x64";
+my $windows_platform = $opt->windows_platform;
+if ($windows_platform ne 'Win32' && $windows_platform ne 'x64') {
+	print "Invalid windows_platform=$windows_platform must be Win32 or x64";
 	exit 1;
 } 
 
@@ -342,7 +342,7 @@ if ($is_windows) {
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${ompp_platform} configuration=${ompp_config}";
+		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${windows_platform} configuration=${ompp_config}";
 	}
 }
 
@@ -695,7 +695,7 @@ for my $model_dir (@model_dirs) {
 					"/p:OM_ROOT=${om_root}",
 					"/p:OMC_EXE=${omc_exe}",
 					"/p:Configuration=${ompp_config}",
-					"/p:Platform=${ompp_platform}",
+					"/p:Platform=${windows_platform}",
 					"/p:GRID_COMPUTING=${grid_computing}",
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
@@ -724,11 +724,8 @@ for my $model_dir (@model_dirs) {
 				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log}";
 			}
 			
-			# Executable suffix for platform/configuration: nothing, D, 64, 64D
+			# Executable suffix for platform/configuration: nothing, D
 			my $build_suffix = "";
-			if ($ompp_platform eq 'x64') {
-				$build_suffix .= '64';
-			}
 			if ($ompp_config eq 'Debug') {
 				$build_suffix .= 'D';
 			}
