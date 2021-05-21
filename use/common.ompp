@@ -564,3 +564,48 @@ void process_trace_options(IRunBase* const i_runBase)
     }
 }
 
+/**
+* Helper code used internally by run-time
+*
+* The global definitions below are declared in helper.h.
+*
+*/
+namespace omr {
+
+    /**
+    * model build environment to report at run time if user the model as: run model.exe -OpenM.Version
+    *
+    * - platform name: Windows 32 bit, Windows 64 bit, Linux or Apple (MacOS)
+    * - configuration: Release or Debug
+    * - MPI usage enabled or not
+    */
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+    const char * modelTargetOsName = "";
+#else
+    #ifdef _WIN32
+        #ifdef _WIN64
+            const char * modelTargetOsName = "Windows 64 bit";
+        #else
+            const char * modelTargetOsName = "Windows 32 bit";
+        #endif
+    #endif // _WIN32
+    #ifdef __linux__
+            const char * modelTargetOsName = "Linux";
+    #endif
+    #ifdef __APPLE__
+            const char * modelTargetOsName = "Apple";
+    #endif
+#endif
+
+#ifdef NDEBUG
+            const char * modelTargetConfigName = "Release";
+#else
+            const char * modelTargetConfigName = "Debug";
+#endif // NDEBUG
+
+#ifdef OM_MSG_MPI
+            const char * modelTargetMpiUseName = "MPI";
+#else
+            const char * modelTargetMpiUseName = "";
+#endif // OM_MSG_MPI
+}
