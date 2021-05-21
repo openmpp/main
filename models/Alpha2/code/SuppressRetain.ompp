@@ -8,5 +8,6 @@
 #if 0 // Hide non-C++ syntactic island from IDE
 
 //tables_suppress ut1;
+hide(ut1);
 
 #endif

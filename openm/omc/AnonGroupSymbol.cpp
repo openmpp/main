@@ -90,7 +90,9 @@ void AnonGroupSymbol::post_parse(int pass)
                 }
                 auto ts = dynamic_cast<TableSymbol*>(sym);
                 if (ts) {
-                    ts->is_internal = true;
+                    // just ignore 'hide' statement for tables,
+                    // since in Modgen is just a hint to the UI and table may be required, eg for downstream model importing it.
+                    //ts->is_internal = true;
                     continue;
                 }
                 pp_error(LT("error : '") + sym->name + LT("' in hide list is not a parameter or table"));
