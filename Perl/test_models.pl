@@ -23,6 +23,8 @@ my ($opt, $usage) = describe_options(
 		{ default => 7 } ],
 	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
+	[ 'mpi_processes=i' => 'build MPI version and run with n processes (default 0, means no MPI)',
+		{ default => 0 } ],
 	[ 'ompp_config=s' => 'OpenM++ config: Debug or Release(default)',
 		{ default => 'Release' } ],
 	[ 'windows_platform=s' => 'OpenM++ Windows platform: x64(default) or Win32',
@@ -31,8 +33,6 @@ my ($opt, $usage) = describe_options(
 		{ default => 'release' } ],
 	[ 'ompp_mac_config=s' => 'OpenM++ MacOS config: debug or release(default)',
 		{ default => 'release' } ],
-	[ 'ompp_deploy_mpi=s' => 'OpenM++ Windows MPI deployment build: yes or no (default)',
-		{ default => 'no' } ],
 	[ 'ompp_ini=s' => 'OpenM++ ini file to pass to model (relative to model folder, default is none)',
 		{ default => '' } ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
@@ -66,12 +66,17 @@ my $verbosity = 3;
 # Number of significant digits to retain in the output csv files (0 means full precision)
 my $significant_digits = $opt->significant_digits;
 
-# Also create an non-rounded version of each output csv table
+# Also create and keep non-rounded version of each output csv table
 my $unrounded_tables = 1;
 $unrounded_tables = 0 if $opt->nounroundedtables;
 
 # Path to optional ini file (relative to model folder) to pass to ompp model
 my $ompp_ini = $opt->ompp_ini;
+
+# MPI option
+my $mpi_processes = $opt->mpi_processes;
+my $use_mpi = 0;
+$use_mpi = 1 if $mpi_processes > 0;
 
 
 #####################
@@ -93,12 +98,6 @@ if ($ompp_config ne 'Debug' && $ompp_config ne 'Release') {
 my $windows_platform = $opt->windows_platform;
 if ($windows_platform ne 'Win32' && $windows_platform ne 'x64') {
 	print "Invalid windows_platform=$windows_platform must be Win32 or x64";
-	exit 1;
-} 
-
-my $ompp_deploy_mpi = $opt->ompp_deploy_mpi;
-if ($ompp_deploy_mpi ne 'no' && $ompp_deploy_mpi ne 'yes') {
-	print 'Invalid ompp_deploy_mpi=$ompp_deploy_mpi must be "yes" or "no"';
 	exit 1;
 } 
 
@@ -144,6 +143,7 @@ if ($modgen_platform ne 'Win32' && $modgen_platform ne 'x64') {
 
 use strict;
 
+use Config::Tiny;
 use Cwd qw(getcwd);
 use Cwd 'abs_path';
 use File::Basename;
@@ -666,17 +666,10 @@ for my $model_dir (@model_dirs) {
 				$enable_fixed_parameters = 'false';
 			}
 			
-			# Determine grid computing option GRID_COMPUTING user macro in Model.props
-			my $grid_computing = '';
-			if ($ompp_deploy_mpi eq 'yes') {
+			# Prepare grid computing option
+			my $grid_computing = 'EMPTY';
+			if ($use_mpi) {
 				$grid_computing = 'MPI'
-			}
-			else {
-				$grid_computing = get_property($model_props, 'GRID_COMPUTING');
-			}
-			if ($grid_computing eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get GRID_COMPUTING from ${model_props}";
-				next FLAVOUR;
 			}
 			
 			# Project file
@@ -732,7 +725,7 @@ for my $model_dir (@model_dirs) {
 
 			# MPI suffix for platform/configuration: nothing, _mpi
 			my $mpi_suffix = "";
-			if ($grid_computing eq 'MPI') {
+			if ($use_mpi) {
 				$mpi_suffix .= '_mpi';
 			}
 
@@ -791,13 +784,6 @@ for my $model_dir (@model_dirs) {
 				next FLAVOUR;
 			}
 
-			# Determine number of instances if MPI version from PROCESSES user macro in Model.props
-			my $processes = get_property($model_props, 'PROCESSES');
-			if ($processes eq '' && $grid_computing eq 'MPI') {
-				logmsg error, $model_dir, $flavour, "failed to get PROCESSES from ${model_props}";
-				next FLAVOUR;
-			}
-
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
@@ -805,16 +791,16 @@ for my $model_dir (@model_dirs) {
 			my $ompp_log_txt = "${scenario_name}_log.txt";
 			($merged, $retval) = capture_merged {
 				my @args;
-				if ($grid_computing eq 'MPI') {
+				if ($use_mpi) {
 					my $msmpi_bin = $ENV{'MSMPI_BIN'};
 					if ($msmpi_bin eq '') {
-						logmsg error, $model_dir, $flavour, "GRID_COMPUTING = MPI but Microsoft MPI not installed";
+						logmsg error, $model_dir, $flavour, "MPI requested but Microsoft MPI not installed";
 						next FLAVOUR;
 					}
 					push @args,
 						(
 						"${msmpi_bin}mpiexec.exe",
-						"-n", ${processes}
+						"-n", ${mpi_processes}
 						);
 				}
 				push @args,
@@ -921,24 +907,13 @@ for my $model_dir (@model_dirs) {
 			# trim off leading '../' if present
 			$fixed_parameters_folder =~ s@^../@@;
 			
-			# Determine grid computing option GRID_COMPUTING user macro in Model.props
-			my $grid_computing = '';
-			if ($ompp_deploy_mpi eq 'yes') {
-				$grid_computing = 'MPI'
-			}
-			else {
-				$grid_computing = get_property($model_props, 'GRID_COMPUTING');
-			}
-			if ($grid_computing eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get GRID_COMPUTING from ${model_props}";
-				next FLAVOUR;
-			}
-			
+					
 			my @make_defines;
 			push @make_defines, "MODEL_NAME=${model_name}";
 			push @make_defines, "SCENARIO_NAME=${scenario_name}";
 			push @make_defines, "OMC_FIXED_PARAM_DIR=${fixed_parameters_folder}" if $enable_fixed_parameters eq 'true';
 			push @make_defines, 'RELEASE=1' if $ompp_config eq 'release';
+			push @make_defines, 'OM_MSG_USE==MPI' if $use_mpi;
 			
 			my $build_log = "${project_dir}/make.log";
 			unlink $build_log;
