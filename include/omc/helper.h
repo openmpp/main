@@ -83,6 +83,17 @@ namespace omr {
     }
 
 
+    /**
+    * model build environment to report at run time if user the model as: run model.exe -OpenM.Version
+    */
+    /** platform name: Windows 32 bit, Windows 64 bit, Linux or Apple (MacOS) */
+    extern const char * modelTargetOsName;
+
+    /** configuration: Release or Debug */
+    extern const char * modelTargetConfigName;
+
+    /** MPI usage enabled or not */
+    extern const char * modelTargetMpiUseName;
 };
 
 

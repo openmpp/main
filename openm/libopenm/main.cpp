@@ -33,6 +33,7 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "libopenm/omVersion.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/iniReader.h"
 #include "libopenm/common/argReader.h"
@@ -46,6 +47,47 @@ using namespace openm;
 #else
     static const bool isMpiUsed = false;
 #endif
+
+/**
+* OpenM++ build environment to report at run time as part of the model version message
+* 
+* - platform name: Windows 32 bit, Windows 64 bit, Linux or Apple (MacOS)
+* - configuration: Release or Debug
+* - MPI usage enabled or not
+*/
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+    static const char * libTargetOsName = "";
+#else
+    #ifdef _WIN32
+        #ifdef _WIN64
+            static const char * libTargetOsName = "Windows 64 bit";
+        #else
+            static const char * libTargetOsName = "Windows 32 bit";
+        #endif
+    #endif // _WIN32
+    #ifdef __linux__
+            static const char * libTargetOsName = "Linux";
+    #endif
+    #ifdef __APPLE__
+        #if !defined(TARGET_OS_IPHONE)
+            static const char * libTargetOsName = "MacOS";
+        #else
+            static const char * libTargetOsName = "Apple OS";
+        #endif
+    #endif
+#endif
+
+#ifdef NDEBUG
+            static const char * libTargetConfigName = "Release";
+#else
+            static const char * libTargetConfigName = "Debug";
+#endif // NDEBUG
+
+#ifdef OM_MSG_MPI
+            static const char * libTargetMpiUseName = "MPI";
+#else
+            static const char * libTargetMpiUseName = "";
+#endif // OM_MSG_MPI
 
 /** model one-time initialization */
 OM_RUN_ONCE_HANDLER RunOnceHandler;
@@ -136,12 +178,13 @@ int main(int argc, char ** argv)
 
             // log model and runtime version
             if (argOpts.boolOption(RunOptionsKey::version)) {
-                theLog->logMsg("Model version ", runCtrl->meta()->modelRow->version.c_str());
-                theLog->logMsg("Model created ", runCtrl->meta()->modelRow->createDateTime.c_str());
-                theLog->logMsg("Model digest  ", OM_MODEL_DIGEST);
+                theLog->logMsg("Model version  ", runCtrl->meta()->modelRow->version.c_str());
+                theLog->logMsg("Model created  ", runCtrl->meta()->modelRow->createDateTime.c_str());
+                theLog->logMsg("Model digest   ", OM_MODEL_DIGEST);
 #ifdef OM_RUNTIME_VERSION
                 theLog->logMsg("OpenM++ version", OM_RUNTIME_VERSION);
 #endif
+                theLog->logFormatted("OpenM++ build  : %s %s %s", libTargetOsName, libTargetConfigName, libTargetMpiUseName);
             }
 
             if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
