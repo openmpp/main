@@ -593,7 +593,11 @@ namespace omr {
             const char * modelTargetOsName = "Linux";
     #endif
     #ifdef __APPLE__
-            const char * modelTargetOsName = "Apple";
+        #if !defined(TARGET_OS_IPHONE)
+            static const char * libTargetOsName = "MacOS";
+        #else
+            static const char * libTargetOsName = "Apple OS";
+        #endif
     #endif
 #endif
 

@@ -69,7 +69,11 @@ using namespace openm;
             static const char * libTargetOsName = "Linux";
     #endif
     #ifdef __APPLE__
-            static const char * libTargetOsName = "Apple";
+        #if !defined(TARGET_OS_IPHONE)
+            static const char * libTargetOsName = "MacOS";
+        #else
+            static const char * libTargetOsName = "Apple OS";
+        #endif
     #endif
 #endif
 
