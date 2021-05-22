@@ -499,7 +499,7 @@ void CodeGen::do_RunInit()
 	c += "{";
     c += "// report model build environment";
     c += "if (i_runBase->boolOption(\"OpenM.Version\")) {";
-    c += "theLog->logFormatted(\"Model build    :  % s % s % s\", omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
+    c += "theLog->logFormatted(\"Model build    : % s % s % s\", omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
     c += "}";
     c += "";
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
