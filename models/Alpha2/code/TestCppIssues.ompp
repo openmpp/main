@@ -1,0 +1,37 @@
+// Copyright (c) 2013-2021 OpenM++ Contributors
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(TestCppIssues, EN) Tests of C++ language issues with OpenM++ attributes
+
+#include "omc/omSimulation.h" // For IDE to understand C++ code in this module
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+entity Person
+{
+    //EN Integer age
+    int integer_age = self_scheduling_int(age);
+
+    double a1 = max(integer_age, age);
+    //double a2 = std::max(integer_age, age);
+
+    //EN Is an adult
+    bool is_adult = (integer_age >= 18) ? true : false;
+
+    bool b2 = is_adult;
+
+    SEX sex1 = sex;
+    SEX sex2 = sex;
+    SEX sex3 = (true) ? sex1 : sex2;
+    SEX sex4;
+
+    void TestCpp(void);
+};
+
+#endif
+
+void Person::TestCpp(void)
+{
+    sex4 = MALE;
+    sex4 = sex3;
+}
