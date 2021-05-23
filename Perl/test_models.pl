@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 # Copyright (c) 2013-2021 OpenM++ Contributors
 # This code is licensed under the MIT license (see LICENSE.txt for details)
 
@@ -15,29 +16,23 @@ my ($opt, $usage) = describe_options(
 	$script_name.' %o model...',
 	[ 'help|h'    => 'print usage message and exit' ],
 	[ 'version|v' => 'print version and exit' ],
-	[ 'models_root|m=s'  => 'directory containing models (default is ../models)',
-		{ default => '../models' } ],
+	[ 'models_root|m=s'  => 'directory containing models (default is .)',
+		{ default => '.' } ],
 	[ 'newref' => 'replace existing reference files' ],
-	[ 'cleanup' => 'remove intermediate, build, and run files' ],
+	[ 'clean' => 'remove all build files after run' ],
 	[ 'significant_digits=i' => 'significant digits (default 7)',
 		{ default => 7 } ],
 	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
 	[ 'mpi_processes=i' => 'build MPI version and run with n processes (default 0, means no MPI)',
 		{ default => 0 } ],
-	[ 'ompp_config=s' => 'OpenM++ config: Debug or Release(default)',
-		{ default => 'Release' } ],
-	[ 'windows_platform=s' => 'OpenM++ Windows platform: x64(default) or Win32',
+	[ 'config=s' => 'build configuration: debug or release(default)',
+		{ default => 'release' } ],
+	[ 'windows_platform=s' => 'Windows platform: x64(default) or Win32',
 		{ default => 'x64' } ],
-	[ 'ompp_linux_config=s' => 'OpenM++ Linux config: debug or release(default)',
-		{ default => 'release' } ],
-	[ 'ompp_mac_config=s' => 'OpenM++ MacOS config: debug or release(default)',
-		{ default => 'release' } ],
-	[ 'ompp_ini=s' => 'OpenM++ ini file to pass to model (relative to model folder, default is none)',
+	[ 'run_ini=s' => 'OpenM++ ini file to pass to model (relative to model folder, default is test_models.ini if present)',
 		{ default => '' } ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
-	[ 'modgen_config=s' => 'Modgen config: Debug or Release(default)',
-		{ default => 'Release' } ],
 	[ 'modgen_platform=s' => 'Modgen platform: Win32(default) or x64',
 		{ default => 'Win32' } ],
 );
@@ -71,7 +66,7 @@ my $unrounded_tables = 1;
 $unrounded_tables = 0 if $opt->nounroundedtables;
 
 # Path to optional ini file (relative to model folder) to pass to ompp model
-my $ompp_ini = $opt->ompp_ini;
+my $run_ini = $opt->run_ini;
 
 # MPI option
 my $mpi_processes = $opt->mpi_processes;
@@ -89,9 +84,9 @@ my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omc64.exe';
 #my $omc_exe = 'omc64D.exe';
 
-my $ompp_config = $opt->ompp_config;
-if ($ompp_config ne 'Debug' && $ompp_config ne 'Release') {
-	print "Invalid ompp_config=$ompp_config must be Debug or Release";
+my $config = lc($opt->config);
+if ($config ne 'debug' && $config ne 'release') {
+	print "Invalid config=$config must be debug or release";
 	exit 1;
 } 
 
@@ -101,35 +96,10 @@ if ($windows_platform ne 'Win32' && $windows_platform ne 'x64') {
 	exit 1;
 } 
 
-#####################
-# ompp-linux settings
-#####################
-
-my $ompp_linux_config = $opt->ompp_linux_config;
-if ($ompp_linux_config ne 'debug' && $ompp_linux_config ne 'release') {
-	print "Invalid ompp_linux_config=$ompp_linux_config must be debug or release";
-	exit 1;
-} 
-
-#####################
-# ompp-mac settings
-#####################
-
-my $ompp_mac_config = $opt->ompp_mac_config;
-if ($ompp_mac_config ne 'debug' && $ompp_mac_config ne 'release') {
-	print "Invalid ompp_mac_config=$ompp_mac_config must be debug or release";
-	exit 1;
-} 
 
 #####################
 # modgen settings
 #####################
-
-my $modgen_config = $opt->modgen_config;
-if ($modgen_config ne 'Debug' && $modgen_config ne 'Release') {
-	print "Invalid modgen_config=$modgen_config must be Debug or Release";
-	exit 1;
-} 
 
 my $modgen_platform = $opt->modgen_platform;
 if ($modgen_platform ne 'Win32' && $modgen_platform ne 'x64') {
@@ -282,7 +252,7 @@ if ($is_windows) {
 ###############
 
 my $new_ref = ($opt->newref) ? 1 : 0;
-my $do_cleanup = ($opt->cleanup) ? 1 : 0;
+my $do_clean = ($opt->clean) ? 1 : 0;
 my $do_modgen = ($opt->nomodgen) ? 0 : 1;
 my $do_ompp = ($opt->noompp) ? 0 : 1;
 
@@ -316,7 +286,7 @@ if ($is_windows) {
 		push @flavours, 'modgen';
 		my $modgen_version_string = modgen_version($modgen_exe);
 		
-		# Check of supported Modgen version
+		# Check if supported Modgen version
 		(my $v1, my $v2, my $v3, my $v4) = split(',', $modgen_version_string);
         if (!($v1 == 12 && $v2 == 1 && $v3==3)) {
             logmsg error, "Modgen version 12.1.3 is required for cross-compatible models";
@@ -325,7 +295,7 @@ if ($is_windows) {
 		
 		my $sb = stat($modgen_exe);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-		push @flavours_tombstone, "version=${modgen_version_string} (${exe_time_stamp}) platform=${modgen_platform} configuration=${modgen_config}";
+		push @flavours_tombstone, "version=${modgen_version_string} (${exe_time_stamp}) platform=${modgen_platform} configuration=${config}";
 	}
 	
 	if ($do_ompp) {
@@ -342,7 +312,13 @@ if ($is_windows) {
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
 		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-		push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${windows_platform} configuration=${ompp_config}";
+        my $mpi_info = '';
+        if ($use_mpi) {
+            $mpi_info .= ($mpi_processes == 1) ?
+                " mpi-enabled"
+              : " mpi_processes=${mpi_processes}";
+        }
+        push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${windows_platform} configuration=${config}${mpi_info}";
 	}
 }
 
@@ -353,7 +329,7 @@ if ($is_linux) {
 	-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 	my $sb = stat($full_path);
 	my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${ompp_linux_config}";
+	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${config}";
 }
 	
 if ($is_darwin) {
@@ -363,7 +339,7 @@ if ($is_darwin) {
 	-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 	my $sb = stat($full_path);
 	my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${ompp_mac_config}";
+	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${config}";
 }
 
 logmsg info, "=========================";
@@ -398,13 +374,32 @@ for my $model_dir (@model_dirs) {
 	# Location of parameter folder
 	my $parameters_dir = "${model_path}/parameters";
 
-	# Location of optional ompp_ini file to pass to model (empty if none)
-	my $ompp_ini_path = '';
+	# Location of optional run_ini file to pass to model (empty if none)
+	my $run_ini_path = '';
 	
-	if ($ompp_ini ne '') {
-		$ompp_ini_path = "${model_path}/${ompp_ini}";
-		-f $ompp_ini_path || die "File ompp_ini ${ompp_ini_path} not found";
-	}	
+	if ($run_ini ne '') {
+		$run_ini_path = "${model_path}/${run_ini}";
+		-f $run_ini_path || die "File run_ini ${run_ini_path} not found";
+	}
+    else {
+        # check for presence of default ini file if none specified
+        my $def_ini = "${model_path}/test_models.ini";
+        $run_ini_path = $def_ini if -f $def_ini;
+    }
+
+    # Default values of members and threads
+    my $members = 1;
+    my $threads = 1;
+    # Override default values if ini file present
+    my $ini_file = "${model_path}/test_models/test_models.ini";
+    if (-f $ini_file) {
+        my $Config = Config::Tiny->new;
+        $Config = Config::Tiny->read($ini_file);
+        my $v1 = $Config->{OpenM}->{SubValues};
+        $members = $v1 if $v1 > 0;
+        my $v2 = $Config->{OpenM}->{Threads};
+        $threads = $v2 if $v2 > 0;
+    }
 
 	##############
 	# Process each flavour
@@ -413,7 +408,7 @@ for my $model_dir (@model_dirs) {
 	for (my $j = 0; $j <= $#flavours; $j++) {
 		my $start_seconds = time;
 		my $flavour = $flavours[$j];
-		my $tombstone = $flavours_tombstone[$j];
+		my $tombstone_info = $flavours_tombstone[$j]." members=${members} threads=${threads}";
 		my $reference_dir = "${model_path}/test_models/reference/${flavour}";
 		my $current_dir = "${model_path}/test_models/current/${flavour}";
 		my $project_dir = "${model_path}/${flavour}";
@@ -443,7 +438,7 @@ for my $model_dir (@model_dirs) {
 		# File containing current tombstone information
 		my $tombstone_txt = "${current_dir}/tombstone.txt";
 		open TOMBSTONE_TXT, '>'.$tombstone_txt or die "Cannot open ${tombstone_txt}.";
-		print TOMBSTONE_TXT $tombstone;
+		print TOMBSTONE_TXT $tombstone_info;
 		close TOMBSTONE_TXT;
 		
 		# Folders for reference model outputs
@@ -501,7 +496,7 @@ for my $model_dir (@model_dirs) {
 					"/fileLogger",
 					"/flp:Verbosity=normal",
 					"/p:OM_ROOT=${om_root}",
-					"/p:Configuration=${modgen_config}",
+					"/p:Configuration=${config}",
 					"/p:Platform=${modgen_platform}",
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:RUN_SCENARIO=false",
@@ -530,7 +525,7 @@ for my $model_dir (@model_dirs) {
 			if ($modgen_platform eq 'x64') {
 				$build_suffix .= '64';
 			}
-			if ($modgen_config eq 'Debug') {
+			if ($config eq 'debug') {
 				$build_suffix .= 'D';
 			}
 
@@ -619,9 +614,9 @@ for my $model_dir (@model_dirs) {
 			}
 
 			#####################################
-			# Cleanup                           #
+			# Clean                             #
 			#####################################
-			if ($do_cleanup) {
+			if ($do_clean) {
 				chdir ${project_dir};
 				remove_tree "${project_dir}/src";
 				remove_tree "${project_dir}/build";
@@ -687,7 +682,7 @@ for my $model_dir (@model_dirs) {
 					"/clp:ForceNoAlign",
 					"/p:OM_ROOT=${om_root}",
 					"/p:OMC_EXE=${omc_exe}",
-					"/p:Configuration=${ompp_config}",
+					"/p:Configuration=${config}",
 					"/p:Platform=${windows_platform}",
 					"/p:GRID_COMPUTING=${grid_computing}",
 					"/p:SCENARIO_NAME=${scenario_name}",
@@ -719,7 +714,7 @@ for my $model_dir (@model_dirs) {
 			
 			# Executable suffix for platform/configuration: nothing, D
 			my $build_suffix = "";
-			if ($ompp_config eq 'Debug') {
+			if ($config eq 'debug') {
 				$build_suffix .= 'D';
 			}
 
@@ -767,23 +762,6 @@ for my $model_dir (@model_dirs) {
 			
 			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
 			
-			# Change working directory to project directory to obtain props
-			chdir $project_dir || die;
-			
-			# Determine number of members in simulation from MEMBERS user macro in Model.props
-			my $members = get_property($model_props, 'MEMBERS');
-			if ($members eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get MEMBERS from ${model_props}";
-				next FLAVOUR;
-			}
-			
-			# Determine number of threads in simulation from THREADS user macro in Model.props
-			my $threads = get_property($model_props, 'THREADS');
-			if ($threads eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get THREADS from ${model_props}";
-				next FLAVOUR;
-			}
-
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
@@ -791,7 +769,8 @@ for my $model_dir (@model_dirs) {
 			my $ompp_log_txt = "${scenario_name}_log.txt";
 			($merged, $retval) = capture_merged {
 				my @args;
-				if ($use_mpi) {
+				if ($use_mpi && $mpi_processes > 1) {
+                    # note special case when mpi_processes==1 to test mpi build without mpiexec
 					my $msmpi_bin = $ENV{'MSMPI_BIN'};
 					if ($msmpi_bin eq '') {
 						logmsg error, $model_dir, $flavour, "MPI requested but Microsoft MPI not installed";
@@ -816,10 +795,10 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.Threads", $threads,
 					"-OpenM.ProgressPercent", "25",
 					);
-				if ($ompp_ini_path ne '') {
+				if ($run_ini_path ne '') {
 					push @args,
 						(
-						"-ini", $ompp_ini_path,
+						"-ini", $run_ini_path,
                         "-OpenM.IniAnyKey", "true"
 						);
 				}
@@ -851,9 +830,9 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			#####################################
-			# Cleanup                           #
+			# Clean                             #
 			#####################################
-			if ($do_cleanup) {
+			if ($do_clean) {
 				chdir ${project_dir};
 				remove_tree "${project_dir}/src";
 				remove_tree "${project_dir}/build";
@@ -865,12 +844,6 @@ for my $model_dir (@model_dirs) {
 			########################################
 			# Build model (ompp-linux or ompp-mac) #
 			########################################
-			
-			# release or debug build
-			my $ompp_config = $ompp_linux_config;
-			if ($is_darwin) {
-				$ompp_config = $ompp_mac_config;
-			}
 			
 			# Change working directory to model path for make (location of makefile)
 			chdir ${model_path};
@@ -912,7 +885,7 @@ for my $model_dir (@model_dirs) {
 			push @make_defines, "MODEL_NAME=${model_name}";
 			push @make_defines, "SCENARIO_NAME=${scenario_name}";
 			push @make_defines, "OMC_FIXED_PARAM_DIR=${fixed_parameters_folder}" if $enable_fixed_parameters eq 'true';
-			push @make_defines, 'RELEASE=1' if $ompp_config eq 'release';
+			push @make_defines, 'RELEASE=1' if $config eq 'release';
 			push @make_defines, 'OM_MSG_USE==MPI' if $use_mpi;
 			
 			my $build_log = "${project_dir}/make.log";
@@ -940,7 +913,7 @@ for my $model_dir (@model_dirs) {
 			
 			# suffix for configuration: nothing or D
 			my $build_suffix = "";
-			$build_suffix .= 'D' if $ompp_config eq 'debug';
+			$build_suffix .= 'D' if $config eq 'debug';
 			
 			# Executable model generated by build
 			my $target_dir = "${project_dir}/bin";
@@ -970,22 +943,8 @@ for my $model_dir (@model_dirs) {
 			# Run model (ompp-linux or ompp-mac) #
 			######################################
 			
-			# Determine number of members in simulation from MEMBERS user macro in Model.props
-			my $members = get_property($model_props, 'MEMBERS');
-			if ($members eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get MEMBERS from ${model_props}";
-				next FLAVOUR;
-			}
-			
-			# Determine number of threads in simulation from THREADS user macro in Model.props
-			my $threads = get_property($model_props, 'THREADS');
-			if ($threads eq '') {
-				logmsg error, $model_dir, $flavour, "failed to get THREADS from ${model_props}";
-				next FLAVOUR;
-			}
-			
 			# Save copy of generated C++ source code
-			my $omc_generated_code_dir = "${project_dir}/build/${ompp_config}/src";
+			my $omc_generated_code_dir = "${project_dir}/build/${config}/src";
 			
 			chdir $omc_generated_code_dir;
 			for (glob "*.h *.cpp") {
@@ -1010,10 +969,10 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.SubValues", $members,
 					"-OpenM.Threads", $threads,
 					);
-				if ($ompp_ini_path ne '') {
+				if ($run_ini_path ne '') {
 					push @args,
 						(
-						"-ini", $ompp_ini_path,
+						"-ini", $run_ini_path,
                         "-OpenM.IniAnyKey", "true"
 						);
 				}
@@ -1045,9 +1004,9 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			#####################################
-			# Cleanup                           #
+			# Clean                             #
 			#####################################
-			if ($do_cleanup) {
+			if ($do_clean) {
 				chdir ${project_dir};
 				remove_tree "${project_dir}/src";
 				remove_tree "${project_dir}/build";
@@ -1090,7 +1049,7 @@ for my $model_dir (@model_dirs) {
 		}
 		else {
 			if (compare($tombstone_reference_txt, $tombstone_current_txt) != 0) {
-				logmsg info, $model_dir, $flavour, "Current build differs from reference build:" if $verbosity >= 1;
+				logmsg info, $model_dir, $flavour, "Current tombstone info differs from reference:" if $verbosity >= 1;
 				open FILE, "<".$tombstone_reference_txt || die "unable to open ${tombstone_reference_txt}";
 				my $tombstone_reference = <FILE>;
 				close FILE;
