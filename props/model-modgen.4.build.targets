@@ -119,10 +119,10 @@
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(SCENARIO_SCEX)" />
     <Message
-          Text="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) @(SCENARIO_DATS, ' ')"
+          Text="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) --working_dir $(WORKING_DIR) @(SCENARIO_DATS, ' ')"
     />
-    <Exec WorkingDirectory="$(MODGEN_IN_DIR)"
-          Command="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) @(SCENARIO_DATS, ' ')" 
+    <Exec WorkingDirectory="$(ProjectDir)"
+          Command="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --props $(MODEL_PROPS) --working_dir $(WORKING_DIR) @(SCENARIO_DATS, ' ')" 
     />
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"

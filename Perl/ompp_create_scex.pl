@@ -23,6 +23,8 @@ my ($opt, $usage) = describe_options(
 		{ required => 1 } ],
 	[ 'props:s'      => "input model OpenM++ Visual Studio xml file (vcxproj)",
 		{ required => 1 } ],
+	[ 'working_dir:s'      => "working directory for relative paths in .dat arguments (with trailing slash)",
+		{ required => 1 } ],
 );
 
 if ($opt->version) {
@@ -44,7 +46,8 @@ if ( $#ARGV < 0 ) {
 my $out_scex = $opt->scex;
 my $in_odat = $opt->odat;
 my $in_ompp = $opt->ompp;
-my $model_props = $opt->props;
+my $in_props = $opt->props;
+my $working_dir = $opt->working_dir;
 my @in_dat = @ARGV;
 
 # Control verbosity of log output (0, 1, 2)
@@ -68,12 +71,16 @@ if (! -s $in_ompp) {
 	logmsg error, $script_name, "Framework parameter module ${in_ompp} not found\n";
 	exit 1;
 }
-if (! -s $model_props) {
-	logmsg error, $script_name, "Model macros ${model_props} not found\n";
+if (! -s $in_props) {
+	logmsg error, $script_name, "Model properties file ${in_props} not found\n";
+	exit 1;
+}
+if (! -d $working_dir) {
+	logmsg error, $script_name, "working directory for .dat paths${working_dir} not found\n";
 	exit 1;
 }
 
-my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, $model_props, @in_dat;
+my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, $in_props, $working_dir, @in_dat;
 
 if ($result) {
 	logmsg error, $script_name, "failed to create ${out_scex}\n";

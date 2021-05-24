@@ -5,10 +5,14 @@
   
     <!-- 
     Begin: Assign default values for user-specified properties
+    Paths are relative to the project directory (where the vcxproj is located).
     -->
     
+    <!--  The absolute path of the project directory, which is the working directory of all relative paths -->
+    <WORKING_DIR>$([System.IO.Path]::GetFullPath('$(ProjectDir)'))</WORKING_DIR>
+    
     <!--  Default value for MODEL_NAME -->
-    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME> <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
+    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME> <!--  Name of grandparent directory of project, e.g. NewCaseBased -->
     <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>     <!--  Remove trailing backslash -->
     <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
     
@@ -50,7 +54,8 @@
     <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>
     <ENABLE_FIXED_PARAMETERS Condition="'$(FIXED_PARAMETERS_FOLDER)'!=''">true</ENABLE_FIXED_PARAMETERS>
     
-    <PUBLISH_DIR>$(ProjectDir)../output-modgen</PUBLISH_DIR>
+    <!--  Location of generated .scex file, etc. -->
+    <PUBLISH_DIR>$(ProjectDir)bin</PUBLISH_DIR>
 
     <MODEL_PROPS>$(ProjectDir)Model.vcxproj</MODEL_PROPS>
 
@@ -72,6 +77,7 @@
     The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,
     and do it right for more complex dependencies.  If this is not set VS sometimes thinks things are up-to-date
     when they are not, and does not launch MSBuild.
+    This may be obsolete information, as MS changes how VS and msbuild interact.
     -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   

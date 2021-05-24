@@ -383,6 +383,7 @@ sub get_property
 # arg1 - the ompp Base(Framework).odat file
 # arg2 - the ompp ompp_framework.ompp file
 # arg3 - the Modgen property file Model.props
+# arg4 - working directory for relative paths in .dat arguments (with trailing slash)
 # argN - remaining arguments are .dat files
 # returns - 0 for success, otherwise non-zero
 sub modgen_create_scex
@@ -391,6 +392,7 @@ sub modgen_create_scex
 	my $framework_odat_file = shift(@_);
 	my $framework_ompp_file = shift(@_);
 	my $model_props = shift(@_);
+	my $working_dir = shift(@_);
 
 	my @dat_files = @_;
 
@@ -494,7 +496,7 @@ sub modgen_create_scex
 	print SCEX "  <Inputs>\n";
 	# Iterate .dat files
 	for my $file (@dat_files) {
-		print SCEX "    <Input>${file}=</Input>\n";
+		print SCEX "    <Input>${file}=${working_dir}${file}</Input>\n";
 	}
 	print SCEX "  </Inputs>\n";
 	print SCEX "</Scenario>\n";
