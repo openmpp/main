@@ -12,7 +12,7 @@
     <Category Name="Names"        DisplayName="1. Names" />
     <Category Name="Folders"      DisplayName="2. Folders" />
     <Category Name="BuildOptions" DisplayName="3. Build Options" />
-    <Category Name="RunOptions"   DisplayName="4. Run Options" />
+    <Category Name="RunOptions"   DisplayName="4. Run Options (DEPRECATED)" />
   </Rule.Categories>
   
   <!-- Names -->
@@ -44,10 +44,20 @@
                   Subtype="folder"
                   Name="FIXED_PARAMETERS_FOLDER"
                   DisplayName="Fixed Parameter Folder"
-                  Description="The folder containing fixed parameter values (*.dat and *.odat) for the model. The path is relative to the project file. If empty, the fixed parameters folder is disabled.  A typical value if enabled is ../parameters/Fixed."
+                  Description="The folder containing invariant parameter values (*.dat and *.odat) for the model. Invariant parmaeters are burned into the model executable and absent from the user interface.The path is relative to the project file. If empty, the fixed parameters folder is disabled.  A typical value if enabled is ../parameters/Fixed.  Another way to specify that some parameters are  invariant "
                   />
 
   <!-- Build Options -->
+  <BoolProperty Category="BuildOptions"
+                Name="GENERATE_HELP"
+                DisplayName="Generate model help after build"
+                Description="Generate model comprehensive help files after build.  A compiled chm for the model is also generated if required Microsoft components have been installed."
+                />
+  <BoolProperty Category="BuildOptions"
+                Name="GENERATE_DOCDB"
+                DisplayName="Generate model documentation database after build"
+                Description="Create the MS Access model documentation database after build.  This database is a reuqired component to publish a model using Modgen Web."
+                />
   
   <!-- Run Options -->
   <BoolProperty Category="RunOptions"

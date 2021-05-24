@@ -131,13 +131,70 @@
 
  
   <!--
+  GenerateHelp
+  -->
+
+  
+  <PropertyGroup>
+    <!-- The following property prepares arguments to the model executable. -->
+    <GENERATE_HELP_OPTS>-help -s</GENERATE_HELP_OPTS>
+    <GENERATE_HELP_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).help.tickle</GENERATE_HELP_TICKLE>
+  </PropertyGroup>
+
+  <Target Name="GenerateHelp"
+          Condition="'$(GENERATE_HELP)'=='true'" 
+          Inputs="$(PUBLISH_TICKLE)"
+          Outputs="$(GENERATE_HELP_TICKLE)"
+          AfterTargets="GenerateDocDB"
+          >
+    <Message Text="Generating model help for $(MODEL_NAME)..." />
+    <Exec WorkingDirectory="$(TargetDir)"
+          Command="$(TargetPath) $(GENERATE_HELP_OPTS)"
+          IgnoreExitCode="true"
+          />
+    <Touch  Files="$(GENERATE_HELP_TICKLE)"
+            AlwaysCreate="true"
+            />
+  </Target>
+
+
+ 
+  <!--
+  GenerateDocDB
+  -->
+
+  
+  <PropertyGroup>
+    <!-- The following property prepares arguments to the model executable. -->
+    <GENERATE_DOCDB_OPTS>-doc -s</GENERATE_DOCDB_OPTS>
+    <GENERATE_DOCDB_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).docdb.tickle</GENERATE_DOCDB_TICKLE>
+  </PropertyGroup>
+
+  <Target Name="GenerateDocDB"
+          Condition="'$(GENERATE_DOCDB)'=='true'" 
+          Inputs="$(PUBLISH_TICKLE)"
+          Outputs="$(GENERATE_DOCDB_TICKLE)"
+          AfterTargets="ScexPublish"
+          >
+    <Message Text="Generating documentation DB for $(MODEL_NAME)..." />
+    <Exec WorkingDirectory="$(TargetDir)"
+          Command="$(TargetPath) $(GENERATE_DOCDB_OPTS)"
+          IgnoreExitCode="true"
+          />
+    <Touch  Files="$(GENERATE_DOCDB_TICKLE)"
+            AlwaysCreate="true"
+            />
+  </Target>
+
+
+  <!--
   RunModel
   -->
 
   
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
-    <MODEL_OPTS>-sc $(SCENARIO_SCEX) -s</MODEL_OPTS>
+    <RUN_MODEL_OPTS>-sc $(SCENARIO_SCEX) -s</RUN_MODEL_OPTS>
     <RUN_MODEL_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).run.tickle</RUN_MODEL_TICKLE>
   </PropertyGroup>
 
@@ -145,12 +202,12 @@
           Condition="'$(RUN_SCENARIO)'=='true'" 
           Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
-          AfterTargets="ScexPublish"
+          AfterTargets="GenerateHelp"
           >
     <Message Text="Running scenario $(SCENARIO_NAME) using $(MODEL_NAME)..." />
-    <Message Text="$(TargetPath) $(MODEL_OPTS)" />
+    <Message Text="$(TargetPath) $(RUN_MODEL_OPTS)" />
     <Exec WorkingDirectory="$(TargetDir)"
-          Command="$(TargetPath) $(MODEL_OPTS)"
+          Command="$(TargetPath) $(RUN_MODEL_OPTS)"
           IgnoreExitCode="true"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
@@ -171,6 +228,11 @@
     <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
     <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
     <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
+    <Message Text="GENERATE_HELP=$(GENERATE_HELP)" />
+    <Message Text="GENERATE_DOCDB=$(GENERATE_DOCDB)" />
+    <Message Text="RUN_SCENARIO=$(RUN_SCENARIO)" />
+    <Message Text="MEMBERS=$(MEMBERS)" />
+    <Message Text="THREADS=$(THREADS)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
