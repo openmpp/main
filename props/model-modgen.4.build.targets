@@ -109,6 +109,7 @@
     <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME)_$(SCENARIO_NAME).publish.tickle</PUBLISH_TICKLE>
     <FRAMEWORK_OMPP>$(MODEL_CODE_DIR)/ompp_framework.ompp</FRAMEWORK_OMPP>
     <SCENARIO_SCEX>$(PUBLISH_DIR)/$(SCENARIO_NAME).scex</SCENARIO_SCEX>
+    <COPY_PARAMS_OPT Condition="( '$(SCEX_COPY_PARAMETERS)' == 'true' )" >--copy_params</COPY_PARAMS_OPT>
   </PropertyGroup>
  
   <Target Name="ScexPublish"
@@ -119,10 +120,10 @@
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(SCENARIO_SCEX)" />
     <Message
-          Text="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --run_ini &quot;$(SCEX_RUN_INI)&quot; --working_dir $(WORKING_DIR) @(SCENARIO_DATS, ' ')"
+          Text="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --run_ini &quot;$(SCEX_RUN_INI)&quot; --working_dir $(WORKING_DIR) $(COPY_PARAMS_OPT) @(SCENARIO_DATS, ' ')"
     />
     <Exec WorkingDirectory="$(ProjectDir)"
-          Command="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --run_ini &quot;$(SCEX_RUN_INI)&quot; --working_dir $(WORKING_DIR) @(SCENARIO_DATS, ' ')" 
+          Command="$(COMPLETE_OMPP_CREATE_SCEX_EXE) --scex $(SCENARIO_SCEX) --odat $(FRAMEWORK_ODAT) --ompp $(FRAMEWORK_OMPP) --run_ini &quot;$(SCEX_RUN_INI)&quot; --working_dir $(WORKING_DIR) $(COPY_PARAMS_OPT) @(SCENARIO_DATS, ' ')" 
     />
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
@@ -229,6 +230,8 @@
     <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
     <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="GENERATE_HELP=$(GENERATE_HELP)" />
+    <Message Text="SCEX_RUN_INI=$(SCEX_RUN_INI)" />
+    <Message Text="SCEX_COPY_PARAMETERS=$(SCEX_COPY_PARAMETERS)" />
     <Message Text="GENERATE_DOCDB=$(GENERATE_DOCDB)" />
     <Message Text="RUN_SCENARIO=$(RUN_SCENARIO)" />
     <Message Text="MEMBERS=$(MEMBERS)" />

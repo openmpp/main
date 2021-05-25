@@ -55,17 +55,17 @@
                 />
   <StringProperty Category="BuildOptions"
                 Name="SCEX_RUN_INI"
-                DisplayName="SCEX settings: Propagate selected settings from an OpenM++ run ini file to the Modgen scenario file."
-                Description="The settings extracted and propagated are THREADS and MEMBERS.  Any overrides to parameter values in the ini file are not propagated."
+                DisplayName="Get settings from OpenM++ run ini file"
+                Description="The settings for Threads and Members are extracted from the given OpenM++ run ini file and propagated to the published Modgen scex file.  Note that overrides to parameter values in the run ini file are not propagated."
                 />
   <BoolProperty Category="BuildOptions"
-                Name="SCEX_PARAMETERS_TO_DB"
-                DisplayName="SCEX setting: Copy all parameters to the output database"
-                Description="In the SCEX Modgen scenario file created in the publishing step, indicate to copy all input parameters to the MS Access output database after the model run.  This is required to publish a model to Modgen Web."
+                Name="SCEX_COPY_PARAMETERS"
+                DisplayName="Copy all parameters to output DB"
+                Description="Indicate to copy all input parameters to the MS Access output database in the published Modgen scexfile.  This is required to publish a model to Modgen Web."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="GENERATE_DOCDB"
-                DisplayName="Generate model documentation database after build"
+                DisplayName="Generate model documentation DB"
                 Description="Create the MS Access model documentation database after build.  This database is required to publish a model to Modgen Web."
                 />
   
@@ -77,12 +77,12 @@
                 />
   <IntProperty  Category="RunOptions"
                 Name="MEMBERS"
-                DisplayName="Number of members in run (DEPRECATED)"
+                DisplayName="Members in run (DEPRECATED)"
                 Description="A run can be divided into a number of independent members (aka sub-samples or replicates)"
                 />
   <IntProperty  Category="RunOptions"
                 Name="THREADS"
-                DisplayName="Number of threads in each process (DEPRECATED)"
+                DisplayName="Threads in each process (DEPRECATED)"
                 Description="To follow"
                 />
                   

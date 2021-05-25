@@ -13,18 +13,19 @@ use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
 	$script_name.' %o <parameter-dat-file>...',
-	[ 'help|h'     => "print usage message and exit" ],
-	[ 'version|v'  => "print version and exit" ],
-	[ 'scex:s'       => "output scex Modgen scenario file",
-		{ required => 1 } ],
-	[ 'odat:s'       => "input odat OpenM++ scenario framework parameters",
-		{ required => 1 } ],
-	[ 'ompp:s'       => "input ompp OpenM++ model framework module",
-		{ required => 1 } ],
-	[ 'run_ini:s'      => "optional run ini file",
-		{ default => '' } ],
-	[ 'working_dir:s'      => "working directory for relative paths in .dat arguments (with trailing slash)",
-		{ required => 1 } ],
+	[ 'help|h'        => "print usage message and exit" ],
+	[ 'version|v'     => "print version and exit" ],
+	[ 'scex:s'        => "output scex Modgen scenario file",
+                        { required => 1 } ],
+	[ 'odat:s'        => "input odat OpenM++ scenario framework parameters",
+                        { required => 1 } ],
+	[ 'ompp:s'        => "input ompp OpenM++ model framework module",
+                        { required => 1 } ],
+	[ 'run_ini:s'     => "optional run ini file",
+                        { default => '' } ],
+	[ 'copy_params'   => "copy parameters to output DB" ],
+	[ 'working_dir:s' => "working directory for relative paths in .dat arguments (with trailing slash)",
+                        { required => 1 } ],
 );
 
 if ($opt->version) {
@@ -48,6 +49,7 @@ my $in_odat = $opt->odat;
 my $in_ompp = $opt->ompp;
 my $run_ini = $opt->run_ini;
 my $working_dir = $opt->working_dir;
+my $copy_params = ($opt->copy_params) ? 1 : 0;
 my @in_dat = @ARGV;
 
 # Control verbosity of log output (0, 1, 2)
@@ -80,7 +82,14 @@ if (! -d $working_dir) {
 	exit 1;
 }
 
-my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, $run_ini, $working_dir, @in_dat;
+my $result = modgen_create_scex 
+    $out_scex, 
+    $in_odat,
+    $in_ompp,
+    $run_ini,
+    $working_dir,
+    $copy_params,
+    @in_dat;
 
 if ($result) {
 	logmsg error, $script_name, "failed to create ${out_scex}\n";

@@ -30,8 +30,8 @@
     <!--  Default value for SCEX_RUN_INI -->
     <SCEX_RUN_INI Condition="'$(SCEX_RUN_INI)'==''"></SCEX_RUN_INI>
     
-    <!--  Default value for SCEX_PARAMETERS_TO_DB -->
-    <SCEX_PARAMETERS_TO_DB Condition="'$(SCEX_PARAMETERS_TO_DB)'==''">true</SCEX_PARAMETERS_TO_DB>
+    <!--  Default value for SCEX_COPY_PARAMETERS -->
+    <SCEX_COPY_PARAMETERS Condition="'$(SCEX_COPY_PARAMETERS)'==''">true</SCEX_COPY_PARAMETERS>
     
     <!--  Default value for GENERATE_DOCDB -->
     <GENERATE_DOCDB Condition="'$(GENERATE_DOCDB)'==''">true</GENERATE_DOCDB>

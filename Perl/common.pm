@@ -385,6 +385,7 @@ sub get_property
 # arg2 - the ompp ompp_framework.ompp file
 # arg3 - optional run ini file
 # arg4 - working directory for relative paths in .dat arguments (with trailing slash)
+# arg5 - flag to copy parameters to output DB
 # argN - remaining arguments are .dat files
 # returns - 0 for success, otherwise non-zero
 sub modgen_create_scex
@@ -394,6 +395,7 @@ sub modgen_create_scex
 	my $framework_ompp_file = shift(@_);
 	my $run_ini = shift(@_);
 	my $working_dir = shift(@_);
+	my $copy_params = shift(@_);
 
 	my @dat_files = @_;
 
@@ -437,6 +439,8 @@ sub modgen_create_scex
 			$General{"Threads"} = $threads;
         }
     }
+    
+    $General{"CopyParameters"} = $copy_params;
 
 	# Parse Base ompp framework code file for .scex scenario information
 	if (!open FRAMEWORK_OMPP, "<${framework_ompp_file}") {
