@@ -32,6 +32,7 @@ sub info {
 # yum install 'perl(Capture::Tiny)'
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
+use Config::Tiny;
 
 # Output a log message with one or more prefixes.
 # arg0 - left margin prefix for warning/change/error/info
@@ -382,7 +383,7 @@ sub get_property
 # arg0 - the output file name
 # arg1 - the ompp Base(Framework).odat file
 # arg2 - the ompp ompp_framework.ompp file
-# arg3 - the Modgen property file Model.props
+# arg3 - optional run ini file
 # arg4 - working directory for relative paths in .dat arguments (with trailing slash)
 # argN - remaining arguments are .dat files
 # returns - 0 for success, otherwise non-zero
@@ -391,7 +392,7 @@ sub modgen_create_scex
 	my $scex_file      = shift(@_);
 	my $framework_odat_file = shift(@_);
 	my $framework_ompp_file = shift(@_);
-	my $model_props = shift(@_);
+	my $run_ini = shift(@_);
 	my $working_dir = shift(@_);
 
 	my @dat_files = @_;
@@ -421,12 +422,21 @@ sub modgen_create_scex
 		CopyParameters => 0,
 		MemoryReports => 0,
 	);
+    my $members = $General{'Subsamples'};
+    my $threads = $General{'Threads'};
 	
-	# Override values based on user-specified properties
-	my $members = get_property($model_props, 'MEMBERS');
-	$General{"Subsamples"} = $members;
-	my $threads = get_property($model_props, 'THREADS');
-	$General{"Threads"} = $threads;
+    if ('' ne $run_ini) {
+        if (-f $run_ini) {
+            my $Config = Config::Tiny->new;
+            $Config = Config::Tiny->read($run_ini);
+            my $v1 = $Config->{OpenM}->{SubValues};
+            $members = $v1 if $v1 > 0;
+			$General{"Subsamples"} = $members;
+            my $v2 = $Config->{OpenM}->{Threads};
+            $threads = $v2 if $v2 > 0;
+			$General{"Threads"} = $threads;
+        }
+    }
 
 	# Parse Base ompp framework code file for .scex scenario information
 	if (!open FRAMEWORK_OMPP, "<${framework_ompp_file}") {

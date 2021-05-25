@@ -12,7 +12,7 @@
     <Category Name="Names"        DisplayName="1. Names" />
     <Category Name="Folders"      DisplayName="2. Folders" />
     <Category Name="BuildOptions" DisplayName="3. Build Options" />
-    <Category Name="RunOptions"   DisplayName="4. Run Options (DEPRECATED)" />
+    <Category Name="RunOptions"   DisplayName="4. Run Options" />
   </Rule.Categories>
   
   <!-- Names -->
@@ -51,12 +51,22 @@
   <BoolProperty Category="BuildOptions"
                 Name="GENERATE_HELP"
                 DisplayName="Generate model help after build"
-                Description="Generate model comprehensive help files after build.  A compiled chm for the model is also generated if required Microsoft components have been installed."
+                Description="Generate model encyclopedic help files after build.  A compiled chm for the 0model is also generated if the required Microsoft components have been installed."
+                />
+  <StringProperty Category="BuildOptions"
+                Name="SCEX_RUN_INI"
+                DisplayName="SCEX settings: Propagate selected settings from an OpenM++ run ini file to the Modgen scenario file."
+                Description="The settings extracted and propagated are THREADS and MEMBERS.  Any overrides to parameter values in the ini file are not propagated."
+                />
+  <BoolProperty Category="BuildOptions"
+                Name="SCEX_PARAMETERS_TO_DB"
+                DisplayName="SCEX setting: Copy all parameters to the output database"
+                Description="In the SCEX Modgen scenario file created in the publishing step, indicate to copy all input parameters to the MS Access output database after the model run.  This is required to publish a model to Modgen Web."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="GENERATE_DOCDB"
                 DisplayName="Generate model documentation database after build"
-                Description="Create the MS Access model documentation database after build.  This database is a reuqired component to publish a model using Modgen Web."
+                Description="Create the MS Access model documentation database after build.  This database is required to publish a model to Modgen Web."
                 />
   
   <!-- Run Options -->
@@ -67,12 +77,12 @@
                 />
   <IntProperty  Category="RunOptions"
                 Name="MEMBERS"
-                DisplayName="Number of members in Run"
+                DisplayName="Number of members in run (DEPRECATED)"
                 Description="A run can be divided into a number of independent members (aka sub-samples or replicates)"
                 />
   <IntProperty  Category="RunOptions"
                 Name="THREADS"
-                DisplayName="Number of threads in each process"
+                DisplayName="Number of threads in each process (DEPRECATED)"
                 Description="To follow"
                 />
                   

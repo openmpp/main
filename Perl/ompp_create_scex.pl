@@ -21,8 +21,8 @@ my ($opt, $usage) = describe_options(
 		{ required => 1 } ],
 	[ 'ompp:s'       => "input ompp OpenM++ model framework module",
 		{ required => 1 } ],
-	[ 'props:s'      => "input model OpenM++ Visual Studio xml file (vcxproj)",
-		{ required => 1 } ],
+	[ 'run_ini:s'      => "optional run ini file",
+		{ default => '' } ],
 	[ 'working_dir:s'      => "working directory for relative paths in .dat arguments (with trailing slash)",
 		{ required => 1 } ],
 );
@@ -46,7 +46,7 @@ if ( $#ARGV < 0 ) {
 my $out_scex = $opt->scex;
 my $in_odat = $opt->odat;
 my $in_ompp = $opt->ompp;
-my $in_props = $opt->props;
+my $run_ini = $opt->run_ini;
 my $working_dir = $opt->working_dir;
 my @in_dat = @ARGV;
 
@@ -71,8 +71,8 @@ if (! -s $in_ompp) {
 	logmsg error, $script_name, "Framework parameter module ${in_ompp} not found\n";
 	exit 1;
 }
-if (! -s $in_props) {
-	logmsg error, $script_name, "Model properties file ${in_props} not found\n";
+if ('' ne $run_ini && ! -s $run_ini) {
+	logmsg error, $script_name, "Run ini ${run_ini} not found\n";
 	exit 1;
 }
 if (! -d $working_dir) {
@@ -80,7 +80,7 @@ if (! -d $working_dir) {
 	exit 1;
 }
 
-my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, $in_props, $working_dir, @in_dat;
+my $result = modgen_create_scex $out_scex, $in_odat, $in_ompp, $run_ini, $working_dir, @in_dat;
 
 if ($result) {
 	logmsg error, $script_name, "failed to create ${out_scex}\n";
