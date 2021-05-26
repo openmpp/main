@@ -693,9 +693,6 @@ for my $model_dir (@model_dirs) {
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
 					"/p:OPEN_MODEL_WEB_UI=false",
 					"/p:RUN_SCENARIO=false",
-					"/p:EXPORT_CSV=false",
-					"/p:EXPORT_EXCEL=false",
-					"/p:EXPORT_EXCEL_LAUNCH=false",
 					"/t:Rebuild"
 					);
 				system(@args);

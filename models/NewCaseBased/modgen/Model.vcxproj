@@ -10,12 +10,12 @@
     </SCENARIO_NAMES>
     <FIXED_NAME>
     </FIXED_NAME>
-    <GENERATE_HELP>true</GENERATE_HELP>
+    <GENERATE_HELP>false</GENERATE_HELP>
     <MODEL_INI>
     </MODEL_INI>
-    <SCEX_COPY_PARAMETERS>true</SCEX_COPY_PARAMETERS>
-    <GENERATE_DOCDB>true</GENERATE_DOCDB>
-    <RUN_SCENARIO>true</RUN_SCENARIO>
+    <SCEX_COPY_PARAMETERS>false</SCEX_COPY_PARAMETERS>
+    <GENERATE_DOCDB>false</GENERATE_DOCDB>
+    <RUN_SCENARIO>false</RUN_SCENARIO>
   </PropertyGroup>
   <!-- Import common early properties for model projects -->
   <Import Project="$(OM_ROOT)/props/model-modgen.0.version.props" />

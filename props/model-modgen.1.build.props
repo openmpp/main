@@ -20,7 +20,7 @@
     <SCENARIO_FOLDER>../parameters/$(SCENARIO_NAME)</SCENARIO_FOLDER>
 
     <!--  Default value for MODEL_INI -->
-    <MODEL_INI Condition="'$(MODEL_INI)'=='' And Exists('../$(MODEL_INI)')">$(MODEL_NAME).ini</MODEL_INI>
+    <MODEL_INI Condition="'$(MODEL_INI)'=='' And Exists('../$(MODEL_NAME).ini')">$(MODEL_NAME).ini</MODEL_INI>
     <!--  Fully qualified path of MODEL_INI (is in model root AKA SolutionDir -->
     <MODEL_INI_PATH Condition="'$(MODEL_INI)' != ''">$([System.IO.Path]::GetFullPath('$(ProjectDir)../$(MODEL_INI)'))</MODEL_INI_PATH>
 
