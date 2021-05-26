@@ -163,9 +163,6 @@ namespace openm
         /** language to display output messages */
         static constexpr const char * messageLang = "OpenM.MessageLanguage";
         
-        /** log version info */
-        static constexpr const char * version = "OpenM.Version";
-
         /** sub-value of parameter must be in the input workset */
         static constexpr const char * dbSubValue = "db";
 

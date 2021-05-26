@@ -177,15 +177,13 @@ int main(int argc, char ** argv)
             unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
             // log model and runtime version
-            if (argOpts.boolOption(RunOptionsKey::version)) {
-                theLog->logMsg("Model version  ", runCtrl->meta()->modelRow->version.c_str());
-                theLog->logMsg("Model created  ", runCtrl->meta()->modelRow->createDateTime.c_str());
-                theLog->logMsg("Model digest   ", OM_MODEL_DIGEST);
+            theLog->logMsg("Model version  ", runCtrl->meta()->modelRow->version.c_str());
+            theLog->logMsg("Model created  ", runCtrl->meta()->modelRow->createDateTime.c_str());
+            theLog->logMsg("Model digest   ", OM_MODEL_DIGEST);
 #ifdef OM_RUNTIME_VERSION
-                theLog->logMsg("OpenM++ version", OM_RUNTIME_VERSION);
+            theLog->logMsg("OpenM++ version", OM_RUNTIME_VERSION);
 #endif
-                theLog->logFormatted("OpenM++ build  : %s %s %s", libTargetOsName, libTargetConfigName, libTargetMpiUseName);
-            }
+            theLog->logFormatted("OpenM++ build  : %s %s %s", libTargetOsName, libTargetConfigName, libTargetMpiUseName);
 
             if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
                 theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);

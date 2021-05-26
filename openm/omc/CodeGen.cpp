@@ -454,6 +454,9 @@ void CodeGen::do_RunOnce()
     c += "// Model one-time initialization";
     c += "void RunOnce(IRunBase * const i_runBase)";
     c += "{";
+    c += "// report model build environment";
+    c += "theLog->logFormatted(\"Model build    : % s % s % s\", omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
+    c += "";
     c += "theLog->logMsg(\"Prepare fixed and missing parameters\");";
     // Missing parameters are handled like fixed parameters.
     bool any_missing_parameters = false;
@@ -497,11 +500,6 @@ void CodeGen::do_RunInit()
     c += "// Model run initialization";
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
-    c += "// report model build environment";
-    c += "if (i_runBase->boolOption(\"OpenM.Version\")) {";
-    c += "theLog->logFormatted(\"Model build    : % s % s % s\", omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
-    c += "}";
-    c += "";
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
     c += "// Process model dev options for EventTrace";
     c += "process_trace_options(i_runBase);";

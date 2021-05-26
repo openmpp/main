@@ -48,7 +48,6 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::traceUsePid,
     RunOptionsKey::traceNoMsgTime,
     RunOptionsKey::messageLang,
-    RunOptionsKey::version,
     ArgKey::iniFile,
     ArgKey::iniAnyKey,
     ArgKey::runStamp,
