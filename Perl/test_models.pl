@@ -657,6 +657,7 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
+            # SFG TODO requires alignment to changed .props symbol, FIXED_NAME, etc.
 			my $fixed_parameters_folder = get_property($model_props, 'FIXED_PARAMETERS_FOLDER');
 			my $enable_fixed_parameters = 'true';
 			if ($fixed_parameters_folder eq '') {

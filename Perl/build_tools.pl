@@ -1,5 +1,5 @@
-# Copyright (c) 2013-2016 OpenM++
-# This code is licensed under MIT license (see LICENSE.txt for details)
+# Copyright (c) 2013-2021 OpenM++ Contributors
+# This code is licensed under the MIT license (see LICENSE.txt for details)
 
 # Script to build utilities, etc.
 
@@ -43,6 +43,8 @@ for my $utility ('ompp_export_excel', 'ompp_export_csv', 'modgen_export_csv', 'o
 		system(@args);
 	};
 }
+
+exit; #SFG temporary exit from following broken steps
 
 # build R package
 if (! -e "${R_exe}") {
