@@ -36,6 +36,11 @@
     <OMC_OUTPUTS Include="@(OMC_H_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_CPP_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_SQL_OUTPUTS)" />
+    
+    <!--  Create @(SCENARIO_NAMES_COLLECTION) from $(SCENARIO_NAMES) (can be ; delimited list) -->
+    <SCENARIO_NAMES_COLLECTION Include="$(SCENARIO_NAMES.Split(';'))" />
+    <!--  Create @(SCENARIO_FOLDERS_COLLECTION) of corresponding directory names -->
+    <SCENARIO_FOLDERS_COLLECTION Include="$(SCENARIO_FOLDERS.Split(';'))" />
 
   </ItemGroup>
 

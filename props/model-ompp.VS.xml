@@ -10,55 +10,32 @@
   
   <Rule.Categories>	
     <Category Name="Names"        DisplayName="1. Names" />
-    <Category Name="Folders"      DisplayName="2. Folders" />
-    <Category Name="BuildOptions" DisplayName="3. Build Options" />
-    <Category Name="RunOptions"   DisplayName="4. Run Options" />
-    <Category Name="Deprecated"   DisplayName="5. DEPRECATED" />
+    <Category Name="BuildOptions" DisplayName="2. Build Options" />
+    <Category Name="RunOptions"   DisplayName="3. Run Options" />
   </Rule.Categories>
   
   <!-- Names -->
   <StringProperty Category="Names"
                   Name="MODEL_NAME"
                   DisplayName="Model Name"
-                  Description="The name of the model published in the database, also the name of the executable (possibly with an appended suffix). The default is the name of the grandparent folder of the project file."
+                  Description="The name of the model published in the database and the name of the executable. The default is the name of the grandparent folder of the project file."
                   />
   <StringProperty Category="Names"
-                  Name="SCENARIO_NAME"
+                  Name="SCENARIO_NAMES"
                   DisplayName="Scenario Name(s)"
-                  Description="The  scenario name or list of names to publish in the database. The default is Default. It can be list of names separated by semicolon"
+                  Description="The scenario name or list of names to publish in the database. The default is Default. It can be a list of names separated by semicolons"
                   />
-  
-  <!-- Folders -->
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="MODEL_CODE_DIR"
-                  DisplayName="Model Code Folder"
-                  Description="The folder containing model source code modules (*.mpp, *.ompp, *.cpp, *.h). The path is relative to the project file. The default is ../code."
+  <StringProperty Category="Names"
+                  Name="FIXED_NAME"
+                  DisplayName="Fixed Name"
+                  Description="The name of a folder in parameters which contains values of fixed (invariant) parameters. Default is none."
                   />
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="SCENARIO_PARAMETERS_FOLDER"
-                  DisplayName="Scenario Parameter Folder(s)"
-                  Description="The folder or folder list containing values of modifiable parameters (*.dat, *.odat, *.csv, *.tsv) for the published scenario(s). The path is relative to the project file. The default is ../parameters/Default. It can be a list of folders separated by semicolons."
-                  />
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="FIXED_PARAMETERS_FOLDER"
-                  DisplayName="Fixed Parameter Folder"
-                  Description="The folder containing values for invariant parameters (*.dat and *.odat) for the model. Invariant parameters are burned into the model executable and absent from the model user interface. The path is relative to the model project file. If empty, the fixed parameters folder is disabled.  A typical value if enabled is ../parameters/Fixed.  Parameters can also be made invariant using suppress_parameters and retain_parameters statements in model code."
-                  />
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="OMC_USE_DIR"
-                  DisplayName="Use Folder"
-                  Description="The folder containing common framework modules.  The path is absolute.  The default is $(OM_ROOT)/use."
-                  />
-
+    
   <!-- Build Options -->
   <EnumProperty Category="BuildOptions"
                 Name="GRID_COMPUTING"
-                DisplayName="Grid computing"
-                Description="Description forthcoming">
+                DisplayName="Grid computing (MPI)"
+                Description="Incorporate or not MPI capability into the model executable.">
     <EnumValue Name="EMPTY"
                Switch="EMPTY"
                DisplayName="No grid computing"
@@ -66,31 +43,17 @@
     <EnumValue Name="MPI"
                Switch="MPI"
                DisplayName="MPI-enabled Executable"
-               Description="Description forthcoming"/>
+               Description="Select MPI to incorporate multi-processing capability. A trailing _mpi will be added to the executable name."/>
   </EnumProperty>
-  <EnumProperty Category="BuildOptions"
-                Name="DB_PROVIDER"
-                DisplayName="DB Provider"
-                Description="Description forthcoming">
-    <EnumValue Name="SQLITE"
-               Switch="SQLITE"
-               DisplayName="Sqlite"
-               Description="Description forthcoming"/>
-  </EnumProperty>
-  <BoolProperty Category="BuildOptions"
-                Name="MULTIPROCESSOR_COMPILE"
-                DisplayName="Enable multi-processor C++ compilation"
-                Description="Description forthcoming"
-                />
   <BoolProperty Category="BuildOptions"
                 Name="USE_PCH"
-                DisplayName="Enable pre-compiled headers in C++ compilation"
-                Description="Description forthcoming"
+                DisplayName="Enable pre-compiled headers"
+                Description="Enable the PCH mechanism in C++ to improve compilation speed."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="NO_LINE_DIRECTIVES"
-                DisplayName="Disable generation of #line directives by the OpenM++ compiler."
-                Description="Use this option if the correspondence between model source and execution in the Visual Studio debugger seems erroneous.  Please contact the OpenM++ team if this occurs."
+                DisplayName="Disable #line directives"
+                Description="Use this option if the correspondence between model source code and execution in the Visual Studio debugger seems erroneous.  Please contact the OpenM++ team if this occurs."
                 />
   
   <!-- Run Options -->
@@ -98,6 +61,16 @@
                 Name="RUN_SCENARIO"
                 DisplayName="Run the scenario after build"
                 Description="Run the scenario after building and publishing the model and scenario(s)."
+                />
+  <StringProperty Category="RunOptions"
+                  Name="MODEL_INI"
+                  DisplayName="Model ini file"
+                  Description="The name of an ini file located in the model root folder containing model run options. The default is MODEL_NAME.ini, if present."
+                  />
+  <IntProperty  Category="RunOptions"
+                Name="PROCESSES"
+                DisplayName="Number of processes to launch (requires MPI)"
+                Description="This property has no effect unless the model was build with MPI capability incorporated."
                 />
   <BoolProperty Category="RunOptions"
                 Name="DBCOPY_EXPORT_CSV"
@@ -110,40 +83,4 @@
                 Description="Publish model in web-service and open model web UI using default browser"
                 />
 
-  <!-- Deprecated -->
-  <BoolProperty Category="Deprecated"
-                Name="EXPORT_CSV"
-                DisplayName="Export results to csv files"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
-  <BoolProperty Category="Deprecated"
-                Name="EXPORT_EXCEL"
-                DisplayName="Export results to Excel"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
-  <StringProperty Category="Deprecated"
-                  Name="EXPORT_EXCEL_LANG"
-                  DisplayName="Language for export to Excel"
-                Description="This functionality is deprecated and will be removed in future release."
-                  />
-  <BoolProperty Category="Deprecated"
-                Name="EXPORT_EXCEL_LAUNCH"
-                DisplayName="Launch Excel after export to Excel"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
-  <IntProperty  Category="Deprecated"
-                Name="MEMBERS"
-                DisplayName="Number of members in Run"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
-  <IntProperty  Category="Deprecated"
-                Name="PROCESSES"
-                DisplayName="Number of processes to launch (requires MPI)"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
-  <IntProperty  Category="Deprecated"
-                Name="THREADS"
-                DisplayName="Number of threads in each process"
-                Description="This functionality is deprecated and will be removed in future release."
-                />
 </Rule>

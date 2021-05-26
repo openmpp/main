@@ -47,12 +47,15 @@
 
 
   <Target Name="Validate">
+
     <Error
-	    Text="SCENARIO_NAME cannot be empty"
-        Condition=" ( '$(SCENARIO_NAME)' == '' )" />
+	    Text="SCENARIO_NAMES cannot be empty"
+        Condition=" ( '$(SCENARIO_NAMES)' == '' )" />
+  <!-- SFG commented pending repair, does not work for Item collection
     <Error
-	    Text="SCENARIO_PARAMETERS_FOLDER does not exist. Value is $(SCENARIO_PARAMETERS_FOLDER)"
-        Condition=" ( ! Exists('$(SCENARIO_PARAMETERS_FOLDER)') )" />
+	    Text="SCENARIO_FOLDERS does not exist. Value is %(SCENARIO_FOLDERS_COLLECTION.Identity)"
+        Condition=" ( ! Exists('%(SCENARIO_FOLDERS_COLLECTION.Identity)') )" />
+  -->
     <Error
 	    Text="FIXED_PARAMETERS_FOLDER does not exist. Value is $(FIXED_PARAMETERS_FOLDER)"
         Condition=" ( '$(ENABLE_FIXED_PARAMETERS)' == 'true' And ! Exists('$(FIXED_PARAMETERS_FOLDER)') )" />
@@ -72,14 +75,11 @@
 	    Text="RUN_SCENARIO must be either true or false. Value is $(RUN_SCENARIO)"
         Condition=" ! ( '$(RUN_SCENARIO)' == 'true' Or '$(RUN_SCENARIO)' == 'false' )" />
     <Error
-	    Text="EXPORT_CSV must be either true or false. Value is $(EXPORT_CSV)"
-        Condition=" ! ( '$(EXPORT_CSV)' == 'true' Or '$(EXPORT_CSV)' == 'false' )" />
+	    Text="MODEL_INI does not exist. Value is $(MODEL_INI)"
+        Condition=" ! ( '$(MODEL_INI)' == '' Or Exists('../$(MODEL_INI)') )" />
     <Error
-	    Text="EXPORT_EXCEL must be either true or false. Value is $(EXPORT_EXCEL)"
-        Condition=" ! ( '$(EXPORT_EXCEL)' == 'true' Or '$(EXPORT_EXCEL)' == 'false' )" />
-    <Error
-	    Text="EXPORT_EXCEL_LAUNCH must be either true or false. Value is $(EXPORT_EXCEL_LAUNCH)"
-        Condition=" ! ( '$(EXPORT_EXCEL_LAUNCH)' == 'true' Or '$(EXPORT_EXCEL_LAUNCH)' == 'false' )" />
+	    Text="DBCOPY_EXPORT_CSV must be either true or false. Value is $(DBCOPY_EXPORT_CSV)"
+        Condition=" ! ( '$(DBCOPY_EXPORT_CSV)' == 'true' Or '$(DBCOPY_EXPORT_CSV)' == 'false' )" />
   </Target>
 
   
@@ -110,8 +110,7 @@
     <PropertyGroup>
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
     </PropertyGroup>
-    <Message Text="$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT)" />
-    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_SCENARIO_OPT) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />
@@ -219,11 +218,10 @@
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
     <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
-    <FIRST_SCENARIO_NAME>$(SCENARIO_NAME.Split(';')[0])</FIRST_SCENARIO_NAME>
+    <FIRST_SCENARIO_NAME>$(SCENARIO_NAMES.Split(';')[0])</FIRST_SCENARIO_NAME>
     <MODEL_OPTS>$(MODEL_OPTS) -s $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
-    <MODEL_OPTS Condition="'$(MEMBERS)'   != ''">$(MODEL_OPTS) -OpenM.SubValues $(MEMBERS)</MODEL_OPTS>
-    <MODEL_OPTS Condition="'$(THREADS)'   != ''">$(MODEL_OPTS) -OpenM.Threads $(THREADS)</MODEL_OPTS>
+    <MODEL_OPTS Condition="'$(MODEL_INI)' != ''">$(MODEL_OPTS) -ini $(MODEL_INI_PATH)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
@@ -305,59 +303,6 @@
   </Target>
   
   <!--
-  ExportCsv
-  -->
-  
-  <PropertyGroup>
-    <CSV_EXPORT_DIR>$(PUBLISH_DIR)/$(SCENARIO_NAME)</CSV_EXPORT_DIR>
-  </PropertyGroup>
-
-  <Target Name="ExportCsv"
-          Condition="'$(EXPORT_CSV)'=='true'"
-          AfterTargets="RunModel"
-          >
-    <RemoveDir Directories="$(CSV_EXPORT_DIR)" />
-    <Message Text="Exporting scenario $(SCENARIO_NAME) to csv..." />
-    <Message Text="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
-    <Exec Command="$(COMPLETE_OMPP_EXPORT_CSV_EXE) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(CSV_EXPORT_DIR)&quot;" ContinueOnError="true"/>
-  </Target>
-  
-  <!--
-  ExportExcel
-  -->
-  
-  <PropertyGroup>
-    <EXCEL_EXPORT_OUT>$(PUBLISH_DIR)/$(SCENARIO_NAME)(tbl).xlsx</EXCEL_EXPORT_OUT>
-    <!-- excel_export -lang option to specify language to use for exported Excel workbook -->
-    <EXCEL_EXPORT_OPT Condition="'$(EXPORT_EXCEL_LANG)'!=''">--lang $(EXPORT_EXCEL_LANG)</EXCEL_EXPORT_OPT>
-  </PropertyGroup>
-
-  <Target Name="ExportExcel"
-          Condition="'$(EXPORT_EXCEL)'=='true'" 
-          Inputs="$(RUN_MODEL_TICKLE)"
-          Outputs="$(EXCEL_EXPORT_OUT)"
-          AfterTargets="RunModel"
-          >
-    <Message Text="Exporting scenario $(SCENARIO_NAME) to Excel..." />
-    <Message Text="$(COMPLETE_OMPP_EXPORT_EXCEL_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
-    <Exec Command="$(COMPLETE_OMPP_EXPORT_EXCEL_EXE) $(EXCEL_EXPORT_OPT) &quot;$(PUBLISH_SQLITE)&quot; &quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
-  </Target>
-
-  
-  <!--
-  RunExcel
-  -->
-
-  
-  <Target Name="RunExcel"
-          Condition="'$(EXPORT_EXCEL_LAUNCH)'=='true'"
-          AfterTargets="ExportExcel"
-          >
-    <Message Text="Launching Excel with outputs from scenario $(SCENARIO_NAME)..." />
-    <Exec Command="&quot;$(EXCEL_EXPORT_OUT)&quot;" ContinueOnError="true"/>
-  </Target>
-
-  <!--
   StartOmppUI
   -->
 
@@ -391,9 +336,11 @@
   <Target Name="Diagnostics"
           Condition="'1'=='1'">
     <Message Text="MODEL_NAME=$(MODEL_NAME)" />
-    <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
-    <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
-    <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
+    <Message Text="SCENARIO_NAMES=$(SCENARIO_NAMES)" />
+    <Message Text="SCENARIO_NAMES_COLLECTION=@(SCENARIO_NAMES_COLLECTION)" />
+    <Message Text="SCENARIO_FOLDERS=$(SCENARIO_FOLDERS)" />
+    <Message Text="SCENARIO_FOLDERS_COLLECTION=@(SCENARIO_FOLDERS_COLLECTION)" />
+    <Message Text="FIXED_NAME=$(FIXED_NAME)" />
     <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />

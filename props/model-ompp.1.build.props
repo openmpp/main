@@ -3,43 +3,43 @@
 
   <PropertyGroup>
 
-    <!-- 
-    The following properties are set through the VS UI in project properties:
+    <!--  The absolute path of the project directory, which is the working directory of all relative paths -->
+    <WORKING_DIR>$([System.IO.Path]::GetFullPath('$(ProjectDir)'))</WORKING_DIR>
     
+    <!-- 
+    Begin: Assign default values for properties visible in VS integration
     -->
+    
+    <!--  Default value for OM_ROOT -->
+    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
 
-    <!-- 
-    Begin: Set default values for user-specified properties
-    -->
-    
     <!--  Default value for MODEL_NAME -->
-    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME> <!--  Name of grandparent directory of project, e.g. WizardCaseBased -->
+    <DEFAULT_MODEL_NAME>$([MSBuild]::MakeRelative($(ProjectDir)../..,$(ProjectDir)..))</DEFAULT_MODEL_NAME> <!--  Name of grandparent directory of project, e.g. NewCaseBased -->
     <DEFAULT_MODEL_NAME>$(DEFAULT_MODEL_NAME.TrimEnd(&quot;\&quot;))</DEFAULT_MODEL_NAME>     <!--  Remove trailing backslash -->
     <MODEL_NAME Condition="'$(MODEL_NAME)'==''">$(DEFAULT_MODEL_NAME)</MODEL_NAME>
     
-    <!--  Default value for SCENARIO_NAME -->
-    <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
+    <!--  Default value for SCENARIO_NAMES -->
+    <SCENARIO_NAMES Condition="'$(SCENARIO_NAMES)'==''">Default</SCENARIO_NAMES>
+    <!--  Trickery to create parallel folder locations -->
+    <SCENARIO_FOLDERS>../parameters/$(SCENARIO_NAMES.Replace(';', ';../parameters/'))</SCENARIO_FOLDERS>
 
-    <!--  Default value for MODEL_CODE_DIR -->
-    <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
-
-    <!--  Default value for SCENARIO_PARAMETERS_FOLDER -->
-    <SCENARIO_PARAMETERS_FOLDER Condition="'$(SCENARIO_PARAMETERS_FOLDER)'==''">../parameters/$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
-    
-    <!--  Default value for OMC_USE_DIR -->
-    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
-
+    <!--  Default value for MODEL_INI -->
+    <MODEL_INI Condition="'$(MODEL_INI)'=='' And Exists('../$(MODEL_INI)')">$(MODEL_NAME).ini</MODEL_INI>
+    <!--  Fully qualified path of MODEL_INI (is in model root AKA SolutionDir -->
+    <MODEL_INI_PATH Condition="'$(MODEL_INI)' != ''">$([System.IO.Path]::GetFullPath('$(ProjectDir)../$(MODEL_INI)'))</MODEL_INI_PATH>
     <!-- 
     End: Set default values for user-specified properties
     -->
 
-    <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
+    <!--  Default value for MODEL_CODE_DIR -->
+    <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
 
+    <!--  Default value for OMC_USE_DIR -->
+    <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
+  
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
 
     <OMC_EXE>omc.exe</OMC_EXE>
-    <OMPP_EXPORT_EXCEL_EXE>ompp_export_excel.exe</OMPP_EXPORT_EXCEL_EXE>
-    <OMPP_EXPORT_CSV_EXE>ompp_export_csv.exe</OMPP_EXPORT_CSV_EXE>
     <DBCOPY_EXE>dbcopy.exe</DBCOPY_EXE>
     <MPIEXEC_EXE>mpiexec.exe</MPIEXEC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
@@ -47,8 +47,6 @@
 
     <COMPLETE_OMC_EXE>&quot;$(OM_BIN_DIR)/$(OMC_EXE)&quot;</COMPLETE_OMC_EXE>
     <COMPLETE_SQLITE_EXE>&quot;$(SQLITE_EXE_DIR)/$(SQLITE_EXE)&quot;</COMPLETE_SQLITE_EXE>
-    <COMPLETE_OMPP_EXPORT_EXCEL_EXE>&quot;$(OM_BIN_DIR)/$(OMPP_EXPORT_EXCEL_EXE)&quot;</COMPLETE_OMPP_EXPORT_EXCEL_EXE>
-    <COMPLETE_OMPP_EXPORT_CSV_EXE>&quot;$(OM_BIN_DIR)/$(OMPP_EXPORT_CSV_EXE)&quot;</COMPLETE_OMPP_EXPORT_CSV_EXE>
     <COMPLETE_MPIEXEC_EXE>&quot;$(MSMPI_BIN)/$(MPIEXEC_EXE)&quot;</COMPLETE_MPIEXEC_EXE>
 
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include</OM_INC_DIR>
@@ -57,6 +55,7 @@
 
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
 
+    <FIXED_PARAMETERS_FOLDER Condition="'$(FIXED_NAME)'!=''">../parameters/$(FIXED_NAME)</FIXED_PARAMETERS_FOLDER>
     <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>
     <ENABLE_FIXED_PARAMETERS Condition="'$(FIXED_PARAMETERS_FOLDER)'!=''">true</ENABLE_FIXED_PARAMETERS>
     
@@ -77,7 +76,6 @@
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     
     <MODEL_EXE>$(MODEL_NAME)$(CONFIG_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
-    <MODEL_INI>$(MODEL_NAME).ini</MODEL_INI>
     
     <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
     
@@ -97,8 +95,6 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <!-- omc -p option to supply parameters -->
-    <OMC_IN_SCENARIO_OPT>-p $(SCENARIO_PARAMETERS_FOLDER)</OMC_IN_SCENARIO_OPT>
     <!-- omc -f option to supply fixed parameter -->
     <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
     <!-- omc -noLineDirectives option -->
