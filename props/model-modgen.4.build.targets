@@ -240,8 +240,6 @@
     <Message Text="SCEX_COPY_PARAMETERS=$(SCEX_COPY_PARAMETERS)" />
     <Message Text="GENERATE_DOCDB=$(GENERATE_DOCDB)" />
     <Message Text="RUN_SCENARIO=$(RUN_SCENARIO)" />
-    <Message Text="MEMBERS=$(MEMBERS)" />
-    <Message Text="THREADS=$(THREADS)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />

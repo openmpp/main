@@ -36,12 +36,6 @@
     <!--  Default value for RUN_SCENARIO -->
     <RUN_SCENARIO Condition="'$(RUN_SCENARIO)'==''">false</RUN_SCENARIO>
     
-    <!--  Default value for MEMBERS -->
-    <MEMBERS Condition="'$(MEMBERS)'==''">1</MEMBERS>
-    
-    <!--  Default value for THREADS -->
-    <THREADS Condition="'$(THREADS)'==''">1</THREADS>
-    
     <!-- 
     End: Assign default values for user-specified properties
     -->

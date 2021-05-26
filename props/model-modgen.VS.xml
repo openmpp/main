@@ -59,15 +59,5 @@
                 DisplayName="Run the scenario after build"
                 Description="Run the scenario after building and publishing the model and scenario."
                 />
-  <IntProperty  Category="RunOptions"
-                Name="MEMBERS"
-                DisplayName="Members in run (DEPRECATED)"
-                Description="A run can be divided into a number of independent members (aka sub-samples or replicates)"
-                />
-  <IntProperty  Category="RunOptions"
-                Name="THREADS"
-                DisplayName="Threads in each process (DEPRECATED)"
-                Description="To follow"
-                />
                   
 </Rule>
