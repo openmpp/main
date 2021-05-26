@@ -18,12 +18,6 @@
     <!--  Default value for SCENARIO_NAME -->
     <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
 
-    <!--  Default value for MODEL_CODE_DIR -->
-    <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
-
-    <!--  Default value for SCENARIO_PARAMETERS_FOLDER -->
-    <SCENARIO_PARAMETERS_FOLDER Condition="'$(SCENARIO_PARAMETERS_FOLDER)'==''">../parameters/$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
-    
     <!--  Default value for GENERATE_HELP -->
     <GENERATE_HELP Condition="'$(GENERATE_HELP)'==''">true</GENERATE_HELP>
     
@@ -49,6 +43,12 @@
     End: Assign default values for user-specified properties
     -->
 
+    <!--  Default value for MODEL_CODE_DIR -->
+    <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
+
+    <!--  Default value for SCENARIO_PARAMETERS_FOLDER -->
+    <SCENARIO_PARAMETERS_FOLDER Condition="'$(SCENARIO_PARAMETERS_FOLDER)'==''">../parameters/$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
+    
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
 
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include</OM_INC_DIR>
@@ -71,6 +71,7 @@
     
     <FRAMEWORK_ODAT>$(SCENARIO_PARAMETERS_FOLDER)/Framework.odat</FRAMEWORK_ODAT>
 
+    <FIXED_PARAMETERS_FOLDER Condition="'$(FIXED_NAME)'!=''">../parameters/$(FIXED_NAME)</FIXED_PARAMETERS_FOLDER>
     <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>
     <ENABLE_FIXED_PARAMETERS Condition="'$(FIXED_PARAMETERS_FOLDER)'!=''">true</ENABLE_FIXED_PARAMETERS>
     

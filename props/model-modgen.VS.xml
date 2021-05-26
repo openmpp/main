@@ -26,25 +26,18 @@
                   DisplayName="Scenario Name"
                   Description="The name of the default scenario published in the database. The default is Default."
                   />
+  <StringProperty Category="Names"
+                  Name="FIXED_NAME"
+                  DisplayName="Fixed Name"
+                  Description="The name of a folder in parameters which contains values of fixed (invariant) parameters (in OpenM++)."
+                  />
   
   <!-- Folders -->
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="MODEL_CODE_DIR"
-                  DisplayName="Model Code Folder"
-                  Description="The folder containing model source code modules (*.mpp, *.ompp, *.cpp, *.h). The path is relative to the project file. The default is ../code."
-                  />
   <StringProperty Category="Folders"
                   Subtype="folder"
                   Name="SCENARIO_PARAMETERS_FOLDER"
                   DisplayName="Scenario Parameter Folder"
                   Description="The folder containing modifiable parameter values (*.dat and *.odat) for the published scenario. The path is relative to the project file. The default is ../parameters/$(SCENARIO_NAME)."
-                  />
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="FIXED_PARAMETERS_FOLDER"
-                  DisplayName="Fixed Parameter Folder"
-                  Description="The folder containing invariant parameter values (*.dat and *.odat) for the model. Invariant parmaeters are burned into the model executable and absent from the user interface.The path is relative to the project file. If empty, the fixed parameters folder is disabled.  A typical value if enabled is ../parameters/Fixed.  Another way to specify that some parameters are  invariant "
                   />
 
   <!-- Build Options -->

@@ -226,7 +226,7 @@
           Condition="'1'=='1'">
     <Message Text="MODEL_NAME=$(MODEL_NAME)" />
     <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
-    <Message Text="MODEL_CODE_DIR=$(MODEL_CODE_DIR)" />
+    <Message Text="FIXED_NAME=$(FIXED_NAME)" />
     <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
     <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="GENERATE_HELP=$(GENERATE_HELP)" />
