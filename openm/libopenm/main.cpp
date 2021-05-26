@@ -65,16 +65,19 @@ using namespace openm;
             static const char * libTargetOsName = "Windows 32 bit";
         #endif
     #endif // _WIN32
+
     #ifdef __linux__
             static const char * libTargetOsName = "Linux";
     #endif
+
     #ifdef __APPLE__
-        #if !defined(TARGET_OS_IPHONE)
-            static const char * libTargetOsName = "MacOS";
+        #include <TargetConditionals.h>
+        #if defined(TARGET_OS_OSX) && TARGET_OS_OSX
+            static const char * libTargetOsName = "macOS";
         #else
             static const char * libTargetOsName = "Apple OS";
         #endif
-    #endif
+    #endif // __APPLE__
 #endif
 
 #ifdef NDEBUG

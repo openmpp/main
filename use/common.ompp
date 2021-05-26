@@ -589,16 +589,19 @@ namespace omr {
             const char * modelTargetOsName = "Windows 32 bit";
         #endif
     #endif // _WIN32
+
     #ifdef __linux__
             const char * modelTargetOsName = "Linux";
     #endif
+
     #ifdef __APPLE__
-        #if !defined(TARGET_OS_IPHONE)
-            const char * modelTargetOsName = "MacOS";
+        #include <TargetConditionals.h>
+        #if defined(TARGET_OS_OSX) && TARGET_OS_OSX
+           const char * modelTargetOsName = "macOS";
         #else
-            const char * modelTargetOsName = "Apple OS";
+           const char * modelTargetOsName = "Apple OS";
         #endif
-    #endif
+    #endif // __APPLE__
 #endif
 
 #ifdef NDEBUG
