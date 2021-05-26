@@ -38,9 +38,9 @@
                 Description="Generate model encyclopedic help files after build.  A compiled chm for the 0model is also generated if the required Microsoft components have been installed."
                 />
   <StringProperty Category="BuildOptions"
-                Name="SCEX_RUN_INI"
-                DisplayName="Get settings from OpenM++ run ini file"
-                Description="The settings for Threads and Members are extracted from the given OpenM++ run ini file and propagated to the published Modgen scex file.  Note that overrides to parameter values in the run ini file are not propagated."
+                Name="MODEL_INI"
+                DisplayName="Model ini file"
+                Description="The name of an ini file located in the model root folder containing model run options. The default is MODEL_NAME.ini, if present.  Values are propagated to the Modgen scex file.  Note that overrides to parameter values in the model ini file are not propagated."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="SCEX_COPY_PARAMETERS"

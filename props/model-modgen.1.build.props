@@ -19,11 +19,13 @@
     <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
     <SCENARIO_FOLDER>../parameters/$(SCENARIO_NAME)</SCENARIO_FOLDER>
 
+    <!--  Default value for MODEL_INI -->
+    <MODEL_INI Condition="'$(MODEL_INI)'=='' And Exists('../$(MODEL_INI)')">$(MODEL_NAME).ini</MODEL_INI>
+    <!--  Fully qualified path of MODEL_INI (is in model root AKA SolutionDir -->
+    <MODEL_INI_PATH Condition="'$(MODEL_INI)' != ''">$([System.IO.Path]::GetFullPath('$(ProjectDir)../$(MODEL_INI)'))</MODEL_INI_PATH>
+
     <!--  Default value for GENERATE_HELP -->
     <GENERATE_HELP Condition="'$(GENERATE_HELP)'==''">true</GENERATE_HELP>
-    
-    <!--  Default value for SCEX_RUN_INI -->
-    <SCEX_RUN_INI Condition="'$(SCEX_RUN_INI)'==''"></SCEX_RUN_INI>
     
     <!--  Default value for SCEX_COPY_PARAMETERS -->
     <SCEX_COPY_PARAMETERS Condition="'$(SCEX_COPY_PARAMETERS)'==''">true</SCEX_COPY_PARAMETERS>
@@ -47,9 +49,6 @@
     <!--  Default value for MODEL_CODE_DIR -->
     <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
 
-    <!--  Default value for SCENARIO_PARAMETERS_FOLDER -->
-    <SCENARIO_PARAMETERS_FOLDER Condition="'$(SCENARIO_PARAMETERS_FOLDER)'==''">../parameters/$(SCENARIO_NAME)</SCENARIO_PARAMETERS_FOLDER>
-    
     <OM_ROOT Condition="'$(OM_ROOT)'==''">$(ProjectDir)../../..</OM_ROOT>
 
     <OM_INC_DIR Condition="'$(OM_INC_DIR)'==''">$(OM_ROOT)/include</OM_INC_DIR>
