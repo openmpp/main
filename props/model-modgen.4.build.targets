@@ -35,11 +35,20 @@
 	    Text="SCENARIO_NAME cannot be empty"
         Condition=" ( '$(SCENARIO_NAME)' == '' )" />
     <Error
+	    Text="SCENARIO_FOLDER does not exist. Value is $(SCENARIO_FOLDER)"
+        Condition=" ( ! Exists('$(SCENARIO_FOLDER)') )" />
+    <Error
+	    Text="FIXED_PARAMETERS_FOLDER does not exist. Value is $(FIXED_PARAMETERS_FOLDER)"
+        Condition=" ( '$(ENABLE_FIXED_PARAMETERS)' == 'true' And ! Exists('$(FIXED_PARAMETERS_FOLDER)') )" />
+    <Error
 	    Text="FRAMEWORK_ODAT does not exist. Value is $(FRAMEWORK_ODAT)"
         Condition=" ( ! Exists('$(FRAMEWORK_ODAT)') )" />
     <Error
 	    Text="RUN_SCENARIO must be either true or false. Value is $(RUN_SCENARIO)"
         Condition=" ! ( '$(RUN_SCENARIO)' == 'true' Or '$(RUN_SCENARIO)' == 'false' )" />
+    <Error
+	    Text="MODEL_INI does not exist. Value is $(MODEL_INI)"
+        Condition=" ! ( '$(MODEL_INI)' == '' Or Exists('../$(MODEL_INI)') )" />
   </Target>
 
   
@@ -226,8 +235,8 @@
           Condition="'1'=='1'">
     <Message Text="MODEL_NAME=$(MODEL_NAME)" />
     <Message Text="SCENARIO_NAME=$(SCENARIO_NAME)" />
+    <Message Text="SCENARIO_FOLDER=$(SCENARIO_FOLDER)" />
     <Message Text="FIXED_NAME=$(FIXED_NAME)" />
-    <Message Text="SCENARIO_PARAMETERS_FOLDER=$(SCENARIO_PARAMETERS_FOLDER)" />
     <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="GENERATE_HELP=$(GENERATE_HELP)" />
     <Message Text="SCEX_RUN_INI=$(SCEX_RUN_INI)" />

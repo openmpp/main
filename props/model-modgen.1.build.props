@@ -17,6 +17,7 @@
     
     <!--  Default value for SCENARIO_NAME -->
     <SCENARIO_NAME Condition="'$(SCENARIO_NAME)'==''">Default</SCENARIO_NAME>
+    <SCENARIO_FOLDER>../parameters/$(SCENARIO_NAME)</SCENARIO_FOLDER>
 
     <!--  Default value for GENERATE_HELP -->
     <GENERATE_HELP Condition="'$(GENERATE_HELP)'==''">true</GENERATE_HELP>
@@ -69,7 +70,7 @@
 
     <CUSTOM_CPP>$(MODEL_CODE_DIR)/custom.cpp</CUSTOM_CPP>
     
-    <FRAMEWORK_ODAT>$(SCENARIO_PARAMETERS_FOLDER)/Framework.odat</FRAMEWORK_ODAT>
+    <FRAMEWORK_ODAT>$(SCENARIO_FOLDER)/Framework.odat</FRAMEWORK_ODAT>
 
     <FIXED_PARAMETERS_FOLDER Condition="'$(FIXED_NAME)'!=''">../parameters/$(FIXED_NAME)</FIXED_PARAMETERS_FOLDER>
     <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>

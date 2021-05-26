@@ -35,7 +35,7 @@
 
     <ResourceCompile Include="@(MODGEN_RC_OUTPUTS)" />
     
-    <SCENARIO_DATS Include="$(SCENARIO_PARAMETERS_FOLDER)/*.dat" />
+    <SCENARIO_DATS Include="$(SCENARIO_FOLDER)/*.dat" />
     <SCENARIO_DATS Include="$(FIXED_PARAMETERS_FOLDER)/*.dat"  Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'"/>
     
   </ItemGroup>
