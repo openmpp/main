@@ -10,9 +10,8 @@
   
   <Rule.Categories>	
     <Category Name="Names"        DisplayName="1. Names" />
-    <Category Name="Folders"      DisplayName="2. Folders" />
-    <Category Name="BuildOptions" DisplayName="3. Build Options" />
-    <Category Name="RunOptions"   DisplayName="4. Run Options" />
+    <Category Name="BuildOptions" DisplayName="2. Build Options" />
+    <Category Name="RunOptions"   DisplayName="3. Run Options" />
   </Rule.Categories>
   
   <!-- Names -->
@@ -32,14 +31,6 @@
                   Description="The name of a folder in parameters which contains values of fixed (invariant) parameters (in OpenM++)."
                   />
   
-  <!-- Folders -->
-  <StringProperty Category="Folders"
-                  Subtype="folder"
-                  Name="SCENARIO_PARAMETERS_FOLDER"
-                  DisplayName="Scenario Parameter Folder"
-                  Description="The folder containing modifiable parameter values (*.dat and *.odat) for the published scenario. The path is relative to the project file. The default is ../parameters/$(SCENARIO_NAME)."
-                  />
-
   <!-- Build Options -->
   <BoolProperty Category="BuildOptions"
                 Name="GENERATE_HELP"
