@@ -35,17 +35,6 @@ ifndef OUT_PREFIX
 endif
 
 #
-# arguments for run control
-#
-ifdef MEMBERS
-  RUN_OPT_MEMBERS = -OpenM.SubValues $(MEMBERS)
-endif
-
-ifdef THREADS
-  RUN_OPT_THREADS = -OpenM.Threads $(THREADS)
-endif
-
-#
 # model name: current dir name by default
 #
 CUR_SUBDIR = $(notdir $(CURDIR))
@@ -147,6 +136,14 @@ OUT_BIN_DIR = $(OUT_PREFIX)/bin
 
 # model exe name: model name and optional D postfix in case of debug
 MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
+
+#
+# model run arguments
+#
+RUN_OPT_INI =
+ifdef MODEL_INI
+  RUN_OPT_INI = -ini $(OUT_BIN_DIR)/$(MODEL_INI)
+endif
 
 #
 # location and name of output database
@@ -266,8 +263,8 @@ $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 
 .PHONY : copy_ini
 copy_ini:
-	@if [ -e $(MODEL_NAME).ini ] ; then cp -pf $(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
-	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
+	@if [ -e ompp/$(MODEL_NAME).ini ] ; then cp -pvf ompp/$(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
+	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pvf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
 
 .PHONY : publish-views
 publish-views : publish
@@ -279,7 +276,7 @@ publish-views : publish
 #
 .PHONY : run
 run:
-	$(OUT_BIN_DIR)/$(MODEL_EXE) $(RUN_OPT_MEMBERS) $(RUN_OPT_THREADS) \
+	$(OUT_BIN_DIR)/$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.ProgressPercent 25 \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
