@@ -6,31 +6,19 @@
     <!-- The following properties can be set by model developer in the VS IDE through project properties -->
     <MODEL_NAME>
     </MODEL_NAME>
-    <SCENARIO_NAME>
-    </SCENARIO_NAME>
-    <MODEL_CODE_DIR>
-    </MODEL_CODE_DIR>
-    <SCENARIO_PARAMETERS_FOLDER>
-    </SCENARIO_PARAMETERS_FOLDER>
-    <FIXED_PARAMETERS_FOLDER>
-    </FIXED_PARAMETERS_FOLDER>
-    <OMC_USE_DIR>
-    </OMC_USE_DIR>
+    <SCENARIO_NAMES>
+    </SCENARIO_NAMES>
+    <FIXED_NAME>
+    </FIXED_NAME>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
-    <DB_PROVIDER>SQLITE</DB_PROVIDER>
-    <MULTIPROCESSOR_COMPILE>true</MULTIPROCESSOR_COMPILE>
     <USE_PCH>true</USE_PCH>
     <NO_LINE_DIRECTIVES>false</NO_LINE_DIRECTIVES>
     <RUN_SCENARIO>false</RUN_SCENARIO>
-    <MEMBERS>1</MEMBERS>
-    <PROCESSES>1</PROCESSES>
-    <THREADS>1</THREADS>
+    <MODEL_INI>
+    </MODEL_INI>
+    <PROCESSES>
+    </PROCESSES>
     <DBCOPY_EXPORT_CSV>false</DBCOPY_EXPORT_CSV>
-    <EXPORT_CSV>false</EXPORT_CSV>
-    <EXPORT_EXCEL>false</EXPORT_EXCEL>
-    <EXPORT_EXCEL_LANG>
-    </EXPORT_EXCEL_LANG>
-    <EXPORT_EXCEL_LAUNCH>false</EXPORT_EXCEL_LAUNCH>
     <OPEN_MODEL_WEB_UI>false</OPEN_MODEL_WEB_UI>
   </PropertyGroup>
   <!-- Import common early properties for model projects -->
@@ -65,14 +53,12 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -80,7 +66,6 @@
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -88,7 +73,6 @@
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <LocalDebuggerEnvironment>OM_ROOT=$(ProjectDir)..\..\..</LocalDebuggerEnvironment>
   </PropertyGroup>
   <!-- Import standard master properties for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -111,20 +95,14 @@
   <Import Project="$(OM_ROOT)/props/model-ompp.1.build.props" />
   <Import Project="$(OM_ROOT)/props/model-ompp.2.cpp.props" />
   <Import Project="$(OM_ROOT)/props/model-ompp.3.items.props" />
-  
-  <!-- VS will expand wild cards in the None group on the first open of this project
-   and will replace, in this file, the None group with that expanded list -->
+  <!-- VS handles wild cards in different ways depending on VS version -->
   <ItemGroup>
     <None Include="../code/*.mpp" />
     <None Include="../code/*.ompp" />
-    <None Include="../parameters/*/*.dat" />
-    <None Include="../parameters/*/*.odat" />
+    <None Include="../parameters/Default/*.dat" />
+    <None Include="../parameters/Default/*.odat" />
+    <None Include="../*.ini" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <None Include="$(ProjectDir)$(MODEL_NAME).ini" />
-  </ItemGroup>
-  
   <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

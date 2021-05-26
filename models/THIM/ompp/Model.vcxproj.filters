@@ -9,11 +9,11 @@
       <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
       <Extensions>mpp;ompp</Extensions>
     </Filter>
-    <Filter Include="Parameter Files">
+    <Filter Include="Parameter Files (Default)">
       <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
       <Extensions>dat;odat</Extensions>
     </Filter>
-    <Filter Include="IniFiles">
+    <Filter Include="Model ini Files">
       <UniqueIdentifier>{9d673919-854a-495c-b069-c7e667f5e12f}</UniqueIdentifier>
       <Extensions>ini</Extensions>
     </Filter>
