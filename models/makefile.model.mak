@@ -263,7 +263,7 @@ $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 
 .PHONY : copy_ini
 copy_ini:
-	@if [ -e ompp/$(MODEL_NAME).ini ] ; then cp -pvf ompp/$(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
+	@if [ -e $(MODEL_NAME).ini ] ; then cp -pvf $(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
 	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pvf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
 
 .PHONY : publish-views
@@ -291,6 +291,7 @@ cleanall: clean
 	rm -rf $(MODEL_BUILD_DIR)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(MODEL_SQLITE)
+	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME).ini
 
 .PHONY: prepare
 prepare:
