@@ -25,7 +25,7 @@
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql" />
     
-    <OMC_MSG_INI_OUTPUT Include="$(OMC_OUT_DIR)/$(MODEL_NAME).message.ini" />
+    <OMC_MSG_INI_OUTPUT Include="$(OMC_OUT_DIR)/$(MODEL_MSG_INI)" />
     <!--
     drop sql-scripts created by omc and it is for dba use only:
     

@@ -77,6 +77,10 @@
     <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
     
     <MODEL_EXE>$(MODEL_NAME)$(CONFIG_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
+
+    <!--  Model messages (translation file) -->
+    <MODEL_MSG_INI>$(MODEL_NAME).message.ini</MODEL_MSG_INI>
+    <MODEL_MSG_INI_OMC_OUT>$(OMC_OUT_DIR)/$(MODEL_MSG_INI)</MODEL_MSG_INI_OMC_OUT>
     
     <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
     
