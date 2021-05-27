@@ -193,7 +193,8 @@ sub run_sqlite_statement {
 # arg0 - the SQLite database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
-# arg3 - flag to create non-rounded version of csv (optional)
+# arg3 - flag to create original    tables in subfolder original (optional)
+# arg4 - flag to create transformed tables in subfolder transformed (optional)
 # returns - 0 for success, otherwise non-zero
 #
 # Note: Implementation uses DB compatibility views
@@ -202,28 +203,43 @@ sub ompp_tables_to_csv
 	my $db = shift(@_);
 	my $dir = shift(@_);
 	my $retval;
-	my $do_rounding = 0;
-	my $do_unrounded_file = 0;
+	my $rounding_on = 0;
+	my $do_original = 0;
+	my $do_transformed = 0;
 	my $round_prec = 0;
 	if ($#_ >= 0) {
 		$round_prec = shift(@_);
 		if ($round_prec > 0) {
-			$do_rounding = 1;
+			$rounding_on = 1;
 		}
 	}
 	if ($#_ >= 0) {
-		$do_unrounded_file = shift(@_);
+		$do_original = shift(@_);
+	}
+	if ($#_ >= 0) {
+		$do_transformed = shift(@_);
 	}
 	
 	# Change slashes from \ to / for sqlite3
 	$dir =~ s@[\\]@/@g;
 
-	if (! -d $dir) {
-		if (!mkdir $dir) {
-			logmsg error, "unable to create directory ${dir}";
-			return 1;
-		}
-	}
+    my $dir_original = "${dir}/original";
+    my $dir_transformed = "${dir}/transformed";
+
+    my @outdirs;
+    push @outdirs, $dir;
+    push @outdirs, $dir_original    if $do_original;
+    push @outdirs, $dir_transformed if $do_transformed;
+
+    # create output directories
+    for my $fldr (@outdirs) {
+        if (! -d $fldr && ! mkdir $fldr) {
+            if (!mkdir $fldr) {
+                logmsg error, "unable to create directory ${fldr}";
+                return 1;
+            }
+        }
+    }
 
 	# Get all output table names and ranks
 	my $temp = run_sqlite_statement $db, "Select table_name, table_rank From table_dic Order By table_name;", $retval;
@@ -290,10 +306,17 @@ sub ompp_tables_to_csv
 			logmsg error, "unable to open ${out_csv}";
 			return 1;
 		};
-		if ($do_unrounded_file) {
-			my $out_csv_unrounded = "${dir}/_${table}.csv";
-			if (!open OUT_CSV_UNROUNDED, ">${out_csv_unrounded}") {
-				logmsg error, "unable to open ${out_csv_unrounded}";
+		if ($do_original) {
+			my $out_csv_original = "${dir_original}/${table}.csv";
+			if (!open OUT_CSV_ORIGINAL, ">${out_csv_original}") {
+				logmsg error, "unable to open ${out_csv_original}";
+				return 1;
+			};
+		}
+		if ($do_transformed) {
+			my $out_csv_transformed = "${dir_transformed}/${table}.csv";
+			if (!open OUT_CSV_TRANSFORMED, ">${out_csv_transformed}") {
+				logmsg error, "unable to open ${out_csv_transformed}";
 				return 1;
 			};
 		}
@@ -303,7 +326,8 @@ sub ompp_tables_to_csv
 			#chomp;
 			if ($header_line) {
 				print OUT_CSV $_."\n";
-				print OUT_CSV_UNROUNDED $_."\n" if $do_unrounded_file;
+				print OUT_CSV_ORIGINAL $_."\n" if $do_original;
+				print OUT_CSV_TRANSFORMED $_."\n" if $do_transformed;
 				$header_line = 0;
 				next;
 			}
@@ -313,8 +337,9 @@ sub ompp_tables_to_csv
 				my @fields = split /,/, $line;
 				# get the last (value) field
 				my $value = pop @fields;
-				my $unrounded_value = 0.0 + $value;
-				if ($do_rounding) {
+				my $original_value = 0.0 + $value;
+				my $transformed_value = $value;
+				if ($rounding_on) {
 					$value = $value + 0.0;
 					# standard rounding
 					# $value = sprintf("%.${round_prec}g", $value);
@@ -331,18 +356,22 @@ sub ompp_tables_to_csv
 				}
 				# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 				$value =~ s/e([-+])0(\d\d)/e\1\2/;
-				$unrounded_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_rounding;
+				$original_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_original;
+				$transformed_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_transformed;
 				print OUT_CSV join(',', @fields).','.$value."\n";
-				print OUT_CSV_UNROUNDED join(',', @fields).','.$unrounded_value."\n" if $do_unrounded_file;
+				print OUT_CSV_ORIGINAL join(',', @fields).','.$original_value."\n" if $do_original;
+				print OUT_CSV_TRANSFORMED join(',', @fields).','.$transformed_value."\n" if $do_transformed;
 			}
 			else {
 				print OUT_CSV $line."\n";
-				print OUT_CSV_UNROUNDED $line."\n" if $do_unrounded_file;
+				print OUT_CSV_ORIGINAL $line."\n" if $do_original;
+				print OUT_CSV_TRANSFORMED $line."\n" if $do_transformed;
 			}
 		}
 		close IN_CSV;
 		close OUT_CSV;
-		close OUT_CSV_UNROUNDED if $do_unrounded_file;
+		close OUT_CSV_ORIGINAL if $do_original;
+		close OUT_CSV_TRANSFORMED if $do_transformed;
 		unlink $in_csv;
 	}
 	
