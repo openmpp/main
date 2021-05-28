@@ -68,35 +68,52 @@ sub run_jet_statement {
 # arg0 - the Modgen database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
-# arg3 - flag to create non-rounded version of csv (optional)
+# arg3 - flag to create original    tables in subfolder original (optional)
+# arg4 - flag to create transformed tables in subfolder transformed (optional)
 # returns - 0 for success, otherwise non-zero
 sub modgen_tables_to_csv
 {
 	my $db = shift(@_);
 	my $dir = shift(@_);
-	my $do_rounding = 0;
-	my $do_unrounded_file = 0;
+	my $rounding_on = 0;
+	my $do_original = 0;
+	my $do_transformed = 0;
 	my $round_prec = 0;
 	if ($#_ >= 0) {
 		$round_prec = shift(@_);
 		if ($round_prec > 0) {
-			$do_rounding = 1;
+			$rounding_on = 1;
 		}
 	}
 	if ($#_ >= 0) {
-		$do_unrounded_file = shift(@_);
+		$do_original = shift(@_);
 	}
+	if ($#_ >= 0) {
+		$do_transformed = shift(@_);
+	}
+
+    my $dir_original = "${dir}/original";
+    my $dir_transformed = "${dir}/transformed";
+
+    my @outdirs;
+    push @outdirs, $dir;
+    push @outdirs, $dir_original    if $do_original;
+    push @outdirs, $dir_transformed if $do_transformed;
+
+    # create output directories
+    for my $fldr (@outdirs) {
+        if (! -d $fldr && ! mkdir $fldr) {
+            if (!mkdir $fldr) {
+                logmsg error, "unable to create directory ${fldr}";
+                return 1;
+            }
+        }
+    }
+
 	my $retval;
 	
 	my $suppress_margins = 0;
 
-	if (! -d $dir) {
-		if (!mkdir $dir) {
-			logmsg error, "unable to create directory ${dir}";
-			return 1;
-		}
-	}
-	
 	use Win32::OLE;
 	use Win32::OLE::Const 'Microsoft ActiveX Data Objects';
 	#my $sConnect = "Provider = Microsoft.Jet.OLEDB.4.0; Data source = ${db}";
@@ -152,10 +169,17 @@ sub modgen_tables_to_csv
 			logmsg error, "unable to open ${out_csv}";
 			return 1;
 		}
-		if ($do_unrounded_file) {
-			my $out_csv_unrounded = "${dir}/_${table}.csv";
-			if (!open OUT_CSV_UNROUNDED, ">${out_csv_unrounded}") {
-				logmsg error, "unable to open ${out_csv_unrounded}";
+		if ($do_original) {
+			my $out_csv_original = "${dir_original}/${table}.csv";
+			if (!open OUT_CSV_ORIGINAL, ">${out_csv_original}") {
+				logmsg error, "unable to open ${out_csv_original}";
+				return 1;
+			};
+		}
+		if ($do_transformed) {
+			my $out_csv_transformed = "${dir_transformed}/${table}.csv";
+			if (!open OUT_CSV_TRANSFORMED, ">${out_csv_transformed}") {
+				logmsg error, "unable to open ${out_csv_transformed}";
 				return 1;
 			};
 		}
@@ -247,29 +271,35 @@ sub modgen_tables_to_csv
 		# where the analysis dimension is always last.
 		for (my $dim = 0; $dim < $rank; ++$dim) {
 			print OUT_CSV "Dim${dim},";
-			print OUT_CSV_UNROUNDED "Dim${dim}," if $do_unrounded_file;
+			print OUT_CSV_ORIGINAL "Dim${dim}," if $do_original;
+			print OUT_CSV_TRANSFORMED "Dim${dim}," if $do_transformed;
 		}
 		print OUT_CSV "Value\n";
-		print OUT_CSV_UNROUNDED "Value\n" if $do_unrounded_file;
+		print OUT_CSV_ORIGINAL "Value\n" if $do_original;
+		print OUT_CSV_TRANSFORMED "Value\n" if $do_transformed;
 
 		# data lines
 		while ( !$ADO_RS->EOF ) {
 			my @fields;
 			my $suppress_line = 0;
 			my $value;
-			my $unrounded_value;
+			my $original_value;
+			my $transformed_value;
 			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
 				$value = $ADO_RS->Fields($field_ordinal)->value;
-				$unrounded_value = $value;
+				$original_value = $value;
+				$transformed_value = $value;
 				if (length($value) && $field_ordinal == $fields - 1) {
 					if ($value eq '-1.#IND' ) {
 						# is a NaN, output in OUT_CSV as an empty field (NULL)
 						$value = '';
-						$unrounded_value = $value;
+						$original_value = $value;
+						$transformed_value = $value;
 					}
 					else {
-						$unrounded_value = $value;
-						if ($do_rounding) {
+						$original_value = $value;
+						$transformed_value = $value;
+						if ($rounding_on) {
 							$value = $value + 0.0;
 							# standard rounding
 							# $value = sprintf("%.${round_prec}g", $value);
@@ -286,7 +316,8 @@ sub modgen_tables_to_csv
 						}
 						# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 						$value =~ s/e([-+])0(\d\d)/e\1\2/;
-						$unrounded_value =~ s/e([-+])0(\d\d)/e\1\2/ if ($do_rounding);
+						$original_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_original;
+                        $transformed_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_transformed;
 					}
 				}
 				$suppress_line = 1 if $suppress_margins && $has_margin[$field_ordinal] && $value == $max_dims[$field_ordinal];
@@ -295,11 +326,13 @@ sub modgen_tables_to_csv
 				}
 			}
 			print OUT_CSV join(',', @fields).','.$value."\n" if !$suppress_line;
-			print OUT_CSV_UNROUNDED join(',', @fields).','.$unrounded_value."\n" if $do_unrounded_file && !$suppress_line;
+			print OUT_CSV_ORIGINAL join(',', @fields).','.$original_value."\n" if $do_original && !$suppress_line;
+			print OUT_CSV_TRANSFORMED join(',', @fields).','.$transformed_value."\n" if $do_transformed && !$suppress_line;
 			$ADO_RS->MoveNext;
 		}
 		close OUT_CSV;
-		close OUT_CSV_UNROUNDED if $do_unrounded_file;
+		close OUT_CSV_ORIGINAL if $do_original;
+		close OUT_CSV_TRANSFORMED if $do_transformed;
 	}
 
 	# Success

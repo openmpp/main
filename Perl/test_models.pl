@@ -14,27 +14,28 @@ use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
 	$script_name.' %o model...',
-	[ 'help|h'    => 'print usage message and exit' ],
-	[ 'version|v' => 'print version and exit' ],
 	[ 'models_root|m=s'  => 'directory containing models (default is .)',
 		{ default => '.' } ],
-	[ 'newref' => 'replace existing reference files' ],
-	[ 'clean' => 'remove all build files after run' ],
-	[ 'significant_digits=i' => 'significant digits (default 7)',
-		{ default => 7 } ],
-	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
+	[ 'newref' => 'replace reference results with current' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
-	[ 'mpi_processes=i' => 'build MPI version and run with n processes (default 0, means no MPI)',
-		{ default => 0 } ],
+	[ 'nomodgen' => 'skip Modgen build and run' ],
+	[ 'nocomp' => 'skip flavour comparison' ],
 	[ 'config=s' => 'build configuration: debug or release(default)',
 		{ default => 'release' } ],
+	[ 'ini=s' => 'OpenM++ model ini file to pass to model (in model root, default is test_models.ini if present)',
+		{ default => '' } ],
+	[ 'mpi_processes=i' => 'build MPI version and run with n processes (default 0, means no MPI)',
+		{ default => 0 } ],
+	[ 'significant_digits=i' => 'significant digits (default 7)',
+		{ default => 7 } ],
+	[ 'help|h'    => 'print usage message and exit' ],
+	[ 'version|v' => 'print version and exit' ],
+	[ 'clean' => 'remove all build files after run' ],
 	[ 'windows_platform=s' => 'Windows platform: x64(default) or Win32',
 		{ default => 'x64' } ],
-	[ 'run_ini=s' => 'OpenM++ ini file to pass to model (relative to model folder, default is test_models.ini if present)',
-		{ default => '' } ],
-	[ 'nomodgen' => 'skip Modgen build and run' ],
 	[ 'modgen_platform=s' => 'Modgen platform: Win32(default) or x64',
 		{ default => 'Win32' } ],
+	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
 );
 
 if ($opt->version) {
@@ -66,7 +67,11 @@ my $unrounded_tables = 1;
 $unrounded_tables = 0 if $opt->nounroundedtables;
 
 # Path to optional ini file (relative to model folder) to pass to ompp model
-my $run_ini = $opt->run_ini;
+my $model_ini = $opt->ini;
+
+# Flavour comparison
+my $do_flavour_comparison = 1;
+$do_flavour_comparison = 0 if $opt->nocomp;
 
 # MPI option
 my $mpi_processes = $opt->mpi_processes;
@@ -280,22 +285,26 @@ if ($is_windows) {
 		my $modgen_folder = 'Modgen 12';
 		my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\${modgen_folder}\\Modgen.exe";
 		if ( ! -e $modgen_exe ) {
-			logmsg error, "Missing Modgen compiler: $modgen_exe";
-			exit 1;
+            # silently don't do modgen flavour if Modgen not installed
+            $do_modgen = 0;
 		}
-		push @flavours, 'modgen';
-		my $modgen_version_string = modgen_version($modgen_exe);
-		
-		# Check if supported Modgen version
-		(my $v1, my $v2, my $v3, my $v4) = split(',', $modgen_version_string);
-        if (!($v1 == 12 && $v2 == 1 && $v3==3)) {
-            logmsg error, "Modgen version 12.1.3 is required for cross-compatible models";
-            exit 1;
+        else {
+            my $modgen_version_string = modgen_version($modgen_exe);
+            
+            # Check if supported Modgen version
+            (my $v1, my $v2, my $v3, my $v4) = split(',', $modgen_version_string);
+            if (!($v1 == 12 && $v2 == 1 && $v3==3)) {
+                logmsg error, "Modgen version 12.1.3 is required for cross-compatible models";
+	            $do_modgen = 0;
+            }
+			else {
+	            my $sb = stat($modgen_exe);
+	            my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
+	            push @flavours, 'modgen';
+	            push @flavours_tombstone, "version=${modgen_version_string} (${exe_time_stamp}) platform=${modgen_platform} configuration=${config}";
+			}
+            
         }
-		
-		my $sb = stat($modgen_exe);
-		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-		push @flavours_tombstone, "version=${modgen_version_string} (${exe_time_stamp}) platform=${modgen_platform} configuration=${config}";
 	}
 	
 	if ($do_ompp) {
@@ -307,7 +316,7 @@ if ($is_windows) {
 			logmsg error, "Missing MSBuild for ompp: $msbuild_exe";
 			exit 1;
 		}
-		push @flavours, 'ompp';
+		push @flavours, 'ompp-win';
 		my $full_path = "${om_root}/bin/${omc_exe}";
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
@@ -322,7 +331,7 @@ if ($is_windows) {
 	}
 }
 
-if ($is_linux) {
+if ($is_linux && $do_ompp) {
 	push @flavours, 'ompp-linux';
 	my $omc_exe = 'omc';
 	my $full_path = "${om_root}/bin/${omc_exe}";
@@ -332,7 +341,7 @@ if ($is_linux) {
 	push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) configuration=${config}";
 }
 	
-if ($is_darwin) {
+if ($is_darwin && $do_ompp) {
 	push @flavours, 'ompp-mac';
 	my $omc_exe = 'omc';
 	my $full_path = "${om_root}/bin/${omc_exe}";
@@ -346,7 +355,7 @@ logmsg info, "=========================";
 logmsg info, " test_models.pl ${script_version} ";
 logmsg info, "=========================";
 logmsg info, " ";
-logmsg info, "Testing model folder(s): ".join(", ", @model_dirs);
+logmsg info, "Testing: ".join(", ", @model_dirs);
 
 for (my $j = 0; $j <= $#flavours; $j++) {
 	logmsg info, "$flavours[$j] settings: $flavours_tombstone[$j]";
@@ -374,34 +383,47 @@ for my $model_dir (@model_dirs) {
 	# Location of parameter folder
 	my $parameters_dir = "${model_path}/parameters";
 
-	# Location of optional run_ini file to pass to model (empty if none)
-	my $run_ini_path = '';
-	if ($run_ini ne '') {
-        # --ini option was given
-		$run_ini_path = "${model_path}/${run_ini}";
-		-f $run_ini_path || die "File run_ini ${run_ini_path} not found";
+	# Location of optional model ini file to pass to model (empty if none)
+	my $model_ini_path = '';
+	if ($model_ini ne '') {
+        # --ini option was supplied on command line
+		$model_ini_path = "${model_path}/${model_ini}";
+		if (-f $model_ini_path) {
+            logmsg error, "Model ini ${model_ini_path} not found";
+            next MODEL;
+        }
 	}
     else {
         # check for presence of default ini file if none specified
         my $def_ini = "${model_path}/test_models.ini";
         if (-f $def_ini) {
-            $run_ini_path = $def_ini;
-            $run_ini = 'test_models.ini';
+            $model_ini_path = $def_ini;
+            $model_ini = 'test_models.ini';
+        }
+        else {
+            # Assume that model name is same as model folder
+            # If ini with that name existis, use it.
+            my $def_ini = "${model_path}/${model_dir}.ini";
+            if (-f $def_ini) {
+                $model_ini_path = $def_ini;
+                $model_ini = "${model_dir}.ini";
+            }
         }
     }
 
     # Default values of members and threads
+    # This is for reporting purposes and to construct files with tombstone info.
+    # The ini file itself is used to specify members and threads when running the model.
     my $members = 1;
     my $threads = 1;
-    # Override default values if ini file present
-    my $ini_file = "${model_path}/test_models/test_models.ini";
-    if (-f $ini_file) {
+    # Override default values if an ini file is being used
+    if (-f $model_ini_path) {
         my $Config = Config::Tiny->new;
-        $Config = Config::Tiny->read($ini_file);
+        $Config = Config::Tiny->read($model_ini_path);
         my $v1 = $Config->{OpenM}->{SubValues};
-        $members = $v1 if $v1 > 0;
+        $members = $v1 if defined $v1;
         my $v2 = $Config->{OpenM}->{Threads};
-        $threads = $v2 if $v2 > 0;
+        $threads = $v2 if defined $v2;
     }
 
 	##############
@@ -411,13 +433,15 @@ for my $model_dir (@model_dirs) {
 	for (my $j = 0; $j <= $#flavours; $j++) {
 		my $start_seconds = time;
 		my $flavour = $flavours[$j];
-		my $tombstone_info = $flavours_tombstone[$j]." members=${members} threads=${threads}";
+		my $tombstone_info = $flavours_tombstone[$j]." members=${members}";
 		my $reference_dir = "${model_path}/test_models/reference/${flavour}";
 		my $current_dir = "${model_path}/test_models/current/${flavour}";
-		my $project_dir = "${model_path}/${flavour}";
-		make_path $project_dir if -d "${project_dir}";
-		# Skip this flavour if place-holder file skip_model found in project folder
-		next FLAVOUR if -e "${project_dir}/skip_model";
+		my $current_dir_short = "${model_dir}/test_models/current/${flavour}"; # for messages
+        my $flavour_dir = $flavour; # name of folder containing intermediate files for the flavour
+        $flavour_dir = 'ompp' if $flavour eq 'ompp-win';
+		my $project_dir = "${model_path}/${flavour_dir}";
+		# Skip this flavour if place-holder file test_models.suppress is found in project folder (is flavour folder)
+		next FLAVOUR if -e "${project_dir}/test_models.suppress";
 		logmsg info, $model_dir, $flavour if $verbosity == 0;
 		if ($new_ref) {
 			logmsg info, $model_dir, $flavour, "Deleting reference directory" if $verbosity >= 2;
@@ -437,6 +461,7 @@ for my $model_dir (@model_dirs) {
 		# Folder for current logs (holds a copy)
 		my $current_logs_dir = "${current_dir}/logs";
 		make_path $current_logs_dir;
+        my $current_logs_dir_short = "${current_dir_short}/logs"; # for messages
 		
 		# File containing current tombstone information
 		my $tombstone_txt = "${current_dir}/tombstone.txt";
@@ -463,7 +488,7 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to where vcxproj, etc. are located
 			chdir "${project_dir}" || die;
 
-			# The xml file containing user-configurable build properties
+			# The xml file containing user-configurable build properties (same as vcxproj file)
 			my $model_props = "Model.vcxproj";
 			if ( ! -e $model_props ) {
 				logmsg error, $model_dir, $flavour, "Missing file with configurable properties: $model_props";
@@ -488,7 +513,8 @@ for my $model_dir (@model_dirs) {
 			my $model_vcxproj = 'model.vcxproj';
 			
 			# Log file from build
-			my $build_log = "msbuild.log";
+			my $build_log = "${current_logs_dir}/build.log";
+			my $build_log_short = "${current_logs_dir_short}/build.log"; # for messages
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
 				my @args = (
@@ -505,13 +531,22 @@ for my $model_dir (@model_dirs) {
 					"/p:RUN_SCENARIO=false",
 					"/t:Rebuild",
 					);
+				if (-f $model_ini_path) {
+                    # supply name of ini file to Modgen build in MODEL_INI
+                    # build process will extract members and threads and insert them into default scex,
+                    # which will be used when model is run later in this script.
+					push @args,
+						(
+                            "/p:MODEL_INI=${model_ini}",
+						);
+				}
 				system(@args);
 			};
 			open BUILD_LOG, ">${build_log}";
 			print BUILD_LOG $merged;
 			close BUILD_LOG;
 			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "Build failed (${retval}) see ${build_log}";
+				logmsg error, $model_dir, $flavour, "Build failed (${retval}) see ${build_log_short}";
 				logerrors $merged;
 				next FLAVOUR;
 			}
@@ -520,7 +555,7 @@ for my $model_dir (@model_dirs) {
 			$merged =~ /^ *([0-9]+) Warning\(s\)/m;
 			my $warning_count = $1;
 			if ($warning_count) {
-				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log}";
+				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log_short}";
 			}
 
 			# Executable suffix for platform/configuration: nothing, D, 64, 64D
@@ -567,7 +602,9 @@ for my $model_dir (@model_dirs) {
 			}
 			
 			chdir "${target_dir}";
-			logmsg info, $model_dir, $flavour, "Run model" if $verbosity >= 2;
+            my $run_txt = "Run model";
+            $run_txt .= " using ${model_ini}" if $model_ini ne '';
+			logmsg info, $model_dir, $flavour, $run_txt if $verbosity >= 2;
 
 			# Delete output database to enable subsequent check for success
 			my $modgen_scenario_mdb = "${publish_dir}/${scenario_name}(tbl).mdb";
@@ -626,7 +663,7 @@ for my $model_dir (@model_dirs) {
 				remove_tree "${project_dir}/bin";
 			}
 		}
-		elsif ($flavour eq 'ompp') {
+		elsif ($flavour eq 'ompp-win') {
 		
 			#####################################
 			# Build model (ompp)                #
@@ -635,7 +672,7 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to project directory for compilation.
 			chdir $project_dir || die;
 
-			# The xml file containing user-configurable build properties
+			# The xml file containing user-configurable build properties (same as vcxproj file)
 			my $model_props = "Model.vcxproj";
 			if ( ! -e $model_props ) {
 				logmsg error, $model_dir, $flavour, "Missing property sheet contining user macros: $model_props";
@@ -675,7 +712,8 @@ for my $model_dir (@model_dirs) {
 			my $model_vcxproj = 'model.vcxproj';
 			
 			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and scenario" if $verbosity >= 2;
-			my $build_log = "msbuild.log";
+			my $build_log = "${current_logs_dir}/build.log";
+			my $build_log_short = "${current_logs_dir_short}/build.log"; # for messages
 			unlink $build_log;
 			($merged, $retval) = capture_merged {
 				my @args = (
@@ -701,7 +739,7 @@ for my $model_dir (@model_dirs) {
 			print BUILD_LOG $merged;
 			close BUILD_LOG;
 			if ($retval != 0) {
-				logmsg error, $model_dir, $flavour, "build failed";
+				logmsg error, $model_dir, $flavour, "build failed - see ${build_log_short}";
 				logerrors $merged;
 				next FLAVOUR;
 			}
@@ -710,7 +748,7 @@ for my $model_dir (@model_dirs) {
 			$merged =~ /^ *([0-9]+) Warning\(s\)/m;
 			my $warning_count = $1;
 			if ($warning_count) {
-				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log}";
+				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log_short}";
 			}
 			
 			# Executable suffix for platform/configuration: nothing, D
@@ -762,7 +800,7 @@ for my $model_dir (@model_dirs) {
 			}
 			
             my $run_txt = "Run model";
-            $run_txt .= " using $run_ini" if $run_ini_path ne '';
+            $run_txt .= " using ${model_ini}" if $model_ini ne '';
 			logmsg info, $model_dir, $flavour, $run_txt if $verbosity >= 2;
 			
 			# Change working directory to target_dir where the executable is located.
@@ -794,15 +832,13 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.TraceFilePath", $ompp_trace_txt,
 					"-OpenM.RunName", $scenario_name,
 					"-OpenM.Database", "Database=${publish_sqlite}; Timeout=86400; OpenMode=ReadWrite;",
-					"-OpenM.SubValues", $members,
-					"-OpenM.Threads", $threads,
 					"-OpenM.ProgressPercent", "25",
 					);
-				if ($run_ini_path ne '') {
+				if (-f $model_ini_path) {
 					push @args,
 						(
-						"-ini", $run_ini_path,
-                        "-OpenM.IniAnyKey", "true"
+						"-ini", $model_ini_path,
+                        "-OpenM.IniAnyKey", "true" # just in case
 						);
 				}
 				system(@args);
@@ -851,22 +887,14 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to model path for make (location of makefile)
 			chdir ${model_path};
 
-			# The property sheet containing user macros
-			my $model_props = "ompp/Model.vcxproj";
-			if ( ! -e $model_props ) {
-				logmsg error, $model_dir, $flavour, "Missing property sheet containing user macros: $model_props";
-				next FLAVOUR;
-			}
-			
-			# Determine model name from MODEL_NAME property
-			my $model_name = get_property($model_props, 'MODEL_NAME');
-			if ($model_name eq '') {
-				# Default is model folder name
-				$model_name = $model_dir;
-			}
+            # makefile has no internal mechanism to specify these names, so use defaults
+			my $model_name = $model_dir;
+			my $scenario_name = 'Default';
 
+            my $model_props = 'ompp/Model.vcxproj';
+			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
 			# Determine scenario name from SCENARIO_NAME property
-			my $scenario_name = get_property($model_props, 'SCENARIO_NAME');
+			$scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
 				# Default is 'Default'
 				$scenario_name = 'Default';
@@ -882,7 +910,6 @@ for my $model_dir (@model_dirs) {
 			# SFG TODO partial hack to account for fact that vcxproj is one level deeper than makefile
 			# trim off leading '../' if present
 			$fixed_parameters_folder =~ s@^../@@;
-			
 					
 			my @make_defines;
 			push @make_defines, "MODEL_NAME=${model_name}";
@@ -955,7 +982,7 @@ for my $model_dir (@model_dirs) {
 			}
 
             my $run_txt = "Run model";
-            $run_txt .= " using $run_ini" if $run_ini_path ne '';
+            $run_txt .= " using $model_ini" if $model_ini ne '';
 			logmsg info, $model_dir, $flavour, $run_txt if $verbosity >= 2;
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
@@ -974,17 +1001,17 @@ for my $model_dir (@model_dirs) {
 					"-OpenM.SubValues", $members,
 					"-OpenM.Threads", $threads,
 					);
-				if ($run_ini_path ne '') {
+				if ($model_ini_path ne '') {
 					push @args,
 						(
-						"-ini", $run_ini_path,
-                        "-OpenM.IniAnyKey", "true"
+						"-ini", $model_ini_path,
+                        "-OpenM.IniAnyKey", "true" # just in case
 						);
 				}
 				system(@args);
 			};
 			if ($retval != 0) {
-				logmsg error, $model_dir, "ompp", "Run ${scenario_name} scenario failed";
+				logmsg error, $model_dir, $flavour, "Run ${scenario_name} scenario failed";
 				logerrors $merged;
 				next FLAVOUR;
 			}
@@ -1093,56 +1120,81 @@ for my $model_dir (@model_dirs) {
 	} # flavour
 
 	########
-	# compare results between 2 flavours
+	# compare results between 2 flavours, for reference and current
 	########
 
-	COMPARE: {
-		my $flavour1 = 'modgen';
-		my $flavour2 = 'ompp';
+	COMPARE: if ($do_flavour_comparison) {
+        # The flavour pairs to compare, comma-separated.
+        # Reeported as 'first vs. second'
+        my @flavour_pairs;
+        
+        if ($is_windows) {
+            @flavour_pairs = (
+                'ompp-win,modgen',
+                'ompp-win,ompp-linux',
+                'ompp-win,ompp-macos',
+            );
+        }
 		if ($is_linux) {
-			$flavour1 = 'ompp';
-			$flavour2 = 'ompp-linux';
+            @flavour_pairs = (
+                'ompp-linux,ompp-win',
+                'ompp-linux,ompp-macos',
+                'ompp-linux,modgen',
+            );
 		}
 		if ($is_darwin) {
-			$flavour1 = 'ompp';
-			$flavour2 = 'ompp-mac';
+            @flavour_pairs = (
+                'ompp-mac,ompp-win',
+                'ompp-mac,ompp-linux',
+                'ompp-mac,modgen',
+            );
 		}
-		my $which_flavours = $flavour2.' vs. '.$flavour1;
-		# Check for differences in outputs between two flavours
-		foreach my $which ('reference', 'current') {
-			my $which_proper = ucfirst($which);
-			my $digests_txt_1 = "${model_path}/test_models/${which}/${flavour1}/outputs/digests.txt";
-			my $digests_txt_2 = "${model_path}/test_models/${which}/${flavour2}/outputs/digests.txt";
-			if (! -e $digests_txt_1) {
-				#logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour1} digest" if $verbosity >= 2;
-			}
-			elsif (! -e $digests_txt_2) {
-				#logmsg info, $model_dir, $which_flavours, "${which_proper} outputs not compared due to missing ${flavour2} digest" if $verbosity >= 2;
-			}
-			else {
-				my ($not_in_1, $not_in_2, $differs) = digest_differences($digests_txt_1, $digests_txt_2);
-				if ('' eq $not_in_1.$not_in_2.$differs) {
-					logmsg info, $model_dir, $which_flavours, "${which_proper} outputs identical";
-				}
-				else {
-					if ('' ne $not_in_2) {
-						foreach my $table (split(',',$not_in_2)) {
-							logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour1}: ${table}" ;
-						}
-					}
-					if ('' ne $not_in_1) {
-						foreach my $table (split(',',$not_in_1)) {
-							logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour2}: ${table}" ;
-						}
-					}
-					if ('' ne $differs) {
-						foreach my $table (split(',',$differs)) {
-							logmsg change, $model_dir, $which_flavours, "${which_proper} DIFFERS: ${table}" ;
-						}
-					}
-				}
-			}
-		}
+        
+        my $comparison_header_done = 0;
+        
+        for my $flavour_pair (@flavour_pairs) {
+            my ($flavour2, $flavour1) = split ',', $flavour_pair;
+            my $which_flavours = $flavour2.' vs. '.$flavour1;
+            # Check for differences in outputs between two flavours
+            foreach my $which ('reference', 'current') {
+                my $which_proper = ucfirst($which);
+                my $digests_txt_1 = "${model_path}/test_models/${which}/${flavour1}/outputs/digests.txt";
+                my $digests_txt_2 = "${model_path}/test_models/${which}/${flavour2}/outputs/digests.txt";
+                if (! -e $digests_txt_1) {
+                    next;
+                }
+                elsif (! -e $digests_txt_2) {
+                    next;
+                }
+                else {
+                    if (!$comparison_header_done) {
+                        $comparison_header_done = 1;
+                        logmsg info, $model_dir, '    Flavour comparisons', ' ';
+                    }
+                    my ($not_in_1, $not_in_2, $differs) = digest_differences($digests_txt_1, $digests_txt_2);
+                    if ('' eq $not_in_1.$not_in_2.$differs) {
+                        logmsg info, $model_dir, $which_flavours, "${which_proper} outputs identical";
+                    }
+                    else {
+                        if ('' ne $not_in_2) {
+                            foreach my $table (split(',',$not_in_2)) {
+                                logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour1}: ${table}" ;
+                            }
+                        }
+                        if ('' ne $not_in_1) {
+                            foreach my $table (split(',',$not_in_1)) {
+                                logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour2}: ${table}" ;
+                            }
+                        }
+                        if ('' ne $differs) {
+                            foreach my $table (split(',',$differs)) {
+                                logmsg change, $model_dir, $which_flavours, "${which_proper} DIFFERS: ${table}" ;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 	}
 	
 	logmsg info, " " if $verbosity >= 1;
