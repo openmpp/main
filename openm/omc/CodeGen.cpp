@@ -674,6 +674,7 @@ void CodeGen::do_ModelStartup()
     c +=     "// Remove run-time suppressed tables from om_table_names";
     c +=     "std::list<std::string> suppressed;";
     c +=     "for (auto nm : om_table_names) {";
+    c +=         "if (om_internal_table_names.count(nm)) continue; // skip internal tables";
     c +=         "if (is_suppressed_compute(nm, i_model)) {";
     c +=             "suppressed.push_back(nm);";
     c +=         "}";
@@ -1065,11 +1066,21 @@ void CodeGen::do_table_interface()
 {
     h += doxygen_short("Table names in the model");
     h += "extern std::unordered_set<std::string> om_table_names;";
+    h += "extern std::unordered_set<std::string> om_internal_table_names;";
     h += "";
 
     c += "std::unordered_set<std::string> om_table_names = {";
     for (auto tbl : Symbol::pp_all_tables) {
         c += "\"" + tbl->name + "\",";
+    }
+    c += "};";
+    c += "";
+
+    c += "std::unordered_set<std::string> om_internal_table_names = {";
+    for (auto tbl : Symbol::pp_all_tables) {
+        if (tbl->is_internal) {
+            c += "\"" + tbl->name + "\",";
+        }
     }
     c += "};";
     c += "";
