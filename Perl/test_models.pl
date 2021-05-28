@@ -13,13 +13,27 @@ my $script_version = '2.0';
 use Getopt::Long::Descriptive;
 
 my ($opt, $usage) = describe_options(
+
 	$script_name.' %o model...',
+    
 	[ 'models_root|m=s'  => 'directory containing models (default is .)',
 		{ default => '.' } ],
+
+    # options which control what to do
+
 	[ 'newref' => 'replace reference results with current' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
 	[ 'nocomp' => 'skip flavour comparison' ],
+
+    # options which control verbosity
+    
+	[ 'allfiles' => 'report all unique and different files' ],
+	[ 'timing' => 'report timing information of various steps' ],
+	[ 'nosteps' => 'skip reporting which step is being performed' ],
+    
+    # other options
+    
 	[ 'config=s' => 'build configuration: debug or release(default)',
 		{ default => 'release' } ],
 	[ 'ini=s' => 'OpenM++ model ini file to pass to model (in model root, default is test_models.ini if present)',
@@ -57,7 +71,20 @@ if ($opt->help) {
 #  0 - errors only
 #  1 - timing and success
 #  2 - chatty
+# Just used internally, and not rigourously maintained.  Deprecated pending removal.
 my $verbosity = 3;
+
+# report all unique files and all different files
+my $report_all_files = 0;
+$report_all_files = 1 if $opt->allfiles;
+
+# report timing information
+my $report_timing = 0;
+$report_timing = 1 if $opt->timing;
+
+# report steps
+my $report_steps = 1;
+$report_steps = 0 if $opt->nosteps;
 
 # Number of significant digits to retain in the output csv files (0 means full precision)
 my $significant_digits = $opt->significant_digits;
@@ -67,7 +94,7 @@ my $unrounded_tables = 1;
 $unrounded_tables = 0 if $opt->nounroundedtables;
 
 # Path to optional ini file (relative to model folder) to pass to ompp model
-my $model_ini = $opt->ini;
+my $model_ini_opt = $opt->ini;
 
 # Flavour comparison
 my $do_flavour_comparison = 1;
@@ -352,13 +379,13 @@ if ($is_darwin && $do_ompp) {
 }
 
 logmsg info, "=========================";
-logmsg info, " test_models.pl ${script_version} ";
+logmsg info, " test_models ${script_version} ";
 logmsg info, "=========================";
 logmsg info, " ";
 logmsg info, "Testing: ".join(", ", @model_dirs);
 
-for (my $j = 0; $j <= $#flavours; $j++) {
-	logmsg info, "$flavours[$j] settings: $flavours_tombstone[$j]";
+for (my $flavour_counter = 0; $flavour_counter <= $#flavours; $flavour_counter++) {
+	logmsg info, "$flavours[$flavour_counter] settings: $flavours_tombstone[$flavour_counter]";
 }
 logmsg info, " ";
 
@@ -384,9 +411,11 @@ for my $model_dir (@model_dirs) {
 	my $parameters_dir = "${model_path}/parameters";
 
 	# Location of optional model ini file to pass to model (empty if none)
+    my $model_ini = '';
 	my $model_ini_path = '';
-	if ($model_ini ne '') {
+	if ($model_ini_opt ne '') {
         # --ini option was supplied on command line
+        $model_ini = $model_ini_opt;
 		$model_ini_path = "${model_path}/${model_ini}";
 		if (-f $model_ini_path) {
             logmsg error, "Model ini ${model_ini_path} not found";
@@ -402,7 +431,7 @@ for my $model_dir (@model_dirs) {
         }
         else {
             # Assume that model name is same as model folder
-            # If ini with that name existis, use it.
+            # and if ini with that name exists, use it.
             my $def_ini = "${model_path}/${model_dir}.ini";
             if (-f $def_ini) {
                 $model_ini_path = $def_ini;
@@ -412,7 +441,7 @@ for my $model_dir (@model_dirs) {
     }
 
     # Default values of members and threads
-    # This is for reporting purposes and to construct files with tombstone info.
+    # This is for reporting purposes and to construct tombstone files
     # The ini file itself is used to specify members and threads when running the model.
     my $members = 1;
     my $threads = 1;
@@ -425,15 +454,23 @@ for my $model_dir (@model_dirs) {
         my $v2 = $Config->{OpenM}->{Threads};
         $threads = $v2 if defined $v2;
     }
+    
+    # Folder for test_model outputs and persistence
+    my $test_models_dir = "${model_path}/test_models";
+	make_path $test_models_dir || die;
 
 	##############
 	# Process each flavour
 	#############
+    my $any_flavour_errors = 0; # to suppress flavour comparison for this model after all flavours have been attempted
 	FLAVOUR:
-	for (my $j = 0; $j <= $#flavours; $j++) {
-		my $start_seconds = time;
-		my $flavour = $flavours[$j];
-		my $tombstone_info = $flavours_tombstone[$j]." members=${members}";
+	for (my $flavour_counter = 0; $flavour_counter <= $#flavours; $flavour_counter++) {
+        if ($flavour_counter > 0) {
+            # insert separator line between flavours for readability
+            logmsg info, $model_dir, ' ';
+        }
+		my $flavour = $flavours[$flavour_counter];
+		my $tombstone_info = $flavours_tombstone[$flavour_counter]." members=${members}";
 		my $reference_dir = "${model_path}/test_models/reference/${flavour}";
 		my $current_dir = "${model_path}/test_models/current/${flavour}";
 		my $current_dir_short = "${model_dir}/test_models/current/${flavour}"; # for messages
@@ -443,12 +480,19 @@ for my $model_dir (@model_dirs) {
 		# Skip this flavour if place-holder file test_models.suppress is found in project folder (is flavour folder)
 		next FLAVOUR if -e "${project_dir}/test_models.suppress";
 		logmsg info, $model_dir, $flavour if $verbosity == 0;
-		if ($new_ref) {
-			logmsg info, $model_dir, $flavour, "Deleting reference directory" if $verbosity >= 2;
+        
+        # if --newref, remove Reference to force replacement by Current
+		if ($new_ref && -d $reference_dir) {
+			logmsg info, $model_dir, $flavour, "Deleting previous Reference information" if $verbosity >= 2;
 			remove_tree($reference_dir);
 		}
 		
-		remove_tree $current_dir || next FLAVOUR;
+        # remove Current information for this flavour
+        if (-d $current_dir && !remove_tree $current_dir) {
+            logmsg error, $model_dir, $flavour, "Unable to remove ${current_dir}";
+            $any_flavour_errors = 1;
+            next FLAVOUR;
+        }
 		
 		# Folder for current model outputs
 		my $current_outputs_dir = "${current_dir}/outputs";
@@ -476,6 +520,11 @@ for my $model_dir (@model_dirs) {
 		remove_tree $generated_code_dir;
 		make_path $generated_code_dir;
 
+        # The following are for measuring and reporting elapsed time of various steps
+		my $start_seconds = time;
+        my $elapsed_seconds;
+        my $elapsed_formatted;
+        
 		if ($flavour eq 'modgen') {
 
 			#####################################
@@ -483,7 +532,7 @@ for my $model_dir (@model_dirs) {
 			#####################################
 
 			# Build the model
-			logmsg info, $model_dir, $flavour, "Modgen compile, C++ compile, build executable" if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "Build model and prepare Default scenario" if $report_steps;
 
 			# Change working directory to where vcxproj, etc. are located
 			chdir "${project_dir}" || die;
@@ -492,6 +541,7 @@ for my $model_dir (@model_dirs) {
 			my $model_props = "Model.vcxproj";
 			if ( ! -e $model_props ) {
 				logmsg error, $model_dir, $flavour, "Missing file with configurable properties: $model_props";
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			
@@ -516,6 +566,8 @@ for my $model_dir (@model_dirs) {
 			my $build_log = "${current_logs_dir}/build.log";
 			my $build_log_short = "${current_logs_dir_short}/build.log"; # for messages
 			unlink $build_log;
+            
+            $start_seconds = time;
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${msbuild_exe}",
@@ -533,7 +585,7 @@ for my $model_dir (@model_dirs) {
 					);
 				if (-f $model_ini_path) {
                     # supply name of ini file to Modgen build in MODEL_INI
-                    # build process will extract members and threads and insert them into default scex,
+                    # build process will extract members, threads, etc. and insert them into default scex,
                     # which will be used when model is run later in this script.
 					push @args,
 						(
@@ -542,12 +594,18 @@ for my $model_dir (@model_dirs) {
 				}
 				system(@args);
 			};
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+			$start_seconds = time;
+
 			open BUILD_LOG, ">${build_log}";
 			print BUILD_LOG $merged;
 			close BUILD_LOG;
 			if ($retval != 0) {
 				logmsg error, $model_dir, $flavour, "Build failed (${retval}) see ${build_log_short}";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			
@@ -555,7 +613,7 @@ for my $model_dir (@model_dirs) {
 			$merged =~ /^ *([0-9]+) Warning\(s\)/m;
 			my $warning_count = $1;
 			if ($warning_count) {
-				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log_short}";
+				logmsg warning, $model_dir, $flavour, "${warning_count} build warning(s) - see ${build_log_short}";
 			}
 
 			# Executable suffix for platform/configuration: nothing, D, 64, 64D
@@ -573,6 +631,7 @@ for my $model_dir (@model_dirs) {
 			if ( ! -e $model_exe ) {
 				logmsg error, $model_dir, $flavour, "Missing model executable: $model_exe";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			copy $build_log, $current_logs_dir;
@@ -583,13 +642,9 @@ for my $model_dir (@model_dirs) {
 			if ( ! -f $publish_scex ) {
 				logmsg error, $model_dir, $flavour, "Missing scenario file: ${publish_scex}";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
-
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $verbosity >= 1;
-			$start_seconds = time;
 
 			#####################################
 			# Run model (modgen)                #
@@ -604,12 +659,13 @@ for my $model_dir (@model_dirs) {
 			chdir "${target_dir}";
             my $run_txt = "Run model";
             $run_txt .= " using ${model_ini}" if $model_ini ne '';
-			logmsg info, $model_dir, $flavour, $run_txt if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, $run_txt if $report_steps;
 
 			# Delete output database to enable subsequent check for success
 			my $modgen_scenario_mdb = "${publish_dir}/${scenario_name}(tbl).mdb";
 			unlink $modgen_scenario_mdb;
 
+			$start_seconds = time;
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${model_exe}",
@@ -619,22 +675,24 @@ for my $model_dir (@model_dirs) {
 					);
 				system(@args);
 			};
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+
 			# Modgen models return a code of 1 to indicate success
 			# But return code from Perl requires shifting out 8 lower order bits to recover actual return code.
 			$retval >>= 8;
 			if ($retval != 1) {
 				logmsg error, $model_dir, $flavour, "Run model failed - retval=${retval}";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			if ( ! -e $modgen_scenario_mdb ) {
 				logmsg error, $model_dir, $flavour, "Missing scenario database: ${modgen_scenario_mdb}";
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
-
-			$elapsed_seconds = time - $start_seconds;
-			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
 
 			# Copy model run log file to logs directory
 			my $modgen_scenario_log_txt = "${publish_dir}/${scenario_name}(log).txt";
@@ -642,16 +700,22 @@ for my $model_dir (@model_dirs) {
 				copy $modgen_scenario_log_txt, $current_logs_dir;
 			}
 			
-			# If present, copy event trace / case checksum file to results directory
+			$start_seconds = time;
+			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
+
+			# If present, normalize event trace / case checksum file to results directory
 			my $modgen_scenario_debug_txt = "${publish_dir}/${scenario_name}(debug).txt";
 			if (-e $modgen_scenario_debug_txt) {
 				normalize_event_trace $modgen_scenario_debug_txt, "${current_outputs_dir}/trace.txt";
 			}
 			
-			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
 			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $unrounded_tables)) {
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Convert time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
 
 			#####################################
 			# Clean                             #
@@ -676,6 +740,7 @@ for my $model_dir (@model_dirs) {
 			my $model_props = "Model.vcxproj";
 			if ( ! -e $model_props ) {
 				logmsg error, $model_dir, $flavour, "Missing property sheet contining user macros: $model_props";
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			
@@ -711,10 +776,12 @@ for my $model_dir (@model_dirs) {
 			# Project file
 			my $model_vcxproj = 'model.vcxproj';
 			
-			logmsg info, $model_dir, $flavour, "omc compile, C++ compile, build executable, publish model and scenario" if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "Build and publish model and Default scenario" if $report_steps;
 			my $build_log = "${current_logs_dir}/build.log";
 			my $build_log_short = "${current_logs_dir_short}/build.log"; # for messages
 			unlink $build_log;
+            
+			$start_seconds = time;
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${msbuild_exe}",
@@ -735,12 +802,18 @@ for my $model_dir (@model_dirs) {
 					);
 				system(@args);
 			};
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+			$start_seconds = time;
+
 			open BUILD_LOG, ">${build_log}";
 			print BUILD_LOG $merged;
 			close BUILD_LOG;
 			if ($retval != 0) {
 				logmsg error, $model_dir, $flavour, "build failed - see ${build_log_short}";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			
@@ -748,7 +821,7 @@ for my $model_dir (@model_dirs) {
 			$merged =~ /^ *([0-9]+) Warning\(s\)/m;
 			my $warning_count = $1;
 			if ($warning_count) {
-				logmsg warning, $model_dir, $flavour, "${warning_count} build warnings - see ${build_log_short}";
+				logmsg warning, $model_dir, $flavour, "${warning_count} build warning(s) - see ${build_log_short}";
 			}
 			
 			# Executable suffix for platform/configuration: nothing, D
@@ -770,6 +843,7 @@ for my $model_dir (@model_dirs) {
 			if ( ! -e $model_exe ) {
 				logmsg error, $model_dir, $flavour, "Missing model executable: $model_exe";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 
@@ -779,16 +853,12 @@ for my $model_dir (@model_dirs) {
 			if ( ! -f $publish_sqlite ) {
 				logmsg error, $model_dir, $flavour, "Missing database: ${publish_sqlite}";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 
 			copy $build_log, $current_logs_dir;
 			
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $verbosity >= 1;
-			$start_seconds = time;
-
 			#####################################
 			# Run model (ompp)                  #
 			#####################################
@@ -800,8 +870,9 @@ for my $model_dir (@model_dirs) {
 			}
 			
             my $run_txt = "Run model";
+			$start_seconds = time;
             $run_txt .= " using ${model_ini}" if $model_ini ne '';
-			logmsg info, $model_dir, $flavour, $run_txt if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, $run_txt if $report_steps;
 			
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
@@ -815,6 +886,7 @@ for my $model_dir (@model_dirs) {
 					my $msmpi_bin = $ENV{'MSMPI_BIN'};
 					if ($msmpi_bin eq '') {
 						logmsg error, $model_dir, $flavour, "MPI requested but Microsoft MPI not installed";
+                        $any_flavour_errors = 1;
 						next FLAVOUR;
 					}
 					push @args,
@@ -843,20 +915,26 @@ for my $model_dir (@model_dirs) {
 				}
 				system(@args);
 			};
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+
 			if ($retval != 0) {
 				logmsg error, $model_dir, $flavour, "Run ${scenario_name} scenario failed";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			
-			$elapsed_seconds = time - $start_seconds;
-			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
-
-			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;
+			$start_seconds = time;
+			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
 			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $unrounded_tables)) {
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Convert time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
 		
 			# Copy model run log file to logs directory
 			if (-s $ompp_log_txt) {
@@ -921,6 +999,8 @@ for my $model_dir (@model_dirs) {
 			my $build_log = "${project_dir}/make.log";
 			unlink $build_log;
 			open BUILD_LOG, ">${build_log}";
+			logmsg info, $model_dir, $flavour, "Build and publish model and Default scenario" if $report_steps;
+			$start_seconds = time;
 			for my $make_target ('cleanall', 'model', 'publish-views') {
 				($merged, $retval) = capture_merged {
 					my @args = (
@@ -936,10 +1016,15 @@ for my $model_dir (@model_dirs) {
 					logmsg error, $model_dir, $flavour, "build failed";
 					logerrors $merged;
 					close BUILD_LOG;
+                    $any_flavour_errors = 1;
 					next FLAVOUR;
 				}
 			}
 			close BUILD_LOG;
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+			$start_seconds = time;
 			
 			# suffix for configuration: nothing or D
 			my $build_suffix = "";
@@ -951,6 +1036,7 @@ for my $model_dir (@model_dirs) {
 			if ( ! -e $model_exe ) {
 				logmsg error, $model_dir, $flavour, "Missing model executable: $model_exe";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			copy $build_log, $current_logs_dir;
@@ -961,13 +1047,10 @@ for my $model_dir (@model_dirs) {
 			if ( ! -f $publish_sqlite ) {
 				logmsg error, $model_dir, $flavour, "Missing database: ${publish_sqlite}";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 
-			my $elapsed_seconds = time - $start_seconds;
-			my $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Build time ${elapsed_formatted}" if $verbosity >= 1;
-			$start_seconds = time;
 
 			######################################
 			# Run model (ompp-linux or ompp-mac) #
@@ -983,10 +1066,11 @@ for my $model_dir (@model_dirs) {
 
             my $run_txt = "Run model";
             $run_txt .= " using $model_ini" if $model_ini ne '';
-			logmsg info, $model_dir, $flavour, $run_txt if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, $run_txt if $report_steps;
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
+			$start_seconds = time;
 			my $ompp_trace_txt = "${scenario_name}_trace.txt";
 			my $ompp_log_txt = "${scenario_name}_log.txt";
 			($merged, $retval) = capture_merged {
@@ -1010,20 +1094,26 @@ for my $model_dir (@model_dirs) {
 				}
 				system(@args);
 			};
+			$elapsed_seconds = time - $start_seconds;
+			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+            
 			if ($retval != 0) {
 				logmsg error, $model_dir, $flavour, "Run ${scenario_name} scenario failed";
 				logerrors $merged;
+                $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
-			
+
+			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
+			$start_seconds = time;
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, 1)) {
+                $any_flavour_errors = 1;
+				next FLAVOUR;
+			}
 			$elapsed_seconds = time - $start_seconds;
 			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Run time ${elapsed_formatted}" if $verbosity >= 1;
-
-			logmsg info, $model_dir, $flavour, "Convert output tables to .csv (${significant_digits} digits of precision)" if $verbosity >= 2;;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, 1)) {
-				next FLAVOUR;
-			}
+			logmsg info, $model_dir, $flavour, "Convert time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
 
 			# Copy model run log file to logs directory
 			if (-s $ompp_log_txt) {
@@ -1055,14 +1145,20 @@ for my $model_dir (@model_dirs) {
 		#######################################
 		
 		# Create file to record significant digits used in csv creation
-		open SIGNIFICANT_DIGITS_TXT, ">${current_outputs_dir}/significant_digits.txt";
+        # Leading ! is in file name so that it will be in first files reported if different
+        # Capitalized to make it stand out in report.
+		open SIGNIFICANT_DIGITS_TXT, ">${current_outputs_dir}/!SIGNIFICANT_DIGITS.txt";
 		print SIGNIFICANT_DIGITS_TXT "significant digits = ${significant_digits}\n";
 		close SIGNIFICANT_DIGITS_TXT;
 
 		# Create digests of outputs
-		logmsg info, $model_dir, $flavour, "Create digests of current outputs" if $verbosity >= 2;
+		$start_seconds = time;
+		logmsg info, $model_dir, $flavour, "Create digests of current outputs" if $report_steps;
 		chdir "${current_outputs_dir}";
 		my $digests = create_digest(glob "[a-zA-Z]*.csv *.txt");
+        $elapsed_seconds = time - $start_seconds;
+        $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+        logmsg info, $model_dir, $flavour, "Digest time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
@@ -1073,7 +1169,7 @@ for my $model_dir (@model_dirs) {
 			dircopy $current_dir, $reference_dir;
 		}
 		
-		# Report on version differences
+		# Report on version differences based on tombstone info
 		my $tombstone_reference_txt = "${reference_dir}/tombstone.txt";
 		my $tombstone_current_txt = "${current_dir}/tombstone.txt";
 		if (! -e $tombstone_reference_txt || ! -e $tombstone_current_txt) {
@@ -1081,7 +1177,7 @@ for my $model_dir (@model_dirs) {
 		}
 		else {
 			if (compare($tombstone_reference_txt, $tombstone_current_txt) != 0) {
-				logmsg info, $model_dir, $flavour, "Current tombstone info differs from reference:" if $verbosity >= 1;
+				logmsg info, $model_dir, $flavour, "Current vs. Reference: tombstone info differs:" if $verbosity >= 1;
 				open FILE, "<".$tombstone_reference_txt || die "unable to open ${tombstone_reference_txt}";
 				my $tombstone_reference = <FILE>;
 				close FILE;
@@ -1093,37 +1189,73 @@ for my $model_dir (@model_dirs) {
 			}
 		}
 		
-		# Report on differences between current and reference outputs
+		# Report on differences between Current and Reference outputs
 		my $digests_txt_1 = "${reference_outputs_dir}/digests.txt";
 		my $digests_txt_2 = "${current_outputs_dir}/digests.txt";
-		my ($not_in_1, $not_in_2, $differs) = digest_differences($digests_txt_1, $digests_txt_2);
-		if ('' eq $not_in_1.$not_in_2.$differs) {
-			logmsg info, $model_dir, $flavour, "Current outputs identical to reference outputs" if $verbosity >= 1;
+		my ($not_in_1, $not_in_2, $differs, $same) = digest_differences($digests_txt_1, $digests_txt_2);
+        
+        # Report on files which are the same
+        {
+
+            # total number of files in union of Current and Reference)
+            my $count_total = 
+                  scalar(split(',',$not_in_1))
+                + scalar(split(',',$not_in_2))
+                + scalar(split(',',$differs))
+                + scalar(split(',',$same));
+            my @files = split(',',$same);
+            my $count = @files;
+            logmsg info, $model_dir, $flavour, sprintf 'Current vs. Reference: %3d the same (of %d)', $count, $count_total;
         }
-		else {
-			if ('' ne $not_in_2) {
-				foreach my $table (split(',',$not_in_2)) {
-					logmsg warning, $model_dir, $flavour, "Only in reference: ${table}" ;
-				}
-			}
-			if ('' ne $not_in_1) {
-				foreach my $table (split(',',$not_in_1)) {
-					logmsg warning, $model_dir, $flavour, "Only in current:   ${table}" ;
-				}
-			}
-			if ('' ne $differs) {
-				foreach my $table (split(',',$differs)) {
-					logmsg change, $model_dir, $flavour, "DIFFERS:           ${table}" ;
-				}
-			}
-		}
+        if ('' ne $not_in_2) {
+            my @files = split(',',$not_in_2);
+            my $count = @files;
+            logmsg warning, $model_dir, $flavour, sprintf 'Current vs. Reference: %3d only in Reference', $count ;
+            if ($report_all_files) {
+                foreach my $file (@files) {
+                    logmsg warning, $model_dir, $flavour, "Current vs. Reference: Only in reference: ${file}" ;
+                }
+            }
+        }
+        if ('' ne $not_in_1) {
+            my @files = split(',',$not_in_1);
+            my $count = @files;
+            logmsg warning, $model_dir, $flavour, sprintf 'Current vs. Reference: %3d only in Current', $count ;
+            if ($report_all_files) {
+                foreach my $file (@files) {
+                    logmsg warning, $model_dir, $flavour, "Current vs. Reference: Only in current:   ${file}" ;
+                }
+            }
+        }
+        if ('' ne $differs) {
+            my @files = split(',',$differs);
+            my $count = @files;
+            logmsg change, $model_dir, $flavour, sprintf 'Current vs. Reference: %3d differ', $count ;
+            my $reported = 0;
+            my $remaining = $count;
+            my $max_to_report = 5;
+            foreach my $file (@files) {
+                logmsg change, $model_dir, $flavour, "Current vs. Reference: DIFFERS:           ${file}" ;
+                $reported++;
+                $remaining--;
+                if (!$report_all_files && $reported == $max_to_report && $remaining > 0) {
+                    logmsg change, $model_dir, $flavour, "Current vs. Reference: DIFFERS:           ... and ${remaining} other(s)";
+                    last;
+                }
+            }
+        }
 	} # flavour
 
 	########
 	# compare results between 2 flavours, for reference and current
 	########
 
-	COMPARE: if ($do_flavour_comparison) {
+	COMPARE:
+    if ($do_flavour_comparison) {
+        if ($any_flavour_errors) {
+			logmsg info, $model_dir, ' ', 'Suppressing flavour comparison due to previous build/run errors';
+            next MODEL;
+        }
         # The flavour pairs to compare, comma-separated.
         # Reeported as 'first vs. second'
         my @flavour_pairs;
@@ -1154,12 +1286,14 @@ for my $model_dir (@model_dirs) {
         
         for my $flavour_pair (@flavour_pairs) {
             my ($flavour2, $flavour1) = split ',', $flavour_pair;
-            my $which_flavours = $flavour2.' vs. '.$flavour1;
+            #my $flavour_pair_formatted = $flavour2.' vs. '.$flavour1;
+            # right pad with spaces to common length
+            my $flavour_pair_formatted = sprintf '%-24s', $flavour2.' vs. '.$flavour1;
             # Check for differences in outputs between two flavours
-            foreach my $which ('reference', 'current') {
-                my $which_proper = ucfirst($which);
-                my $digests_txt_1 = "${model_path}/test_models/${which}/${flavour1}/outputs/digests.txt";
-                my $digests_txt_2 = "${model_path}/test_models/${which}/${flavour2}/outputs/digests.txt";
+            foreach my $model_version ('reference', 'current') {
+                my $model_version_formatted = ($model_version eq 'reference') ? 'Reference:' : 'Current:  ';
+                my $digests_txt_1 = "${model_path}/test_models/${model_version}/${flavour1}/outputs/digests.txt";
+                my $digests_txt_2 = "${model_path}/test_models/${model_version}/${flavour2}/outputs/digests.txt";
                 if (! -e $digests_txt_1) {
                     next;
                 }
@@ -1169,26 +1303,58 @@ for my $model_dir (@model_dirs) {
                 else {
                     if (!$comparison_header_done) {
                         $comparison_header_done = 1;
+                        logmsg info, $model_dir, ' '; # insert separator line for readability
                         logmsg info, $model_dir, '    Flavour comparisons', ' ';
                     }
-                    my ($not_in_1, $not_in_2, $differs) = digest_differences($digests_txt_1, $digests_txt_2);
-                    if ('' eq $not_in_1.$not_in_2.$differs) {
-                        logmsg info, $model_dir, $which_flavours, "${which_proper} outputs identical";
+                    logmsg info, $model_dir, ' '; # insert separator line for readability
+                    my ($not_in_1, $not_in_2, $differs, $same) = digest_differences($digests_txt_1, $digests_txt_2);
+                    # Report on files which are the same
+                    {
+
+                        # total number of files in union of flavours 1 and 2
+                        my $count_total = 
+                              scalar(split(',',$not_in_1))
+                            + scalar(split(',',$not_in_2))
+                            + scalar(split(',',$differs))
+                            + scalar(split(',',$same));
+                        my @files = split(',',$same);
+                        my $count = @files;
+                        logmsg info, $model_dir, $flavour_pair_formatted, sprintf "${model_version_formatted} %3d the same (of %d)", $count, $count_total;
                     }
-                    else {
-                        if ('' ne $not_in_2) {
-                            foreach my $table (split(',',$not_in_2)) {
-                                logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour1}: ${table}" ;
+                    if ('' ne $not_in_2) {
+                        my @files = split(',',$not_in_2);
+                        my $count = @files;
+                        logmsg warning, $model_dir, $flavour_pair_formatted, sprintf "${model_version_formatted} %3d only in ${flavour1}", $count ;
+                        if ($report_all_files) {
+                            foreach my $file (@files) {
+                                logmsg warning, $model_dir, $flavour_pair_formatted, "${model_version_formatted} only in ${flavour1}: ${file}" ;
                             }
                         }
-                        if ('' ne $not_in_1) {
-                            foreach my $table (split(',',$not_in_1)) {
-                                logmsg warning, $model_dir, $which_flavours, "${which_proper} only in  ${flavour2}: ${table}" ;
+                    }
+                    if ('' ne $not_in_1) {
+                        my @files = split(',',$not_in_1);
+                        my $count = @files;
+                        logmsg warning, $model_dir, $flavour_pair_formatted, sprintf "${model_version_formatted} %3d only in ${flavour2}", $count;
+                        if ($report_all_files) {
+                            foreach my $file (@files) {
+                                logmsg warning, $model_dir, $flavour_pair_formatted, "${model_version_formatted} only in ${flavour2}: ${file}" ;
                             }
                         }
-                        if ('' ne $differs) {
-                            foreach my $table (split(',',$differs)) {
-                                logmsg change, $model_dir, $which_flavours, "${which_proper} DIFFERS: ${table}" ;
+                    }
+                    if ('' ne $differs) {
+                        my @files = split(',',$differs);
+                        my $count = @files;
+                        logmsg change, $model_dir, $flavour_pair_formatted, sprintf "${model_version_formatted} %3d differ", $count;
+                        my $reported = 0;
+                        my $remaining = $count;
+                        my $max_to_report = 5;
+                        foreach my $file (@files) {
+                            logmsg change, $model_dir, $flavour_pair_formatted, "${model_version_formatted} DIFFERS: ${file}" ;
+                            $reported++;
+                            $remaining--;
+                            if (!$report_all_files && $reported == $max_to_report && $remaining > 0) {
+                                logmsg change, $model_dir, $flavour_pair_formatted, "${model_version_formatted} DIFFERS: ... and ${remaining} other(s)";
+                                last;
                             }
                         }
                     }

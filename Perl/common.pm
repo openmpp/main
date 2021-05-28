@@ -46,7 +46,13 @@ sub logmsg {
 	$prefix = shift(@_);
 	# build prefix using all arguments except last
 	while (0 != $#_) {
-		$prefix .= shift(@_).": ";
+        my $part = shift(@_);
+        # do not add to prefix if empty
+        next if $part eq '';
+        # append ': ' to end of string
+        # if any trailing spaces, insert before them
+        $part =~ s/( *)$/:$1 /;
+        $prefix .= $part;
 	}
 
 	# prepend prefix to each line in msg, and print
@@ -456,19 +462,6 @@ sub modgen_create_scex
     my $members = $General{'Subsamples'};
     my $threads = $General{'Threads'};
 	
-    if ('' ne $run_ini) {
-        if (-f $run_ini) {
-            my $Config = Config::Tiny->new;
-            $Config = Config::Tiny->read($run_ini);
-            my $v1 = $Config->{OpenM}->{SubValues};
-            $members = $v1 if $v1 > 0;
-			$General{"Subsamples"} = $members;
-            my $v2 = $Config->{OpenM}->{Threads};
-            $threads = $v2 if $v2 > 0;
-			$General{"Threads"} = $threads;
-        }
-    }
-    
     $General{"CopyParameters"} = $copy_params;
 
 	# Parse Base ompp framework code file for .scex scenario information
@@ -519,6 +512,33 @@ sub modgen_create_scex
 	}
 	close FRAMEWORK_ODAT;
 
+    # Propagate selected values from model ini to scex, if present
+    # Values from the Parameter section override values from framework.odat
+    if ('' ne $run_ini && -f $run_ini) {
+        my $Config = Config::Tiny->new;
+        $Config = Config::Tiny->read($run_ini);
+        {
+            my $val = $Config->{OpenM}->{SubValues};
+            $General{"Subsamples"} = $val if defined $val;
+        }
+        {
+            my $val = $Config->{OpenM}->{Threads};
+            $General{"Threads"} = $val if defined $val;
+        }
+        {
+            my $val = $Config->{Parameter}->{SimulationSeed};
+            $General{"StartingSeed"} = $val if defined $val;
+        }
+        {
+            my $val = $Config->{Parameter}->{SimulationCases};
+            $General{"Cases"} = $val if defined $val;
+        }
+        {
+            my $val = $Config->{Parameter}->{SimulationEnd};
+            $General{"SimulationEnd"} = $val if defined $val;
+        }
+    }
+    
 	# The XML structure of the .scex file is simple,
 	# so the approach here is to generate it directly rather than use XML::Tiny or XML::LibXML, etc.
 
@@ -574,7 +594,8 @@ sub create_digest
 # Report differences between two digest files
 # arg0 - digest file #1
 # arg1 - digest file #2
-# returns - 3-element list with not in 1, not in 2, differs.  Each element is a comma-separated string of file names
+# returns - 4-element list with not in 1, not in 2, differs, same.
+#    Each element is a comma-separated string of file names
 sub digest_differences {
 	my $in_digest1 = shift(@_);
 	my $in_digest2 = shift(@_);
@@ -615,6 +636,7 @@ sub digest_differences {
 	my $not_in_1 = '';
 	my $not_in_2 = '';
 	my $differs = '';
+    my $same = '';
 	foreach my $file (sort(keys %all_files)) {
 		if (!exists $digest1{$file}) {
 			$not_in_1 .= ',' if length($not_in_1);
@@ -631,10 +653,14 @@ sub digest_differences {
 				$differs .= ',' if length($differs);
 				$differs .= $file;
 			}
+            else {
+				$same .= ',' if length($same);
+				$same .= $file;
+            }
 		}
 	}
 	
-	return ($not_in_1, $not_in_2, $differs);
+	return ($not_in_1, $not_in_2, $differs, $same);
 }
 
 # Normalise event trace for comparability
