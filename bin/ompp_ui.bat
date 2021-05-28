@@ -20,5 +20,8 @@ if not exist %OM_ROOT%\html (
   EXIT 1
 )
 
+set OM_CFG_INI_ALLOW=true
+set OM_CFG_INI_ANY_KEY=true
+
 START "oms" /MIN %OM_ROOT%\bin\oms -oms.HomeDir models\home -oms.LogRequest
 START http://localhost:4040

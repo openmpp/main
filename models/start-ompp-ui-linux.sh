@@ -81,6 +81,11 @@ if [ -n "$OM_CFG_DEFAULT_RUN_TMPL" ] ; then
   echo "OM_CFG_DEFAULT_RUN_TMPL = $OM_CFG_DEFAULT_RUN_TMPL" | tee -a "$START_OMPP_UI_LOG"
 fi
 
+# allow to use $MODEL_NAME.ini file in UI for model run
+#
+export OM_CFG_INI_ALLOW="true"
+export OM_CFG_INI_ANY_KEY="true"
+
 # start oms web-service
 #
 echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
