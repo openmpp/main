@@ -29,6 +29,11 @@ fi
 
 [ "$OM_ROOT" != "$PWD" ] && pushd $OM_ROOT
 
+# allow to use $MODEL_NAME.ini file in UI for model run
+#
+export OM_CFG_INI_ALLOW=true
+export OM_CFG_INI_ANY_KEY=true
+
 # start oms web-service
 #
 [ -z "$OMS_PORT" ] && OMS_PORT=4040
