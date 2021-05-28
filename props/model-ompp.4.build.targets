@@ -189,28 +189,46 @@
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
 
-    <Message Text="Copy @(OMC_MSG_INI_OUTPUT) to $(MODEL_BIN_DIR)" />
-    <Copy 
-      SourceFiles="@(OMC_MSG_INI_OUTPUT)" 
-      DestinationFolder="$(MODEL_BIN_DIR)" 
-      SkipUnchangedFiles="true" 
-      Condition="Exists('%(FullPath)')"
-    />
-    
-    <!--  Skip copy if $(MODEL_INI) is empty or absent. -->
-    <Message Text="Copy $(MODEL_INI) to $(MODEL_BIN_DIR)" Condition="'$(MODEL_INI)'!='' And Exists('$(ProjectDir)/$(MODEL_INI)')" />
-    <Copy 
-      SourceFiles="$(ProjectDir)/$(MODEL_INI)" 
-      DestinationFolder="$(MODEL_BIN_DIR)" 
-      SkipUnchangedFiles="true" 
-      Condition="'$(MODEL_INI)'!='' And Exists('$(ProjectDir)/$(MODEL_INI)')"
-    />
-    
     <Touch  Files="$(PUBLISH_TICKLE)"
             AlwaysCreate="true"
             />
   </Target>
 
+  <!--
+  ModelIniPublish
+  -->
+  <Target Name="ModelIniPublish" 
+          Inputs="$(MODEL_INI_PATH)"
+          Outputs="$(MODEL_BIN_DIR)$(MODEL_INI)"
+          AfterTargets="link"
+          >
+    <!--  Skip copy if $(MODEL_INI) is empty or absent. -->
+    <Message Text="Copy $(MODEL_INI) to $(MODEL_BIN_DIR)" Condition="'$(MODEL_INI)'!='' And Exists('$(MODEL_INI_PATH)')" />
+    <Copy 
+      SourceFiles="$(MODEL_INI_PATH)" 
+      DestinationFolder="$(MODEL_BIN_DIR)" 
+      SkipUnchangedFiles="true" 
+      Condition="'$(MODEL_INI)'!='' And Exists('$(MODEL_INI_PATH)')"
+    />
+  </Target>
+
+  <!--
+  ModelMessageIniPublish
+  -->
+  <Target Name="ModelMessageIniPublish" 
+          Inputs="$(MODEL_MSG_INI_OMC_OUT)"
+          Outputs="$(MODEL_BIN_DIR)$(MODEL_MSG_INI)"
+          AfterTargets="link"
+          >
+    <!--  Skip copy if $(MODEL_MSG_INI) is absent. -->
+    <Message Text="Copy $(MODEL_MSG_INI) to $(MODEL_BIN_DIR)" Condition="Exists('$(MODEL_MSG_INI_OMC_OUT)')" />
+    <Copy 
+      SourceFiles="$(MODEL_MSG_INI_OMC_OUT)" 
+      DestinationFolder="$(MODEL_BIN_DIR)" 
+      SkipUnchangedFiles="true" 
+      Condition="Exists('$(MODEL_MSG_INI_OMC_OUT)')"
+    />
+  </Target>
   
   <!--
   RunModel
