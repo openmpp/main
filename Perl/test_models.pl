@@ -512,6 +512,12 @@ for my $model_dir (@model_dirs) {
 		open TOMBSTONE_TXT, '>'.$tombstone_txt or die "Cannot open ${tombstone_txt}.";
 		print TOMBSTONE_TXT $tombstone_info;
 		close TOMBSTONE_TXT;
+        
+		# Copy model ini file if used to outputs folder under fixed name
+        # Will participate in digest mechanism
+        if (-f $model_ini_path) {
+            copy $model_ini_path, "${current_outputs_dir}/!MODEL_INI.txt";
+        }
 		
 		# Folders for reference model outputs
 		my $reference_outputs_dir = "${reference_dir}/outputs";
