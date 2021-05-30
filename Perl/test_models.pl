@@ -21,7 +21,7 @@ my ($opt, $usage) = describe_options(
 
     # options which control what to do
 
-	[ 'newref' => 'replace reference results with current' ],
+	[ 'newref' => 'replace Reference results with Current results' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
 	[ 'nocomp' => 'skip flavour comparison' ],
