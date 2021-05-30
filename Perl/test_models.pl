@@ -1171,7 +1171,7 @@ for my $model_dir (@model_dirs) {
 		
 		# If no reference directory, copy current to reference
 		if (! -d $reference_dir) {
-			logmsg info, $model_dir, $flavour, "No reference outputs - create using current outputs." if $verbosity >= 2;
+			logmsg info, $model_dir, $flavour, "No Reference outputs - create using Current outputs" if $verbosity >= 2;
 			dircopy $current_dir, $reference_dir;
 		}
 		
