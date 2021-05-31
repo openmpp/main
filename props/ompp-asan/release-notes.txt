@@ -11,7 +11,7 @@ WholeProgramOptimization:   false,                     /LTCG must be off
 For better reports use:
   Link -> AdditionalOptions: /DEBUG
 
-To avoid asan DLLs at run time solution is a static linking, 
+To avoid asan DLLs run time dependency: solution is a static linking, 
 it should work but does not and crush Release version of model.exe:
   RuntimeLibrary:            MultiThreaded,   /MT /MTd
 
@@ -58,7 +58,7 @@ Static version of runtime may crush Release model.exe for no reason:
     </ClCompile>
   </ItemDefinitionGroup>
   
-release model.exe works perfectly OK with DLLs version of run-time and ASAN dlls.
+Release model.exe works perfectly OK with DLLs version of run-time and ASAN dlls.
 
 For better ASAN reports we need link /DEBUG, but standard version may not work:
 
