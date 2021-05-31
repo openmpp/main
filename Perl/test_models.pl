@@ -516,7 +516,18 @@ for my $model_dir (@model_dirs) {
 		# Copy model ini file if used to outputs folder under fixed name
         # Will participate in digest mechanism
         if (-f $model_ini_path) {
-            copy $model_ini_path, "${current_outputs_dir}/0_MODEL_INI.txt";
+            #copy $model_ini_path, "${current_outputs_dir}/0_MODEL_INI.txt";
+            # perform copy line by line to normalize line terminators to current OS value
+            # Note that both files are opened in text mode, not binmode
+            open IN_FILE, '<'.$model_ini_path;
+            open OUT_FILE, '>'."${current_outputs_dir}/0_MODEL_INI.txt";
+            while (<IN_FILE>) {
+                my $line = $_;
+                $line =~ s/\s+$//; # trim all trailing whitespace from line
+                print OUT_FILE "${line}\n"; # append OS-standard delimiter
+            }
+            close IN_FILE;
+            close OUT_FILE;
         }
 		
 		# Folders for reference model outputs
