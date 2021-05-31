@@ -15,11 +15,11 @@
       <UniqueIdentifier>{8cccebfa-faca-4919-98d0-0f6783a23205}</UniqueIdentifier>
       <Extensions>mpp;ompp</Extensions>
     </Filter>
-    <Filter Include="Parameter Files">
+    <Filter Include="Parameter Files (Default)">
       <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
       <Extensions>dat;odat</Extensions>
     </Filter>
-    <Filter Include="IniFiles">
+    <Filter Include="Model ini Files">
       <UniqueIdentifier>{9d673919-854a-495c-b069-c7e667f5e12f}</UniqueIdentifier>
       <Extensions>ini</Extensions>
     </Filter>
@@ -64,13 +64,13 @@
     <None Include="../code/*.ompp">
       <Filter>Model Source Files</Filter>
     </None>
-    <None Include="../parameters/*/*.dat">
+    <None Include="../parameters/Default/*.dat">
       <Filter>Parameter Files</Filter>
     </None>
-    <None Include="../parameters/*/*.odat">
+    <None Include="../parameters/Default/*.odat">
       <Filter>Parameter Files</Filter>
     </None>
-    <None Include="$(ProjectDir)$(MODEL_NAME).ini">
+    <None Include="../*.ini">
       <Filter>IniFiles</Filter>
     </None>
   </ItemGroup>

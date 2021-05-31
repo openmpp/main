@@ -6,31 +6,19 @@
     <!-- The following properties can be set by model developer in the VS IDE through project properties -->
     <MODEL_NAME>
     </MODEL_NAME>
-    <SCENARIO_NAME>
-    </SCENARIO_NAME>
-    <MODEL_CODE_DIR>
-    </MODEL_CODE_DIR>
-    <SCENARIO_PARAMETERS_FOLDER>
-    </SCENARIO_PARAMETERS_FOLDER>
-    <FIXED_PARAMETERS_FOLDER>
-    </FIXED_PARAMETERS_FOLDER>
-    <OMC_USE_DIR>
-    </OMC_USE_DIR>
+    <SCENARIO_NAMES>
+    </SCENARIO_NAMES>
+    <FIXED_NAME>
+    </FIXED_NAME>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
-    <DB_PROVIDER>SQLITE</DB_PROVIDER>
-    <MULTIPROCESSOR_COMPILE>true</MULTIPROCESSOR_COMPILE>
     <USE_PCH>true</USE_PCH>
     <NO_LINE_DIRECTIVES>false</NO_LINE_DIRECTIVES>
     <RUN_SCENARIO>false</RUN_SCENARIO>
-    <MEMBERS>1</MEMBERS>
-    <PROCESSES>1</PROCESSES>
-    <THREADS>1</THREADS>
+    <MODEL_INI>
+    </MODEL_INI>
+    <PROCESSES>
+    </PROCESSES>
     <DBCOPY_EXPORT_CSV>false</DBCOPY_EXPORT_CSV>
-    <EXPORT_CSV>false</EXPORT_CSV>
-    <EXPORT_EXCEL>false</EXPORT_EXCEL>
-    <EXPORT_EXCEL_LANG>
-    </EXPORT_EXCEL_LANG>
-    <EXPORT_EXCEL_LAUNCH>false</EXPORT_EXCEL_LAUNCH>
     <OPEN_MODEL_WEB_UI>false</OPEN_MODEL_WEB_UI>
   </PropertyGroup>
   <!-- Import common early properties for model projects -->
@@ -60,7 +48,7 @@
     <ProjectName>Model</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-
+  <!--                                                                          -->
   <!-- AddressSanitizer:          EnableASAN == true                            -->
   <!-- DebugInformationFormat:    /Zi == ProgramDatabase,    not /ZI            -->
   <!-- Linker:                    LinkIncremental == false,  /INCREMENTAL:NO    -->
@@ -113,7 +101,7 @@
     <EnableASAN>true</EnableASAN>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-
+  <!--                                                    -->
   <!-- Import standard master properties for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -131,7 +119,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  
   <!--                                            -->
   <!-- Import openM properties for model projects -->
   <!--                                            -->
@@ -140,22 +127,19 @@
   <Import Project="$(OM_ROOT)/props/model-ompp.3.items.props" />
   <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.3.items-sqlite.props" />
   <Import Project="$(OM_ROOT)/props/ompp-no-libs/model-ompp.3.items-openm.props" />
-  <!-- VS will expand wild cards in the None group on the first open of this project
-   and will replace, in this file, the None group with that expanded list -->
+  <!-- VS handles wild cards in different ways depending on VS version -->
   <ItemGroup>
     <None Include="../code/*.mpp" />
     <None Include="../code/*.ompp" />
-    <None Include="../parameters/*/*.dat" />
-    <None Include="../parameters/*/*.odat" />
+    <None Include="../parameters/Default/*.dat" />
+    <None Include="../parameters/Default/*.odat" />
+    <None Include="../*.ini" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(ProjectDir)$(MODEL_NAME).ini" />
-  </ItemGroup>
+  <!--                                                 -->
   <!-- Import standard master targets for C++ projects -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  
   <!--                                         -->
   <!-- Import openM targets for model projects -->
   <!--                                         -->
