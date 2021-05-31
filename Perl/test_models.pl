@@ -516,7 +516,7 @@ for my $model_dir (@model_dirs) {
 		# Copy model ini file if used to outputs folder under fixed name
         # Will participate in digest mechanism
         if (-f $model_ini_path) {
-            copy $model_ini_path, "${current_outputs_dir}/!MODEL_INI.txt";
+            copy $model_ini_path, "${current_outputs_dir}/0_MODEL_INI.txt";
         }
 		
 		# Folders for reference model outputs
@@ -1153,7 +1153,7 @@ for my $model_dir (@model_dirs) {
 		# Create file to record significant digits used in csv creation
         # Leading ! is in file name so that it will be in first files reported if different
         # Capitalized to make it stand out in report.
-		open SIGNIFICANT_DIGITS_TXT, ">${current_outputs_dir}/!SIGNIFICANT_DIGITS.txt";
+		open SIGNIFICANT_DIGITS_TXT, ">${current_outputs_dir}/0_SIGNIFICANT_DIGITS.txt";
 		print SIGNIFICANT_DIGITS_TXT "significant digits = ${significant_digits}\n";
 		close SIGNIFICANT_DIGITS_TXT;
 
