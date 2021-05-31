@@ -16,35 +16,49 @@ my ($opt, $usage) = describe_options(
 
 	$script_name.' %o model...',
     
-	[ 'models_root|m=s'  => 'directory containing models (default is .)',
-		{ default => '.' } ],
+    # Models
+    
+    [ 'models_root|m=s'  => 'directory containing models (default is .)',
+    { default => '.' } ],
 
-    # options which control what to do
+    # Actions
 
 	[ 'newref' => 'replace Reference results with Current results' ],
 	[ 'noompp' => 'skip OpenM++ build and run' ],
 	[ 'nomodgen' => 'skip Modgen build and run' ],
 	[ 'nocomp' => 'skip flavour comparison' ],
 
-    # options which control verbosity
+    # Verbosity
     
-	[ 'allfiles' => 'report all unique and different files' ],
-	[ 'timing' => 'report timing information of various steps' ],
+	[ 'allfiles' => 'report all different and orphaned files' ],
+	[ 'timing' => 'report elapsed time of steps' ],
 	[ 'nosteps' => 'skip reporting which step is being performed' ],
     
-    # other options
+    # Build
     
 	[ 'config=s' => 'build configuration: debug or release(default)',
 		{ default => 'release' } ],
-	[ 'ini=s' => 'OpenM++ model ini file to pass to model (in model root, default is test_models.ini if present)',
-		{ default => '' } ],
 	[ 'mpi_processes=i' => 'build MPI version and run with n processes (default 0, means no MPI)',
 		{ default => 0 } ],
+    
+    # Run
+    
+	[ 'ini=s' => 'OpenM++ model ini file to pass to model (in model root, default is test_models.ini if present)',
+		{ default => '' } ],
+	[ 'clean' => 'remove all build files after run' ],
+    
+    # Digests
+    
 	[ 'significant_digits=i' => 'significant digits (default 7)',
 		{ default => 7 } ],
-	[ 'help|h'    => 'print usage message and exit' ],
-	[ 'version|v' => 'print version and exit' ],
-	[ 'clean' => 'remove all build files after run' ],
+    
+    # Miscellaneous
+    
+	[ 'help|h'    => 'report usage message and exit' ],
+	[ 'version|v' => 'report test_models version and exit' ],
+    
+    # Deprecated
+    
 	[ 'windows_platform=s' => 'Windows platform: x64(default) or Win32',
 		{ default => 'x64' } ],
 	[ 'modgen_platform=s' => 'Modgen platform: Win32(default) or x64',
@@ -417,7 +431,7 @@ for my $model_dir (@model_dirs) {
         # --ini option was supplied on command line
         $model_ini = $model_ini_opt;
 		$model_ini_path = "${model_path}/${model_ini}";
-		if (-f $model_ini_path) {
+		if (! -f $model_ini_path) {
             logmsg error, "Model ini ${model_ini_path} not found";
             next MODEL;
         }
