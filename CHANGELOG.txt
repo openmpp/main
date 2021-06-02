@@ -1,6 +1,17 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_06_02:
+  TablePresent() function for derived table model code
+  bug fix in Modgen macros FixedGetTableValue and FixedSetTableValue for cross-compatible models
+  bug fix in Modgen hide statement
+  significant updates of test_models.pl and build Windows test_models.exe
+  Windows: drop Win32 model.exe suffix, build release with only x64 exe's
+  enhanced support of model ini-files for Visual Studio
+  enhanced model version log
+  build documentation archive as part of release
+  build single page of wiki for offline use
+
 2021_05_05:
   model code statements to suppress or retain parameters or tables in the model executable
   move wiki to GitHub
