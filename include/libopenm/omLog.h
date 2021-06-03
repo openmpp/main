@@ -126,4 +126,7 @@ extern openm::ITrace * theTrace;
 /** LT localisation function: return is temporary const char* and must be copied to avoid memory violation crash. */
 #define LT(sourceMessage) ((theLog->getMessage(sourceMessage)).c_str())
 
+/** NO_LT localisation function: return source content as is. Use it to suppress translation, for example: WarningMsg( NO_LT("};") ); */
+#define NO_LT(sourceMessage) sourceMessage
+
 #endif  // OM_H_LOG_H
