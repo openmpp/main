@@ -243,7 +243,9 @@ void ParameterSymbol::post_parse(int pass)
 void ParameterSymbol::post_parse_mark_enumerations(void)
 {
     // Mark enumerations required for metadata support for this parameter
-    if (source == scenario_parameter) {
+    // Note that .csv or .tsv parameters are not detected until late, so may be marked as missing_parameters
+    // so publish meta data for their enumerations.
+    if (source == scenario_parameter || source == missing_parameter) {
         // The storage type if an enumeration
         if (pp_datatype->is_enumeration()) {
             auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
