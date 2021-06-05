@@ -1,5 +1,5 @@
-# Copyright (c) 2013-2014 OpenM++
-# This code is licensed under MIT license (see LICENSE.txt for details)
+# Copyright (c) 2013-2021 OpenM++ Contributors
+# This code is licensed under the MIT license (see LICENSE.txt for details)
 
 # Common shared components for ompp Perl utilities, e.g. test_models.pl and friends 
 
@@ -766,5 +766,49 @@ sub normalize_event_trace
 	
 	return 0;
 }
+
+# Find warning and error messages in a text file
+# arg0 - name of input file
+# returns - 4-element list with (error_count, error_messages, warning_count, warning_messages), where messages are new-line separated strings.
+sub extract_errors_and_warnings {
+	my $in_file = shift(@_);
+    
+    my $error_count = 0;
+    my $error_messages = '';
+
+    my $warning_count = 0;
+    my $warning_messages = '';
+
+	if (!open IN, "<${in_file}") {
+		logmsg error, "error opening >${in_file}";
+		return (1,'',0,'');
+	}
+    
+	while (<IN>) {
+		chomp;
+		my $line = $_;
+        
+        # pattern avoids false positive like a summary line like '4 Warnings'
+        # 'warning' followed by a space or colon
+        if ($line =~ /warning[: ]/i ) {
+            $warning_messages .= "\n" if $warning_count > 0;
+            $warning_messages .= $line;
+            $warning_count++;
+        }
+        if ($line =~ /error[: ]/i ) {
+            $error_messages .= "\n" if $error_count > 0;
+            $error_messages .= $line;
+            $error_count++;
+        }
+        
+        # special stop processing conditions to avoid double-counting warnings and errors in msbuild output.
+        last if $line =~ /^Done Building Project/;
+        
+    };
+	close IN;
+    
+	return ($error_count, $error_messages, $warning_count, $warning_messages);
+}
+
 
 return 1;

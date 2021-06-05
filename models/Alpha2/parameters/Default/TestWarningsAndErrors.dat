@@ -1,0 +1,8 @@
+parameters {
+    //EN activate run-time warning test
+    logical ActivateWarningTest = FALSE;
+
+    //EN activate run-time error test
+    logical ActivateErrorTest = FALSE;
+};
+

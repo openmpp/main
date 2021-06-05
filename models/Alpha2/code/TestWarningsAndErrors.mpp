@@ -1,0 +1,23 @@
+// Copyright (c) 2013-2017 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(TestWarningsAndErrors, EN) Run-time tests of warnings and errors
+
+parameters
+{
+    //EN activate run-time warning test
+    logical ActivateWarningTest;
+
+    //EN activate run-time error test
+    logical ActivateErrorTest;
+};
+
+void PreSimulation()
+{
+    if (ActivateWarningTest) {
+        WarningMsg("warning deliberately produced in PreSimulation");
+    }
+    if (ActivateErrorTest) {
+        ModelExit("error deliberately produced in PreSimulation");
+    }
+}
