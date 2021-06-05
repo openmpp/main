@@ -40,6 +40,7 @@ my ($opt, $usage) = describe_options(
 		{ default => 'release' } ],
 	[ 'mpi_processes=i' => 'build MPI version and run with n processes (default 0, means no MPI)',
 		{ default => 0 } ],
+	[ 'gencode' => 'keep a copy of the generated C++ code' ],
     
     # Run
     
@@ -118,6 +119,10 @@ $do_flavour_comparison = 0 if $opt->nocomp;
 my $mpi_processes = $opt->mpi_processes;
 my $use_mpi = 0;
 $use_mpi = 1 if $mpi_processes > 0;
+
+# Save generated code option
+my $save_generated_code = 0;
+$save_generated_code = 1 if $opt->gencode;
 
 
 #####################
@@ -512,9 +517,10 @@ for my $model_dir (@model_dirs) {
 		my $current_outputs_dir = "${current_dir}/outputs";
 		make_path $current_outputs_dir;
 
-		# Folder for current generated code (holds a copy)
+		# Folder for current generated code (can hold a copy)
 		my $current_generated_code_dir = "${current_dir}/generated_code";
-		make_path $current_generated_code_dir;
+        # remove any pre-existing generated code folder to avoid confusion.
+        remove_tree $current_generated_code_dir;
 		
 		# Folder for current logs (holds a copy)
 		my $current_logs_dir = "${current_dir}/logs";
@@ -547,6 +553,7 @@ for my $model_dir (@model_dirs) {
 		# Folders for reference model outputs
 		my $reference_outputs_dir = "${reference_dir}/outputs";
 
+        # Ensure existence of empty generated code folder for omc
 		my $generated_code_dir = "${project_dir}/src";
 		remove_tree $generated_code_dir;
 		make_path $generated_code_dir;
@@ -682,10 +689,13 @@ for my $model_dir (@model_dirs) {
 			#####################################
 			
 			# Save copy of generated C++ source code
-			chdir $generated_code_dir;
-			for (glob "*.h *.cpp") {
-				copy "$_", "$current_generated_code_dir";
-			}
+            if ($save_generated_code) {
+                make_path $current_generated_code_dir;
+                chdir $generated_code_dir;
+                for (glob "*.h *.cpp") {
+                    copy "$_", "${current_generated_code_dir}";
+                }
+            }
 			
 			chdir "${target_dir}";
             my $run_txt = "Run model";
@@ -895,10 +905,13 @@ for my $model_dir (@model_dirs) {
 			#####################################
 			
 			# Save copy of generated C++ source code
-			chdir $generated_code_dir;
-			for (glob "*.h *.cpp") {
-				copy "$_", "$current_generated_code_dir";
-			}
+            if ($save_generated_code) {
+                make_path $current_generated_code_dir;
+                chdir $generated_code_dir;
+                for (glob "*.h *.cpp") {
+                copy "$_", "${current_generated_code_dir}";
+                }
+            }
 			
             my $run_txt = "Run model";
 			$start_seconds = time;
@@ -1090,10 +1103,13 @@ for my $model_dir (@model_dirs) {
 			# Save copy of generated C++ source code
 			my $omc_generated_code_dir = "${project_dir}/build/${config}/src";
 			
-			chdir $omc_generated_code_dir;
-			for (glob "*.h *.cpp") {
-				copy "$_", "$current_generated_code_dir";
-			}
+            if ($save_generated_code) {
+                make_path $current_generated_code_dir;
+                chdir $omc_generated_code_dir;
+                for (glob "*.h *.cpp") {
+                    copy "$_", "${current_generated_code_dir}";
+                }
+            }
 
             my $run_txt = "Run model";
             $run_txt .= " using $model_ini" if $model_ini ne '';
