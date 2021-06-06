@@ -252,7 +252,6 @@ int get_next_entity_id()
  */
 void ModelExit(const char* msg)
 {
-    theLog->logMsg(msg);
     throw openm::SimulationException(msg);
 }
 
