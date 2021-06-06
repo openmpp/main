@@ -657,8 +657,6 @@ for my $model_dir (@model_dirs) {
 			if ($build_error_count) {
 				logmsg error, $model_dir, $flavour, "${build_error_count} build errors - see ${current_build_log_short}";
 				logerrors $build_error_messages;
-                $any_flavour_errors = 1;
-				next FLAVOUR;
 			}
 			if ($build_warning_count) {
 				logmsg warning, $model_dir, $flavour, "${build_warning_count} build warnings - see ${current_build_log_short}";
@@ -750,8 +748,6 @@ for my $model_dir (@model_dirs) {
 			if ($run_error_count) {
 				logmsg error, $model_dir, $flavour, "${run_error_count} run errors - see ${current_run_log_short}";
 				logerrors $run_error_messages;
-                $any_flavour_errors = 1;
-				next FLAVOUR;
 			}
 			if ($run_warning_count) {
 				logmsg warning, $model_dir, $flavour, "${run_warning_count} run warnings - see ${current_run_log_short}";
@@ -887,8 +883,6 @@ for my $model_dir (@model_dirs) {
 			if ($build_error_count) {
 				logmsg error, $model_dir, $flavour, "${build_error_count} build errors - see ${current_build_log_short}";
 				logerrors $build_error_messages;
-                $any_flavour_errors = 1;
-				next FLAVOUR;
 			}
 			if ($build_warning_count) {
 				logmsg warning, $model_dir, $flavour, "${build_warning_count} build warnings - see ${current_build_log_short}";
@@ -1007,8 +1001,6 @@ for my $model_dir (@model_dirs) {
 			if ($run_error_count) {
 				logmsg error, $model_dir, $flavour, "${run_error_count} run errors - see ${current_run_log_short}";
 				logerrors $run_error_messages;
-                $any_flavour_errors = 1;
-				next FLAVOUR;
 			}
 			if ($run_warning_count) {
 				logmsg warning, $model_dir, $flavour, "${run_warning_count} run warnings - see ${current_run_log_short}";
@@ -1116,8 +1108,6 @@ for my $model_dir (@model_dirs) {
 			if ($build_error_count) {
 				logmsg error, $model_dir, $flavour, "${build_error_count} build errors - see ${current_build_log_short}";
 				logerrors $build_error_messages;
-                $any_flavour_errors = 1;
-				next FLAVOUR;
 			}
 			if ($build_warning_count) {
 				logmsg warning, $model_dir, $flavour, "${build_warning_count} build warning(s) - see ${current_build_log_short}";
@@ -1210,8 +1200,6 @@ for my $model_dir (@model_dirs) {
 			if ($run_error_count) {
 				logmsg error, $model_dir, $flavour, "${run_error_count} run errors - see ${current_run_log_short}";
 				logerrors $run_error_messages;
-                $any_flavour_errors = 1;
-				next FLAVOUR;
 			}
 			if ($run_warning_count) {
 				logmsg warning, $model_dir, $flavour, "${run_warning_count} run warnings - see ${current_run_log_short}";

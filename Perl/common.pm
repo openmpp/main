@@ -788,14 +788,13 @@ sub extract_errors_and_warnings {
 		chomp;
 		my $line = $_;
         
-        # pattern avoids false positive like a summary line like '4 Warnings'
-        # 'warning' followed by a space or colon
-        if ($line =~ /warning[: ]/i ) {
+        # re tries to detect error/warning formats used in build chains used by ompp
+        if ($line =~ /(^|\s)warning ?\w* ?:/i ) {
             $warning_messages .= "\n" if $warning_count > 0;
             $warning_messages .= $line;
             $warning_count++;
         }
-        if ($line =~ /error[: ]/i ) {
+        if ($line =~ /(^|\s)error ?\w* ?:/i ) {
             $error_messages .= "\n" if $error_count > 0;
             $error_messages .= $line;
             $error_count++;
