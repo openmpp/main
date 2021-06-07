@@ -1,15 +1,18 @@
 # openM++ intermediate build and run files
-bin/data/*
-build/
-lib/
-models/bin/
-*.zip
-*.gz
-*.log
-
-# openM++ UI
 #
-html/
+ompp/bin/
+ompp/build/
+ompp/src/
+*.log
+ompp-linux/
+ompp-mac/
+test_models/
+
+# Modgen-specific
+#
+modgen/bin/
+modgen/build/
+modgen/src/
 
 # build results and user settings
 #
@@ -36,8 +39,6 @@ html/
 .#*
 .*.swp
 *.vcxproj.user
-
-[Tt]humbs.db
 
 #
 # MacOS and Xcode
