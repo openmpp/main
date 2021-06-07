@@ -234,16 +234,18 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
+.PHONY : omc_compile
 $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP)
-	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) || { exit $$?; }
+	( $(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) ) \
+	|| kill $$PPID
 
-$(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp
+$(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp | omc_compile
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(DEPS_DIR)/%.d : $(MODEL_CODE_DIR)/%.cpp
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
-$(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp
+$(OBJ_DIR)/%.o : $(OMC_OUT_DIR)/%.cpp | omc_compile
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_OMC) -c $< -o $@
 
 $(OBJ_DIR)/%.o : $(MODEL_CODE_DIR)/%.cpp
@@ -259,11 +261,11 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 publish : $(MODEL_SQLITE) copy_ini
 
 $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
-	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE) || { exit $$?; }
+	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
 
 .PHONY : copy_ini
 copy_ini:
-	@if [ -e $(MODEL_NAME).ini ] ; then cp -pvf $(MODEL_NAME).ini $(OUT_BIN_DIR) || { exit $$?; } ; fi
+	@if [ -e $(MODEL_NAME).ini ] ; then cp -pvf $(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
 	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pvf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
 
 .PHONY : publish-views
@@ -278,8 +280,7 @@ publish-views : publish
 run:
 	$(OUT_BIN_DIR)/$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.ProgressPercent 25 \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite" \
-		|| { exit $$?; }
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean
 clean:
