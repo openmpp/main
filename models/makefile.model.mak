@@ -236,8 +236,8 @@ $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 .PHONY : omc_compile
 $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP)
-	( $(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) ) \
-	|| kill $$PPID
+	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) \
+	|| { echo "error at omc compile, exit code: " $$? ; kill $$PPID ; }
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp | omc_compile
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
