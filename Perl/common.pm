@@ -18,6 +18,9 @@ sub error {
 sub info {
 	return "             ";
 }
+sub diagnostic {
+	return "diagnostic   ";
+}
 
 # Steps to install Capture::Tiny (this method requires internet connectivity, there are other ways)
 #
@@ -359,7 +362,9 @@ sub ompp_tables_to_csv
 					#	$value = sprintf("%.*g", $j, $value);
 					#}
 					$value = 0.0 + $value;
+                    
 				}
+                $transformed_value = apply_transform($value, $round_prec) if $do_transformed;
 				# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 				$value =~ s/e([-+])0(\d\d)/e\1\2/;
 				$original_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_original;
@@ -386,6 +391,25 @@ sub ompp_tables_to_csv
 
 	# Success
 	return 0;
+}
+
+# Transform numeric value for alternative digest
+# arg0 - the original value
+# arg1 - the digits of precision for rounding
+# returns - the transformed value
+sub apply_transform
+{
+	my $value = shift(@_);
+	my $round_prec  = shift(@_);
+    
+    my $transformed_value = $value * 1.12345678987654321;
+    if ($round_prec > 0) {
+        # 2-stage rounding
+        $transformed_value = sprintf("%.15g", $transformed_value);
+        $transformed_value = sprintf("%.${round_prec}g", $transformed_value);
+        $transformed_value = 0.0 + $transformed_value;
+    }
+    return $transformed_value;
 }
 
 
@@ -594,11 +618,22 @@ sub create_digest
 # Report differences between two digest files
 # arg0 - digest file #1
 # arg1 - digest file #2
+# arg2 - alternate digest file #1
+# arg3 - alternate digest file #2
+# arg4 - folder of files #1
+# arg5 - folder of files #2
+# arg6 - significant digits for sameness
 # returns - 4-element list with not in 1, not in 2, differs, same.
 #    Each element is a comma-separated string of file names
 sub digest_differences {
 	my $in_digest1 = shift(@_);
 	my $in_digest2 = shift(@_);
+	my $in_digest1a = shift(@_);
+	my $in_digest2a = shift(@_);
+	my $in_folder1 = shift(@_);
+	my $in_folder2 = shift(@_);
+    my $significant_digits = shift(@_);
+    
 	my $result = '';
 	
 	# read the digest1 information into a map
@@ -628,6 +663,38 @@ sub digest_differences {
 		$digest2{$key} = $value;
 	}
 	close IN_DIGEST2;
+    
+    # populate alternate digest1 if supplied and valid
+    my %digest1a;
+    if (-e $in_digest1a) {
+        if (!open IN_DIGEST1A, "<${in_digest1a}") {
+            logmsg error, "unable to open ${in_digest1a}";
+            return 1;
+        };
+        while (<IN_DIGEST1A>) {
+            # trim all trailing white space
+            $_ =~ s/\s*$//;
+            (my $key, my $value) = split ', ';
+            $digest1a{$key} = $value;
+        }
+        close IN_DIGEST1A;
+    }
+
+    # populate alternate digest2 if supplied and valid
+    my %digest2a;
+    if (-e $in_digest2a) {
+        if (!open IN_DIGEST2A, "<${in_digest2a}") {
+            logmsg error, "unable to open ${in_digest2a}";
+            return 1;
+        };
+        while (<IN_DIGEST2A>) {
+            # trim all trailing white space
+            $_ =~ s/\s*$//;
+            (my $key, my $value) = split ', ';
+            $digest2a{$key} = $value;
+        }
+        close IN_DIGEST2A;
+    }
 
 	# Create amalgamated map of union of files in digest1 and digest2
 	my %all_files = (%digest1, %digest2);
@@ -638,6 +705,7 @@ sub digest_differences {
 	my $differs = '';
     my $same = '';
 	foreach my $file (sort(keys %all_files)) {
+        my $is_csv = ($file =~ /[.]csv$/i);
 		if (!exists $digest1{$file}) {
 			$not_in_1 .= ',' if length($not_in_1);
 			$not_in_1 .= $file;
@@ -649,13 +717,44 @@ sub digest_differences {
 		else {
 			my $value1 = $digest1{$file};
 			my $value2 = $digest2{$file};
-			if ( $value1 ne $value2) {
-				$differs .= ',' if length($differs);
-				$differs .= $file;
-			}
-            else {
+			if ( $value1 eq $value2) {
+                #logmsg diagnostic, 'digest_differences', "   same by method 1: ${file}";
 				$same .= ',' if length($same);
 				$same .= $file;
+			}
+            elsif ($is_csv) {
+                #logmsg diagnostic, 'digest_differences', "differs by method 1: ${file}";
+                # differ with main digests
+                # try alternate digests (method 2)
+                my $value1a = $digest1a{$file};
+                my $value2a = $digest2a{$file};
+                if (defined($value1a) && defined($value1a) && $value1a eq $value2a) {
+                    # alternate digests equal, so consider equal
+                    #logmsg diagnostic, 'digest_differences', "   same by method 2: ${file}";
+                    $same .= ',' if length($same);
+                    $same .= $file;
+                }
+                else {
+                    #logmsg diagnostic, 'digest_differences', "differs by method 2: ${file}";
+                    my $file1 = "${in_folder1}/${file}";
+                    my $file2 = "${in_folder2}/${file}";
+                    if (-e $file1 && -e $file2 && same_values_csv($file1, $file2, $significant_digits)) {
+                        #logmsg diagnostic, 'digest_differences', "   same by method 3: ${file}";
+                        # passed cell-by-cell comparison
+                        $same .= ',' if length($same);
+                        $same .= $file;
+                    }
+                    else {
+                        #logmsg diagnostic, 'digest_differences', "differs by method 3: ${file}";
+                        $differs .= ',' if length($differs);
+                        $differs .= $file;
+                    }
+                }
+            }
+            else { # elsif ($is_csv)
+                # not a .csv, method 1 detects difference without ambiguity
+                $differs .= ',' if length($differs);
+                $differs .= $file;
             }
 		}
 	}
@@ -807,6 +906,94 @@ sub extract_errors_and_warnings {
 	close IN;
     
 	return ($error_count, $error_messages, $warning_count, $warning_messages);
+}
+
+# Report if the values in two csv files are the same, within specified tolerance
+# arg0 - csv file #1
+# arg1 - csv file #2
+# arg2 - digits of precision for sameness
+# returns - true if all cells compare the same, otherwise false
+sub same_values_csv {
+	my $in_csv1 = shift(@_);
+	my $in_csv2 = shift(@_);
+	my $prec = shift(@_);
+	my $result = 0;
+    my $tol = 10 ** (-$prec); # comparison tolerance
+	
+	if (!open IN_CSV1, "<${in_csv1}") {
+		logmsg error, "unable to open ${in_csv1}";
+		return 0;
+	};
+    
+	if (!open IN_CSV2, "<${in_csv2}") {
+		logmsg error, "unable to open ${in_csv1}";
+		return 0;
+	};
+    
+    while (1) {
+        my $line1 = <IN_CSV1>;
+        my $line2 = <IN_CSV2>;
+        
+        if ($line1 ne $line2) {
+            # Split into leading indices and value parts.
+            # All tables have a measure dimension, so at least one comma is always present,
+            # even for tables with no classification dimensions.
+            # RE below excludes trailing newlines from capture group #2
+            chomp $line1;
+            $line1 =~ /^(.*),([^,]*)$/;
+            my $indices1 = $1;
+            my $value1 = $2;
+            chomp $line2;
+            $line2 =~ /^(.*),([^,]*)$/;
+            my $indices2 = $1; 
+            my $value2 = $2;
+            if ($indices1 ne $indices2) {
+                #logmsg diagnostic, 'same_values_csv', "indices differ indices1=${indices1} indices2=${indices2}";
+                $result = 0;
+                last;
+            }
+            elsif (!length($value1) || !length($value2)) { # perl idiom for detecting 0-length string
+                # value1 and value2 differ
+                # One value is missing (parsed as empty string)
+                # Perl interprets '' in numeric context to be 0, so we deal with it as a special case
+                # to avoid treating missing and 0 as the same (they are not!)
+                #logmsg diagnostic, 'same_values_csv', "cell value differs indices=${indices1} one value null, other not";
+                $result = 0;
+                last;
+            }
+            else {
+                # value1 and value2 differ
+                my $diff = abs($value2 - $value1);
+                if ($value1 != 0) {
+                    # convert to proportional difference if possible
+                    $diff = $diff / abs($value1);
+                }
+                ##logmsg diagnostic, 'same_values_csv', "indices=${indices1} value1=${value1} value2=${value2} diff=${diff} tol=${tol}";
+                if ($diff > $tol) {
+                    #logmsg diagnostic, 'same_values_csv', "cell value differs indices=${indices1} value1=${value1} value2=${value2} diff=${diff}";
+                    $result = 0;
+                    last;
+                }
+            }
+        }
+        
+        if (eof(IN_CSV1) || eof(IN_CSV2)) {
+            if(eof(IN_CSV1) && eof(IN_CSV1)) {
+                # simultaneous eof with no differences found
+                $result = 1;
+            }
+            else {
+                # the two files have differing line counts
+                #logmsg diagnostic, 'same_values_csv', "input files have differing line counts";
+                $result = 0;
+            }
+            last;
+        }
+    }
+    
+	close IN_CSV1;
+	close IN_CSV2;
+    return $result;
 }
 
 

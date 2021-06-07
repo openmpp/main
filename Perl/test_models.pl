@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 my $script_name = "test_models";
-my $script_version = '2.0';
+my $script_version = '2.1';
 
 use Getopt::Long::Descriptive;
 
@@ -48,10 +48,11 @@ my ($opt, $usage) = describe_options(
 		{ default => '' } ],
 	[ 'clean' => 'remove all build files after run' ],
     
-    # Digests
+    # Comparison
     
-	[ 'significant_digits=i' => 'significant digits (default 7)',
-		{ default => 7 } ],
+	[ 'significant_digits=i' => 'significant digits (default 6)',
+		{ default => 6 } ],
+	[ 'nocells' => 'disable fallback cell-by-cell verification of differing tables and copy of original data' ],
     
     # Miscellaneous
     
@@ -64,7 +65,6 @@ my ($opt, $usage) = describe_options(
 		{ default => 'x64' } ],
 	[ 'modgen_platform=s' => 'Modgen platform: Win32(default) or x64',
 		{ default => 'Win32' } ],
-	[ 'nounroundedtables' => 'suppress creation of unrounded versions of tables' ],
 );
 
 if ($opt->version) {
@@ -104,10 +104,6 @@ $report_steps = 0 if $opt->nosteps;
 # Number of significant digits to retain in the output csv files (0 means full precision)
 my $significant_digits = $opt->significant_digits;
 
-# Also create and keep non-rounded version of each output csv table
-my $unrounded_tables = 1;
-$unrounded_tables = 0 if $opt->nounroundedtables;
-
 # Path to optional ini file (relative to model folder) to pass to ompp model
 my $model_ini_opt = $opt->ini;
 
@@ -123,6 +119,19 @@ $use_mpi = 1 if $mpi_processes > 0;
 # Save generated code option
 my $save_generated_code = 0;
 $save_generated_code = 1 if $opt->gencode;
+
+# method 2 option
+# Save transformed values and compute and use digests of rounded transformed values
+# to confirm differences from pass1
+
+my $do_method2 = 0;
+
+# method 3 option
+# Save original values and compute cell-by-cell proportional differences 
+# to confirm differences from pass1 (and pass2 if active).
+
+my $do_method3 = 1;
+$do_method3 = 0 if $opt->nocells;
 
 
 #####################
@@ -477,6 +486,11 @@ for my $model_dir (@model_dirs) {
     # Folder for test_model outputs and persistence
     my $test_models_dir = "${model_path}/test_models";
 	make_path $test_models_dir || die;
+    
+    # The following are for measuring and reporting elapsed time of various steps
+    my $start_seconds = time;
+    my $elapsed_seconds;
+    my $elapsed_formatted;
 
 	##############
 	# Process each flavour
@@ -571,11 +585,6 @@ for my $model_dir (@model_dirs) {
 		remove_tree $generated_code_dir;
 		make_path $generated_code_dir;
 
-        # The following are for measuring and reporting elapsed time of various steps
-		my $start_seconds = time;
-        my $elapsed_seconds;
-        my $elapsed_formatted;
-        
 		if ($flavour eq 'modgen') {
 
 			#####################################
@@ -776,7 +785,7 @@ for my $model_dir (@model_dirs) {
 				normalize_event_trace $modgen_scenario_debug_txt, $current_trace_txt;
 			}
 			
-			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $unrounded_tables)) {
+			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
                 $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
@@ -1015,7 +1024,7 @@ for my $model_dir (@model_dirs) {
 			
 			$start_seconds = time;
 			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $unrounded_tables)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
                 $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
@@ -1214,13 +1223,13 @@ for my $model_dir (@model_dirs) {
 
 			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
 			$start_seconds = time;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, 1)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
                 $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
 			$elapsed_seconds = time - $start_seconds;
 			$elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-			logmsg info, $model_dir, $flavour, "Convert time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
+			logmsg info, $model_dir, $flavour, "Convert time ${elapsed_formatted}" if $report_timing;
 
 			# If present and non-empty copy event trace / case checksum file to results directory
 			if (-s $ompp_trace_txt) {
@@ -1254,16 +1263,31 @@ for my $model_dir (@model_dirs) {
 		close SIGNIFICANT_DIGITS_TXT;
 
 		# Create digests of outputs
+        
 		$start_seconds = time;
 		logmsg info, $model_dir, $flavour, "Create digests of current outputs" if $report_steps;
+        
+        my @digests;
+        push @digests, "${current_outputs_dir}";
+        push @digests, "digests${current_outputs_dir}";
+        
 		chdir "${current_outputs_dir}";
 		my $digests = create_digest(glob "[a-zA-Z]*.csv *.txt");
-        $elapsed_seconds = time - $start_seconds;
-        $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
-        logmsg info, $model_dir, $flavour, "Digest time ${elapsed_formatted}" if $report_timing && $verbosity >= 1;
 		open DIGESTS_TXT, ">digests.txt";
 		print DIGESTS_TXT $digests;
 		close DIGESTS_TXT;
+        if ($do_method2) {
+            chdir "${current_outputs_dir}/transformed";
+            my $digests = create_digest(glob "[a-zA-Z]*.csv");
+            open DIGESTS_TXT, ">../digests_transformed.txt";
+            print DIGESTS_TXT $digests;
+            close DIGESTS_TXT;
+        }
+        
+        $elapsed_seconds = time - $start_seconds;
+        $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+        logmsg info, $model_dir, $flavour, "Digest time ${elapsed_formatted}" if $report_timing;
+       
 		
 		# If no reference directory, copy current to reference
 		if (! -d $reference_dir) {
@@ -1292,9 +1316,23 @@ for my $model_dir (@model_dirs) {
 		}
 		
 		# Report on differences between Current and Reference outputs
+		$start_seconds = time;
+        my $current_outputs_original = "${current_outputs_dir}/original";
+        my $reference_outputs_original = "${reference_outputs_dir}/original";
 		my $digests_txt_1 = "${reference_outputs_dir}/digests.txt";
 		my $digests_txt_2 = "${current_outputs_dir}/digests.txt";
-		my ($not_in_1, $not_in_2, $differs, $same) = digest_differences($digests_txt_1, $digests_txt_2);
+		my $digests_txt_1a = "${reference_outputs_dir}/digests_alternate.txt";
+		my $digests_txt_2a = "${current_outputs_dir}/digests_alternate.txt";
+		my ($not_in_1, $not_in_2, $differs, $same) = 
+          digest_differences(
+                $digests_txt_1,
+                $digests_txt_2,
+                $digests_txt_1a,
+                $digests_txt_2a,
+                $current_outputs_original,
+                $reference_outputs_original,
+                $significant_digits
+            );
         
         # Report on files which are the same
         {
@@ -1346,14 +1384,18 @@ for my $model_dir (@model_dirs) {
                 }
             }
         }
+        $elapsed_seconds = time - $start_seconds;
+        $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+        logmsg info, $model_dir, $flavour, "Compare time ${elapsed_formatted}" if $report_timing;
 	} # flavour
 
 	########
-	# compare results between 2 flavours, for reference and current
+	# compare results among flavours, for reference and current
 	########
 
 	COMPARE:
     if ($do_flavour_comparison) {
+		$start_seconds = time;
         if ($any_flavour_errors) {
 			logmsg info, $model_dir, ' ', 'Suppressing flavour comparison due to previous build/run errors';
             next MODEL;
@@ -1394,8 +1436,14 @@ for my $model_dir (@model_dirs) {
             # Check for differences in outputs between two flavours
             foreach my $model_version ('reference', 'current') {
                 my $model_version_formatted = ($model_version eq 'reference') ? 'Reference:' : 'Current:  ';
-                my $digests_txt_1 = "${model_path}/test_models/${model_version}/${flavour1}/outputs/digests.txt";
-                my $digests_txt_2 = "${model_path}/test_models/${model_version}/${flavour2}/outputs/digests.txt";
+                my $dir1 = "${model_path}/test_models/${model_version}/${flavour1}";
+                my $dir2 = "${model_path}/test_models/${model_version}/${flavour2}";
+                my $dir1_original = "${dir1}/outputs/original";
+                my $dir2_original = "${dir2}/outputs/original";;
+                my $digests_txt_1 = "${dir1}/outputs/digests.txt";
+                my $digests_txt_2 = "${dir2}/outputs/digests.txt";
+                my $digests_txt_1a = "${dir1}/outputs/digests_transformed.txt";
+                my $digests_txt_2a = "${dir2}/outputs/digests_transformed.txt";
                 if (! -e $digests_txt_1) {
                     next;
                 }
@@ -1409,7 +1457,16 @@ for my $model_dir (@model_dirs) {
                         logmsg info, $model_dir, '    Flavour comparisons', ' ';
                     }
                     logmsg info, $model_dir, ' '; # insert separator line for readability
-                    my ($not_in_1, $not_in_2, $differs, $same) = digest_differences($digests_txt_1, $digests_txt_2);
+                    my ($not_in_1, $not_in_2, $differs, $same) = 
+                        digest_differences(
+                            $digests_txt_1,
+                            $digests_txt_2,
+                            $digests_txt_1a,
+                            $digests_txt_2a,
+                            $dir1_original,
+                            $dir2_original,
+                            $significant_digits
+                   );
                     # Report on files which are the same
                     {
 
@@ -1463,6 +1520,9 @@ for my $model_dir (@model_dirs) {
                 }
             }
         }
+        $elapsed_seconds = time - $start_seconds;
+        $elapsed_formatted = int($elapsed_seconds/60)."m ".($elapsed_seconds%60)."s";
+        logmsg info, $model_dir, "Flavour compare time ${elapsed_formatted}" if $report_timing;
 	}
 	
 	logmsg info, " " if $verbosity >= 1;

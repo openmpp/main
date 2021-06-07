@@ -288,7 +288,6 @@ sub modgen_tables_to_csv
 			for (my $field_ordinal = 0; $field_ordinal < $fields; $field_ordinal++) {
 				$value = $ADO_RS->Fields($field_ordinal)->value;
 				$original_value = $value;
-				$transformed_value = $value;
 				if (length($value) && $field_ordinal == $fields - 1) {
 					if ($value eq '-1.#IND' ) {
 						# is a NaN, output in OUT_CSV as an empty field (NULL)
@@ -298,7 +297,6 @@ sub modgen_tables_to_csv
 					}
 					else {
 						$original_value = $value;
-						$transformed_value = $value;
 						if ($rounding_on) {
 							$value = $value + 0.0;
 							# standard rounding
@@ -314,6 +312,7 @@ sub modgen_tables_to_csv
 							#}
 							$value = 0.0 + $value;
 						}
+                        $transformed_value = apply_transform($value, $round_prec) if $do_transformed;
 						# Windows Perl does 7.836e-007 and Linux Perl 7.836e-07, so make uniform
 						$value =~ s/e([-+])0(\d\d)/e\1\2/;
 						$original_value =~ s/e([-+])0(\d\d)/e\1\2/ if $do_original;
