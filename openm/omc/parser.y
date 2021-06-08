@@ -176,6 +176,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_cumrate                   "cumrate"
 %token <val_token>    TK_delta                     "delta"
 %token <val_token>    TK_delta2                    "delta2"
+%token <val_token>    TK_derived                   "derived"
 %token <val_token>    TK_duration                  "duration"
 %token <val_token>    TK_duration_counter          "duration_counter"
 %token <val_token>    TK_duration_trigger          "duration_trigger"
