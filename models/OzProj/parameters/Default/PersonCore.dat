@@ -11,10 +11,10 @@ parameters {
 			(2) 0.000, 
 		},
 	};
-	file	MicroDataInputFile = "$OM_ROOT/models/OzProjGen/microdata/OzProj22_5K.csv"; //EN File name of starting population
+	file	MicroDataInputFile = "../../../OzProjGen/microdata/OzProj22_5K.csv"; //EN File name of starting population
     logical MicroDataOutputFlag = TRUE;
     double  MicroDataOutputTime = 2016.5;
-	file	MicroDataOutputFile = "$OM_ROOT/models/OzProj/microdata/OzProj22_5K_projected.csv"; //EN Microdata output file
+	file	MicroDataOutputFile = "../../microdata/OzProj22_5K_projected.csv"; //EN Microdata output file
 	int	RealWorldStartPopulation = 22340024; //EN Real world population count at start
 	int	MaxYearsForImmigrantDonor = 0; //EN Maximum years since immigration immigration to be an immigrant donor
 /* NOTE ( Immigrants, EN )
