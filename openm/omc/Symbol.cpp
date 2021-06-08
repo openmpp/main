@@ -200,7 +200,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_cumrate, "cumrate" },
     { token::TK_delta, "delta" },
     { token::TK_delta2, "delta2" },
-    { token::TK_delta2, "derived" },
+    { token::TK_derived, "derived" },
     { token::TK_duration, "duration" },
     { token::TK_duration_counter, "duration_counter" },
     { token::TK_duration_trigger, "duration_trigger" },

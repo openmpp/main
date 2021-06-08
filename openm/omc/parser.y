@@ -1292,9 +1292,13 @@ parameter_list:
 	;
 
 parameter_modifier_opt:
-"model_generated"[kw]
+      "derived"[kw]
                         {
                             $parameter_modifier_opt = $kw;
+                        }
+    | "model_generated"[kw]
+                        {
+                            $parameter_modifier_opt = token::TK_derived; // synonym of 'derived'
                         }
     | /* nothing */
                         {
@@ -1335,8 +1339,8 @@ decl_parameter:
                                 // note type in redeclaration for subsequent semantic check
                                 parm->datatype2 = ($type_symbol)->stable_pp();
                             }
-                            // update provenance if model_generated
-                            if ($pm_opt == token::TK_model_generated) {
+                            // update provenance if derived
+                            if ($pm_opt == token::TK_derived) {
                                 parm->source = ParameterSymbol::parameter_source::derived_parameter;
                             }
                             // Set parameter context for gathering the dimension specification (if present)
