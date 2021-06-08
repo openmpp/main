@@ -35,6 +35,7 @@ public:
         , is_hidden(false)
         , is_declared(false)
         , is_extendable(false)
+        , publish_as_table(false)
         , pp_index_series(nullptr)
         , index_series_offset(0)
         , datatype2(nullptr)
@@ -363,6 +364,13 @@ public:
      * True if an extend_parameter statement targets the parameter
      */
     bool is_extendable;
+
+    /**
+     * True if a derived parameter is to be published as a table
+     * 
+     * Model code uses the parameters_to_tables statement to publish derived parameters as tables
+     */
+    bool publish_as_table;
 
     /**
      * The parameter containing an index series used to extend the parameter

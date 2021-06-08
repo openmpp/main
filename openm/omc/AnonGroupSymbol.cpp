@@ -161,7 +161,19 @@ void AnonGroupSymbol::post_parse(int pass)
         }
         case eKind::parameters_to_tables:
         {
-            pp_error(LT("error : not implemented"));
+            for (auto sym : expanded_list()) {
+                auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                if (ps) {
+                    // indicate that this parameter, if derived, is also to be published as a table.
+                    if (ps->source == ParameterSymbol::parameter_source::derived_parameter) {
+                        ps->publish_as_table = true;
+                    }
+                }
+                else {
+                    pp_error(LT("error : '") + sym->name + LT("' in parameters_to_tables statement is not a parameter"));
+                }
+            }
+            pp_warning(LT("warning : parameters_to_tables is not implemented"));
             break;
         }
         default:
