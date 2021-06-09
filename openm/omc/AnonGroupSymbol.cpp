@@ -37,6 +37,9 @@ void AnonGroupSymbol::post_parse(int pass)
         case eKind::tables_retain:
             Symbol::any_tables_retain = true;
             break;
+        case eKind::parameters_to_tables:
+            Symbol::any_parameters_to_tables = true;
+            break;
         default:
             break;
         }

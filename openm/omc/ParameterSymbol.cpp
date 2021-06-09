@@ -656,61 +656,191 @@ CodeBlock ParameterSymbol::dat_definition() const
 
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
-    // Only external parameters have metadata
-    if (source != scenario_parameter) return;
+    // Only external (scenario) parameters, or parameters echoed as tables, have metadata
+    if (source != ParameterSymbol::parameter_source::scenario_parameter && !publish_as_table) {
+        // returning before traversing possible higher levels of the hierarchical calling chain 
+        // ensures those higher levela are not called for this instance.
+        return;
+    }
 
     // Hook into the hierarchical calling chain
     super::populate_metadata( metaRows );
 
     // Perform operations specific to this level in the Symbol hierarchy.
- 
-    ParamDicRow paramDic;
 
-    // basic information about the parameter
+    if (source == ParameterSymbol::parameter_source::scenario_parameter) {
+        // This is a normal scenario parameter to be published as such
+        
+        ParamDicRow paramDic;
 
-    paramDic.paramId = pp_parameter_id;
-    paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
-    paramDic.rank = rank();
-    paramDic.typeId = pp_datatype->type_id;
-    paramDic.isExtendable = is_extendable;
-    paramDic.isHidden = is_hidden;
-    paramDic.numCumulated = 0; //TODO: not implemented
-    metaRows.paramDic.push_back(paramDic);
+        // basic information about the parameter
 
-    // label and note for the parameter
-    for (auto lang : Symbol::pp_all_languages) {
-        ParamDicTxtLangRow paramTxt;
-        paramTxt.paramId = pp_parameter_id;
-        paramTxt.langCode = lang->name;
-        paramTxt.descr = label(*lang);
-        paramTxt.note = note(*lang);
-        metaRows.paramTxt.push_back(paramTxt);
+        paramDic.paramId = pp_parameter_id;
+        paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
+        paramDic.rank = rank();
+        paramDic.typeId = pp_datatype->type_id;
+        paramDic.isExtendable = is_extendable;
+        paramDic.isHidden = is_hidden;
+        paramDic.numCumulated = 0; //TODO: not implemented
+        metaRows.paramDic.push_back(paramDic);
+
+        // label and note for the parameter
+        for (auto lang : Symbol::pp_all_languages) {
+            ParamDicTxtLangRow paramTxt;
+            paramTxt.paramId = pp_parameter_id;
+            paramTxt.langCode = lang->name;
+            paramTxt.descr = label(*lang);
+            paramTxt.note = note(*lang);
+            metaRows.paramTxt.push_back(paramTxt);
+        }
+
+        // The dimensions of the parameter
+        for (auto dim : dimension_list) {
+
+            ParamDimsRow paramDims;
+
+            auto es = dim->pp_enumeration;
+            assert(es); // logic guarantee
+            paramDims.paramId = pp_parameter_id;
+            paramDims.dimId = dim->index;
+            paramDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
+            paramDims.typeId = es->type_id;
+            metaRows.paramDims.push_back(paramDims);
+
+            // Labels and notes for the dimensions of the parameter
+            for (auto lang : Symbol::pp_all_languages) {
+
+                ParamDimsTxtLangRow paramDimsTxt;
+
+                paramDimsTxt.paramId = pp_parameter_id;
+                paramDimsTxt.dimId = dim->index;
+                paramDimsTxt.langCode = lang->name;
+                paramDimsTxt.descr = dim->label(*lang);
+                paramDimsTxt.note = dim->note(*lang);
+                metaRows.paramDimsTxt.push_back(paramDimsTxt);
+            }
+        }
     }
+    else if (publish_as_table) {
+        // This is a derived parameter which has been marked for export as a table
+        // by a parameters_to_tables statement in model code.
 
-    // The dimensions of the parameter
-    for (auto dim : dimension_list ) {
+        // The following code is patterned after
+        //   TableSymbol::populate_metadata 
+        //     and
+        //   DerivedTableSymbol::populate_metadata 
+        // but adapted to a parameter.
+        // The main differences apart from member names is that a parameter 
+        // has no measure dimension, so a 'fake' measure dimension 
+        // of rank 1 and size 1 is created on its place.
 
-        ParamDimsRow paramDims;
+         // The table
 
-        auto es = dim->pp_enumeration;
-        assert(es); // logic guarantee
-        paramDims.paramId = pp_parameter_id;
-        paramDims.dimId = dim->index;
-        paramDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
-        paramDims.typeId = es->type_id;
-        metaRows.paramDims.push_back(paramDims);
+        TableDicRow tableDic;
 
-        // Labels and notes for the dimensions of the parameter
+        tableDic.tableId = pp_parameter_to_table_id;
+        tableDic.tableName = name;
+        tableDic.rank = rank();
+        tableDic.isSparse = true;           // do not store zeroes
+        tableDic.exprPos = rank() - 1;      // after all classificatory dimensions
+        tableDic.isHidden = false;          // perhaps ignored
+        metaRows.tableDic.push_back(tableDic);
+
+        // Labels and notes for the table
         for (auto lang : Symbol::pp_all_languages) {
 
-            ParamDimsTxtLangRow paramDimsTxt;
+            TableDicTxtLangRow tableTxt;
 
-            paramDimsTxt.paramId = pp_parameter_id;
-            paramDimsTxt.dimId = dim->index;
-            paramDimsTxt.langCode = lang->name;
-            paramDimsTxt.descr = dim->label(*lang);
-            paramDimsTxt.note = dim->note(*lang);
-            metaRows.paramDimsTxt.push_back(paramDimsTxt);
+            tableTxt.tableId = pp_parameter_to_table_id;
+            tableTxt.langCode = lang->name;
+            tableTxt.descr = label(*lang);
+            tableTxt.note = note(*lang);
+            tableTxt.exprDescr = "";
+            tableTxt.exprNote = "";
+            metaRows.tableTxt.push_back(tableTxt);
+        }
+
+        // The dimensions of the table
+        for (auto dim : dimension_list) {
+
+            TableDimsRow tableDims;
+
+            auto es = dim->pp_enumeration;
+            assert(es); // logic guarantee
+            tableDims.tableId = pp_parameter_to_table_id;
+            tableDims.dimId = dim->index;
+            tableDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
+            tableDims.typeId = es->type_id;
+            tableDims.isTotal = dim->has_margin;
+            tableDims.dimSize = es->pp_size() + dim->has_margin;
+            metaRows.tableDims.push_back(tableDims);
+
+            // Labels and notes for the dimensions of the table
+            for (auto lang : Symbol::pp_all_languages) {
+
+                TableDimsTxtLangRow tableDimsTxt;
+
+                tableDimsTxt.tableId = pp_parameter_to_table_id;
+                tableDimsTxt.dimId = dim->index;
+                tableDimsTxt.langCode = lang->name;
+                tableDimsTxt.descr = dim->label(*lang);
+                tableDimsTxt.note = dim->note(*lang);
+                metaRows.tableDimsTxt.push_back(tableDimsTxt);
+            }
+        }
+
+        // the single 'accumulator'
+        {
+            TableAccRow tableAcc;
+
+            tableAcc.tableId = pp_parameter_to_table_id;
+            tableAcc.accId = 0;
+            tableAcc.accSrc = "";
+            tableAcc.isDerived = false;
+            metaRows.tableAcc.push_back(tableAcc);
+
+            // Labels and notes for accumulators
+            for (auto lang : Symbol::pp_all_languages) {
+                TableAccTxtLangRow tableAccTxt;
+                tableAccTxt.tableId = pp_parameter_to_table_id;
+                tableAccTxt.accId = 0;
+                tableAccTxt.langCode = lang->name;
+                tableAccTxt.descr = "";
+                tableAccTxt.note = "";
+                metaRows.tableAccTxt.push_back(tableAccTxt);
+            }
+        }
+
+        // the single 'measure'
+        {
+            TableExprRow tableExpr;
+
+            tableExpr.tableId = pp_parameter_to_table_id;
+            tableExpr.exprId = 0;
+            tableExpr.name = "";
+            tableExpr.decimals = -1;
+
+            // Construct the expression to compute the measure for a single simulation member.
+            // For echoed parameters, as for derived tables, this is just the corresponding 'accumulator'.
+            string measure_expr = "acc0";
+
+            // Construct the expression used to compute the measure over simulation members.
+            // For echoed parameters, as for derived tables, this is the average across simulation members.
+            tableExpr.srcExpr = "OM_AVG(acc0)";
+
+            // save table measure metadata
+            metaRows.tableExpr.push_back(tableExpr);
+
+            // Labels and notes for measures
+            for (auto lang : Symbol::pp_all_languages) {
+                TableExprTxtLangRow tableExprTxt;
+                tableExprTxt.tableId = pp_parameter_to_table_id;
+                tableExprTxt.exprId = 0;
+                tableExprTxt.langCode = lang->name;
+                tableExprTxt.descr = "";
+                tableExprTxt.note = "";
+                metaRows.tableExprTxt.push_back(tableExprTxt);
+            }
         }
     }
 }

@@ -1296,10 +1296,6 @@ parameter_modifier_opt:
                         {
                             $parameter_modifier_opt = $kw;
                         }
-    | "model_generated"[kw]
-                        {
-                            $parameter_modifier_opt = token::TK_derived; // synonym of 'derived'
-                        }
     | /* nothing */
                         {
                             $parameter_modifier_opt = token::TK_unused;
@@ -1378,8 +1374,8 @@ decl_parameter:
                                 assert(parm); // grammar/logic guarantee
                                 parm->redecl_loc = @parm; // note redeclaration location
                             }
-                            // update provenance if model_generated
-                            if ($pm_opt == token::TK_model_generated) {
+                            // update provenance if derived
+                            if ($pm_opt == token::TK_derived) {
                                 parm->source = ParameterSymbol::parameter_source::derived_parameter;
                             }
                             // Set parameter context for gathering the dimension specification (if present)
@@ -1416,7 +1412,7 @@ decl_parameter:
                                 parm->redecl_loc = @parm; // note redeclaration location
                             }
                             // update provenance if model_generated
-                            if ($pm_opt == token::TK_model_generated) {
+                            if ($pm_opt == token::TK_derived) {
                                 parm->source = ParameterSymbol::parameter_source::derived_parameter;
                             }
                             // record cumrate information in parameter

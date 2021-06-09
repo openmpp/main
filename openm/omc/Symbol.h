@@ -1239,6 +1239,11 @@ public:
     static bool any_tables_retain;
 
     /**
+     * If true, model contains one or more parameters_to_tables statements
+     */
+    static bool any_parameters_to_tables;
+
+    /**
      * If true, table measures are aggregated across simulation members.
      * If false, table measures are averaged across simulation members.
      */

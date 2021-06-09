@@ -25,7 +25,7 @@ public:
 
     ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
         : Symbol(sym, decl_loc)
-        , source(missing_parameter)
+        , source(ParameterSymbol::parameter_source::missing_parameter)
         , cumrate(false)
         , cumrate_dims(0)
         , datatype(datatype->stable_rp())
@@ -41,6 +41,7 @@ public:
         , datatype2(nullptr)
         , pp_datatype2(nullptr)
         , pp_parameter_id(0)
+        , pp_parameter_to_table_id(0)
     {
     }
 
@@ -406,5 +407,10 @@ public:
      * Numeric identifier of the parameter. Used for communicating with the metadata API.
      */
     int pp_parameter_id;
+
+    /**
+     * Numeric identifier of a parameter if published as a table. Used for communicating with the metadata API.
+     */
+    int pp_parameter_to_table_id;
 };
 

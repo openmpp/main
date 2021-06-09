@@ -517,6 +517,7 @@ unordered_map<string, token_type> Symbol::string_token =
     { "actor", token::TK_entity },
     { "actor_set", token::TK_entity_set },
     { "logical", token::TK_bool },
+    { "model_generated", token::TK_derived },
     { "user_table", token::TK_derived_table },
     { "TRUE", token::TK_true },
     { "FALSE", token::TK_false },
@@ -565,6 +566,8 @@ bool Symbol::any_parameters_retain = false;
 bool Symbol::any_tables_suppress = false;
 
 bool Symbol::any_tables_retain = false;
+
+bool Symbol::any_parameters_to_tables = false;
 
 bool Symbol::measures_are_aggregated = true;
 
@@ -1349,6 +1352,11 @@ void Symbol::post_parse_all()
         int id = 0;
         for (auto table : pp_all_tables) {
             table->pp_table_id = id;
+            ++id;
+        }
+        // continue numbering to create unique tableId if parameter published as table
+        for (auto parameter : pp_all_parameters) {
+            parameter->pp_parameter_to_table_id = id;
             ++id;
         }
     }
