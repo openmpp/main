@@ -210,6 +210,16 @@ SUFFIXES += .d
 
 MODEL_MPP = $(wildcard $(MODEL_CODE_DIR)/*.mpp $(MODEL_CODE_DIR)/*.ompp $(MODEL_CODE_DIR)/*.dat $(MODEL_CODE_DIR)/*.odat)
 
+MODEL_SCENARIO_DAT =
+ifdef OMC_SCENARIO_PARAM_DIR
+  MODEL_SCENARIO_DAT = $(wildcard $(OMC_SCENARIO_PARAM_DIR)/*.dat $(OMC_SCENARIO_PARAM_DIR)/*.odat)
+endif
+
+MODEL_FIXED_DAT =
+ifdef OMC_FIXED_PARAM_DIR
+  MODEL_FIXED_DAT = $(wildcard $(OMC_FIXED_PARAM_DIR)/*.dat $(OMC_FIXED_PARAM_DIR)/*.odat)
+endif
+
 MODEL_CPP = $(wildcard $(MODEL_CODE_DIR)/*.cpp)
 
 MODEL_OMC_CPP = \
@@ -235,7 +245,7 @@ model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 .PHONY : omc_compile
-$(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP)
+$(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP) $(MODEL_SCENARIO_DAT) $(MODEL_FIXED_DAT)
 	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) \
 	|| { echo "error at omc compile, exit code: " $$? ; kill $$PPID ; }
 
@@ -278,9 +288,8 @@ publish-views : publish
 #
 .PHONY : run
 run:
-	$(OUT_BIN_DIR)/$(MODEL_EXE) $(RUN_OPT_INI) \
-		-OpenM.ProgressPercent 25 \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	cd $(OUT_BIN_DIR) && \
+	./$(MODEL_EXE) $(RUN_OPT_INI) -OpenM.ProgressPercent 25
 
 .PHONY: clean
 clean:
