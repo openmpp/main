@@ -85,11 +85,10 @@ ifdef OMC_CODE_PAGE
 endif
 
 #
-# if OMC_NO_LINE is true then disable generation of #line directives
-# true case-insenstive "true" or "yes" or "1" anything else is false
+# if OMC_NO_LINE defined then disable generation of #line directives
 #
 ifdef OMC_NO_LINE
-  OMC_NO_LINE_OPT = -Omc.NoLineDirectives $(OMC_NO_LINE)
+  OMC_NO_LINE_OPT = -Omc.NoLineDirectives
 endif
 
 # OM_DEBUG_PARAMETERS:
