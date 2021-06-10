@@ -487,12 +487,12 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             io_metaRows.typeDic.cend(),
             fkRow,
             TypeDicRow::isKeyLess
-        )) throw DbException(LT("in parameter_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
+        )) throw DbException(LT("in parameter_dims [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), mkRow.paramName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
 
         vector<ParamDimsRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.paramDims.cend() && ParamDimsRow::isKeyEqual(*rowIt, *nextIt))
-            throw DbException(LT("in parameter_dims not unique model id: %d, parameter id: %d and dimension name: %s"), rowIt->modelId, rowIt->paramId, rowIt->name.c_str());
+            throw DbException(LT("in parameter_dims [%s].[%s] not unique model id: %d, parameter id: %d and dimension name: %s"), mkRow.paramName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->paramId, rowIt->name.c_str());
     }
 
     // parameter_dims_txt table
@@ -599,12 +599,12 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             io_metaRows.typeDic.cend(),
             fkRow,
             TypeDicRow::isKeyLess
-        )) throw DbException(LT("in table_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
+        )) throw DbException(LT("in table_dims [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), mkRow.tableName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
 
         vector<TableDimsRow>::const_iterator nextIt = rowIt + 1;
 
         if (nextIt != io_metaRows.tableDims.cend() && TableDimsRow::isKeyEqual(*rowIt, *nextIt))
-            throw DbException(LT("in table_dims not unique model id: %d, table id: %d and dimension id: %d"), rowIt->modelId, rowIt->tableId, rowIt->dimId);
+            throw DbException(LT("in table_dims [%s].[%s] not unique model id: %d, table id: %d and dimension id: %d"), mkRow.tableName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->tableId, rowIt->dimId);
 
         if (std::any_of(
             io_metaRows.tableDims.cbegin(),
@@ -614,7 +614,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
                 i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.dimId != rowIt->dimId &&
                 i_row.name == rowIt->name;
         }
-        )) throw DbException(LT("in table_dims not unique model id: %d, table id: %d and dimension name: %s"), rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
+        )) throw DbException(LT("in table_dims [%s].[%s] not unique model id: %d, table id: %d and dimension name: %s"), mkRow.tableName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
     // table_dims_txt table
@@ -1154,7 +1154,7 @@ const tuple<string, string> ModelSqlBuilder::makeParamDigest(const ParamDicRow &
         i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), typeFkRow, TypeDicRow::isKeyLess
     );
     if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != i_paramRow.modelId || typeRowIt->typeId != i_paramRow.typeId)
-        throw DbException(LT("in parameter_dic invalid model id: %d and type id: %d: not found in type_dic"), i_paramRow.modelId, i_paramRow.typeId);
+        throw DbException(LT("in parameter_dic [%s] invalid model id: %d and type id: %d: not found in type_dic"), i_paramRow.paramName.c_str(), i_paramRow.modelId, i_paramRow.typeId);
 
     // make parameter digest header as name, rank and parameter type digest
     MD5 md5Full;
@@ -1187,7 +1187,7 @@ const tuple<string, string> ModelSqlBuilder::makeParamDigest(const ParamDicRow &
             }
         );
         if (dimRowIt == i_metaRows.paramDims.cend() || dimRowIt->modelId != i_paramRow.modelId || dimRowIt->paramId != i_paramRow.paramId)
-            throw DbException(LT("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic"), i_paramRow.modelId, i_paramRow.paramId);
+            throw DbException(LT("in parameter_dims [%s] invalid model id: %d and parameter id: %d: not found in parameter_dic"), i_paramRow.paramName.c_str(), i_paramRow.modelId, i_paramRow.paramId);
 
         for (vector<ParamDimsRow>::const_iterator rowIt = dimRowIt; 
             rowIt != i_metaRows.paramDims.cend() && rowIt->modelId == i_paramRow.modelId && rowIt->paramId == i_paramRow.paramId; 
@@ -1199,7 +1199,7 @@ const tuple<string, string> ModelSqlBuilder::makeParamDigest(const ParamDicRow &
                 i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
             );
             if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
-                throw DbException(LT("in parameter_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
+                throw DbException(LT("in parameter_dims [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), i_paramRow.paramName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
 
             // find first enum of that type 
             TypeEnumLstRow enumFkRow(typeRowIt->modelId, typeRowIt->typeId, 0);
@@ -1258,7 +1258,7 @@ const tuple<string, string> ModelSqlBuilder::makeOutTableDigest(const TableDicRo
             i_metaRows.tableDims.cbegin(), i_metaRows.tableDims.cend(), dimFkRow, TableDimsRow::isKeyLess
         );
         if (dimRowIt == i_metaRows.tableDims.cend() || dimRowIt->modelId != i_tableRow.modelId || dimRowIt->tableId != i_tableRow.tableId)
-            throw DbException(LT("in table_dims invalid model id: %d and table id: %d: not found in table_dic"), i_tableRow.modelId, i_tableRow.tableId);
+            throw DbException(LT("in table_dims [%s] invalid model id: %d and table id: %d: not found in table_dic"), i_tableRow.tableName.c_str(), i_tableRow.modelId, i_tableRow.tableId);
 
         for (vector<TableDimsRow>::const_iterator rowIt = dimRowIt; 
             rowIt != i_metaRows.tableDims.cend() && rowIt->modelId == i_tableRow.modelId && rowIt->tableId == i_tableRow.tableId;
@@ -1270,7 +1270,7 @@ const tuple<string, string> ModelSqlBuilder::makeOutTableDigest(const TableDicRo
                 i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
             );
             if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
-                throw DbException(LT("in table_dims invalid model id: %d and type id: %d: not found in type_dic"), rowIt->modelId, rowIt->typeId);
+                throw DbException(LT("in table_dims [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), i_tableRow.tableName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
 
             // add dimension to digest: id, name, size, type digest
             sLine = to_string(rowIt->dimId) + "," + rowIt->name + "," + to_string(rowIt->dimSize) + "," + typeRowIt->digest + "\n";
