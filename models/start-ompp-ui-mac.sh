@@ -21,7 +21,7 @@
 # OM_ROOT     - openM++ root folder, default: ../..
 # PUBLISH_DIR - "publish" directory where model.exe and model.sqlite resides
 #               if PUBLISH_DIR is relative then it MUST BE relative to $OM_ROOT
-#               default: models/${MODEL_NAME}/ompp-mac/bin
+#               default: ${PWD}/ompp-mac/bin
 # RELEASE && CONFIGURATION - if both not defined 
 #                            then UI configured to use debug model run template: run.Debug.template.txt
 # Note:
@@ -32,22 +32,26 @@
 set -e
 set -m
 
-# set model name and openM++ root folder 
+# set model name, openM++ root folder and "publish" directory
+#     if PUBLISH_DIR is relative then it MUST BE relative to $OM_ROOT
 #
-[ -z "$MODEL_NAME" ] && MODEL_NAME="$(basename $PWD)"
-[ -z "$OM_ROOT" ]    && OM_ROOT="../.."
+[ -z "$MODEL_NAME" ]  && MODEL_NAME="$(basename $PWD)"
+[ -z "$OM_ROOT" ]     && OM_ROOT="../.."
+[ -z "$PUBLISH_DIR" ] && PUBLISH_DIR="${PWD}/ompp-mac/bin"
+
+# set model root, for example: OM_NewCaseBased=/home/user/NewCaseBased
+#
+model_root_name=OM_${MODEL_NAME}
+model_root_value=$PWD
 
 pushd "$OM_ROOT"
 export OM_ROOT="$PWD"
-
-# set "publish" directory
-# PUBLISH_DIR, if specified, MUST BE relative to $OM_ROOT
-#
-[ -z "$PUBLISH_DIR" ] && PUBLISH_DIR="models/${MODEL_NAME}/ompp-mac/bin"
+export $model_root_name=$model_root_value
 
 echo "MODEL_NAME  = $MODEL_NAME"
 echo "OM_ROOT     = $OM_ROOT"
 echo "PUBLISH_DIR = $PUBLISH_DIR"
+echo "$model_root_name = $model_root_value"
 
 # check if "publish" directory exist
 #

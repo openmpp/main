@@ -19,22 +19,19 @@
 # OM_ROOT     - openM++ root folder, default: ../..
 # PUBLISH_DIR - "publish" directory where model.exe and model.sqlite resides
 #               if PUBLISH_DIR is relative then it MUST BE relative to $OM_ROOT
-#               default: models/${MODEL_NAME}/ompp-mac/bin
+#               default: ${PWD}/ompp-mac/bin
 
 set -e
 
-# set model name and openM++ root folder 
+# set model name, openM++ root folder and "publish" directory
+#     if PUBLISH_DIR is relative then it MUST BE relative to $OM_ROOT
 #
-[ -z "$MODEL_NAME" ] && MODEL_NAME="$(basename $PWD)"
-[ -z "$OM_ROOT" ]    && OM_ROOT="../.."
+[ -z "$MODEL_NAME" ]  && MODEL_NAME="$(basename $PWD)"
+[ -z "$OM_ROOT" ]     && OM_ROOT="../.."
+[ -z "$PUBLISH_DIR" ] && PUBLISH_DIR="${PWD}/ompp-mac/bin"
 
 pushd "$OM_ROOT"
 export OM_ROOT="$PWD"
-
-# set "publish" directory
-# PUBLISH_DIR, if specified, MUST BE relative to $OM_ROOT
-#
-[ -z "$PUBLISH_DIR" ] && PUBLISH_DIR="models/${MODEL_NAME}/ompp-mac/bin"
 
 echo "MODEL_NAME     = $MODEL_NAME"
 echo "OM_ROOT        = $OM_ROOT"
