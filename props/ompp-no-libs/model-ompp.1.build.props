@@ -25,7 +25,7 @@
 
     <!--  Default value for MODEL_INI -->
     <MODEL_INI Condition="'$(MODEL_INI)'=='' And Exists('../$(MODEL_NAME).ini')">$(MODEL_NAME).ini</MODEL_INI>
-    <!--  Fully qualified path of MODEL_INI (is in model root AKA SolutionDir -->
+    <!--  Fully qualified path of MODEL_INI (is in model root AKA SolutionDir) -->
     <MODEL_INI_PATH Condition="'$(MODEL_INI)' != ''">$([System.IO.Path]::GetFullPath('$(ProjectDir)../$(MODEL_INI)'))</MODEL_INI_PATH>
 
     <!-- 
@@ -82,13 +82,21 @@
     <MODEL_MSG_INI>$(MODEL_NAME).message.ini</MODEL_MSG_INI>
     <MODEL_MSG_INI_OMC_OUT>$(OMC_OUT_DIR)/$(MODEL_MSG_INI)</MODEL_MSG_INI_OMC_OUT>
     
-    <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
-    
+    <!--
+    get model root from environment if defined or use default value: OM_MyModelName=../../
+    -->
+    <MODEL_ROOT_NAME>OM_$(MODEL_NAME)</MODEL_ROOT_NAME>
+    <MODEL_ROOT_VALUE>$([System.Environment]::GetEnvironmentVariable('$(MODEL_ROOT_NAME)'))</MODEL_ROOT_VALUE>
+    <MODEL_ROOT_ENV Condition="'$(MODEL_ROOT_VALUE)'==''">$(MODEL_ROOT_NAME)=../..</MODEL_ROOT_ENV>
+    <MODEL_ROOT_ENV Condition="'$(MODEL_ROOT_VALUE)'!=''">$(MODEL_ROOT_NAME)=$(MODEL_ROOT_VALUE)</MODEL_ROOT_ENV>
+
     <!--
     If this is Debug under Visual Studio then PUBLISH_DIR, TargetDir, LocalDebuggerWorkingDirectory must be identical
     otherwise debug model.exe always fail to find model.sqlite in current directory.
     -->
     <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
+
+    <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
 
     <!-- 
     The property DisableFastUpToDateCheck forces Visual Studio to always use MSBuild to evaluate dependencies,

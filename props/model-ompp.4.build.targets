@@ -3,6 +3,9 @@
 
   <!-- 
   Override default VStudio cpp project settings
+
+  If this is Debug under Visual Studio then PUBLISH_DIR, TargetDir, LocalDebuggerWorkingDirectory must be identical
+  otherwise debug model.exe always fail to find model.sqlite in current directory.
   -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(TargetDir)</LocalDebuggerWorkingDirectory>
@@ -121,8 +124,6 @@
         Overwrite="true"
         Encoding="Unicode"
     />
-    <Message Text="Move $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite to @(OMC_SQLITE_OUTPUT)" />
-    <Move SourceFiles="$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite" DestinationFiles="@(OMC_SQLITE_OUTPUT)" />
   </Target>
 
   <PropertyGroup>
@@ -142,7 +143,7 @@
   </PropertyGroup>
 
   <Target Name="StopOms"
-          Condition="'$(OPEN_MODEL_WEB_UI)'=='true' And Exists('$(OMS_URL_TICKLE)')" 
+          Condition="Exists('$(OMS_URL_TICKLE)')" 
           BeforeTargets="ModelPublish"
           >
 
@@ -180,8 +181,8 @@
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(PUBLISH_SQLITE)" />
 
-    <Message Text="Copy @(OMC_SQLITE_OUTPUT) to $(PUBLISH_SQLITE)" />
-    <Copy SourceFiles="@(OMC_SQLITE_OUTPUT)" DestinationFiles="$(PUBLISH_SQLITE)" />
+    <Message Text="Move $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite to $(PUBLISH_SQLITE)" />
+    <Move SourceFiles="$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite" DestinationFiles="$(PUBLISH_SQLITE)" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
@@ -244,20 +245,18 @@
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.Database &quot;Database=$(PUBLISH_SQLITE); Timeout=86400; OpenMode=ReadWrite;&quot;</MODEL_OPTS>
     <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME)_$(FIRST_SCENARIO_NAME).run.tickle</RUN_MODEL_TICKLE>
     <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
 
   <Target Name="RunModel"
           Condition="'$(RUN_SCENARIO)'=='true' And '$(GRID_COMPUTING)' == 'EMPTY'" 
-          Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
     <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
-    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/..;$(MODEL_ROOT_ENV)"
           WorkingDirectory="$(TargetDir)"
           Command="$(TargetPath) $(MODEL_OPTS)"
           />
@@ -267,13 +266,12 @@
   </Target>
   <Target Name="RunModel_mpi"
           Condition="'$(RUN_SCENARIO)'=='true' And '$(GRID_COMPUTING)' == 'MPI'" 
-          Inputs="$(PUBLISH_TICKLE)"
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
     <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
-    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/.."
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/..;$(MODEL_ROOT_ENV)"
           WorkingDirectory="$(TargetDir)"
           Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
           />
@@ -346,11 +344,11 @@
           >
     <Message Text="Using PowerShell to start openM++ UI:" />
     <Message
-      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
+      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; (set $(MODEL_ROOT_ENV)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
       />
     <Exec
       WorkingDirectory="$(OM_ROOT)"
-      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
+      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; (set $(MODEL_ROOT_ENV)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
       />
   </Target>
 
@@ -368,6 +366,7 @@
     <Message Text="FIXED_NAME=$(FIXED_NAME)" />
     <Message Text="FIXED_PARAMETERS_FOLDER=$(FIXED_PARAMETERS_FOLDER)" />
     <Message Text="OM_ROOT=$(OM_ROOT)" />
+    <Message Text="$(MODEL_ROOT_ENV)" />
     <Message Text="BuildingInsideVisualStudio=$(BuildingInsideVisualStudio)" />
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
     <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />

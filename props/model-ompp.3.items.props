@@ -19,9 +19,6 @@
     <OMC_CPP_OUTPUTS Include="$(OMC_OUT_DIR)/om_developer.cpp" />
     <OMC_CPP_OUTPUTS Include="$(OMC_OUT_DIR)/om_fixed_parms.cpp" />
 
-    <OMC_SQLITE_OUTPUT Include="$(BUILD_DIR)/$(MODEL_NAME).sqlite" />
-
-    <OMC_SQL_OUTPUTS Include="@(OMC_SQLITE_OUTPUT)" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql" />
     
