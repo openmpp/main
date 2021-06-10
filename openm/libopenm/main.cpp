@@ -48,50 +48,6 @@ using namespace openm;
     static const bool isMpiUsed = false;
 #endif
 
-/**
-* OpenM++ build environment to report at run time as part of the model version message
-* 
-* - platform name: Windows 32 bit, Windows 64 bit, Linux or Apple (MacOS)
-* - configuration: Release or Debug
-* - MPI usage enabled or not
-*/
-#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
-    static const char * libTargetOsName = "";
-#else
-    #ifdef _WIN32
-        #ifdef _WIN64
-            static const char * libTargetOsName = "Windows 64 bit";
-        #else
-            static const char * libTargetOsName = "Windows 32 bit";
-        #endif
-    #endif // _WIN32
-
-    #ifdef __linux__
-            static const char * libTargetOsName = "Linux";
-    #endif
-
-    #ifdef __APPLE__
-        #include <TargetConditionals.h>
-        #if defined(TARGET_OS_OSX) && TARGET_OS_OSX
-            static const char * libTargetOsName = "macOS";
-        #else
-            static const char * libTargetOsName = "Apple OS";
-        #endif
-    #endif // __APPLE__
-#endif
-
-#ifdef NDEBUG
-            static const char * libTargetConfigName = "Release";
-#else
-            static const char * libTargetConfigName = "Debug";
-#endif // NDEBUG
-
-#ifdef OM_MSG_MPI
-            static const char * libTargetMpiUseName = "MPI";
-#else
-            static const char * libTargetMpiUseName = "";
-#endif // OM_MSG_MPI
-
 /** model one-time initialization */
 OM_RUN_ONCE_HANDLER RunOnceHandler;
 
@@ -115,6 +71,9 @@ static ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl);
 
 // exchange between root and child modeling processes and modeling threads, sleep if no child activity
 static void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl);
+
+// log model version, runtime version and modeling environment
+static void reportVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl);
 
 /** main entry point */
 int main(int argc, char ** argv) 
@@ -179,18 +138,8 @@ int main(int argc, char ** argv)
             // load metadata tables and broadcast it to all modeling processes
             unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
-            // log model and runtime version
-            theLog->logMsg("Model version  ", runCtrl->meta()->modelRow->version.c_str());
-            theLog->logMsg("Model created  ", runCtrl->meta()->modelRow->createDateTime.c_str());
-            theLog->logMsg("Model digest   ", OM_MODEL_DIGEST);
-#ifdef OM_RUNTIME_VERSION
-            theLog->logMsg("OpenM++ version", OM_RUNTIME_VERSION);
-#endif
-            theLog->logFormatted("OpenM++ build  : %s %s %s", libTargetOsName, libTargetConfigName, libTargetMpiUseName);
-
-            if (isMpiUsed && msgExec->isRoot() && msgExec->worldSize() > 1) {
-                theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", msgExec->worldSize(), runCtrl->threadCount);
-            }
+            // log model version, runtime version and modeling environment
+            reportVersion(msgExec.get(), runCtrl.get());
 
             // model one-time initialization
             if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
@@ -395,5 +344,89 @@ void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl)
 
     if (nExchange > 0 && i_runCtrl->processCount > 1 && !theModelRunState->isFinal()) {
         this_thread::sleep_for(chrono::milliseconds(nExchange * OM_ACTIVE_SLEEP_TIME)); // sleep more if no child activity
+    }
+}
+
+/**
+* OpenM++ build environment to report at run time as part of the model version message
+*
+* - platform name: Windows 32 bit, Windows 64 bit, Linux or Apple (MacOS)
+* - configuration: Release or Debug
+* - MPI usage enabled or not
+*/
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+static const char * libTargetOsName = "";
+#else
+#ifdef _WIN32
+#ifdef _WIN64
+static const char * libTargetOsName = "Windows 64 bit";
+#else
+static const char * libTargetOsName = "Windows 32 bit";
+#endif
+#endif // _WIN32
+
+#ifdef __linux__
+static const char * libTargetOsName = "Linux";
+#endif
+
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#if defined(TARGET_OS_OSX) && TARGET_OS_OSX
+static const char * libTargetOsName = "macOS";
+#else
+static const char * libTargetOsName = "Apple OS";
+#endif
+#endif // __APPLE__
+#endif
+
+#ifdef NDEBUG
+static const char * libTargetConfigName = "Release";
+#else
+static const char * libTargetConfigName = "Debug";
+#endif // NDEBUG
+
+#ifdef OM_MSG_MPI
+static const char * libTargetMpiUseName = "MPI";
+#else
+static const char * libTargetMpiUseName = "";
+#endif // OM_MSG_MPI
+
+// log model version, runtime version and modeling environment:
+//  - number of modeling processes and threads
+//  - openM++ root environment variable, if defined
+//  - model root environment variable, if defined
+void reportVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl)
+{
+    theLog->logMsg("Model version  ", i_runCtrl->meta()->modelRow->version.c_str());
+    theLog->logMsg("Model created  ", i_runCtrl->meta()->modelRow->createDateTime.c_str());
+    theLog->logMsg("Model digest   ", OM_MODEL_DIGEST);
+#ifdef OM_RUNTIME_VERSION
+    theLog->logMsg("OpenM++ version", OM_RUNTIME_VERSION);
+#endif
+    theLog->logFormatted("OpenM++ build  : %s %s %s", libTargetOsName, libTargetConfigName, libTargetMpiUseName);
+
+    if (!isMpiUsed && i_runCtrl->threadCount > 1) {
+        theLog->logFormatted("Run model with %d modeling thread(s)", i_runCtrl->threadCount);
+    }
+    if (isMpiUsed && i_msgExec->isRoot()) {
+        if (i_msgExec->worldSize() > 1) {
+            theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", i_msgExec->worldSize(), i_runCtrl->threadCount);
+        }
+        else {
+            theLog->logFormatted("Run single model process with %d modeling thread(s)", i_runCtrl->threadCount);
+        }
+    }
+
+    // report model environment roots, if such envrinment variables defined, example:
+    //  OM_ROOT=../../../ 
+    //  OM_MyModel=../../
+    {
+        if (const char * val = getenv("OM_ROOT")) {
+            theLog->logFormatted("OM_ROOT=%s", val);
+        }
+        string merName = string("OM_") + OM_MODEL_NAME;
+        if (const char * val = getenv(merName.c_str())) {
+            theLog->logFormatted("%s=%s", merName.c_str(), val);
+        }
     }
 }
