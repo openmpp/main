@@ -145,6 +145,11 @@ ifdef MODEL_INI
   RUN_OPT_INI = -ini $(OUT_BIN_DIR)/$(MODEL_INI)
 endif
 
+# set model root, for example: OM_NewCaseBased=/home/user/NewCaseBased
+#
+model_root_name = OM_$(MODEL_NAME)
+model_root_value = $(CURDIR)
+
 #
 # location and name of output database
 #
@@ -289,6 +294,7 @@ publish-views : publish
 .PHONY : run
 run:
 	cd $(OUT_BIN_DIR) && \
+	$(model_root_name)=$(model_root_value) \
 	./$(MODEL_EXE) $(RUN_OPT_INI) -OpenM.ProgressPercent 25
 
 .PHONY: clean
