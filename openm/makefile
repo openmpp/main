@@ -49,9 +49,9 @@ clean:
 	$(MAKE) -C $(LIBOPENM_DIR) clean
 	$(MAKE) -C $(LIBSQLITE_DIR) clean
 
-.PHONY : cleanall
-cleanall:
-	$(MAKE) -C $(OMC_DIR) cleanall
+.PHONY : clean-all
+clean-all:
+	$(MAKE) -C $(OMC_DIR) clean-all
 	rm -rf $(BUILD_DIR)
 	rm -rf $(OUT_LIB_DIR)
 	@if [ -e $(OUT_BIN_DIR)/omc ] ;  then rm -f $(OUT_BIN_DIR)/omc ; fi 

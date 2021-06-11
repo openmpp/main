@@ -82,7 +82,7 @@ prepare:
 
 .PHONY : clean-all
 clean-all: clean
-	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) cleanall;)
+	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) clean-all;)
 
 .PHONY : clean
 clean:

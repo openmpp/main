@@ -202,8 +202,8 @@ clean:
 	rm -f $(DEPS_DIR)/*.d
 	rm -f $(BUILD_SRC_DIR)/*
 
-.PHONY: cleanall
-cleanall: clean
+.PHONY: clean-all
+clean-all: clean
 	rm -f $(OUT_BIN_DIR)/$(OMC_EXE)
 	rm -f $(OUT_BIN_DIR)/omc.ini
 	rm -f $(OUT_BIN_DIR)/omc.message.ini
@@ -220,6 +220,6 @@ prepare:
 
 # include dependencies for each .cpp file
 # if target is not clean or prepare
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean clean-all prepare)))
     -include $(DEPS)
 endif

@@ -97,8 +97,8 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
-.PHONY: cleanall
-cleanall: clean
+.PHONY: clean-all
+clean-all: clean
 	rm -rf $(MODEL_BUILD_DIR)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(MODEL_SQLITE)
@@ -112,7 +112,7 @@ prepare:
 
 # include dependencies for each .cpp file
 # if target is not clean or prepare
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean clean-all prepare)))
     -include $(DEPS)
 endif
 
