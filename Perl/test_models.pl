@@ -957,8 +957,8 @@ for my $model_dir (@model_dirs) {
 			# Change working directory to target_dir where the executable is located.
 			chdir "${target_dir}";
 			
-			my $ompp_trace_txt = "${scenario_name}_trace.txt";
-			my $ompp_log_txt = "${scenario_name}_log.txt";
+			my $ompp_trace_txt = "${model_name}.trace.txt";
+			my $ompp_log_txt = "${model_name}.log";
 			($merged, $retval) = capture_merged {
 				my @args;
 				if ($use_mpi && $mpi_processes > 1) {
@@ -1171,8 +1171,8 @@ for my $model_dir (@model_dirs) {
 			chdir "${target_dir}";
 			
 			$start_seconds = time;
-			my $ompp_trace_txt = "${scenario_name}_trace.txt";
-			my $ompp_log_txt = "${scenario_name}_log.txt";
+			my $ompp_trace_txt = "${model_name}.trace.txt";
+			my $ompp_log_txt = "${model_name}.log";
 			($merged, $retval) = capture_merged {
 				my @args = (
 					"${model_exe}",
