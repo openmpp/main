@@ -78,8 +78,8 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
-.PHONY: cleanall
-cleanall: clean
+.PHONY: clean-all
+clean-all: clean
 	rm -f $(OUT_DIR)/$(LIBSQLITE_A)
 	rm -rf $(BUILD_PROJ_DIR)
 	@if [ -d $(OUT_DIR) ] ; then rmdir --ignore-fail-on-non-empty $(OUT_DIR) ; fi 
@@ -92,7 +92,7 @@ prepare:
 
 # include dependencies for each .c file
 # if target is not clean or prepare
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean clean-all prepare)))
     -include $(DEPS)
 endif
 

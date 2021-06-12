@@ -1092,7 +1092,7 @@ for my $model_dir (@model_dirs) {
 			open BUILD_LOG, ">${build_log}" || die;
 			logmsg info, $model_dir, $flavour, "Build and publish model and Default scenario" if $report_steps;
 			$start_seconds = time;
-			for my $make_target ('cleanall', 'model', 'publish-views') {
+			for my $make_target ('clean-all', 'model', 'publish-views') {
 				($merged, $retval) = capture_merged {
 					my @args = (
 						"make",

@@ -256,8 +256,8 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
-.PHONY: cleanall
-cleanall: clean
+.PHONY: clean-all
+clean-all: clean
 	rm -f $(OUT_DIR)/$(LIBOPENM_A)
 	rm -f $(OUT_DIR)/$(LIB_OMC_A)
 	rm -rf $(BUILD_PROJ_DIR)
@@ -270,7 +270,7 @@ prepare:
 
 # include dependencies for each .cpp file
 # if target is not clean or prepare
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean clean-all prepare)))
     -include $(RT_DEPS)
     -include $(OMC_DEPS)
 endif

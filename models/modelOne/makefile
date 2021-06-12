@@ -15,12 +15,11 @@ endif
 CPP = $(CC)
 AR = ar
 
-ifndef BUILD_DIR
-  BUILD_DIR = ../build
-endif
-
 ifndef OUT_PREFIX
-  OUT_PREFIX = ..
+  OUT_PREFIX = ompp-linux
+  ifeq ($(PLATFORM_UNAME), Darwin)
+    OUT_PREFIX = ompp-mac
+  endif
 endif
 
 ifndef OM_ROOT
@@ -46,21 +45,25 @@ endif
 # if model build directory defined globally 
 #   then assume shared some/build/ location and use model name to avoid conflicts
 #
-MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
+ifndef BUILD_DIR
+  MODEL_BUILD_DIR = $(OUT_PREFIX)/build
+else
+  MODEL_BUILD_DIR = $(BUILD_DIR)/$(CUR_SUBDIR)
+endif
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG -Og
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin
   BIN_POSTFIX = D
 else
   BD_CFLAGS = -DNDEBUG -O3
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
-  OUT_BIN_DIR = $(OUT_PREFIX)/bin
   BIN_POSTFIX =
 endif
+
+OUT_BIN_DIR = $(OUT_PREFIX)/bin
 
 ifndef OM_DB_LIB
 #  OM_DB_LIB = sqlite3
@@ -229,8 +232,8 @@ clean:
 	rm -f $(OBJ_DIR)/*.o
 	rm -f $(DEPS_DIR)/*.d
 
-.PHONY: cleanall
-cleanall: clean
+.PHONY: clean-all
+clean-all: clean
 	rm -rf $(MODEL_BUILD_DIR)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(MODEL_SQLITE)
@@ -243,7 +246,7 @@ prepare:
 
 # include dependencies for each .cpp file
 # if target is not clean or prepare
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean cleanall prepare)))
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean clean-all prepare)))
     -include $(DEPS)
 endif
 
