@@ -1,6 +1,14 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_06_12:
+  Bug fix: omc compiler error can occur with a parameter in csv format
+  New version 2.1 of test_models
+  adjust build and run scripts to develop and run models outside of OM_ROOT release folder
+  support model-specific root folder, allow to use it in model code
+  create  model-specific run templates for OzProj sample models
+  add model localization macro for non-translated messages
+
 2021_06_02:
   TablePresent() function for derived table model code
   bug fix in Modgen macros FixedGetTableValue and FixedSetTableValue for cross-compatible models
