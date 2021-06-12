@@ -161,6 +161,7 @@ void CodeGen::do_preamble()
     c += "double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();";
     c += "std::unordered_set<int> BaseEntity::event_trace_selected_entities;";
     c += "std::unordered_set<int> BaseEntity::event_trace_selected_events;";
+    c += "int BaseEntity::event_trace_maximum_lines = 100000;";
     c += "";
 
     // Let the run-time know whether to generate a running checksum for events
