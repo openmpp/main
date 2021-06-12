@@ -333,6 +333,7 @@
     <START_OMPP_UI_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).start_ompp_ui.log</START_OMPP_UI_LOG>
     <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">run.Debug.template.txt</RUN_TEMPLATE>
     <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">run.Debug.template.txt</RUN_TEMPLATE>
+    <RUN_TEMPLATE Condition="'$(OM_CFG_DEFAULT_RUN_TMPL)'!=''">$(OM_CFG_DEFAULT_RUN_TMPL)</RUN_TEMPLATE>
     <RUN_TEMPLATE Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></RUN_TEMPLATE>
     <RUN_TEMPLATE Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'"></RUN_TEMPLATE>
   </PropertyGroup>
