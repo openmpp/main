@@ -73,7 +73,7 @@ if (! -s $in_ompp) {
 	logmsg error, $script_name, "Framework parameter module ${in_ompp} not found\n";
 	exit 1;
 }
-if ('' ne $run_ini && ! -s $run_ini) {
+if ('' ne $run_ini && ! -e $run_ini) {
 	logmsg error, $script_name, "Run ini ${run_ini} not found\n";
 	exit 1;
 }
