@@ -40,6 +40,7 @@ public:
         , index_series_offset(0)
         , datatype2(nullptr)
         , pp_datatype2(nullptr)
+        , initializations_count(0)
         , pp_parameter_id(0)
         , pp_parameter_to_table_id(0)
     {
@@ -402,6 +403,11 @@ public:
      * The data type of the parameter contents - redeclaration
      */
     TypeSymbol *pp_datatype2;
+
+    /**
+     * The number of times this parameter was initialized with .dat, .csv, .tsv.
+     */
+    int initializations_count;
 
     /**
      * Numeric identifier of the parameter. Used for communicating with the metadata API.

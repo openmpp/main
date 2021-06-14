@@ -107,6 +107,8 @@ extern void omc::readParameterCsvFiles(
         }
         Symbol::all_source_files.push_back(pathCsv);    // add csv file path to list of source files
 
+        param->initializations_count++; // to detect multiple initialization error later
+
         // re-initialize parameter: clear previous values from .dat file
         param->source = i_isFixed ? ParameterSymbol::fixed_parameter : ParameterSymbol::scenario_parameter;
         param->sub_initial_list.resize(1);

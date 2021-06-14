@@ -550,6 +550,11 @@ void ParameterSymbol::validate_initializer()
         return;
     }
 
+    // error if initialized more than once
+    if (initializations_count > 1) {
+        pp_error(LT("error : multiple initializations for parameter '") + name + LT("'"));
+    }
+
     // Presence check: parameter must have at least one sub-value (default sub-value)
     if (0 == sub_initial_list.size()) {
         pp_error(LT("error : missing initializer for parameter '") + name + LT("'"));
