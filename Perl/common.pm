@@ -35,7 +35,6 @@ sub diagnostic {
 # yum install 'perl(Capture::Tiny)'
 
 use Capture::Tiny qw/capture tee capture_merged tee_merged/;
-use Config::Tiny;
 
 # Output a log message with one or more prefixes.
 # arg0 - left margin prefix for warning/change/error/info
@@ -490,7 +489,7 @@ sub modgen_create_scex
 
 	# Parse Base ompp framework code file for .scex scenario information
 	if (!open FRAMEWORK_OMPP, "<${framework_ompp_file}") {
-		logmsg error, "unable to open ${framework_ompp_file}";
+		logmsg error, 'modgen_create_scex', "unable to open ${framework_ompp_file}";
 		return 1;
 	}
 	while (<FRAMEWORK_OMPP>) {
@@ -515,7 +514,7 @@ sub modgen_create_scex
 
 	# Parse Base Framework parameters for .scex scenario information
 	if (!open FRAMEWORK_ODAT, "<${framework_odat_file}") {
-		logmsg error, "unable to open ${framework_odat_file}";
+		logmsg error, 'modgen_create_scex', "unable to open ${framework_odat_file}";
 		return 1;
 	}
 	while (<FRAMEWORK_ODAT>) {
@@ -538,36 +537,59 @@ sub modgen_create_scex
 
     # Propagate selected values from model ini to scex, if present
     # Values from the Parameter section override values from framework.odat
+    #logmsg diagnostic, 'modgen_create_scex', "run_ini=${run_ini}";
     if ('' ne $run_ini && -f $run_ini) {
-        my $Config = Config::Tiny->new;
-        $Config = Config::Tiny->read($run_ini);
-        {
-            my $val = $Config->{OpenM}->{SubValues};
-            $General{"Subsamples"} = $val if defined $val;
+        #logmsg diagnostic, 'modgen_create_scex', "processing ini file";
+        if (!open MODEL_INI, "<${run_ini}") {
+            logmsg error, 'modgen_create_scex', "unable to open ${run_ini}";
+            return 1;
         }
-        {
-            my $val = $Config->{OpenM}->{Threads};
-            $General{"Threads"} = $val if defined $val;
+        my $section = '';
+        while (<MODEL_INI>) {
+            my $key = '';
+            my $value = '';
+            chomp;
+            my $line = $_;
+            if ( $line =~ /\[(\w+)\]/ ) {
+                # section detected
+                $section = $1;
+                #logmsg diagnostic, 'modgen_create_scex', "section=${section}";
+                next;
+            }
+            if ( $line =~ /^\s*(\w+)\s*=\s*(\w+)/ ) {
+                $key = $1;
+                $value = $2;
+                #logmsg diagnostic, 'modgen_create_scex', "key=${key} value=${value}";
+            }
+            else {
+                # Ignore any line which is not a simple key = value pair
+                # since this is all we are looking for in this context.
+                next;
+            }
+            if ($section eq 'OpenM' && $key eq 'SubValues') {
+                $General{"Subsamples"} = $value;
+            }
+            if ($section eq 'OpenM' && $key eq 'Threads') {
+                $General{"Threads"} = $value;
+            }
+            if ($section eq 'Parameter' && $key eq 'SimulationSeed') {
+                $General{"StartingSeed"} = $value;
+            }
+            if ($section eq 'Parameter' && $key eq 'SimulationCases') {
+                $General{"Cases"} = $value;
+            }
+            if ($section eq 'Parameter' && $key eq 'SimulationEnd') {
+                $General{"SimulationEnd"} = $value;
+            }
         }
-        {
-            my $val = $Config->{Parameter}->{SimulationSeed};
-            $General{"StartingSeed"} = $val if defined $val;
-        }
-        {
-            my $val = $Config->{Parameter}->{SimulationCases};
-            $General{"Cases"} = $val if defined $val;
-        }
-        {
-            my $val = $Config->{Parameter}->{SimulationEnd};
-            $General{"SimulationEnd"} = $val if defined $val;
-        }
+        close MODEL_INI;
     }
     
 	# The XML structure of the .scex file is simple,
 	# so the approach here is to generate it directly rather than use XML::Tiny or XML::LibXML, etc.
 
 	if (!open SCEX, ">${scex_file}") {
-		logmsg error, "unable to open ${scex_file}";
+		logmsg error, 'modgen_create_scex', "unable to open ${scex_file}";
 		return 1;
 	}
 	print SCEX "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";

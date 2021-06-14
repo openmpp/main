@@ -1517,11 +1517,14 @@ parameter_initializer_expr:
                                 ostringstream msg;
                                 msg << LT("warning : ignoring initializer for derived parameter ") << parm->name;
                                 drv.warning(@eq, msg.str());
+                                //TODO should not fall through to initialization code after if/elseif/else below
                             }
                             else if (pc.is_scenario_parameter_value) {
+                                parm->initializations_count++;
                                 parm->source = ParameterSymbol::scenario_parameter;
                             }
                             else if (pc.is_fixed_parameter_value) {
+                                parm->initializations_count++;
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {
@@ -1540,11 +1543,14 @@ parameter_initializer_expr:
                                 ostringstream msg;
                                 msg << LT("warning : ignoring initializer for derived parameter ") << parm->name;
                                 drv.warning(@eq, msg.str());
+                                //TODO should not fall through to initialization code after if/elseif/else below
                             }
                             else if (pc.is_scenario_parameter_value) {
+                                parm->initializations_count++;
                                 parm->source = ParameterSymbol::scenario_parameter;
                             }
                             else if (pc.is_fixed_parameter_value) {
+                                parm->initializations_count++;
                                 parm->source = ParameterSymbol::fixed_parameter;
                             }
                             else {

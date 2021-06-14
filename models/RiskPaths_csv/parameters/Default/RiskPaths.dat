@@ -1,0 +1,19 @@
+//LABEL(RiskPaths, EN) RiskPaths
+parameters {
+	 // Age-specific death probabilities
+	double	ProbMort[LIFE] = {
+		(100) .01, 1, 
+	};
+
+	 // Relative risks of union status on first pregnancy
+	double	UnionStatusPreg1[UNION_STATE] = {
+		0.0648, 1.0000, 0.2523, 0.0648, 0.8048, 0.0648, 
+	};
+
+	 // Separation Duration Baseline of 2nd Formation
+	double	SeparationDurationBaseline[DISSOLUTION_DURATION] = {
+		0.1995702, 0.1353028, 0.1099149, 0.0261186, 0.0456905, 
+	};
+
+};
+
