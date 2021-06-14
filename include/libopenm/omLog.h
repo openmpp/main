@@ -19,6 +19,9 @@ namespace openm
     {
         virtual ~ILogBase(void) noexcept = 0;
 
+        /** return true if log to console or to file enabled. */
+        virtual const bool isEnabled(void) noexcept = 0;
+
         /** log message */
         virtual void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept = 0;
 
