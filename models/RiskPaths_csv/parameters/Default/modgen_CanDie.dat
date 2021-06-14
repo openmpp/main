@@ -1,0 +1,4 @@
+parameters {
+	logical	CanDie = FALSE; // Switch to turn mortality on
+};
+
