@@ -101,6 +101,8 @@
     <None Include="../code/*.ompp" />
     <None Include="../parameters/Default/*.dat" />
     <None Include="../parameters/Default/*.odat" />
+    <None Include="../parameters/Default/*.csv" />
+    <None Include="../parameters/Default/*.tsv" />
     <None Include="../*.ini" />
   </ItemGroup>
   <!-- Import standard master targets for C++ projects -->

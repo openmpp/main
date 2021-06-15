@@ -8,7 +8,8 @@
     </MODEL_NAME>
     <SCENARIO_NAMES>
     </SCENARIO_NAMES>
-    <FIXED_NAME>Fixed</FIXED_NAME>
+    <FIXED_NAME>
+    </FIXED_NAME>
     <GRID_COMPUTING>EMPTY</GRID_COMPUTING>
     <USE_PCH>true</USE_PCH>
     <NO_LINE_DIRECTIVES>false</NO_LINE_DIRECTIVES>
@@ -100,6 +101,8 @@
     <None Include="../code/*.ompp" />
     <None Include="../parameters/Default/*.dat" />
     <None Include="../parameters/Default/*.odat" />
+    <None Include="../parameters/Default/*.csv" />
+    <None Include="../parameters/Default/*.tsv" />
     <None Include="../*.ini" />
   </ItemGroup>
   <!-- Import standard master targets for C++ projects -->
