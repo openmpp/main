@@ -60,6 +60,9 @@ namespace openm
         */
         const string timeStamp(void) noexcept override;
 
+        /** return true if log to console or to file enabled. */
+        const bool isEnabled(void) noexcept override { return isConsoleEnabled || isLastEnabled || isStampedEnabled; }
+
         /** re-initialize log file name(s) and other log settings.
         *
         * @param[in]   i_logToConsole  if true then log to console
