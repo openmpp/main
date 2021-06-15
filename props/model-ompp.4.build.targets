@@ -124,6 +124,8 @@
         Overwrite="true"
         Encoding="Unicode"
     />
+    <Message Text="Move $(OMC_MODEL_SQLITE) to $(OMC_MODEL_SQLITE_DB)" />
+    <Move SourceFiles="$(OMC_MODEL_SQLITE)" DestinationFiles="$(OMC_MODEL_SQLITE_DB)" />
   </Target>
 
   <PropertyGroup>
@@ -166,7 +168,6 @@
   
   <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
-    <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).publish.tickle</PUBLISH_TICKLE>
     <PUBLISH_SQLITE_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(PUBLISH_SQLITE)))</PUBLISH_SQLITE_REL>
     <OM_SQL_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir),$(OM_SQL_DIR)))</OM_SQL_DIR_REL>
     <!--  Replace back slash by forward slash. -->
@@ -175,24 +176,20 @@
 
   <Target Name="ModelPublish" 
           Inputs="@(OMC_SQL_OUTPUTS)"
-          Outputs="$(PUBLISH_TICKLE)"
+          Outputs="$(PUBLISH_SQLITE)"
           AfterTargets="link"
           >
     <MakeDir Directories="$(PUBLISH_DIR)" />
     <Delete Files="$(PUBLISH_SQLITE)" />
 
-    <Message Text="Move $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite to $(PUBLISH_SQLITE)" />
-    <Move SourceFiles="$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite" DestinationFiles="$(PUBLISH_SQLITE)" />
+    <Message Text="Copy $(OMC_MODEL_SQLITE_DB) to $(PUBLISH_SQLITE)" />
+    <Copy SourceFiles="$(OMC_MODEL_SQLITE_DB)" DestinationFiles="$(PUBLISH_SQLITE)" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; $(OM_SQL_DIR_REL)/sqlite/optional_meta_views_sqlite.sql" />
 
     <Message Text="$(SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
     <Exec Command="$(COMPLETE_SQLITE_EXE) $(PUBLISH_SQLITE_REL) &lt; src/$(MODEL_NAME)_optional_views_sqlite.sql" />
-
-    <Touch  Files="$(PUBLISH_TICKLE)"
-            AlwaysCreate="true"
-            />
   </Target>
 
   <!--
