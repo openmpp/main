@@ -1,7 +1,16 @@
 parameters {
-    // Union Duration Baseline of Dissolution
-	double	UnionDurationBaseline[UNION_ORDER][UNION_DURATION] = {
-		0.0096017, (2) 0.0199994, 0.0213172, 0.0150836, 0.0110791, 
-		(2) 0.0370541, (2) 0.012775, (2) 0.0661157, 
-	};
+    double UnionDurationBaseline[UNION_ORDER][UNION_DURATION] = {
+        0.0096017,
+        0.0199994,
+        0.0199994,
+        0.0213172,
+        0.0150836,
+        0.0110791,
+        0.0370541,
+        0.0370541,
+        0.012775,
+        0.012775,
+        0.0661157,
+        0.0661157,
+    };
 };

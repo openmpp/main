@@ -1,7 +1,16 @@
 parameters {
-	 // Age baseline for 1st union formation
-	double	AgeBaselineForm1[AGEINT_STATE] = {
-		0, 0.030898, 0.134066, 0.167197, 0.165551, 0.147390, 0.108470, 0.080378, 0.033944, 0.045454, 0.040038, 0, 
-	};
+    double AgeBaselineForm1[AGEINT_STATE] = {
+        0,
+        0.030898,
+        0.134066,
+        0.167197,
+        0.165551,
+        0.14739,
+        0.10847,
+        0.080378,
+        0.033944,
+        0.045454,
+        0.040038,
+        0,
+    };
 };
-
