@@ -155,6 +155,7 @@ namespace
         else {
             strncpy(io_buffer, ValueFormatter::falseValueString, i_size);
         }
+        io_buffer[i_size - 1] = '\0';
         return (int)strnlen(io_buffer, i_size);
     }
 
@@ -163,6 +164,7 @@ namespace
     {
         string sVal = *static_cast<const string *>(i_value);
         strncpy(io_buffer, sVal.c_str(), i_size);
+        io_buffer[i_size - 1] = '\0';
         return (int)strnlen(io_buffer, i_size);
     }
 }
