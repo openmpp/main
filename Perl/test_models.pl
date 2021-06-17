@@ -336,6 +336,28 @@ else {
 my @flavours;
 my @flavours_tombstone;
 if ($is_windows) {
+	if ($do_ompp) {
+		if ( ! -e $create_db_sqlite_sql ) {
+			logmsg error, "Missing SQL file used to create new data store for ompp: $create_db_sqlite_sql";
+			exit 1;
+		}
+		if ( ! -e $msbuild_exe ) {
+			logmsg error, "Missing MSBuild for ompp: $msbuild_exe";
+			exit 1;
+		}
+		push @flavours, 'ompp-win';
+		my $full_path = "${om_root}/bin/${omc_exe}";
+		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
+		my $sb = stat($full_path);
+		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
+        my $mpi_info = '';
+        if ($use_mpi) {
+            $mpi_info .= ($mpi_processes == 1) ?
+                " mpi-enabled"
+              : " mpi_processes=${mpi_processes}";
+        }
+        push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${windows_platform} configuration=${config}${mpi_info}";
+	}
 	if ($do_modgen) {
 		my $modgen_folder = 'Modgen 12';
 		my $modgen_exe = "C:\\Program Files (x86)\\StatCan\\${modgen_folder}\\Modgen.exe";
@@ -360,30 +382,7 @@ if ($is_windows) {
 			}
             
         }
-	}
-	
-	if ($do_ompp) {
-		if ( ! -e $create_db_sqlite_sql ) {
-			logmsg error, "Missing SQL file used to create new data store for ompp: $create_db_sqlite_sql";
-			exit 1;
-		}
-		if ( ! -e $msbuild_exe ) {
-			logmsg error, "Missing MSBuild for ompp: $msbuild_exe";
-			exit 1;
-		}
-		push @flavours, 'ompp-win';
-		my $full_path = "${om_root}/bin/${omc_exe}";
-		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
-		my $sb = stat($full_path);
-		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
-        my $mpi_info = '';
-        if ($use_mpi) {
-            $mpi_info .= ($mpi_processes == 1) ?
-                " mpi-enabled"
-              : " mpi_processes=${mpi_processes}";
-        }
-        push @flavours_tombstone, "compiler=${omc_exe} (${exe_time_stamp}) platform=${windows_platform} configuration=${config}${mpi_info}";
-	}
+	}	
 }
 
 if ($is_linux && $do_ompp) {
