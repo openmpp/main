@@ -30,6 +30,7 @@ my ($opt, $usage) = describe_options(
 	[ 'model=s'   => 'name of model' ],
 	[ 'ompp_database=s'   => 'path of ompp database containing scenario' ],
 	[ 'scenario_folder=s' => 'path of scenario folder for generated dat files' ],
+	[ 'scenario=s' => 'name of scenario (default is Default)' ],
 	[ 'keep_tmp|k' => 'keep temporary files in folder ./tmp_CsvToDat' ],
 	[ 'verbose'    => 'verbose log output' ],
 );
@@ -54,6 +55,9 @@ $ompp_database = $opt->ompp_database if $opt->ompp_database;
 
 my $model = '';
 $model = $opt->model if $opt->model;
+
+my $scenario = 'Default';
+$scenario = $opt->scenario if $opt->scenario;
 
 # adapted from test_models.pl
 my $om_root = $ENV{'OM_ROOT'};
@@ -188,8 +192,8 @@ for my $file (glob("${scenario_folder}/*.[ct]sv")) {
 for my $param_name (@parameters) {
     #print "param_name=${param_name}\n";
     my $out_file = "${scenario_folder}/modgen_${param_name}.dat";
-    my $in_file = "${temp_dir}/${model}/set.Default/${param_name}.id.csv";
-    -e $in_file || die "not found in_file=${in_file}";
+    my $in_file = "${temp_dir}/${model}/set.${scenario}/${param_name}.id.csv";
+    -e $in_file || die "parameter ${param_name} in scenario ${scenario} not found in dbcopy results: in_file=${in_file}";
     # the id of this param
     my $param_id = $param_name_TO_param_id{$param_name};
     #print "param_id=${param_id}\n";
