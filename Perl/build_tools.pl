@@ -29,7 +29,7 @@ chdir 'Perl' or die;
 
 my $merged; # output from build command
 my $retval; # return value from build command
-for my $utility ('ompp_export_excel', 'ompp_export_csv', 'modgen_export_csv', 'ompp_create_scex', 'patch_modgen12.1_outputs', 'test_models') {
+for my $utility ('ompp_export_excel', 'ompp_export_csv', 'modgen_export_csv', 'ompp_create_scex', 'patch_modgen12.1_outputs', 'test_models', 'CsvToDat') {
 	my $input = "${utility}.pl";
 	my $output = "${om_root}/bin/${utility}.exe";
 	print "Building utility ${utility}\n";
