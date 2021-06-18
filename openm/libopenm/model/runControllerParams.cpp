@@ -67,8 +67,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
         wsParamVec = IWorksetParamTable::select(i_dbExec, i_setId);
     }
 
-    // get list of model parameters
+    // get list of model parameters and model languages
     vector<ParamDicRow> paramVec = metaStore->paramDic->rows();
+    vector<LangLstRow> langVec = metaStore->langLst->rows();
+
+    const locale mdLocale(""); // user default locale for md files
 
     // check if parameters csv directory specified and accessible
     string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
@@ -209,6 +212,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
         }
 
         // insert from parameter.csv file if sub-value from option either "csv" or "default" and csv directory specified
+        // if parameter.csv loaded then check load value notes form parameter.LANG.md file(s)
         if (!isInserted && (isFromCsv || (isFromDefault && isParamDir))) {
 
             // if parameter.csv exist then copy it into parameter value table
@@ -227,6 +231,27 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                 writer->loadCsvParameter(i_dbExec, subOpts.subIds, csvPath.c_str(), isIdCsv);
 
                 isInserted = true;
+
+                // for all model languages check if parameter.LANG.md exist and read value notes
+                for (const LangLstRow & lang : langVec) {
+
+                    string mdPath = makeFilePath(paramDir.c_str(), (paramIt->paramName + "." + lang.code).c_str(), ".md");
+                    if (isFileExists(mdPath.c_str())) {
+                        theLog->logMsg("Read", mdPath.c_str());
+
+                        string notes = fileToUtf8(mdPath.c_str());
+                        notes = trim(notes, mdLocale);
+                        if (notes.empty()) continue;    // skip empty notes
+
+                        i_dbExec->update(
+                            "INSERT INTO run_parameter_txt (run_id, parameter_hid, lang_id, note) VALUES(" +
+                            sRunId + "," +
+                            to_string(paramIt->paramHid) + "," +
+                            to_string(lang.langId) + "," +
+                            toQuoted(notes) + ")"
+                        );
+                    }
+                }
             }
             else {
                 if (isFromCsv) throw DbException("parameter csv file not found: %s", csvPath.c_str());
