@@ -28,6 +28,11 @@ public:
     {
     	//TODO traverse tree recursively and destroy (but why bother?)
     }
+
+    /**
+     * true if expression or subexpression contains a pointer operator
+     */
+    virtual bool uses_pointer() const = 0;
 };
 
 class ExprForAttributeUnaryOp : public ExprForAttribute {
@@ -43,6 +48,12 @@ public:
 	    : op ( op )
 	    , right ( right )
     {
+    }
+
+    bool uses_pointer() const
+    {
+        // TK_STAR is unary * in this context
+        return (op == token_type::TK_STAR) || right->uses_pointer();
     }
 
 	const token_type op;
@@ -64,6 +75,12 @@ public:
 	    , left ( left )
 	    , right ( right )
     {
+    }
+
+    bool uses_pointer() const
+    {
+        // TK_MEMBER_OF_POINTER is binary operator ->
+        return (op == token_type::TK_MEMBER_OF_POINTER) || left->uses_pointer() || right->uses_pointer();
     }
 
 	const token_type op;
@@ -88,7 +105,12 @@ public:
     {
     }
 
-	ExprForAttribute *cond;
+    bool uses_pointer() const
+    {
+        return cond->uses_pointer() || first->uses_pointer() || second->uses_pointer();
+    }
+
+    ExprForAttribute *cond;
 	ExprForAttribute *first;
 	ExprForAttribute *second;
 };
@@ -106,6 +128,19 @@ public:
     {
     }
 
+    bool uses_pointer() const
+    {
+        // detect use of omc hack which creates "A->B" as a name
+        // for an anonymous identity attribute.
+        if (symbol->name.find("->") != std::string::npos) {
+            // symbol 'name' contains "->"
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
 	Symbol*& symbol;
 	Symbol* pp_symbol;
 };
@@ -121,6 +156,11 @@ public:
 	ExprForAttributeLiteral(const Literal *constant)
 	    : constant (constant)
     {
+    }
+
+    bool uses_pointer() const
+    {
+        return false;
     }
 
     const Literal *constant;

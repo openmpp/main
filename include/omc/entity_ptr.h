@@ -74,8 +74,16 @@ public:
             return ptr;
         }
         else {
-            // entity_ptr is nullptr, return pointer to the 'null' agent
-            return &A::om_null_agent;
+            if (BaseEntity::om_access_to_null_entity) {
+                // we are here only if evaluating an identity attribute expression
+                return &A::om_null_agent;
+            }
+            else {
+                // an attempt to derefernece null pointer to entity in model code
+                handle_null_dereference();
+                // NOT_REACHED because exception thrown above
+                return nullptr;
+            }
         }
     }
 

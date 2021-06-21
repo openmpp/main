@@ -190,6 +190,9 @@ void CodeGen::do_preamble()
         c += "const bool BaseEvent::allow_clairvoyance = false;";
     }
 
+    c += "// allow or disallow access to null entity through null pointer";
+    c += "thread_local bool BaseEntity::om_access_to_null_entity = false;";
+
     c += "";
 
     // om_fixed_parms.cpp
@@ -1155,7 +1158,7 @@ void CodeGen::do_event_names()
         }
         c += "};";
         if (id > 0) {
-            c += "return (event_id < " + std::to_string(id) + ") ? event_name[event_id] : \"\";";
+            c += "return (event_id >= 0 && event_id < " + std::to_string(id) + ") ? event_name[event_id] : \"(no event)\";";
         }
         else {
             c += "return \"\"; // no events in model";

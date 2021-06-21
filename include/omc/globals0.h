@@ -18,5 +18,8 @@ void handle_backwards_time(double the_current_time, double the_event_time,  int 
 void handle_clairvoyance(double the_current_time, double the_future_time, int the_future_entity);
 
 // defined in use/common.ompp
+void handle_null_dereference();
+
+// defined in use/common.ompp
 double get_global_time();
 

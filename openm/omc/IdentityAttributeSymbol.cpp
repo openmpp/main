@@ -339,6 +339,13 @@ void IdentityAttributeSymbol::build_body_expression()
 {
     CodeBlock& c = expression_fn->func_body;
 
+    // is a sandwich allowing access to null entity required for this identity attribute?
+    bool do_sandwich = root->uses_pointer();
+
+    if (do_sandwich) {
+        c += "bool saved_atne = BaseEntity::om_access_to_null_entity;";
+        c += "BaseEntity::om_access_to_null_entity = true;";
+    }
     if (decl_loc.begin.filename) {
         c += (no_line_directives ? "//#line " : "#line ")
             + to_string(decl_loc.begin.line)
@@ -350,6 +357,9 @@ void IdentityAttributeSymbol::build_body_expression()
         c += "//#line This is a generated identity attribute which has no associated model source file";
     }
     c += name + ".set(" + cxx_expression(root) + ");";
+    if (do_sandwich) {
+        c += "BaseEntity::om_access_to_null_entity = saved_atne;";
+    }
 }
 
 

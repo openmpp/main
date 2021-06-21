@@ -194,6 +194,29 @@ void handle_clairvoyance(
 }
 
 /**
+ * Handles situation where model code attempts to derefence a null pointer to an entity
+ */
+void handle_null_dereference(
+)
+{
+    // This is caused by an error in model logic.
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+        << std::showpoint; // show decimal point
+    ss << LT("Attempt to dereference null pointer");
+    ss << LT(" when current time is  ") << get_global_time();
+    if (BaseEvent::current_entity_id >= 0) {
+        ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
+    }
+    if (BaseEvent::current_event_id >= 0) {
+        ss << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id);
+    }
+    ss << LT(" in simulation member ") << get_simulation_member();
+    ss << LT(" with combined seed ") << get_combined_seed();
+    ModelExit(ss.str().c_str());
+}
+
+/**
  * Handles situation where the maximum number of random streams is exceeded.
  */
 void handle_streams_exceeded(
