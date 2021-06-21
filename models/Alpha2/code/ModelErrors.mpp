@@ -1,0 +1,42 @@
+// Copyright (c) 2013-2014 OpenM++
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(ModelErrors, EN) Some tests to identify model build and runtime errors
+
+//
+// BEGIN Null pointer deference (write)
+//
+// Attempt to assign value to null pointer should cause runtime exception.
+
+actor Person
+{
+    int chess_wins;
+    void lose_chess_game();
+
+    // If the following line is uncommented, a run-time error will occur
+    //hook lose_chess_game, Start;
+
+    // If the following line is uncommented, a run-time error will occur
+    //hook lose_chess_game, HappinessReversalEvent;
+
+    // workaround to issue requiring hook function
+    void do_nothing();
+    hook do_nothing, HappinessReversalEvent;
+};
+link Person.bff;
+void Person::lose_chess_game(void)
+{
+    chess_wins--;
+    bff->chess_wins++;
+}
+
+//
+// END Null pointer deference (write)
+//
+
+
+// workaround to issue requiring hook function
+void Person::do_nothing(void)
+{
+}
+

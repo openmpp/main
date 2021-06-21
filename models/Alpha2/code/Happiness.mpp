@@ -49,6 +49,7 @@ void Person::HappinessReversalEvent()
     if (happy && my_first_happy_time == TIME_INFINITE) {
         my_first_happy_time = time;
     }
+	hook_HappinessReversalEvent();
 }
 
 
