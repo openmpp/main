@@ -71,147 +71,81 @@ namespace openm
     struct OmcArgKey
     {
         /** omc model name */
-        static const char * modelName;
+        static constexpr const char * modelName = "Omc.ModelName";
 
         /** omc scenario name (or list of names) */
-        static const char * scenarioName;
+        static constexpr const char * scenarioName = "Omc.ScenarioName";
 
         /** omc input directory with openM++ source files */
-        static const char * inputDir;
+        static constexpr const char * inputDir = "Omc.InputDir";
 
         /** omc output directory for compiled files */
-        static const char * outputDir;
+        static constexpr const char * outputDir = "Omc.OutputDir";
 
         /** omc use directory to resolve 'use' statements */
-        static const char * useDir;
+        static constexpr const char * useDir = "Omc.UseDir";
 
         /** omc input directory with OpenM++ scenario parameter files (or list of directories) */
-        static const char * paramDir;
+        static constexpr const char * paramDir = "Omc.ParamDir";
 
         /** omc input directory with OpenM++ fixed parameter files */
-        static const char * fixedDir;
+        static constexpr const char * fixedDir = "Omc.FixedDir";
 
         /**  omc code page: input files encoding name */
-        static const char * codePage;
+        static constexpr const char * codePage = "Omc.CodePage";
 
         /** omc suppress #line directives in generated cpp files */
-        static const char * noLineDirectives;
+        static constexpr const char * noLineDirectives = "Omc.NoLineDirectives";
 
         /** omc generate detailed output from parser */
-        static const char * traceParsing;
+        static constexpr const char * traceParsing = "Omc.TraceParsing";
 
         /** omc generate detailed output from scanner */
-        static const char * traceScanning;
+        static constexpr const char * traceScanning = "Omc.TraceScanning";
 
         /** omc input directory with sql script to create SQLite model database */
-        static const char * sqlDir;
+        static constexpr const char * sqlDir = "Omc.SqlDir";
+
+        /** omc output directory to create SQLite model database */
+        static constexpr const char * sqliteDir = "Omc.SqliteDir";
 
         /** omc list of db-provider names to create sql scripts */
-        static const char * dbProviderNames;
+        static constexpr const char * dbProviderNames = "Omc.SqlPublishTo";
 
         /** language to display output messages */
-        static const char * messageLang;
+        static constexpr const char * messageLang = "Omc.MessageLanguage";
 
         /** list of functions which produce localized messages */
-        static const char * messageFnc;
+        static constexpr const char * messageFnc = "Omc.MessageFnc";
     };
 
     /** keys for omc options (short form) */
     struct OmcShortKey
     {
         /** short name for ini file name: -ini fileName.ini */
-        static const char * iniFile;
+        static constexpr const char * iniFile = "ini";
 
         /** short name for omc model name */
-        static const char * modelName;
+        static constexpr const char * modelName = "m";
 
         /** short name for omc scenario name */
-        static const char * scenarioName;
+        static constexpr const char * scenarioName = "s";
 
         /** short name for omc input directory  */
-        static const char * inputDir;
+        static constexpr const char * inputDir = "i";
 
         /** short name for omc output directory */
-        static const char * outputDir;
+        static constexpr const char * outputDir = "o";
 
         /** short name for omc use directory */
-        static const char * useDir;
+        static constexpr const char * useDir = "u";
 
         /** short name for omc param directory */
-        static const char * paramDir;
+        static constexpr const char * paramDir = "p";
 
         /** short name for omc fixed directory */
-        static const char * fixedDir;
+        static constexpr const char * fixedDir = "f";
     };
-
-    /** omc model name */
-    const char * OmcArgKey::modelName = "Omc.ModelName";
-
-    /** omc scenario name (or list of names) */
-    const char * OmcArgKey::scenarioName = "Omc.ScenarioName";
-
-    /** omc input directory with openM++ source files */
-    const char * OmcArgKey::inputDir = "Omc.InputDir";
-
-    /** omc output directory for compiled files */
-    const char * OmcArgKey::outputDir = "Omc.OutputDir";
-
-    /** omc use directory to resolve 'use' statements */
-    const char * OmcArgKey::useDir = "Omc.UseDir";
-
-    /** omc input directory (or list of directories) for OpenM++ parameter files */
-    const char * OmcArgKey::paramDir = "Omc.ParamDir";
-
-    /** omc input directory for OpenM++ fixed parameter files */
-    const char * OmcArgKey::fixedDir = "Omc.FixedDir";
-
-    /** omc code page: input files encoding name */
-    const char * OmcArgKey::codePage = "Omc.CodePage";
-
-    /** omc no #line directives option */
-    const char * OmcArgKey::noLineDirectives = "Omc.NoLineDirectives";
-
-    /** omc trace parsing option */
-    const char * OmcArgKey::traceParsing = "Omc.TraceParsing";
-
-    /** omc trace scanning option */
-    const char * OmcArgKey::traceScanning = "Omc.TraceScanning";
-
-    /** omc input directory with sql script to create SQLite model database */
-    const char * OmcArgKey::sqlDir = "Omc.SqlDir";
-
-    /** omc list of db-provider names to create sql scripts */
-    const char * OmcArgKey::dbProviderNames = "Omc.SqlPublishTo";
-
-    /** language to display output messages */
-    const char * OmcArgKey::messageLang = "Omc.MessageLanguage";
-
-    /** list of functions which produce localized messages */
-    const char * OmcArgKey::messageFnc = "Omc.MessageFnc";
-
-    /** short name for ini file name: -ini fileName.ini */
-    const char * OmcShortKey::iniFile = "ini";
-
-    /** short name for omc model name  */
-    const char * OmcShortKey::modelName = "m";
-
-    /** short name for omc scenario name  */
-    const char * OmcShortKey::scenarioName = "s";
-
-    /** short name for omc input directory  */
-    const char * OmcShortKey::inputDir = "i";
-
-    /** short name for omc output directory */
-    const char * OmcShortKey::outputDir = "o";
-
-    /** short name for omc use directory */
-    const char * OmcShortKey::useDir = "u";
-
-    /** short name for omc parm directory */
-    const char * OmcShortKey::paramDir = "p";
-
-    /** short name for omc fixed directory */
-    const char * OmcShortKey::fixedDir = "f";
 
     /** array of model run option keys. */
     static const char * runArgKeyArr[] = {
@@ -227,6 +161,7 @@ namespace openm
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
+        OmcArgKey::sqliteDir,
         OmcArgKey::dbProviderNames,
         OmcArgKey::messageLang,
         OmcArgKey::messageFnc,
@@ -565,7 +500,7 @@ int main(int argc, char * argv[])
 #endif
         // collect model metadata during code generation
         MetaModelHolder metaRows;
-        unique_ptr<IModelBuilder> builder(IModelBuilder::create(sqlProviders, sqlDir, outDir));
+        unique_ptr<IModelBuilder> builder(IModelBuilder::create(sqlProviders, sqlDir, outDir, argStore.strOption(OmcArgKey::sqliteDir)));
         if (!builder->isSqliteDb())
             theLog->logMsg("warning : model SQLite database not created");
 

@@ -31,7 +31,7 @@ namespace openm
     {
     public:
         /** create new model builder. */
-        ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir);
+        ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir, const string & i_sqliteDir);
 
         /** release builder resources. */
         ~ModelSqlBuilder() noexcept { }
@@ -71,6 +71,7 @@ namespace openm
         string sqlDir;                  // sql scripts directory to create database
         string sourceDir;               // source code directory
         string outputDir;               // output directory to write sql script files
+        string sqliteDir;               // output directory to create model.sqlite database
         bool isSqlite;                  // if true then create SQLite database
         list<string> dbProviderLst;     // list of db provider names, ie: sqlite,postgresql,mysql
         unique_ptr<IDbExec> dbExec;     // database connection

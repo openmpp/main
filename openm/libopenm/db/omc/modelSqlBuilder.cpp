@@ -7,16 +7,16 @@
 using namespace openm;
 
 // new model builder to create sql script specific to each db-provider
-IModelBuilder * IModelBuilder::create(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir)
+IModelBuilder * IModelBuilder::create(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir, const string & i_sqliteDir)
 {
-    return new ModelSqlBuilder(i_providerNames, i_sqlDir, i_outputDir);
+    return new ModelSqlBuilder(i_providerNames, i_sqlDir, i_outputDir, i_sqliteDir);
 }
 
 // release builder resources
 IModelBuilder::~IModelBuilder() noexcept { }
 
 // create new model builder and set db table name prefix and suffix rules
-ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir) :
+ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir, const string & i_sqliteDir) :
     isCrc32Name(false),
     dbPrefixSize(0),
     dbSuffixSize(0),
@@ -29,6 +29,8 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     if (dbProviderLst.empty()) throw DbException(LT("invalid (empty) list db-provider names"));
 
     isSqlite = dbProviderLst.cend() != std::find(dbProviderLst.cbegin(), dbProviderLst.cend(), SQLITE_DB_PROVIDER);
+
+    sqliteDir = !i_sqliteDir.empty() ? i_sqliteDir : outputDir;
 
     // if max size of db table name is too short then use crc32(md5) digest
     // table name is: paramNameAsPrefix + _p + md5Suffix, for example: ageSex_p12345678
@@ -76,7 +78,7 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
         if (isSqlite) {
             dbExec.reset(IDbExec::create(
                 SQLITE_DB_PROVIDER,
-                "Database=" + makeFilePath(outputDir.c_str(), io_metaRows.modelDic.name.c_str(), ".sqlite") + ";" +
+                "Database=" + makeFilePath(sqliteDir.c_str(), io_metaRows.modelDic.name.c_str(), ".sqlite") + ";" +
                 " Timeout=86400;" +
                 " OpenMode=Create;" +
                 " DeleteExisting=true;"
