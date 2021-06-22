@@ -19,7 +19,7 @@ actor Person
     // If the following line is uncommented, a run-time error will occur
     //hook lose_chess_game, HappinessReversalEvent;
 
-    // workaround to issue requiring hook function
+    // workaround to Modgen issue which requires 1+ hooks to use hook function
     void do_nothing();
     hook do_nothing, HappinessReversalEvent;
 };
@@ -35,7 +35,7 @@ void Person::lose_chess_game(void)
 //
 
 
-// workaround to issue requiring hook function
+// workaround to Modgen issue which requires 1+ hooks to use hook function
 void Person::do_nothing(void)
 {
 }

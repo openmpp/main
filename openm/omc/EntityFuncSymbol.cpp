@@ -17,8 +17,9 @@ void EntityFuncSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case eAssignMembers:
+    case eCreateMissingSymbols:
     {
+        // Process early to handle possible missing symbol creation
         if (suppress_defn) {
             // Is a developer-supplied entity member function.
 
@@ -31,15 +32,36 @@ void EntityFuncSymbol::post_parse(int pass)
                 pp_warning(LT("warning : entity member function '") + unique_name + LT("' was declared but has no definition."));
             }
 
-            // Construct the set of all identifiers used in the function body.
+            // Get the name of the generated hook function for this function.
+            auto hook_fn_name = hook_implement_name(name);
+
+            // See if it is called in the source code of this function
+            bool hook_is_called = false;
+
+            // Also construct the set of all identifiers used in the function body.
             auto rng = memfunc_bodyids.equal_range(unique_name);
-            for_each(rng.first,
-                    rng.second,
-                    [&](unordered_multimap<string, string>::value_type& vt)
-            {
-                body_identifiers.insert(vt.second);
-            }
+            for_each(
+                rng.first,
+                rng.second,
+                [&](unordered_multimap<string, string>::value_type& vt)
+                {
+                    if (vt.second == hook_fn_name) {
+                        hook_is_called = true;
+                    }
+                    body_identifiers.insert(vt.second);
+                }
             );
+
+            if (hook_is_called) {
+                auto sym = get_symbol(hook_fn_name, agent);
+                if (!sym) {
+                    // The hook function for this function is called in model code,
+                    // and the associated EntityFuncSymbol does not exist.
+                    // Create it so that it will be declared and defined in generated source.
+                    auto fn_sym = new EntityFuncSymbol(hook_fn_name, agent, "void", "");
+                    fn_sym->doc_block = doxygen_short("Call the functions hooked to the function '" + name + "'");
+                }
+            }
         }
         break;
     }
