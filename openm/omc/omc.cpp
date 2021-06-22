@@ -293,9 +293,10 @@ int main(int argc, char * argv[])
             theLog->logMsg("Model name not specified - using default name 'Model'. Use -m option to specify model name.");
         }
 
-        // get scenario name
+        // list of scenario(s) names
         list<string> scNameLst = splitCsv(argStore.strOption(OmcArgKey::scenarioName), ",;");
 
+        // default scenario name
         string scenario_name;
         if (scNameLst.size() > 0) scenario_name = scNameLst.front();
 
@@ -634,12 +635,14 @@ int main(int argc, char * argv[])
         int scenario_parameters_count = 0;
         for (auto param : Symbol::pp_all_parameters) {
             if (param->source != ParameterSymbol::scenario_parameter) continue;
+
             scenario_parameters_count++;
             WorksetParamRow wsParam;
             wsParam.paramId = param->pp_parameter_id;
             wsParam.subCount = param->sub_count();          // number of parameter sub-values in the scenario
             wsParam.defaultSubId = param->default_sub_id;   // sub-value id to be used by default for that parameter
             metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
+
             // value notes for the parameter
             for (auto lang : Symbol::pp_all_languages) {
                 WorksetParamTxtLangRow worksetParamTxt;
@@ -811,6 +814,21 @@ static void processExtraParamDir(const string & i_paramDir, const string & i_sce
         wsParam.subCount = param->sub_count();          // number of parameter sub-values in the scenario
         wsParam.defaultSubId = param->default_sub_id;   // sub-value id to be used by default for that parameter
         metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
+
+        // value notes for the parameter
+        for (auto lang : Symbol::pp_all_languages) {
+            WorksetParamTxtLangRow worksetParamTxt;
+            auto lang_id = lang->language_id;
+            auto lang_name = lang->name;
+            assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
+            string value_note = param->pp_value_notes[lang_id];
+            if (value_note.length() > 0) {
+                worksetParamTxt.paramId = wsParam.paramId;
+                worksetParamTxt.langCode = lang_name;
+                worksetParamTxt.note = value_note;
+                metaSet.worksetParamTxt.push_back(worksetParamTxt);
+            }
+        }
     }
 
     // if any scenario parameters found in create new workset in model database from scenario parameters

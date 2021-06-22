@@ -45,6 +45,8 @@ extern void omc::readParameterCsvFiles(
     list<string> csv_files = listSourceFiles(i_srcDir, { ".csv", ".tsv", ".id.csv", ".id.tsv", ".value.csv", ".value.tsv" });
     int nFiles = 0;
 
+    const locale mdLocale(""); // user default locale for md files
+
     // read csv file if file name is parameterName.csv, ignore case of parameterName
     // each line of csv file can contain multiple columns separated by comma or tab
     // any csv value can be "quoted by double quote", quoutes are removed
@@ -103,7 +105,7 @@ extern void omc::readParameterCsvFiles(
         if (csvLines.size() <= 0) {
             theLog->logFormatted("error : invalid (empty) parameter file : %s", pathCsv.c_str());
             Symbol::post_parse_errors++;
-            continue;   // skip this csv file
+            continue;   // skip empty csv file
         }
         Symbol::all_source_files.push_back(pathCsv);    // add csv file path to list of source files
 
@@ -131,8 +133,9 @@ extern void omc::readParameterCsvFiles(
 
         // convert string literal values to parameter type constants and append to initializer list
         TypeSymbol * pt = param->pp_datatype;
+        bool isValid = true;
 
-        for (size_t nSub = 0; nSub < subValArr.size(); nSub++) {
+        for (size_t nSub = 0; isValid && nSub < subValArr.size(); nSub++) {
 
             // clear first sub-value (default sub-value) or append additional sub-values
             if (nSub == 0) {
@@ -157,6 +160,7 @@ extern void omc::readParameterCsvFiles(
                         LT("error : '") + v + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + param->name + LT("'"));
 
                     param->sub_initial_list.back().second.clear();   // parameter value invalid
+                    isValid = false;
                     break;
                 }
 
@@ -164,6 +168,29 @@ extern void omc::readParameterCsvFiles(
                 param->sub_initial_list.back().second.push_back(c);
             }
         }
+
+        // if csv data correct then check for parameter value notes in paramName.LANG.md file(s) for each language
+        if (isValid && !i_isFixed) {
+            for (auto lang : Symbol::pp_all_languages) {
+
+                string mdPath = makeFilePath(i_srcDir.c_str(), (param->name + "." + lang->name).c_str(), ".md");
+
+                if (isFileExists(mdPath.c_str())) {
+                    theLog->logFormatted("Reading %s", mdPath.c_str());
+
+                    string value_note = fileToUtf8(mdPath.c_str());
+                    value_note = trim(value_note, mdLocale);
+                    if (value_note.empty()) continue;    // skip empty notes
+
+                    auto lang_id = lang->language_id;
+                    assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
+
+                    param->pp_value_notes[lang_id] = value_note;
+                    Symbol::all_source_files.push_back(mdPath);    // add md file path to list of source files
+                }
+            }
+        }
+
         nFiles++;
     }
 

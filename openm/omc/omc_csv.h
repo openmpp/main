@@ -10,6 +10,7 @@
 #include <forward_list>
 #include "libopenm/omLog.h"
 #include "libopenm/common/omFile.h"
+#include "LanguageSymbol.h"
 #include "TypeSymbol.h"
 #include "EnumerationSymbol.h"
 #include "EnumerationWithEnumeratorsSymbol.h"
