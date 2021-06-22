@@ -256,9 +256,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in model_dic_txt invalid model id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // type_dic table
@@ -308,9 +305,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in type_dic_txt invalid  model id: %d, type id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->typeId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // type_enum_lst table
@@ -381,9 +375,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in type_enum_txt invalid model id: %d, type id: %d enum id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->typeId, rowIt->enumId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // parameter_dic table
@@ -464,9 +455,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in parameter_dic_txt invalid model id: %d, parameter id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->paramId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // parameter_dims table
@@ -521,9 +509,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in parameter_dims_txt invalid model id: %d, parameter id: %d, dimension id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->paramId, rowIt->dimId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // table_dic table
@@ -573,11 +558,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in table_dic_txt invalid model id: %d, table id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->tableId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
-        blankCrLf(rowIt->exprDescr);
-        blankCrLf(rowIt->exprNote);
     }
 
     // table_dims table
@@ -643,9 +623,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in table_dims_txt invalid model id: %d, table id: %d, dimension id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->tableId, rowIt->dimId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // table_acc table
@@ -703,9 +680,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in table_acc_txt invalid model id: %d, table id: %d, accumulator id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->tableId, rowIt->accId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // table_expr table
@@ -763,9 +737,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in table_expr_txt invalid model id: %d, table id: %d, expr id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->tableId, rowIt->exprId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // group_lst table
@@ -806,9 +777,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in group_txt invalid model id: %d, group id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->groupId, rowIt->langCode.c_str());
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // group_pc table
@@ -871,9 +839,6 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
             throw DbException(LT("in workset_txt invalid set id: %d and language: %s: not found in lang_lst"), rowIt->setId, rowIt->langCode.c_str());
 
         rowIt->langId = langIt->langId;
-
-        blankCrLf(rowIt->descr);
-        blankCrLf(rowIt->note);
     }
 
     // workset_parameter table
@@ -934,8 +899,6 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
             throw DbException(LT("in workset_txt invalid set id: %d and language: %s: not found in lang_lst"), rowIt->setId, rowIt->langCode.c_str());
 
         rowIt->langId = langIt->langId;
-
-        blankCrLf(rowIt->note);
     }
 }
 
