@@ -73,7 +73,7 @@ static ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl);
 static void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl);
 
 // log model version, runtime version and modeling environment
-static void reportVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl);
+static void logVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl);
 
 /** main entry point */
 int main(int argc, char ** argv) 
@@ -139,7 +139,7 @@ int main(int argc, char ** argv)
             unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
 
             // log model version, runtime version and modeling environment
-            reportVersion(msgExec.get(), runCtrl.get());
+            logVersion(msgExec.get(), runCtrl.get());
 
             // model one-time initialization
             if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
@@ -395,7 +395,7 @@ static const char * libTargetMpiUseName = "";
 //  - number of modeling processes and threads
 //  - openM++ root environment variable, if defined
 //  - model root environment variable, if defined
-void reportVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl)
+void logVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl)
 {
     theLog->logMsg("Model version  ", i_runCtrl->meta()->modelRow->version.c_str());
     theLog->logMsg("Model created  ", i_runCtrl->meta()->modelRow->createDateTime.c_str());
