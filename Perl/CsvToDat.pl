@@ -239,5 +239,44 @@ for my $param_name (@parameters) {
         print OUT_FILE "    };\n";
     }
     print OUT_FILE "};\n";
+    
+    {
+        # identify possible Param.YY.md files from dbcopy and transform to NOTE format
+        for my $md_file (glob("${temp_dir}/${model}/set.${scenario}/${param_name}.*.md")) {
+            # extract language code from filename
+            $md_file =~ /[.](\w*)[.]md$/;
+            my $lang_code = $1;
+            print OUT_FILE "/*NOTE(${param_name},${lang_code})\n";
+            open MD_FILE, '<'.$md_file || die "failed to open ${md_file}";
+            my $in_code_block = 0;
+            while (<MD_FILE>) {
+                my $line = $_;
+                chomp $line;
+                if ($line =~ "^````") {
+                    if ($in_code_block) {
+                        # transition out of code block
+                        $in_code_block = 0;
+                        next;
+                    }
+                    else {
+                        # transition into code block
+                        $in_code_block = 1;
+                        next;
+                    }
+                }
+                if ($in_code_block) {
+                    $line = ">".$line;
+                }
+                elsif ($line =~ /^[*] /) {
+                    # change list indicator from * to -
+                    $line = "- ".substr($line, 2);
+                }
+                print OUT_FILE "${line}\n";
+            }
+            close MD_FILE;
+            print OUT_FILE "*/\n";
+        }
+    }
+    
     close OUT_FILE;
 }
