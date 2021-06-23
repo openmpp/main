@@ -11,7 +11,7 @@
     </Filter>
     <Filter Include="Parameter Files (Default)">
       <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
-      <Extensions>dat;odat;csv;tsv</Extensions>
+      <Extensions>dat;odat;csv;tsv;md</Extensions>
     </Filter>
     <Filter Include="Model ini Files">
       <UniqueIdentifier>{9d673919-854a-495c-b069-c7e667f5e12f}</UniqueIdentifier>
