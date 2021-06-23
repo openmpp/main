@@ -18,7 +18,7 @@ parameters {
 };
 
 /*NOTE(ProbMort, EN)
-This is an artifical note.  It's purpose is to
+This is an artificial note for ProbMort, supplied in a NOTE comment in a .dat file.  It's purpose is to
 - test previous normalization of NOTE content
 - test next version of normalization which converts to markdown format
 - a third thing which I forget
