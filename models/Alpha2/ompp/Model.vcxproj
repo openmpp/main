@@ -102,6 +102,7 @@
     <None Include="../parameters/Default/*.odat" />
     <None Include="../parameters/Default/*.csv" />
     <None Include="../parameters/Default/*.tsv" />
+    <None Include="../parameters/Default/*.md" />
     <None Include="../*.ini" />
   </ItemGroup>
   <!-- Import standard master targets for C++ projects -->
