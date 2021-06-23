@@ -209,7 +209,7 @@ void handle_null_dereference(
         ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
     }
     if (BaseEvent::current_event_id >= 0) {
-        ss << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id);
+        ss << LT(" in or after event ") << event_id_to_name(BaseEvent::current_event_id);
     }
     ss << LT(" in simulation member ") << get_simulation_member();
     ss << LT(" with combined seed ") << get_combined_seed();
