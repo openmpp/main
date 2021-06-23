@@ -21,7 +21,6 @@
 
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql" />
-    <OMC_SQL_OUTPUTS Include="$(OMC_MODEL_SQLITE_DB)" />
     
     <OMC_MSG_INI_OUTPUT Include="$(OMC_OUT_DIR)/$(MODEL_MSG_INI)" />
     <!--
@@ -30,11 +29,13 @@
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_drop.sql" />
     <OMC_SQL_OUTPUTS Include="$(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views.sql" />
     -->
+    <!--
+    <OMC_SQL_OUTPUTS Include="$(PUBLISH_SQLITE)" />
+    -->
     
     <OMC_OUTPUTS Include="@(OMC_H_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_CPP_OUTPUTS)" />
     <OMC_OUTPUTS Include="@(OMC_SQL_OUTPUTS)" />
-    <OMC_OUTPUTS Include="@(OMC_MODEL_SQLITE_DB)" />
     
     <!--  Create @(SCENARIO_NAMES_COLLECTION) from $(SCENARIO_NAMES) (can be ; delimited list) -->
     <SCENARIO_NAMES_COLLECTION Include="$(SCENARIO_NAMES.Split(';'))" />

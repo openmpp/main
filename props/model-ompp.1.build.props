@@ -60,7 +60,15 @@
     <ENABLE_FIXED_PARAMETERS>false</ENABLE_FIXED_PARAMETERS>
     <ENABLE_FIXED_PARAMETERS Condition="'$(FIXED_PARAMETERS_FOLDER)'!=''">true</ENABLE_FIXED_PARAMETERS>
     
-    <PUBLISH_DIR>$(ProjectDir)bin</PUBLISH_DIR>
+    <!--
+    If this is F5 Debug or Ctrl-F5 model run under Visual Studio then
+      PUBLISH_DIR, MODEL_BIN_DIR, TargetDir, LocalDebuggerWorkingDirectory
+    must be identical
+    otherwise model.exe always fail to run because there is no model.sqlite in current directory.
+    -->
+    <MODEL_BIN_DIR>$(ProjectDir)bin</MODEL_BIN_DIR>
+    <PUBLISH_DIR>$(MODEL_BIN_DIR)</PUBLISH_DIR>
+    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
     
     <OMC_IN_DIR>$(MODEL_CODE_DIR)</OMC_IN_DIR>
 
@@ -74,8 +82,6 @@
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Release'"></CONFIG_SUFFIX>
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Debug'">D</CONFIG_SUFFIX>
 
-    <MODEL_BIN_DIR>$(ProjectDir)bin/</MODEL_BIN_DIR>
-    
     <MODEL_EXE>$(MODEL_NAME)$(CONFIG_SUFFIX)$(MPI_SUFFIX).exe</MODEL_EXE>
 
     <!--  Model messages (translation file) -->
@@ -89,15 +95,6 @@
     <MODEL_ROOT_VALUE>$([System.Environment]::GetEnvironmentVariable('$(MODEL_ROOT_NAME)'))</MODEL_ROOT_VALUE>
     <MODEL_ROOT_ENV Condition="'$(MODEL_ROOT_VALUE)'==''">$(MODEL_ROOT_NAME)=../..</MODEL_ROOT_ENV>
     <MODEL_ROOT_ENV Condition="'$(MODEL_ROOT_VALUE)'!=''">$(MODEL_ROOT_NAME)=$(MODEL_ROOT_VALUE)</MODEL_ROOT_ENV>
-
-    <!--
-    If this is Debug under Visual Studio then PUBLISH_DIR, TargetDir, LocalDebuggerWorkingDirectory must be identical
-    otherwise debug model.exe always fail to find model.sqlite in current directory.
-    -->
-    <PUBLISH_SQLITE>$(PUBLISH_DIR)/$(MODEL_NAME).sqlite</PUBLISH_SQLITE>
-
-    <OMC_MODEL_SQLITE>$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite</OMC_MODEL_SQLITE>
-    <OMC_MODEL_SQLITE_DB>$(OMC_OUT_DIR)/$(MODEL_NAME).sqlite.db</OMC_MODEL_SQLITE_DB>
 
     <DBCOPY_EXPORT_CSV Condition="'$(DBCOPY_EXPORT_CSV)'!='true'">false</DBCOPY_EXPORT_CSV>
 
