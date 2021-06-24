@@ -318,7 +318,7 @@ string ParseContext::normalize_note(const string & txt)
             if (line.length() == 0) {
                 // empty line with no leading >
                 // leave code block mode
-                result += "````\n";
+                result += "```\n";
                 in_code_block = false;
                 // fall through to normal mode for current line
             }
@@ -332,7 +332,7 @@ string ParseContext::normalize_note(const string & txt)
             else {
                 // non-empty line without leading >
                 // leave code block mode
-                result += "````\n";
+                result += "```\n";
                 in_code_block = false;
                 // fall through to normal mode for current line
             }
@@ -345,7 +345,7 @@ string ParseContext::normalize_note(const string & txt)
         else if (line[0] == '>') {
             // non-empty line with leading >
             // enter code block mode
-            result += "````text\n";
+            result += "```\n";
             in_code_block = true;
             // append content to code block and
             // continue in code block mode
@@ -366,7 +366,7 @@ string ParseContext::normalize_note(const string & txt)
     // finish code block mode if active
     if (in_code_block) {
         // leave code block mode
-        result += "````\n";
+        result += "```\n";
         in_code_block = false;
     }
 

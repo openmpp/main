@@ -252,7 +252,7 @@ for my $param_name (@parameters) {
             while (<MD_FILE>) {
                 my $line = $_;
                 chomp $line;
-                if ($line =~ "^````") {
+                if ($line =~ "^```") {
                     if ($in_code_block) {
                         # transition out of code block
                         $in_code_block = 0;
