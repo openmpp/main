@@ -86,7 +86,7 @@ int main(int argc, char ** argv)
         string lfPath;
         if (argOpts.boolOption(ArgKey::logToFile) || argOpts.boolOption(ArgKey::logToStamped)) {
             lfPath = argOpts.strOption(ArgKey::logFilePath);
-            if (lfPath.empty()) lfPath = makeDefaultPath(argv[0], ".log");
+            if (lfPath.empty()) lfPath = string(OM_MODEL_NAME) + ".log";
         }
         theLog->init(
             argOpts.boolOption(ArgKey::logToConsole) || !argOpts.isOptionExist(ArgKey::logToConsole),
@@ -109,7 +109,7 @@ int main(int argc, char ** argv)
         string tfPath;
         if (argOpts.boolOption(RunOptionsKey::traceToFile)) {
             tfPath = argOpts.strOption(RunOptionsKey::traceFilePath);
-            if (tfPath.empty()) tfPath = makeDefaultPath(argv[0], ".trace.txt");
+            if (tfPath.empty()) tfPath = string(OM_MODEL_NAME) + ".trace.txt";
         }
         theTrace->init(
             argOpts.boolOption(RunOptionsKey::traceToConsole),
