@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_06_29:
+  full support of .csv parameters and .md parameter value notes in omc, at model runtime, dbcopy and UI
+  Raise runtime exception on disallowed null entity pointer use
+  New experimental utility CsvToDat
+  Changes to event trace
+
 2021_06_12:
   Bug fix: omc compiler error can occur with a parameter in csv format
   New version 2.1 of test_models
