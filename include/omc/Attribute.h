@@ -127,6 +127,12 @@ public:
 
     void set( T new_value )
     {
+        if (om_verify_attribute_modification) { // is constexpr
+            if (!BaseEntity::om_permit_attribute_modification) {
+                // attribute assignment is forbidden in current phase of event lifecycle
+                handle_prohibited_attribute_assignment();
+            }
+        }
         T old_value = get();
         if ( old_value != new_value ) {
 

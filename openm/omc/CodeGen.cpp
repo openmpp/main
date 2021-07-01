@@ -137,7 +137,6 @@ void CodeGen::do_preamble()
         t0 += doxygen_short("Model was built with event trace capability.");
         t0 += "constexpr bool om_event_trace_capable = true;";
         t0 += "";
-        //c += "const bool BaseEntity::event_trace_capable = true;";
         c += "// Model has event trace capability. Event tracing is active unless turned off in model code";
         c += "thread_local bool BaseEntity::event_trace_on = true;";
     }
@@ -145,7 +144,6 @@ void CodeGen::do_preamble()
         t0 += doxygen_short("Model was not built with event trace capability.");
         t0 += "constexpr bool om_event_trace_capable = false;";
         t0 += "";
-        //c += "const bool BaseEntity::event_trace_capable = false;";
         c += "// Model does not have event trace capability. Nevertheless, this static member requires a definition.";
         c += "thread_local bool BaseEntity::event_trace_on = false;";
     }
@@ -193,6 +191,20 @@ void CodeGen::do_preamble()
     c += "// allow or disallow access to null entity through null pointer";
     c += "thread_local bool BaseEntity::om_access_to_null_entity = false;";
 
+    if (Symbol::option_verify_attribute_modification) {
+        t0 += doxygen_short("Model was built with verification of attribute modification.");
+        t0 += "constexpr bool om_verify_attribute_modification = true;";
+        t0 += "";
+        c += "// Model prohibits attribute modification in event time functions using the following flag.";
+        c += "thread_local bool BaseEntity::om_permit_attribute_modification  = true;";
+    }
+    else {
+        t0 += doxygen_short("Model was built without verification of attribute modification.");
+        t0 += "constexpr bool om_verify_attribute_modification = false;";
+        t0 += "";
+        c += "// Model does not prohibit attribute modification in event time functions, but still requires that the following flag be defined.";
+        c += "thread_local bool BaseEntity::om_permit_attribute_modification  = true;";
+    }
     c += "";
 
     // om_fixed_parms.cpp
@@ -504,6 +516,10 @@ void CodeGen::do_RunInit()
     c += "// Model run initialization";
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
+    if (!Symbol::option_verify_attribute_modification) {
+        c += "theLog->logFormatted(LT(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\"));";
+        c += "";
+    }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
     c += "// Process model dev options for EventTrace";
     c += "process_trace_options(i_runBase);";
@@ -1139,6 +1155,12 @@ void CodeGen::do_event_queue()
     c += "";
     c += "// definition of entity_id of current event (declaration in Event.h)";
     c += "thread_local int BaseEvent::current_entity_id;";
+    c += "";
+    c += "// definition of event_id of event time function being recomputed (declaration in Event.h)";
+    c += "thread_local int BaseEvent::timefunc_event_id;";
+    c += "";
+    c += "// definition of entity_id of event time function being recomputed (declaration in Event.h)";
+    c += "thread_local int BaseEvent::timefunc_entity_id;";
     c += "";
 }
 

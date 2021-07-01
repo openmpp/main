@@ -184,7 +184,7 @@ void handle_clairvoyance(
         << std::showpoint // show decimal point
         << LT("error : Attempt to access entity_id ") << the_future_entity
         << LT(" with future time ") << the_future_time
-        << LT(" when current time is  ") << the_current_time
+        << LT(" when current time is ") << the_current_time
         << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id)
         << LT(" in entity_id ") << BaseEvent::current_entity_id
         << LT(" in simulation member ") << get_simulation_member()
@@ -204,12 +204,39 @@ void handle_null_dereference(
     ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
         << std::showpoint; // show decimal point
     ss << LT("Attempt to dereference null pointer");
-    ss << LT(" when current time is  ") << get_global_time();
+    ss << LT(" when current time is ") << get_global_time();
     if (BaseEvent::current_entity_id >= 0) {
         ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
     }
     if (BaseEvent::current_event_id >= 0) {
         ss << LT(" in or after event ") << event_id_to_name(BaseEvent::current_event_id);
+    }
+    ss << LT(" in simulation member ") << get_simulation_member();
+    ss << LT(" with combined seed ") << get_combined_seed();
+    ModelExit(ss.str().c_str());
+}
+
+/**
+ * Handles situation where model code attempts to modify an attribute when prohibited
+ */
+void handle_prohibited_attribute_assignment(
+)
+{
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+        << std::showpoint; // show decimal point
+    ss << LT("Attempt to modify an attribute in the event time function of event ");
+    ss << event_id_to_name(BaseEvent::timefunc_event_id);
+    ss << LT(" in entity_id ") << BaseEvent::timefunc_entity_id;
+    ss << LT(" when current time is ") << get_global_time();
+    if (BaseEvent::current_event_id >= 0) {
+        ss << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id);
+    }
+    else {
+        ss << LT(" before enter_simulation");
+    }
+    if (BaseEvent::current_entity_id >= 0) {
+        ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
     }
     ss << LT(" in simulation member ") << get_simulation_member();
     ss << LT(" with combined seed ") << get_combined_seed();

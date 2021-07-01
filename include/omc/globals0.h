@@ -21,5 +21,8 @@ void handle_clairvoyance(double the_current_time, double the_future_time, int th
 void handle_null_dereference();
 
 // defined in use/common.ompp
+void handle_prohibited_attribute_assignment();
+
+// defined in use/common.ompp
 double get_global_time();
 

@@ -1275,7 +1275,7 @@ public:
     static unordered_map<string, string> options;
 
     /**
-     * true if event_trace activated in options statement.
+     * true if event_trace capability is requested in options statement.
      */
     static bool option_event_trace;
 
@@ -1303,6 +1303,11 @@ public:
      * true if time_undef_is_minus_one activated in options statement.
      */
     static bool option_time_undef_is_minus_one;
+
+    /**
+     * true or false depending on verify_attribute_modification value in options statement.
+     */
+    static bool option_verify_attribute_modification;
 
     /**
      * Code page to use for source file conversion

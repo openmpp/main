@@ -27,7 +27,12 @@ link Person.bff;
 void Person::lose_chess_game(void)
 {
     chess_wins--;
-    bff->chess_wins++;
+    bff->chess_wins++; // null dereference here
+}
+
+// workaround to Modgen issue which requires 1+ hooks to use hook function
+void Person::do_nothing(void)
+{
 }
 
 //
@@ -35,8 +40,63 @@ void Person::lose_chess_game(void)
 //
 
 
-// workaround to Modgen issue which requires 1+ hooks to use hook function
-void Person::do_nothing(void)
+
+//
+// BEGIN Attribute modification in event time function
+//
+// Attempt to modify attribute in event time function should cause exception by default.
+
+// Uncomment the following line to test disabling runtime attribute assignment check
+//options verify_attribute_modification = off;
+
+actor Person            //EN Individual
 {
+    //EN Over one year old
+    logical over_1 = { FALSE };
+
+    //EN Blow horns instantaneously
+    logical blow_horns_now = trigger_changes(over_1);
+
+    //EN Horns blew
+    logical horns_blew = { FALSE };
+
+    //EN Don't touch this
+    logical dont_touch_this = { TRUE };
+
+    //EN First birthday event
+    event timeFirstBirthdayEvent, FirstBirthdayEvent;
+
+    //EN Blow horn event
+    event timeBlowHornEvent, BlowHornEvent;
+};
+TIME Person::timeFirstBirthdayEvent()
+{
+    TIME event_time = TIME_INFINITE;
+    if (!over_1) {
+        event_time = WAIT(1.0);
+    }
+    return event_time;
+}
+void Person::FirstBirthdayEvent()
+{
+    over_1 = true;
+}
+TIME Person::timeBlowHornEvent()
+{
+    TIME event_time = TIME_INFINITE;
+    if (blow_horns_now) {
+        event_time = WAIT(0);
+        // Uncommenting the following line will cause a runtime error
+        // because of attempt to modify attribute in event time function
+        //dont_touch_this = true;
+    }
+    return event_time;
+}
+void Person::BlowHornEvent()
+{
+    horns_blew = true;
 }
 
+//
+// END Attribute modification in event time function
+//

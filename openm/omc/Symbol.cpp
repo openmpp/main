@@ -591,6 +591,8 @@ bool Symbol::option_time_infinite_is_32767 = false;
 
 bool Symbol::option_time_undef_is_minus_one = false;
 
+bool Symbol::option_verify_attribute_modification = true;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -1765,6 +1767,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_time_undef_is_minus_one = false;
+            }
+        }
+    }
+
+    {
+        string key = "verify_attribute_modification";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_verify_attribute_modification = true;
+            }
+            else if (value == "off") {
+                option_verify_attribute_modification = false;
             }
         }
     }
