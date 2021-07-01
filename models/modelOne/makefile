@@ -31,6 +31,7 @@ OM_BIN_DIR = $(OM_ROOT)/bin
 OM_LIB_DIR = $(OM_ROOT)/lib
 OM_SQL_DIR = $(OM_ROOT)/sql
 OM_SQLITE_DIR = $(OM_SQL_DIR)/sqlite
+OM_MODELS_DIR = $(OM_ROOT)/models
 
 #
 # model name: current dir name by default
@@ -76,10 +77,17 @@ LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 L_UCVT_FLAG =
 STDC_FS_LIB = stdc++fs
 WL_PIE_FLAG = -pie
+INFO_PLIST_FLAG =
 ifeq ($(PLATFORM_UNAME), Darwin)
   L_UCVT_FLAG = -liconv
   STDC_FS_LIB = stdc++
   WL_PIE_FLAG = -Wl,-pie
+  ifdef RELEASE
+    INFO_PLIST_FLAG = -sectcreate __TEXT __info_plist $(MODEL_BUILD_DIR)/Info.plist
+  endif
+  ifndef BUNDLE_VERSION
+    BUNDLE_VERSION = 0.0.1
+  endif
 endif
 
 # address sanitizer
@@ -126,7 +134,11 @@ $(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/$(LIBSQLITE_A)
-	$(CXX) -pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) $(LD_ASAN_FLAGS) -o $@ $(OBJS) -lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
+	$(CXX) \
+	-pthread -L$(OM_LIB_DIR) $(WL_PIE_FLAG) $(LD_ASAN_FLAGS) $(INFO_PLIST_FLAG) \
+	-o $@ \
+	$(OBJS) \
+	-lopenm$(BIN_POSTFIX)$(MSG_POSTFIX) -l$(OM_DB_LIB) -l$(STDC_FS_LIB) $(L_UCVT_FLAG)
 
 #
 # create model SQLite database
@@ -243,6 +255,14 @@ prepare:
 	@if [ ! -d $(DEPS_DIR) ] ; then mkdir -p $(DEPS_DIR) ; fi
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_BIN_DIR) ] ; then mkdir -p $(OUT_BIN_DIR) ; fi
+ifeq ($(PLATFORM_UNAME), Darwin)
+	@sed \
+	-e "s_<string>0.0.1</string>_<string>$(BUNDLE_VERSION)</string>_" \
+	-e "s|<string>org.openmpp.MODEL</string>|<string>org.openmpp.$(MODEL_NAME)</string>|" \
+	-e "s|<string>MODEL</string>|<string>$(MODEL_NAME)</string>|" \
+	< $(OM_MODELS_DIR)/Model.Info.plist.txt \
+	> $(MODEL_BUILD_DIR)/Info.plist
+endif
 
 # include dependencies for each .cpp file
 # if target is not clean or prepare
