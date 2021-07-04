@@ -100,3 +100,34 @@ void Person::BlowHornEvent()
 //
 // END Attribute modification in event time function
 //
+
+
+//
+// BEGIN Invalid arguments to derived table API
+//
+
+user_table ErrorTest1
+{
+    RNG_0_19
+    * { VALUE }
+};
+
+void UserTables(void)
+{
+    int index = 5;
+    double value = 1.0;
+
+    // The following line, if uncommented, will give a run-time warning about invalid name
+    //value = GetTableValue("ErrorTest1.Value", index);
+
+    // The following line, if uncommented, will give a run-time exception about rank violation
+    //value = GetTableValue("ErrorTest1.VALUE", index, index);
+
+    // The following line, if uncommented, will give a run-time exception about invalid index
+    //value = GetTableValue("ErrorTest1.VALUE", -1);
+}
+
+
+//
+// END Invalid arguments to derived table API
+//

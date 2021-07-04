@@ -244,6 +244,44 @@ void handle_prohibited_attribute_assignment(
 }
 
 /**
+ * Handles situation where model code specifes an invalid number of indices to derived table API
+ */
+void handle_derived_table_API_invalid_rank(
+    size_t indices_rank,
+    size_t indices_count
+)
+{
+    std::stringstream ss;
+    ss << LT("Derived table API - rank is ");
+    ss << indices_rank;
+    ss << LT(" but number of indices is ");
+    ss << indices_count;
+    ss << LT(" in simulation member ") << get_simulation_member();
+    ss << LT(" with combined seed ") << get_combined_seed();
+    ModelExit(ss.str().c_str());
+}
+
+/**
+ * Handles situation where model code specifes an invalid index value to derived table API
+ */
+void handle_derived_table_API_invalid_index(
+    size_t index_position,
+    size_t index_max,
+    int index_value
+)
+{
+    std::stringstream ss;
+    ss << LT("Derived table API - index ");
+    ss << index_position;
+    ss << LT(" must be in [0,");
+    ss << index_max;
+    ss << LT("] but is ");
+    ss << index_value;
+    ss << LT(" in simulation member ") << get_simulation_member();
+    ModelExit(ss.str().c_str());
+}
+
+/**
  * Handles situation where the maximum number of random streams is exceeded.
  */
 void handle_streams_exceeded(

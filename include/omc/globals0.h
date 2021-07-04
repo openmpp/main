@@ -24,5 +24,11 @@ void handle_null_dereference();
 void handle_prohibited_attribute_assignment();
 
 // defined in use/common.ompp
+void handle_derived_table_API_invalid_rank(size_t indices_rank, size_t indices_count);
+
+// defined in use/common.ompp
+void handle_derived_table_API_invalid_index(size_t index_position, size_t index_max, int index_value);
+
+// defined in use/common.ompp
 double get_global_time();
 
