@@ -92,11 +92,12 @@ public:
             return nullptr;
         }
         for (size_t dim = 0; dim < shape.size(); ++dim) {
-            if (indices[dim] < 0 || indices[dim] >= shape[dim])
-            // run-time error Invalid index for dimension dim
-            handle_derived_table_API_invalid_index(dim, shape[dim], indices[dim]);
-            //NOT_REACHED
-            return nullptr;
+            if (indices[dim] < 0 || indices[dim] >= shape[dim]) {
+                // run-time error Invalid index for dimension dim
+                handle_derived_table_API_invalid_index(dim, shape[dim], indices[dim]);
+                //NOT_REACHED
+                return nullptr;
+            }
         }
         auto cell_index = get_cell_index(indices);
         return &measure[measure_index][cell_index];
