@@ -33,6 +33,10 @@ using namespace openm;
 * trim = Aname,Bname, \     ; comment: multi-line value joined with spaces trimmed
 *        Cname,DName        ; comment: result is: Aname,Bname,Cname,DName
 *
+* abcd = Aname,Bname, \     ; multi-line value ended with empty line
+*        Cname,DName  \     ; result is: 
+*                           ; Aname,Bname,Cname,DName
+*
 * ; multi-line value started with " quote or ' apostrophe
 * ; right spaces before \ is not trimmed, result is:
 * ; Multi line   text with spaces
@@ -62,6 +66,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
         string::size_type nStart = 0;
         int nLine = 1;
         int nNext = nLine;
+        string sLine;
         string section;
         string sKey;
         string sValue;
@@ -84,12 +89,23 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
                 }
             }
 
-            string sLine = trim(fileContent.substr(nStart, nextPos - nStart));
+            sLine = trim(fileContent.substr(nStart, nextPos - nStart));
             nStart = nextPos;   // to start of the next line
 
             // skip empty lines
+            // if this is line continuation and key not empty then add new ini-entry
             string::size_type nLen = sLine.length();
-            if (nLen <= 0) continue;
+            if (nLen <= 0) {
+                if (isContinue && !sKey.empty()) {
+
+                    addIniEntry(sLine, nLine, section, sKey, sValue);
+
+                    sKey = "";
+                    sValue = "";
+                    isContinue = false;
+                }
+                continue;   // skip empty lines
+            }
 
             // remove ; comments or # Linux comments:
             //   comment starts with ; or # outside of "quote" or 'single quote'
@@ -121,13 +137,34 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
                     }
                 }
             }
-            if (nRem == 0) continue;    // skip line: it is a comment only line
+            // skip line: it is a comment only line
+            if (nRem == 0) {
+                if (isContinue && !sKey.empty()) {
+
+                    addIniEntry(sLine, nLine, section, sKey, sValue);
+
+                    sKey = "";
+                    sValue = "";
+                    isContinue = false;
+                }
+                continue;   // skip line: it is a comment only line
+            }
 
             if (nRem < nLen) {          // remove comment from the end of the line
                 sLine = trimRight(sLine.substr(0, nRem));
                 nLen = sLine.length();
             }
-            if (nLen <= 0) continue;    // skip empty line (unexpected)
+            if (nLen <= 0) {
+                if (isContinue && !sKey.empty()) {
+
+                    addIniEntry(sLine, nLine, section, sKey, sValue);
+
+                    sKey = "";
+                    sValue = "";
+                    isContinue = false;
+                }
+                continue;    // skip empty line (unexpected)
+            }
 
             // check for the [section]
             // section is not allowed after previous line \ continuation
@@ -192,30 +229,18 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
 
             if (isContinue) continue;   // done with this line, next line is a value continuation
 
-            // make new entry, unquote key and value if "quoted" or 'single quoted'
-            IniEntry newEntry(section, sKey, sValue);
-            if (newEntry.section.empty() || newEntry.key.empty()) {     // skip empty sections or empty keys
-                theLog->logFormatted("Skip incorrect empty section or empty key at line %d of ini file: %s", nLine, sLine.c_str());
-                continue;
-            }
+            // add new ini-entry, if it is a valid (if section and key are not empty)
+            addIniEntry(sLine, nLine, section, sKey, sValue);
 
-            // add to the entry list or replace existing entry with new value
-            IniEntryVec::const_iterator entryIt = std::find_if(
-                entryVec.cbegin(),
-                entryVec.cend(),
-                [&newEntry](const IniEntry & i_entry) -> bool { return i_entry.equalTo(newEntry.section.c_str(), newEntry.key.c_str()); }
-            );
-            if (entryIt != entryVec.cend()) {
-                entryVec[entryIt - entryVec.cbegin()].val = sValue;
-            }
-            else {
-                entryVec.push_back(newEntry);
-            }
-
-            // reset key and value
             sKey = "";
             sValue = "";
             isContinue = false;
+        }
+
+        // process last line ini-file end with line continuation without cr-lf
+        // if this is line continuation and key not empty then add new ini-entry
+        if (isContinue && !sKey.empty()) {
+            addIniEntry(sLine, nLine, section, sKey, sValue);
         }
 
         is_loaded = true;   // ini-file loaded correctly
@@ -228,6 +253,35 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
         theLog->logErr(ex, OM_FILE_LINE);
         throw HelperException(ex.what());
     }
+}
+
+// insert new or update existing ini-file entry:
+//  unquote key and value if "quoted" or 'single quoted'
+//  return false on error: if section or key is empty
+bool IniFileReader::addIniEntry(const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value)
+{
+
+    // make new entry, unquote key and value if "quoted" or 'single quoted'
+    IniEntry newEntry(i_section, i_key, i_value);
+    if (newEntry.section.empty() || newEntry.key.empty()) {     // skip empty sections or empty keys
+        theLog->logFormatted("Skip incorrect empty section or empty key at line %d of ini file: %s", i_nLine, i_src.c_str());
+        return false;
+    }
+
+    // add to the entry list or replace existing entry with new value
+    IniEntryVec::const_iterator entryIt = std::find_if(
+        entryVec.cbegin(),
+        entryVec.cend(),
+        [&newEntry](const IniEntry & i_entry) -> bool { return i_entry.equalTo(newEntry.section.c_str(), newEntry.key.c_str()); }
+    );
+    if (entryIt != entryVec.cend()) {
+        entryVec[entryIt - entryVec.cbegin()].val = newEntry.val;
+    }
+    else {
+        entryVec.push_back(newEntry);
+    }
+
+    return true;
 }
 
 // find index of section and key or -1 if not found

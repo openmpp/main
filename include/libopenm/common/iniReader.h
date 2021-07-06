@@ -99,6 +99,11 @@ namespace openm
 
         // find index of section.key or -1 if not found
         ptrdiff_t findIndex(const char * i_sectionKey) const;
+
+        // insert new or update existing ini-file entry:
+        //  unquote key and value if "quoted" or 'single quoted'
+        //  return false on error: if section or key is empty
+        bool addIniEntry(const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value);
     };
 }
 
