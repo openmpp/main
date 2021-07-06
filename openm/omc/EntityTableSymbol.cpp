@@ -230,7 +230,7 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     h += "{";
     h += "public:";
     // constructor
-    h += cxx_class + "(std::initializer_list<int> shape) : " + cxx_template + "(shape)";
+    h += cxx_class + "(const char* name, std::initializer_list<int> shape) : " + cxx_template + "(name, shape)";
     h += "{";
     h += "}";
     h += "void initialize_accumulators();";

@@ -114,7 +114,7 @@ user_table ErrorTest1
 
 void UserTables(void)
 {
-    int index = 5;
+    int index = 20;
     double value = 1.0;
 
     // The following line, if uncommented, will give a run-time warning about invalid name
@@ -124,7 +124,7 @@ void UserTables(void)
     //value = GetTableValue("ErrorTest1.VALUE", index, index);
 
     // The following line, if uncommented, will give a run-time exception about invalid index
-    //value = GetTableValue("ErrorTest1.VALUE", -1);
+    //value = GetTableValue("ErrorTest1.VALUE", index);
 }
 
 

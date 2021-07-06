@@ -707,28 +707,40 @@ void CodeGen::do_ModelStartup()
 
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
+
+        // example of generated code block:
+        //    assert(!thePopulationByCity);
+        //    if (!is_suppressed_compute("PopulationByCity", i_model)) {
+        //        thePopulationByCity = new PopulationByCity("PopulationByCity", { 101, 5 });
+        //    }
+
         c += "assert(!" + et->cxx_instance + "); ";
         if (!et->is_internal) {
             c += "if (!is_suppressed_compute(\"" + et->name + "\", i_model)) {";
-            c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
-            c += "}";
         }
-        else {
-            c += et->cxx_instance + " = new " + et->cxx_type + "(" + et->cxx_initializer() + ");";
+        c += et->cxx_instance + " = new " + et->cxx_type + "(\"" + et->name + "\", " + et->cxx_initializer() + ");";
+        if (!et->is_internal) {
+            c += "}";
         }
     }
     c += "";
 
     c += "// Derived table instantiation";
     for (auto dt : Symbol::pp_all_derived_tables) {
+
+        // example of generated code block:
+        //    assert(!theut1_feeder_with_names);
+        //    if (!is_suppressed_compute("ut1_feeder_with_names", i_model)) {
+        //        theut1_feeder_with_names = new ut1_feeder_with_names("ut1_feeder_with_names", { 5, 2 });
+        //    }
+
         c += "assert(!" + dt->cxx_instance + "); ";
         if (!dt->is_internal) {
             c += "if (!is_suppressed_compute(\"" + dt->name + "\", i_model)) {";
-            c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
-            c += "}";
         }
-        else {
-            c += dt->cxx_instance + " = new " + dt->cxx_type + "(" + dt->cxx_initializer() + ");";
+        c += dt->cxx_instance + " = new " + dt->cxx_type + "(\"" + dt->name + "\", " + dt->cxx_initializer() + ");";
+        if (!dt->is_internal) {
+            c += "}";
         }
     }
     c += "";

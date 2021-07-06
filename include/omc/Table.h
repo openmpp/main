@@ -24,8 +24,9 @@ template<int Tdimensions, int Tcells, int Tmeasures>
 class Table
 {
 public:
-    Table(std::initializer_list<int> shape)
-        : shape(shape)
+    Table(const char *name, std::initializer_list<int> shape)
+        : name(name)
+        , shape(shape)
     {
         // There are one or more measures.
         assert(n_measures > 0);
@@ -87,14 +88,14 @@ public:
         assert(measure_index < n_measures); // logic guarantee
         if (indices.size() != shape.size()) {
             // run-time error Number of indices does not match table rank
-            handle_derived_table_API_invalid_rank(shape.size(), indices.size());
+            handle_derived_table_API_invalid_rank(name, shape.size(), indices.size());
             //NOT_REACHED
             return nullptr;
         }
         for (size_t dim = 0; dim < shape.size(); ++dim) {
             if (indices[dim] < 0 || indices[dim] >= shape[dim]) {
                 // run-time error Invalid index for dimension dim
-                handle_derived_table_API_invalid_index(dim, shape[dim], indices[dim]);
+                handle_derived_table_API_invalid_index(name, dim, shape[dim] - 1, indices[dim]);
                 //NOT_REACHED
                 return nullptr;
             }
@@ -123,6 +124,11 @@ public:
     static const int n_measures = Tmeasures;
 
     /**
+     * The name of the table.
+     */
+    const char * name;
+
+    /**
      * The size of each dimension in the table.
      */
     const std::vector<int> shape;
@@ -146,7 +152,7 @@ template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    EntityTable(std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
+    EntityTable(const char* name, std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(name, shape)
     {
         auto it = acc_storage.before_begin();
         for (int k = 0; k < Taccumulators; k++) {
@@ -183,7 +189,7 @@ class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Ta
 {
 public:
 
-    EntityTableWithObs(std::initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(shape)
+    EntityTableWithObs(const char* name, std::initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(name, shape)
     {
     };
 
@@ -216,7 +222,7 @@ template<int Tdimensions, int Tcells, int Tmeasures>
 class DerivedTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
-    DerivedTable(std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(shape)
+    DerivedTable(const char* name, std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(name, shape)
     {
     };
 };
