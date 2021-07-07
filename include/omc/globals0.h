@@ -30,5 +30,8 @@ void handle_derived_table_API_invalid_rank(const char* name, size_t indices_rank
 void handle_derived_table_API_invalid_index(const char* name, size_t index_position, size_t index_max, int index_value);
 
 // defined in use/common.ompp
+void handle_bounds_error(const char* name, int min_value, int max_value, int value);
+
+// defined in use/common.ompp
 double get_global_time();
 

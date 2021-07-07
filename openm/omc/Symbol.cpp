@@ -581,6 +581,8 @@ unordered_map<string, string> Symbol::options;
 
 bool Symbol::option_event_trace = false;
 
+bool Symbol::option_bounds_errors = true;
+
 bool Symbol::option_case_checksum = false;
 
 bool Symbol::option_allow_time_travel = false;
@@ -1689,6 +1691,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_event_trace = false;
+            }
+        }
+    }
+
+    {
+        string key = "bounds_errors";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_bounds_errors = true;
+            }
+            else if (value == "off") {
+                option_bounds_errors = false;
             }
         }
     }

@@ -264,7 +264,7 @@ void handle_derived_table_API_invalid_rank(
 }
 
 /**
- * Handles situation where model code specifes an invalid index value to derived table API
+ * Handles situation where model code specifies an invalid index value to derived table API
  */
 void handle_derived_table_API_invalid_index(
     const char* name,
@@ -283,6 +283,39 @@ void handle_derived_table_API_invalid_index(
     ss << LT("] but is ");
     ss << index_value;
     ss << LT(" in simulation member ") << get_simulation_member();
+    ModelExit(ss.str().c_str());
+}
+
+/**
+ * Handles situation where model code attempts to assign an out-of-bouds value to a classifcation or range
+ */
+void handle_bounds_error(
+    const char * name,
+    int min_value,
+    int max_value,
+    int value
+)
+{
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+        << std::showpoint; // show decimal point
+    ss << name;
+    ss << LT(" must be in [");
+    ss << min_value;
+    ss << ",";
+    ss << max_value;
+    ss << "]" << LT(" but is ");
+    ss << value;
+
+    ss << LT(" when current time is ") << get_global_time();
+    if (BaseEvent::current_entity_id >= 0) {
+        ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
+    }
+    if (BaseEvent::current_event_id >= 0) {
+        ss << LT(" in or after event ") << event_id_to_name(BaseEvent::current_event_id);
+    }
+    ss << LT(" in simulation member ") << get_simulation_member();
+    ss << LT(" with combined seed ") << get_combined_seed();
     ModelExit(ss.str().c_str());
 }
 

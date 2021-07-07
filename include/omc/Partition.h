@@ -199,7 +199,14 @@ private:
     // assignment cover function
     T set_interval(int new_interval)
     {
-        return interval = (T) ((new_interval < min) ? min : (new_interval > max) ? max : new_interval);
+        int trunced_interval = ((new_interval < min) ? min : (new_interval > max) ? max : new_interval);
+        if (om_bounds_errors) { // is constexpr
+            if (new_interval != trunced_interval) {
+                handle_bounds_error("partition", min, max, new_interval);
+            }
+        }
+
+        return interval = (T)trunced_interval;
     }
 
     // storage - the interval in the partition (0-based)

@@ -268,6 +268,11 @@ private:
     int set_value(int new_value)
     {
         int trunced_value = ((new_value < min) ? min : (new_value > max) ? max : new_value);
+        if (om_bounds_errors) { // is constexpr
+            if (new_value != trunced_value) {
+                handle_bounds_error("range", min, max, new_value);
+            }
+        }
         range_value = (T)trunced_value;
         return trunced_value;
     }

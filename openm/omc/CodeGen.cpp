@@ -133,6 +133,17 @@ void CodeGen::do_preamble()
 	c += "using namespace openm;";
 	c += "";
 
+    if (Symbol::option_bounds_errors) {
+        t0 += doxygen_short("Model was built with bounds_errors = on.");
+        t0 += "constexpr bool om_bounds_errors = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was built with bounds_errors = off.");
+        t0 += "constexpr bool om_bounds_errors = false;";
+        t0 += "";
+    }
+
     if (Symbol::option_event_trace) {
         t0 += doxygen_short("Model was built with event trace capability.");
         t0 += "constexpr bool om_event_trace_capable = true;";

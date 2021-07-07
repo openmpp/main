@@ -1280,6 +1280,11 @@ public:
     static bool option_event_trace;
 
     /**
+     * true/false depending on bounds_errors in options statement.
+     */
+    static bool option_bounds_errors;
+
+    /**
      * true if case_checksum activated in options statement.
      */
     static bool option_case_checksum;

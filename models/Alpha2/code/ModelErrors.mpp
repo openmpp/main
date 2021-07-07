@@ -4,6 +4,24 @@
 //LABEL(ModelErrors, EN) Some tests to identify model build and runtime errors
 
 //
+// Preliminaries
+//
+
+actor Person
+{
+    // workaround to Modgen issue which requires 1+ hooks to use hook function
+    void do_nothing();
+    hook do_nothing, HappinessReversalEvent;
+};
+
+// workaround to Modgen issue which requires 1+ hooks to use hook function
+void Person::do_nothing(void)
+{
+}
+
+
+
+//
 // BEGIN Null pointer deference (write)
 //
 // Attempt to assign value to null pointer should cause runtime exception.
@@ -18,21 +36,14 @@ actor Person
 
     // If the following line is uncommented, a run-time error will occur
     //hook lose_chess_game, HappinessReversalEvent;
-
-    // workaround to Modgen issue which requires 1+ hooks to use hook function
-    void do_nothing();
-    hook do_nothing, HappinessReversalEvent;
 };
+
 link Person.bff;
+
 void Person::lose_chess_game(void)
 {
     chess_wins--;
     bff->chess_wins++; // null dereference here
-}
-
-// workaround to Modgen issue which requires 1+ hooks to use hook function
-void Person::do_nothing(void)
-{
 }
 
 //
@@ -102,6 +113,7 @@ void Person::BlowHornEvent()
 //
 
 
+
 //
 // BEGIN Invalid arguments to derived table API
 //
@@ -127,7 +139,40 @@ void UserTables(void)
     //value = GetTableValue("ErrorTest1.VALUE", index);
 }
 
-
 //
 // END Invalid arguments to derived table API
+//
+
+
+
+//
+// BEGIN Out of bounds assignment to range/classification
+//
+
+actor Person
+{
+    RNG_0_19 my_bad1;
+    SEX my_bad2 = { MALE };
+    AGE_GROUP my_bad3;
+
+    void bad_assignment();
+
+    // If the following line is uncommented, a run-time error will occur
+    //hook bad_assignment, Start;
+
+    // If the following line is uncommented, a run-time error will occur
+    //hook bad_assignment, HappinessReversalEvent;
+};
+
+void Person::bad_assignment(void)
+{
+    // uncomment to select error
+    my_bad1 = MAX(RNG_0_19) + 1;
+    //my_bad2 += 3;
+    my_bad3--;
+}
+
+
+//
+// END Out of bounds assignment to range/classification
 //
