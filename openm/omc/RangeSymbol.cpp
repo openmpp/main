@@ -58,11 +58,35 @@ CodeBlock RangeSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    h += "";
     h += doxygen("Range: " + name);
-    h += "typedef Range<" + token_to_string(storage_type) + ", " + to_string(lower_bound) + ", " + to_string(upper_bound) + "> " + name + "; " ;
+
+    h += "extern const std::string om_name_" + name + ";";
+    h += "typedef Range<"
+        + token_to_string(storage_type) + ", "
+        + to_string(lower_bound) + ", "
+        + to_string(upper_bound) + ", "
+        + "&om_name_" + name
+        + "> "
+        + name + ";";
     h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     return h;
+}
+
+CodeBlock RangeSymbol::cxx_definition_global()
+{
+    // Hook into the hierarchical calling chain
+    CodeBlock c = super::cxx_definition_global();
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    c += "";
+    c += doxygen_short(name);
+
+    c += "static const std::string om_name_" + name + " = \"" + pretty_name() + "\";";
+
+    return c;
 }
 
 void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)

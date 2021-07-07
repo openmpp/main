@@ -87,6 +87,7 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    h += "";
     h += doxygen("Partition: " + name);
 
     // lower bounds of intervals in partition
@@ -96,11 +97,15 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
     // splitter map for partition
     h += "extern const std::map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter;";
 
+    h += "extern const std::string om_name_" + name + ";";
     h += "typedef Partition<" + token_to_string(storage_type) + ", "
         + to_string(pp_size()) + ", "
         + "om_" + name + "_lower, "
         + "om_" + name + "_upper, "
-        + "om_" + name + "_splitter> " + name + ";" ;
+        + "om_" + name + "_splitter, " 
+        + "&om_name_" + name
+        + "> "
+        + name + ";" ;
     h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     return h;
@@ -109,65 +114,67 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
 CodeBlock PartitionSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_definition_global();
+    CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += doxygen_short(name);
+    c += "";
+    c += doxygen_short(name);
 
     // Used below as argument to real_literal() to avoid compiler warnings if real is float
     bool real_is_float = RealSymbol::find()->is_float();
 
     int index;  // index of interval in partition
 
-    h += "// lower bounds of intervals in partition";
-    h += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_lower = {";
+    c += "// lower bounds of intervals in partition";
+    c += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_lower = {";
     index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         if (index > 0) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
-            h += real_literal(pes->lower_split_point, real_is_float) + ",";
+            c += real_literal(pes->lower_split_point, real_is_float) + ",";
         }
         else {
             // special case for upper limit of last partition interval
-            h += "-REAL_MAX,";
+            c += "-REAL_MAX,";
         }
         ++index;
     }
-    h += "};";
+    c += "};";
 
-    h += "// upper bounds of intervals in partition";
-    h += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_upper = {";
+    c += "// upper bounds of intervals in partition";
+    c += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_upper = {";
     index = 0;
     for (auto enumerator : pp_enumerators) {
         if (index < (pp_size() - 1)) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
-            h += real_literal(pes->upper_split_point, real_is_float) + ",";
+            c += real_literal(pes->upper_split_point, real_is_float) + ",";
         }
         else {
             // special case for upper limit of last partition interval
-            h += "REAL_MAX";
+            c += "REAL_MAX";
         }
         ++index;
     }
-    h += "};";
+    c += "};";
 
-    h += "// splitter map for partition";
-    h += "const std::map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter = {";
+    c += "// splitter map for partition";
+    c += "const std::map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter = {";
     index = 0;  // index of interval in partition
     for (auto enumerator : pp_enumerators) {
         auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
         assert(pes); // grammar guarantee
-        h += "{ " + real_literal(pes->upper_split_point, real_is_float) + ", " + to_string(index) + " }," ;
+        c += "{ " + real_literal(pes->upper_split_point, real_is_float) + ", " + to_string(index) + " }," ;
         ++index;
         if (index == (pp_size() - 1)) break;
     }
-    h += "};";
+    c += "};";
 
+    c += "static const std::string om_name_" + name + " = \"" + pretty_name() + "\";";
 
-    return h;
+    return c;
 }
 
 bool PartitionSymbol::is_valid_constant(const Constant &k) const

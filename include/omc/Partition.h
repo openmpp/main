@@ -3,7 +3,7 @@
 * Declares the Partition template
 *
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2021 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -21,6 +21,7 @@
     * @tparam T_lower  Array containing lower limit of each interval in the partition.
     * @tparam T_upper  Array containing upper limit of each interval in the partition.
     * @tparam T_set Set used by find_interval to find the interval for a given number.
+    * @tparam NT_name Name of the range (non-type argument).
     */
 
 template<
@@ -28,7 +29,8 @@ template<
     T T_size,
     const std::array<real, T_size> &T_lower,
     const std::array<real, T_size> &T_upper,
-    const std::map<real, T> &T_splitter
+    const std::map<real, T> &T_splitter,
+    std::string const* NT_name
 >
 class Partition
 {
@@ -40,35 +42,36 @@ public:
         : interval(0)
     {}
 
-    Partition(T interval)
-        : interval((interval < 0 ) ? 0 : (interval > max) ? max : interval)
-    {}
-
-    // operator: user-defined conversion
-    operator T() const
+    Partition(int val)
     {
-        return interval;
+        set_interval(val);
+    }
+
+    // operator: implicit conversion to int
+    operator int() const
+    {
+        return get();
     }
 
     // operator: direct assignment (by interval, 0-based)
-    Partition& operator=(T new_interval)
+    Partition& operator=(int new_interval)
     {
         this->set_interval(new_interval);
         return *this;
     }
 
     // operator: assignment by sum (jump intervals upwards)
-    Partition& operator+=(T delta_intervals)
+    Partition& operator+=(int delta_intervals)
     {
-        int new_interval = (int)interval + delta_intervals;
+        int new_interval = get() + delta_intervals;
         this->set_interval(new_interval);
         return *this;
     }
 
     // operator: assignment by difference
-    Partition& operator-=(T delta_intervals)
+    Partition& operator-=(int delta_intervals)
     {
-        int new_interval = (int)interval - delta_intervals;
+        int new_interval = get() - delta_intervals;
         this->set_interval(new_interval);
         return *this;
     }
@@ -76,7 +79,7 @@ public:
     // operator: prefix increment
     Partition& operator++()
     {
-        int new_interval = (int)interval + 1;
+        int new_interval = get() + 1;
         this->set_interval(new_interval);
         return *this;
     }
@@ -84,7 +87,7 @@ public:
     // operator: prefix decrement
     Partition& operator--()
     {
-        int new_interval = (int)interval - 1;
+        int new_interval = get() - 1;
         this->set_interval(new_interval);
         return *this;
     }
@@ -92,14 +95,14 @@ public:
     // operator: postfix increment
     T operator++(int)
     {
-        int new_interval = 1 + (int)interval;
+        int new_interval = 1 + get();
         return this->set_interval(new_interval);
     }
 
     // operator: postfix decrement
     T operator--(int)
     {
-        int new_interval = (int)interval - 1;
+        int new_interval = get() - 1;
         return this->set_interval(new_interval);
     }
 
@@ -194,15 +197,30 @@ public:
     static const int size = T_size;
 #endif //!defined(_MSC_VER)
 
+    /**
+     * Gets the name of the range
+     *
+     * @return The name.
+     */
+    static const std::string& get_name()
+    {
+        return *NT_name;
+    }
 
 private:
+    // cover function to get value
+    int get() const
+    {
+        return interval;
+    }
+
     // assignment cover function
     T set_interval(int new_interval)
     {
         int trunced_interval = ((new_interval < min) ? min : (new_interval > max) ? max : new_interval);
         if (om_bounds_errors) { // is constexpr
             if (new_interval != trunced_interval) {
-                handle_bounds_error("partition", min, max, new_interval);
+                handle_bounds_error("partition " + get_name(), min, max, new_interval);
             }
         }
 

@@ -970,7 +970,7 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
-	    h += "// data members in " + agent->name + " agent";
+	    h += "// Data members in " + agent->name + " entity";
 	    h += "//";
 	    h += "";
         for ( auto data_member : agent->pp_agent_data_members ) {

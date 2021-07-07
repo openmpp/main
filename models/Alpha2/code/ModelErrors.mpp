@@ -146,8 +146,11 @@ void UserTables(void)
 
 
 //
-// BEGIN Out of bounds assignment to range/classification
+// BEGIN Out of bounds assignment to range/classification/partition
 //
+
+// Uncomment the following line to test disabling runtime bounds checking
+//options bounds_errors = off;
 
 actor Person
 {
@@ -167,12 +170,11 @@ actor Person
 void Person::bad_assignment(void)
 {
     // uncomment to select error
-    my_bad1 = MAX(RNG_0_19) + 1;
-    //my_bad2 += 3;
-    my_bad3--;
+    my_bad1 = MAX(RNG_0_19) + 1; // range
+    //my_bad2 += 3;                // classification
+    //my_bad3--;                     // partition
 }
 
-
 //
-// END Out of bounds assignment to range/classification
+// END Out of bounds assignment to range/classification/partition
 //

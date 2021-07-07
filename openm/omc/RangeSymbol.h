@@ -47,6 +47,8 @@ public:
 
     CodeBlock cxx_declaration_global() override;
 
+    CodeBlock cxx_definition_global() override;
+
     void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
     bool is_valid_constant(const Constant &k) const override;

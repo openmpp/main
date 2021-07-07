@@ -3,7 +3,7 @@
 * Declares the Range template
 *
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2021 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -15,12 +15,14 @@
 * @tparam T     Storage type for range value.
 * @tparam T_min Minimum value of range.
 * @tparam T_max Maximum value of range.
+* @tparam NT_name Name of the range (non-type argument).
 */
 
 template<
     typename T,
     int T_min,
-    int T_max
+    int T_max,
+    std::string const* NT_name
 >
 class Range
 {
@@ -257,6 +259,16 @@ public:
     static const int size = (int)T_max - (int)T_min + 1;
 #endif //!defined(_MSC_VER)
 
+    /**
+     * Gets the name of the range
+     *
+     * @return The name.
+     */
+    static const std::string& get_name()
+    {
+        return *NT_name;
+    }
+
 private:
     // cover function to get value
     int get() const
@@ -270,7 +282,7 @@ private:
         int trunced_value = ((new_value < min) ? min : (new_value > max) ? max : new_value);
         if (om_bounds_errors) { // is constexpr
             if (new_value != trunced_value) {
-                handle_bounds_error("range", min, max, new_value);
+                handle_bounds_error("range " + get_name(), min, max, new_value);
             }
         }
         range_value = (T)trunced_value;

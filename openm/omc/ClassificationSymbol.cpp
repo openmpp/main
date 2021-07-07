@@ -64,6 +64,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
 
     h += "";
     h += doxygen("Classification: " + name);
+
     h += "enum " + enum_name() + " : " + token_to_string(storage_type) + " {";
     bool first = true;
     for (auto enumerator : pp_enumerators) {
@@ -78,7 +79,14 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
         h += "";
     }
     h += "};";
-    h += "typedef Classification<" + enum_name() + ", " + to_string(pp_size()) + "> " + name + ";" ;
+
+    h += "extern const std::string om_name_" + name + ";";
+    h += "typedef Classification<" 
+        + enum_name() + ", "
+        + to_string(pp_size()) + ", "
+        + "&om_name_" + name
+        + "> "
+        + name + ";" ;
     h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     if (pp_generate_IntIs) {
@@ -133,6 +141,9 @@ CodeBlock ClassificationSymbol::cxx_definition_global()
     CodeBlock c = super::cxx_definition_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
+
+    c += "";
+    c += doxygen_short(name);
 
     if (pp_generate_IntIs) {
         c += "";
@@ -214,6 +225,8 @@ CodeBlock ClassificationSymbol::cxx_definition_global()
         c += "}";
         c += "}";
     }
+
+    c += "static const std::string om_name_" + name + " = \"" + pretty_name() + "\";";
 
     return c;
 }

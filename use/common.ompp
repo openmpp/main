@@ -293,7 +293,7 @@ void handle_derived_table_API_invalid_index(
  * Handles situation where model code attempts to assign an out-of-bouds value to a classifcation or range
  */
 void handle_bounds_error(
-    const char * name,
+    const std_string name,
     int min_value,
     int max_value,
     int value
@@ -302,13 +302,15 @@ void handle_bounds_error(
     std::stringstream ss;
     ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
         << std::showpoint; // show decimal point
+    ss << LT("attempt to assign ");
+    ss << value;
+    ss << LT(" to ");
     ss << name;
-    ss << LT(" must be in [");
+    ss << LT(" which has limits [");
     ss << min_value;
     ss << ",";
     ss << max_value;
-    ss << "]" << LT(" but is ");
-    ss << value;
+    ss << "]";
 
     ss << LT(" when current time is ") << get_global_time();
     if (BaseEvent::current_entity_id >= 0) {
