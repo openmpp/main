@@ -130,7 +130,7 @@ public:
         if (om_verify_attribute_modification) { // is constexpr
             if (!BaseEntity::om_permit_attribute_modification) {
                 // attribute assignment is forbidden in current phase of event lifecycle
-                handle_prohibited_attribute_assignment();
+                handle_prohibited_attribute_assignment(get_name());
             }
         }
         T old_value = get();

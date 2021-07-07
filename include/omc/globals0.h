@@ -21,7 +21,7 @@ void handle_clairvoyance(double the_current_time, double the_future_time, int th
 void handle_null_dereference();
 
 // defined in use/common.ompp
-void handle_prohibited_attribute_assignment();
+void handle_prohibited_attribute_assignment(const std::string name);
 
 // defined in use/common.ompp
 void handle_derived_table_API_invalid_rank(const char* name, size_t indices_rank, size_t indices_count);

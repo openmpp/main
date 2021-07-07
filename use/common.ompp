@@ -220,12 +220,15 @@ void handle_null_dereference(
  * Handles situation where model code attempts to modify an attribute when prohibited
  */
 void handle_prohibited_attribute_assignment(
+    const std_string name
 )
 {
     std::stringstream ss;
     ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
         << std::showpoint; // show decimal point
-    ss << LT("Attempt to modify an attribute by the event time function of event ");
+    ss << LT("Attempt to modify the attribute ");
+    ss << name;
+    ss << LT(" by the event time function of event ");
     ss << event_id_to_name(BaseEvent::timefunc_event_id);
     ss << LT(" in entity_id ") << BaseEvent::timefunc_entity_id;
     ss << LT(" when current time is ") << get_global_time();
