@@ -13,42 +13,14 @@ using namespace std;
 
 namespace openm
 {
-    /** aggregation function names */
-    struct AggregationFnc
-    {
-        /** average value */
-        static const char * avg;
-
-        /** sum of values */
-        static const char * sum;
-
-        /** count of values */
-        static const char * count;
-
-        /** minimal value */
-        static const char * min;
-
-        /** maximum value */
-        static const char * max;
-
-        /** variance */
-        static const char * var;
-
-        /** standard deviation */
-        static const char * sd;
-
-        /** standard error */
-        static const char * se;
-
-        /** coefficient of variation */
-        static const char * cv;
-    };
-
-    /** aggregation function code */
+    /** aggregation and non-aggregation function code */
     enum class FncCode
     {
         /** undefined aggregation function */
         undefined = 0,
+
+        /** denominator: wrap value as divisor */
+        denom,
 
         /** average value */
         avg,
@@ -138,6 +110,9 @@ namespace openm
         /** names of table accumulators */
         const vector<string> accNameVec;
 
+        /** translate non-aggregation function into sql */
+        static const string translateSimpleFnc(const string & i_srcContextName, FncCode i_code, const string & i_arg);
+
     private:
         ModelBaseExpressionSql(const ModelBaseExpressionSql & i_other) = delete;
         ModelBaseExpressionSql & operator=(const ModelBaseExpressionSql & i_other) = delete;
@@ -156,34 +131,48 @@ namespace openm
          * @param[in]   i_dimNameVec    names of table dimensions
          */
         ModelAccumulatorSql(
-            const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
+            const string & i_accTableName,
+            const vector<string> & i_dimNameVec, 
+            const vector<int> & i_accIdVec, 
+            const vector<string> & i_accNameVec, 
+            const vector<TableAccRow> & i_tableAcc
             ) :
-            ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec)
+            ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec),
+            tableAccVec(i_tableAcc)
         { }
 
         /** release sql builder resources. */
         ~ModelAccumulatorSql() noexcept { }
 
         /**
-         * translate output table "native" (non-derived) accumulator into sql subquery.
+         * translate output table "native" (non-derived) accumulator into sql CTE subquery.
          *
-         * @param i_accId       accumulator id
-         * @param i_isFirstAcc  if true then this is first accumulator
+         * @param i_outTableName    output table name
+         * @param i_accName         accumulator name
+         * @param i_accId           accumulator id
          *
          * @return  sql select subquery
          */
-        const string translateNativeAccExpr(int i_accId, bool i_isFirstAcc) const;
+        const string translateNativeAccExpr(const string & i_outTableName, const string & i_accName, int i_accId);
 
         /**
-         * translate output table derived accumulator into sql subquery.
+         * translate output table derived accumulator into sql CTE subquery.
          *
-         * @param i_accName     accumulator name
-         * @param i_expr        source expression, ie: acc0 + acc1.
-         * @param i_nativeMap   native accumlators map of (name, sql)
+         * @param i_outTableName    output table name
+         * @param i_accName         accumulator name
+         * @param i_expr            source expression, ie: acc0 + acc1.
+         * @param i_nativeMap       native accumlators map of (name, accumulator index)
          *
          * @return  sql select subquery
          */
-        const string translateDerivedAccExpr(const string & i_accName, const string & i_expr, const map<string, string> & i_nativeMap) const;
+        const string translateDerivedAccExpr(const string & i_outTableName, const string & i_accName, const string & i_expr, const map<string, size_t> & i_nativeMap);
+
+    private:
+        /** table_acc table rows */
+        const vector<TableAccRow> & tableAccVec;
+
+        /** current source name: output table name and accumulator name */
+        string srcContextName;
 
     private:
         ModelAccumulatorSql(const ModelAccumulatorSql & i_other) = delete;
@@ -203,7 +192,10 @@ namespace openm
          * @param[in]   i_dimNameVec    names of table dimensions
          */
         ModelAggregationSql(
-            const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
+            const string & i_accTableName, 
+            const vector<string> & i_dimNameVec, 
+            const vector<int> & i_accIdVec, 
+            const vector<string> & i_accNameVec
             ) :
             ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec)
         { }
@@ -214,22 +206,26 @@ namespace openm
         /**
          * translate output aggregation expression into sql.
          *
-         * @param   i_name  expression name, ie: expr2.
-         * @param   i_expr  source expression, ie: OM_AVG(acc2).
+         * @param i_outTableName    output table name
+         * @param i_name            expression name, ie: expr2.
+         * @param i_expr            source expression, ie: OM_AVG(acc2).
          *
          * @return  aggergation sql select query
          */
-        const string translateAggregationExpr(const string & i_name, const string & i_expr);
+        const string translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_expr);
 
     private:
+        /** current source name: output table name and expression name */
+        string srcContextName;
+
         /** contains true if accumulator used at current level */
         vector<bool> isAccUsedArr;
 
         /** aggregation expressions for the next level */
         vector<AggregationColumnExpr> nextExprArr;
 
-        /** translate aggregation function into sql */
-        const string translateFnc(FncCode i_code, const string & i_innerAlias, const string & i_arg);
+        /** translate aggregation and non-aggregation function into sql */
+        const string translateFnc(FncCode i_code, bool i_isAggr, const string & i_innerAlias, const string & i_arg);
 
         /** translate function argument into sql argument */
         const string translateArg(const string & i_innerAlias, const string & i_arg);
