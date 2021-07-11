@@ -469,7 +469,7 @@ sub modgen_create_scex
 		Population => 5000,
 		Threads => 1,
 		PartialReports => 0,
-		StartingSeed => 16807,
+		StartingSeed => 1,
 		ComputationPriority => "THREAD_PRIORITY_BELOW_NORMAL",
 		CancelPartialResults => "PARTIAL_NO",
 		BackgroundMode => 0,
@@ -520,7 +520,7 @@ sub modgen_create_scex
 	while (<FRAMEWORK_ODAT>) {
 		chomp;
 		my $line = $_;
-		if ( $line =~ /^\s*int\s+SimulationSeed\s*=\s*(\d+)/ ) {
+		if ( $line =~ /^\s*long\s+long\s+SimulationSeed\s*=\s*(\d+)/ ) {
 			$General{"StartingSeed"} = $1;
 		}
 		if ( $line =~ /^\s*long\s+long\s+SimulationCases\s*=\s*(\d+)/ ) {
