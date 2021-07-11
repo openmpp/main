@@ -8,6 +8,11 @@
 // Copyright (c) 2013-2017 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+parameters {
+    //EN Simulation starting seed
+    long long SimulationSeed;
+};
+
 namespace fmk {
 
     /**
@@ -31,7 +36,8 @@ namespace fmk {
     thread_local long member_entity_counter = 0;
 
     /**
-     * The modulus used by linear congruential random number generators.
+     * The modulus used by linear congruential random number generators
+     * (possibly to seed a different RNG).
      * Equal to 2^31 - 1
      */
     const long lcg_modulus = 2147483647;
@@ -50,6 +56,26 @@ namespace fmk {
      * independtly of other cases / replicates.
      */
     thread_local long long combined_seed = 0;
+
+    /**
+     * The member portion of SimulationSeed, encoded in high-order bits
+     * 
+     * Conceptually, this should be identical for all members,
+     * but SimulationSeed is a parameter, so is provided by the framework
+     * independently for each member.
+     * So we declare it thread_local like a parameter.
+     */
+    thread_local long long SimulationSeed_member_part = 0;
+
+    /**
+     * The seed portion of SimulationSeed, encoded in low-order bits
+     *
+     * Conceptually, this should be identical for all members,
+     * but SimulationSeed is a parameter, so is provided by the framework
+     * independently for each member.
+     * So we declare it thread_local like a parameter.
+     */
+    thread_local long long SimulationSeed_seed_part = 1;
 
     /**
      * The master seed, derived from the parameter SimulationSeed.
@@ -71,7 +97,7 @@ namespace fmk {
      *
      * The actual RNG stream varies by member, in an RNG-specific way.
      */
-    thread_local long master_seed = 0;
+    thread_local int master_seed = 0;
 
     /**
      * The value for population scaling.
@@ -92,6 +118,69 @@ namespace fmk {
      * Default value of % progress messages during simulation
      */
     const int progress_percent_default = 1;
+}
+
+/**
+* Called before model PreSimulation functions.
+*/
+void before_presimulation(int mem_id, int mem_count)
+{
+    extern void before_presimulation_for_framework(void);
+
+    // code block for member and member count
+    {
+        // The number of member simulations in the sample of simulations
+        fmk::simulation_members = mem_count;
+
+        // The member to simulate of the sample of simulations
+        fmk::simulation_member = mem_id;
+    }
+
+    // code block for SimulationSeed
+    {
+        // Factor the combined seed SimulationSeed into its two parts
+        fmk::SimulationSeed_member_part = SimulationSeed / ((long long)fmk::lcg_modulus + 1);
+        fmk::SimulationSeed_seed_part = SimulationSeed - ((long long)fmk::lcg_modulus + 1) * fmk::SimulationSeed_member_part;
+    }
+
+    // Code block for random number support in PreSimulation
+    {
+        // In PreSimulation, the master seed is the same for all simulation members.
+        // For lcg-style generators, a different generator is used for each member.
+        // For other generators, the actual starting seed is generated from the master seed
+        // and the simulation member number.
+        fmk::master_seed = (int)fmk::SimulationSeed_seed_part;
+
+        // Create stream generator objects
+        // new_streams is generator-specific - defined in random/random_YYY.ompp
+        new_streams();
+
+        // Note that streams vary by simulation_member, master_seed and stream number.
+        initialize_model_streams(); //defined in common.ompp
+    }
+
+    // Framework-specific before PreSimulation code
+    before_presimulation_for_framework();
+}
+
+/**
+* Called after invocation of PreSimulation functions.
+*/
+void after_presimulation()
+{
+    extern void after_presimulation_for_framework();
+
+    // Code block for random number support in PreSimulation (cleanup)
+    {
+        fmk::master_seed = 0;
+
+        // Free stream generator objects
+        // delete_streams is generator-specific - defined in random/random_YYY.ompp
+        delete_streams();
+    }
+
+    // Framework-specific after PreSimulation code
+    after_presimulation_for_framework();
 }
 
 /**

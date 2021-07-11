@@ -156,7 +156,9 @@ actor Person
 {
     RNG_0_19 my_bad1;
     SEX my_bad2 = { MALE };
-    AGE_GROUP my_bad3;
+
+    // uncomment the following to test partition (cannot declare variable as partition in Modgen)
+    //AGE_GROUP my_bad3;
 
     void bad_assignment();
 

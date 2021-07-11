@@ -6,11 +6,6 @@
 // Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-parameters {
-    //EN Simulation starting seed
-    int SimulationSeed;
-};
-
 /**
  * The fmk namespace protects the global namespace for model use.
  */
@@ -56,18 +51,6 @@ void report_simulation_progress(int member, int percent, long long cases)
 {
     theLog->logFormatted("member=%d Simulation progress=%d%% cases=%lld", member, percent, cases);
     report_simulation_progress_beat(percent, (double)cases);
-}
-
-/**
-* Called after invocation of PreSimulation functions.
-*/
-void after_presimulation()
-{
-    fmk::master_seed = 0;
-
-    // Free stream generator objects
-    // delete_streams is generator-specific - defined in random/random_YYY.ompp
-    delete_streams();
 }
 
 void SimulateEvents()
@@ -160,7 +143,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
     // For simulation member values greater than the number of lcg generators,
     // re-use case seed generators cyclically and increment the starting
     // master_seed for the simulation of the sample.
-    fmk::master_seed = SimulationSeed + (int)simulation_member / max_case_seed_generators;
+    fmk::master_seed = (int)fmk::SimulationSeed_seed_part + (int)simulation_member / max_case_seed_generators;
     long case_seed_generator = case_seed_generators[simulation_member % max_case_seed_generators];
 
 	// Create stream generator objects

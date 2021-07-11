@@ -7,9 +7,6 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 parameters {
-    //EN Simulation starting seed
-    int SimulationSeed;
-
     //EN Simulation end time
     Time SimulationEnd;
 };
@@ -39,40 +36,17 @@ void report_simulation_progress(int member, int percent, Time i_time)
 }
 
 /**
-* Called before invocation of PreSimulation functions.
+* Called by before_presimulation.
 */
-void before_presimulation(int mem_id, int mem_count)
+void before_presimulation_for_framework()
 {
-    // The number of member simulations in the sample of simulations
-    fmk::simulation_members = mem_count;
-
-    // The member to simulate of the sample of simulations
-    fmk::simulation_member = mem_id;
-
-    // In PreSimulation, the master seed is the same for all simulation members.
-    // For lcg-style generators, a different generator is used for each member.
-    // For other generators, the actual starting seed is generated from the master seed
-    // and the simulation member number.
-    fmk::master_seed = SimulationSeed;
-
-    // Create stream generator objects
-    // new_streams is generator-specific - defined in random/random_YYY.ompp
-    new_streams();
-
-    // Note that streams vary by simulation member as well as SimulationSeed and stream number.
-    initialize_model_streams(); //defined in common.ompp
 }
 
 /**
-* Called after invocation of PreSimulation functions.
+* Called by after_presimulation.
 */
-void after_presimulation()
+void after_presimulation_for_framework()
 {
-    fmk::master_seed = 0;
-
-    // Free stream generator objects
-    // delete_streams is generator-specific - defined in random/random_YYY.ompp
-    delete_streams();
 }
 
 void LogSimulationStart()
@@ -236,7 +210,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
     // For lcg-style generators, a different generator is used for each member.
     // For other generators, the actual starting seed is generated from the master seed
     // and the simulation member number.
-    fmk::master_seed = SimulationSeed;
+    fmk::master_seed = (int)fmk::SimulationSeed_seed_part;
 
     // record the encoded combined seed (master_seed + simulation_member in high order bits)
     fmk::combined_seed = fmk::master_seed + simulation_member * ((long long)lcg_modulus + 1);

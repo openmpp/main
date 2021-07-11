@@ -12,18 +12,12 @@ parameters {
 };
 
 /**
-* Called before model PreSimulation functions.
+* Called by before_presimulation.
 */
-void before_presimulation(int mem_id, int mem_count)
+void before_presimulation_for_framework(void)
 {
     // Code block for number of cases
     {
-        // The number of members in the run
-        fmk::simulation_members = mem_count;
-
-        // The member being simulated
-        fmk::simulation_member = mem_id;
-
         // For this style of model, the parameter SimulationCases
         // gives the number of cases in the run (over all members)
         fmk::all_cases = SimulationCases;
@@ -36,21 +30,11 @@ void before_presimulation(int mem_id, int mem_count)
             fmk::member_cases++;
         };
     }
-
-    // Code block for random number support in PreSimulation
-    {
-        // In PreSimulation, the master seed is the same for all simulation members.
-        // For lcg-style generators, a different generator is used for each member.
-        // For other generators, the actual starting seed is generated from the master seed
-        // and the simulation member number.
-        fmk::master_seed = SimulationSeed;
-
-        // Create stream generator objects
-        // new_streams is generator-specific - defined in random/random_YYY.ompp
-        new_streams();
-
-        // Note that streams vary by simulation_member, master_seed and stream number.
-        initialize_model_streams(); //defined in common.ompp
-    }
 }
 
+/**
+* Called by after_presimulation.
+*/
+void after_presimulation_for_framework(void)
+{
+}
