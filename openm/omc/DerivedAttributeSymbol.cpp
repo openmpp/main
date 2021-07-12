@@ -1866,7 +1866,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                    " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             observed_cxx += "}";
@@ -1944,7 +1944,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
+                    " (double)time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
                     ;
             }
             if (Symbol::option_event_trace) {
@@ -1958,7 +1958,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                    " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             ss_implement_cxx += "}";  // end of the block started at "if (current_time == ..."
@@ -2127,7 +2127,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
+                    " (double)time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
                     ;
             }
             if (Symbol::option_event_trace) {
@@ -2141,7 +2141,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                    " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             ss_implement_cxx += "}";
@@ -2338,7 +2338,7 @@ void DerivedAttributeSymbol::create_side_effects()
                         "\"" + pretty_name() + "\", "
                         + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                         "\"" + evt_name + "\", "
-                        " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                        " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                         ;
                 }
                 identity_cxx += "} // if (om_active)";
@@ -2393,7 +2393,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
+                    " (double)time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
                     ;
             }
             if (Symbol::option_event_trace) {
@@ -2407,7 +2407,7 @@ void DerivedAttributeSymbol::create_side_effects()
                     "\"" + pretty_name() + "\", "
                     + std::to_string(pp_agent->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
-                    " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                    " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
             }
             ss_implement_cxx += "}";

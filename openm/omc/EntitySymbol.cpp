@@ -525,7 +525,7 @@ void EntitySymbol::build_body_initialize_events()
                         "\"" + d_attr->pretty_name() + "\", "
                         + std::to_string(ss_event->pp_event_id) + ", " // event id of the single event which handles ss attributes
                         "\"" + evt_name + "\", "
-                        " (double)ss_time, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
+                        " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                         ;
                     c += "}"; // end code block for the ss attribute
                 }

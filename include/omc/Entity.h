@@ -255,7 +255,8 @@ public:
                     -1, // no associated event
                     "enter_simulation",
                     om_get_time(), // the value of time in the entity before it enters the simulation
-                    get_global_time(), 
+                    om_get_age(), // the value of age in the entity before it enters the simulation
+                    get_global_time(),
                     et_msg_type::eEnterSimulation
                 );
             }
@@ -288,6 +289,7 @@ public:
                     -1, // no associated event
                     "exit_simulation",
                     om_get_time(), // the value of time in the entity when it exits the simulation
+                    om_get_age(), // the value of age in the entity when it exits the simulation
                     get_global_time(),
                     et_msg_type::eExitSimulation
                 );
@@ -502,6 +504,7 @@ public:
         int event_id,
         const char *event_description,
         double reported_time,
+        double reported_age,
         double global_time,
         et_msg_type msg_type)
     {
@@ -562,6 +565,7 @@ public:
             switch (msg_type) {
             case et_msg_type::eEventOccurrence:
             case et_msg_type::eQueuedEvent:
+            case et_msg_type::eSelfSchedulingEventOccurrence:
             {
                 theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
                     entity_name,
@@ -589,7 +593,7 @@ public:
                         global_time,
                         entity_id,
                         event_description,
-                        reported_time
+                        reported_age
                     );
                 }
                 break;
@@ -601,7 +605,7 @@ public:
                         entity_id,
                         entity_name,
                         event_name,
-                        reported_time
+                        reported_age
                     );
                 }
                 break;
