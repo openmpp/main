@@ -236,10 +236,10 @@ namespace openm
         vector<AggregationColumnExpr> nextExprArr;
 
         /** translate aggregation and non-aggregation function into sql */
-        const string translateAggregationFnc(FncCode i_code, const string & i_innerAlias, const string & i_arg);
+        const string translateAggregationFnc(FncCode i_code, const string & i_nextInnerAlias, const string & i_arg);
 
         /** translate function argument into sql argument */
-        const string translateArg(const string & i_innerAlias, const string & i_arg);
+        const string translateArg(const string & i_nextInnerAlias, const string & i_arg);
 
         /** collect accumulator name usage in expression */
         const string processAccumulators(const string & i_expr);

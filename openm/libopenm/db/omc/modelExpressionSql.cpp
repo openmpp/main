@@ -109,13 +109,15 @@ struct LevelDef
     int level = 0;                          // nesting level
     string fromAlias;                       // from table alias
     string innerAlias;                      // inner join table alias
+    string nextInnerAlias;                  // next level inner join table alias
     vector<AggregationColumnExpr> exprArr;  // column names and expressions
     vector<bool> accUsageArr;               // contains true if accumulator used at current level
 
     LevelDef(int i_level) : level(i_level)
     {
         fromAlias = "M" + to_string(level);
-        innerAlias = "T" + to_string(level + 1);
+        innerAlias = "T" + to_string(level);
+        nextInnerAlias = "T" + to_string(level + 1);
     }
 };
 
@@ -161,7 +163,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 
                     // translate function into sql expression and append to output
                     currExpr.sqlExpr += translateAggregationFnc(
-                        fnc.code, levelArr.back().innerAlias, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
+                        fnc.code, levelArr.back().nextInnerAlias, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
                     );
 
                     // remove parsed function from expression
@@ -199,7 +201,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
     //   (
     //     SELECT 
     //       M2.run_id, M2.dim0, M2.dim1, 
-    //       AVG(M2.acc_value + A4.acc4 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
+    //       AVG(M2.acc_value + L2A4.acc4 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
     //     FROM age_acc M2
     //     INNER JOIN
     //     (
@@ -211,7 +213,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
     //       SELECT 
     //         M3.run_id, M3.dim0, M3.dim1, 
     //         MAX(M3.acc_value) AS ex31, 
-    //         MIN(A3.acc1) AS ex32
+    //         MIN(L3A1.acc1)    AS ex32
     //       FROM age_acc M3
     //       INNER JOIN
     //       (
@@ -297,10 +299,10 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
         if (nLev > 0) {
 
             sql += ") " + levelArr[nLev].innerAlias +
-                " ON (" + levelArr[nLev].innerAlias + ".run_id = " + levelArr[nLev].fromAlias + ".run_id";
+                " ON (" + levelArr[nLev].innerAlias + ".run_id = " + levelArr[nLev - 1].fromAlias + ".run_id";
 
             for (const string & dimName : dimNameVec) {
-                sql += " AND " + levelArr[nLev].innerAlias + "." + dimName + " = " + levelArr[nLev].fromAlias + "." + dimName;
+                sql += " AND " + levelArr[nLev].innerAlias + "." + dimName + " = " + levelArr[nLev - 1].fromAlias + "." + dimName;
             }
 
             sql += ")";
@@ -418,13 +420,13 @@ const string ModelBaseExpressionSql::translateSimpleFnc(const string & i_srcMsg,
 //
 /** translate aggregation or non - aggregation function into sql */
 const string ModelAggregationSql::translateAggregationFnc(
-    FncCode i_code, const string & i_innerAlias, const string & i_arg
+    FncCode i_code, const string & i_nextInnerAlias, const string & i_arg
     )
 {
     // check arguments
     if (i_arg.length() < 1) throw DbException(LT("Invalid (empty) function %d argument at: %s"), i_code, srcMsg.c_str());
 
-    string sqlArg = translateArg(i_innerAlias, i_arg);
+    string sqlArg = translateArg(i_nextInnerAlias, i_arg);
     string avgCol;
 
     // return aggregation or non-aggregation sql expression
@@ -451,18 +453,16 @@ const string ModelAggregationSql::translateAggregationFnc(
 
         avgCol = pushAvgToNextLevel(i_arg);
         return
-            "SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / CASE WHEN ABS( (COUNT(" + sqlArg + ") - 1) ) > 1.0e-37 THEN (COUNT(" + sqlArg + ") - 1) ELSE NULL END";
+            "SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END";
 
     case FncCode::sd:   // SQRT(var)
         
         avgCol = pushAvgToNextLevel(i_arg);
         return
             "SQRT(" \
-            " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / CASE WHEN ABS( (COUNT(" + sqlArg + ") - 1) ) > 1.0e-37 THEN (COUNT(" + sqlArg + ") - 1) ELSE NULL END" \
+            " SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END" \
             " )";
 
     case FncCode::se:   // SQRT(var / COUNT(arg))
@@ -470,21 +470,21 @@ const string ModelAggregationSql::translateAggregationFnc(
         avgCol = pushAvgToNextLevel(i_arg);
         return
             "SQRT(" \
-            " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / CASE WHEN ABS( (COUNT(" + sqlArg + ") - 1) ) > 1.0e-37 THEN (COUNT(" + sqlArg + ") - 1) ELSE NULL END" \
-            " / CASE WHEN ABS( (COUNT(" + sqlArg + ")) ) > 1.0e-37 THEN (COUNT(" + sqlArg + ")) ELSE NULL END" \
+            " SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") ) > 1.0e-37 THEN COUNT(" + sqlArg + ") ELSE NULL END" \
             " )";
 
     case FncCode::cv:   // 100 * ( SQRT(var) / AVG(arg) ) 
         
         avgCol = pushAvgToNextLevel(i_arg);
         return
-            "100 * (SQRT(" \
-            " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / CASE WHEN ABS( (COUNT(" + sqlArg + ") - 1) ) > 1.0e-37 THEN (COUNT(" + sqlArg + ") - 1) ELSE NULL END" \
-            " / CASE WHEN ABS( (AVG(" + sqlArg + ")) ) > 1.0e-37 THEN (AVG(" + sqlArg + ")) ELSE NULL END" \
+            "100 * ("
+            " SQRT(" \
+            " SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END" \
+            " )" \
+            " / CASE WHEN ABS( AVG(" + sqlArg + ") ) > 1.0e-37 THEN AVG(" + sqlArg + ") ELSE NULL END" \
             " )";
 
     default:
@@ -495,7 +495,7 @@ const string ModelAggregationSql::translateAggregationFnc(
 // translate function argument into sql argument:
 // push nested OM_ functions to next aggregation level
 // if accumulator outside of nested function then insert table alias in front of accumulator
-const string ModelAggregationSql::translateArg(const string & i_innerAlias, const string & i_arg)
+const string ModelAggregationSql::translateArg(const string & i_nextInnerAlias, const string & i_arg)
 {
     // parse until source expression not completed
     string outExpr;
@@ -519,7 +519,7 @@ const string ModelAggregationSql::translateArg(const string & i_innerAlias, cons
             // and nested function remove from source expression
             string colName = pushToNextLevel(expr.substr(fnc.namePos, (fnc.closePos + 1) - fnc.namePos));
 
-            outExpr += i_innerAlias + "." + colName;
+            outExpr += i_nextInnerAlias + "." + colName;
             expr = (fnc.closePos + 1 < expr.length()) ? expr.substr(fnc.closePos + 1) : "";
         }
     }
