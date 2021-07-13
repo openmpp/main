@@ -110,8 +110,16 @@ namespace openm
         /** names of table accumulators */
         const vector<string> accNameVec;
 
-        /** translate non-aggregation function into sql */
-        static const string translateSimpleFnc(const string & i_srcContextName, FncCode i_code, const string & i_arg);
+        /** translate (substitute) all non-aggregation functions
+        *
+        * @param i_srcMsg     source table name and expression name to be used in error message
+        * @param i_isSkipAggr if true then skip aggregation functions else throw an exception
+        * @param i_expr       expression to translate
+        */
+        const string ModelBaseExpressionSql::translateAllSimpleFnc(const string & i_srcMsg, bool i_isSkipAggr, const string & i_expr);
+
+        /** translate (substitute) non-aggregation function */
+        static const string translateSimpleFnc(const string & i_srcMsg, FncCode i_code, const string & i_arg);
 
     private:
         ModelBaseExpressionSql(const ModelBaseExpressionSql & i_other) = delete;
@@ -168,11 +176,14 @@ namespace openm
         const string translateDerivedAccExpr(const string & i_outTableName, const string & i_accName, const string & i_expr, const map<string, size_t> & i_nativeMap);
 
     private:
+        /** current source name: output table name and accumulator name */
+        string srcMsg;
+
         /** table_acc table rows */
         const vector<TableAccRow> & tableAccVec;
 
-        /** current source name: output table name and accumulator name */
-        string srcContextName;
+        /** contains true if accumulator used at current level */
+        vector<bool> isAccUsedArr;
 
     private:
         ModelAccumulatorSql(const ModelAccumulatorSql & i_other) = delete;
@@ -216,7 +227,7 @@ namespace openm
 
     private:
         /** current source name: output table name and expression name */
-        string srcContextName;
+        string srcMsg;
 
         /** contains true if accumulator used at current level */
         vector<bool> isAccUsedArr;
@@ -225,7 +236,7 @@ namespace openm
         vector<AggregationColumnExpr> nextExprArr;
 
         /** translate aggregation and non-aggregation function into sql */
-        const string translateFnc(FncCode i_code, bool i_isAggr, const string & i_innerAlias, const string & i_arg);
+        const string translateAggregationFnc(FncCode i_code, const string & i_innerAlias, const string & i_arg);
 
         /** translate function argument into sql argument */
         const string translateArg(const string & i_innerAlias, const string & i_arg);
