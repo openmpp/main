@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 my $script_name = "test_models";
-my $script_version = '2.1';
+my $script_version = '2.2';
 
 use Getopt::Long::Descriptive;
 
@@ -58,6 +58,10 @@ my ($opt, $usage) = describe_options(
     
 	[ 'help|h'    => 'report usage message and exit' ],
 	[ 'version|v' => 'report test_models version and exit' ],
+	[ 'time_format=s' => 'time format for event trace (default 13.6f)',
+		{ default => '13.6f' } ],
+	[ 'modgen_id_offset=i' => 'offset adjustment to Modgen IDs (default 0)',
+		{ default => 0 } ],
     
     # Deprecated
     
@@ -132,6 +136,13 @@ my $do_method2 = 0;
 
 my $do_method3 = 1;
 $do_method3 = 0 if $opt->nocells;
+
+# Time format for normalized trace reports
+my $time_format = $opt->time_format;
+
+# Offset to apply to Modgen ID's
+my $modgen_id_offset = $opt->modgen_id_offset;
+
 
 
 #####################
@@ -781,7 +792,11 @@ for my $model_dir (@model_dirs) {
 			# If present, normalize event trace / case checksum file to results directory
 			my $modgen_scenario_debug_txt = "${publish_dir}/${scenario_name}(debug).txt";
 			if (-e $modgen_scenario_debug_txt) {
-				normalize_event_trace $modgen_scenario_debug_txt, $current_trace_txt;
+				normalize_event_trace
+                    $modgen_scenario_debug_txt,
+                    $current_trace_txt,
+                    $time_format,
+                    $modgen_id_offset;
 			}
 			
 			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
@@ -1033,7 +1048,11 @@ for my $model_dir (@model_dirs) {
 		
 			# If present and non-empty event trace, normalize to results
 			if (-s $ompp_trace_txt) {
-				normalize_event_trace $ompp_trace_txt, $current_trace_txt;
+				normalize_event_trace
+                    $ompp_trace_txt,
+                    $current_trace_txt,
+                    $time_format,
+                    0;
 			}
 			
 			#####################################
@@ -1232,7 +1251,11 @@ for my $model_dir (@model_dirs) {
 
 			# If present and non-empty copy event trace / case checksum file to results directory
 			if (-s $ompp_trace_txt) {
-				normalize_event_trace $ompp_trace_txt, $current_trace_txt;
+				normalize_event_trace
+                    $ompp_trace_txt,
+                    $current_trace_txt,
+                    $time_format,
+                    0;
 			}
 			
 			#####################################

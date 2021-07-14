@@ -787,11 +787,15 @@ sub digest_differences {
 # Normalise event trace for comparability
 # arg0 - the input event trace file
 # arg1 - the output normalized event trace file
+# arg2 - the format for time, eg 16.9f (no leading %)
+# arg3 - offset to be added to the entity id
 # returns - 0 for success, otherwise non-zero
 sub normalize_event_trace
 {
 	my $input_event_trace = shift(@_);
 	my $output_event_trace = shift(@_);
+    my $time_format = '%'.shift(@_);
+    my $entity_id_offset = shift(@_);
 	
 	if (!open IN, "<${input_event_trace}") {
 		logmsg error, "error opening >${input_event_trace}";
@@ -830,7 +834,7 @@ sub normalize_event_trace
 		}
 		# is trace line
 		my $entity_kind = $1;
-		my $entity_id = $2;
+		my $entity_id = $2 + $entity_id_offset;
 		my $case_seed = $3;
 		my $function = $4;
 		my $time = $5;
@@ -841,8 +845,8 @@ sub normalize_event_trace
 		if ($time eq "inf" || $time > 99999.0) {
 			$time = 99999.0;
 		}
-		# Reformat time at lower precision
-		$time = sprintf("%13.6f", $time);
+		# Reformat time at specified precision
+		$time = sprintf($time_format, $time);
 		
 		my $is_event = 0;
 		if ($function =~ /(\w+)[.](\w+)/) {
