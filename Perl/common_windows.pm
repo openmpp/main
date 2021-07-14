@@ -68,8 +68,9 @@ sub run_jet_statement {
 # arg0 - the Modgen database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
-# arg3 - flag to create original    tables in subfolder original (optional)
-# arg4 - flag to create transformed tables in subfolder transformed (optional)
+# arg3 - zero fuzz value (optional)
+# arg4 - flag to create original    tables in subfolder original (optional)
+# arg5 - flag to create transformed tables in subfolder transformed (optional)
 # returns - 0 for success, otherwise non-zero
 sub modgen_tables_to_csv
 {
@@ -84,6 +85,10 @@ sub modgen_tables_to_csv
 		if ($round_prec > 0) {
 			$rounding_on = 1;
 		}
+	}
+	my $zero_fuzz = 1e-15;
+	if ($#_ >= 0) {
+		$zero_fuzz = shift(@_);
 	}
 	if ($#_ >= 0) {
 		$do_original = shift(@_);
@@ -297,6 +302,7 @@ sub modgen_tables_to_csv
 					}
 					else {
 						$original_value = $value;
+                        $value = 0 if abs($value) <= $zero_fuzz;
 						if ($rounding_on) {
 							$value = $value + 0.0;
 							# standard rounding

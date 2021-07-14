@@ -52,6 +52,8 @@ my ($opt, $usage) = describe_options(
     
 	[ 'significant_digits=i' => 'significant digits (default 6)',
 		{ default => 6 } ],
+	[ 'zero_fuzz=f' => 'zero fuzz value (default 1e-15)',
+		{ default => 1e-15 } ],
 	[ 'nocells' => 'disable fallback cell-by-cell verification of differing tables and copy of original data' ],
     
     # Miscellaneous
@@ -107,6 +109,9 @@ $report_steps = 0 if $opt->nosteps;
 
 # Number of significant digits to retain in the output csv files (0 means full precision)
 my $significant_digits = $opt->significant_digits;
+
+# Numbers whose absolute value is <= zero_fuzz will be set to zero
+my $zero_fuzz = $opt->zero_fuzz;
 
 # Path to optional ini file (relative to model folder) to pass to ompp model
 my $model_ini_opt = $opt->ini;
@@ -799,7 +804,7 @@ for my $model_dir (@model_dirs) {
                     $modgen_id_offset;
 			}
 			
-			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
+			if ( 0 != modgen_tables_to_csv($modgen_scenario_mdb, $current_outputs_dir, $significant_digits, $zero_fuzz, $do_method3, $do_method2)) {
                 $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
@@ -1038,7 +1043,7 @@ for my $model_dir (@model_dirs) {
 			
 			$start_seconds = time;
 			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $zero_fuzz, $do_method3, $do_method2)) {
                 $any_flavour_errors = 1;
 				next FLAVOUR;
 			}
@@ -1241,7 +1246,7 @@ for my $model_dir (@model_dirs) {
 
 			logmsg info, $model_dir, $flavour, "Convert outputs (${significant_digits} digits of precision)" if $report_steps;
 			$start_seconds = time;
-			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $do_method3, $do_method2)) {
+			if ( 0 != ompp_tables_to_csv($publish_sqlite, $current_outputs_dir, $significant_digits, $zero_fuzz, $do_method3, $do_method2)) {
                 $any_flavour_errors = 1;
 				next FLAVOUR;
 			}

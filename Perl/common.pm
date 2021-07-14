@@ -201,8 +201,9 @@ sub run_sqlite_statement {
 # arg0 - the SQLite database
 # arg1 - the destination folder
 # arg2 - the number of significant digits to output (optional)
-# arg3 - flag to create original    tables in subfolder original (optional)
-# arg4 - flag to create transformed tables in subfolder transformed (optional)
+# arg3 - zero fuzz value (optional)
+# arg4 - flag to create original    tables in subfolder original (optional)
+# arg5 - flag to create transformed tables in subfolder transformed (optional)
 # returns - 0 for success, otherwise non-zero
 #
 # Note: Implementation uses DB compatibility views
@@ -220,6 +221,10 @@ sub ompp_tables_to_csv
 		if ($round_prec > 0) {
 			$rounding_on = 1;
 		}
+	}
+	my $zero_fuzz = 1e-15;
+	if ($#_ >= 0) {
+		$zero_fuzz = shift(@_);
 	}
 	if ($#_ >= 0) {
 		$do_original = shift(@_);
@@ -346,6 +351,7 @@ sub ompp_tables_to_csv
 				# get the last (value) field
 				my $value = pop @fields;
 				my $original_value = 0.0 + $value;
+                $value = 0 if abs($value) <= $zero_fuzz;
 				my $transformed_value = $value;
 				if ($rounding_on) {
 					$value = $value + 0.0;
