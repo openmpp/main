@@ -705,7 +705,7 @@ void process_trace_options(IRunBase* const i_runBase)
     if (om_event_trace_capable) { // is constexpr
         // Model was compiled with event trace capability
 
-        theLog->logFormatted(LT("Warning : possible performance impact - model built with trace_event = on"));
+        theLog->logFormatted(LT("Warning : possible performance impact - model built with event_trace = on"));
 
         if (i_runBase->isOptionExist("EventTrace.ReportStyle")) {
             std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");

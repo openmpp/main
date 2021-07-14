@@ -556,9 +556,6 @@ public:
             return;
         }
 
-        // a line will be emitted so decrement the count af remaining lines to maximum
-        event_trace_maximum_lines--;
-
         switch (event_trace_report_style) {
         case et_report_style::eModgen:
         {
@@ -567,6 +564,9 @@ public:
             case et_msg_type::eQueuedEvent:
             case et_msg_type::eSelfSchedulingEventOccurrence:
             {
+                // decrement the count af remaining lines before maximum reached
+                event_trace_maximum_lines--;
+
                 theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
                     entity_name,
                     entity_id,
@@ -583,6 +583,9 @@ public:
         break;
         case et_report_style::eReadable:
             {
+                // decrement the count of remaining lines before maximum reached
+                event_trace_maximum_lines--;
+
                 // style is similar to that produced by test_models
                 // using normalize_event_trace in common.pm
                 switch (msg_type) {
