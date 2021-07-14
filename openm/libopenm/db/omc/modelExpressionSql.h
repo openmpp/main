@@ -16,8 +16,11 @@ namespace openm
     /** aggregation and non-aggregation function code */
     enum class FncCode
     {
-        /** undefined aggregation function */
+        /** undefined function */
         undefined = 0,
+
+        /** if condition then value else other value */
+        if_case,
 
         /** denominator: wrap value as divisor */
         denom,

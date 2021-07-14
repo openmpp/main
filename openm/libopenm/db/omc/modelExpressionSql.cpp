@@ -8,6 +8,9 @@ using namespace openm;
 /** aggregation and non-aggregation function names */
 struct FncName
 {
+    /** if condition then value else other value */
+    static constexpr const char * if_case = "OM_IF";
+
     /** denominator: wrap value as divisor */
     static constexpr const char * denom = "OM_DENOM";
 
@@ -49,6 +52,7 @@ struct FncTag
 };
 
 static FncTag fncTagArr[] = {
+    {FncCode::if_case, false, FncName::if_case, strlen(FncName::if_case)},
     {FncCode::denom, false, FncName::denom, strlen(FncName::denom)},
     {FncCode::avg, true, FncName::avg, strlen(FncName::avg)},
     {FncCode::sum, true, FncName::sum, strlen(FncName::sum)},
@@ -315,17 +319,17 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 // OM_DENOM(acc1 / acc2) 
 //    => 
 //      CASE 
-//        WHEN ABS( (acc1 / OM_DENOM(acc2)) ) > 1.0e-37 
-//        THEN (acc1 / OM_DENOM(acc2)) 
+//        WHEN ABS(acc1 / OM_DENOM(acc2)) > 1.0e-37 
+//        THEN acc1 / OM_DENOM(acc2) 
 //        ELSE NULL 
 //      END
 //    =>
 //      CASE
 //        WHEN 
-//          ABS( (
+//          ABS( 
 //            acc1 / 
 //            CASE WHEN ABS(acc2) > 1.0e-37 THEN acc2 ELSE NULL END 
-//          ) ) > 1.0e-37
+//          ) > 1.0e-37
 //        THEN 
 //          (
 //            acc1 / 
@@ -395,11 +399,20 @@ const string ModelBaseExpressionSql::translateAllSimpleFnc(const string & i_srcM
 
 /** translate (substitute) non-aggregation function:
 * 
-* OM_DENOM(acc1) => CASE WHEN ABS( (acc1) ) > 1.0e-37 THEN (acc1) ELSE NULL END
+* OM_DENOM(acc1) 
+*   => 
+*   CASE WHEN ABS(acc1) > 1.0e-37 THEN acc1 ELSE NULL END
+* 
+* OM_IF(acc1 > 1.5 THEN acc1 ELSE 1.5)
+*   => 
+*   CASE WHEN acc1 > 1.5 THEN acc1 ELSE 1.5 END
 */
 const string ModelBaseExpressionSql::translateSimpleFnc(const string & i_srcMsg, FncCode i_code, const string & i_arg)
 {
     switch (i_code) {
+    case FncCode::if_case:
+        return "CASE WHEN " + i_arg + " END";
+
     case FncCode::denom:
         return "CASE WHEN ABS( (" + i_arg + ") ) > 1.0e-37 THEN (" + i_arg + ") ELSE NULL END";
 
