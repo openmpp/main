@@ -12,6 +12,7 @@
 #include <cfloat>       // for real
 #include "omc/integer_counter.h"
 #include "om_types0.h"  // for real
+#include "omc/globals0.h" // for error message handlers
 
 /**
     * A partition.
@@ -239,27 +240,30 @@ template<
     T T_size,
     const std::array<real, T_size> &T_lower,
     const std::array<real, T_size> &T_upper,
-    const std::map<real, T> &T_splitter
+    const std::map<real, T> &T_splitter,
+    std::string const* NT_name
 >
-const T Partition<T, T_size, T_lower, T_upper, T_splitter>::min = 0;
+const T Partition<T, T_size, T_lower, T_upper, T_splitter, NT_name>::min = 0;
 
 template<
     typename T,
     T T_size,
     const std::array<real, T_size> &T_lower,
     const std::array<real, T_size> &T_upper,
-    const std::map<real, T> &T_splitter
+    const std::map<real, T> &T_splitter,
+    std::string const* NT_name
 >
-const T Partition<T, T_size, T_lower, T_upper, T_splitter>::max = T_size - 1;
+const T Partition<T, T_size, T_lower, T_upper, T_splitter, NT_name>::max = T_size - 1;
 
 template<
     typename T,
     T T_size,
     const std::array<real, T_size> &T_lower,
     const std::array<real, T_size> &T_upper,
-    const std::map<real, T> &T_splitter
+    const std::map<real, T> &T_splitter,
+    std::string const* NT_name
 >
-const int Partition<T, T_size, T_lower, T_upper, T_splitter>::size = T_size;
+const int Partition<T, T_size, T_lower, T_upper, T_splitter, NT_name>::size = T_size;
 #else // defined(_MSC_VER)
     // MSVC bug workaround 2020-07-03
     // With standard idiom, MSVC does not treat these as compile time constants.

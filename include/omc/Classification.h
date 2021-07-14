@@ -8,6 +8,7 @@
 
 #pragma once
 #include "omc/integer_counter.h"
+#include "omc/globals0.h" // for error message handlers
 
 /**
 * A partition.
@@ -157,21 +158,24 @@ private:
 #if !defined(_MSC_VER)
 template<
     typename T,
-    size_t T_size
+    size_t T_size,
+    std::string const* NT_name
 >
-const T Classification<T, T_size>::min = (T) 0;
+const T Classification<T, T_size, NT_name>::min = (T) 0;
 
 template<
     typename T,
-    size_t T_size
+    size_t T_size,
+    std::string const* NT_name
 >
-const T Classification<T, T_size>::max = (T) (T_size - 1);
+const T Classification<T, T_size, NT_name>::max = (T) (T_size - 1);
 
 template<
     typename T,
-    size_t T_size
+    size_t T_size,
+    std::string const* NT_name
 >
-const int Classification<T, T_size>::size = T_size;
+const int Classification<T, T_size, NT_name>::size = T_size;
 #else // defined(_MSC_VER)
     // MSVC bug workaround 2020-07-03
     // With standard idiom, MSVC does not treat these as compile time constants.

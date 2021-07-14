@@ -8,6 +8,7 @@
 
 #pragma once
 #include "omc/integer_counter.h"
+#include "omc/globals0.h" // for error message handlers
 
 /**
 * A range.
@@ -299,23 +300,26 @@ private:
 template<
     typename T,
     int T_min,
-    int T_max
+    int T_max,
+    std::string const* NT_name
 >
-const int Range<T, T_min, T_max>::min = T_min;
+const int Range<T, T_min, T_max, NT_name>::min = T_min;
 
 template<
     typename T,
     int T_min,
-    int T_max
+    int T_max,
+    std::string const* NT_name
 >
-const int Range<T, T_min, T_max>::max = T_max;
+const int Range<T, T_min, T_max, NT_name>::max = T_max;
 
 template<
     typename T,
     int T_min,
-    int T_max
+    int T_max,
+    std::string const* NT_name
 >
-const int Range<T, T_min, T_max>::size = (int)T_max - (int)T_min + 1;
+const int Range<T, T_min, T_max, NT_name>::size = (int)T_max - (int)T_min + 1;
 #else // defined(_MSC_VER)
     // MSVC bug workaround 2020-07-03
     // With standard idiom, MSVC does not treat these as compile time constants.

@@ -172,7 +172,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     }
     c += "};";
 
-    c += "static const std::string om_name_" + name + " = \"" + pretty_name() + "\";";
+    c += "const std::string om_name_" + name + " = \"" + pretty_name() + "\";";
 
     return c;
 }
