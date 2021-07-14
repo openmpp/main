@@ -69,7 +69,7 @@ parameters
 actor Person
 {
     //EN Scripts (with long description)
-    SCRIPT script = OneScript ? SCRIPT_t(WhichScript) : SCRIPT_t(actor_id - 1);
+    SCRIPT script = OneScript ? SCRIPT_t(WhichScript) : SCRIPT_t(maxi(0,actor_id - 1));
 
 	logical alive;
     logical fltr;
