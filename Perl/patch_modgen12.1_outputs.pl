@@ -66,6 +66,9 @@ if (!-d $src_dir) {
 // The following code was inserted by patch_modgenXX_outputs after Modgen compilation:
 //
 
+// The following seems required in some versions of VS 2019 when requesting C++17
+#include <set>
+
 // minimum of two doubles
 inline double mind(double a, double b)
 {
