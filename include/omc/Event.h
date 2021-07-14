@@ -362,8 +362,13 @@ public:
      */
     static Time get_global_time()
     {
-        assert(global_time);
-        return *global_time;
+        if (global_time) {
+            return *global_time;
+        }
+        else {
+            // global_time may not be allocated if this function is called early in run lifecycle, eg for error message
+            return time_undef;
+        }
     }
 
     /**
