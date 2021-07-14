@@ -290,7 +290,9 @@ void Person::t03_user_func() {
 
 	edlev3 = ED3_NA;
 	edlev5 = ED5_NA;
-	edlev5 = (EDLEV5) 1000;
+
+	// disable the following test, since it (delbierately) produces a runtime error by default in ompp
+	//edlev5 = (EDLEV5) 1000;
 
 	rng1to5 = 5;
 
