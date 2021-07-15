@@ -133,7 +133,7 @@ actor Host
     logical year_ge_10 = (report_time >= 10) ? TRUE : FALSE;
 
 	logical one_time_done = { FALSE };
-	event OneTimetime, OneTime;
+	event timeOneTime, OneTime;
     double thingee;
     real one = { 1.0 };
     double thingee2 = COERCE(REPORT_TIME, thingee);
@@ -141,8 +141,26 @@ actor Host
     REPORT_TIME thingee3 = COERCE(REPORT_TIME, big_time);
 };
 
-TIME Host::OneTimetime()
+TIME Host::timeOneTime()
 {
+    //
+    // BEGIN Test access to other entities in time function (ompp only)
+    // 
+    //for (auto prHost : asAllHostsByPhase[DP_SUSCEPTIBLE]) // one day this will work!
+    //double dSum = 0;
+    //int nHosts = asAllHosts->Count();
+    //for (int nJ = 0; nJ < nHosts; nJ++)
+    //{
+    //    auto prHost = asAllHosts->Item(nJ);
+    //    // arbitrary attribute read across link in a time function
+    //    dSum += prHost->age;
+    //    // the following is disallowed and will generate a run-time error in ompp
+    //    //prHost->thingee = 3.0;
+    //}
+    //
+    // END Test access to other entities in time function (ompp only)
+    // 
+
 	if (one_time_done) return TIME_INFINITE;
 	else return 0.0;
 }
