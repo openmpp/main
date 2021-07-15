@@ -57,7 +57,16 @@ public:
                 if (!std::isinf(current_global_time)) {
                     if (ptr->time < current_global_time) {
                         // Synchronize time of the entity referred to through the pointer.
-                        ptr->time.set(current_global_time);
+                        if (om_verify_attribute_modification) { // is constexpr
+                            // construct a sandwich allowing modification of time attribute for just-in-time
+                            bool saved = BaseEntity::om_permit_attribute_modification;
+                            BaseEntity::om_permit_attribute_modification = true;
+                            ptr->time.set(current_global_time);
+                            BaseEntity::om_permit_attribute_modification = saved;
+                        }
+                        else {
+                            ptr->time.set(current_global_time);
+                        }
                     }
                     else if (!BaseEvent::allow_clairvoyance && ptr->time > current_global_time) {
                         // This is an attempt to access an entity in the local future of the current entity.
