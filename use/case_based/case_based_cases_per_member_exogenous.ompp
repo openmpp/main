@@ -23,6 +23,21 @@ void before_presimulation_for_framework()
         fmk::member_cases = CasesPerMember;
 
         fmk::all_cases = fmk::member_cases * fmk::simulation_members;
+
+        if (fmk::SimulationSeed_member_part == 0) {
+            // Normal run, start at member 0
+        }
+        else {
+            // Special run, simulate a single case in the specified member.
+            if (fmk::simulation_member == fmk::SimulationSeed_member_part) {
+                // Simulate one case in the member specified in the combined seed
+                fmk::member_cases = 1;
+            }
+            else {
+                // Ignore all other members
+                fmk::member_cases = 0;
+            }
+        }
     }
 }
 
