@@ -848,7 +848,7 @@ sub normalize_event_trace
 		
 		# Replace very large times (or inf) with a fixed smaller value, to avoid
 		# reporting spurious precision-related differences due to magnitude of large times
-		if ($time eq "inf" || $time > 99999.0) {
+		if ($time eq "inf" || $time >= 32767.0) {
 			$time = 99999.0;
 		}
 		# Reformat time at specified precision
