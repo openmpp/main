@@ -1011,6 +1011,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
 
         // collect accumulator names
         tblInf.accNameVec.clear();
+        tblInf.accIdVec.clear();
         for (const TableAccRow & accRow : io_metaRows.tableAcc) {
             if (accRow.tableId == tblInf.id) {
                 tblInf.accIdVec.push_back(accRow.accId);
@@ -1021,22 +1022,20 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
             throw DbException(LT("output table accumulators not found for table: %s"), tableRow.tableName.c_str());
 
         // translate native accumulators into sql subqueries
-        ModelAccumulatorSql ae(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
+        ModelAccumulatorSql ae(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec, io_metaRows.tableAcc);
 
-        map<string, string> nm;     // native accumulators map of (name, sql subquery)
-        bool isFirst = true;
-        for (TableAccRow & accRow : io_metaRows.tableAcc) {
-            if (accRow.tableId == tblInf.id && !accRow.isDerived) {
-                accRow.accSql = ae.translateNativeAccExpr(accRow.accId, isFirst);
-                isFirst = false;
-                nm[accRow.name] = accRow.accSql;
+        map<string, size_t> nm;     // native accumulators map of (name, table_acc row)
+        for (size_t nAcc = 0; nAcc < io_metaRows.tableAcc.size(); nAcc++) {
+            if (io_metaRows.tableAcc[nAcc].tableId == tblInf.id && !io_metaRows.tableAcc[nAcc].isDerived) {
+                io_metaRows.tableAcc[nAcc].accSql = ae.translateNativeAccExpr(tableRow.tableName, io_metaRows.tableAcc[nAcc].name, io_metaRows.tableAcc[nAcc].accId);
+                nm[io_metaRows.tableAcc[nAcc].name] = nAcc;
             }
         }
 
         // translate derived accumulators into sql subqueries
         for (TableAccRow & accRow : io_metaRows.tableAcc) {
             if (accRow.tableId == tblInf.id && accRow.isDerived) {
-                accRow.accSql = ae.translateDerivedAccExpr(accRow.name, accRow.accSrc, nm);
+                accRow.accSql = ae.translateDerivedAccExpr(tableRow.tableName, accRow.name, accRow.accSrc, nm);
             }
         }
 
@@ -1045,7 +1044,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
 
         for (TableExprRow & exprRow : io_metaRows.tableExpr) {
             if (exprRow.tableId == tblInf.id) {
-                exprRow.sqlExpr = aggr.translateAggregationExpr(exprRow.name, exprRow.srcExpr); // translate expression to sql aggregation
+                exprRow.sqlExpr = aggr.translateAggregationExpr(tableRow.tableName, exprRow.name, exprRow.srcExpr); // translate expression to sql aggregation
             }
         }
         // if (tblInf.exprVec.empty()) 

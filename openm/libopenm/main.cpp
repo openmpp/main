@@ -83,15 +83,14 @@ int main(int argc, char ** argv)
         const ArgReader argOpts = MetaLoader::getRunOptions(argc, argv);
 
         // adjust log file(s) with actual log settings specified in model run options file
-        string lfPath;
-        if (argOpts.boolOption(ArgKey::logToFile) || argOpts.boolOption(ArgKey::logToStamped)) {
-            lfPath = argOpts.strOption(ArgKey::logFilePath);
-            if (lfPath.empty()) lfPath = string(OM_MODEL_NAME) + ".log";
+        string lfPath = argOpts.strOption(ArgKey::logFilePath);
+        if (lfPath.empty()) {
+            lfPath = string(OM_MODEL_NAME) + ".log";
         }
         theLog->init(
             argOpts.boolOption(ArgKey::logToConsole) || !argOpts.isOptionExist(ArgKey::logToConsole),
             lfPath.c_str(),
-            argOpts.boolOption(ArgKey::logToFile),
+            argOpts.boolOption(ArgKey::logToFile) || !argOpts.isOptionExist(ArgKey::logToFile),
             argOpts.boolOption(ArgKey::logUseTs),
             argOpts.boolOption(ArgKey::logUsePid),
             argOpts.boolOption(ArgKey::logNoMsgTime),

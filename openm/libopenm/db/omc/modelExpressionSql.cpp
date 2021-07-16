@@ -5,51 +5,64 @@
 #include "modelExpressionSql.h"
 using namespace openm;
 
-/** average value */
-const char * AggregationFnc::avg = "OM_AVG";
+/** aggregation and non-aggregation function names */
+struct FncName
+{
+    /** if condition then value else other value */
+    static constexpr const char * if_case = "OM_IF";
 
-/** sum of values */
-const char * AggregationFnc::sum = "OM_SUM";
+    /** denominator: wrap value as divisor */
+    static constexpr const char * denom = "OM_DENOM";
 
-/** count of values */
-const char * AggregationFnc::count = "OM_COUNT";
+    /** average value */
+    static constexpr const char * avg = "OM_AVG";
 
-/** minimal value */
-const char * AggregationFnc::min = "OM_MIN";
+    /** sum of values */
+    static constexpr const char * sum = "OM_SUM";
 
-/** maximum value */
-const char * AggregationFnc::max = "OM_MAX";
+    /** count of values */
+    static constexpr const char * count = "OM_COUNT";
 
-/** variance */
-const char * AggregationFnc::var = "OM_VAR";
+    /** minimal value */
+    static constexpr const char * min = "OM_MIN";
 
-/** standard deviation */
-const char * AggregationFnc::sd = "OM_SD";
+    /** maximum value */
+    static constexpr const char * max = "OM_MAX";
 
-/** standard error */
-const char * AggregationFnc::se = "OM_SE";
+    /** variance */
+    static constexpr const char * var = "OM_VAR";
 
-/** coefficient of variation */
-const char * AggregationFnc::cv = "OM_CV";
+    /** standard deviation */
+    static constexpr const char * sd = "OM_SD";
 
-// aggregation function code and name
+    /** standard error */
+    static constexpr const char * se = "OM_SE";
+
+    /** coefficient of variation */
+    static constexpr const char * cv = "OM_CV";
+};
+
+// function code, name and kind: aggregation or non-aggregation
 struct FncTag
 {
-    FncCode code;       // aggregation function code
-    const char * name;  // aggregation function name
+    FncCode code;       // function code
+    bool isAggr;        // if true then it is aggregation function
+    const char * name;  // function name
     size_t nameLen;     // char size of function name
 };
 
 static FncTag fncTagArr[] = {
-    {FncCode::avg, AggregationFnc::avg, strlen(AggregationFnc::avg)},
-    {FncCode::sum, AggregationFnc::sum, strlen(AggregationFnc::sum)},
-    {FncCode::count, AggregationFnc::count, strlen(AggregationFnc::count)},
-    {FncCode::min, AggregationFnc::min, strlen(AggregationFnc::min)},
-    {FncCode::max, AggregationFnc::max, strlen(AggregationFnc::max)},
-    {FncCode::var, AggregationFnc::var, strlen(AggregationFnc::var)},
-    {FncCode::sd, AggregationFnc::sd, strlen(AggregationFnc::sd)},
-    {FncCode::se, AggregationFnc::se, strlen(AggregationFnc::se)},
-    {FncCode::cv, AggregationFnc::cv, strlen(AggregationFnc::cv)}
+    {FncCode::if_case, false, FncName::if_case, strlen(FncName::if_case)},
+    {FncCode::denom, false, FncName::denom, strlen(FncName::denom)},
+    {FncCode::avg, true, FncName::avg, strlen(FncName::avg)},
+    {FncCode::sum, true, FncName::sum, strlen(FncName::sum)},
+    {FncCode::count, true, FncName::count, strlen(FncName::count)},
+    {FncCode::min, true, FncName::min, strlen(FncName::min)},
+    {FncCode::max, true, FncName::max, strlen(FncName::max)},
+    {FncCode::var, true, FncName::var, strlen(FncName::var)},
+    {FncCode::sd, true, FncName::sd, strlen(FncName::sd)},
+    {FncCode::se, true, FncName::se, strlen(FncName::se)},
+    {FncCode::cv, true, FncName::cv, strlen(FncName::cv)}
 };
 static const size_t fncTagArrSize = sizeof(fncTagArr) / sizeof(FncTag);
 
@@ -71,6 +84,9 @@ struct FncToken
     /** aggregation function code */
     FncCode code;
 
+    /** if true then it is aggregation function */
+    bool isAggr;
+
     /** function name position */
     size_t namePos;
 
@@ -82,14 +98,14 @@ struct FncToken
 
     /** create empty function token */
     FncToken(void) : 
-        code(FncCode::undefined) , namePos(0), openPos(0), closePos(0)
+        code(FncCode::undefined) , isAggr(false), namePos(0), openPos(0), closePos(0)
     { }
 
     /** get next function from expresiion string */
-    static const FncToken next(const string & i_expr);
+    static const FncToken next(const string & i_srcMsg, const string & i_expr);
 };
 
-static size_t skipIfQuoted(size_t i_pos, const string & i_str);
+static size_t skipIfQuoted(const string & i_srcMsg, size_t i_pos, const string & i_str);
 
 // Parsed aggregation expressions for each nesting level
 struct LevelDef
@@ -97,36 +113,41 @@ struct LevelDef
     int level = 0;                          // nesting level
     string fromAlias;                       // from table alias
     string innerAlias;                      // inner join table alias
+    string nextInnerAlias;                  // next level inner join table alias
     vector<AggregationColumnExpr> exprArr;  // column names and expressions
     vector<bool> accUsageArr;               // contains true if accumulator used at current level
 
     LevelDef(int i_level) : level(i_level)
     {
         fromAlias = "M" + to_string(level);
-        innerAlias = "T" + to_string(level + 1);
+        innerAlias = "T" + to_string(level);
+        nextInnerAlias = "T" + to_string(level + 1);
     }
 };
 
 int AggregationColumnExpr::nextExprNumber = 1;   // next aggregation expression number
 
 /** translate output aggregation expression into sql */
-const string ModelAggregationSql::translateAggregationExpr(const string & i_name, const string & i_expr)
+const string ModelAggregationSql::translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_expr)
 {
+    srcMsg = i_outTableName + "." + i_name;
     vector<LevelDef> levelArr;      // array of aggregation expressions by levels
+
+    // translate (substitute) all non-aggregation functions
+    string startExpr = translateAllSimpleFnc(srcMsg, true, i_expr);
 
     // start with source expression and column name
     int level = 1;
 
     levelArr.emplace_back(level);
-    LevelDef & currLevel = levelArr.back();
-    currLevel.exprArr.emplace_back(i_name, i_expr);
+    levelArr.back().exprArr.emplace_back(i_name, startExpr);
 
     // until any expressions to parse repeat translation
     bool isFound = false;
     do {
         isAccUsedArr.assign(accNameVec.size(), false);  // clear accumulator usage flags
 
-        for (AggregationColumnExpr & currExpr : currLevel.exprArr) {
+        for (AggregationColumnExpr & currExpr : levelArr.back().exprArr) {
 
             string expr = currExpr.srcExpr;
 
@@ -134,7 +155,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
             while (!expr.empty()) {
 
                 // find next function in current expression
-                FncToken fnc = FncToken::next(expr);
+                FncToken fnc = FncToken::next(srcMsg, expr);
                 if (fnc.code == FncCode::undefined) {   // no function found: copy source expression into output
                     currExpr.sqlExpr += expr;
                     expr.clear();
@@ -145,9 +166,9 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
                     if (fnc.namePos != 0) currExpr.sqlExpr += expr.substr(0, fnc.namePos);
 
                     // translate function into sql expression and append to output
-                    currExpr.sqlExpr += translateFnc(
-                        fnc.code, currLevel.innerAlias, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
-                        );
+                    currExpr.sqlExpr += translateAggregationFnc(
+                        fnc.code, levelArr.back().nextInnerAlias, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
+                    );
 
                     // remove parsed function from expression
                     expr = (fnc.closePos + 1 < expr.length()) ? expr.substr(fnc.closePos + 1) : "";
@@ -156,10 +177,10 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
         }
 
         // second pass: translate accumulators for all sql expressions
-        currLevel.accUsageArr = isAccUsedArr;
+        levelArr.back().accUsageArr = isAccUsedArr;
 
-        for (AggregationColumnExpr & expr : currLevel.exprArr) {
-            expr.sqlExpr = processAccumulators(true, level, currLevel.fromAlias, expr.sqlExpr);
+        for (AggregationColumnExpr & expr : levelArr.back().exprArr) {
+            expr.sqlExpr = processAccumulators(true, level, levelArr.back().fromAlias, expr.sqlExpr);
         }
 
         // if any expressions pushed to the next level then continue parsing
@@ -167,8 +188,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
 
         if (isFound) {
             levelArr.emplace_back(++level);
-            currLevel = levelArr.back();
-            currLevel.exprArr.swap(nextExprArr);
+            levelArr.back().exprArr.swap(nextExprArr);
         }
     }
     while (isFound);
@@ -185,7 +205,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     //   (
     //     SELECT 
     //       M2.run_id, M2.dim0, M2.dim1, 
-    //       AVG(M2.acc_value + A4.acc4 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
+    //       AVG(M2.acc_value + L2A4.acc4 + 0.1 * (T3.ex31 - T3.ex32)) AS ex2
     //     FROM age_acc M2
     //     INNER JOIN
     //     (
@@ -197,7 +217,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     //       SELECT 
     //         M3.run_id, M3.dim0, M3.dim1, 
     //         MAX(M3.acc_value) AS ex31, 
-    //         MIN(A3.acc1) AS ex32
+    //         MIN(L3A1.acc1)    AS ex32
     //       FROM age_acc M3
     //       INNER JOIN
     //       (
@@ -283,10 +303,10 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
         if (nLev > 0) {
 
             sql += ") " + levelArr[nLev].innerAlias +
-                " ON (" + levelArr[nLev].innerAlias + ".run_id = " + levelArr[nLev].fromAlias + ".run_id";
+                " ON (" + levelArr[nLev].innerAlias + ".run_id = " + levelArr[nLev - 1].fromAlias + ".run_id";
 
             for (const string & dimName : dimNameVec) {
-                sql += " AND " + levelArr[nLev].innerAlias + "." + dimName + " = " + levelArr[nLev].fromAlias + "." + dimName;
+                sql += " AND " + levelArr[nLev].innerAlias + "." + dimName + " = " + levelArr[nLev - 1].fromAlias + "." + dimName;
             }
 
             sql += ")";
@@ -296,7 +316,111 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
     return sql;
 }
 
-// translate aggregation function into sql:
+// OM_DENOM(acc1 / acc2) 
+//    => 
+//      CASE 
+//        WHEN ABS(acc1 / OM_DENOM(acc2)) > 1.0e-37 
+//        THEN acc1 / OM_DENOM(acc2) 
+//        ELSE NULL 
+//      END
+//    =>
+//      CASE
+//        WHEN 
+//          ABS( 
+//            acc1 / 
+//            CASE WHEN ABS(acc2) > 1.0e-37 THEN acc2 ELSE NULL END 
+//          ) > 1.0e-37
+//        THEN 
+//          (
+//            acc1 / 
+//            CASE WHEN ABS(acc2) > 1.0e-37 THEN acc2 ELSE NULL END 
+//          )
+//        ELSE NULL
+//      END
+//
+/** translate (substitute) all non-aggregation functions */
+const string ModelBaseExpressionSql::translateAllSimpleFnc(const string & i_srcMsg, bool i_isSkipAggr, const string & i_expr)
+{
+    // until any expressions to parse repeat translation
+    string expr = i_expr;
+
+    bool isFound = false;
+    do {
+        // parse until source expression not completed
+        isFound = false;
+        string sqlExpr = "";
+
+        while (!expr.empty()) {
+
+            // find next function in current expression
+            FncToken fnc = FncToken::next(i_srcMsg, expr);
+            if (fnc.code == FncCode::undefined) {   // no function found: copy source expression into output
+                sqlExpr += expr;
+                expr.clear();
+            }
+            else {
+                if (fnc.isAggr)
+                {
+                    // if aggregation functions allowed then pass it as is into result
+                    if (i_isSkipAggr) {
+                        sqlExpr += expr.substr(0, fnc.openPos + 1);
+                        expr = (fnc.openPos + 1 < expr.length()) ? expr.substr(fnc.openPos + 1) : "";
+                        continue;
+                    }
+                    // else
+                    throw DbException(LT("error in derived accumulator, invalid function: %s at position %zd in: %s of %s"),
+                        expr.substr(fnc.namePos, fnc.openPos - fnc.namePos).c_str(),
+                        fnc.namePos,
+                        i_expr.c_str(),
+                        i_srcMsg.c_str()
+                    );
+                }
+                isFound = true;
+
+                // if anything before the function then copy it into output
+                if (fnc.namePos != 0) sqlExpr += expr.substr(0, fnc.namePos);
+
+                // translate function into sql expression and append to output
+                sqlExpr += translateSimpleFnc(
+                    i_srcMsg, fnc.code, expr.substr(fnc.openPos + 1, fnc.closePos - (fnc.openPos + 1))
+                );
+
+                // remove parsed function from expression
+                expr = (fnc.closePos + 1 < expr.length()) ? expr.substr(fnc.closePos + 1) : "";
+            }
+        }
+
+        expr = sqlExpr;     // if any function found then repeat substitution
+
+    } while (isFound);
+
+    return expr;
+}
+
+/** translate (substitute) non-aggregation function:
+* 
+* OM_DENOM(acc1) 
+*   => 
+*   CASE WHEN ABS(acc1) > 1.0e-37 THEN acc1 ELSE NULL END
+* 
+* OM_IF(acc1 > 1.5 THEN acc1 ELSE 1.5)
+*   => 
+*   CASE WHEN acc1 > 1.5 THEN acc1 ELSE 1.5 END
+*/
+const string ModelBaseExpressionSql::translateSimpleFnc(const string & i_srcMsg, FncCode i_code, const string & i_arg)
+{
+    switch (i_code) {
+    case FncCode::if_case:
+        return "CASE WHEN " + i_arg + " END";
+
+    case FncCode::denom:
+        return "CASE WHEN ABS( (" + i_arg + ") ) > 1.0e-37 THEN (" + i_arg + ") ELSE NULL END";
+
+    default:
+        throw DbException(LT("unknown non-aggregation function code: %d with arguments: %s at: %s"), i_code, i_arg.c_str(), i_srcMsg.c_str());
+    }
+}
+
 //  OM_AVG(acc0) => AVG(M1.acc0)
 // or:
 //  OM_SUM(acc0 - 0.5 * OM_AVG(acc0)) => SUM(M1.acc0 - 0.5 * T2.ex2)
@@ -307,17 +431,18 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_name
 //  =>
 //  SUM((M1.acc0 - T2.ex2) * (M1.acc0 - T2.ex2)) / (COUNT(M1.acc0) – 1)
 //
-const string ModelAggregationSql::translateFnc(
-    FncCode i_code, const string & i_innerAlias, const string & i_arg
+/** translate aggregation or non - aggregation function into sql */
+const string ModelAggregationSql::translateAggregationFnc(
+    FncCode i_code, const string & i_nextInnerAlias, const string & i_arg
     )
 {
     // check arguments
-    if (i_arg.length() < 1) throw DbException(LT("Invalid (empty) function %d argument"), i_code);
+    if (i_arg.length() < 1) throw DbException(LT("Invalid (empty) function %d argument at: %s"), i_code, srcMsg.c_str());
 
-    string sqlArg = translateArg(i_innerAlias, i_arg);
+    string sqlArg = translateArg(i_nextInnerAlias, i_arg);
     string avgCol;
 
-    // return aggregation sql expression
+    // return aggregation or non-aggregation sql expression
     switch (i_code) {
     case FncCode::avg:
         return "AVG(" + sqlArg + ")";
@@ -334,22 +459,23 @@ const string ModelAggregationSql::translateFnc(
     case FncCode::max:
         return "MAX(" + sqlArg + ")";
 
-    case FncCode::var:  // SUM((arg - T2.ex2) * (arg - T2.ex2)) / (COUNT(arg) - 1)
-        
+    case FncCode::var:
+        // SUM((arg - T2.ex2) * (arg - T2.ex2)) / (COUNT(arg) - 1)
+        // (COUNT(arg) - 1) => 
+        //   CASE WHEN ABS( (COUNT(arg) - 1) ) > 1.0e-37 THEN (COUNT(arg) - 1) ELSE NULL END
+
         avgCol = pushAvgToNextLevel(i_arg);
         return
-            "SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") - 1)";
+            "SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END";
 
     case FncCode::sd:   // SQRT(var)
         
         avgCol = pushAvgToNextLevel(i_arg);
         return
             "SQRT(" \
-            " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") - 1)" \
+            " SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END" \
             " )";
 
     case FncCode::se:   // SQRT(var / COUNT(arg))
@@ -357,30 +483,32 @@ const string ModelAggregationSql::translateFnc(
         avgCol = pushAvgToNextLevel(i_arg);
         return
             "SQRT(" \
-            " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") - 1)" \
-            " / COUNT(" + sqlArg + ") )";
+            " SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") ) > 1.0e-37 THEN COUNT(" + sqlArg + ") ELSE NULL END" \
+            " )";
 
     case FncCode::cv:   // 100 * ( SQRT(var) / AVG(arg) ) 
         
         avgCol = pushAvgToNextLevel(i_arg);
         return
-            "100 * (SQRT(" \
-            " SUM(((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + ") *" \
-            " ((" + sqlArg + ") - " + i_innerAlias + "." + avgCol + "))" \
-            " / (COUNT(" + sqlArg + ") - 1)" \
-            " ) / AVG(" + sqlArg + ") )";
+            "100 * ("
+            " SQRT(" \
+            " SUM(((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + ") * ((" + sqlArg + ") - " + i_nextInnerAlias + "." + avgCol + "))" \
+            " / CASE WHEN ABS( COUNT(" + sqlArg + ") - 1 ) > 1.0e-37 THEN COUNT(" + sqlArg + ") - 1 ELSE NULL END" \
+            " )" \
+            " / CASE WHEN ABS( AVG(" + sqlArg + ") ) > 1.0e-37 THEN AVG(" + sqlArg + ") ELSE NULL END" \
+            " )";
 
     default:
-        throw DbException(LT("unknown aggregation function code: %d with arguments: %s"), i_code, i_arg.c_str());
+        throw DbException(LT("unknown aggregation function code: %d with arguments: %s at: %s"), i_code, i_arg.c_str(), srcMsg.c_str());
     }
 }
 
 // translate function argument into sql argument:
 // push nested OM_ functions to next aggregation level
 // if accumulator outside of nested function then insert table alias in front of accumulator
-const string ModelAggregationSql::translateArg(const string & i_innerAlias, const string & i_arg)
+const string ModelAggregationSql::translateArg(const string & i_nextInnerAlias, const string & i_arg)
 {
     // parse until source expression not completed
     string outExpr;
@@ -389,7 +517,7 @@ const string ModelAggregationSql::translateArg(const string & i_innerAlias, cons
     while (!expr.empty()) {
 
         // find next function in source expression
-        FncToken fnc = FncToken::next(expr);
+        FncToken fnc = FncToken::next(srcMsg, expr);
         if (fnc.code == FncCode::undefined) {    // for entire source insert alias in front of accumulators and append to output
             outExpr += processAccumulators(expr);
             expr.clear();
@@ -404,7 +532,7 @@ const string ModelAggregationSql::translateArg(const string & i_innerAlias, cons
             // and nested function remove from source expression
             string colName = pushToNextLevel(expr.substr(fnc.namePos, (fnc.closePos + 1) - fnc.namePos));
 
-            outExpr += i_innerAlias + "." + colName;
+            outExpr += i_nextInnerAlias + "." + colName;
             expr = (fnc.closePos + 1 < expr.length()) ? expr.substr(fnc.closePos + 1) : "";
         }
     }
@@ -438,7 +566,7 @@ const string ModelAggregationSql::processAccumulators(
     for (size_t nPos = 0; nPos < i_expr.length(); nPos++) {
 
         // skip until end of "quotes" or 'apostrophes'
-        size_t nSkip = skipIfQuoted(nPos, i_expr);
+        size_t nSkip = skipIfQuoted(srcMsg, nPos, i_expr);
         if (nSkip != nPos) {
             if (nSkip < i_expr.length()) {      // append to output
                 expr += i_expr.substr(nPos, (nSkip + 1) - nPos);
@@ -517,7 +645,7 @@ const string ModelAggregationSql::processAccumulators(
 }
 
 // get next function from expresiion string
-const FncToken FncToken::next(const string & i_expr)
+const FncToken FncToken::next(const string & i_srcMsg, const string & i_expr)
 {
     // find function name
     FncToken fncToken;
@@ -527,7 +655,7 @@ const FncToken FncToken::next(const string & i_expr)
     for (size_t nPos = 0; nPos < i_expr.length() && fncToken.code == FncCode::undefined; nPos++) {
 
         // skip until end of "quotes" or 'apostrophes'
-        size_t nSkip = skipIfQuoted(nPos, i_expr);
+        size_t nSkip = skipIfQuoted(i_srcMsg, nPos, i_expr);
         if (nSkip != nPos) {
             if (nSkip >= i_expr.length()) break;    // skipped until end of string
 
@@ -542,6 +670,7 @@ const FncToken FncToken::next(const string & i_expr)
 
                 if (equalNoCase(tag.name, i_expr.c_str() + nPos, tag.nameLen)) {
                     fncToken.code = tag.code;
+                    fncToken.isAggr = tag.isAggr;
                     fncToken.namePos = nPos;
                     nOpen = nPos + tag.nameLen;
                     break;          // function name found
@@ -574,7 +703,7 @@ const FncToken FncToken::next(const string & i_expr)
         fncToken.openPos = nPos;
         break;
     }
-    if (!isOpen) throw DbException(LT("missing open bracket after function at: %d in: %s"), fncToken.namePos, i_expr.c_str());
+    if (!isOpen) throw DbException(LT("missing open bracket after function at: %s [%d] in: %s"), i_srcMsg.c_str(), fncToken.namePos, i_expr.c_str());
 
     // find function body ) close bracket, it must be on the same bracket level
     int depth = 0;
@@ -582,7 +711,7 @@ const FncToken FncToken::next(const string & i_expr)
     for (size_t nPos = fncToken.openPos + 1; !isClose && nPos < i_expr.length(); nPos++) {
 
         // skip until end of "quotes" or 'apostrophes'
-        size_t nSkip = skipIfQuoted(nPos, i_expr);
+        size_t nSkip = skipIfQuoted(i_srcMsg, nPos, i_expr);
         if (nSkip != nPos) {
             if (nSkip >= i_expr.length()) break;    // skipped until end of string
 
@@ -607,7 +736,7 @@ const FncToken FncToken::next(const string & i_expr)
             }
         }
     }
-    if (!isClose) throw DbException(LT("missing close bracket after function at: %d in: %s"), fncToken.namePos, i_expr.c_str());
+    if (!isClose) throw DbException(LT("missing close bracket after function at: %s [%d] in: %s"), i_srcMsg.c_str(), fncToken.namePos, i_expr.c_str());
 
     return fncToken;
 }
@@ -631,7 +760,7 @@ const string ModelAggregationSql::makeAccTableAlias(
 }
 
 // if quote opens at current position then skip until the end of "quotes" or 'apostrophes'
-size_t skipIfQuoted(size_t i_pos, const string & i_str)
+size_t skipIfQuoted(const string & i_srcMsg, size_t i_pos, const string & i_str)
 {
     // check if current position is open of "quotes" or 'apostrophes'
     if (i_pos >= i_str.length()) return i_pos;
@@ -643,58 +772,83 @@ size_t skipIfQuoted(size_t i_pos, const string & i_str)
     for (size_t nPos = i_pos + 1; nPos < i_str.length(); nPos++) {
         if (i_str[nPos] == chQuote) return nPos;
     }
-    throw DbException(LT("unbalanced \"quotes\" or 'apostrophes' in: %s"), i_str.c_str());
+    throw DbException(LT("unbalanced \"quotes\" or 'apostrophes' in: %s: %s"), i_srcMsg.c_str(), i_str.c_str());
 }
 
-/** translate output table "native" (non-derived) accumulator into sql subquery. */
-const string ModelAccumulatorSql::translateNativeAccExpr(int i_accId, bool i_isFirstAcc) const
+/** translate output table "native" (non-derived) accumulator into sql CTE subquery. */
+const string ModelAccumulatorSql::translateNativeAccExpr(const string & i_outTableName, const string & i_accName, int i_accId)
 {
-    // if this is first accumulator then return value field: no subquery required
-    if (i_isFirstAcc) return "A.acc_value";
+    srcMsg = i_outTableName +"." + i_accName;
 
-    // SELECT A1.acc_value FROM salarySex_a_2012820 A1
-    // WHERE A1.run_id = A.run_id 
-    // AND A1.sub_id = A.sub_id 
-    // AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
-    // AND A1.acc_id = 1
+    // SELECT
+    //   run_id, sub_id, dim0, dim1, acc_value
+    // FROM T04_FertilityRatesByAgeGroup_a10612268
+    // WHERE acc_id = 1
     //
-    string alias = "A" + to_string(i_accId);    // table alsias
-    string sql = 
-        "SELECT " + alias + ".acc_value FROM " + accTableName + " " + alias +
-        " WHERE " + alias + ".run_id = A.run_id" +
-        " AND " + alias + ".sub_id = A.sub_id";
+    string sql = "SELECT run_id, sub_id, "; 
 
     for (const string & name : dimNameVec) {
-        sql += " AND " + alias + "." + name + " = A." + name;
+        sql += name + ", ";
     }
-
-    sql += " AND " + alias + ".acc_id = " + to_string(i_accId);
+    sql += "acc_value FROM " + accTableName + " WHERE acc_id = " + to_string(i_accId);
 
     return sql;
 }
 
-/** translate output table derived accumulator into sql subquery. */
+// translate derived expression:
+// 
+// acc0 / OM_DENOM(acc1) 
+//    =>
+//      acc0 / CASE WHEN ABS(acc1) > 1.0e-37 THEN acc1 ELSE NULL END 
+//    =>
+//      A.acc_value / CASE WHEN ABS(A1.acc_value) > 1.0e-37 THEN A1.acc_value ELSE NULL END
+// 
+// WITH va1 AS
+// (
+//   SELECT
+//     run_id, sub_id, dim0, dim1, acc_value
+//   FROM T04_FertilityRatesByAgeGroup_a10612268
+//   WHERE acc_id = 1
+// )
+// SELECT
+//   A.run_id, A.sub_id, A.dim0, A.dim1,
+//   A.acc_value AS acc0,
+//   A1.acc_value AS acc1,
+//   (
+//     A.acc_value / CASE WHEN ABS(A1.acc_value) > 1.0e-37 THEN A1.acc_value ELSE NULL END
+//   ) AS Expr0
+// FROM T04_FertilityRatesByAgeGroup_a10612268 A
+// INNER JOIN va1 A1 ON (A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1)
+// WHERE A.acc_id = 0;
+//
+/** translate output table derived accumulator into sql CTE subquery. */
 const string ModelAccumulatorSql::translateDerivedAccExpr(
-    const string & i_accName, const string & i_expr, const map<string, string> & i_nativeMap
-) const
+    const string & i_outTableName, const string & i_accName, const string & i_expr, const map<string, size_t> & i_nativeMap
+)
 {
-    // find native accumulators in source expression and substitute with sql subquery
+    srcMsg = i_outTableName + "." + i_accName;
+    isAccUsedArr.assign(accNameVec.size(), false);  // clear accumulator usage flags
+
+    // translate (substitute) all non-aggregation functions
+    string expr = translateAllSimpleFnc(srcMsg, false, i_expr);
+
+    // find native accumulators in source expression and substitute with acc_value column from CTE
     string sql;
     bool isLeftDelim = true;
 
-    for (size_t nPos = 0; nPos < i_expr.length(); nPos++) {
+    for (size_t nPos = 0; nPos < expr.length(); nPos++) {
 
         // skip until end of "quotes" or 'apostrophes'
-        size_t nSkip = skipIfQuoted(nPos, i_expr);
+        size_t nSkip = skipIfQuoted(srcMsg, nPos, expr);
         if (nSkip != nPos) {
-            if (nSkip < i_expr.length()) {      // append to output
-                sql += i_expr.substr(nPos, (nSkip + 1) - nPos);
+            if (nSkip < expr.length()) {      // append to output
+                sql += expr.substr(nPos, (nSkip + 1) - nPos);
                 nPos = nSkip;
                 isLeftDelim = false;    // "quotes" or 'apostrophes' is not left delimiter
                 continue;               // move to the next char after "quotes" or 'apostrophes'
             }
             else { 
-                sql += i_expr.substr(nPos);
+                sql += expr.substr(nPos);
                 break;      // skipped until end of string
             }
         }
@@ -709,12 +863,12 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
             for (accPos = 0; accPos < (int)accNameVec.size(); accPos++) {
                 
                 nLen = accNameVec[accPos].length();
-                isAcc = equalNoCase(accNameVec[accPos].c_str(), i_expr.c_str() + nPos, nLen);
+                isAcc = equalNoCase(accNameVec[accPos].c_str(), expr.c_str() + nPos, nLen);
 
                 // check if accumulator name end with right delimiter
-                if (isAcc && nPos + nLen < i_expr.length()) {
+                if (isAcc && nPos + nLen < expr.length()) {
 
-                    char chEnd = i_expr[nPos + nLen];
+                    char chEnd = expr[nPos + nLen];
                     isAcc =
                         isspace<char>(chEnd, locale::classic()) ||
                         std::any_of(
@@ -731,11 +885,16 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
             if (isAcc) {
 
                 // validate: it must be native accumulator
-                const map<string, string>::const_iterator it = i_nativeMap.find(accNameVec[accPos]);
-                if (it == i_nativeMap.cend()) 
-                    throw DbException(LT("error in derived accumulator: %s invalid name: %s in: %s"), i_accName.c_str(), accNameVec[accPos].c_str(), i_expr.c_str());
+                const map<string, size_t>::const_iterator it = i_nativeMap.find(accNameVec[accPos]);
+                if (it == i_nativeMap.cend() || it->second >= tableAccVec.size() || tableAccVec[it->second].isDerived)
+                    throw DbException(LT("error in derived accumulator, invalid name: %s or index: %zd in: %s %s"), accNameVec[accPos].c_str(), it->second, srcMsg.c_str(), i_expr.c_str());
 
-                sql += "(" + it->second +")";   // append subquery
+                // append CTE alias and accumulator value: A1.acc_value or A.acc_value
+                sql += (accPos > 0) ? 
+                    "A" + to_string(accPos) + ".acc_value" :
+                    "A.acc_value";
+
+                isAccUsedArr[accPos] = true;    // collect accumulator usage
 
                 nPos += nLen - 1;   // skip accumulator in source expression
                 isLeftDelim = false;
@@ -744,7 +903,7 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
         }
 
         // append current char to output
-        char chNow = i_expr[nPos];
+        char chNow = expr[nPos];
         sql += chNow;
 
         // check if current char is a name delimiter

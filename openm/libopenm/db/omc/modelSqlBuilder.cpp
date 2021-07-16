@@ -964,61 +964,98 @@ const void ModelSqlBuilder::valueCreateTable(
 }
 
 // create sql for all accumulators view:
-// CREATE VIEW salarySex_d_2012820
+// 
+// CREATE VIEW IF NOT EXISTS T04_FertilityRatesByAgeGroup_d10612268
 // AS
+// WITH va1 AS
+// (
+//   SELECT
+//     run_id, sub_id, dim0, dim1, acc_value
+//   FROM T04_FertilityRatesByAgeGroup_a10612268
+//   WHERE acc_id = 1
+// )
 // SELECT
 //   A.run_id, A.sub_id, A.dim0, A.dim1,
 //   A.acc_value AS acc0,
+//   A1.acc_value AS acc1,
 //   (
-//     SELECT A1.acc_value FROM salarySex_a_2012820 A1
-//     WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
-//     AND A1.acc_id = 1
-//   ) AS acc1,
-//   (
-//     (
-//       A.acc_value
-//     )
-//     + 
-//     (
-//       SELECT A1.acc_value FROM salarySex_a_2012820 A1
-//       WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1
-//       AND A1.acc_id = 1
-//     )
-//   ) AS acc2
-// FROM salarySex_a_2012820 A
+//     A.acc_value / CASE WHEN ABS(A1.acc_value) > 1.0e-37 THEN A1.acc_value ELSE NULL END
+//   ) AS Expr0
+// FROM T04_FertilityRatesByAgeGroup_a10612268 A
+// INNER JOIN va1 A1 ON (A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1)
 // WHERE A.acc_id = 0;
+// 
 const void ModelSqlBuilder::accAllCreateView(
     const string & i_sqlProvider, 
     const string & i_viewName,
     const OutTblInfo & i_tblInfo,
     const string & i_accTablName,
-    const vector<TableAccRow> & i_accVec, 
+    const vector<TableAccRow> & i_allAcc, 
     ModelSqlWriter & io_wr
     ) const
 {
-    // start view body with run id, sub id and dimensions
-    string sqlBody = "SELECT A.run_id, A.sub_id";
+    // find table_acc rows
+    vector <vector<TableAccRow>::const_iterator> accVec(i_tblInfo.accIdVec.size());
+
+    for (size_t nAcc = 0; nAcc < i_tblInfo.accIdVec.size(); nAcc++) {
+
+        vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, i_tblInfo.accIdVec[nAcc], i_allAcc);
+        if (accIt == i_allAcc.cend())
+            throw DbException(LT("output table %s accumulator not found, id: %d"), i_tblInfo.name.c_str(), i_tblInfo.accIdVec[nAcc]);
+
+        accVec[nAcc] = accIt;
+    }
+
+    // start view body: 
+    // WITH clause for each native accumulators, except first
+    string sqlBody;
+
+    for (size_t nAcc = 1; nAcc < accVec.size(); nAcc++) {
+        if (!accVec[nAcc]->isDerived) {
+            sqlBody += ((nAcc == 1) ? "WITH va" : ", va") + to_string(nAcc) + " AS (" + accVec[nAcc]->accSql + ")";
+        }
+    }
+
+    // start main SELECT run id, sub id, dimensions and first accumulator value: A.acc_value
+    sqlBody += " SELECT A.run_id, A.sub_id";
 
     for (const string & dimName : i_tblInfo.dimNameVec) {
         sqlBody += ", A." + dimName;
     }
+    sqlBody += ", A.acc_value AS " + accVec[0]->name;
 
-    // append accumulators as sql subqueries
-    for (int accId : i_tblInfo.accIdVec) {
-
-        vector<TableAccRow>::const_iterator accIt = TableAccRow::byKey(i_tblInfo.modelId, i_tblInfo.id, accId, i_accVec);
-        if (accIt == i_accVec.cend())
-            throw DbException(LT("output table %s accumulator not found, id: %d"), i_tblInfo.name.c_str(), accId);
-
-        sqlBody += ", (" + accIt->accSql + ") AS " + accIt->name;
+    // append the rest of native accumulators as: , A1.acc_value....
+    // append derived accumulators sql expressions
+    // first accumulator is always native
+    for (size_t nAcc = 1; nAcc < accVec.size(); nAcc++) {
+        if (!accVec[nAcc]->isDerived) {
+            sqlBody += ", A" + to_string(nAcc) + ".acc_value AS " + accVec[nAcc]->name;
+        }
+        else {
+            sqlBody += ", ( " + accVec[nAcc]->accSql + " ) AS " + accVec[nAcc]->name;
+        }
     }
 
-    // main accumulator table
-    // select first accumulator from main table 
-    // all other accumulators joined to the first by run id, sub id and dimensions
-    sqlBody += 
-        " FROM " + i_accTablName + " A" +
-        " WHERE A.acc_id = " + to_string(i_tblInfo.accIdVec[0]) + ";";
+    // FROM main accumulator table WHERE acc_id = first accumulator id
+    sqlBody += " FROM " + i_accTablName + " A";
+
+    // all other native accumulators joined to the first by run id, sub id and dimensions
+    // INNER JOIN va1 A1 ON (A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1)
+    for (size_t nAcc = 1; nAcc < accVec.size(); nAcc++) {
+        if (accVec[nAcc]->isDerived) continue;
+
+        string aliasDot = "A" + to_string(nAcc) + ".";
+        sqlBody += 
+            " INNER JOIN va" + to_string(nAcc) + " A" + to_string(nAcc) + " ON (" + aliasDot + "run_id = A.run_id AND " + aliasDot + "sub_id = A.sub_id";
+        
+        for (const string & dimName : i_tblInfo.dimNameVec) {
+            sqlBody += " AND " + aliasDot + dimName + " = A." + dimName;
+        }
+        sqlBody += ")";
+    }
+
+    // WHERE acc_id = first accumulator id
+    sqlBody += " WHERE A.acc_id = " + to_string(accVec[0]->accId) + ";";
 
     // make create view as select
     io_wr.outFs << IDbExec::makeSqlCreateViewReplace(i_sqlProvider, i_viewName, sqlBody) << "\n";
