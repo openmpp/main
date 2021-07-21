@@ -267,8 +267,12 @@ if ($is_windows) {
 		}
 	}
 	if ( ! -x $msbuild_exe ) {
-		# Use VS 2019 aka version 16 if present
+		# Use VS 2019 aka version 16 if present (Community Edition)
 		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe";
+	}
+	if ( ! -x $msbuild_exe ) {
+		# Use VS 2019 aka version 16 if present (Enterprise Edition)
+		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin\\MSBuild.exe";
 	}
 	if ( ! -x $msbuild_exe ) {
 		# fall back to VS 2017 aka version 15 if present
