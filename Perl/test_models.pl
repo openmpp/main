@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 my $script_name = "test_models";
-my $script_version = '2.2';
+my $script_version = '2.3';
 
 use Getopt::Long::Descriptive;
 
