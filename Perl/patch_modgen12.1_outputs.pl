@@ -66,6 +66,18 @@ if (!-d $src_dir) {
 // The following code was inserted by patch_modgenXX_outputs after Modgen compilation:
 //
 
+#if !defined(NO_LT)
+// NO_LT macro is used in OpenM++ to suppress translation, for example: WarningMsg( NO_LT("};") );
+#define NO_LT(sourceMessage) sourceMessage
+#endif  // !defined(MODGEN)
+
+namespace mm {
+    // Cross-compatible functions to save/restore random state to support cloning.
+    // Definitions in modgen_random_state.mpp
+    extern void store_random_state();
+    extern void retrieve_random_state();
+};
+
 // The following seems required in some versions of VS 2019 when requesting C++17
 #include <set>
 
