@@ -119,7 +119,7 @@ namespace openm
         * @param i_isSkipAggr if true then skip aggregation functions else throw an exception
         * @param i_expr       expression to translate
         */
-        const string ModelBaseExpressionSql::translateAllSimpleFnc(const string & i_srcMsg, bool i_isSkipAggr, const string & i_expr);
+        const string translateAllSimpleFnc(const string & i_srcMsg, bool i_isSkipAggr, const string & i_expr);
 
         /** translate (substitute) non-aggregation function */
         static const string translateSimpleFnc(const string & i_srcMsg, FncCode i_code, const string & i_arg);

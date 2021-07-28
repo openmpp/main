@@ -313,7 +313,7 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
         argStore.args[ArgKey::runStamp] = theLog->timeStamp();
     }
     else {
-        if (rStamp.length() > OM_CODE_DB_MAX) argStore.args[ArgKey::runStamp] = rStamp.substr(0, OM_CODE_DB_MAX);
+        argStore.args[ArgKey::runStamp] = cleanPathChars(rStamp, OM_CODE_DB_MAX);
     }
 
     // validate "Parameter." options: it must be name of scalar input parameter
