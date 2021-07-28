@@ -1774,7 +1774,7 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "time_undef_is_32767";
+        string key = "time_undef_is_minus_one";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
