@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # It does:
-#   OM_ROOT=${OM_ROOT} bin/oms -oms.Listen http://localhost:${OMS_PORT} -oms.LogRequest
+#   OM_ROOT=${OM_ROOT} bin/oms -oms.Listen http://localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.LogRequest
 #
 # Environment:
 #   OM_ROOT  - openM++ root folder, default: current directory
@@ -38,9 +38,9 @@ export OM_CFG_INI_ANY_KEY=true
 #
 [ -z "$OMS_PORT" ] && OMS_PORT=4040
 
-echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.LogRequest"
+echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.LogRequest"
 
-OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.LogRequest
+OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.LogRequest
 status=$?
 
 if [ $status -ne 0 ] ;

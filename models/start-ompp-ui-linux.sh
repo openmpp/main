@@ -9,10 +9,8 @@
 #   cd $OM_ROOT
 #   # start oms, listen on free port:
 #   bin/oms -oms.Listen localhost:0 .... &
-#   # use lsof to find oms port:
-#   lsof -i -a -sTCP:LISTEN -a -p $OMS_PID ....
-#   # write oms URL into file:
-#   "http://localhost:12345" > ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle
+#   # read actual oms URL "http://localhost:12345" from file:
+#   cat ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle
 #   # open UI in browser:
 #   xdg-open http://localhost:12345
 #
@@ -92,9 +90,9 @@ export OM_CFG_INI_ANY_KEY="true"
 
 # start oms web-service
 #
-echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
+echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.AllowDownload -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
 
-"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.LogRequest \
+"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir models/home -oms.AllowDownload -oms.LogRequest \
   >> "$START_OMPP_UI_LOG" 2>&1 & \
   status=$? \
   OMS_PID=$!

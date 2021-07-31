@@ -23,5 +23,5 @@ if not exist %OM_ROOT%\html (
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
 
-START "oms" /MIN %OM_ROOT%\bin\oms -oms.HomeDir models\home -oms.LogRequest
+START "oms" /MIN %OM_ROOT%\bin\oms -oms.HomeDir models\home -oms.AllowDownload -oms.LogRequest
 START http://localhost:4040
