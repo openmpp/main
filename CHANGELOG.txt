@@ -1,6 +1,19 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_08_02:
+  (breaking change) Change SimulationSeed from int to long long in Framework.odat
+  Raise runtime error on out-of-bounds assignment to range, classification, partition
+  Raise runtime error on invalid indices in GetTableValue or SetTableValue
+  Raise runtime error on assignment to attribute in event time function
+  openM++ UI cloud: allow download model, model run results, model input scenario
+  model sql function: fix bug in aggregation functions: VAR, SD, SE, CV
+  model sql function: add OM_IF() to provide if-then-else operator
+  model sql function: add OM_DENOM() to protect from divide by zero
+  ini-file: better handling of line \ continuation
+  release notarized MacOS executables
+  multiple other bug issues fixed
+
 2021_06_29:
   full support of .csv parameters and .md parameter value notes in omc, at model runtime, dbcopy and UI
   Raise runtime exception on disallowed null entity pointer use
