@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <string>
+
 // The following global functions are defined in framework modules,
 // as indicated.
 // They are declared early to allow use in templates, e.g. <Event>
