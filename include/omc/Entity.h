@@ -327,7 +327,7 @@ public:
      *
      * @return An int.
      */
-    static int om_active_agents()
+    static size_t om_active_agents()
     {
         assert(agents);
         return agents->size();
