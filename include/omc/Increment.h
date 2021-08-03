@@ -19,7 +19,7 @@ template<
     typename A,
     std::string const *NT_name,
     void(A::*NT_init_increment)(int, big_counter),
-    void(A::*NT_push_increment)(int, int, big_counter)
+    void(A::*NT_push_increment)(size_t, int, big_counter)
 >
 class Increment
 {
@@ -115,7 +115,7 @@ public:
         }
     }
 
-    void set_cell(int cl)
+    void set_cell(size_t cl)
     {
         cell = cl;
     }
@@ -141,12 +141,12 @@ public:
     /**
      * The current index of the table cell.
      */
-    int cell;
+    size_t cell;
 
     /**
      * The index of the table cell at the start of the increment.
      */
-    int cell_in;
+    size_t cell_in;
 
     /**
      * The current value of the table filter.
@@ -195,6 +195,6 @@ template<
     typename A,
     std::string const *NT_name,
     void(A::*NT_init_increment)(int, big_counter),
-    void(A::*NT_push_increment)(int, int, big_counter)
+    void(A::*NT_push_increment)(size_t, int, big_counter)
 >
 size_t Increment<A, NT_name, NT_init_increment, NT_push_increment>::offset_in_agent = 0;

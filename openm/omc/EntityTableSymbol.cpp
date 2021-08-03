@@ -39,7 +39,7 @@ void EntityTableSymbol::create_auxiliary_symbols()
 
     {
         assert(!current_cell_fn); // initialization guarantee
-        current_cell_fn = new EntityFuncSymbol("om_" + name + "_current_cell", agent, "int", "");
+        current_cell_fn = new EntityFuncSymbol("om_" + name + "_current_cell", agent, "size_t", "");
         assert(current_cell_fn); // out of memory check
         current_cell_fn->doc_block = doxygen_short("Compute the current cell index of table " + name + " using attributes in the " + agent->name + " entity.");
     }
@@ -53,7 +53,7 @@ void EntityTableSymbol::create_auxiliary_symbols()
 
     {
         assert(!push_increment_fn); // initialization guarantee
-        push_increment_fn = new EntityFuncSymbol("om_" + name + "_push_increment", agent, "void", "int cell_in, int pending, big_counter pending_event_counter");
+        push_increment_fn = new EntityFuncSymbol("om_" + name + "_push_increment", agent, "void", "size_t cell_in, int pending, big_counter pending_event_counter");
         assert(push_increment_fn); // out of memory check
         push_increment_fn->doc_block = doxygen_short("Finalize the increment and push it to the accumulators in " + name + ".");
     }
@@ -671,6 +671,7 @@ void EntityTableSymbol::build_body_push_increment()
         c += "";
         c += "// Dimensionality of table (does not include measure dimension)";
         c += "const size_t rank = " + to_string(dimension_count()) + ";";
+        c += "assert(rank > 0);";
         c += "";
         c += "// Size of each dimension of table (includes margin if present)";
         c += "const std::array<size_t, rank> shape = " + cxx_shape_initializer_list() + ";";
@@ -698,8 +699,9 @@ void EntityTableSymbol::build_body_push_increment()
         c +=     "// Dimension coordinates of the body cell being incremented";
         c +=     "std::array<size_t, rank> body_coordinates;";
         c +=     "// Decode dimension coordinates of the body cell";
-        c +=     "for (int j = rank - 1, w = cell_in; j >= 0; --j) {";
+        c +=     "for (size_t j = rank - 1, w = cell_in; ; --j) {";
         c +=         "body_coordinates[j] = w % shape[j];";
+        c +=         "if (j == 0) break;";
         c +=         "w /= shape[j];";
         c +=     "}";
         c +=     "// Working coordinates of a margin cell";
@@ -804,11 +806,11 @@ void EntityTableSymbol::build_body_push_increment()
         if (!has_margins) {
             c += "// Push increment to body cell";
             c += "{";
-            c += "int cell = cell_in;";
+            c += "size_t cell = cell_in;";
         }
         else {
             c += "// Push increment to body cell and margin cells";
-            c += "for (int cell : cells_to_increment) {";
+            c += "for (size_t cell : cells_to_increment) {";
         }
         c += "auto& dAccumulator = table->acc[acc_index][cell];";
         switch (acc->accumulator) {
