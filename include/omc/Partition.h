@@ -94,14 +94,14 @@ public:
     }
 
     // operator: postfix increment
-    T operator++(int)
+    int operator++(int)
     {
         int new_interval = 1 + get();
         return this->set_interval(new_interval);
     }
 
     // operator: postfix decrement
-    T operator--(int)
+    int operator--(int)
     {
         int new_interval = get() - 1;
         return this->set_interval(new_interval);
@@ -153,7 +153,7 @@ public:
      *
      * @return A T.
      */
-    T set_from_value(real value)
+    int set_from_value(real value)
     {
         return set_interval(value_to_interval(value));
     }
@@ -177,7 +177,7 @@ public:
     }
 
     // Find the interval within which a value falls.
-    static T value_to_interval(real value)
+    static int value_to_interval(real value)
     {
         // find first interval whose upper bound exceeds value
         auto it = T_splitter.upper_bound(value);
@@ -216,7 +216,7 @@ private:
     }
 
     // assignment cover function
-    T set_interval(int new_interval)
+    int set_interval(int new_interval)
     {
         int trunced_interval = ((new_interval < min) ? min : (new_interval > max) ? max : new_interval);
         if (om_bounds_errors) { // is constexpr
