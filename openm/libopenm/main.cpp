@@ -143,7 +143,9 @@ int main(int argc, char ** argv)
             // model one-time initialization
             if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
 
-            theLog->logFormatted("Run: %s", argOpts.strOption(ArgKey::runStamp).c_str());
+            if (string rs = runCtrl->argOpts().strOption(ArgKey::runStamp); !rs.empty()) {
+                theLog->logFormatted("Run: %s", rs.c_str());
+            }
 
             // run the model until modeling task completed
             ExitStatus e = ExitStatus::OK;
