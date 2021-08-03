@@ -1933,6 +1933,7 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
     // typedef the om single-keyword types so that the macro OST_HELPER(TYPE) defined immediately above works
     // (but within function scope to reduce name pollution)
     typedef unsigned char uchar;
+    typedef signed char schar;
     typedef unsigned short ushort;
     typedef unsigned int uint;
     typedef unsigned long ulong;
@@ -1952,13 +1953,19 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
     }
 
     // The following order picks signed types over unsigned types
+
+    // signed types
+
     OST_HELPER(long);
     OST_HELPER(int);
     OST_HELPER(short);
-    OST_HELPER(char);
+    OST_HELPER(schar); // only use schar or uchar for storage, not ambiguous char
+
+    // unsigned types
+
     // Windows 64-bit memory model is LLP64, where unsigned long is 32-bit
     // Linux 64-bit memory model is LP64, where unsigned long is 64 bits.
-    // So unsigned long is not a storage candidate for 64-bit Linux.
+    // So unsigned long is not a storage candidate for 64-bit Linux, because exceeds signed long long
     // Eliminate as a storage candidate for both.
     // (in any case, the context is storage type for classifications, ranges and partitions).
     //OST_HELPER(ulong);
