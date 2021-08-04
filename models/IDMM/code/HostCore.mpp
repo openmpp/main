@@ -340,7 +340,7 @@ void Host::ChangeContactsEvent()
 
 			prContact = asAllHosts->GetRandom( RandUniform(8) );
 
-			if ( prContact != NULL ) 
+			if ( prContact ) 
 			{
 				// Add the new contact to the outgoing contacts list.
 				mlContactsOut->Add( prContact );
