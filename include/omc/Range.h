@@ -164,7 +164,7 @@ public:
     }
 
     // 0-based index corresponding to value
-    size_t to_index()
+    int to_index()
     {
         return get() - min;
     }
@@ -233,7 +233,7 @@ public:
     }
 
     // convert a range value to 0-based index
-    static size_t to_index(int val)
+    static int to_index(int val)
     {
         if (val < min) return 0;
         else if (val > max) return max - min;
@@ -241,7 +241,7 @@ public:
     }
 
     // convert given 0-based index to value
-    static int to_value(size_t index)
+    static int to_value(int index)
     {
         return (int)(index + min);
     }
