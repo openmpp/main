@@ -198,7 +198,7 @@ void ParameterSymbol::post_parse(int pass)
             // Generate body of lookup function
             CodeBlock& c = lookup_fn->func_body;
             c += "// Calculate conditioning index";
-            c += "size_t conditioning_index = 0;";
+            c += "int conditioning_index = 0;";
             int cond_index = 0;
             for (auto cond_size : pp_conditioning_shape) {
                 if (cond_index > 0) {
@@ -209,7 +209,7 @@ void ParameterSymbol::post_parse(int pass)
             }
             c += "// Determine if distribution is empty";
             c += "bool is_empty = " + cumrate_name() + ".is_degenerate(conditioning_index);";
-            c += "size_t distribution_index = 0;";
+            c += "int distribution_index = 0;";
             c += "if (!is_empty) {";
             c += "// Obtain value from distribution";
             c += "distribution_index = " + cumrate_name() + ".draw(conditioning_index, uniform);";

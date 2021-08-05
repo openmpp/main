@@ -113,7 +113,7 @@ public:
     /**
      * The value corresponding to each cumulated probability
      */
-    std::array<size_t,N> value;
+    std::array<int,N> value;
 
     /**
      * The cumulated probabilities (partial sums)
