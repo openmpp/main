@@ -529,7 +529,13 @@ sub modgen_create_scex
 		if ( $line =~ /^\s*long\s+long\s+SimulationSeed\s*=\s*(\d+)/ ) {
 			$General{"StartingSeed"} = $1;
 		}
+		if ( $line =~ /^\s*llong\s+SimulationSeed\s*=\s*(\d+)/ ) {
+			$General{"StartingSeed"} = $1;
+		}
 		if ( $line =~ /^\s*long\s+long\s+SimulationCases\s*=\s*(\d+)/ ) {
+			$General{"Cases"} = $1;
+		}
+		if ( $line =~ /^\s*llong\s+SimulationCases\s*=\s*(\d+)/ ) {
 			$General{"Cases"} = $1;
 		}
 		if ( $line =~ /^\s*double\s+SimulatedPopulation\s*=\s*(\d+[.]?\d+)/ ) {
