@@ -1,6 +1,11 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_09_03:
+  c++ code cleanup in order to eliminate c++ model build warnings
+  UI: add model download feature to get model run results or input scenario(s)
+  UI: add an ability to delete model run results, input scenario(s) or download files
+
 2021_08_02:
   (breaking change) Change SimulationSeed from int to long long in Framework.odat
   Raise runtime error on out-of-bounds assignment to range, classification, partition
