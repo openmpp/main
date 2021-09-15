@@ -195,7 +195,9 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 
     writeOutputValues(i_runId, i_dbExec);
 
-    // update run status as completed
+    // update run status as completed and calculate run digest
+    theLog->logFormatted("Digest output tables, run: %d", i_runId);
+
     sDt = makeDateTime(chrono::system_clock::now());
     {
         unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();

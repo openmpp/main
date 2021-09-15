@@ -33,21 +33,21 @@ VALUES
 INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (2, 0, 'Model One default set of parameters', NULL);
 INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (2, 1, '(FR) Model One default set of parameters', NULL);
 
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 44, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 45, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 46, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 47, 4, 3);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 48, 4, 3);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 49, 4, 3);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 50, 4, 3);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 101, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 102, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 103, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 104, 4, 3);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 105, 4, 3);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 106, 4, 3);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (2, 107, 4, 3);
 
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 44, 0, 'Age by Sex default values');
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 44, 1, '(FR) Age by Sex default values');
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 45, 0, 'Salary by Age default values');
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 45, 1, '(FR) Salary by Age default values');
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 46, 0, 'Starting seed default value');
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 47, 0, 'Full or part time by Salary default values');
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 50, 0, 'Is old age default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 101, 0, 'Age by Sex default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 101, 1, '(FR) Age by Sex default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 102, 0, 'Salary by Age default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 102, 1, '(FR) Salary by Age default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 103, 0, 'Starting seed default value');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 104, 0, 'Full or part time by Salary default values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (2, 107, 0, 'Is old age default values');
 
 --
 -- modelOne partial set of parameters
@@ -60,9 +60,9 @@ VALUES
 
 INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (3, 0, 'modelOne partial set of parameters', NULL);
 
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (3, 44, 1, 32);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (3, 101, 1, 32);
 
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (3, 44, 0, 'Age by Sex partial values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (3, 101, 0, 'Age by Sex partial values');
 
 --
 -- modelOne other set of parameters
@@ -76,13 +76,13 @@ VALUES
 INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (4, 0, 'Model One other set of parameters', NULL);
 INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (4, 1, '(FR) Model One other set of parameters', NULL);
 
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 44, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 45, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 46, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 47, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 48, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 49, 1, 0);
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 50, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 101, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 102, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 103, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 104, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 105, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 106, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (4, 107, 1, 0);
 
 --
 -- modelOne updated set of parameters, it contain only one parameter value
@@ -95,9 +95,9 @@ VALUES
 
 INSERT INTO workset_txt (set_id, lang_id, descr, note) VALUES (5, 0, 'modelOne updated set of parameters', NULL);
 
-INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (5, 45, 1, 0);
+INSERT INTO workset_parameter (set_id, parameter_hid, sub_count, default_sub_id) VALUES (5, 102, 1, 0);
 
-INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (5, 45, 0, 'Salary by Age updated values');
+INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES (5, 102, 0, 'Salary by Age updated values');
 
 --
 -- modelOne modelling tasks
