@@ -17,7 +17,7 @@ using namespace std;
 /**
  * MultilinkAttributeSymbol
  * 
- * Symbol for multilink attributes of the form count(multilink), sum_over(multilink, agentvar),
+ * Symbol for multilink attributes of the form count(multilink), sum_over(multilink, attribute),
  * etc.
  */
 class MultilinkAttributeSymbol : public AttributeSymbol
@@ -34,20 +34,20 @@ public:
      * @param agent     The agent.
      * @param func      The function, e.g. TK_min_over
      * @param multilink The multilink, e.g. things
-     * @param agentvar  (Optional) the agentvar.
+     * @param attribute  (Optional) the attribute.
      *                  
      *  The 'data_type' argument to the AttributeSymbol constructor is interim and
-     *  may be changed once the data type of agentvar is known.
+     *  may be changed once the data type of attribute is known.
      */
-    MultilinkAttributeSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar)
-        : AttributeSymbol(MultilinkAttributeSymbol::member_name(func, multilink, agentvar),
+    MultilinkAttributeSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute)
+        : AttributeSymbol(MultilinkAttributeSymbol::member_name(func, multilink, attribute),
                         agent,
                         UnknownTypeSymbol::find() )
         , func(func)
         , multilink(multilink->stable_rp())
         , pp_multilink(nullptr)
-        , agentvar(agentvar)
-        , pp_agentvar(nullptr)
+        , attribute(attribute)
+        , pp_attribute(nullptr)
     {
         create_auxiliary_symbols();
     }
@@ -57,21 +57,21 @@ public:
      */
     void build_body_evaluate();
 
-    static string member_name(token_type func, const Symbol *multilink, const string agentvar);
+    static string member_name(token_type func, const Symbol *multilink, const string attribute);
 
-    static string symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar);
+    static string symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute);
 
     /**
-     * Create a symbol for a multilink agentvar.
+     * Create a symbol for a multilink attribute.
      *
      * @param agent     The containing agent.
      * @param func      The function, e.g. TK_sum_over
      * @param multilink The multilink, e.g. things
-     * @param agentvar  (Optional) the agentvar.
+     * @param attribute  (Optional) the attribute.
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const string agentvar);
+    static Symbol * create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute);
 
     /**
      * Create auxiliary symbols associated with this symbol.
@@ -82,7 +82,7 @@ public:
 
     CodeBlock cxx_declaration_agent();
 
-    /** The function which computes the current value of the agentvar from the multilink */
+    /** The function which computes the current value of the attribute from the multilink */
     EntityFuncSymbol *evaluate_fn;
 
     /**
@@ -103,10 +103,10 @@ public:
     EntityMultilinkSymbol *pp_multilink;
 
     /**
-     * The agentvar the aggregate function applies to.  Is empty for TK_count
+     * The attribute the aggregate function applies to.  Is empty for TK_count
      */
-    const string agentvar;
-    AttributeSymbol *pp_agentvar;
+    const string attribute;
+    AttributeSymbol *pp_attribute;
 
 };
 

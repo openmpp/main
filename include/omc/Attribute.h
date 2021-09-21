@@ -13,7 +13,7 @@
  * 
  * The return value casting operator is implemented in this template, so C++ code can use the
  * attribute in expressions. No assignment operators are implemented, making entities declared
- * using AgentVar read-only. Side-effects are evaluated if a call to set() changes the value.
+ * using Attribute read-only. Side-effects are evaluated if a call to set() changes the value.
  * 
  * A bug in VC++ prevented the use of nullptr for NT_side_effects.  The parameter NT_se_present
  * is a work-around for this bug.  Ditto for NT_notify and NT_ntfy_present.
@@ -37,22 +37,22 @@ template<
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-class AgentVar 
+class Attribute 
 {
 public:
     // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
-    AgentVar(const AgentVar&) = delete; // copy constructor
-    AgentVar& operator=(const AgentVar&) = delete; // copy assignment operator
+    Attribute(const Attribute&) = delete; // copy constructor
+    Attribute& operator=(const Attribute&) = delete; // copy assignment operator
 
     // default ctor
-    AgentVar()
+    Attribute()
     {
     }
 
     // converting ctor using T
     // 
     // For creating temporary r-values in expressions.
-    AgentVar(T assign_value)
+    Attribute(T assign_value)
     {
         // N.B. no side-effects
         value = assign_value;
@@ -65,9 +65,9 @@ public:
     // Disabled if T2 is void.
     template <typename U = T2>
 #if defined(CXX_17)
-    AgentVar(typename std::enable_if_t< !std::is_void_v<U>, U > assign_value)
+    Attribute(typename std::enable_if_t< !std::is_void_v<U>, U > assign_value)
 #else
-    AgentVar(typename std::enable_if< !std::is_void<U>::value, U >::type assign_value)
+    Attribute(typename std::enable_if< !std::is_void<U>::value, U >::type assign_value)
 #endif
     {
         // N.B. no side-effects
@@ -193,7 +193,7 @@ template<
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-size_t AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
+size_t Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
 
 // Attribute participation in type resolution based on wrapped types
 // by specializing std::common_type.
@@ -203,28 +203,28 @@ namespace std {
 
     // unwrap Attribute with void T2
     template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    struct common_type<Other, Attribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap Attribute with void T2, opposite order
     template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<AgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    struct common_type<Attribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap Attribute with non-void T2
     template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    struct common_type<Other, Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
     {
         using type = typename common_type<Other, T2>::type;
     };
 
     // unwrap Attribute with non-void T2, opposite order
     template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    struct common_type<Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
     {
         using type = typename common_type<Other, T2>::type;
         //using type = decltype(true ? declval<Other>() : declval<T2>());
@@ -233,8 +233,8 @@ namespace std {
     // unwrap two Attributes, both with non-void T2
     //template<typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present,
     //         typename O_T, typename O_T2, typename O_A, string const *O_NT_name, void (A::*O_NT_side_effects)(T, T), bool O_NT_se_present, void (A::*O_NT_notify)(), bool O_NT_ntfy_present>
-    //struct common_type<AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>,
-    //                   AgentVar<O_T, O_T2, O_A, O_NT_name, O_NT_side_effects, O_NT_se_present, O_NT_notify, O_NT_ntfy_present>>
+    //struct common_type<Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>,
+    //                   Attribute<O_T, O_T2, O_A, O_NT_name, O_NT_side_effects, O_NT_se_present, O_NT_notify, O_NT_ntfy_present>>
     //{
     //    using type = typename common_type<T2, O_T2>::type;
     //};

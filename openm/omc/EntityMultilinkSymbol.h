@@ -44,7 +44,7 @@ public:
     }
 
     /**
-     * Create auxiliary symbols associated with this agentvar.
+     * Create auxiliary symbols associated with this attribute.
      */
     void create_auxiliary_symbols();
 

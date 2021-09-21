@@ -15,9 +15,9 @@ class LinkAttributeSymbol;
 /**
  * A symbol for a link to an agent variable symbol.
  * 
- * A LinkToAgentVarSmbol records the use of an agentvar in a different agent across a link
- * agentvar.  An example might be “my_thing->making_trouble” in the declaration of an identity
- * agentvar in the "Person" agent.  The example is a reference to the agentvar named
+ * A LinkToAttributeSmbol records the use of an attribute in a different agent across a link
+ * attribute.  An example might be “my_thing->making_trouble” in the declaration of an identity
+ * attribute in the "Person" agent.  The example is a reference to the attribute named
  * "making_trouble" in the agent "my_thing", which is an agent of type "Thing".
  */
 class LinkToAttributeSymbol : public Symbol
@@ -28,22 +28,22 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    LinkToAttributeSymbol(const Symbol *agent_context, const Symbol *link, const string agentvar)
-        : Symbol(LinkToAttributeSymbol::member_name(link, agentvar), agent_context)
+    LinkToAttributeSymbol(const Symbol *agent_context, const Symbol *link, const string attribute)
+        : Symbol(LinkToAttributeSymbol::member_name(link, attribute), agent_context)
         , agent_context(agent_context->stable_rp())
         , pp_agent_context(nullptr)
         , link(link->stable_rp())
         , pp_link(nullptr)
-        , agentvar(agentvar)
-        , pp_agentvar(nullptr)
+        , attribute(attribute)
+        , pp_attribute(nullptr)
     {
     }
 
-    static string member_name(const Symbol* link, const string agentvar);
+    static string member_name(const Symbol* link, const string attribute);
 
-    static string symbol_name(const Symbol* agent_context, const Symbol* link, const string agentvar);
+    static string symbol_name(const Symbol* agent_context, const Symbol* link, const string attribute);
 
-    static Symbol *create_symbol(const Symbol* agent_context, const Symbol* link, const string agentvar);
+    static Symbol *create_symbol(const Symbol* agent_context, const Symbol* link, const string attribute);
 
     void post_parse(int pass);
 
@@ -60,9 +60,9 @@ public:
     LinkAttributeSymbol *pp_link;
 
     /**
-     * The agentvar being referenced across the link.
+     * The attribute being referenced across the link.
      */
-    const string agentvar;
-    AttributeSymbol *pp_agentvar;
+    const string attribute;
+    AttributeSymbol *pp_attribute;
 };
 

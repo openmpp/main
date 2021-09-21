@@ -2762,7 +2762,7 @@ CodeBlock DerivedAttributeSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += "AgentVar<"
+    h += "Attribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
         + pp_agent->name + ", "

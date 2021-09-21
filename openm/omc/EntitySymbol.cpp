@@ -623,7 +623,7 @@ void EntitySymbol::build_body_finalize_links()
 {
     CodeBlock& c = finalize_links_fn->func_body;
 
-    for ( auto lav : pp_link_agentvars ) {
+    for ( auto lav : pp_link_attributes ) {
         c += lav->name + ".set(nullptr);";
     }
 }

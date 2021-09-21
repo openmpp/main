@@ -103,12 +103,12 @@ public:
     EntitySymbol *pp_agent;
 
     /**
-     * The agentvar which will hold the active index into the entity set.
+     * The attribute which will hold the active index into the entity set.
      */
     EntityInternalSymbol *cell;
 
     /**
-     * The agent function which updates the active cell index using agentvars.
+     * The agent function which updates the active cell index using attributes.
      */
     EntityFuncSymbol *update_cell_fn;
 
@@ -123,7 +123,7 @@ public:
     EntityFuncSymbol *erase_fn;
 
     /**
-     * The expression agentvar of the entity set filter.
+     * The expression attribute of the entity set filter.
      */
     IdentityAttributeSymbol *filter;
 

@@ -16,30 +16,30 @@ using namespace std;
 using namespace openm;
 
 // static
-string LinkToAttributeSymbol::member_name(const Symbol* link, const string agentvar)
+string LinkToAttributeSymbol::member_name(const Symbol* link, const string attribute)
 {
-    string result = link->name + "->" + agentvar;
+    string result = link->name + "->" + attribute;
     return result;
 }
 
 // static
-string LinkToAttributeSymbol::symbol_name(const Symbol* agent_context, const Symbol* link, const string agentvar)
+string LinkToAttributeSymbol::symbol_name(const Symbol* agent_context, const Symbol* link, const string attribute)
 {
-    string member = LinkToAttributeSymbol::member_name(link, agentvar);
+    string member = LinkToAttributeSymbol::member_name(link, attribute);
     string result = Symbol::symbol_name(member, agent_context);
     return result;
 }
 
 // static
-Symbol *LinkToAttributeSymbol::create_symbol(const Symbol* agent_context, const Symbol* link, const string agentvar)
+Symbol *LinkToAttributeSymbol::create_symbol(const Symbol* agent_context, const Symbol* link, const string attribute)
 {
     Symbol *sym = nullptr;
-    string nm = LinkToAttributeSymbol::symbol_name(agent_context, link, agentvar);
+    string nm = LinkToAttributeSymbol::symbol_name(agent_context, link, attribute);
     auto it = symbols.find(nm);
     if (it != symbols.end())
         sym = it->second;
     else
-        sym = new LinkToAttributeSymbol(agent_context, link, agentvar);
+        sym = new LinkToAttributeSymbol(agent_context, link, attribute);
 
     return sym;
 }
@@ -61,7 +61,7 @@ void LinkToAttributeSymbol::post_parse(int pass)
         pp_link = dynamic_cast<LinkAttributeSymbol *> (pp_symbol(link));
         assert(pp_link); // parser guarantee (link statement)
 
-        // assign direct pointer to agentvar in agent at other end of link
+        // assign direct pointer to attribute in agent at other end of link
         Symbol *agent = nullptr;
         if (pp_link->reciprocal_link) {
             // is a one-to-one link
@@ -76,12 +76,12 @@ void LinkToAttributeSymbol::post_parse(int pass)
             agent = reciprocal->agent;
             assert(agent); // grammar guarantee (link statement)
         }
-        auto sym = Symbol::get_symbol(agentvar, agent);
+        auto sym = Symbol::get_symbol(attribute, agent);
         auto av = dynamic_cast<AttributeSymbol *> (sym);
         if (!av) {
-            pp_error(LT("error : invalid member '") + agentvar + LT("' of link '") + pp_link->name + LT("'"));
+            pp_error(LT("error : invalid member '") + attribute + LT("' of link '") + pp_link->name + LT("'"));
         }
-        pp_agentvar = av;
+        pp_attribute = av;
         break;
     }
     default:

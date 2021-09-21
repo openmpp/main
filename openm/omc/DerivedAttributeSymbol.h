@@ -21,7 +21,7 @@ using namespace std;
 /**
  * DerivedAttributeSymbol
  * 
- * Symbol for derived agentvars with various signatures
+ * Symbol for derived attributes with various signatures
  * E.g. duration(happy, true)
  */
 class DerivedAttributeSymbol : public MaintainedAttributeSymbol
@@ -143,7 +143,7 @@ public:
      *
      * @param agent    The agent.
      * @param tok      The token.
-     * @param av1      The agentvar.
+     * @param av1      The attribute.
      * @param k1       The constant.
      *
      * @return The symbol.
@@ -165,7 +165,7 @@ public:
      *
      * @param agent    The agent.
      * @param tok      The token.
-     * @param av1      The agentvar.
+     * @param av1      The attribute.
      * @param k1       The constant.
      *
      * @return The symbol.
@@ -189,7 +189,7 @@ public:
      *
      * @param agent    The agent.
      * @param tok      The token.
-     * @param av1      The agentvar.
+     * @param av1      The attribute.
      * @param k1       The constant.
      *
      * @return The symbol.
@@ -215,10 +215,10 @@ public:
      *
      * @param agent    The agent.
      * @param tok      The token.
-     * @param av1      The agentvar #1
+     * @param av1      The attribute #1
      * @param k1       The constant #1
      * @param k2       The constant #2
-     * @param av2      The agentvar #2
+     * @param av2      The attribute #2
      *
      * @return The symbol.
      */
@@ -243,9 +243,9 @@ public:
      *
      * @param agent    The agent.
      * @param tok      The token.
-     * @param av1      The agentvar #1
+     * @param av1      The attribute #1
      * @param k1       The constant.
-     * @param av2      The agentvar #2
+     * @param av2      The attribute #2
      *
      * @return The symbol.
      */
@@ -277,7 +277,7 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param av1      The agentvar.
+     * @param av1      The attribute.
      *
      * @return The symbol.
      */
@@ -295,8 +295,8 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param av1      The agentvar (#1)
-     * @param av2      The agentvar (#2)
+     * @param av1      The attribute (#1)
+     * @param av2      The attribute (#2)
      *
      * @return The symbol.
      */
@@ -316,7 +316,7 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param av1      The agentvar
+     * @param av1      The attribute
      * @param av2      always nullptr
      * @param prt      The partition
      *
@@ -340,7 +340,7 @@ public:
      * Creates the given symbol, or returns it if it already exists
      *
      * @param agent    The agent.
-     * @param av1      The agentvar.
+     * @param av1      The attribute.
      * @param av2      always nullptr
      * @param prt      always nullptr
      * @param cls      The classification.
@@ -457,28 +457,28 @@ public:
     const token_type tok;
 
     /**
-     * agentvar #1
+     * attribute #1
      * 
      * Stable to symbol morphing during parse phase.
      */
     Symbol** av1;
 
     /**
-     * agentvar #1
+     * attribute #1
      * 
      * Only valid after post-parse phase 1.
      */
     AttributeSymbol *pp_av1;
 
     /**
-     * agentvar #2
+     * attribute #2
      * 
      * Stable to symbol morphing during parse phase.
      */
     Symbol** av2;
 
     /**
-     * agentvar #2
+     * attribute #2
      * 
      * Only valid after post-parse phase 1.
      */
@@ -528,16 +528,16 @@ public:
     const ConstantSymbol *k3;
 
     /**
-     * The identity agentvar symbol
+     * The identity attribute symbol
      * 
      * Used for conditions and spells
      */
     IdentityAttributeSymbol *iav;
 
     /**
-     * The derived agentvar symbol
+     * The derived attribute symbol
      * 
-     * Used for required associated derived agentvars, e.g. to implement
+     * Used for required associated derived attributes, e.g. to implement
      * value_at_first_entrance(disease_phase,DP_INFECTIOUS,age)
      * need 
      * undergone_entrance(disease_phase,DP_INFECTIOUS)
@@ -548,14 +548,14 @@ public:
      * The agent internal member for time
      * 
      * Used to record the internal symbol created to hold the nect time of occurrence of the self-
-     * scheduling derived agentvar.
+     * scheduling derived attribute.
      */
     EntityInternalSymbol *ait;
 
     /**
      * Numeric identifier for the symbol.
      * 
-     * Used to hold numeric id for self-scheduling agentvars which appear in generated code and in
+     * Used to hold numeric id for self-scheduling attributes which appear in generated code and in
      * event trace logs.
      */
     int numeric_id;

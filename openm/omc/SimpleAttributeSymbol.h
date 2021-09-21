@@ -14,7 +14,7 @@ using namespace std;
 /**
  * SimpleAttributeSymbol.
  * 
- * A symbol of this class represents an agentvar whose value can be modified by C++ code in an
+ * A symbol of this class represents an attribute whose value can be modified by C++ code in an
  * event implement function.
  */
 
@@ -55,7 +55,7 @@ public:
     /**
      * The initializer.
      *
-     *  C++ literal to initialize simple agentvar at agent creation.
+     *  C++ literal to initialize simple attribute at agent creation.
      */
 
     Literal *initializer;

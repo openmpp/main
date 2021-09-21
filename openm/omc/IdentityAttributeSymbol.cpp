@@ -62,8 +62,8 @@ void IdentityAttributeSymbol::post_parse(int pass)
                 if (la) {
                     // The attribute is a link-to-attribute symbol
                     // Get the type of the attribute in the other entity
-                    assert(la->pp_agentvar);
-                    auto typ = la->pp_agentvar->pp_data_type;
+                    assert(la->pp_attribute);
+                    auto typ = la->pp_attribute->pp_data_type;
                     assert(typ);
                     // Set the type of the anonymous identity attribute to that type
                     change_data_type(typ);
@@ -74,8 +74,8 @@ void IdentityAttributeSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this identity agentvar symbol to the agent's list of all such symbols
-        pp_agent->pp_identity_agentvars.push_back(this);
+        // Add this identity attribute symbol to the agent's list of all such symbols
+        pp_agent->pp_identity_attributes.push_back(this);
         
         // Perform post-parse operations to each element in the expression tree
         post_parse_traverse2(root);
@@ -91,7 +91,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
         // construct function body
         build_body_expression();
 
-        // Dependency on agentvars in expression
+        // Dependency on attributes in expression
         for (auto av : pp_attributes_used) {
             CodeBlock& c = av->side_effects_fn->func_body;
             c += injection_description();
@@ -99,12 +99,12 @@ void IdentityAttributeSymbol::post_parse(int pass)
             c += expression_fn->name + "();";
         }
 
-        // Dependency on linked agentvars in expression
+        // Dependency on linked attributes in expression
         for (auto ltav : pp_linked_attributes_used) {
-            auto av = ltav->pp_agentvar; // agentvar being referenced across the link (rhs)
+            auto av = ltav->pp_attribute; // attribute being referenced across the link (rhs)
             assert(av);
 
-            auto lav = ltav->pp_link; // the link agentvar
+            auto lav = ltav->pp_link; // the link attribute
             assert(lav);
 
             CodeBlock& c = av->side_effects_fn->func_body;
@@ -216,12 +216,12 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
         assert(sym->pp_symbol); // parser guarantee
         auto av = dynamic_cast<AttributeSymbol *>(sym->pp_symbol);
         if (av) {
-            // add to the set of all agentvars used in this expression
+            // add to the set of all attributes used in this expression
             pp_attributes_used.insert(av);
         }
         auto ltav = dynamic_cast<LinkToAttributeSymbol *>(sym->pp_symbol);
         if (ltav) {
-            // add to the set of all links to agentvars used in this expression
+            // add to the set of all links to attributes used in this expression
             pp_linked_attributes_used.insert(ltav);
 
             // add the link itself to the set of all links used in this expression
@@ -370,7 +370,7 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += "AgentVar<"
+    h += "Attribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
         + agent->name + ", "

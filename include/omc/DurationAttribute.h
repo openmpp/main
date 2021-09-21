@@ -13,7 +13,7 @@
 /**
  * Template for duration attributes.
  * 
- * No assignment operators are implemented, making the agentvar read-only in C++ code.  A
+ * No assignment operators are implemented, making the attribute read-only in C++ code.  A
  * constant template argument holds the function used to evaluate the logical condition during
  * which duration will be cumulated.
  *
@@ -38,21 +38,21 @@ template<
     bool NT_ntfy_present,
     bool (A::*NT_condition)() = nullptr
 >
-class DurationAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
+class DurationAttribute : public Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
     // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
-    DurationAgentVar(const DurationAgentVar&) = delete; // copy constructor
-    DurationAgentVar& operator=(const DurationAgentVar&) = delete; // copy assignment operator
+    DurationAttribute(const DurationAttribute&) = delete; // copy constructor
+    DurationAttribute& operator=(const DurationAttribute&) = delete; // copy assignment operator
 
     // default ctor
-    DurationAgentVar()
+    DurationAttribute()
     {
     }
 
     // converting ctor for creating temporary r-values
-    DurationAgentVar(T assign_value)
-        : AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
+    DurationAttribute(T assign_value)
+        : Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
     {
     }
 
@@ -80,28 +80,28 @@ namespace std {
 
     // unwrap DurationAttribute with void T2
     template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
-    struct common_type<Other, DurationAgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>>
+    struct common_type<Other, DurationAttribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap DurationAttribute with void T2, opposite order
     template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
-    struct common_type<DurationAgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>, Other>
+    struct common_type<DurationAttribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>, Other>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap DurationAttribute with non-void T2
     template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
-    struct common_type<Other, DurationAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>>
+    struct common_type<Other, DurationAttribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>>
     {
         using type = typename common_type<Other, T2>::type;
     };
 
     // unwrap DurationAttribute with non-void T2, opposite order
     template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present, bool (A::*NT_condition)()>
-    struct common_type<DurationAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>, Other>
+    struct common_type<DurationAttribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present, NT_condition>, Other>
     {
         using type = typename common_type<Other, T2>::type;
     };

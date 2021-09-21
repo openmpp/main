@@ -34,10 +34,10 @@ CodeBlock SimpleAttributeSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    // add declaration code specific to simple agentvars
+    // add declaration code specific to simple attributes
 
-	// example:         AssignableAgentVar<bool, Person, &Person::alive_side_effects> alive;
-	h += "AssignableAgentVar<"
+	// example:         AssignableAttribute<bool, Person, &Person::alive_side_effects> alive;
+	h += "AssignableAttribute<"
 		+ pp_data_type->name + ", "
 		+ pp_data_type->exposed_type() + ", "
 		+ agent->name + ", "

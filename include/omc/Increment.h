@@ -129,12 +129,12 @@ public:
      * The value of the global event counter at the previous table update.
      * 
      * Table updates are lagged so that simultaneous changes in multiple classificatory dimensions
-     * and/or filter are processed together as a single table update.  This agentvar together with
+     * and/or filter are processed together as a single table update.  This attribute together with
      * the current value of the global event counter is used to detect that the previous table
      * update is definitively finished and can be processed.
      * 
      * Because the global event counter is 1 for the first event, the default initialization value
-     * of zero for this agentvar works as intended.
+     * of zero for this attribute works as intended.
      */
     big_counter pending_event_counter;
 

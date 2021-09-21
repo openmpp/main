@@ -20,7 +20,7 @@ void SimpleAttributeEnumSymbol::post_parse(int pass)
     {
         // assign direct pointer for use post-parse
         pp_enumerator = dynamic_cast<EnumeratorSymbol *> (pp_symbol(enumerator));
-        //TODO Check that enumerator is valid for enumeration of agentvar
+        //TODO Check that enumerator is valid for enumeration of attribute
         assert(pp_enumerator); // developer error
         break;
     }

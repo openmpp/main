@@ -306,8 +306,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "// " + Symbol::token_to_string(acc->accumulator);
         }
         else {
-            assert(acc->pp_agentvar);
-            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_agentvar->name + "))";
+            assert(acc->pp_attribute);
+            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
         }
         // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
         c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
@@ -504,8 +504,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 c += "// " + Symbol::token_to_string(acc->accumulator);
             }
             else {
-                assert(acc->pp_agentvar);
-                c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_agentvar->name + "))";
+                assert(acc->pp_attribute);
+                c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
             }
             // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] *= scale_factor;
             c += "for (int cell = 0; cell < n_cells; cell++) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
@@ -741,17 +741,17 @@ void EntityTableSymbol::build_body_push_increment()
         c += "";
         c += "// Compute increment";
         if (acc->accumulator != token::TK_unit) {
-            auto attr = acc->pp_agentvar;
+            auto attr = acc->pp_attribute;
             assert(attr);
             if (acc->uses_value_out()) {
                 c += attr->pp_data_type->name + " value_out = " + attr->name + ";";
             }
             if (acc->uses_value_in()) {
                 if (acc->table_op == token::TK_interval) {
-                    c += "auto& value_in = " + acc->pp_analysis_agentvar->in_member_name() + ";";
+                    c += "auto& value_in = " + acc->pp_analysis_attribute->in_member_name() + ";";
                 }
                 else if (acc->table_op == token::TK_event) {
-                    c += "auto& value_in = " + acc->pp_analysis_agentvar->in_event_member_name() + ";";
+                    c += "auto& value_in = " + acc->pp_analysis_attribute->in_event_member_name() + ";";
                     assert(attr->lagged);
                     assert(attr->lagged_event_counter);
                     c += "auto& value_lagged = " + attr->lagged->name + ";";

@@ -56,7 +56,7 @@ public:
     }
 
     /**
-     * Create auxiliary symbols associated with this agentvar.
+     * Create auxiliary symbols associated with this attribute.
      */
     void create_auxiliary_symbols();
 
@@ -72,24 +72,24 @@ public:
     void change_data_type(TypeSymbol *new_type);
 
     /**
-     * Creates the lagged version of this agentvar.
+     * Creates the lagged version of this attribute.
      * 
      * The lagged version is an EntityInternalSymbol which holds
-     * the value of the agentvar at the end of the previous event.
+     * the value of the attribute at the end of the previous event.
      * An additional EntityInternalSymbol holds the value of the
      * event counter at last update.
      */
     void create_lagged();
 
     /**
-     * Gets the name of the lagged version of this agentvar.
+     * Gets the name of the lagged version of this attribute.
      *
      * @return The symbol name.
      */
     string get_lagged_name();
 
     /**
-     * Gets the name of the lagged event counter for this agentvar.
+     * Gets the name of the lagged event counter for this attribute.
      *
      * Contains the value of the events counter when the lagged value
      * was last updated.
@@ -99,7 +99,7 @@ public:
     string get_lagged_event_counter_name();
 
     /**
-     * Determines if agentvar can be validly compared to the specifiec constant.
+     * Determines if attribute can be validly compared to the specifiec constant.
      *
      * @param constant     The constant.
      * @param [in,out] msg Generated error message

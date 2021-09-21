@@ -357,7 +357,7 @@ public:
      * Indicates if context is a redeclaration of an enclosing symbol.
      * 
      * The om langauge permits redeclaration isncertain contexts, in particular agents can be freely
-     * redeclared, and the agentvar specifications are gathered together.  Parameters can be
+     * redeclared, and the attribute specifications are gathered together.  Parameters can be
      * redeclared, once to give their properties and (optionally) a second time to provide values.
      */
     bool redeclaration;

@@ -131,7 +131,7 @@ public:
     void build_body_finalize_multilinks();
 
     /**
-     * The built-in agentvar for time in the agent.
+     * The built-in attribute for time in the agent.
      */
     BuiltinAttributeSymbol *pp_time;
 
@@ -264,11 +264,11 @@ public:
     list<MaintainedAttributeSymbol *> pp_maintained_attributes;
 
     /**
-     * The expression agentvars of this agent.
+     * The expression attributes of this agent.
      * 
      * Populated after parsing is complete.
      */
-    list<IdentityAttributeSymbol *> pp_identity_agentvars;
+    list<IdentityAttributeSymbol *> pp_identity_attributes;
 
     /**
      * The agent events of this agent
@@ -299,11 +299,11 @@ public:
     list<EntityTableSymbol *> pp_entity_tables;
 
     /**
-     * The link agentvars of this agent
+     * The link attributes of this agent
      * 
      *  Populated after parsing is complete.
      */
-    list<LinkAttributeSymbol *> pp_link_agentvars;
+    list<LinkAttributeSymbol *> pp_link_attributes;
 
     /**
      * The multilink members of this agent
@@ -329,11 +329,11 @@ public:
     multimap<string,string> pp_hooks_with_order;
 
     /**
-     * Create event to support self-scheduling derived agentvars.
+     * Create event to support self-scheduling derived attributes.
      * 
      * If not already created, create an event symbol and associated event time and event implement
-     * function symbols to support self-scheduling derived agentvars.  Self-scheduling derived
-     * agentvars will inject code into these functions to implement themselves.
+     * function symbols to support self-scheduling derived attributes.  Self-scheduling derived
+     * attributes will inject code into these functions to implement themselves.
      */
     void create_ss_event();
 

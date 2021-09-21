@@ -23,8 +23,8 @@ void LinkAttributeSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // Add this link agentvar symbol to the agent's list of all such symbols
-        pp_agent->pp_link_agentvars.push_back(this);
+        // Add this link attribute symbol to the agent's list of all such symbols
+        pp_agent->pp_link_attributes.push_back(this);
         break;
     }
     case ePopulateDependencies:
@@ -79,7 +79,7 @@ CodeBlock LinkAttributeSymbol::cxx_declaration_agent()
         reciprocal_agent = reciprocal_multilink->pp_agent;
     }
 
-    h += "LinkAgentVar<"
+    h += "LinkAttribute<"
         + pp_data_type->name + ", "
         + "bool, " // allow access to bool cast in wrapped link
         + agent->name + ", "

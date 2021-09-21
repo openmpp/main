@@ -340,7 +340,7 @@ public:
      * Post-parse operations create derived information based on information obtained during the
      * parse phase. This information is stored in members of the Symbol class hierarchy which by
      * convention have a 'pp_' prefix in their name. For example, the \ref pp_callback_members
-     * collection of the \ref EntitySymbol class contains a list of all agentvars of the agent after
+     * collection of the \ref EntitySymbol class contains a list of all attributes of the agent after
      * post-parse processing.  These pp_ members are used subsequently in the code-generation phase.
      * 
      * When post_parse is called on an object in the \ref Symbol hierarchy, the call is first passed
@@ -515,7 +515,7 @@ public:
     /**
      * The unique identifier for the symbol
      * 
-     * To create unique names for all agentvars, member names in the model source code are prefixed
+     * To create unique names for all attributes, member names in the model source code are prefixed
      * with the agent context to create a unique name for symbol table lookup,
      * e.g. 'time' becomes 'Person::time'.
      */

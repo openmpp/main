@@ -84,7 +84,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this EntityTableMeasureAttributeSymbol to the table's list of agentvars
+        // Add this EntityTableMeasureAttributeSymbol to the table's list of attributes
         pp_table->pp_measure_attributes.push_back(this);
         break;
     }

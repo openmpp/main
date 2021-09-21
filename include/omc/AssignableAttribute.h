@@ -13,7 +13,7 @@
 /**
  * Template for assignable attributes.
  * 
- * All C++ assignment operators are implemented in AssignableAgentVar, allowing developer code to
+ * All C++ assignment operators are implemented in AssignableAttribute, allowing developer code to
  * assign values.  Side-effects are executed if the assignment changes the value.
  *
  * @tparam T               Generic type parameter.
@@ -35,17 +35,17 @@ template<
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-class AssignableAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
+class AssignableAttribute : public Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
     // Copy constructor is deleted to prohibit creation of local variable Attribute objects.
-    AssignableAgentVar(const AssignableAgentVar&) = delete; // copy constructor
-    //AssignableAgentVar& operator=(const AssignableAgentVar&) = delete; // copy assignment operator
+    AssignableAttribute(const AssignableAttribute&) = delete; // copy constructor
+    //AssignableAttribute& operator=(const AssignableAttribute&) = delete; // copy assignment operator
 
     // operator: copy assignment
     // Handle occasional situation where an Attribute is assigned to an identical Attribute in another Entity.
     // An example is assigning newborn's time to mother's time at creation of newborn.
-    AssignableAgentVar& operator=(const AssignableAgentVar & other)
+    AssignableAttribute& operator=(const AssignableAttribute & other)
     {
         // Assign using the set function to trigger side-effects.
         this->set( other.get() );
@@ -53,25 +53,25 @@ public:
     }
 
     // default ctor
-    AssignableAgentVar()
+    AssignableAttribute()
     {
     }
 
     // converting ctor for creating temporary r-values
-    AssignableAgentVar(T assign_value)
-        : AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
+    AssignableAttribute(T assign_value)
+        : Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
     {
     }
 
     // operator: direct assignment of wrapped type
-    AssignableAgentVar& operator=( T new_value )
+    AssignableAttribute& operator=( T new_value )
     {
         this->set( new_value );
         return *this;
     }
 
     // operator: assignment by sum
-    AssignableAgentVar& operator+=( T modify_value )
+    AssignableAttribute& operator+=( T modify_value )
     {
         T new_value = this->get() + modify_value;
         this->set( new_value );
@@ -79,7 +79,7 @@ public:
     }
 
     // operator: assignment by difference
-    AssignableAgentVar& operator-=( T modify_value )
+    AssignableAttribute& operator-=( T modify_value )
     {
         T new_value = this->get() - modify_value;
         this->set( new_value );
@@ -87,7 +87,7 @@ public:
     }
 
     // operator: assignment by product
-    AssignableAgentVar& operator*=( T modify_value )
+    AssignableAttribute& operator*=( T modify_value )
     {
         T new_value = this->get() * modify_value;
         this->set( new_value );
@@ -95,7 +95,7 @@ public:
     }
 
     // operator: assignment by quotient
-    AssignableAgentVar& operator/=( T modify_value )
+    AssignableAttribute& operator/=( T modify_value )
     {
         T new_value = this->get() / modify_value;
         this->set( new_value );
@@ -103,7 +103,7 @@ public:
     }
 
     // operator: assignment by remainder
-    AssignableAgentVar& operator%=( T modify_value )
+    AssignableAttribute& operator%=( T modify_value )
     {
         T new_value = this->get() % modify_value;
         this->set( new_value );
@@ -111,7 +111,7 @@ public:
     }
 
     // operator: assignment by bitwise left shift
-    AssignableAgentVar& operator<<=( T modify_value )
+    AssignableAttribute& operator<<=( T modify_value )
     {
         T new_value = this->get() << modify_value;
         this->set( new_value );
@@ -119,7 +119,7 @@ public:
     }
 
     // operator: assignment by bitwise right shift
-    AssignableAgentVar& operator>>=( T modify_value )
+    AssignableAttribute& operator>>=( T modify_value )
     {
         T new_value = this->get() >> modify_value;
         this->set( new_value );
@@ -127,7 +127,7 @@ public:
     }
 
     // operator: assignment by bitwise AND
-    AssignableAgentVar& operator&=( T modify_value )
+    AssignableAttribute& operator&=( T modify_value )
     {
         T new_value = this->get() & modify_value;
         this->set( new_value );
@@ -135,7 +135,7 @@ public:
     }
 
     // operator: assignment by bitwise XOR
-    AssignableAgentVar& operator^=( T modify_value )
+    AssignableAttribute& operator^=( T modify_value )
     {
         T new_value = this->get() ^ modify_value;
         this->set( new_value );
@@ -143,7 +143,7 @@ public:
     }
 
     // operator: assignment by bitwise OR
-    AssignableAgentVar& operator|=( T modify_value )
+    AssignableAttribute& operator|=( T modify_value )
     {
         T new_value = this->get() | modify_value;
         this->set( new_value );
@@ -151,7 +151,7 @@ public:
     }
 
     // operator: prefix increment
-    AssignableAgentVar& operator++()
+    AssignableAttribute& operator++()
     {
         T new_value = this->get() + 1;
         this->set( new_value );
@@ -159,7 +159,7 @@ public:
     }
 
     // operator: prefix decrement
-    AssignableAgentVar& operator--()
+    AssignableAttribute& operator--()
     {
         T new_value = this->get() - 1;
         this->set( new_value );
@@ -191,28 +191,28 @@ namespace std {
 
     // unwrap AssignableAttribute with void T2
     template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AssignableAgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    struct common_type<Other, AssignableAttribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap AssignableAttribute with void T2, opposite order
     template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<AssignableAgentVar<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    struct common_type<AssignableAttribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap AssignableAttribute with non-void T2
     template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    struct common_type<Other, AssignableAttribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
     {
         using type = typename common_type<Other, T2>::type;
     };
 
     // unwrap AssignableAttribute with non-void T2, opposite order
     template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<AssignableAgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    struct common_type<AssignableAttribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
     {
         using type = typename common_type<Other, T2>::type;
     };

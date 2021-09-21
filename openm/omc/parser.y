@@ -92,7 +92,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 	ConstantSymbol       *pval_ConstantSymbol;
 	Constant             *pval_Constant;
     list<Constant *>     *pval_Constant_list;
-	ExprForAttribute     *pval_AgentVarExpr;
+	ExprForAttribute     *pval_AttributeExpr;
 	ExprForTable         *pval_TableExpr;
     string               *pval_string;
     list<string *>       *pval_string_list;
@@ -514,7 +514,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %type  <pval_TableExpr> expr_for_table
 %type  <pval_TableExpr> table_expression_list
 
-%type  <pval_AgentVarExpr> expr_for_agentvar
+%type  <pval_AttributeExpr> expr_for_attribute
 
 %type  <val_token> aggregate_multilink_function
 
@@ -1249,7 +1249,7 @@ decl_track:
 
 
 track_filter_opt:
-	  "[" expr_for_agentvar[root] "]"
+	  "[" expr_for_attribute[root] "]"
                         {
                             //TODO
                             // if topmost $root node is comma-operator "," drill down a level to find 
@@ -1660,9 +1660,9 @@ agent_member_list:
 	;
 
 agent_member:
-	  decl_simple_agentvar
+	  decl_simple_attribute
 	| decl_agent_array
-	| decl_identity_agentvar
+	| decl_identity_attribute
 	| decl_agent_function
 	| decl_agent_event
 	| decl_hook
@@ -1675,29 +1675,29 @@ agent_member:
                         }
     ;
 
-decl_simple_agentvar:
-        decl_type_part[type_symbol] SYMBOL[agentvar] ";"
+decl_simple_attribute:
+        decl_type_part[type_symbol] SYMBOL[attribute] ";"
                         {
-                            auto *sym = new SimpleAttributeSymbol( $agentvar, pc.get_agent_context(), $type_symbol, nullptr, @agentvar );
+                            auto *sym = new SimpleAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, nullptr, @attribute );
                             assert(sym);
                         }
-      | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" signed_literal "}" ";"
+      | decl_type_part[type_symbol] SYMBOL[attribute] "=" "{" signed_literal "}" ";"
                         {
-                            auto *sym = new SimpleAttributeSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $signed_literal, @agentvar );
+                            auto *sym = new SimpleAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, $signed_literal, @attribute );
                             assert(sym);
                         }
-      | decl_type_part[type_symbol] SYMBOL[agentvar] "=" "{" SYMBOL[enumerator] "}" ";"
+      | decl_type_part[type_symbol] SYMBOL[attribute] "=" "{" SYMBOL[enumerator] "}" ";"
                         {
-                            auto *sym = new SimpleAttributeEnumSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $enumerator, @agentvar );
+                            auto *sym = new SimpleAttributeEnumSymbol( $attribute, pc.get_agent_context(), $type_symbol, $enumerator, @attribute );
                             assert(sym);
                         }
     ;
 
 decl_agent_array:
-        decl_type_part[type_symbol] SYMBOL[agentvar] array_decl_dimension_list ";"
+        decl_type_part[type_symbol] SYMBOL[attribute] array_decl_dimension_list ";"
                         {
                             // Morph symbol to agent array member symbol
-                            auto aam = new EntityArrayMemberSymbol($agentvar, pc.get_agent_context(), $type_symbol, @agentvar);
+                            auto aam = new EntityArrayMemberSymbol($attribute, pc.get_agent_context(), $type_symbol, @attribute);
                             list<Symbol *> *pls = $array_decl_dimension_list;
                             // Move dimension list to EntityArrayMemberSymbol (transform elements to stable **).
                             for (auto sym : *pls) aam->dimension_list.push_back(sym->stable_pp());
@@ -1723,10 +1723,10 @@ array_decl_dimension_list: // A non-empty list of dimensions enclosed by []
                         }
     ;
 
-decl_identity_agentvar:
-        decl_type_part[type_symbol] SYMBOL[agentvar] "=" expr_for_agentvar ";"
+decl_identity_attribute:
+        decl_type_part[type_symbol] SYMBOL[attribute] "=" expr_for_attribute ";"
                         {
-                            auto *sym = new IdentityAttributeSymbol( $agentvar, pc.get_agent_context(), $type_symbol, $expr_for_agentvar, @agentvar );
+                            auto *sym = new IdentityAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, $expr_for_attribute, @attribute );
                             assert(sym);
                         }
     ;
@@ -1924,10 +1924,10 @@ hook_order_opt:
     ;
 
 /*
- * expression for identity agentvar
+ * expression for identity attribute
  */
 
-expr_for_agentvar[result]:
+expr_for_attribute[result]:
     //
     // expression terminals
     // 
@@ -1943,114 +1943,114 @@ expr_for_agentvar[result]:
     //
     // arithmetic
     // 
-    | "+"[op] expr_for_agentvar[right] %prec UNARY_PLUS
+    | "+"[op] expr_for_attribute[right] %prec UNARY_PLUS
                         {
 	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
-    | "-"[op] expr_for_agentvar[right] %prec UNARY_MINUS
+    | "-"[op] expr_for_attribute[right] %prec UNARY_MINUS
                         {
 	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
-    | expr_for_agentvar[left] "+"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "+"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "-"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "-"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "*"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "*"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "/"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "/"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "%"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "%"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // bit-wise operations
     // 
-    | expr_for_agentvar[left] "|"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "|"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "&"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "&"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "^"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "^"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | "~"[op] expr_for_agentvar[right]
+    | "~"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
-    | expr_for_agentvar[left] "<<"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "<<"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] ">>"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] ">>"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // logical
     // 
-    | "!"[op] expr_for_agentvar[right]
+    | "!"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeUnaryOp( (token_type) $op, $right );
                         }
-    | expr_for_agentvar[left] "&&"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "&&"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "||"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "||"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // comparison operations
     // 
-    | expr_for_agentvar[left] "=="[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "=="[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "!="[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "!="[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "<"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "<"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] ">"[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] ">"[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] "<="[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] "<="[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
-    | expr_for_agentvar[left] ">="[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] ">="[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // ternary conditional
     // 
-    | expr_for_agentvar[cond] "?" expr_for_agentvar[first] ":" expr_for_agentvar[second] 
+    | expr_for_attribute[cond] "?" expr_for_attribute[first] ":" expr_for_attribute[second] 
                         {
 	                        $result = new ExprForAttributeTernaryOp( $cond, $first, $second );
                         }
     //
     // array subscripting
     //
-    | expr_for_agentvar[left] "["[op] expr_for_agentvar[right] "]"
+    | expr_for_attribute[left] "["[op] expr_for_attribute[right] "]"
                         {
                             // array indexing
                             $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
@@ -2058,14 +2058,14 @@ expr_for_agentvar[result]:
     //
     // comma-separated list
     //
-    | expr_for_agentvar[left] ","[op] expr_for_agentvar[right]
+    | expr_for_attribute[left] ","[op] expr_for_attribute[right]
                         {
 	                        $result = new ExprForAttributeBinaryOp( (token_type) $op, $left, $right );
                         }
     //
     // function-syle cast to numeric type
     //
-    | numeric_type "("[op] expr_for_agentvar[arg] ")"
+    | numeric_type "("[op] expr_for_attribute[arg] ")"
                         {
                             // convert numeric_type from a token to a type symbol
                             auto *type_symbol = Symbol::get_symbol(Symbol::token_to_string((token_type)$numeric_type));
@@ -2076,7 +2076,7 @@ expr_for_agentvar[result]:
     //
     // function call, or function-syle cast to a model-specific type, e.g. a classification
     //
-    | SYMBOL[sym] "("[op] expr_for_agentvar[arg] ")"
+    | SYMBOL[sym] "("[op] expr_for_attribute[arg] ")"
                         {
                             // turn the function (or type) symbol into an expression terminal node
 	                        auto func = new ExprForAttributeSymbol( $sym );
@@ -2086,7 +2086,7 @@ expr_for_agentvar[result]:
     //
     // grouping
     //
-    | "(" expr_for_agentvar[expr] ")"
+    | "(" expr_for_attribute[expr] ")"
                         {
 	                        $result = $expr;
                         }
@@ -2094,7 +2094,7 @@ expr_for_agentvar[result]:
 
 
 /*
- * the 'type' part of a parameter, agentvar or agent function declaration
+ * the 'type' part of a parameter, attribute or agent function declaration
  */
 
 decl_type_part:
@@ -2135,7 +2135,7 @@ decl_link:
                         }
         | "link" link_symbol[link1] link_symbol[link2] ";"
                         {
-                            // one-to-one link (different agents and/or different link agentvars)
+                            // one-to-one link (different agents and/or different link attributes)
 
                             // The containing agent of each link
                             auto agent1 = $link1->agent;
@@ -2211,7 +2211,7 @@ decl_link:
 link_symbol:
             SYMBOL[agent] "."
                         {
-                            // Set agent context for scanner creation of the immediately following link agentvar
+                            // Set agent context for scanner creation of the immediately following link attribute
                             pc.set_agent_context( $agent );
                         }
             SYMBOL[link]
@@ -2292,13 +2292,13 @@ entity_set_dimension:
     ;
 
 entity_set_filter_opt:
-    "filter" expr_for_agentvar[root]
+    "filter" expr_for_attribute[root]
                         {
                             EntitySetSymbol *entity_set = pc.get_entity_set_context();
-                            // create an identity agentvar for the filter
+                            // create an identity attribute for the filter
                             auto eav = new IdentityAttributeSymbol("om_" + entity_set->name + "_filter", entity_set->agent, BoolSymbol::find(), $root, @root);
                             assert(eav); // out of memory check
-                            // note identity agentvar in entity set
+                            // note identity attribute in entity set
                             entity_set->filter = eav;
                         }
     | /* nothing */
@@ -2333,7 +2333,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             pc.reset_working_counters();
                             // working counter1 used for table expressions
                             // working counter2 used for table accumulators
-                            // working counter3 used for table agentvars
+                            // working counter3 used for table attributes
                             // working counter4 used for table classification dimensions
                         }
             table_filter_opt
@@ -2354,7 +2354,7 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
     ;
 
 table_filter_opt:
-    "[" expr_for_agentvar[root] "]"
+    "[" expr_for_attribute[root] "]"
                         {
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an anonymous identity attribute for the filter
@@ -3032,11 +3032,11 @@ derived_attribute_other:
                             // depends on the nature of the preceding multilink symbol, whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
-        STRING[agentvar] ")"
+        STRING[attribute] ")"
                         {
-                            $derived_attribute_other = MultilinkAttributeSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$agentvar );
-                            delete $agentvar; // delete the string created using new in scanner
-                            $agentvar = nullptr;
+                            $derived_attribute_other = MultilinkAttributeSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$attribute );
+                            delete $attribute; // delete the string created using new in scanner
+                            $attribute = nullptr;
                         }
 	;
 

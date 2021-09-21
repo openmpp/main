@@ -18,21 +18,21 @@ using namespace openm;
 
 
 // static
-string EntityTableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
+string EntityTableAccumulatorSymbol::symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *attribute)
 {
     string result;
     result = "om_" + table->name + "_ta_" + token_to_string(accumulator);
     if (accumulator != token::TK_unit) {
-        assert(agentvar); // grammar guarantee
-        result += "_" + token_to_string(increment) + "_" + token_to_string(table_op) + "_" + agentvar->name;
+        assert(attribute); // grammar guarantee
+        result += "_" + token_to_string(increment) + "_" + token_to_string(table_op) + "_" + attribute->name;
     }
     return result;
 }
 
 // static
-bool EntityTableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar)
+bool EntityTableAccumulatorSymbol::exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *attribute)
 {
-    string unm = symbol_name(table, accumulator, increment, table_op, agentvar);
+    string unm = symbol_name(table, accumulator, increment, table_op, attribute);
     return symbols.count(unm) == 0 ? false : true;
 }
 
@@ -41,8 +41,8 @@ string EntityTableAccumulatorSymbol::pretty_name() const
     // example:     accumulator 0: sum(delta(interval(duration)))
     string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator);
     if (accumulator != token::TK_unit) {
-        assert(agentvar); // grammar guarantee
-        result += "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + (*agentvar)->pretty_name() + ")))";
+        assert(attribute); // grammar guarantee
+        result += "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + (*attribute)->pretty_name() + ")))";
     }
     return result;
 }
@@ -56,9 +56,9 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
-        // If agentvar is subject to event() tabulation operator create lagged version.
+        // If attribute is subject to event() tabulation operator create lagged version.
         if (table_op == token::TK_event) {
-            auto av = dynamic_cast<AttributeSymbol *>(pp_symbol(agentvar));
+            auto av = dynamic_cast<AttributeSymbol *>(pp_symbol(attribute));
             assert(av);
             av->create_lagged();
             assert(av->lagged);
@@ -77,18 +77,18 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
 
         if (accumulator != token::TK_unit) {
             // assign direct pointer to attribute for post-parse use
-            pp_agentvar = dynamic_cast<AttributeSymbol *> (pp_symbol(agentvar));
-            if (pp_agentvar == nullptr) {
-                throw HelperException(LT("error : %s is not an attribute in table %s"), (*agentvar)->name.c_str(), table->name.c_str());
+            pp_attribute = dynamic_cast<AttributeSymbol *> (pp_symbol(attribute));
+            if (pp_attribute == nullptr) {
+                throw HelperException(LT("error : %s is not an attribute in table %s"), (*attribute)->name.c_str(), table->name.c_str());
             }
 
             // assign direct pointer to EntityTableMeasureAttributeSymbol for post-parse use
-            pp_analysis_agentvar = dynamic_cast<EntityTableMeasureAttributeSymbol *> (pp_symbol(analysis_agentvar));
-            assert(pp_analysis_agentvar); // parser guarantee
+            pp_analysis_attribute = dynamic_cast<EntityTableMeasureAttributeSymbol *> (pp_symbol(analysis_attribute));
+            assert(pp_analysis_attribute); // parser guarantee
         }
         else {
-            pp_agentvar = nullptr;
-            pp_analysis_agentvar = nullptr;
+            pp_attribute = nullptr;
+            pp_analysis_attribute = nullptr;
         }
 
         break;

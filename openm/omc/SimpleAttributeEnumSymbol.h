@@ -40,7 +40,7 @@ public:
     void post_parse(int pass);
 
     /**
-     * Gets the initial value for the agentvar.
+     * Gets the initial value for the attribute.
      *
      * @param type_default true to return the default value for the type.
      *

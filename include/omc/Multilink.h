@@ -122,7 +122,7 @@ public:
     // The following overload of the pointer operator in effect translates the "->" to ".".
     Multilink<T,A,B,side_effects,insert_reciprocal,erase_reciprocal>* operator->()
     {
-        // return pointer to this agentvar
+        // return pointer to this attribute
         return this;
     }
 
@@ -187,7 +187,7 @@ public:
  * offset in Agent (static definition)
  * 
  * The offset is used within an instance of multilink to gain access to the enclosing agent to
- * call the side-effects function in the context of the agent and with access to all agentvars
+ * call the side-effects function in the context of the agent and with access to all attributes
  * in the agent.
  */
 template<typename T, typename A, typename B, void (A::*side_effects)(), void (A::*insert_reciprocal)(T lnk), void (A::*erase_reciprocal)(T lnk) >

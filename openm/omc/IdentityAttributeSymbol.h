@@ -43,9 +43,9 @@ public:
     {
         create_auxiliary_symbols();
 
-        // This sorting group ensures that side-effect code for the identity agentvar
+        // This sorting group ensures that side-effect code for the identity attribute
         // which might be injected into 'time' will execute after side-effect code injected by active_spell_delta (sorting group 2)
-        // (side-effect code is injected by sorting group then lexicographic order of the name of the injecting agentvar.)
+        // (side-effect code is injected by sorting group then lexicographic order of the name of the injecting attribute.)
         // This ensures that logic to maintain active_spell_delta works correctly: the side-effect for active_spell_delta
         // must execute before side-effect code which changes the condition.
         sorting_group = 8;
@@ -66,9 +66,9 @@ public:
     {
         create_auxiliary_symbols();
 
-        // This sorting group ensures that side-effect code for the identity agentvar
+        // This sorting group ensures that side-effect code for the identity attribute
         // which might be injected into 'time' will execute after side-effect code injected by active_spell_delta (sorting group 2)
-        // (side-effect code is injected by sorting group then lexicographic order of the name of the injecting agentvar.)
+        // (side-effect code is injected by sorting group then lexicographic order of the name of the injecting attribute.)
         // This ensures that logic to maintain active_spell_delta works correctly: the side-effect for active_spell_delta
         // must execute before side-effect code which changes the condition.
         sorting_group = 8;
@@ -127,7 +127,7 @@ public:
     ExprForAttribute *root;
 
     /**
-     * The agentvars used in the expression.
+     * The attributes used in the expression.
      */
     set<AttributeSymbol *> pp_attributes_used;
 
@@ -137,7 +137,7 @@ public:
     set<LinkAttributeSymbol *> pp_links_used;
 
     /**
-     * The linked agentvars used in the expression.
+     * The linked attributes used in the expression.
      */
     set<LinkToAttributeSymbol *> pp_linked_attributes_used;
 

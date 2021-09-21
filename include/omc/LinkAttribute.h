@@ -14,17 +14,17 @@
 /**
  * Template for link attributes.
  * 
- * A link agentvar is a smart pointer between agents.  Every link agentvar has a reciprocal link
- * agentvar in another agent.  This makes all links two-way.  That allows side-effects of
- * agentvar changes in an agent to propagate 'backwards' across agent links, to affect events,
- * tables, and expression agentvars in other agents.
+ * A link attribute is a smart pointer between agents.  Every link attribute has a reciprocal link
+ * attribute in another agent.  This makes all links two-way.  That allows side-effects of
+ * attribute changes in an agent to propagate 'backwards' across agent links, to affect events,
+ * tables, and expression attributes in other agents.
  * 
- * When used to retrieve the value of an agentvar in another agent, a link will first
+ * When used to retrieve the value of an attribute in another agent, a link will first
  * synchronize the time of the other agent if the just-in-time simulation option is activated.
  * 
- * To simplify their use in expression agentvars, the pointer and dereference operators can be
- * used even if the link agentvar is nullptr.  In that case, a pre-constructed static 'null
- * agent' whose agentvars are in a freshly initialized state (generally 0) is used for the
+ * To simplify their use in expression attributes, the pointer and dereference operators can be
+ * used even if the link attribute is nullptr.  In that case, a pre-constructed static 'null
+ * agent' whose attributes are in a freshly initialized state (generally 0) is used for the
  * operation.
  *
  * @tparam T               Storage type, e.g. link<Thing>
@@ -48,14 +48,14 @@ template<
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-class LinkAgentVar : public AgentVar<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
+class LinkAttribute : public Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
-    LinkAgentVar(const LinkAgentVar&) = delete; // copy constructor
-    LinkAgentVar& operator=(const LinkAgentVar&) = delete; // copy initialization operator
+    LinkAttribute(const LinkAttribute&) = delete; // copy constructor
+    LinkAttribute& operator=(const LinkAttribute&) = delete; // copy initialization operator
 
     // ctor
-    LinkAgentVar()
+    LinkAttribute()
     {
         this->set(nullptr);
     }
@@ -65,14 +65,14 @@ public:
     }
 
     // operator: direct assignment
-    LinkAgentVar& operator=( T new_value )
+    LinkAttribute& operator=( T new_value )
     {
         this->set( new_value );
         return *this;
     }
 
     //// operator: assignment of pointer
-    //LinkAgentVar& operator=( B *new_value )
+    //LinkAttribute& operator=( B *new_value )
     //{
     //    this->set( new_value );
     //    return *this;

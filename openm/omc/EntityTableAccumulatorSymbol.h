@@ -26,17 +26,17 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, token_type table_op, Symbol *agentvar, Symbol *analysis_agentvar, int index)
-        : Symbol(symbol_name(table, accumulator, increment, table_op, agentvar))
+    EntityTableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, token_type table_op, Symbol *attribute, Symbol *analysis_attribute, int index)
+        : Symbol(symbol_name(table, accumulator, increment, table_op, attribute))
         , table(table->stable_rp())
         , pp_table(nullptr)
         , accumulator(accumulator)
         , increment(increment)
         , table_op(table_op)
-        , agentvar(agentvar ? agentvar->stable_pp() : nullptr)
-        , pp_agentvar(nullptr)
-        , analysis_agentvar(analysis_agentvar ? analysis_agentvar->stable_pp() : nullptr)
-        , pp_analysis_agentvar(nullptr)
+        , attribute(attribute ? attribute->stable_pp() : nullptr)
+        , pp_attribute(nullptr)
+        , analysis_attribute(analysis_attribute ? analysis_attribute->stable_pp() : nullptr)
+        , pp_analysis_attribute(nullptr)
         , updates_obs_collection(false)
         , obs_collection_index(-1)
         , index(index)
@@ -115,11 +115,11 @@ public:
      * @param accumulator The accumulator, e.g. token::TK_sum.
      * @param increment   The increment, e.g. token::TK_delta.
      * @param table_op    The table operation: TK_interval or TK_event.
-     * @param agentvar    The agentvar.
+     * @param attribute    The attribute.
      *
      * @return The name, e.g. om_ta_DurationOfLife_sum_delta_om_duration.
      */
-    static string symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar);
+    static string symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *attribute);
 
     /**
      * Check for existence of symbol with this unique name.
@@ -128,11 +128,11 @@ public:
      * @param accumulator The accumulator, e.g. token::TK_sum.
      * @param increment   The increment, e.g. token::TK_delta.
      * @param table_op    The table operation: TK_interval or TK_event
-     * @param agentvar    The agentvar.
+     * @param attribute    The attribute.
      *
      * @return true if found, else false.
      */
-    static bool exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *agentvar);
+    static bool exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *attribute);
 
     void post_parse(int pass);
 
@@ -194,32 +194,32 @@ public:
     token_type table_op;
 
     /**
-     * The agentvar being accumulated (pointer to pointer)
+     * The attribute being accumulated (pointer to pointer)
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol** agentvar;
+    Symbol** attribute;
 
     /**
-     * The agentvar being accumulated (pointer)
+     * The attribute being accumulated (pointer)
      * 
      * Only valid after post-parse phase 1.
      */
-    AttributeSymbol* pp_agentvar;
+    AttributeSymbol* pp_attribute;
 
     /**
-     * The analysis agentvar being accumulated (pointer to pointer)
+     * The analysis attribute being accumulated (pointer to pointer)
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol** analysis_agentvar;
+    Symbol** analysis_attribute;
 
     /**
-     * The analysis agentvar being accumulated (pointer)
+     * The analysis attribute being accumulated (pointer)
      * 
      * Only valid after post-parse phase 1.
      */
-    EntityTableMeasureAttributeSymbol* pp_analysis_agentvar;
+    EntityTableMeasureAttributeSymbol* pp_analysis_attribute;
 
     /**
      * Indicates if the accumulator has an associated collection of observations.

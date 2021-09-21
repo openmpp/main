@@ -1387,11 +1387,11 @@ void Symbol::post_parse_all()
         agent->pp_agent_data_members.sort( [] (EntityDataMemberSymbol *a, EntityDataMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_callback_members.sort( [] (EntityMemberSymbol *a, EntityMemberSymbol *b) { return a->name < b->name ; } );
         agent->pp_maintained_attributes.sort( [] (MaintainedAttributeSymbol *a, MaintainedAttributeSymbol *b) { return a->name < b->name ; } );
-        agent->pp_identity_agentvars.sort( [] (IdentityAttributeSymbol *a, IdentityAttributeSymbol *b) { return a->name < b->name ; } );
+        agent->pp_identity_attributes.sort( [] (IdentityAttributeSymbol *a, IdentityAttributeSymbol *b) { return a->name < b->name ; } );
         agent->pp_agent_events.sort( [] (EntityEventSymbol *a, EntityEventSymbol *b) { return a->event_name < b->event_name ; } );
         agent->pp_agent_funcs.sort( [] (EntityFuncSymbol *a, EntityFuncSymbol *b) { return a->name < b->name ; } );
         agent->pp_entity_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
-        agent->pp_link_agentvars.sort( [] (LinkAttributeSymbol *a, LinkAttributeSymbol *b) { return a->name < b->name ; } );
+        agent->pp_link_attributes.sort( [] (LinkAttributeSymbol *a, LinkAttributeSymbol *b) { return a->name < b->name ; } );
         agent->pp_multilink_members.sort( [] (EntityMultilinkSymbol *a, EntityMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 

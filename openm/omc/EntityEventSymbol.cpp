@@ -163,7 +163,7 @@ void EntityEventSymbol::post_parse(int pass)
         // Dependencies are generated directly if not developer-supplied.
         if (!is_developer_supplied) break;
         // Iterate through list of identifiers in the body of the time function
-        // whose name matches an agentvar.
+        // whose name matches an attribute.
         for (auto identifier : time_func_original->body_identifiers) {
             if (exists(identifier, pp_agent)) {
                 auto sym = get_symbol(identifier, pp_agent);

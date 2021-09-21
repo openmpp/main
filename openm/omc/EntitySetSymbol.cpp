@@ -34,7 +34,7 @@ void EntitySetSymbol::create_auxiliary_symbols()
         assert(!update_cell_fn); // initialization guarantee
         update_cell_fn = new EntityFuncSymbol("om_" + name + "_update_cell", agent);
         assert(update_cell_fn); // out of memory check
-        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using agentvars in the " + agent->name + " agent.");
+        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using attributes in the " + agent->name + " agent.");
     }
 
     {
@@ -85,7 +85,7 @@ void EntitySetSymbol::post_parse(int pass)
         build_body_insert();
         build_body_erase();
 
-        // Dependency on change in index agentvars
+        // Dependency on change in index attributes
         for (auto dim : dimension_list) {
             auto av = dim->pp_attribute;
             CodeBlock& c = av->side_effects_fn->func_body;
@@ -191,7 +191,7 @@ void EntitySetSymbol::build_body_update_cell()
         }
         assert(es); // integrity check guarantee
         c += "";
-        c += "// dimension=" + to_string(dim->index) + " agentvar=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
+        c += "// dimension=" + to_string(dim->index) + " attribute=" + av->name + " type=" + es->name + " size=" + to_string(es->pp_size());
         if (dim->index > 0) {
             c += "cell *= " + to_string(es->pp_size()) + ";";
         }

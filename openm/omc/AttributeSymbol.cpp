@@ -99,7 +99,7 @@ void AttributeSymbol::create_lagged()
         return;
     }
 
-    // lagged stores in same type as this agentvar
+    // lagged stores in same type as this attribute
     lagged = new EntityInternalSymbol(lagged_name, agent, data_type);
     // note parent attribute for post-parse type resolution in case data_type is unknown
     lagged->parent = this->stable_pp();
@@ -190,7 +190,7 @@ void AttributeSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // Add this agentvar to the agent's list of all callback members
+        // Add this attribute to the agent's list of all callback members
         pp_agent->pp_callback_members.push_back(this);
         break;
     }

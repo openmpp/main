@@ -46,8 +46,8 @@ CodeBlock BuiltinAttributeSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    // example:         AgentVar<Time, Person, &Person::time_side_effects> time;
-    h += "AssignableAgentVar<"
+    // example:         Attribute<Time, Person, &Person::time_side_effects> time;
+    h += "AssignableAttribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
         + agent->name + ", "

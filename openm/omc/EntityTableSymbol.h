@@ -130,7 +130,7 @@ public:
     EntityFuncSymbol *push_increment_fn;
 
     /**
-     * The expression agentvar of the table filter.
+     * The expression attribute of the table filter.
      */
     IdentityAttributeSymbol *filter;
 
