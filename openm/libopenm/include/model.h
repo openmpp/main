@@ -16,6 +16,7 @@
 using namespace std;
 
 #include "libopenm/omLog.h"
+#include "libopenm/common/omFile.h"
 #include "libopenm/omModel.h"
 #include "libopenm/db/dbMetaRow.h"
 #include "dbMetaTable.h"

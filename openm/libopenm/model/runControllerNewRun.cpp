@@ -429,22 +429,20 @@ void RunController::createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) 
 {
     // insert run description using run options
     for (const auto & lOpt : langOptsMap) {
-        if (lOpt.first.first != LangOptKind::runDescr) continue;    // this is not run decription
-
         i_dbExec->update(
             "INSERT INTO run_txt (run_id, lang_id, descr, note)" \
             " VALUES (" +
             to_string(i_runId) + ", " +
-            to_string(lOpt.first.second) + ", " +
-            toQuoted(lOpt.second) + ", " +
-            "NULL)");
+            to_string(lOpt.first) + ", " +
+            toQuoted(lOpt.second.first) + ", " +
+            (!lOpt.second.second.empty() ? toQuoted(lOpt.second.second) : "NULL") + ")");
     }
 
     // copy workset text into run text where run description is not specified by run options
     vector<WorksetTxtRow> wtRows = IWorksetTxtTable::select(i_dbExec, i_setId);
 
     for (const auto & row : wtRows) {
-        if (langOptsMap.find(pair(LangOptKind::runDescr, row.langId)) != langOptsMap.end()) continue;   // skip: run text specified through options
+        if (langOptsMap.find(row.langId) != langOptsMap.end()) continue;    // skip: run text specified through options
 
         i_dbExec->update(
             "INSERT INTO run_txt (run_id, lang_id, descr, note)" \

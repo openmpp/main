@@ -89,7 +89,9 @@ static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 
 /** option suffixes to provide language-specific options, ex: "EN.RunDescription" */
 static const char * langSuffixOptArr[] = {
-    RunOptionsKey::runDescrSuffix
+    RunOptionsKey::runDescrSuffix,
+    RunOptionsKey::runNotePathSuffix
+
 };
 static const size_t langSuffixOptSize = sizeof(langSuffixOptArr) / sizeof(const char *);
 
@@ -866,16 +868,15 @@ void MetaLoader::parseSuppressOptions(void)
 
 /** parse language-specific options to get language code and option value.
 *
-* For example: -EN.RunDescription "run the model with 50,000 cases"
+* For example: -EN.RunDescription "run the model with 50,000 cases" -EN.RunNotesPath EN_notes.md
 */
 void MetaLoader::parseLangOptions(void)
 {
+    const locale mdLocale(""); // user default locale for md files
+
     for (NoCaseMap::const_iterator optIt = argStore.args.cbegin(); optIt != argStore.args.cend(); optIt++) {
 
-        LangOptKind kind = LangOptKind::none;
-        int lid = 0;
-        size_t nMax = 0;
-        for (size_t n = 0; kind == LangOptKind::none && n < langSuffixOptSize; n++) {
+        for (size_t n = 0; n < langSuffixOptSize; n++) {
 
             string sfx = string(".") + langSuffixOptArr[n];
             if (!endWithNoCase(optIt->first, sfx.c_str())) continue;    // option does not end with this language-specific suffix
@@ -887,15 +888,23 @@ void MetaLoader::parseLangOptions(void)
             if (langRow == nullptr)
                 throw ModelException("invalid language specified for %s option", optIt->first.c_str());
 
-            // this is language-specific option, only run description option supported
-            kind = LangOptKind::runDescr;
-            lid = langRow->langId;
-            nMax = OM_DESCR_DB_MAX;
-        }
+            // add run description
+            if (equalNoCase(langSuffixOptArr[n], RunOptionsKey::runDescrSuffix)) {
+                langOptsMap[langRow->langId].first = optIt->second.substr(0, OM_DESCR_DB_MAX);
+            }
 
-        // if this is this language-specific option then store language code and value
-        if (kind != LangOptKind::none) {
-            langOptsMap[pair<LangOptKind, int>(kind, lid)] = optIt->second.substr(0, nMax);
+            // read run notes
+            if (equalNoCase(langSuffixOptArr[n], RunOptionsKey::runNotePathSuffix)) {
+
+                theLog->logFormatted("Reading %s", optIt->second.c_str());
+
+                string value_note = fileToUtf8(optIt->second.c_str());
+
+                value_note = trim(value_note, mdLocale);
+                if (!value_note.empty()) {  // skip empty notes
+                    langOptsMap[langRow->langId].second = value_note.substr(0, OM_STR_DB_MAX);
+                }
+            }
         }
     }
 }
