@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_10_04:
+  add model run option to specify run notes in Markdown format
+  UI: ability to create new workset
+  UI: ability to edit model run notes
+  build and publish Linux / Ubuntu release
+
 2021_09_03:
   c++ code cleanup in order to eliminate c++ model build warnings
   UI: add model download feature to get model run results or input scenario(s)
