@@ -54,7 +54,7 @@ public:
 
     // converting ctor for creating temporary r-values
     DurationAttribute(T assign_value)
-        : Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
+        : Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>(assign_value)
     {
     }
 
