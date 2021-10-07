@@ -139,6 +139,9 @@ namespace openm
         /** options ended with ".RunDescription" used to specify run decsription, ex: -EN.RunDescription "run model with 50,000 cases" */
         static constexpr const char * runDescrSuffix = "RunDescription";
 
+        /** options ended with ".RunNotesPath" used to specify path to run notes file, ex: -EN.RunNotesPath EN_notes.md */
+        static constexpr const char * runNotePathSuffix = "RunNotesPath";
+
         /** trace log to console */
         static constexpr const char * traceToConsole = "OpenM.TraceToConsole";
 
@@ -337,14 +340,8 @@ namespace openm
         };
         map<int, ParamImportOpts> paramImportOptsMap;   // parameter id mapped to import options
 
-        // enum to specify what kind of language-specific option it is
-        enum class LangOptKind {
-            none = 0,       // undefined
-            runDescr = 1    // run description
-        };
-
-        // language-specific options: map (kind, language id) to option value
-        map<pair<LangOptKind, int>, string> langOptsMap;
+        // language-specific options: map language id to run description and notes
+        map<int, pair<string, string> > langOptsMap;
 
     private:
         RunOptions baseRunOpts;     // basic model run options

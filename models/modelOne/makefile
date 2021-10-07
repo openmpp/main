@@ -196,6 +196,9 @@ run:
 		-OpenM.SubValues 2 -SubFrom.salaryFull csv -OpenM.ParamDir ./csv \
 		-OpenM.RunName "Sub-values_2_from_csv" \
 		-EN.RunDescription "Parameter sub-values 2 from csv" \
+		-FR.RunDescription "(FR) Parameter sub-values 2 from csv" \
+		-EN.RunNotesPath ./run_notes-en.md \
+		-FR.RunNotesPath ./run_notes-fr.md \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
