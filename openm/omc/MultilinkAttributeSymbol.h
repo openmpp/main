@@ -6,7 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
-#include "AttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
 #include "NumericSymbol.h"
 #include "UnknownTypeSymbol.h"
 
@@ -17,13 +17,13 @@ using namespace std;
 /**
  * MultilinkAttributeSymbol
  * 
- * Symbol for multilink attributes of the form count(multilink), sum_over(multilink, attribute),
+ * Symbol for multilink function attributes like count(multilink), sum_over(multilink, attribute),
  * etc.
  */
-class MultilinkAttributeSymbol : public AttributeSymbol
+class MultilinkAttributeSymbol : public MaintainedAttributeSymbol
 {
 private:
-    typedef AttributeSymbol super;
+    typedef MaintainedAttributeSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -40,7 +40,7 @@ public:
      *  may be changed once the data type of attribute is known.
      */
     MultilinkAttributeSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute)
-        : AttributeSymbol(MultilinkAttributeSymbol::member_name(func, multilink, attribute),
+        : MaintainedAttributeSymbol(MultilinkAttributeSymbol::member_name(func, multilink, attribute),
                         agent,
                         UnknownTypeSymbol::find() )
         , func(func)

@@ -13,7 +13,17 @@ class EntityMultilinkSymbol;
 using namespace std;
 
 /**
-* Symbol for a link member of an agent.
+* Symbol for a link member of an entity.
+* 
+* Note that this symbol is for the link itself, not for an attribute
+* pointed to by a link.
+* A link can be used in an expression without being followed by
+* the -> operator, in which case it returns a bool
+* just like C++ does with a pointer.
+* 
+* During parsing, a link which points to an attribute
+* is held in a LinkToAttributeSymbol object.
+* 
 */
 class LinkAttributeSymbol : public AttributeSymbol
 {

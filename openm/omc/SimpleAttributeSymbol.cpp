@@ -42,6 +42,7 @@ CodeBlock SimpleAttributeSymbol::cxx_declaration_agent()
 		+ pp_data_type->exposed_type() + ", "
 		+ agent->name + ", "
 		+ "&om_name_" + name + ", "
+		+ (is_time_like ? "true" : "false") + ", "
 		+ "&" + side_effects_fn->unique_name + ", "
 		+ (!side_effects_fn->empty() ? "true" : "false") + ", "
 		+ "&" + notify_fn->unique_name + ", "

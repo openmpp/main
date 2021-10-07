@@ -137,9 +137,9 @@ public:
     set<LinkAttributeSymbol *> pp_links_used;
 
     /**
-     * The linked attributes used in the expression.
+     * The link-to attributes used in the expression.
      */
-    set<LinkToAttributeSymbol *> pp_linked_attributes_used;
+    set<LinkToAttributeSymbol *> pp_linkto_attributes_used;
 
     /**
      * The expression function.

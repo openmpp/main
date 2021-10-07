@@ -2758,6 +2758,10 @@ symbol_in_table:
     | link_to_attribute_shadowed
 	;
 
+/*
+ * link to attribute shadowed by a generated identity attribute
+ */
+
 link_to_attribute_shadowed:
       SYMBOL[link] "->"
                         {
@@ -3028,7 +3032,7 @@ derived_attribute_other:
     | aggregate_multilink_function[function] "(" SYMBOL[multilink] ","
                         {
                             // Tell the scanner not to apply agent scope resolution to the following 'word'
-                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // in the input stream, but just return a STRING instead.  That's because the entity context
                             // depends on the nature of the preceding multilink symbol, whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }

@@ -85,6 +85,7 @@ CodeBlock LinkAttributeSymbol::cxx_declaration_agent()
         + agent->name + ", "
         + reciprocal_agent->name + ", "
         + "&om_name_" + name + ", "
+        + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "

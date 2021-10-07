@@ -1315,6 +1315,11 @@ public:
     static bool option_verify_attribute_modification;
 
     /**
+     * true or false depending on verify_timelike_attribute_access value in options statement.
+     */
+    static bool option_verify_timelike_attribute_access;
+
+    /**
      * Code page to use for source file conversion
      */
     static string code_page;

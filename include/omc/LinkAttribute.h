@@ -32,6 +32,7 @@
  * @tparam A               Type of the containing entity.
  * @tparam B               Type of the entity in the link, e.g. Thing
  * @tparam NT_name         Name of the attribute (non-type parameter).
+ * @tparam NT_is_time_like Attribute can change between events, like time.
  * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
  * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
  * @tparam NT_notify       Function implementing pre-notification of change in value (non-type parameter).
@@ -43,12 +44,13 @@ template<
     typename A,
     typename B,
     std::string const *NT_name,
+    bool NT_is_time_like,
     void (A::*NT_side_effects)(T old_value, T new_value),
     bool NT_se_present,
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-class LinkAttribute : public Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
+class LinkAttribute : public Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>
 {
 public:
     LinkAttribute(const LinkAttribute&) = delete; // copy constructor

@@ -396,9 +396,14 @@ public:
     void assign_pp_members();
 
     /**
-     * Record symbols on which the derived attributes depends
+     * Record attributes on which the derived attribute depends
      */
     void record_dependencies();
+
+    /**
+     * Record attributes on which the derived attribute depends for its time-like status
+     */
+    void record_dependencies_timelike();
 
     /**
      * Create side-effects to maintain this symbol.

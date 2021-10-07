@@ -35,6 +35,7 @@ public:
         , lagged_event_counter(nullptr)
         , side_effects_fn(nullptr)
         , notify_fn(nullptr)
+        , is_time_like(false)
     {
         create_auxiliary_symbols();
     }
@@ -49,8 +50,11 @@ public:
      */
     AttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
         : EntityDataMemberSymbol(member_name, agent, type, decl_loc)
+        , lagged(nullptr)
+        , lagged_event_counter(nullptr)
         , side_effects_fn(nullptr)
         , notify_fn(nullptr)
+        , is_time_like(false)
     {
         create_auxiliary_symbols();
     }
@@ -141,5 +145,9 @@ public:
      */
     EntityFuncSymbol *notify_fn;
 
+    /**
+     * The attribute can change between events, like time.
+     */
+    bool is_time_like;
 };
 

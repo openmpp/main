@@ -2,7 +2,7 @@
 * @file    LinkToAttributeSymbol.cpp
 * Definitions for the LinkToAttributeSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2021 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>

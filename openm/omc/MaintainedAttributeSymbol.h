@@ -57,8 +57,13 @@ public:
     void post_parse(int pass);
 
     /**
-     * The maintained attributes on which this maintained attribute depends.
+     * The attributes on which this maintained attribute depends.
      */
     unordered_set<AttributeSymbol *> pp_dependent_attributes;
+
+    /**
+     * The attributes whose time-like status propagates to this attribute.
+     */
+    unordered_set<AttributeSymbol*> pp_dependent_attributes_timelike_propagating;
 };
 

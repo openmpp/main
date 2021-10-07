@@ -146,17 +146,21 @@ TIME Host::timeOneTime()
     //
     // BEGIN Test access to other entities in time function (ompp only)
     // 
+
     //for (auto prHost : asAllHostsByPhase[DP_SUSCEPTIBLE]) // one day this will work!
+
     //double dSum = 0;
     //int nHosts = asAllHosts->Count();
     //for (int nJ = 0; nJ < nHosts; nJ++)
     //{
     //    auto prHost = asAllHosts->Item(nJ);
     //    // arbitrary attribute read across link in a time function
-    //    dSum += prHost->age;
+    //    //dSum += prHost->age; // this will generate a run-time error because age is a prohibited time-like attribute
+    //    dSum += prHost->event_count; // this is OK
     //    // the following is disallowed and will generate a run-time error in ompp
     //    //prHost->thingee = 3.0;
     //}
+
     //
     // END Test access to other entities in time function (ompp only)
     // 

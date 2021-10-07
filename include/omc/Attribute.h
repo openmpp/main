@@ -22,6 +22,7 @@
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
  * @tparam A               Type of containing entity.
  * @tparam NT_name         Name of the attribute (non-type parameter).
+ * @tparam NT_is_time_like Attribute can change between events, like time.
  * @tparam NT_side_effects Function implementing assignment side effects (non-type parameter).
  * @tparam NT_se_present   Assignment side-effects are present (non-type parameter).
  * @tparam NT_notify       Function implementing pre-notification of change in value (non-type parameter).
@@ -32,6 +33,7 @@ template<
     typename T2,
     typename A,
     std::string const *NT_name,
+    bool NT_is_time_like,
     void (A::*NT_side_effects)(T old_value, T new_value),
     bool NT_se_present,
     void (A::*NT_notify)(),
@@ -155,6 +157,18 @@ public:
 
     T get() const
     {
+        if (om_verify_timelike_attribute_access) { // is constexpr
+            if (!BaseEntity::om_permit_timelike_attribute_access && get_is_time_like()) {
+                // time-like attribute access is forbidden in current phase of event lifecycle
+                handle_prohibited_timelike_attribute_access(get_name());
+            }
+        }
+        return value;
+    }
+
+    T direct_get() const
+    {
+        // bypasses checks, for diagnostic output only, eg in cover event time trace function
         return value;
     }
 
@@ -166,6 +180,16 @@ public:
     static const std::string & get_name()
     {
         return *NT_name;
+    }
+
+    /**
+     * Gets the is_time_like property of the attribute
+     *
+     * @return bool
+     */
+    static const bool get_is_time_like()
+    {
+        return NT_is_time_like;
     }
 
     // storage
@@ -188,12 +212,13 @@ template<
     typename T2,
     typename A,
     std::string const *NT_name,
+    bool NT_is_time_like,
     void (A::*NT_side_effects)(T old_value, T new_value),
     bool NT_se_present,
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-size_t Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
+size_t Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
 
 // Attribute participation in type resolution based on wrapped types
 // by specializing std::common_type.
@@ -202,29 +227,29 @@ size_t Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, N
 namespace std {
 
     // unwrap Attribute with void T2
-    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, Attribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    template<typename Other, typename T, typename A, string const *NT_name, bool NT_is_time_like, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<Other, Attribute<T, void, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap Attribute with void T2, opposite order
-    template<typename Other, typename T, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Attribute<T, void, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    template<typename Other, typename T, typename A, string const *NT_name, bool NT_is_time_like, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<Attribute<T, void, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
     {
         using type = typename common_type<Other, T>::type;
     };
 
     // unwrap Attribute with non-void T2
-    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Other, Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
+    template<typename Other, typename T, typename T2, typename A, string const *NT_name, bool NT_is_time_like, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<Other, Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>>
     {
         using type = typename common_type<Other, T2>::type;
     };
 
     // unwrap Attribute with non-void T2, opposite order
-    template<typename Other, typename T, typename T2, typename A, string const *NT_name, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
-    struct common_type<Attribute<T, T2, A, NT_name, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
+    template<typename Other, typename T, typename T2, typename A, string const *NT_name, bool NT_is_time_like, void (A::*NT_side_effects)(T, T), bool NT_se_present, void (A::*NT_notify)(), bool NT_ntfy_present>
+    struct common_type<Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>, Other>
     {
         using type = typename common_type<Other, T2>::type;
         //using type = decltype(true ? declval<Other>() : declval<T2>());

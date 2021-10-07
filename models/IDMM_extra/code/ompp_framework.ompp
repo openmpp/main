@@ -18,6 +18,7 @@ use "random/random_lcg41.ompp";
 use "time_based/time_based_common.ompp";
 use "time_based/time_based_scaling_none.ompp";
 #endif
+//options verify_timelike_attribute_access = off;
 
 namespace fmk {
 

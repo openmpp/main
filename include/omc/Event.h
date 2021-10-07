@@ -244,6 +244,10 @@ public:
             // prohibit attribute assignment during recomputation of dirty event times
             BaseEntity::om_permit_attribute_modification = false;
         }
+        if (om_verify_timelike_attribute_access) { // is constexpr
+            // prohibit time-like attribute access during recomputation of dirty event times
+            BaseEntity::om_permit_timelike_attribute_access = false;
+        }
         assert(dirty_events);
         auto it = dirty_events->begin();
         while (it != dirty_events->end()) {
@@ -254,6 +258,10 @@ public:
         if (om_verify_attribute_modification) { // is constexpr
             // permit attribute assignment after recomputation of dirty event times is complete
             BaseEntity::om_permit_attribute_modification = true;
+        }
+        if (om_verify_timelike_attribute_access) { // is constexpr
+            // permit attribute assignment after recomputation of dirty event times is complete
+            BaseEntity::om_permit_timelike_attribute_access = true;
         }
     }
 

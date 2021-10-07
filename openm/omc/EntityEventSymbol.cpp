@@ -193,7 +193,7 @@ void EntityEventSymbol::post_parse(int pass)
                 + std::to_string(pp_event_id) + ","
                 "\"" + time_func_original->name + "\", "
                 "(double)event_time, "
-                "(double)age, "
+                "(double)age.direct_get(), "
                 "(double)BaseEvent::get_global_time(), "
                 "BaseEntity::et_msg_type::eQueuedEvent);"
                 ;

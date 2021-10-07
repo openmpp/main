@@ -55,23 +55,31 @@ public:
                 // Do not synchronize time if the global time is -inf.
                 // Global time is -inf before the first event in the simulation.
                 if (!std::isinf(current_global_time)) {
-                    if (ptr->time < current_global_time) {
+                    if (ptr->time.direct_get() < current_global_time) {
+                        // Construct sandwich #1 to allow reading of time attribute for just-in-time
+                        bool saved1 = BaseEntity::om_permit_timelike_attribute_access;
+                        BaseEntity::om_permit_timelike_attribute_access = true;
+
                         // Synchronize time of the entity referred to through the pointer.
                         if (om_verify_attribute_modification) { // is constexpr
-                            // construct a sandwich allowing modification of time attribute for just-in-time
-                            bool saved = BaseEntity::om_permit_attribute_modification;
+                            // construct sandwich #2 allowing modification of time attribute for just-in-time
+                            bool saved2 = BaseEntity::om_permit_attribute_modification;
                             BaseEntity::om_permit_attribute_modification = true;
                             ptr->time.set(current_global_time);
-                            BaseEntity::om_permit_attribute_modification = saved;
+                            // finish sandwich #2
+                            BaseEntity::om_permit_attribute_modification = saved2;
                         }
                         else {
                             ptr->time.set(current_global_time);
                         }
+
+                        // finish sandwich #1
+                        BaseEntity::om_permit_timelike_attribute_access = saved1;
                     }
-                    else if (!BaseEvent::allow_clairvoyance && ptr->time > current_global_time) {
+                    else if (!BaseEvent::allow_clairvoyance && ptr->time.direct_get() > current_global_time) {
                         // This is an attempt to access an entity in the local future of the current entity.
                         // Write error message to log and throw run-time exception.
-                        handle_clairvoyance(current_global_time, ptr->time, ptr->entity_id);
+                        handle_clairvoyance(current_global_time, ptr->time.direct_get(), ptr->entity_id);
                     }
                     else {
                         // Time is already synchronized between the two entities.

@@ -206,15 +206,31 @@ void CodeGen::do_preamble()
         t0 += doxygen_short("Model was built with verification of attribute modification.");
         t0 += "constexpr bool om_verify_attribute_modification = true;";
         t0 += "";
-        c += "// Model prohibits attribute modification in event time functions using the following flag.";
+        c += "// Model runtime prohibits attribute modification in event time functions using the following flag.";
         c += "thread_local bool BaseEntity::om_permit_attribute_modification  = true;";
     }
     else {
         t0 += doxygen_short("Model was built without verification of attribute modification.");
         t0 += "constexpr bool om_verify_attribute_modification = false;";
         t0 += "";
-        c += "// Model does not prohibit attribute modification in event time functions, but still requires that the following flag be defined.";
+        c += "// Model runtime does not prohibit attribute modification in event time functions, but still requires that the following flag be defined.";
         c += "thread_local bool BaseEntity::om_permit_attribute_modification  = true;";
+    }
+    c += "";
+
+    if (Symbol::option_verify_timelike_attribute_access) {
+        t0 += doxygen_short("Model was built with verification of time-like attribute access.");
+        t0 += "constexpr bool om_verify_timelike_attribute_access = true;";
+        t0 += "";
+        c += "// Model runtime prohibits access to time-like attributes in event time functions using the following flag.";
+        c += "thread_local bool BaseEntity::om_permit_timelike_attribute_access = true;";
+    }
+    else {
+        t0 += doxygen_short("Model was built without verification of time-like attribute access.");
+        t0 += "constexpr bool om_verify_timelike_attribute_access = false;";
+        t0 += "";
+        c += "// Model runtime does not prohibit access to time-like attributes in event time functions, but still requires that the following flag be defined.";
+        c += "thread_local bool BaseEntity::om_permit_timelike_attribute_access = true;";
     }
     c += "";
 
@@ -529,6 +545,10 @@ void CodeGen::do_RunInit()
 	c += "{";
     if (!Symbol::option_verify_attribute_modification) {
         c += "theLog->logFormatted(LT(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\"));";
+        c += "";
+    }
+    if (!Symbol::option_verify_timelike_attribute_access) {
+        c += "theLog->logFormatted(LT(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\"));";
         c += "";
     }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";

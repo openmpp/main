@@ -26,6 +26,9 @@ void handle_null_dereference();
 void handle_prohibited_attribute_assignment(const std::string name);
 
 // defined in use/common.ompp
+void handle_prohibited_timelike_attribute_access(const std::string name);
+
+// defined in use/common.ompp
 void handle_derived_table_API_invalid_rank(const char* name, size_t indices_rank, size_t indices_count);
 
 // defined in use/common.ompp

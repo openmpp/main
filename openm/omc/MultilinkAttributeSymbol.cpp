@@ -137,6 +137,19 @@ void MultilinkAttributeSymbol::post_parse(int pass)
     }
     break;
 
+    case ePopulateCollections:
+    {
+        if (pp_attribute) {
+            // is sum_over, min_over, max_over
+
+            // The multilink function attribute depends on the attribute
+            pp_dependent_attributes.emplace(pp_attribute);
+
+            // The time-like status of the attribute propagate to the mutlilink function attribute
+            pp_dependent_attributes_timelike_propagating.emplace(pp_attribute);
+        }
+        break;
+    }
     case ePopulateDependencies:
     {
         // Construct function body
@@ -232,6 +245,7 @@ CodeBlock MultilinkAttributeSymbol::cxx_declaration_agent()
         + pp_data_type->exposed_type() + ", "
         + agent->name + ", "
         + "&om_name_" + name + ", "
+        + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "

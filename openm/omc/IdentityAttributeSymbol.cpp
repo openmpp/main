@@ -74,21 +74,34 @@ void IdentityAttributeSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this identity attribute symbol to the agent's list of all such symbols
+        // Add this identity attribute symbol to the entity's list of all such symbols
         pp_agent->pp_identity_attributes.push_back(this);
         
         // Perform post-parse operations to each element in the expression tree
         post_parse_traverse2(root);
 
-        // record dependencies
+        // record dependencies on attributes upstream to this identity attribute
         for (auto *sym : pp_attributes_used) {
+            // Record attributes on which the identity attribute depends
             pp_dependent_attributes.emplace(sym);
+            // Record attributes on which the identity attribute depends for its time-like status
+            pp_dependent_attributes_timelike_propagating.emplace(sym);
+        }
+
+        // record dependencies on linked attributes upstream to this identity attribute
+        for (auto* sym : pp_linkto_attributes_used) {
+            // Record linked attribute on which this identity attribute depends
+            auto attr = sym->pp_attribute;
+            assert(attr);
+            pp_dependent_attributes.emplace(attr);
+            // Record linked attribute on which this identity attribute depends for its time-like status
+            pp_dependent_attributes_timelike_propagating.emplace(attr);
         }
         break;
     }
     case ePopulateDependencies:
     {
-        // construct function body
+        // construct function body which evaluates the expression
         build_body_expression();
 
         // Dependency on attributes in expression
@@ -100,7 +113,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
         }
 
         // Dependency on linked attributes in expression
-        for (auto ltav : pp_linked_attributes_used) {
+        for (auto ltav : pp_linkto_attributes_used) {
             auto av = ltav->pp_attribute; // attribute being referenced across the link (rhs)
             assert(av);
 
@@ -212,27 +225,34 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
     auto ternary_op = dynamic_cast<ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
+        // this is a terminal leaf of the expression tree, specifically a symbol
         (sym->pp_symbol) = pp_symbol(sym->symbol);
         assert(sym->pp_symbol); // parser guarantee
-        auto av = dynamic_cast<AttributeSymbol *>(sym->pp_symbol);
-        if (av) {
-            // add to the set of all attributes used in this expression
-            pp_attributes_used.insert(av);
+        {
+            auto av = dynamic_cast<AttributeSymbol*>(sym->pp_symbol);
+            if (av) {
+                // Add to the set of all attributes used in this expression.
+                // Note that this includes the various subtypes of AttributeSymbol, eg DerivedAttributeSymbol, etc
+                // Note that this does not include LinkToAttributeSymbol
+                pp_attributes_used.insert(av);
+            }
         }
-        auto ltav = dynamic_cast<LinkToAttributeSymbol *>(sym->pp_symbol);
-        if (ltav) {
-            // add to the set of all links to attributes used in this expression
-            pp_linked_attributes_used.insert(ltav);
+        {
+            auto ltav = dynamic_cast<LinkToAttributeSymbol*>(sym->pp_symbol);
+            if (ltav) {
+                // add to the set of all links to attributes used in this expression
+                pp_linkto_attributes_used.insert(ltav);
 
-            // add the link itself to the set of all links used in this expression
-            // ltav->pp_link is not yet valid in this post-parse pass,
-            // so go through ltav->link instead
-            assert(ltav->link);
-            auto temp_sym = pp_symbol(ltav->link);
-            assert(temp_sym);
-            auto lav = dynamic_cast<LinkAttributeSymbol *>(temp_sym);
-            assert(lav);
-            pp_links_used.insert(lav);
+                // add the link itself to the set of all links used in this expression
+                // ltav->pp_link is not yet valid in this post-parse pass,
+                // so go through ltav->link instead
+                assert(ltav->link);
+                auto temp_sym = pp_symbol(ltav->link);
+                assert(temp_sym);
+                auto la = dynamic_cast<LinkAttributeSymbol*>(temp_sym);
+                assert(la);
+                pp_links_used.insert(la);
+            }
         }
     }
     else if (lit != nullptr) {
@@ -375,6 +395,7 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
         + pp_data_type->exposed_type() + ", "
         + agent->name + ", "
         + "&om_name_" + name + ", "
+        + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "

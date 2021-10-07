@@ -47,6 +47,7 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
             // initialize it
+            biav->is_time_like = true; // can change between events
             // declare the om_delta local variable for use in subsequently added code
             auto fn = biav->side_effects_fn;
             assert(fn);
@@ -73,6 +74,7 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
             // initialize it
+            biav->is_time_like = true; // can change between events, like time
             biav->sorting_group = 2; // age is continuously-updated
         }
     }

@@ -595,6 +595,8 @@ bool Symbol::option_time_undef_is_minus_one = false;
 
 bool Symbol::option_verify_attribute_modification = true;
 
+bool Symbol::option_verify_timelike_attribute_access = true;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -1480,6 +1482,29 @@ void Symbol::post_parse_all()
         default_sort_pp_symbols();
     }
 
+    // Propagate time-like property among attributes
+    // Iterate until no new propagations of time-like status among attributes.
+    // Implementation is knowingly brute force rather than recursive.
+    {
+        int conversions = 0;
+        do {
+            conversions = 0;
+            for (auto* ent : pp_all_agents) { // entities
+                for (auto* ma : ent->pp_maintained_attributes) { // maintained attributes
+                    for (auto* pa : ma->pp_dependent_attributes_timelike_propagating) { // attributes which propagate time-like property to this maintaied attribute
+                        if (pa->is_time_like) {
+                            if (!ma->is_time_like) {
+                                // new conversion to time-like from dependent (upstream) attribute
+                                conversions++;
+                                ma->is_time_like = true;
+                            }
+                        }
+                    }
+                } // maintained attributes
+            } // entities
+        } while (conversions > 0);
+    }
+
 #if defined(DEPENDENCY_TEST)
     // For each entity in the model, determine the code injection order
     // of its maintained attributes.
@@ -1589,7 +1614,7 @@ void Symbol::post_parse_all()
             }
         }
     }
-    // Sort taking account of code injection order before pass 6
+    // Sort taking account of code injection order before code injection pass
     default_sort_pp_symbols();
 #endif
 
@@ -1797,6 +1822,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_verify_attribute_modification = false;
+            }
+        }
+    }
+
+    {
+        string key = "verify_timelike_attribute_access";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_verify_timelike_attribute_access = true;
+            }
+            else if (value == "off") {
+                option_verify_timelike_attribute_access = false;
             }
         }
     }

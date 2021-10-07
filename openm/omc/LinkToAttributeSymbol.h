@@ -13,12 +13,14 @@ class AttributeSymbol;
 class LinkAttributeSymbol;
 
 /**
- * A symbol for a link to an agent variable symbol.
+ * A symbol for a link to an attribute in an entity.
  * 
- * A LinkToAttributeSmbol records the use of an attribute in a different agent across a link
- * attribute.  An example might be “my_thing->making_trouble” in the declaration of an identity
- * attribute in the "Person" agent.  The example is a reference to the attribute named
- * "making_trouble" in the agent "my_thing", which is an agent of type "Thing".
+ * A LinkToAttributeSymbol records the use of an attribute of a different entity across a link.
+ * An example is my_thing->making_trouble in the declaration of an identity
+ * attribute in the Person entity.  It is a reference to the attribute named
+ * making_trouble of the entity pointed to by the link my_thing.
+ * 
+ * NB: A LinkToAttributeSymbol is not an attribute of an entity.
  */
 class LinkToAttributeSymbol : public Symbol
 {

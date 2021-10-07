@@ -579,7 +579,7 @@ void DerivedAttributeSymbol::assign_sorting_group()
     }
 #if defined(DEPENDENCY_TEST)
     // Assign all derived attributes to sorting group 8
-    // so that code_order resolves depdencies among them.
+    // so that code_order resolves dependencies among them.
     sorting_group = 8;
 #endif
 }
@@ -861,7 +861,7 @@ void DerivedAttributeSymbol::record_dependencies()
         pp_dependent_attributes.emplace(iav);
     }
 
-    // implicit dependencies on time and age
+    // implicit dependencies on non-argument attributes
     switch (tok) {
 
     case token::TK_duration:
@@ -908,7 +908,7 @@ void DerivedAttributeSymbol::record_dependencies()
         // to get the value before the spell becomes false.
         // So, the active_spell_* attribute
         // needs to be updated after the completed_spell_* attribute
-        // to record its value before the spell becomse false.
+        // to record its value before the spell becomes false.
         assert(dav);
         dav->pp_dependent_attributes.emplace(this);
     }
@@ -950,6 +950,108 @@ void DerivedAttributeSymbol::record_dependencies()
     }
 
 
+}
+
+void DerivedAttributeSymbol::record_dependencies_timelike()
+{
+    switch (tok) {
+
+    case token::TK_duration:
+    case token::TK_weighted_duration:
+    case token::TK_active_spell_duration:
+    case token::TK_active_spell_weighted_duration:
+    case token::TK_active_spell_delta:
+    {
+        // Derived attribute is time-like by nature
+        is_time_like = true;
+        break;
+    }
+
+    case token::TK_self_scheduling_int:
+    case token::TK_self_scheduling_split:
+    {
+        // Derived attribute is not time-like by construction.
+        is_time_like = false; // default is false, but assign here anyway for logical clarity
+        break;
+    }
+
+    case token::TK_undergone_entrance:
+    case token::TK_undergone_exit:
+    case token::TK_undergone_transition:
+    case token::TK_undergone_change:
+    case token::TK_entrances:
+    case token::TK_exits:
+    case token::TK_transitions:
+    case token::TK_changes:
+    case token::TK_value_at_first_entrance:
+    case token::TK_value_at_first_exit:
+    case token::TK_value_at_first_transition:
+    case token::TK_value_at_first_change:
+    case token::TK_value_at_latest_entrance:
+    case token::TK_value_at_latest_exit:
+    case token::TK_value_at_latest_transition:
+    case token::TK_value_at_latest_change:
+    case token::TK_value_at_entrances:
+    case token::TK_value_at_exits:
+    case token::TK_value_at_transitions:
+    case token::TK_value_at_changes:
+    case token::TK_trigger_entrances:
+    case token::TK_trigger_exits:
+    case token::TK_trigger_transitions:
+    case token::TK_trigger_changes:
+    case token::TK_duration_trigger:
+    case token::TK_duration_counter:
+    {
+        // Derived attribute inherits time-like status from the monitored attribute (first argument)
+        assert(pp_av1);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av1);
+        break;
+    }
+
+    case token::TK_completed_spell_duration:
+    case token::TK_completed_spell_delta:
+    {
+        // Derived attribute inherits time-like status from the monitored attribute which defines the spell (first argument)
+        assert(pp_av1);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av1);
+        break;
+    }
+
+    case token::TK_completed_spell_weighted_duration:
+    {
+        // Derived attribute inherits time-like status from the monitored attribute which defines the spell (first argument)
+        // and from the weight attribute (third argument)
+        assert(pp_av1);
+        assert(pp_av2);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av1);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av2);
+        break;
+    }
+
+    case token::TK_weighted_cumulation:
+    {
+        // Derived attribute inherits time-like status from the noted attribute (first argument)
+        // and from the weight attribute (second argument)
+        assert(pp_av1);
+        assert(pp_av2);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av1);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av2);
+        break;
+    }
+
+    case token::TK_split:
+    case token::TK_aggregate:
+    {
+        // Derived attribute inherits time-like status from the noted attribute (first argument)
+        assert(pp_av1);
+        pp_dependent_attributes_timelike_propagating.emplace(pp_av1);
+        break;
+    }
+
+    default:
+        assert(false); // above cases should be exhaustive
+        break;
+    }
 }
 
 void DerivedAttributeSymbol::assign_pp_members()
@@ -2743,6 +2845,7 @@ void DerivedAttributeSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         record_dependencies();
+        record_dependencies_timelike();
         break;
     }
     case ePopulateDependencies:
@@ -2767,6 +2870,7 @@ CodeBlock DerivedAttributeSymbol::cxx_declaration_agent()
         + pp_data_type->exposed_type() + ", "
         + pp_agent->name + ", "
         + "&om_name_" + name + ", "
+        + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "
