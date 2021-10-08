@@ -21,8 +21,6 @@ void AnonGroupSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        is_hidden = true; // SFG not sure what purpose this serves, at the group level...
-
         // assign global flags about what kinds of anon group statements are present in model code
         switch (anon_kind) {
         case eKind::parameters_suppress:
@@ -88,7 +86,6 @@ void AnonGroupSymbol::post_parse(int pass)
             for (auto sym : expanded_list()) {
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
-                    ps->is_hidden = true;
                     continue;
                 }
                 auto ts = dynamic_cast<TableSymbol*>(sym);
@@ -157,7 +154,7 @@ void AnonGroupSymbol::post_parse(int pass)
                     ts->is_suppressed = false;
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in tabless_retain statement is not a table"));
+                    pp_error(LT("error : '") + sym->name + LT("' in tables_retain statement is not a table"));
                 }
             }
             break;
