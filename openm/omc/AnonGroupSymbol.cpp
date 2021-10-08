@@ -21,8 +21,15 @@ void AnonGroupSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign global flags about what kinds of anon group statements are present in model code
+        // Assign global-like flags about what kinds of anon group statements are present in model code.
         switch (anon_kind) {
+        case eKind::hide:
+            // The Modgen hide statement is deprecated.
+            // The use of any hide statement precludes use of retain (either parameters_retain or tables_retain)
+            // A hide group is recoded to a parameters_suppress or tables_suppress group in a subsequent pass.
+            Symbol::any_parameters_suppress = true;
+            Symbol::any_tables_suppress = true;
+            break;
         case eKind::parameters_suppress:
             Symbol::any_parameters_suppress = true;
             break;
@@ -43,11 +50,35 @@ void AnonGroupSymbol::post_parse(int pass)
         }
         break;
     }
-    case eResolveDataTypes:
+    case ePopulateCollections:
     {
-        // issue error messages if model contains incompatible combinations of anon groups
+        // add this to the complete list of anon groups
+        pp_all_anon_groups.push_back(this);
+
+        if (anon_kind == eKind::hide) {
+            // The Modgen hide statement is deprecated.
+            // Treat like either parameters_suppress or tables_suppress by
+            // recoding based on the type of the first symbol in the collection.
+            // Iterate expanded list to easily retrieve first element if present.
+            for (auto sym : expanded_list()) {
+                auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                if (ps) {
+                    anon_kind = eKind::parameters_suppress;
+                }
+                else {
+                    // if first symbol is in fact not a table, an error will be raised in code below
+                    anon_kind = eKind::tables_suppress;
+                }
+                break; // of for sym loop
+            }
+        }
+
+        // Issue error message if model contains incompatible combinations of anon groups.
         switch (anon_kind) {
         case eKind::hide:
+            // The Modgen hide statement is deprecated.
+            // Modgen hide groups were recoded to parameters_suppress or tables_suppress above.
+            assert(false); // logic guarantee - hide group was recoded
             break;
         case eKind::parameters_suppress:
             if (any_parameters_retain) {
@@ -72,59 +103,46 @@ void AnonGroupSymbol::post_parse(int pass)
         default:
             break;
         }
-        break;
-    }
-    case ePopulateCollections:
-    {
-        // add this to the complete list of anon groups
-        pp_all_anon_groups.push_back(this);
 
+        // Assign properties to each element of the group.
         switch (anon_kind) {
         case eKind::hide:
         {
-            // Iterate expanded list and set is_hidden for parameters and is_internal for tables
-            for (auto sym : expanded_list()) {
-                auto ps = dynamic_cast<ParameterSymbol*>(sym);
-                if (ps) {
-                    continue;
-                }
-                auto ts = dynamic_cast<TableSymbol*>(sym);
-                if (ts) {
-                    // just ignore 'hide' statement for tables,
-                    // since in Modgen is just a hint to the UI and table may be required, eg for downstream model importing it.
-                    //ts->is_internal = true;
-                    continue;
-                }
-                pp_error(LT("error : '") + sym->name + LT("' in hide list is not a parameter or table"));
-            }
+            assert(false); // logic guarantee - hide group was recoded
             break;
         }
         case eKind::parameters_suppress:
         {
             for (auto sym : expanded_list()) {
+                auto symbol_name = sym->name;
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
-                    // indicate that this parameter is to be burned into executable instead of published
-                    ps->source = ParameterSymbol::parameter_source::fixed_parameter;
+                    if (ps->source == ParameterSymbol::parameter_source::scenario_parameter) {
+                        // indicate that this scenario parameter is to be burned into the executable instead of published
+                        ps->source = ParameterSymbol::parameter_source::fixed_parameter;
+                    }
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in parameters_suppress statement is not a parameter"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in parameters_suppress statement is not a parameter"));
                 }
             }
             break;
         }
         case eKind::parameters_retain:
         {
-            // Before this pass, all scenario parameters were changed to fixed_parameter
-            // in preparation for this step, which switches retained parameters back to scenario_parameter.
+            // Before this pass, all scenario parameters were changed to fixed parameters.
+            // in preparation for this step, which switches retained parameters back to scenario parameters.
             for (auto sym : expanded_list()) {
+                auto symbol_name = sym->name;
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
-                    // indicate that this parameter is to be a published scenario parameter, ie not burned into the executable.
-                    ps->source = ParameterSymbol::parameter_source::scenario_parameter;
+                    if (ps->source == ParameterSymbol::parameter_source::fixed_parameter) {
+                        // indicate that this parameter is to be a published scenario parameter, ie not burned into the executable.
+                        ps->source = ParameterSymbol::parameter_source::scenario_parameter;
+                    }
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in parameters_retain statement is not a parameter"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in parameters_retain statement is not a parameter"));
                 }
             }
             break;
@@ -132,29 +150,31 @@ void AnonGroupSymbol::post_parse(int pass)
         case eKind::tables_suppress:
         {
             for (auto sym : expanded_list()) {
+                auto symbol_name = sym->name;
                 auto ts = dynamic_cast<TableSymbol*>(sym);
                 if (ts) {
                     // indicate that this table is to be suppressed from the model
                     ts->is_suppressed = true;
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in tables_suppress statement is not a table"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in tables_suppress statement is not a table"));
                 }
             }
             break;
         }
         case eKind::tables_retain:
         {
-            // Before this pass is_suppressed was set to true for all non-internal tables
+            // Before this pass, is_suppressed was set to true for all non-internal tables
             // in preparation for this step, which switches retained tables back to false.
             for (auto sym : expanded_list()) {
+                auto symbol_name = sym->name;
                 auto ts = dynamic_cast<TableSymbol*>(sym);
                 if (ts) {
                     // indicate that this table is not to be suppressed.
                     ts->is_suppressed = false;
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in tables_retain statement is not a table"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in tables_retain statement is not a table"));
                 }
             }
             break;
@@ -162,6 +182,7 @@ void AnonGroupSymbol::post_parse(int pass)
         case eKind::parameters_to_tables:
         {
             for (auto sym : expanded_list()) {
+                auto symbol_name = sym->name;
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
                     // indicate that this parameter, if derived, is also to be published as a table.
@@ -170,7 +191,7 @@ void AnonGroupSymbol::post_parse(int pass)
                     }
                 }
                 else {
-                    pp_error(LT("error : '") + sym->name + LT("' in parameters_to_tables statement is not a parameter"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in parameters_to_tables statement is not a parameter"));
                 }
             }
             pp_warning(LT("warning : parameters_to_tables is not implemented"));
@@ -179,6 +200,7 @@ void AnonGroupSymbol::post_parse(int pass)
         default:
             assert(false); // logic guarantee
         } // switch (anon_kind)
+        break;
     } // case ePopulateCollections:
     default:
         break;

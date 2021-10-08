@@ -57,7 +57,7 @@ public:
     /**
      * The kind of the anonymous group
      */
-    const eKind anon_kind;
+    eKind anon_kind;
 
     static int counter;
 };
