@@ -36,6 +36,7 @@ public:
         , measures_position(0)
         , is_internal(false)
         , is_suppressed(false)
+        , is_hidden(false)
         , pp_table_id(-1)
     {
         cxx_type = name;
@@ -170,6 +171,11 @@ public:
      * eg injected code in call backs, any associated attributes, etc.
      */
     bool is_suppressed;
+
+    /**
+     * True if the table is hidden
+     */
+    bool is_hidden;
 
     /**
      * Other tables required by this table.

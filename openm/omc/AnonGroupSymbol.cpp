@@ -21,10 +21,10 @@ void AnonGroupSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        is_hidden = true;
-
         // assign global flags about what kinds of anon group statements are present in model code
         switch (anon_kind) {
+        case eKind::hide:
+            break;
         case eKind::parameters_suppress:
             Symbol::any_parameters_suppress = true;
             break;
@@ -84,22 +84,44 @@ void AnonGroupSymbol::post_parse(int pass)
         switch (anon_kind) {
         case eKind::hide:
         {
-            // Iterate expanded list and set is_hidden for parameters and is_internal for tables
+            // Iterate expanded list and raise error if invalid
             for (auto sym : expanded_list()) {
+                auto symbol_name = sym->name;
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
-                    ps->is_hidden = true;
                     continue;
                 }
                 auto ts = dynamic_cast<TableSymbol*>(sym);
                 if (ts) {
-                    // just ignore 'hide' statement for tables,
-                    // since in Modgen is just a hint to the UI and table may be required, eg for downstream model importing it.
-                    //ts->is_internal = true;
                     continue;
                 }
-                pp_error(LT("error : '") + sym->name + LT("' in hide list is not a parameter or table"));
+                pp_error(LT("error : '") + symbol_name + LT("' in hide list is not a parameter or table"));
             }
+            // Iterate non-expanded list and mark each element hidden
+            for (auto sym : pp_symbol_list) {
+                {
+                    auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                    if (ps) {
+                        ps->is_hidden = true;
+                        continue;
+                    }
+                }
+                {
+                    auto ts = dynamic_cast<TableSymbol*>(sym);
+                    if (ts) {
+                        ts->is_hidden = true;
+                        continue;
+                    }
+                }
+                {
+                    auto gs = dynamic_cast<GroupSymbol*>(sym);
+                    if (gs) {
+                        gs->is_hidden = true;
+                        continue;
+                    }
+                }
+            }
+
             break;
         }
         case eKind::parameters_suppress:
