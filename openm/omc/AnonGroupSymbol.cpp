@@ -21,15 +21,10 @@ void AnonGroupSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // Assign global-like flags about what kinds of anon group statements are present in model code.
+        is_hidden = true;
+
+        // assign global flags about what kinds of anon group statements are present in model code
         switch (anon_kind) {
-        case eKind::hide:
-            // The Modgen hide statement is deprecated.
-            // The use of any hide statement precludes use of retain (either parameters_retain or tables_retain)
-            // A hide group is recoded to a parameters_suppress or tables_suppress group in a subsequent pass.
-            Symbol::any_parameters_suppress = true;
-            Symbol::any_tables_suppress = true;
-            break;
         case eKind::parameters_suppress:
             Symbol::any_parameters_suppress = true;
             break;
@@ -50,35 +45,11 @@ void AnonGroupSymbol::post_parse(int pass)
         }
         break;
     }
-    case ePopulateCollections:
+    case eResolveDataTypes:
     {
-        // add this to the complete list of anon groups
-        pp_all_anon_groups.push_back(this);
-
-        if (anon_kind == eKind::hide) {
-            // The Modgen hide statement is deprecated.
-            // Treat like either parameters_suppress or tables_suppress by
-            // recoding based on the type of the first symbol in the collection.
-            // Iterate expanded list to easily retrieve first element if present.
-            for (auto sym : expanded_list()) {
-                auto ps = dynamic_cast<ParameterSymbol*>(sym);
-                if (ps) {
-                    anon_kind = eKind::parameters_suppress;
-                }
-                else {
-                    // if first symbol is in fact not a table, an error will be raised in code below
-                    anon_kind = eKind::tables_suppress;
-                }
-                break; // of for sym loop
-            }
-        }
-
-        // Issue error message if model contains incompatible combinations of anon groups.
+        // issue error messages if model contains incompatible combinations of anon groups
         switch (anon_kind) {
         case eKind::hide:
-            // The Modgen hide statement is deprecated.
-            // Modgen hide groups were recoded to parameters_suppress or tables_suppress above.
-            assert(false); // logic guarantee - hide group was recoded
             break;
         case eKind::parameters_suppress:
             if (any_parameters_retain) {
@@ -103,12 +74,32 @@ void AnonGroupSymbol::post_parse(int pass)
         default:
             break;
         }
+        break;
+    }
+    case ePopulateCollections:
+    {
+        // add this to the complete list of anon groups
+        pp_all_anon_groups.push_back(this);
 
-        // Assign properties to each element of the group.
         switch (anon_kind) {
         case eKind::hide:
         {
-            assert(false); // logic guarantee - hide group was recoded
+            // Iterate expanded list and set is_hidden for parameters and is_internal for tables
+            for (auto sym : expanded_list()) {
+                auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                if (ps) {
+                    ps->is_hidden = true;
+                    continue;
+                }
+                auto ts = dynamic_cast<TableSymbol*>(sym);
+                if (ts) {
+                    // just ignore 'hide' statement for tables,
+                    // since in Modgen is just a hint to the UI and table may be required, eg for downstream model importing it.
+                    //ts->is_internal = true;
+                    continue;
+                }
+                pp_error(LT("error : '") + sym->name + LT("' in hide list is not a parameter or table"));
+            }
             break;
         }
         case eKind::parameters_suppress:
@@ -200,7 +191,6 @@ void AnonGroupSymbol::post_parse(int pass)
         default:
             assert(false); // logic guarantee
         } // switch (anon_kind)
-        break;
     } // case ePopulateCollections:
     default:
         break;

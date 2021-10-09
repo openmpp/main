@@ -63,6 +63,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     groupRow.groupId = pp_group_id;
     groupRow.isParam = false;       // group of output tables
     groupRow.name = name;
+    groupRow.isHidden = is_hidden;
     metaRows.groupLst.push_back(groupRow);
 
     // labels and notes for the group

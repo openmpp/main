@@ -32,6 +32,7 @@ public:
         , pp_datatype(nullptr)
         , lookup_fn(nullptr)
         , haz1rate(false)
+        , is_hidden(false)
         , is_declared(false)
         , is_extendable(false)
         , publish_as_table(false)
@@ -350,6 +351,11 @@ public:
      * True if parameter declared as haz1rate
      */
     bool haz1rate;
+
+    /**
+     * True if the parameter is hidden
+     */
+    bool is_hidden;
 
     /**
      * True if the parameter was declared in model source
