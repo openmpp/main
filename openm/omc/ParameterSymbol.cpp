@@ -111,6 +111,12 @@ void ParameterSymbol::post_parse(int pass)
                 source = ParameterSymbol::parameter_source::fixed_parameter;
             }
         }
+        if (any_show) { // model contains a show statement
+            // Mark all parameters as hidden
+            // Those which are shown will be changed back in a subsequent pass.
+            is_hidden = true;
+            
+        }
         break;
     }
     case ePopulateCollections:

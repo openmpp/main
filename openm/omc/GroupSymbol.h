@@ -59,14 +59,14 @@ public:
     bool is_circular_helper(const string & name) const;
 
     /**
-     * Return list with all groups expanded.
+     * Return list with all groups expanded recursively
      */
-    list<Symbol *> expanded_list() const;
+    list<Symbol *> expanded_list(bool include_groups = false) const;
 
     /**
      * Return a group, expanded.
      */
-    list<Symbol *> expand_group() const;
+    list<Symbol *> expand_group(bool include_groups = false) const;
 
     /**
      * List of symbols.

@@ -29,6 +29,8 @@ public:
     enum class eKind {
         ///< group is a 'hide' statement.
         hide,
+        ///< group is a 'show' statement.
+        show,
         ///< group is a parameters_suppress statement.
         parameters_suppress,
         ///< group is a parameters_retain statement.

@@ -31,6 +31,12 @@ void TableSymbol::post_parse(int pass)
                 is_suppressed = true;
             }
         }
+        if (any_show) { // model contains a show statement
+            // Mark all tables as hidden
+            // Those which are shown will be changed back in a subsequent pass.
+            is_hidden = true;
+
+        }
         break;
     }
     case ePopulateCollections:

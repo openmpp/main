@@ -27,6 +27,16 @@ void GroupSymbol::post_parse(int pass)
         }
         break;
     }
+    case eResolveDataTypes:
+    {
+        if (any_show) { // model contains a show statement
+            // Mark all groups as hidden
+            // Those which are shown will be changed back in a subsequent pass.
+            is_hidden = true;
+
+        }
+        break;
+    }
     case ePopulateCollections:
     {
         // verify non-circularity
@@ -65,7 +75,7 @@ bool GroupSymbol::is_circular_helper(const string & name) const
 }
 
 
-list<Symbol *> GroupSymbol::expanded_list() const
+list<Symbol *> GroupSymbol::expanded_list(bool include_groups) const
 {
     list<Symbol *> result = pp_symbol_list;
 
@@ -74,20 +84,24 @@ list<Symbol *> GroupSymbol::expanded_list() const
     // If circular, return an empty list.
     if (!is_circular()) {
         // expand the list, recursively
-        result = expand_group();
+        result = expand_group(include_groups);
     }
 
     return result;
 }
 
-list<Symbol *> GroupSymbol::expand_group() const
+
+list<Symbol *> GroupSymbol::expand_group(bool include_groups) const
 {
     list<Symbol *> result;
 
     for (auto sym : pp_symbol_list) {
         auto gs = dynamic_cast<GroupSymbol *>(sym);
         if (gs) {
-            result.splice(result.end(), gs->expand_group());
+            if (include_groups) {
+                result.push_back(gs);
+            }
+            result.splice(result.end(), gs->expand_group(include_groups));
         }
         else {
             result.push_back(sym);
@@ -96,3 +110,4 @@ list<Symbol *> GroupSymbol::expand_group() const
 
     return result;
 }
+

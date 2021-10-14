@@ -1219,6 +1219,16 @@ public:
     static SpecialGlobal derived_tables;
 
     /**
+     * If true, model contains one or more hide statements
+     */
+    static bool any_hide;
+
+    /**
+     * If true, model contains one or more show statements
+     */
+    static bool any_show;
+
+    /**
      * If true, model contains one or more parameters_suppress statements
      */
     static bool any_parameters_suppress;

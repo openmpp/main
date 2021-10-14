@@ -144,6 +144,7 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %token <val_token>    TK_pull           "pull"
 %token <val_token>    TK_range          "range"
 %token <val_token>    TK_real_type      "real_type"
+%token <val_token>    TK_show         "show"
 %token <val_token>    TK_string         "string"
 %token <val_token>    TK_table          "table"
 %token <val_token>    TK_tables_suppress "tables_suppress"
@@ -1144,11 +1145,11 @@ decl_table_group:
 
 
 /*
- * hide, parameters_suppress, parameters_retain, tables_suppress, tables_retain
+ * hide, show, parameters_suppress, parameters_retain, tables_suppress, tables_retain
  */
 
 decl_hide:
-	  "hide"[tok] "(" symbol_list ")" ";"
+	  "hide"[tok] "(" symbol_list ")" ";"  // deprecated Modgen hide statement using parentheses
                         {
                             // create new AnonGroupSymbol, of provenance 'hide'
                             auto *grp = new AnonGroupSymbol(AnonGroupSymbol::eKind::hide, @tok );
@@ -1160,9 +1161,8 @@ decl_hide:
                             delete pls;
                             $symbol_list = nullptr;
                         }
-	| "hide" "(" error ")" ";"
-	| "hide" error ";"
-      ;
+    | "hide" "(" error ")" ";"
+    ;
 
 decl_anon_group:
     anon_group_kw[tok] symbol_list ";"
@@ -1172,6 +1172,8 @@ decl_anon_group:
 
                             // assign anon_kind by translating token to enum
                             switch ($tok) {
+                            case token::TK_hide:                 { anon_kind = AnonGroupSymbol::eKind::hide; break; }
+                            case token::TK_show:               { anon_kind = AnonGroupSymbol::eKind::show; break; }
                             case token::TK_parameters_suppress:  { anon_kind = AnonGroupSymbol::eKind::parameters_suppress; break; }
                             case token::TK_parameters_retain:    { anon_kind = AnonGroupSymbol::eKind::parameters_retain; break; }
                             case token::TK_tables_suppress:      { anon_kind = AnonGroupSymbol::eKind::tables_suppress; break; }
@@ -1194,7 +1196,9 @@ decl_anon_group:
       ;
 
 anon_group_kw:
-      TK_parameters_suppress
+      TK_hide
+    | TK_show
+    | TK_parameters_suppress
     | TK_parameters_retain
     | TK_tables_suppress
     | TK_tables_retain

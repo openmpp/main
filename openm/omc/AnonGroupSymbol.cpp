@@ -24,6 +24,10 @@ void AnonGroupSymbol::post_parse(int pass)
         // assign global flags about what kinds of anon group statements are present in model code
         switch (anon_kind) {
         case eKind::hide:
+            Symbol::any_hide = true;
+            break;
+        case eKind::show:
+            Symbol::any_show = true;
             break;
         case eKind::parameters_suppress:
             Symbol::any_parameters_suppress = true;
@@ -50,6 +54,14 @@ void AnonGroupSymbol::post_parse(int pass)
         // issue error messages if model contains incompatible combinations of anon groups
         switch (anon_kind) {
         case eKind::hide:
+            if (any_show) {
+                pp_error(LT("error : a model cannot contain both hide and show statements"));
+            }
+            break;
+        case eKind::show:
+            if (any_hide) {
+                pp_error(LT("error : a model cannot contain both hide and show statements"));
+            }
             break;
         case eKind::parameters_suppress:
             if (any_parameters_retain) {
@@ -99,6 +111,7 @@ void AnonGroupSymbol::post_parse(int pass)
             }
             // Iterate non-expanded list and mark each element hidden
             for (auto sym : pp_symbol_list) {
+                auto symbol_name = sym->name;
                 {
                     auto ps = dynamic_cast<ParameterSymbol*>(sym);
                     if (ps) {
@@ -120,8 +133,39 @@ void AnonGroupSymbol::post_parse(int pass)
                         continue;
                     }
                 }
+                pp_error(LT("error : '") + symbol_name + LT("' in show list is not a parameter, table, or group"));
             }
-
+            break;
+        }
+        case eKind::show:
+        {
+            // Iterate expanded list and set all parameters and tables to non-hidden
+            // Note that true argument to expanded_list includes group symbols int he expansion
+            for (auto sym : expanded_list(true)) {
+                auto symbol_name = sym->name;
+                {
+                    auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                    if (ps) {
+                        ps->is_hidden = false;
+                        continue;
+                    }
+                }
+                {
+                    auto ts = dynamic_cast<TableSymbol*>(sym);
+                    if (ts) {
+                        ts->is_hidden = false;
+                        continue;
+                    }
+                }
+                {
+                    auto gs = dynamic_cast<GroupSymbol*>(sym);
+                    if (gs) {
+                        gs->is_hidden = false;
+                        continue;
+                    }
+                }
+                pp_error(LT("error : '") + symbol_name + LT("' in show list is not a parameter, table, or group"));
+            }
             break;
         }
         case eKind::parameters_suppress:

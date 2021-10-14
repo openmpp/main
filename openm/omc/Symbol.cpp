@@ -168,6 +168,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_pull, "pull" },
     { token::TK_range, "range" },
     { token::TK_real_type, "real_type" },
+    { token::TK_show, "show" },
     { token::TK_string, "string" },
     { token::TK_table, "table" },
     { token::TK_tables_suppress, "tables_suppress" },
@@ -500,6 +501,7 @@ unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
     token::TK_pull,
     token::TK_range,
     token::TK_real_type,
+    token::TK_show,
     token::TK_string,
     token::TK_table,
     token::TK_tables_suppress,
@@ -558,6 +560,10 @@ SpecialGlobal Symbol::pre_simulation("PreSimulation");
 SpecialGlobal Symbol::post_simulation("PostSimulation");
 
 SpecialGlobal Symbol::derived_tables("UserTables");
+
+bool Symbol::any_hide = false;
+
+bool Symbol::any_show = false;
 
 bool Symbol::any_parameters_suppress = false;
 
