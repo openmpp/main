@@ -1511,6 +1511,33 @@ void Symbol::post_parse_all()
         } while (conversions > 0);
     }
 
+    // Check for prohibited use of time-like attributes in entity tables
+    for (auto et : Symbol::pp_all_entity_tables) {
+        // check the filter for time-like status
+        {
+            // the identity attribute symbol for the filter (if present)
+            auto ias = et->filter;
+            if (ias) {
+                if (ias->is_time_like) {
+                    // issue error for this entity table
+                    et->pp_error(LT("error : the filter of table '") + et->name + LT("' must not be time-like"));
+                }
+            }
+        }
+        
+        // check each dimension for time-like status
+        for (auto ds : et->dimension_list) {
+            // get the attribute associated with the dimension
+            auto as = ds->pp_attribute;
+            assert(as); // logic guarantee
+            if (as->is_time_like) {
+                // issue error for this entity table
+                et->pp_error(LT("error : dimension '") + as->name + LT("' of table '") + et->name + LT("' must not be time-like"));
+            }
+        }
+    }
+
+
 #if defined(DEPENDENCY_TEST)
     // For each entity in the model, determine the code injection order
     // of its maintained attributes.

@@ -394,3 +394,20 @@ track Host
 {
     v30
 };
+
+// test of invalid use of time-like attribute in an entity table
+//actor Host
+//{
+//    //EN age is >= 0.5
+//    logical age_ge_half = (age >= 0.5);
+//};
+//
+//table Host TimeLikeTest
+//[ time > 0.5 ]
+//{
+//    year_ge_10
+//    * {
+//        duration() //EN duration
+//    }
+//    *age_ge_half
+//};
