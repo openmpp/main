@@ -31,7 +31,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TableSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    TableSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , measures_position(0)
         , is_internal(false)

@@ -29,7 +29,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    GlobalFuncSymbol(const string name, string return_decl, string arg_list_decl, yy::location decl_loc = yy::location())
+    GlobalFuncSymbol(const string name, string return_decl, string arg_list_decl, omc::location decl_loc = omc::location())
         : Symbol(name, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
@@ -43,7 +43,7 @@ public:
      * @param name     The symbol to be morphed.
      * @param decl_loc (Optional) the declaration location.
      */
-    GlobalFuncSymbol(const string name, yy::location decl_loc = yy::location())
+    GlobalFuncSymbol(const string name, omc::location decl_loc = omc::location())
         : Symbol(name, decl_loc)
         , suppress_defn(true)
     {

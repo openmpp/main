@@ -38,7 +38,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    LinkAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    LinkAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : AttributeSymbol(sym, agent, type, decl_loc)
         , reciprocal_link(nullptr)
         , reciprocal_multilink(nullptr)

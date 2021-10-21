@@ -37,7 +37,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
+    EntityTableSymbol(Symbol *sym, const Symbol *agent, omc::location decl_loc = omc::location())
         : TableSymbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)

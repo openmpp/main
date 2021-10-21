@@ -29,7 +29,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    DerivedTableSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    DerivedTableSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : TableSymbol(sym, decl_loc)
     {
     }

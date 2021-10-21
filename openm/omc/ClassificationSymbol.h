@@ -31,7 +31,7 @@ public:
      * @param [in,out] sym The symbol to be morphed.
      */
 
-    ClassificationSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    ClassificationSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : EnumerationWithEnumeratorsSymbol(sym, token::TK_int, kind_of_type::classification_type, decl_loc)
         , pp_generate_IntIs(false)
         , pp_generate_IntTo(false)

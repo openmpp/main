@@ -26,7 +26,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    GroupSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    GroupSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , is_hidden(false)
         , pp_group_id(-1)
@@ -39,7 +39,7 @@ public:
      * @param unique_name The symbol name
      * @param decl_loc    (Optional) the declaration location.
      */
-    GroupSymbol(const string unique_name, yy::location decl_loc = yy::location())
+    GroupSymbol(const string unique_name, omc::location decl_loc = omc::location())
         : Symbol(unique_name, decl_loc)
         , is_hidden(false)
         , pp_group_id(-1)

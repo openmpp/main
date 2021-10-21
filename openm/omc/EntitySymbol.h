@@ -40,7 +40,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    EntitySymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    EntitySymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , pp_time(nullptr)
         , assign_member_offsets_fn(nullptr)

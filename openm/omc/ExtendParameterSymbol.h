@@ -20,7 +20,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    explicit ExtendParameterSymbol(Symbol *targ_param, Symbol *index_param, yy::location decl_loc = yy::location())
+    explicit ExtendParameterSymbol(Symbol *targ_param, Symbol *index_param, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(targ_param), decl_loc)
         , target_parameter(targ_param->stable_rp())
         , pp_target_parameter(nullptr)

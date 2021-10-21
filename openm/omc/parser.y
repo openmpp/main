@@ -1,7 +1,9 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "2.6"
 %defines
-%define parser_class_name "parser"
+
+//%define parser_class_name "parser"
+%define api.parser.class { parser }
 
 // The following code is written to the header file, not the implementation file
 %code requires {
@@ -60,6 +62,9 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 %lex-param   { ParseContext& pc }
 
 %locations
+//%define api.filename.type "std::string"
+%define api.location.type{ omc::location }
+%code requires { #include "omc_location.hh" }
 
 %initial-action
 {
@@ -69,7 +74,8 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 
 %debug
 
-%error-verbose
+//%error-verbose
+%define parse.error verbose
 
 %token-table
 
@@ -109,7 +115,6 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
 // special code in line below to handle decl_type_part "void", whose value is nullptr
 %printer { yyoutput << "symbol " << '"' << ($$ ? $$->name : "void") << '"' << " type=" << ($$ ? typeid($$).name() : "void"); } <pval_Symbol>
 %printer { yyoutput << "table expr "; } <pval_TableExpr>
-%printer { yyoutput << "initial value type=" << ($$ ? Symbol::token_to_string($$->associated_token) : "nullptr"); } <pval_InitialValue>
 
 %destructor { delete $$; } <pval_IntegerLiteral> <pval_CharacterLiteral> <pval_FloatingPointLiteral> <pval_StringLiteral>
 
@@ -749,7 +754,6 @@ decl_pull:      // "pull" is a synonym for "import" keyword to avoid c++20 confl
         ;
 
 do_decl_import: // just parse old-style syntax, and assume a single table name, not a list
-          [tok]
               SYMBOL[param] "("
                         {
                             pc.next_word_is_string = true;
@@ -765,7 +769,7 @@ do_decl_import: // just parse old-style syntax, and assume a single table name, 
               sample_dimension_opt ";"
                         {
                             // create new symbol for import statement
-                            auto *imp = new ImportSymbol($param, *$model, *$table, $sample_dimension_opt, @tok);
+                            auto *imp = new ImportSymbol($param, *$model, *$table, $sample_dimension_opt, @param);
                             assert(imp);
 
                             // cleanup

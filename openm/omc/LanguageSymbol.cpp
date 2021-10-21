@@ -26,9 +26,9 @@ void LanguageSymbol::post_parse(int pass)
         // done by Symbol::post_parse in the hierarchical calling chain.
 
         string lang_lbl = name;
-        assert(decl_loc != yy::location()); // grammar guarantee - language symbol has code location
+        assert(decl_loc != omc::location()); // grammar guarantee - language symbol has code location
         // Construct key for lookup in map of all // comments
-        yy::position pos(decl_loc.begin.filename, decl_loc.begin.line, 0);
+        omc::position pos(decl_loc.begin.filename, decl_loc.begin.line, 0);
         auto cmt_search = cxx_comments.find(pos);
         if (cmt_search != cxx_comments.end()) {
             // There was a // comment on the given line.

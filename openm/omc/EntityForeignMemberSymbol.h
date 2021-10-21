@@ -35,7 +35,7 @@ public:
      * @param agent        The agent.
      * @param type         The type.
      */
-    EntityForeignMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    EntityForeignMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : EntityDataMemberSymbol(sym, agent, type, decl_loc)
     {
     }

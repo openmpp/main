@@ -32,7 +32,7 @@ public:
      * @param decl_loc     (Optional) the declaration location.
      */
 
-    EntityDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *data_type, yy::location decl_loc = yy::location())
+    EntityDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *data_type, omc::location decl_loc = omc::location())
         : EntityMemberSymbol(sym, agent, decl_loc)
         , data_type(data_type->stable_rp())
         , pp_data_type(nullptr)
@@ -51,7 +51,7 @@ public:
      * @param decl_loc    (Optional) the declaration location.
      */
 
-    EntityDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *data_type, yy::location decl_loc = yy::location())
+    EntityDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *data_type, omc::location decl_loc = omc::location())
         : EntityMemberSymbol(member_name, agent, decl_loc)
         , data_type(data_type->stable_rp())
         , pp_data_type(nullptr)

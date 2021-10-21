@@ -16,7 +16,7 @@
 #include <set>
 #include <tuple>
 #include "omc_common.h"
-#include "location.hh"
+#include "omc_location.hh"
 #include "SpecialGlobal.h"
 #include "parser.hpp"
 
@@ -80,15 +80,15 @@ typedef unordered_map<string, Symbol *> symbol_map_type;
 typedef unordered_map<string, Symbol *>::value_type symbol_map_value_type;
 
 
-// Specialization of std::hash for yy::position.
+// Specialization of std::hash for omc::position.
 // Required for creating unordered_map for lookup of comment
 // text by start position.
 
 namespace std {
     template <>
-    struct hash<yy::position>
+    struct hash<omc::position>
     {
-        size_t operator()(const yy::position& k) const
+        size_t operator()(const omc::position& k) const
         {
             // Comments are uniquely determined by first position in location
             return (
@@ -103,12 +103,12 @@ namespace std {
 /**
  * Defines an alias representing type of the comment map.
  */
-typedef unordered_map<yy::position, string> comment_map_type;
+typedef unordered_map<omc::position, string> comment_map_type;
 
 /**
  * Defines an alias representing type of a pair in the comment map.
  */
-typedef unordered_map<yy::position, string>::value_type comment_map_value_type;
+typedef unordered_map<omc::position, string>::value_type comment_map_value_type;
 
 
 // ======================================================
@@ -166,11 +166,11 @@ public:
      * @param unm      The unique name for the symbol.
      * @param decl_loc (Optional) the declaration location.
      */
-    explicit Symbol(string unm, yy::location decl_loc = yy::location())
+    explicit Symbol(string unm, omc::location decl_loc = omc::location())
         : unique_name( unm )
         , name ( unm )
         , decl_loc(decl_loc)
-        , redecl_loc(yy::location())
+        , redecl_loc(omc::location())
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
@@ -209,11 +209,11 @@ public:
      * @param agent    The agent qualifying the name.
      * @param decl_loc (Optional) the declaration location.
      */
-    explicit Symbol(const string nm, const Symbol *agent, yy::location decl_loc = yy::location())
+    explicit Symbol(const string nm, const Symbol *agent, omc::location decl_loc = omc::location())
         : unique_name(symbol_name(nm, agent))
         , name ( nm )
         , decl_loc(decl_loc)
-        , redecl_loc(yy::location())
+        , redecl_loc(omc::location())
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
@@ -246,11 +246,11 @@ public:
      * @param [in,out] sym [in,out] Original symbol to be morphed.
      * @param decl_loc     (Optional) the declaration location.
      */
-    explicit Symbol(Symbol*& sym, yy::location decl_loc = yy::location())
+    explicit Symbol(Symbol*& sym, omc::location decl_loc = omc::location())
         : unique_name(sym->unique_name)
         , name ( sym->name )
         , decl_loc(decl_loc)
-        , redecl_loc(yy::location())
+        , redecl_loc(omc::location())
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
@@ -540,7 +540,7 @@ public:
      *
      * @return true if it a valid comment line was found and processed, else false.
      */
-    bool process_symbol_label(const yy::position& pos);
+    bool process_symbol_label(const omc::position& pos);
 
     /**
      * The symbol notes for each language.
@@ -572,14 +572,14 @@ public:
      * 
      * Set using location information of syntactic elements during parsing.
      */
-    yy::location decl_loc;
+    omc::location decl_loc;
 
     /**
      * The redeclaration location.
      * 
      * Set using location information of syntactic elements during parsing.
      */
-    yy::location redecl_loc;
+    omc::location redecl_loc;
 
     /**
      * Number of references by other symbols to this Symbol
@@ -815,21 +815,21 @@ public:
      * 
      * @param msg The message.
      */
-    static void pp_logmsg(const yy::location& loc, const string& msg);
+    static void pp_logmsg(const omc::location& loc, const string& msg);
 
     /**
      * Process an error encountered during the post-parse phase.
      * 
      * @param msg The message.
      */
-    static void pp_error(const yy::location& loc, const string& msg);
+    static void pp_error(const omc::location& loc, const string& msg);
 
     /**
      * Determines if location is in a source file included via a 'use' statement.
      * 
      * @param loc The location.
      */
-    static bool is_use_file(const yy::location& loc);
+    static bool is_use_file(const omc::location& loc);
 
     /**
      * Perform operations after the parser has parsed all input files.
@@ -1106,7 +1106,7 @@ public:
     /**
      * Map of member function qualified names to the definition location.
      */
-    static map<string, yy::location> memfunc_defn_loc;
+    static map<string, omc::location> memfunc_defn_loc;
 
     /**
      * A map of all the C++ style single line comments in the model source code, indexed by location

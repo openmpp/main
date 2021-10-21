@@ -59,8 +59,8 @@ public:
     bool trace_parsing;
 
     // Error handling.
-    void error (const yy::location& l, const string& m);
-    void warning (const yy::location& l, const string& m);
+    void error (const omc::location& l, const string& m);
+    void warning (const omc::location& l, const string& m);
     void error (const string& m);
 
 private:

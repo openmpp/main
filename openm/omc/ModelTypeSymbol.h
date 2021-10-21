@@ -32,7 +32,7 @@ public:
      * @param just_in_time (Optional) the just in time.
      * @param decl_loc     (Optional) the declaration location.
      */
-    ModelTypeSymbol(token_type value, bool just_in_time = false, yy::location decl_loc = yy::location())
+    ModelTypeSymbol(token_type value, bool just_in_time = false, omc::location decl_loc = omc::location())
         : Symbol(token_to_string(token::TK_model_type), decl_loc)
         , value(value)
         , just_in_time(just_in_time)

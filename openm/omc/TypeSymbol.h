@@ -39,7 +39,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    explicit TypeSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    explicit TypeSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
     {
         type_id = next_type_id;

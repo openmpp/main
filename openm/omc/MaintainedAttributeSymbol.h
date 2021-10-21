@@ -32,7 +32,7 @@ public:
      * @param type         The type.
      * @param decl_loc     (Optional) the declaration location.
      */
-    MaintainedAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    MaintainedAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : AttributeSymbol(sym, agent, type, decl_loc)
     {
     }
@@ -45,7 +45,7 @@ public:
      * @param type        The type.
      * @param decl_loc    (Optional) the declaration location.
      */
-    MaintainedAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    MaintainedAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : AttributeSymbol(member_name, agent, type, decl_loc)
     {
     }

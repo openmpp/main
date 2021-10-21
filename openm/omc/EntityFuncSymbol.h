@@ -9,7 +9,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
-#include "location.hh"
+#include "omc_location.hh"
 #include "EntityMemberSymbol.h"
 #include "CodeBlock.h"
 
@@ -35,7 +35,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    EntityFuncSymbol(Symbol *sym, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, yy::location decl_loc = yy::location())
+    EntityFuncSymbol(Symbol *sym, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, omc::location decl_loc = omc::location())
         : EntityMemberSymbol(sym, agent, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
@@ -55,7 +55,7 @@ public:
      * @param suppress_defn (Optional) Suppress definition.
      * @param decl_loc      (Optional) the declaration location.
      */
-    EntityFuncSymbol(const string name, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, yy::location decl_loc = yy::location())
+    EntityFuncSymbol(const string name, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, omc::location decl_loc = omc::location())
         : EntityMemberSymbol(name, agent, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
@@ -140,7 +140,7 @@ public:
      * 
      * Set using location information of syntactic elements during parsing.
      */
-    yy::location defn_loc;
+    omc::location defn_loc;
 
     /**
      * The identifiers in the function body (if developer-suppied)

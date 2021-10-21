@@ -29,7 +29,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, bool is_developer_supplied, int event_priority, yy::location decl_loc = yy::location())
+    EntityEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, bool is_developer_supplied, int event_priority, omc::location decl_loc = omc::location())
         : EntityDataMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
         , event_priority(event_priority)

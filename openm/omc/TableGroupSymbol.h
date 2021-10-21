@@ -25,7 +25,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TableGroupSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    TableGroupSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : GroupSymbol(sym, decl_loc)
     {
     }

@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <set>
 #include <map>
-#include "location.hh"
+#include "omc_location.hh"
 #include "libopenm/omLog.h"
 #include "libopenm/db/modelBuilder.h"   // for OM_MAX_BUILTIN_TYPE_ID
 #include "CodeBlock.h"
@@ -127,7 +127,7 @@ multimap<string, string> Symbol::memfunc_bodyids;
 
 map<string, vector<string> > Symbol::memfunc_parmlist;
 
-map<string, yy::location> Symbol::memfunc_defn_loc;
+map<string, omc::location> Symbol::memfunc_defn_loc;
 
 /**
 * Map from a token to the preferred string representation of that token.
@@ -632,13 +632,13 @@ void Symbol::post_parse(int pass)
         }
 
         // Check for presence of a comment label on the same lines as the symbol declaration.
-        if (decl_loc != yy::location() && code_label_allowed) {
+        if (decl_loc != omc::location() && code_label_allowed) {
             // This symbol has a declaration location in model code which can have an associated source code label
             // Check all lines of the declaration for a valid comment label
             int line_count = decl_loc.end.line - decl_loc.begin.line + 1;
             for (int j = 0; j < line_count; ++j) {
                 // Construct key for lookup in map of all // comments
-                yy::position pos(decl_loc.begin.filename, decl_loc.begin.line + j, 0);
+                omc::position pos(decl_loc.begin.filename, decl_loc.begin.line + j, 0);
                 process_symbol_label(pos);
             }
         }
@@ -705,10 +705,10 @@ void Symbol::post_parse(int pass)
         // Check for presence of a comment label on the *previous* line of the symbol declaration.
         // This is a second pass for associating language labels which are not already associated
         // with a symbol declared on the same line as the label.
-        if (decl_loc != yy::location() && decl_loc.begin.line > 0) {
+        if (decl_loc != omc::location() && decl_loc.begin.line > 0) {
             // This symbol has a declaration location.
             // Construct key for lookup in map of all // comments
-            yy::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
+            omc::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
             process_symbol_label(pos);
         }
         break;
@@ -785,7 +785,7 @@ void Symbol::pp_warning(const string& msg)
 
 void Symbol::pp_log_message(const string& msg)
 {
-    yy::location l = decl_loc;
+    omc::location l = decl_loc;
     if (l.begin.filename) {
         // The symbol has a declaration location
         theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
@@ -797,7 +797,7 @@ void Symbol::pp_log_message(const string& msg)
     }
 }
 
-bool Symbol::process_symbol_label(const yy::position& pos)
+bool Symbol::process_symbol_label(const omc::position& pos)
 {
     auto cmt_search = cxx_comments.find(pos);
     if (cmt_search != cxx_comments.end()) {
@@ -1138,10 +1138,10 @@ void Symbol::modgen_sort_pp_symbols2()
 }
 
 // static
-void Symbol::pp_error(const yy::location& loc, const string& msg)
+void Symbol::pp_error(const omc::location& loc, const string& msg)
 {
     post_parse_errors++;
-    yy::location l = loc;
+    omc::location l = loc;
     if (l.begin.filename) {
         theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
     }
@@ -1156,9 +1156,9 @@ void Symbol::pp_error(const yy::location& loc, const string& msg)
 }
 
 // static
-void Symbol::pp_logmsg(const yy::location& loc, const string& msg)
+void Symbol::pp_logmsg(const omc::location& loc, const string& msg)
 {
-    yy::location l = loc;
+    omc::location l = loc;
     if (l.begin.filename) {
         theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
     }
@@ -1168,7 +1168,7 @@ void Symbol::pp_logmsg(const yy::location& loc, const string& msg)
 }
 
 // static
-bool Symbol::is_use_file(const yy::location& loc)
+bool Symbol::is_use_file(const omc::location& loc)
 {
     for (auto source_file : use_source_files) {
         if (source_file == *loc.begin.filename) {
@@ -1186,7 +1186,7 @@ void Symbol::post_parse_all()
     defaults_and_options();
 
     if (LanguageSymbol::number_of_languages() == 0) {
-        pp_error(yy::location(), LT("error : no languages specified"));
+        pp_error(omc::location(), LT("error : no languages specified"));
     }
 
     // Create pp_symbols now to easily find Symbols while debugging.
@@ -1876,7 +1876,7 @@ void Symbol::defaults_and_options()
                 measures_are_aggregated = false;
             }
             else {
-                pp_error(yy::location(), LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
+                pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
             }
         }
     }

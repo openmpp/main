@@ -37,7 +37,7 @@ public:
      * @param [in,out] root If non-null, the root.
      * @param decl_loc      (Optional) the declaration location.
      */
-    IdentityAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, ExprForAttribute *root, yy::location decl_loc = yy::location())
+    IdentityAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
         : MaintainedAttributeSymbol(sym, agent, type, decl_loc)
         , root(root)
     {
@@ -60,7 +60,7 @@ public:
      * @param [in,out] root If non-null, the root.
      * @param decl_loc      (Optional) the declaration location.
      */
-    IdentityAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, ExprForAttribute *root, yy::location decl_loc = yy::location())
+    IdentityAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
         : MaintainedAttributeSymbol(member_name, agent, type, decl_loc)
         , root(root)
     {
@@ -109,7 +109,7 @@ public:
      *
      * @return The new identity attribute.
      */
-    static IdentityAttributeSymbol * anonymous_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *node, yy::location decl_loc);
+    static IdentityAttributeSymbol * anonymous_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *node, omc::location decl_loc);
 
     /**
      * Creates an identity attribute for an equality or returns it if already created.
@@ -119,7 +119,7 @@ public:
      *
      * @return The new identity attribute.
      */
-    static IdentityAttributeSymbol * create_equality_identity_attribute(Symbol *agent, Symbol * av, const ConstantSymbol *k, yy::location decl_loc);
+    static IdentityAttributeSymbol * create_equality_identity_attribute(Symbol *agent, Symbol * av, const ConstantSymbol *k, omc::location decl_loc);
 
     /**
      * Root of the expression tree.

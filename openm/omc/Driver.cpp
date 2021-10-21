@@ -9,7 +9,7 @@
 #include <fstream>
 #include "Driver.h"
 #include "ParseContext.h"
-#include "location.hh"
+#include "omc_location.hh"
 #include "ModuleSymbol.h"
 
 using namespace std;
@@ -47,12 +47,12 @@ int Driver::parse(string * in_filename, const string & module_name, const string
 	return res;
 }
 
-void Driver::error(const yy::location & l, const string & m)
+void Driver::error(const omc::location & l, const string & m)
 {
     pc.error(l, m);
 }
 
-void Driver::warning(const yy::location & l, const string & m)
+void Driver::warning(const omc::location & l, const string & m)
 {
     pc.warning(l, m);
 }

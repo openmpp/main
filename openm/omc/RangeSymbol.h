@@ -34,7 +34,7 @@ public:
      * @param upper_bound  The upper bound.
      * @param decl_loc     (Optional) the declaration location.
      */
-    RangeSymbol(Symbol *sym, int lower_bound, int upper_bound, yy::location decl_loc = yy::location())
+    RangeSymbol(Symbol *sym, int lower_bound, int upper_bound, omc::location decl_loc = omc::location())
         : EnumerationSymbol(sym, token::TK_int, kind_of_type::range_type, decl_loc)
         , lower_bound(lower_bound)
         , upper_bound(upper_bound)

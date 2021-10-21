@@ -32,7 +32,7 @@ public:
      * @param type         The type of the link in the set, e.g. entity_ptr<Thing>
      * @param decl_loc     (Optional) the declaration location.
      */
-    EntityMultilinkSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    EntityMultilinkSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : EntityDataMemberSymbol(sym, agent, type, decl_loc)
         , reciprocal_link(nullptr)
         , reciprocal_multilink(nullptr)

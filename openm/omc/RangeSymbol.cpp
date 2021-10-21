@@ -11,7 +11,7 @@
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
-#include "location.hh"
+#include "omc_location.hh"
 
 using namespace std;
 using namespace openm;

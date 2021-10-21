@@ -32,7 +32,7 @@ public:
     * @param [in,out] sym The symbol to be morphed.
     */
 
-    PartitionSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    PartitionSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : EnumerationWithEnumeratorsSymbol(sym, token::TK_int, kind_of_type::partition_type, decl_loc)
     {
     }

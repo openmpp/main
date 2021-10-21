@@ -26,7 +26,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    SimpleAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, Literal *initializer, yy::location decl_loc = yy::location())
+    SimpleAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, Literal *initializer, omc::location decl_loc = omc::location())
         : AttributeSymbol(sym, agent, type, decl_loc)
         , initializer(initializer)
     {

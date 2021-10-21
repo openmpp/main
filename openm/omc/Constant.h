@@ -8,7 +8,7 @@
 #pragma once
 #include "Symbol.h"
 #include "Literal.h"
-#include "location.hh"
+#include "omc_location.hh"
 
 /**
 * Constant - Refers to either a Literal or an EnumeratorSymbol
@@ -23,7 +23,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    Constant(Symbol *enumerator, yy::location decl_loc = yy::location())
+    Constant(Symbol *enumerator, omc::location decl_loc = omc::location())
         : is_enumerator(true)
         , enumerator(enumerator->stable_pp())
         , is_literal(false)
@@ -37,7 +37,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    Constant(Literal *literal, yy::location decl_loc = yy::location())
+    Constant(Literal *literal, omc::location decl_loc = omc::location())
         : is_enumerator(false)
         , enumerator(nullptr)
         , is_literal(true)
@@ -109,5 +109,5 @@ public:
      * 
      * Set to the source location of the constant during parsing.
      */
-    yy::location decl_loc;
+    omc::location decl_loc;
 };

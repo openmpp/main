@@ -23,7 +23,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    ParameterSymbol(Symbol *sym, Symbol *datatype, yy::location decl_loc = yy::location())
+    ParameterSymbol(Symbol *sym, Symbol *datatype, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , source(ParameterSymbol::parameter_source::missing_parameter)
         , cumrate(false)

@@ -26,7 +26,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    SimpleAttributeEnumSymbol(Symbol* sym, const Symbol* agent, const Symbol* type, Symbol* enumerator, yy::location decl_loc = yy::location())
+    SimpleAttributeEnumSymbol(Symbol* sym, const Symbol* agent, const Symbol* type, Symbol* enumerator, omc::location decl_loc = omc::location())
         : SimpleAttributeSymbol(sym, agent, type, nullptr, decl_loc)
         , enumerator(enumerator->stable_rp())
         , pp_enumerator(0)

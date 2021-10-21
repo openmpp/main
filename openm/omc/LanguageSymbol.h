@@ -34,7 +34,7 @@ public:
     * @param [in,out]  sym Symbol to be morphed
     * @param   deflang     true if this is the model's default language.
     */
-    explicit LanguageSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    explicit LanguageSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
     {
         language_id = next_language_id;

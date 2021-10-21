@@ -32,7 +32,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    EntitySetSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
+    EntitySetSymbol(Symbol *sym, const Symbol *agent, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)

@@ -34,7 +34,7 @@ public:
      * @param data_type   The type.
      * @param decl_loc    (Optional) the declaration location.
      */
-    EntityIncrementSymbol(const string member_name, const Symbol *agent, const EntityTableSymbol *table, yy::location decl_loc = yy::location())
+    EntityIncrementSymbol(const string member_name, const Symbol *agent, const EntityTableSymbol *table, omc::location decl_loc = omc::location())
         : EntityMemberSymbol(member_name, agent, decl_loc)
         , table(table)
     {

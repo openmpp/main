@@ -7,7 +7,7 @@
 
 #include "ParseContext.h"
 
-string ParseContext::cxx_process_token(token_type tok, const string tok_str, yy::location * loc)
+string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc::location * loc)
 {
     // Maintain the ordered list of all tokens in C++ code
     cxx_tokens.push_back(make_pair(tok, tok_str));
@@ -170,7 +170,7 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, yy:
     return result;
 }
 
-void ParseContext::process_cxx_comment(const string& cmt, const yy::location& loc)
+void ParseContext::process_cxx_comment(const string& cmt, const omc::location& loc)
 {
     // Parse //LABEL comments
     if (cmt.length() >= 5 && cmt.substr(0, 5) == "LABEL") {
@@ -228,12 +228,12 @@ void ParseContext::process_cxx_comment(const string& cmt, const yy::location& lo
     }
 
     // Construct key based on the beginning of the line containing the comment.
-    yy::position pos(loc.begin.filename, loc.begin.line, 0);
+    omc::position pos(loc.begin.filename, loc.begin.line, 0);
     comment_map_value_type element(pos, cmt);
     Symbol::cxx_comments.insert(element);
 }
 
-void ParseContext::process_c_comment(const string& cmt, const yy::location& loc)
+void ParseContext::process_c_comment(const string& cmt, const omc::location& loc)
 {
     // Parse NOTE comments.  Assume starts as /*NOTE or /* NOTE
     if ((cmt.length() > 4) && ((cmt.substr(0, 4) == "NOTE") || (cmt.substr(0, 5) == " NOTE"))) {
@@ -296,7 +296,7 @@ void ParseContext::process_c_comment(const string& cmt, const yy::location& loc)
     }
 
     // Construct key based on the start position of the comment.
-    yy::position pos(loc.begin);
+    omc::position pos(loc.begin);
     comment_map_value_type element(pos, cmt);
     Symbol::c_comments.insert(element);
 }

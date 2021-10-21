@@ -29,7 +29,7 @@ public:
      * @param type         The type.
      * @param decl_loc     (Optional) the declaration location.
      */
-    AttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    AttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : EntityDataMemberSymbol(sym, agent, type, decl_loc)
         , lagged(nullptr)
         , lagged_event_counter(nullptr)
@@ -48,7 +48,7 @@ public:
      * @param type        The type.
      * @param decl_loc    (Optional) the declaration location.
      */
-    AttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, yy::location decl_loc = yy::location())
+    AttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
         : EntityDataMemberSymbol(member_name, agent, type, decl_loc)
         , lagged(nullptr)
         , lagged_event_counter(nullptr)

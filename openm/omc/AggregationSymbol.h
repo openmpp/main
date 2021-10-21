@@ -29,7 +29,7 @@ public:
     * 
     * A unique name is generated using a static counter.
     */
-    explicit AggregationSymbol(const Symbol *from, const Symbol *to, yy::location decl_loc = yy::location())
+    explicit AggregationSymbol(const Symbol *from, const Symbol *to, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(from, to), decl_loc)
         , from(from->stable_rp())
         , pp_from(nullptr)

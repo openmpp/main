@@ -33,7 +33,7 @@ public:
      * @param dicId        The kind of type.
      * @param decl_loc     (Optional) the declaration location.
      */
-    EnumerationSymbol(Symbol *sym, token_type storage_type, int dicId, yy::location decl_loc = yy::location())
+    EnumerationSymbol(Symbol *sym, token_type storage_type, int dicId, omc::location decl_loc = omc::location())
         : TypeSymbol(sym, decl_loc)
         , storage_type(storage_type)
         , metadata_needed(false)

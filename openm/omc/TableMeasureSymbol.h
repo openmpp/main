@@ -29,7 +29,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TableMeasureSymbol(Symbol *table, string measure_name, int index, yy::location decl_loc = yy::location())
+    TableMeasureSymbol(Symbol *table, string measure_name, int index, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(table, index), decl_loc)
         , measure_name(measure_name)
         , index(index)

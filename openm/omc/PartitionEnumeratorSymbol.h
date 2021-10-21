@@ -20,7 +20,7 @@ private:
 public:
     bool is_base_symbol() const override { return false; }
 
-    explicit PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point, yy::location decl_loc = yy::location())
+    explicit PartitionEnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, string upper_split_point, omc::location decl_loc = omc::location())
         : EnumeratorSymbol(unm, enumeration, ordinal, decl_loc)
         , upper_split_point(upper_split_point)
     {

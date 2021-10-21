@@ -26,7 +26,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    DependencyGroupSymbol(yy::location decl_loc = yy::location())
+    DependencyGroupSymbol(omc::location decl_loc = omc::location())
         : GroupSymbol("om_dependency_" + to_string(++counter), decl_loc)
         , pp_table_requiring(nullptr)
     {

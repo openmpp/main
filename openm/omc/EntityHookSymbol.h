@@ -20,7 +20,7 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    explicit EntityHookSymbol(const Symbol *agent, const Symbol *from, const Symbol *to, int order = 0, yy::location decl_loc = yy::location())
+    explicit EntityHookSymbol(const Symbol *agent, const Symbol *from, const Symbol *to, int order = 0, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(from, to), agent, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)

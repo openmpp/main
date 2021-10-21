@@ -20,7 +20,7 @@ private:
 public:
     bool is_base_symbol() const override { return false; }
 
-    EnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
+    EnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , enumeration(enumeration->stable_rp())
         , pp_enumeration(nullptr)
@@ -28,7 +28,7 @@ public:
     {
     }
 
-    EnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
+    EnumeratorSymbol(const string unm, const Symbol *enumeration, int ordinal, omc::location decl_loc = omc::location())
         : Symbol(unm, decl_loc)
         , enumeration(enumeration->stable_rp())
         , pp_enumeration(nullptr)

@@ -28,7 +28,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    ConstantSymbol(Symbol *enumerator, yy::location decl_loc = yy::location())
+    ConstantSymbol(Symbol *enumerator, omc::location decl_loc = omc::location())
         : Symbol(next_symbol_name(), decl_loc)
         , is_enumerator(true)
         , enumerator(enumerator->stable_pp())
@@ -44,7 +44,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    ConstantSymbol(Literal *literal, yy::location decl_loc = yy::location())
+    ConstantSymbol(Literal *literal, omc::location decl_loc = omc::location())
         : Symbol(next_symbol_name(), decl_loc)
         , is_enumerator(false)
         , enumerator(nullptr)

@@ -27,7 +27,7 @@ public:
     * 
     * A unique name is generated using a counter.
     */
-    ImportSymbol(Symbol* target_param, string upstream_model, string upstream_table, bool sample_dimension_opt, yy::location decl_loc = yy::location())
+    ImportSymbol(Symbol* target_param, string upstream_model, string upstream_table, bool sample_dimension_opt, omc::location decl_loc = omc::location())
         : Symbol("om_import_" + to_string(++counter), decl_loc)
         , target_param(target_param->stable_rp())
         , upstream_model(upstream_model)

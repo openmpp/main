@@ -12,7 +12,7 @@
 #pragma once
 #include "libopenm/omLog.h"
 #include "libopenm/common/omHelper.h"
-#include "location.hh"
+#include "omc_location.hh"
 #include "Symbol.h"
 
 class ParseContext
@@ -218,7 +218,7 @@ public:
      * @param l The location
      * @param m The error message
      */
-    void error(const yy::location & l, const string & m)
+    void error(const omc::location & l, const string & m)
     {
         parse_errors++;
         theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
@@ -230,7 +230,7 @@ public:
      * @param l The location
      * @param m The error message
      */
-    void warning(const yy::location & l, const string & m)
+    void warning(const omc::location & l, const string & m)
     {
         parse_warnings++;
         theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
@@ -241,7 +241,7 @@ public:
      *
      * Return possibly modified version of tok_str
      */
-    string cxx_process_token(token_type tok, const string tok_str, yy::location * loc);
+    string cxx_process_token(token_type tok, const string tok_str, omc::location * loc);
 
     /**
      * Process a C++ single-line comment.
@@ -249,7 +249,7 @@ public:
      * @param cmt The comment.
      * @param loc The source code location.
      */
-    void process_cxx_comment(const string& cmt, const yy::location& loc);
+    void process_cxx_comment(const string& cmt, const omc::location& loc);
 
     /**
      * Process a C-style comment.
@@ -257,7 +257,7 @@ public:
      * @param cmt The comment.
      * @param loc The source code location.
      */
-    void process_c_comment(const string& cmt, const yy::location& loc);
+    void process_c_comment(const string& cmt, const omc::location& loc);
 
     /**
      * Normalize a NOTE.
@@ -269,7 +269,7 @@ public:
     /**
      * comment location.
      */
-    yy::location comment_location;
+    omc::location comment_location;
 
     /**
      * comment body.

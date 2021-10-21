@@ -25,7 +25,7 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    StringSymbol(Symbol *sym, yy::location decl_loc = yy::location())
+    StringSymbol(Symbol *sym, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
     {
     }

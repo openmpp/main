@@ -18,14 +18,14 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityMemberSymbol(Symbol *sym, const Symbol *agent, yy::location decl_loc = yy::location())
+    EntityMemberSymbol(Symbol *sym, const Symbol *agent, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)
     {
     }
 
-    EntityMemberSymbol(const string name, const Symbol *agent, yy::location decl_loc = yy::location())
+    EntityMemberSymbol(const string name, const Symbol *agent, omc::location decl_loc = omc::location())
         : Symbol(name, agent, decl_loc)
         , agent(agent->stable_rp())
         , pp_agent(nullptr)

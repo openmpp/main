@@ -407,7 +407,7 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
 }
 
 //static
-IdentityAttributeSymbol * IdentityAttributeSymbol::anonymous_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *root, yy::location decl_loc)
+IdentityAttributeSymbol * IdentityAttributeSymbol::anonymous_identity_attribute(Symbol *entity, const Symbol *type, ExprForAttribute *root, omc::location decl_loc)
 {
     assert(entity);
     assert(type);
@@ -449,7 +449,7 @@ IdentityAttributeSymbol * IdentityAttributeSymbol::anonymous_identity_attribute(
 }
 
 //static
-IdentityAttributeSymbol * IdentityAttributeSymbol::create_equality_identity_attribute(Symbol *entity, Symbol * av, const ConstantSymbol *k, yy::location decl_loc)
+IdentityAttributeSymbol * IdentityAttributeSymbol::create_equality_identity_attribute(Symbol *entity, Symbol * av, const ConstantSymbol *k, omc::location decl_loc)
 {
     assert(entity);
     assert(av);

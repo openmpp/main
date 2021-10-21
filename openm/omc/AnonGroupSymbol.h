@@ -48,7 +48,7 @@ public:
     * 
     * A unique name is generated using a counter.
     */
-    AnonGroupSymbol(const eKind anon_kind, yy::location decl_loc = yy::location())
+    AnonGroupSymbol(const eKind anon_kind, omc::location decl_loc = omc::location())
         : GroupSymbol("om_anon_" + to_string(++counter), decl_loc)
         , anon_kind(anon_kind)
     {

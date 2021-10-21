@@ -40,7 +40,7 @@ public:
     * @param[in]   i_sub_minor       Sub-minor model version.
     * @param[in]   i_sub_sub_minor   Sub-sub minor version.
     */
-    VersionSymbol(int i_major, int i_minor, int i_sub_minor, int i_sub_sub_minor, yy::location decl_loc = yy::location())
+    VersionSymbol(int i_major, int i_minor, int i_sub_minor, int i_sub_sub_minor, omc::location decl_loc = omc::location())
         : Symbol(token_to_string(token::TK_version), decl_loc)
         , major(i_major)
         , minor(i_minor)

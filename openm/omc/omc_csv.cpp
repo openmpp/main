@@ -156,7 +156,7 @@ extern void omc::readParameterCsvFiles(
                 Constant * c = pt->make_constant(v);
                 if (c == nullptr) {
                     Symbol::pp_error(
-                        yy::location(yy::position(&pathCsv)),
+                        omc::location(omc::position(&pathCsv)),
                         LT("error : '") + v + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + param->name + LT("'"));
 
                     param->sub_initial_list.back().second.clear();   // parameter value invalid
@@ -236,7 +236,7 @@ const vector< pair< int, vector<string> > > parseSimpleCsv(const char * i_separa
                 }
                 // else error: non-empty value after end of parameter
                 Symbol::pp_error(
-                    yy::location(yy::position(&i_pathCsv, nLine, nCol)),
+                    omc::location(omc::position(&i_pathCsv, nLine, nCol)),
                     LT("error : initializer for parameter '") + i_param->name + LT("' has size ") + to_string(valArr.size() + 1) + LT(", exceeds ") + to_string(nParamSize));
 
                 return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
@@ -250,7 +250,7 @@ const vector< pair< int, vector<string> > > parseSimpleCsv(const char * i_separa
                 const auto eIt = enumValueMap.find(val);
                 if (eIt == enumValueMap.cend()) {
                     Symbol::pp_error(
-                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        omc::location(omc::position(&i_pathCsv, nLine, nCol + 1)),
                         LT("error : '") + val + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
 
                     return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
@@ -355,7 +355,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
         // each non-empty line in csv file must have rank + 1 or rank + 2 columns
         if (csvCols.size() != colCount) {
             Symbol::pp_error(
-                yy::location(yy::position(&i_pathCsv, nLine)),
+                omc::location(omc::position(&i_pathCsv, nLine)),
                 LT("error : line of parameter file '") + i_param->name + LT("' has ") + to_string(csvCols.size()) + LT(" columns, expected: ") + to_string(colCount));
 
             return vector< pair< int, vector<string> > >(); // return error: invalid parameter value
@@ -373,7 +373,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
 
                 if (!IntegerLiteral::is_valid_literal(val.c_str())) {
                     Symbol::pp_error(
-                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        omc::location(omc::position(&i_pathCsv, nLine, nCol + 1)),
                         LT("error : '") + val + LT("' is not a valid sub value id in initializer for parameter '") + i_param->name + LT("'"));
 
                         return vector< pair< int, vector<string> > >(); // return error: sub value id must be integer
@@ -382,7 +382,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
                 long lv = stol(val);
                 if (lv < INT_MIN || lv > INT_MAX) {
                     Symbol::pp_error(
-                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        omc::location(omc::position(&i_pathCsv, nLine, nCol + 1)),
                         LT("error : '") + val + LT("' is not a valid sub value id in initializer for parameter '") + i_param->name + LT("'"));
 
                     return vector< pair< int, vector<string> > >(); // return error: sub value id out of range
@@ -412,7 +412,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
                 const auto eIt = dims[nDim].enumIdxMap.find(val);
                 if (eIt == dims[nDim].enumIdxMap.cend()) {
                     Symbol::pp_error(
-                        yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                        omc::location(omc::position(&i_pathCsv, nLine, nCol + 1)),
                         LT("error : '") + val + LT("' is not a valid item of dimension '") + dims[nDim].eSym->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
 
                     return vector< pair< int, vector<string> > >(); // return error: invalid dimension item
@@ -433,7 +433,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
             // check if this is duplicate row: if that cell already found by sub value id and dimension(s) items
             if (useArr[nSubIndex][nCell]) {
                 Symbol::pp_error(
-                    yy::location(yy::position(&i_pathCsv, nLine)),
+                    omc::location(omc::position(&i_pathCsv, nLine)),
                     LT("error : duplicate dimension items: '") + line + LT("' in initializer for parameter '") + i_param->name + LT("'"));
 
                 return vector< pair< int, vector<string> > >(); // return error: invalid dimension item
@@ -450,7 +450,7 @@ const vector< pair< int, vector<string> > > parseDimCsv(const char * i_separator
                     const auto eIt = enumValueMap.find(val);
                     if (eIt == enumValueMap.cend()) {
                         Symbol::pp_error(
-                            yy::location(yy::position(&i_pathCsv, nLine, nCol + 1)),
+                            omc::location(omc::position(&i_pathCsv, nLine, nCol + 1)),
                             LT("error : '") + val + LT("' is not a valid '") + pt->name + LT("' in initializer for parameter '") + i_param->name + LT("'"));
 
                         return vector< pair< int, vector<string> > >(); // return error: invalid parameter value

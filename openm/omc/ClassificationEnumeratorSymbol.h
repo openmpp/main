@@ -21,7 +21,7 @@ private:
 public:
     bool is_base_symbol() const override { return false; }
 
-    explicit ClassificationEnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, yy::location decl_loc = yy::location())
+    explicit ClassificationEnumeratorSymbol(Symbol *sym, const Symbol *enumeration, int ordinal, omc::location decl_loc = omc::location())
         : EnumeratorSymbol(sym, enumeration, ordinal, decl_loc)
     {
     }
