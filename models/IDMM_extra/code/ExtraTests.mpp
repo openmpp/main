@@ -141,6 +141,10 @@ actor Host
     REPORT_TIME thingee3 = COERCE(REPORT_TIME, big_time);
 };
 
+
+// test (ompp only)
+//options verify_timelike_attribute_access = off;
+
 TIME Host::timeOneTime()
 {
     //
@@ -148,7 +152,6 @@ TIME Host::timeOneTime()
     // 
 
     //for (auto prHost : asAllHostsByPhase[DP_SUSCEPTIBLE]) // one day this will work!
-
     //double dSum = 0;
     //int nHosts = asAllHosts->Count();
     //for (int nJ = 0; nJ < nHosts; nJ++)
@@ -398,8 +401,7 @@ track Host
 // test of invalid use of time-like attribute in an entity table
 //actor Host
 //{
-//    //EN age is >= 0.5
-//    logical age_ge_half = (age >= 0.5);
+//    logical first6months = (age <= 0.5);
 //};
 //
 //table Host TimeLikeTest
@@ -409,5 +411,5 @@ track Host
 //    * {
 //        duration() //EN duration
 //    }
-//    *age_ge_half
+//    * first6months
 //};
