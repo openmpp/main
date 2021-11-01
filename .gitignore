@@ -1,5 +1,4 @@
 # openM++ intermediate build and run files
-bin/data/*
 build/
 lib/
 models/bin/
@@ -7,8 +6,13 @@ models/bin/
 *.gz
 *.log
 
+# win_bison_flex
+bin/custom_build_rules/*
+bin/data/*
+
 # openM++ UI
 #
+etc/
 html/
 
 # build results and user settings
