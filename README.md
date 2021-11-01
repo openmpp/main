@@ -40,15 +40,20 @@ ${OM_ROOT}/      -> openM++ "root" folder
 Latest release source code and binaries: <https://github.com/openmpp/main/releases/latest>
 
 Desktop version:
- - Linux:   openmpp_debian_YYYYMMDD.tar.gz
- - Windows: openmpp_win_YYYYMMDD.zip 
- - MacOS:   openmpp_mac_YYYYMMDD.zip 
+ - Linux:     openmpp_debian_YYYYMMDD.tar.gz
+ - Ubuntu:    openmpp_ubuntu_YYYYMMDD.tar.gz
+ - Windows:   openmpp_win_YYYYMMDD.zip 
+ - MacOS x86: openmpp_mac_x86_64_YYYYMMDD.zip 
+ - MacOS M1:  openmpp_mac_arm64_YYYYMMDD.zip 
 
 Cluster version:
  - Linux:   openmpp_debian_mpi_YYYYMMDD.tar.gz
+ - Ubuntu:  openmpp_ubuntu_mpi_YYYYMMDD.tar.gz
  - Windows: openmpp_win_mpi_YYYYMMDD.zip 
- - CentOS / RedHat version 8.2:  openmpp_centos_mpi_YYYYMMDD.tar.gz
- 
+ - RedHat:  openmpp_centos_mpi_YYYYMMDD.tar.gz
+
+Documentation snapshot, including wiki as PDF and HTML files: openmpp_doc_YYYYMMDD.tar.gz
+
 It is recommended to start with desktop version.
 Do NOT download _mpi_ binaries unless you have MPI installed on your cluster.
   
