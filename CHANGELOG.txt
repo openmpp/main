@@ -1,6 +1,14 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_11_01:
+  model code: simplified and detailed UI, hide and show statements in model code
+  model code: prohibit invalid use of time-like attributes in tables and events
+  c++: move to bison version 3.x
+  UI: create and edit input scenarios
+  UI: allow to create and edit model run notes, input scenario notes, parameter notes
+  UI: display messages to the user about IE is not supported
+
 2021_10_04:
   add model run option to specify run notes in Markdown format
   UI: ability to create new workset
