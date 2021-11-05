@@ -436,7 +436,7 @@ INSERT INTO parameter_dic
 VALUES
   (108, 'salaryByYears', '_20128171604590138', 4, 14, 0, 0, 'salaryByYears_p_2012818', 'salaryByYears_w_2012818', '_i0128171604590138');
 
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 7, 108, 1);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 7, 108, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (108, 0, 'Salary by Years', 'Salary By Years notes');
 
@@ -461,7 +461,7 @@ INSERT INTO parameter_dic
 VALUES
   (109, 'salaryByPeriod', '_20128171604590139', 5, 14, 0, 0, 'salaryByPeriod_p_2012819', 'salaryByPeriod_w_2012819', '_i0128171604590139');
 
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 8, 109, 1);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 8, 109, 0);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (109, 0, 'Salary by Period', 'Salary by Period notes');
 
@@ -489,7 +489,7 @@ INSERT INTO parameter_dic
 VALUES
   (110, 'salaryByLow', '_20128171604590_10', 5, 14, 0, 0, 'salaryByLow_p_201281_10', 'salaryByLow_w_201281_10', '_i0128171604590_10');
 
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 9, 110, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 9, 110, 1);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (110, 0, 'Salary by Low', 'Salary by Low Period notes');
 
@@ -517,7 +517,7 @@ INSERT INTO parameter_dic
 VALUES
   (111, 'salaryByMiddle', '_20128171604590_11', 5, 14, 0, 0, 'salaryByMiddle_p_201281_11', 'salaryByMiddle_w_201281_11', '_i0128171604590_11');
 
-INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 10, 111, 0);
+INSERT INTO model_parameter_dic (model_id, model_parameter_id, parameter_hid, is_hidden) VALUES (1, 10, 111, 1);
 
 INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (111, 0, 'Salary by Middle', 'Salary by Middle Period notes');
 
@@ -1190,8 +1190,8 @@ INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VA
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 0, NULL, 1);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 1, NULL, 3);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 2, NULL, 4);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 3, NULL, 7);
-INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 4, NULL, 8);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 3, NULL, 9);
+INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 3, 4, NULL, 10);
 
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 4, 0, NULL, 7);
 INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VALUES (1, 4, 1, NULL, 8);
