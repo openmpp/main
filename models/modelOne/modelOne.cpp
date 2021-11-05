@@ -102,9 +102,6 @@ void RunModel(IModel * const i_model)
             }
         }
     }
-    // update sub-value progress: 50% completed
-    i_model->updateProgress(75, (double)nCell);
-    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 75, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
 
     // calculate old age seed, accumulator 0, scalar output table, only one cell
     // if SeedOldAge output table not suppressed
@@ -112,6 +109,73 @@ void RunModel(IModel * const i_model)
 
         for (size_t nAge = 0; nAge < N_AGE; nAge++) {
             theSeedOldAge->acc[SeedOldAge::ACC_ID][0] += (double)(i_model->subValueId() + (isOldAge[nAge] ? 10 : 1));
+        }
+    }
+    // update sub-value progress: 75% completed
+    i_model->updateProgress(75, (double)nCell);
+    theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 75, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
+
+    // calculate large tables, if not suppressed
+    if (theIncomeByYear) {
+        for (size_t nAcc = 0; nAcc < theIncomeByYear->N_ACC; nAcc++) {
+            nCell = 0;
+            for (size_t nAge = 0; nAge < N_AGE; nAge++) {
+                for (size_t nSex = 0; nSex < N_SEX; nSex++) {
+                    for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
+                        for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
+                            theIncomeByYear->acc[nAcc][nCell++] = nAcc + startSeed + salaryByYears[nAge][nSex][nSalary][nYear] ;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (theIncomeByLow) {
+        for (size_t nAcc = 0; nAcc < theIncomeByLow->N_ACC; nAcc++) {
+            nCell = 0;
+            for (size_t nAge = 0; nAge < N_AGE; nAge++) {
+                for (size_t nSex = 0; nSex < N_SEX; nSex++) {
+                    for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
+                        for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
+                            for (size_t nLow = 0; nLow < N_LOW; nLow++) {
+                                theIncomeByLow->acc[nAcc][nCell++] = nAcc + startSeed + salaryByLow[nAge][nSex][nSalary][nYear][nLow];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (theIncomeByMiddle) {
+        for (size_t nAcc = 0; nAcc < theIncomeByMiddle->N_ACC; nAcc++) {
+            nCell = 0;
+            for (size_t nAge = 0; nAge < N_AGE; nAge++) {
+                for (size_t nSex = 0; nSex < N_SEX; nSex++) {
+                    for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
+                        for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
+                            for (size_t nMiddle = 0; nMiddle < N_MIDDLE; nMiddle++) {
+                                theIncomeByMiddle->acc[nAcc][nCell++] = nAcc + startSeed + salaryByMiddle[nAge][nSex][nSalary][nYear][nMiddle];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (theIncomeByPeriod) {
+        for (size_t nAcc = 0; nAcc < theIncomeByPeriod->N_ACC; nAcc++) {
+            nCell = 0;
+            for (size_t nAge = 0; nAge < N_AGE; nAge++) {
+                for (size_t nSex = 0; nSex < N_SEX; nSex++) {
+                    for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
+                        for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
+                            for (size_t nPeriod = 0; nPeriod < N_PERIOD; nPeriod++) {
+                                theIncomeByPeriod->acc[nAcc][nCell++] = nAcc + startSeed + salaryByPeriod[nAge][nSex][nSalary][nYear][nPeriod];
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
