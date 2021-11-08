@@ -254,7 +254,7 @@
           >
     <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="$(TargetPath) $(MODEL_OPTS)" />
-    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/..;$(MODEL_ROOT_ENV)"
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT);$(MODEL_ROOT_ENV)"
           WorkingDirectory="$(TargetDir)"
           Command="$(TargetPath) $(MODEL_OPTS)"
           />
@@ -269,7 +269,7 @@
           >
     <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
     <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
-    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT)/..;$(MODEL_ROOT_ENV)"
+    <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT);$(MODEL_ROOT_ENV)"
           WorkingDirectory="$(TargetDir)"
           Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
           />
@@ -283,8 +283,11 @@
   -->
   
   <PropertyGroup>
-    <!-- path to dbcopy must be relative to PUBLISH_DIR -->
-    <COMPLETE_DBCOPY_EXE>&quot;$(OM_ROOT)/../bin/$(DBCOPY_EXE)&quot;</COMPLETE_DBCOPY_EXE>
+    <!-- dbcopy work dir is PUBLISH_DIR, make absolute path to $OM_ROOT/bin -->
+    <ABS_OM_BIN_DIR Condition="'$(OM_ROOT)'!=''">$([System.IO.Path]::GetFullPath('$(OM_ROOT)\bin'))</ABS_OM_BIN_DIR>
+    <!-- bug: System.IO.Path::GetFullPath('../../..') return: C:\Program Files (x86)\Microsoft Visual Studio\2019 -->
+    <ABS_OM_BIN_DIR Condition="'$(OM_ROOT)'=='../../..'">$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\..\bin'))</ABS_OM_BIN_DIR>
+    <COMPLETE_DBCOPY_EXE>&quot;$(ABS_OM_BIN_DIR)\$(DBCOPY_EXE)&quot;</COMPLETE_DBCOPY_EXE>
     <DBCOPY_CSV_OUTPUT_DIR>$(PUBLISH_DIR)/$(MODEL_NAME).last.run</DBCOPY_CSV_OUTPUT_DIR>
   </PropertyGroup>
 
