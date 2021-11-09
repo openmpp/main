@@ -8,8 +8,10 @@
     <DB_PROVIDER>SQLITE</DB_PROVIDER>
     <!-- If running in VS 2017, set platform toolset for VC 2017 -->
     <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(BuildingInsideVisualStudio)'=='true' And '$(VisualStudioVersion)'=='15.0'">v141</PLATFORM_TOOLSET>
-    <!-- Otherwise, hard code to VS 2019 -->
-    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v142</PLATFORM_TOOLSET>
+    <!-- If running in VS 2017, set platform toolset for VC 2019 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(BuildingInsideVisualStudio)'=='true' And '$(VisualStudioVersion)'=='16.0'">v142</PLATFORM_TOOLSET>
+    <!-- Otherwise, hard code to VS 2022 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v143</PLATFORM_TOOLSET>
     <PlatformToolset>$(PLATFORM_TOOLSET)</PlatformToolset>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
