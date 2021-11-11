@@ -115,6 +115,7 @@ void RunModel(IModel * const i_model)
     i_model->updateProgress(75, (double)nCell);
     theTrace->logFormatted("Sub-value: %d progress: %d %g", i_model->subValueId(), 75, (double)nCell);  // trace output: disabled by default, use command-line or model.ini to enable it
 
+#ifdef MODEL_ONE_LARGE
     // calculate large tables, if not suppressed
     if (theIncomeByYear) {
         for (size_t nAcc = 0; nAcc < theIncomeByYear->N_ACC; nAcc++) {
@@ -123,7 +124,7 @@ void RunModel(IModel * const i_model)
                 for (size_t nSex = 0; nSex < N_SEX; nSex++) {
                     for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
                         for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
-                            theIncomeByYear->acc[nAcc][nCell++] = nAcc + startSeed + salaryByYears[nAge][nSex][nSalary][nYear] ;
+                            theIncomeByYear->acc[nAcc][nCell++] = nAcc + startSeed + i_model->subValueId() + salaryByYears[nAge][nSex][nSalary][nYear];
                         }
                     }
                 }
@@ -138,7 +139,7 @@ void RunModel(IModel * const i_model)
                     for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
                         for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
                             for (size_t nLow = 0; nLow < N_LOW; nLow++) {
-                                theIncomeByLow->acc[nAcc][nCell++] = nAcc + startSeed + salaryByLow[nAge][nSex][nSalary][nYear][nLow];
+                                theIncomeByLow->acc[nAcc][nCell++] = nAcc + startSeed + i_model->subValueId() + salaryByLow[nAge][nSex][nSalary][nYear][nLow];
                             }
                         }
                     }
@@ -154,7 +155,7 @@ void RunModel(IModel * const i_model)
                     for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
                         for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
                             for (size_t nMiddle = 0; nMiddle < N_MIDDLE; nMiddle++) {
-                                theIncomeByMiddle->acc[nAcc][nCell++] = nAcc + startSeed + salaryByMiddle[nAge][nSex][nSalary][nYear][nMiddle];
+                                theIncomeByMiddle->acc[nAcc][nCell++] = nAcc + startSeed + i_model->subValueId() + salaryByMiddle[nAge][nSex][nSalary][nYear][nMiddle];
                             }
                         }
                     }
@@ -170,7 +171,7 @@ void RunModel(IModel * const i_model)
                     for (size_t nSalary = 0; nSalary < N_SALARY; nSalary++) {
                         for (size_t nYear = 0; nYear < N_YEARS; nYear++) {
                             for (size_t nPeriod = 0; nPeriod < N_PERIOD; nPeriod++) {
-                                theIncomeByPeriod->acc[nAcc][nCell++] = nAcc + startSeed + salaryByPeriod[nAge][nSex][nSalary][nYear][nPeriod];
+                                theIncomeByPeriod->acc[nAcc][nCell++] = nAcc + startSeed + i_model->subValueId() + salaryByPeriod[nAge][nSex][nSalary][nYear][nPeriod];
                             }
                         }
                     }
@@ -178,6 +179,7 @@ void RunModel(IModel * const i_model)
             }
         }
     }
+#endif  // MODEL_ONE_LARGE
 
     i_model->updateProgress(100);               // update sub-value progress: 100% completed
     theTrace->logMsg("Event loop completed");   // trace output: disabled by default, use command-line or model.ini to enable it

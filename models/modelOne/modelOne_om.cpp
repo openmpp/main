@@ -39,6 +39,17 @@ thread_local int * om_value_salaryFull = nullptr;
 static vector<unique_ptr<bool[]>> om_param_isOldAge;
 thread_local bool * om_value_isOldAge = nullptr;
 
+// model output tables
+//
+thread_local unique_ptr<SalarySex> theSalarySex;            // salary by sex
+thread_local unique_ptr<FullAgeSalary> theFullAgeSalary;    // full time by age by salary bracket
+thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;      // age by sex income
+thread_local unique_ptr<SeedOldAge> theSeedOldAge;          // seed old age output values
+
+// large model parameters
+//
+#ifdef MODEL_ONE_LARGE
+
 static vector<unique_ptr<double[]>> om_param_salaryByYears;
 thread_local double * om_value_salaryByYears = nullptr;
 
@@ -51,22 +62,20 @@ thread_local double * om_value_salaryByLow = nullptr;
 static vector<unique_ptr<double[]>> om_param_salaryByMiddle;
 thread_local double * om_value_salaryByMiddle = nullptr;
 
-// model output tables
+// large model output tables
 //
-thread_local unique_ptr<SalarySex> theSalarySex;            // salary by sex
-thread_local unique_ptr<FullAgeSalary> theFullAgeSalary;    // full time by age by salary bracket
-thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;      // age by sex income
-thread_local unique_ptr<SeedOldAge> theSeedOldAge;          // seed old age output values
 thread_local unique_ptr<IncomeByYear> theIncomeByYear;      // income by age, sex, salary, year
 thread_local unique_ptr<IncomeByLow> theIncomeByLow;        // income by age, sex, salary, year, period
 thread_local unique_ptr<IncomeByMiddle> theIncomeByMiddle;  // income by age, sex, salary, year, low
 thread_local unique_ptr<IncomeByPeriod> theIncomeByPeriod;  // income by age, sex, salary, year, middle
 
-// modelOne development optioms
+// large modelOne development options
 static bool isIncomeByYear = false;     // if true then use output table IncomeByYear
 static bool isIncomeByLow = false;      // if true then use output table IncomeByLow
 static bool isIncomeByMiddle = false;   // if true then use output table IncomeByMiddle
 static bool isIncomeByPeriod = false;   // if true then use output table IncomeByPeriod
+
+#endif  // MODEL_ONE_LARGE
 
 // Model one-time initialization
 void RunOnce(IRunBase * const i_runBase)
@@ -88,10 +97,15 @@ void RunInit(IRunBase * const i_runBase)
     om_param_baseSalary = std::move(read_om_parameter<int>(i_runBase, "baseSalary"));
     om_param_filePath = std::move(read_om_parameter<string>(i_runBase, "filePath"));
     om_param_isOldAge = std::move(read_om_parameter<bool>(i_runBase, "isOldAge", N_AGE));
+
+#ifdef MODEL_ONE_LARGE
+
     om_param_salaryByYears = std::move(read_om_parameter<double>(i_runBase, "salaryByYears", N_AGE * N_SEX * N_SALARY * N_YEARS));
     om_param_salaryByPeriod = std::move(read_om_parameter<double>(i_runBase, "salaryByPeriod", N_AGE * N_SEX * N_SALARY * N_YEARS * N_PERIOD));
     om_param_salaryByLow = std::move(read_om_parameter<double>(i_runBase, "salaryByLow", N_AGE * N_SEX * N_SALARY * N_YEARS * N_LOW));
     om_param_salaryByMiddle = std::move(read_om_parameter<double>(i_runBase, "salaryByMiddle", N_AGE * N_SEX * N_SALARY * N_YEARS * N_MIDDLE));
+
+#endif  // MODEL_ONE_LARGE
 
     /*
     // read model development run options from model.ini
@@ -122,11 +136,15 @@ void RunInit(IRunBase * const i_runBase)
     vector<pair<string, string>> kvLst = i_runBase->allOptions();
     */
 
+#ifdef MODEL_ONE_LARGE
+
     // check modelOne development options
     isIncomeByYear = i_runBase->boolOption("LargeOutput.incomeByYear");
     isIncomeByLow = i_runBase->boolOption("LargeOutput.incomeByLow");
     isIncomeByMiddle = i_runBase->boolOption("LargeOutput.incomeByMiddle");
     isIncomeByPeriod = i_runBase->boolOption("LargeOutput.incomeByPeriod");
+
+#endif  // MODEL_ONE_LARGE
 }
 
 // Model startup method: initialize sub-value
@@ -146,10 +164,15 @@ void ModelStartup(IModel * const i_model)
     om_value_baseSalary = om_param_baseSalary[i_model->parameterSubValueIndex("baseSalary")];
     om_value_filePath = om_param_filePath[i_model->parameterSubValueIndex("filePath")];
     om_value_isOldAge = om_param_isOldAge[i_model->parameterSubValueIndex("isOldAge")].get();
+
+#ifdef MODEL_ONE_LARGE
+
     om_value_salaryByYears = om_param_salaryByYears[i_model->parameterSubValueIndex("salaryByYears")].get();
     om_value_salaryByPeriod = om_param_salaryByPeriod[i_model->parameterSubValueIndex("salaryByPeriod")].get();
     om_value_salaryByLow = om_param_salaryByLow[i_model->parameterSubValueIndex("salaryByLow")].get();
     om_value_salaryByMiddle = om_param_salaryByMiddle[i_model->parameterSubValueIndex("salaryByMiddle")].get();
+
+#endif  // MODEL_ONE_LARGE
     //
     // parameters ready now and can be used by the model
 
@@ -159,20 +182,29 @@ void ModelStartup(IModel * const i_model)
     if (!i_model->isSuppressed("ageSexIncome")) theAgeSexIncome.reset(new AgeSexIncome());
     if (!i_model->isSuppressed("seedOldAge")) theSeedOldAge.reset(new SeedOldAge());
 
+#ifdef MODEL_ONE_LARGE
+
     if (isIncomeByYear && !i_model->isSuppressed("incomeByYear")) theIncomeByYear.reset(new IncomeByYear());
     if (isIncomeByLow && !i_model->isSuppressed("incomeByLow")) theIncomeByLow.reset(new IncomeByLow());
     if (isIncomeByMiddle && !i_model->isSuppressed("incomeByMiddle")) theIncomeByMiddle.reset(new IncomeByMiddle());
     if (isIncomeByPeriod && !i_model->isSuppressed("incomeByPeriod")) theIncomeByPeriod.reset(new IncomeByPeriod());
+
+#endif  // MODEL_ONE_LARGE
 
     // allocate and initialize new output table(s)
     if (theSalarySex) theSalarySex->initialize_accumulators();
     if (theFullAgeSalary) theFullAgeSalary->initialize_accumulators();
     if (theAgeSexIncome) theAgeSexIncome->initialize_accumulators();
     if (theSeedOldAge) theSeedOldAge->initialize_accumulators();
+
+#ifdef MODEL_ONE_LARGE
+
     if (theIncomeByYear) theIncomeByYear->initialize_accumulators();
     if (theIncomeByLow) theIncomeByLow->initialize_accumulators();
     if (theIncomeByMiddle) theIncomeByMiddle->initialize_accumulators();
     if (theIncomeByPeriod) theIncomeByPeriod->initialize_accumulators();
+
+#endif  // MODEL_ONE_LARGE
 }
 
 // Model shutdown method: write output tables
@@ -185,20 +217,30 @@ void ModelShutdown(IModel * const i_model)
     if (theFullAgeSalary) i_model->writeOutputTable("fullAgeSalary", FullAgeSalary::N_CELL, theFullAgeSalary->acc_storage);
     if (theAgeSexIncome) i_model->writeOutputTable("ageSexIncome", AgeSexIncome::N_CELL, theAgeSexIncome->acc_storage);
     if (theSeedOldAge) i_model->writeOutputTable("seedOldAge", SeedOldAge::N_CELL, theSeedOldAge->acc_storage);
+
+#ifdef MODEL_ONE_LARGE
+
     if (theIncomeByYear) i_model->writeOutputTable("incomeByYear", IncomeByYear::N_CELL, theIncomeByYear->acc_storage);
     if (theIncomeByLow) i_model->writeOutputTable("incomeByLow", IncomeByLow::N_CELL, theIncomeByLow->acc_storage);
     if (theIncomeByMiddle) i_model->writeOutputTable("incomeByMiddle", IncomeByMiddle::N_CELL, theIncomeByMiddle->acc_storage);
     if (theIncomeByPeriod) i_model->writeOutputTable("incomeByPeriod", IncomeByPeriod::N_CELL, theIncomeByPeriod->acc_storage);
+
+#endif  // MODEL_ONE_LARGE
 
     // release output tables memory
     if (theSalarySex) theSalarySex.reset(nullptr);
     if (theFullAgeSalary) theFullAgeSalary.reset(nullptr);
     if (theAgeSexIncome) theAgeSexIncome.reset(nullptr);
     if (theSeedOldAge) theSeedOldAge.reset(nullptr);
+
+#ifdef MODEL_ONE_LARGE
+
     if (theIncomeByYear) theIncomeByYear.reset(nullptr);
     if (theIncomeByLow) theIncomeByLow.reset(nullptr);
     if (theIncomeByMiddle) theIncomeByMiddle.reset(nullptr);
     if (theIncomeByPeriod) theIncomeByPeriod.reset(nullptr);
+
+#endif  // MODEL_ONE_LARGE
 }
 
 namespace openm
@@ -225,6 +267,24 @@ namespace openm
     // set entry points to the code generated by openM++ compiler
     static ModelEntryHolder theModelEntry(RunOnce, RunInit, ModelStartup, RunModel, ModelShutdown);
 
+#ifndef MODEL_ONE_LARGE
+
+    // size of parameters list: number of model input parameters
+    const size_t PARAMETER_NAME_ARR_LEN = 7;
+
+    // list of model input parameters name, type and size
+    const ParameterNameSizeItem parameterNameSizeArr[PARAMETER_NAME_ARR_LEN] = {
+        {"StartingSeed", typeid(int), 1},
+        {"ageSex", typeid(double), N_AGE * N_SEX},
+        {"salaryAge", typeid(int), N_SALARY * N_AGE},
+        {"salaryFull", typeid(int), N_SALARY},
+        {"baseSalary", typeid(int), 1},
+        {"filePath", typeid(string), 1},
+        {"isOldAge", typeid(bool), N_AGE}
+    };
+
+#else   // MODEL_ONE_LARGE
+
     // size of parameters list: number of model input parameters
     const size_t PARAMETER_NAME_ARR_LEN = 11;
 
@@ -242,4 +302,6 @@ namespace openm
         {"salaryByLow", typeid(double), N_AGE * N_SEX * N_SALARY * N_YEARS * N_LOW},
         {"salaryByMiddle", typeid(double), N_AGE * N_SEX * N_SALARY * N_YEARS * N_MIDDLE}
     };
+
+#endif  // MODEL_ONE_LARGE
 }

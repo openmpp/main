@@ -11,6 +11,10 @@ using namespace std;
 
 #include "libopenm/omModel.h"
 
+// use large input parameters and output tables
+//
+// #define MODEL_ONE_LARGE
+
 // One-time initialization, if requred by the model
 void RunOnce(openm::IRunBase * const i_runBase);
 
@@ -31,10 +35,6 @@ const size_t N_AGE = 4;
 const size_t N_SEX = 2;
 const size_t N_SALARY = 3;
 const size_t N_FULL = 2;
-const size_t N_YEARS = 201;
-const size_t N_PERIOD = 201;
-const size_t N_LOW = 10;
-const size_t N_MIDDLE = 30;
 
 // model type "full": full or part time job
 enum jobKind : int
@@ -52,19 +52,31 @@ extern thread_local double * om_value_ageSex;
 extern thread_local int * om_value_salaryAge;
 extern thread_local int * om_value_salaryFull;
 extern thread_local bool * om_value_isOldAge;
-extern thread_local double * om_value_salaryByYears;
-extern thread_local double * om_value_salaryByPeriod;
-extern thread_local double * om_value_salaryByLow;
-extern thread_local double * om_value_salaryByMiddle;
 
 #define ageSex          (*reinterpret_cast<const double(*)[N_AGE][N_SEX]>(om_value_ageSex))
 #define salaryAge       (*reinterpret_cast<const int(*)[N_SALARY][N_AGE]>(om_value_salaryAge))
 #define salaryFull      (*reinterpret_cast<const int(*)[N_SALARY]>(om_value_salaryFull))
 #define isOldAge        (*reinterpret_cast<const bool(*)[N_AGE]>(om_value_isOldAge))
+
+// large model parameters
+#ifdef MODEL_ONE_LARGE
+
+const size_t N_YEARS = 201;
+const size_t N_PERIOD = 201;
+const size_t N_LOW = 10;
+const size_t N_MIDDLE = 30;
+
+extern thread_local double * om_value_salaryByYears;
+extern thread_local double * om_value_salaryByPeriod;
+extern thread_local double * om_value_salaryByLow;
+extern thread_local double * om_value_salaryByMiddle;
+
 #define salaryByYears   (*reinterpret_cast<const double(*)[N_AGE][N_SEX][N_SALARY][N_YEARS]>(om_value_salaryByYears))
 #define salaryByPeriod  (*reinterpret_cast<const double(*)[N_AGE][N_SEX][N_SALARY][N_YEARS][N_PERIOD]>(om_value_salaryByPeriod))
 #define salaryByLow     (*reinterpret_cast<const double(*)[N_AGE][N_SEX][N_SALARY][N_YEARS][N_LOW]>(om_value_salaryByLow))
 #define salaryByMiddle  (*reinterpret_cast<const double(*)[N_AGE][N_SEX][N_SALARY][N_YEARS][N_MIDDLE]>(om_value_salaryByMiddle))
+
+#endif  // MODEL_ONE_LARGE
 
 // model output tables
 //
@@ -185,6 +197,11 @@ public:
 };
 
 
+#ifdef MODEL_ONE_LARGE
+
+// large model output tables
+//
+
 // income by [age, sex, salary, years]: 4824 * 4 expression cells
 class IncomeByYear
 {
@@ -301,14 +318,22 @@ public:
     }
 };
 
+#endif  // MODEL_ONE_LARGE
+
 // model output tables
 extern thread_local unique_ptr<SalarySex> theSalarySex;             // salary by sex
 extern thread_local unique_ptr<FullAgeSalary> theFullAgeSalary;     // full time by age by salary bracket
 extern thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;       // age by sex income
 extern thread_local unique_ptr<SeedOldAge> theSeedOldAge;           // seed for old age
+
+// large model output tables
+#ifdef MODEL_ONE_LARGE
+
 extern thread_local unique_ptr<IncomeByYear> theIncomeByYear;       // income by age, sex, salary, year
 extern thread_local unique_ptr<IncomeByLow> theIncomeByLow;         // income by age, sex, salary, year, period
 extern thread_local unique_ptr<IncomeByMiddle> theIncomeByMiddle;   // income by age, sex, salary, year, low
 extern thread_local unique_ptr<IncomeByPeriod> theIncomeByPeriod;   // income by age, sex, salary, year, middle
+
+#endif  // MODEL_ONE_LARGE
 
 #endif  // MODEL_ONE_H
