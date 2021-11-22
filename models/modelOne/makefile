@@ -189,6 +189,10 @@ run:
 		-OpenM.RunName Default-4 \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-Parameter.baseSalary Full \
+		-OpenM.RunName "Default and Full base salary" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "First Task Run" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"

@@ -178,12 +178,23 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                 sVal = TypeDicRow::isBoolTrue(sVal.c_str()) ? "1" : "0";
             }
 
-            if (!typeRow->isBuiltIn() && !isIdValue) {
-                const TypeEnumLstRow * enumRow = metaStore->typeEnumLst->byName(modelId, paramIt->typeId, sVal.c_str());
-                if (enumRow == nullptr) 
-                    throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
+            if (!typeRow->isBuiltIn()) {
+                if (isIdValue) {
+                    if (!TypeDicRow::isIntValid(sVal.c_str()))
+                        throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
 
-                sVal = to_string(enumRow->enumId);
+                    int eId = stoi(sVal);
+                    const TypeEnumLstRow * enumRow = metaStore->typeEnumLst->byKey(modelId, paramIt->typeId, eId);
+                    if (enumRow == nullptr)
+                        throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
+                }
+                else {
+                    const TypeEnumLstRow * enumRow = metaStore->typeEnumLst->byName(modelId, paramIt->typeId, sVal.c_str());
+                    if (enumRow == nullptr)
+                        throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
+
+                    sVal = to_string(enumRow->enumId);
+                }
             }
 
             // insert the value

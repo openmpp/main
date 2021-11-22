@@ -170,7 +170,7 @@ bool TypeDicRow::isBigInt(void) const
 */
 bool TypeDicRow::isInt(void) const
 {
-    return !isBool() && !isString() && !isFloat() && !isBigInt();
+    return isBuiltIn() && !isBool() && !isString() && !isFloat() && !isBigInt();
 }
 
 /** return true if i_value string represent valid integer constant */
