@@ -246,8 +246,10 @@ if ( $^O eq 'darwin') {
 # http://msdn.microsoft.com/en-us/library/ms164311.aspx
 use File::Which qw(which);
 use Cwd 'abs_path';
+use Capture::Tiny qw(capture_merged);
 
 my $msbuild_exe = "";
+my $ms_platform_toolset = "";
 if ($is_windows) {
 	if (defined $ENV{MSBUILD_EXE}) {
 		# provides a non-standard way to specify the msbuild.exe path
@@ -267,6 +269,14 @@ if ($is_windows) {
 		}
 	}
 	if ( ! -x $msbuild_exe ) {
+		# Use VS 2022 aka version 17 if present (Community Edition)
+		$msbuild_exe = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe";
+	}
+	if ( ! -x $msbuild_exe ) {
+		# Use VS 2022 aka version 17 if present (Enterprise Edition)
+		$msbuild_exe = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe";
+	}
+	if ( ! -x $msbuild_exe ) {
 		# Use VS 2019 aka version 16 if present (Community Edition)
 		$msbuild_exe = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe";
 	}
@@ -280,6 +290,23 @@ if ($is_windows) {
 	}
 	if ( ! -x $msbuild_exe ) {
 		die "Missing msbuild_exe: $msbuild_exe";
+	}
+
+	# get MSBuild version, deduce VS version and corresponding platform toolset version
+	my $retval;
+	my $merged;
+	($merged, $retval) = capture_merged { system(
+		"${msbuild_exe}", "-ver", "-noLogo"
+		); };
+	if ($retval != 0) {
+		die "Failed ${msbuild_exe} -ver -noLogo";
+	}
+
+	if ( index($merged, "15.") == 0 ) { $ms_platform_toolset = "v141"; } # MSBuild 15.x = VS 2017
+	if ( index($merged, "16.") == 0 ) { $ms_platform_toolset = "v142"; } # MSBuild 16.x = VS 2019
+	if ( index($merged, "17.") == 0 ) { $ms_platform_toolset = "v143"; } # MSBuild 17.x = VS 2022
+	if ( $ms_platform_toolset eq "") {
+		die "MSBbuild version $merged is not supported";
 	}
 }
 
@@ -889,6 +916,7 @@ for my $model_dir (@model_dirs) {
 					"/p:OMC_EXE=${omc_exe}",
 					"/p:Configuration=${config}",
 					"/p:Platform=${windows_platform}",
+					"/p:PLATFORM_TOOLSET=${ms_platform_toolset}",
 					"/p:GRID_COMPUTING=${grid_computing}",
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:ENABLE_FIXED_PARAMETERS=${enable_fixed_parameters}",
