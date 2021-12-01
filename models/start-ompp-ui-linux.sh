@@ -7,6 +7,7 @@
 #
 # It does:
 #   cd $OM_ROOT
+#   ulimit -S -s 65536
 #   # start oms, listen on free port:
 #   bin/oms -oms.Listen localhost:0 .... &
 #   # read actual oms URL "http://localhost:12345" from file:
@@ -64,6 +65,17 @@ START_OMPP_UI_LOG="${PUBLISH_DIR}/${MODEL_NAME}.start_ompp_ui.log"
 echo "MODEL_NAME  = $MODEL_NAME"  >"$START_OMPP_UI_LOG"
 echo "OM_ROOT     = $OM_ROOT"     >>"$START_OMPP_UI_LOG"
 echo "PUBLISH_DIR = $PUBLISH_DIR" >>"$START_OMPP_UI_LOG"
+
+# large models may require stack limit increase
+#
+ulimit -S -s 65536
+status=$?
+
+if [ $status -ne 0 ] ;
+then
+  echo "FAILED to set: ulimit -S -s 65536" | tee -a "$START_OMPP_UI_LOG"
+  exit $status
+fi
 
 # check if model.sqlite exist in "publish" directory
 #
