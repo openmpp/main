@@ -603,6 +603,10 @@ bool Symbol::option_verify_attribute_modification = true;
 
 bool Symbol::option_verify_timelike_attribute_access = true;
 
+bool Symbol::option_entity_weight = false;
+
+bool Symbol::option_censor_event_time = false;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -1869,6 +1873,34 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_verify_timelike_attribute_access = false;
+            }
+        }
+    }
+
+    {
+        string key = "entity_weight";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_entity_weight = true;
+            }
+            else if (value == "off") {
+                option_entity_weight = false;
+            }
+        }
+    }
+
+    {
+        string key = "censor_event_time";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_censor_event_time = true;
+            }
+            else if (value == "off") {
+                option_censor_event_time = false;
             }
         }
     }

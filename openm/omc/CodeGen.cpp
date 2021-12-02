@@ -144,6 +144,28 @@ void CodeGen::do_preamble()
         t0 += "";
     }
 
+    if (Symbol::option_censor_event_time) {
+        t0 += doxygen_short("Model was built with censor_event_time = on.");
+        t0 += "constexpr bool om_censor_event_time_on = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was built with censor_event_time = off.");
+        t0 += "constexpr bool om_censor_event_time_on = false;";
+        t0 += "";
+    }
+
+    if (Symbol::option_entity_weight) {
+        t0 += doxygen_short("Model was built with entity_weight = on.");
+        t0 += "constexpr bool om_entity_weight_on = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was built with entity_weight = off.");
+        t0 += "constexpr bool om_entity_weight_on = false;";
+        t0 += "";
+    }
+
     if (Symbol::option_event_trace) {
         t0 += doxygen_short("Model was built with event trace capability.");
         t0 += "constexpr bool om_event_trace_capable = true;";
