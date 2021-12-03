@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 # It does:
+#   ulimit -S -s 65536
 #   OM_ROOT=${OM_ROOT} bin/oms -oms.Listen http://localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.LogRequest
 #
 # Environment:
@@ -9,6 +10,19 @@
 
 # set -e
 set -m
+
+# large models may require stack limit increase
+#
+ulimit -S -s 65536
+status=$?
+
+if [ $status -ne 0 ] ;
+then
+  echo "FAILED to set: ulimit -S -s 65536"
+  echo -n "Press Enter to exit..."
+  read any
+  exit $status
+fi
 
 # set openM++ root folder 
 #

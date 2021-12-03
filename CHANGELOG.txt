@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2021_11_30:
+  support Visual Studio 2022
+  make fast and small csv output by dbcopy: NoAccumulatorsCsv option
+  UI: download parameter as CSV file
+  UI: run comparison
+
 2021_11_01:
   model code: simplified and detailed UI, hide and show statements in model code
   model code: prohibit invalid use of time-like attributes in tables and events
