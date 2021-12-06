@@ -707,6 +707,11 @@ public:
         agent()->age_agent(event_time);
     }
 
+    Time call_get_censor_time()
+    {
+        return agent()->get_censor_time();
+    }
+
 	// offset to containing agent
 	static size_t offset_in_agent;
 };
