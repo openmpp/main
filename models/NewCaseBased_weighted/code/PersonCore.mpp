@@ -90,6 +90,9 @@ void Person::Start()
     age = 0;
     time = 0;
 
+    // The following tests ability to change built-in attribute entity_weight (breaks Modgen version).
+    //entity_weight += 0.5;
+
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 

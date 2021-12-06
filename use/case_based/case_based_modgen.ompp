@@ -89,27 +89,13 @@ int GetSubSamples()
  *
  * @param weight The weight.
  */
-void SetCaseWeight(double weight)
+void SetCaseWeight(double w)
 {
-    if (weight == 1.0) {
-        return;
-    }
-    static bool isFirst = true; // to produce warning only once
-    if (isFirst) {
-        isFirst = false;
-        theLog->logFormatted("warning : Entity weight not implemented.");
-    }
+    set_initial_weight(w);
 }
-void SetCaseWeight(double weight, double weight2)
+void SetCaseWeight(double w, double w2)
 {
-    if (weight == 1.0 && weight2 == 1.0) {
-        return;
-    }
-    static bool isFirst = true; // to produce warning only once
-    if (isFirst) {
-        isFirst = false;
-        theLog->logFormatted("warning : Entity weight not implemented.");
-    }
+    set_initial_weight(w);
 }
 
 /**

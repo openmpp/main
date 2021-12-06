@@ -21,15 +21,18 @@ void CaseSimulation(case_info &ci)
 {
     extern void SimulateEvents(); // defined in a simulation framework module
 
-    // Set the case weight
+    // Provide the weight used to initialize the entity_weight attribute for new entities
+    //set_initial_weight(2.0);
+
+    // For Modgen-compatible models, use the following instead
     SetCaseWeight(2.0);
 
-    // Initialize the person actor
+    // Initialize the person entity
     auto prPerson = new Person();
-	prPerson->Start();
+    prPerson->Start();
 
-	// Simulate events until there are no more.
-	SimulateEvents();
+    // Simulate events until there are no more.
+    SimulateEvents();
 }
 
 /**

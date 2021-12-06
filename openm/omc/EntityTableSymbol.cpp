@@ -815,10 +815,20 @@ void EntityTableSymbol::build_body_push_increment()
         c += "auto& dAccumulator = table->acc[acc_index][cell];";
         switch (acc->accumulator) {
         case token::TK_unit:
-            c += "dAccumulator += dIncrement;";
+            if (Symbol::option_weighted_tabulation) {
+                c += "dAccumulator += entity_weight * dIncrement;";
+            }
+            else {
+                c += "dAccumulator += dIncrement;";
+            }
             break;
         case token::TK_sum:
-            c += "dAccumulator += dIncrement;";
+            if (Symbol::option_weighted_tabulation) {
+                c += "dAccumulator += entity_weight * dIncrement;";
+            }
+            else {
+                c += "dAccumulator += dIncrement;";
+            }
             break;
         case token::TK_minimum:
             c += "if ( dIncrement < dAccumulator ) dAccumulator = dIncrement;";

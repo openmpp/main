@@ -1330,9 +1330,9 @@ public:
     static bool option_verify_timelike_attribute_access;
 
     /**
-     * true or false depending on entity_weight value in options statement.
+     * true or false depending on weighted_tabulation value in options statement.
      */
-    static bool option_entity_weight;
+    static bool option_weighted_tabulation;
 
     /**
      * true or false depending on censor_event_time value in options statement.

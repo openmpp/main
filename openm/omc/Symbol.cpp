@@ -603,7 +603,7 @@ bool Symbol::option_verify_attribute_modification = true;
 
 bool Symbol::option_verify_timelike_attribute_access = true;
 
-bool Symbol::option_entity_weight = false;
+bool Symbol::option_weighted_tabulation = false;
 
 bool Symbol::option_censor_event_time = false;
 
@@ -1878,15 +1878,15 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "entity_weight";
+        string key = "weighted_tabulation";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
             if (value == "on") {
-                option_entity_weight = true;
+                option_weighted_tabulation = true;
             }
             else if (value == "off") {
-                option_entity_weight = false;
+                option_weighted_tabulation = false;
             }
         }
     }

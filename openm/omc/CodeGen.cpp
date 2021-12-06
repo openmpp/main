@@ -23,7 +23,8 @@ void CodeGen::do_all()
 	do_preamble();
 
 	do_types();
-	do_aggregations();
+    do_weight_support();
+    do_aggregations();
 	do_parameters();
 	do_entity_tables();
 	do_derived_tables();
@@ -155,14 +156,14 @@ void CodeGen::do_preamble()
         t0 += "";
     }
 
-    if (Symbol::option_entity_weight) {
-        t0 += doxygen_short("Model was built with entity_weight = on.");
-        t0 += "constexpr bool om_entity_weight_on = true;";
+    if (Symbol::option_weighted_tabulation) {
+        t0 += doxygen_short("Model was built with weighted_tabulation = on.");
+        t0 += "constexpr bool om_weighted_tabulation_on = true;";
         t0 += "";
     }
     else {
-        t0 += doxygen_short("Model was built with entity_weight = off.");
-        t0 += "constexpr bool om_entity_weight_on = false;";
+        t0 += doxygen_short("Model was built with weighted_tabulation = off.");
+        t0 += "constexpr bool om_weighted_tabulation_on = false;";
         t0 += "";
     }
 
@@ -279,7 +280,7 @@ void CodeGen::do_name_digest(void)
     // om_types0.h
     t0.push_header(doxygen(
         "@file   om_types0.h",
-        "Fundamental types" + model_str,
+        "Fundamental types and constexpr" + model_str,
         " ",
         version_str,
         created_str,
@@ -420,6 +421,60 @@ void CodeGen::do_aggregations()
     }
 	h += "";
 	c += "";
+}
+
+void CodeGen::do_weight_support()
+{
+    h += "// weight support";
+    h += "";
+    h += "extern thread_local double om_initial_weight;";
+    h += "extern thread_local double om_sum_weight;";
+    h += "";
+    h += doxygen_short("set initial weight");
+    h += "void set_initial_weight(double w);";
+    h += "";
+    h += doxygen_short("get initial weight");
+    h += "double get_initial_weight(void);";
+    h += "";
+    h += doxygen_short("get sum of weights");
+    h += "double get_sum_weight(void);";
+    h += "";
+    h += doxygen_short("reset weight API");
+    h += "void reset_weight(void);";
+    h += "";
+
+    c += "// weight support";
+    c += "";
+    c += "thread_local double om_initial_weight = 1.0;";
+    c += "thread_local double om_sum_weight = 0.0;";
+    c += "void set_initial_weight(double w)";
+    c += "{";
+    if (Symbol::option_weighted_tabulation) {
+        c += "om_initial_weight = w;";
+    }
+    else {
+        c += "// weighted tabulation is off in this model, so ignore argument";
+        c += "om_initial_weight = 1.0;";
+    }
+    c +=     "om_sum_weight += om_initial_weight;";
+    c += "}";
+    c += "";
+    c += "double get_initial_weight()";
+    c += "{";
+    c +=     "return om_initial_weight;";
+    c += "}";
+    c += "";
+    c += "double get_sum_weight()";
+    c += "{";
+    c +=     "return om_sum_weight;";
+    c += "}";
+    c += "";
+    c += "void reset_weight_api()";
+    c += "{";
+    c +=     "om_initial_weight = 1.0;";
+    c +=     "om_sum_weight += 0.0;";
+    c += "}";
+    c += "";
 }
 
 void CodeGen::do_parameters()
@@ -598,6 +653,9 @@ void CodeGen::do_ModelStartup()
     c += "{";
     c += "// obtain simulation member to use for log messages";
     c += "int simulation_member = i_model->subValueId();";
+    c += "";
+    c += "// reset the weight support API";
+    c += "reset_weight_api();";
     c += "";
     c += "// Bind scenario parameter references to thread local values (for scenario parameters).";
     c += "// Until this is done scenario parameter values are undefined and cannot be used by the model.";

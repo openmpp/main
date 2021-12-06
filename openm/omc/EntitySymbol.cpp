@@ -415,26 +415,6 @@ void EntitySymbol::post_parse(int pass)
             }
         }
 
-        // Create attribute entity_weight if option entity_weight is on
-        if (Symbol::option_entity_weight) {
-            string nm = "entity_weight";
-            auto sym = Symbol::get_symbol(nm, this);
-            if (!sym || sym->is_base_symbol()) {
-                NumericSymbol* typ = NumericSymbol::find(token::TK_double);
-                BuiltinAttributeSymbol* biav = nullptr;
-                if (!sym) {
-                    // create it
-                    biav = new BuiltinAttributeSymbol(nm, this, typ);
-                }
-                else {
-                    // morph it
-                    biav = new BuiltinAttributeSymbol(sym, this, typ);
-                }
-                assert(biav);
-                // initialized to 1.0 by generated code in function om_initialize_data_members
-            }
-        }
-
         // Create attribute censor_time if option censor_event_time is on
         if (Symbol::option_censor_event_time) {
             string nm = "censor_time";
@@ -478,6 +458,26 @@ void EntitySymbol::post_parse(int pass)
             }
             else {
                 c += "";
+            }
+        }
+
+        // Create attribute entity_weight if option weighted_tabulation is on
+        if (Symbol::option_weighted_tabulation) {
+            string nm = "entity_weight";
+            auto sym = Symbol::get_symbol(nm, this);
+            if (!sym || sym->is_base_symbol()) {
+                NumericSymbol* typ = NumericSymbol::find(token::TK_double);
+                BuiltinAttributeSymbol* biav = nullptr;
+                if (!sym) {
+                    // create it
+                    biav = new BuiltinAttributeSymbol(nm, this, typ);
+                }
+                else {
+                    // morph it
+                    biav = new BuiltinAttributeSymbol(sym, this, typ);
+                }
+                assert(biav);
+                // initialized to 1.0 by generated code in function om_initialize_data_members
             }
         }
 
@@ -544,15 +544,15 @@ void EntitySymbol::build_body_initialize_data_members()
         c += "case_id.initialize(GetCaseID());";
         c += "case_seed.initialize(GetCaseSeed());";
     }
-    if (Symbol::option_entity_weight) {
-        c += "";
-        c += "// built-in attribute for a model with weights";
-        c += "entity_weight.initialize(1.0);";
-    }
     if (Symbol::option_censor_event_time) {
         c += "";
         c += "// built-in attribute for a model which censors event times";
         c += "censor_time.initialize(time_infinite);";
+    }
+    if (Symbol::option_weighted_tabulation) {
+        c += "";
+        c += "// built-in attribute for a model with weights";
+        c += "entity_weight.initialize(get_initial_weight());";
     }
 }
 

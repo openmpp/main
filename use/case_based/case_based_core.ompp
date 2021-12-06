@@ -3,7 +3,7 @@
 * Framework implementation for case-based models - core portions
 *
 */
-// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// Copyright (c) 2013-2021 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 /**
@@ -40,6 +40,16 @@ namespace fmk {
      * The case counter in this simulation member.
      */
     thread_local long long member_case_counter = 0;
+
+    /**
+     * The case weight in this simulation member.
+     */
+    thread_local double member_case_weight = 1.0;
+
+    /**
+     * The sum of csae weights in this simulation member.
+     */
+    thread_local double member_sum_case_weight = 0.0;
 
 } // namespace fmk
 

@@ -29,7 +29,7 @@ use "case_based/case_based_cases_per_run_exogenous.ompp"; // Specify number of c
 //use "case_based/case_based_cases_per_member_exogenous.ompp"; // Specify number of cases as cases per member in parameter CasesPerMember
  
 // Select exactly one of the following lines and comment the others
-use "case_based/case_based_scaling_none.ompp";  // No population scaling
+use "case_based/case_based_scaling_exogenous.ompp";
 
 use "common_modgen.ompp";                       // Modgen API implementation for x-compatible models (optional)
 use "case_based/case_based_modgen.ompp";        // Modgen API implementation for x-compatible case-based models (optional)
