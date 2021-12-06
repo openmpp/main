@@ -117,9 +117,9 @@ status=0
 
 if [ "${OM_X_TERMINAL}" != "konsole" ] ;
 then
-  echo "${OM_X_TERMINAL} -e ./bin/start_oms.sh" | tee -a "$OMPP_UI_SH_LOG"
+  echo "${OM_X_TERMINAL} -e ./bin/start_oms.sh &" | tee -a "$OMPP_UI_SH_LOG"
 
-  ${OM_X_TERMINAL} -e ./bin/start_oms.sh
+  ${OM_X_TERMINAL} -e ./bin/start_oms.sh &
   status=$?
 else
   echo bash -c "konsole -e ./bin/start_oms.sh &" | tee -a "$OMPP_UI_SH_LOG"
