@@ -1889,6 +1889,13 @@ void Symbol::defaults_and_options()
                 option_weighted_tabulation = false;
             }
         }
+        // Find the one and only ModelTypeSymbol
+        auto mts = ModelTypeSymbol::find();
+        assert(mts);
+        bool is_time_based = !mts->is_case_based();
+        if (is_time_based && option_weighted_tabulation) {
+            pp_error(mts->decl_loc, LT("error : weighted tabulation is not allowed with a time-based model, use population scaling instead."));
+        }
     }
 
     {
