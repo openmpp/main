@@ -47,6 +47,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::traceUseTs,
     RunOptionsKey::traceUsePid,
     RunOptionsKey::traceNoMsgTime,
+    RunOptionsKey::traceRank,
+    RunOptionsKey::logRank,
     RunOptionsKey::messageLang,
     ArgKey::iniFile,
     ArgKey::iniAnyKey,

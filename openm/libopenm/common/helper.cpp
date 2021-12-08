@@ -330,7 +330,7 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
 const char * openm::elliptString(const char * i_src, size_t i_size, char * io_buffer)
 {
     if (i_src == nullptr || i_src[0] == '\0') return "";        // source is empty, return empty
-    if (i_size < 1 || i_size >= OM_STRLEN_MAX) return "";       // size is too short or too long (error in size)
+    if (i_size < 3 || i_size >= OM_STRLEN_MAX) return "";       // size is too short or too long (error in size)
     if (strnlen(i_src, i_size + 1) <= i_size) return i_src;     // source does not exceed max size, return as is
     if (io_buffer == nullptr) return "";                        // buffer is null, return empty
 

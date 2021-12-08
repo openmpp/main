@@ -28,7 +28,7 @@ namespace openm
         {
             try {
                 if (i_format == NULL) {
-                    strncpy(msg, defaultMessage, maxMsgSize);
+                    strncpy(msg, defaultMessage, maxMsgSize - 1);
                 }
                 else {
                     va_list args;

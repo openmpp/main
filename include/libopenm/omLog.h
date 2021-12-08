@@ -19,7 +19,7 @@ namespace openm
     {
         virtual ~ILogBase(void) noexcept = 0;
 
-        /** return true if log to console or to file enabled. */
+        /** return true if log to console or to file enabled */
         virtual const bool isEnabled(void) noexcept = 0;
 
         /** log message */
@@ -33,6 +33,9 @@ namespace openm
         * it is never return empty "" string, even no log enabled or timestamp disabled for log file
         */
         virtual const std::string timeStamp(void) noexcept = 0;
+
+        /** use process rank as log message prefix */
+        virtual void setRank(int i_rank, int i_worldSize) noexcept = 0;
     };
 
     /** log public interface: log to console and into log files */
