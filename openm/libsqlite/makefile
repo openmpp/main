@@ -1,3 +1,6 @@
+# platform name: Linux or Darwin
+PLATFORM_UNAME := $(shell uname -s)
+
 CXX = g++
 CC = gcc
 CPP = $(CC)

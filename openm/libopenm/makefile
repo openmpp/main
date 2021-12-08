@@ -1,3 +1,6 @@
+# platform name: Linux or Darwin
+PLATFORM_UNAME := $(shell uname -s)
+
 ifeq ($(OM_MSG_USE), MPI)
   CXX = mpic++
   CC = mpicc
