@@ -25,6 +25,9 @@ DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG -Og
+  ifeq ($(PLATFORM_UNAME), Linux)
+    BD_CFLAGS = -g -D_DEBUG -O0
+  endif
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
   BIN_POSTFIX = D

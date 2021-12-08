@@ -15,6 +15,10 @@ bin/data/*
 etc/
 html/
 
+# models missing parameters .dat
+#
+Missing.dat.tmp
+
 # build results and user settings
 #
 **/.vs

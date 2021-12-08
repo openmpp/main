@@ -16,6 +16,9 @@ DEPS_DIR = $(BUILD_PROJ_DIR)/deps
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG -Og
+  ifeq ($(PLATFORM_UNAME), Linux)
+    BD_CFLAGS = -g -D_DEBUG -O0
+  endif
   OUT_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug
   BIN_POSTFIX = D
@@ -54,7 +57,7 @@ LIBSQLITE_CLIST := \
 
 OBJS := $(foreach root,$(LIBSQLITE_CLIST:.c=.o),$(OBJ_DIR)/$(notdir $(root)))
 DEPS := $(foreach root,$(LIBSQLITE_CLIST:.c=.d),$(DEPS_DIR)/$(notdir $(root)))
-    
+
 .PHONY : all
 all: libsqlite
 
@@ -69,7 +72,7 @@ $(DEPS_DIR)/%.d : %.c
 
 $(OBJ_DIR)/%.o : %.c
 	$(CC) $(CCFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
-	
+
 $(OUT_DIR)/$(LIBSQLITE_A) : $(OBJS)
 	$(AR) rcs $@ $^
 

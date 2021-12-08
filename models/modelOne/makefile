@@ -54,6 +54,9 @@ endif
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG -Og
+  ifeq ($(PLATFORM_UNAME), Linux)
+    BD_CFLAGS = -g -D_DEBUG -O0
+  endif
   DEPS_DIR = $(MODEL_BUILD_DIR)/debug/deps
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   BIN_POSTFIX = D
