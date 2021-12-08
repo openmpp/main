@@ -214,7 +214,8 @@ namespace openm
             runId(0),
             msgExec(i_msgExec),
             lastTimeStatus(chrono::system_clock::now()),
-            lastModelStatus(ModelStatus::init)
+            lastModelStatus(ModelStatus::init),
+            isFinalExchange(false)
         {
             processCount = i_processCount; 
         }
@@ -257,6 +258,7 @@ namespace openm
         IMsgExec * msgExec;                                 // message passing interface
         chrono::system_clock::time_point lastTimeStatus;    // last status update time sent to root
         ModelStatus lastModelStatus;                        // last model status sent to root
+        bool isFinalExchange;                               // if true then final model status send or received from root
 
         /** initialize child modeling process. */
         virtual void init(void) override;
