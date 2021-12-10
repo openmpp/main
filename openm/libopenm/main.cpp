@@ -122,6 +122,9 @@ int main(int argc, char ** argv)
         // init message interface
         unique_ptr<IMsgExec> msgExec(IMsgExec::create(argc, argv, theModelRunState));
 
+        if (argOpts.boolOption(RunOptionsKey::logRank)) theLog->setRank(msgExec->rank(), msgExec->worldSize());
+        if (argOpts.boolOption(RunOptionsKey::traceRank)) theTrace->setRank(msgExec->rank(), msgExec->worldSize());
+
         try {
             // get db-connection string or use default if not specified
             string connectionStr = argOpts.strOption(

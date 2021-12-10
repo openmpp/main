@@ -50,6 +50,7 @@ public:
 
     void do_all();
     void do_preamble();
+    void do_weight_support();
     void do_model_strings();
     void do_types();
     void do_aggregations();

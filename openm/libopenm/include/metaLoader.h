@@ -163,6 +163,12 @@ namespace openm
         /** do not prefix trace log messages with date-time */
         static constexpr const char * traceNoMsgTime = "OpenM.TraceNoMsgTime";
                                        
+        /** trace use process rank as log message prefix */
+        static constexpr const char * traceRank = "OpenM.TraceRank";
+
+        /** use process rank as log message prefix */
+        static constexpr const char * logRank = "OpenM.LogRank";
+
         /** language to display output messages */
         static constexpr const char * messageLang = "OpenM.MessageLanguage";
         

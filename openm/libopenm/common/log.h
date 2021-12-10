@@ -81,6 +81,9 @@ namespace openm
             bool i_noMsgTime = false
             ) noexcept;
 
+        /** use process rank as log message prefix */
+        void setRank(int i_rank, int i_worldSize) noexcept;
+
     protected:
         recursive_mutex theMutex;   // mutex to lock for log operations
         bool isConsoleEnabled;      // if true then log to console
@@ -93,6 +96,8 @@ namespace openm
         string lastPath;            // last log file path: /var/log/openm.log
         string stampedPath;         // stamped log file path: /var/log/openm.2012_08_17_16_04_59_148.1234.log
         bool isNoMsgTime;           // if true then not prefix messages with date-time
+        string rankPrefix;          // process rank log prefix
+        bool isMsgRank;             // if true then prefix messages with process rank
 
         static const size_t msgBufferSize = 32768;
         char msgBuffer[msgBufferSize + 1];          // buffer to format message

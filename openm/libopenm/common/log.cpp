@@ -58,7 +58,8 @@ LogBase::LogBase(
     isStampedCreated(false),
     lastPath((i_basePath != nullptr) ? i_basePath : ""),
     stampedPath(""),
-    isNoMsgTime(false)
+    isNoMsgTime(false),
+    isMsgRank(false)
 {
     lock_guard<recursive_mutex> lck(theMutex);
 
@@ -125,6 +126,27 @@ void LogBase::init(
             }
             isStampedEnabled = true;    // enable use of stamped log file
         }
+    }
+    catch (...) { }
+}
+
+/** use process rank as log message prefix */
+void LogBase::setRank(int i_rank, int i_worldSize) noexcept
+{
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        isMsgRank = true;
+
+        ostringstream st;
+        st.imbue(locale::classic());
+
+        if (i_worldSize < 10) st << '[' << i_rank << "] ";
+        if (10 <= i_worldSize && i_worldSize < 100) st << setfill(' ') << '[' << setw(2) << i_rank << "] ";
+        if (100 <= i_worldSize && i_worldSize < 1000) st << setfill(' ') << '[' << setw(3) << i_rank << "] ";
+        if (1000 <= i_worldSize && i_worldSize < 10000) st << setfill(' ') << '[' << setw(4) << i_rank << "] ";
+        if (10000 <= i_worldSize) st << setfill(' ') << '[' << setw(5) << i_rank << "] ";
+
+        rankPrefix = st.str();
     }
     catch (...) { }
 }
@@ -202,6 +224,11 @@ void LogBase::writeToLog(
             '.' <<
             setw(3) << chrono::duration_cast<chrono::milliseconds>(i_msgTime.time_since_epoch()).count() % 1000LL <<
             ' ';
+    }
+
+    // check is process rank prefix required
+    if (isMsgRank) {
+        i_ost << rankPrefix;
     }
 
     // write message and extra info

@@ -15,10 +15,6 @@
 #include "omc/event_priorities.h"
 #include "om_types0.h" // for Time
 
-
-// for testing
-#define OPTIMIZE_DISABLED_EVENTS 1
-
 class BaseEvent
 {
 public:
@@ -71,6 +67,8 @@ public:
 
     virtual void call_age_agent() = 0;
 
+    virtual Time call_get_censor_time() = 0;
+
     /**
      * Verify time, then age the entity of this event to the time of event occurrence.
      */
@@ -104,34 +102,42 @@ public:
         }
         else if ( is_dirty ) {
             Time new_event_time = call_time_func();
+            bool censored = false;
+            if constexpr (om_censor_event_time_on) {
+                if (new_event_time == time_infinite) {
+                    // event is censored if time-to-event is infinite
+                    censored = true;
+                }
+                else {
+                    // event is censored if time-to-event is strictly greater than
+                    // the entity-specific censor time set in model code by call to set_censor_time().
+                    auto ct = call_get_censor_time();
+                    censored = (new_event_time > ct);
+                }
+            }
+            else {
+                // event is censored if time-to-event is infinite
+                censored = (new_event_time == time_infinite);
+            }
             if ( in_queue ) {
                 if ( new_event_time != event_time ) {
                     event_queue->erase( this );
                     event_time = new_event_time;
-#if OPTIMIZE_DISABLED_EVENTS
-                    if (event_time == time_infinite) {
+                    if (censored) {
                         in_queue = false;
                     }
                     else {
                         event_queue->insert(this);
                     }
-#else
-                    event_queue->insert( this );
-#endif
                 }
             }
             else // ! in_queue
             {
                 event_time = new_event_time;
-#if OPTIMIZE_DISABLED_EVENTS
-                if (event_time != time_infinite) {
+                if (!censored) {
                     event_queue->insert(this);
                     in_queue = true;
                 }
-#else
-                event_queue->insert( this );
-                in_queue = true;
-#endif
             }
         }
         is_dirty = false;
@@ -611,7 +617,12 @@ public:
         agent()->age_agent(event_time);
     }
 
-	// offset to containing agent
+    Time call_get_censor_time()
+    {
+        return agent()->get_censor_time();
+    }
+
+    // offset to containing agent
 	static size_t offset_in_agent;
 };
 
@@ -694,6 +705,11 @@ public:
     void call_age_agent()
     {
         agent()->age_agent(event_time);
+    }
+
+    Time call_get_censor_time()
+    {
+        return agent()->get_censor_time();
     }
 
 	// offset to containing agent

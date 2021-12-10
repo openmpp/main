@@ -26,6 +26,9 @@ BUILD_SRC_DIR = $(BUILD_PROJ_DIR)/src
 
 ifndef RELEASE
   BD_CFLAGS = -g -D_DEBUG -Og
+  ifeq ($(PLATFORM_UNAME), Linux)
+    BD_CFLAGS = -g -D_DEBUG -O0
+  endif
   OUT_BIN_DIR = $(OUT_PREFIX)/bin
   OUT_LIB_DIR = $(OUT_PREFIX)/lib
   OBJ_DIR = $(BUILD_PROJ_DIR)/debug

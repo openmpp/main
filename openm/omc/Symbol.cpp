@@ -603,6 +603,10 @@ bool Symbol::option_verify_attribute_modification = true;
 
 bool Symbol::option_verify_timelike_attribute_access = true;
 
+bool Symbol::option_weighted_tabulation = false;
+
+bool Symbol::option_censor_event_time = false;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -1869,6 +1873,41 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_verify_timelike_attribute_access = false;
+            }
+        }
+    }
+
+    {
+        string key = "weighted_tabulation";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_weighted_tabulation = true;
+            }
+            else if (value == "off") {
+                option_weighted_tabulation = false;
+            }
+        }
+        // Find the one and only ModelTypeSymbol
+        auto mts = ModelTypeSymbol::find();
+        assert(mts);
+        bool is_time_based = !mts->is_case_based();
+        if (is_time_based && option_weighted_tabulation) {
+            pp_error(mts->decl_loc, LT("error : weighted tabulation is not allowed with a time-based model, use population scaling instead."));
+        }
+    }
+
+    {
+        string key = "censor_event_time";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_censor_event_time = true;
+            }
+            else if (value == "off") {
+                option_censor_event_time = false;
             }
         }
     }

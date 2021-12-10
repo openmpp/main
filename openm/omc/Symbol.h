@@ -1330,6 +1330,16 @@ public:
     static bool option_verify_timelike_attribute_access;
 
     /**
+     * true or false depending on weighted_tabulation value in options statement.
+     */
+    static bool option_weighted_tabulation;
+
+    /**
+     * true or false depending on censor_event_time value in options statement.
+     */
+    static bool option_censor_event_time;
+
+    /**
      * Code page to use for source file conversion
      */
     static string code_page;

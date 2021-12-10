@@ -24,5 +24,12 @@ namespace fmk {
  */
 double population_scaling_factor()
 {
-    return (double) fmk::set_population_value / (double) fmk::member_cases;
+    double denom = 0;
+    if constexpr (om_weighted_tabulation_on) {
+        denom = get_sum_weight();
+    }
+    else {
+        denom = fmk::member_cases;
+    }
+    return (double) fmk::set_population_value / denom;
 }

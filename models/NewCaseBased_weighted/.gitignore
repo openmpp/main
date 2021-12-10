@@ -1,23 +1,18 @@
 # openM++ intermediate build and run files
-build/
-lib/
-models/bin/
-*.zip
-*.gz
+#
+ompp/bin/
+ompp/build/
+ompp/src/
 *.log
+ompp-linux/
+ompp-mac/
+test_models/
 
-# win_bison_flex
-bin/custom_build_rules/*
-bin/data/*
-
-# openM++ UI
+# Modgen-specific
 #
-etc/
-html/
-
-# models missing parameters .dat
-#
-Missing.dat.tmp
+modgen/bin/
+modgen/build/
+modgen/src/
 
 # build results and user settings
 #
@@ -44,8 +39,6 @@ Missing.dat.tmp
 .#*
 .*.swp
 *.vcxproj.user
-
-[Tt]humbs.db
 
 #
 # MacOS and Xcode

@@ -91,6 +91,11 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
             pp_analysis_attribute = nullptr;
         }
 
+        // emit warning if weighting enabled and ordinal statistic used
+        if (option_weighted_tabulation && has_obs_collection) {
+            auto ordinal_name = token_to_string(accumulator);
+            pp_warning(LT("warning : weighting is not supported for ordinal statistic '") + ordinal_name + LT("' in table '") + pp_table->name +"'");
+        }
         break;
     }
     case ePopulateCollections:

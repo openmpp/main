@@ -389,18 +389,39 @@ void EntitySymbol::post_parse(int pass)
 		// because the model type (case-based or time-based) may not be known
 		// at that point in parsing.  So, creation of case_id needs to be postponed
 		// until after parsing is complete and the model type is known.
+        {
+            // Find the one and only ModelTypeSymbol
+            auto mts = ModelTypeSymbol::find();
+            assert(mts);
+            if (mts->is_case_based()) {
+                // create case_id (or morph it to the correct type)
+                //theLog->logFormatted("creating case_id for entity %s", name.c_str());
+                string nm = "case_id";
+                auto sym = Symbol::get_symbol(nm, this);
+                if (!sym || sym->is_base_symbol()) {
+                    NumericSymbol* typ = NumericSymbol::find(token::TK_llong);
+                    BuiltinAttributeSymbol* biav = nullptr;
+                    if (!sym) {
+                        // create it
+                        biav = new BuiltinAttributeSymbol(nm, this, typ);
+                    }
+                    else {
+                        // morph it
+                        biav = new BuiltinAttributeSymbol(sym, this, typ);
+                    }
+                    // Push the name into the post parse ignore hash for the current pass.
+                    pp_symbols_ignore.insert(biav->unique_name);
+                }
+            }
+        }
 
-        // Find the one and only ModelTypeSymbol
-        auto mts = ModelTypeSymbol::find();
-        assert(mts);
-        if (mts->is_case_based()) {
-            // create case_id (or morph it to the correct type)
-            //theLog->logFormatted("creating case_id for entity %s", name.c_str());
-            string nm = "case_id";
+        // Create attribute censor_time if option censor_event_time is on
+        if (Symbol::option_censor_event_time) {
+            string nm = "censor_time";
             auto sym = Symbol::get_symbol(nm, this);
             if (!sym || sym->is_base_symbol()) {
-                NumericSymbol *typ = NumericSymbol::find(token::TK_llong);
-                BuiltinAttributeSymbol *biav = nullptr;
+                NumericSymbol* typ = NumericSymbol::find(token::TK_Time);
+                BuiltinAttributeSymbol* biav = nullptr;
                 if (!sym) {
                     // create it
                     biav = new BuiltinAttributeSymbol(nm, this, typ);
@@ -409,10 +430,57 @@ void EntitySymbol::post_parse(int pass)
                     // morph it
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
-				// Push the name into the post parse ignore hash for the current pass.
-				pp_symbols_ignore.insert(biav->unique_name);
+                assert(biav);
+                // initialized to time_infinite by generated code in function om_initialize_data_members
             }
         }
+
+        // Create get_censor_time with appropriate body (depending on option_censor_event_time)
+        {
+            auto* fn = new EntityFuncSymbol("get_censor_time", this, "Time", "");
+            fn->doc_block = doxygen_short("Get censor_time of this entity.");
+            CodeBlock& c = fn->func_body;
+            if (Symbol::option_censor_event_time) {
+                c += "return censor_time;";
+            }
+            else {
+                c += "return time_infinite;";
+            }
+        }
+
+        // Create set_censor_time with appropriate body (depending on option_censor_event_time)
+        {
+            auto* fn = new EntityFuncSymbol("set_censor_time", this, "void", "Time t");
+            fn->doc_block = doxygen_short("Set censor_time of this entity.");
+            CodeBlock& c = fn->func_body;
+            if (Symbol::option_censor_event_time) {
+                c += "censor_time = t;";
+            }
+            else {
+                c += "";
+            }
+        }
+
+        // Create attribute entity_weight if option weighted_tabulation is on
+        if (Symbol::option_weighted_tabulation) {
+            string nm = "entity_weight";
+            auto sym = Symbol::get_symbol(nm, this);
+            if (!sym || sym->is_base_symbol()) {
+                NumericSymbol* typ = NumericSymbol::find(token::TK_double);
+                BuiltinAttributeSymbol* biav = nullptr;
+                if (!sym) {
+                    // create it
+                    biav = new BuiltinAttributeSymbol(nm, this, typ);
+                }
+                else {
+                    // morph it
+                    biav = new BuiltinAttributeSymbol(sym, this, typ);
+                }
+                assert(biav);
+                // initialized to 1.0 by generated code in function om_initialize_data_members
+            }
+        }
+
         break;
     }
 
@@ -460,12 +528,11 @@ void EntitySymbol::build_body_assign_member_offsets()
     }
 }
 
-
 void EntitySymbol::build_body_initialize_data_members()
 {
     CodeBlock& c = initialize_data_members_fn->func_body;
 
-    for ( auto adm : pp_agent_data_members ) {
+    for (auto adm : pp_agent_data_members) {
         c += adm->cxx_initialization_expression(false);
     }
 
@@ -473,8 +540,19 @@ void EntitySymbol::build_body_initialize_data_members()
     assert(mts);
     if (mts->is_case_based()) {
         c += "";
+        c += "// built-in attributes for a case-based model";
         c += "case_id.initialize(GetCaseID());";
         c += "case_seed.initialize(GetCaseSeed());";
+    }
+    if (Symbol::option_censor_event_time) {
+        c += "";
+        c += "// built-in attribute for a model which censors event times";
+        c += "censor_time.initialize(time_infinite);";
+    }
+    if (Symbol::option_weighted_tabulation) {
+        c += "";
+        c += "// built-in attribute for a model with weights";
+        c += "entity_weight.initialize(get_initial_weight());";
     }
 }
 

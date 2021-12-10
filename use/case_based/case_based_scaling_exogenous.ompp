@@ -28,5 +28,12 @@ parameters {
  */
 double population_scaling_factor()
 {
-    return (double) SimulatedPopulation / (double) fmk::member_cases;
+    double denom = 0;
+    if constexpr (om_weighted_tabulation_on) {
+        denom = get_sum_weight();
+    }
+    else {
+        denom = fmk::member_cases;
+    }
+    return (double) SimulatedPopulation / denom;
 }

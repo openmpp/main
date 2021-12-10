@@ -180,14 +180,16 @@ int ChildController::nextRun(void)
         metaStore->runOptionTable.reset(IRunOptionTable::create(rv));
     }
 
-    theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit
+
+    theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit, done
+    isFinalExchange = RunState::isFinal(mStatus);
     return runId;
 }
 
 /** model process shutdown if exiting without completion (ie: exit on error). */
 void ChildController::shutdownOnExit(ModelStatus i_status) {
     theModelRunState->updateStatus(i_status);
-    sendStatusUpdate();     // send last status update
+    if (!isFinalExchange) sendStatusUpdate();   // send last status update
 }
  
 /** model process shutdown: cleanup resources. */
@@ -195,8 +197,10 @@ void ChildController::shutdownWaitAll(void)
 {
     ModelStatus mStatus = theModelRunState->updateStatus(ModelStatus::done);    // set model status as completed OK
 
-    sendStatusUpdate();     // send last status update
-    msgExec->waitSendAll(); // wait for send completion, if any outstanding
+    if (!isFinalExchange) {
+        sendStatusUpdate();     // send last status update
+        msgExec->waitSendAll(); // wait for send completion, if any outstanding
+    }
 
     if (!RunState::isError(mStatus)) {
         msgExec->setCleanExit(true);    // if model status not error then do clean shutdown of MPI
@@ -288,6 +292,7 @@ bool ChildController::childExchange(void)
 
     lastModelStatus = mStatus;
     lastTimeStatus = nowTime;
+    isFinalExchange = RunState::isFinal(mStatus);
     return true;
 }
 
