@@ -1,3 +1,5 @@
+@echo off
+
 REM Windows: start openM++ UI from model build directory
 REM
 REM   cd models/ModelDir
@@ -21,8 +23,6 @@ REM
 REM OM_CFG_DEFAULT_RUN_TMPL - if defined then UI configured to use this model run template, by default
 REM                           if Release model.exe not exist and Debug modelD.exe exist then: run.Debug.template.txt
 REM
-
-@echo off
 
 setlocal enabledelayedexpansion
 
@@ -111,11 +111,6 @@ if not exist %OM_ROOT%\props\startOmppUI.ps1 (
   pause
   EXIT 1
 )
-
-REM allow to use MODEL_NAME.ini file in UI for model run
-
-set OM_CFG_INI_ALLOW=true
-set OM_CFG_INI_ANY_KEY=true
 
 REM start oms web-service and UI
 
