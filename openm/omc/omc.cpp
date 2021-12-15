@@ -52,6 +52,7 @@
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
 #include "ScenarioSymbol.h"
+#include "AnonGroupSymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -451,6 +452,48 @@ int main(int argc, char * argv[])
         }
         if (argStore.isOptionExist(OmcArgKey::fixedDir)) {
             readParameterCsvFiles(true, fixedDir, cpLst);
+        }
+
+        // Change source of parameters if parameters_suppress used
+        if (Symbol::any_parameters_suppress) {
+            for (auto grp : Symbol::pp_all_anon_groups) {
+                if (grp->anon_kind == AnonGroupSymbol::eKind::parameters_suppress) {
+                    for (auto sym : grp->expanded_list()) {
+                        auto symbol_name = sym->name;
+                        auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                        if (ps) {
+                            if (ps->source == ParameterSymbol::parameter_source::scenario_parameter) {
+                                // indicate that this scenario parameter is to be burned into the executable instead of published
+                                ps->source = ParameterSymbol::parameter_source::fixed_parameter;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Change source of parameters if parameters_retain used
+        if (Symbol::any_parameters_retain) {
+            for (auto param : Symbol::pp_all_parameters) {
+                // mark all scenario parameters as burned in unless explicitly retained
+                if (param->source == ParameterSymbol::parameter_source::scenario_parameter) {
+                    param->source = ParameterSymbol::parameter_source::fixed_parameter;
+                }
+            }
+            for (auto grp : Symbol::pp_all_anon_groups) {
+                if (grp->anon_kind == AnonGroupSymbol::eKind::parameters_retain) {
+                    for (auto sym : grp->expanded_list()) {
+                        auto symbol_name = sym->name;
+                        auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                        if (ps) {
+                            if (ps->source == ParameterSymbol::parameter_source::fixed_parameter) {
+                                // indicate that this parameter is to be published
+                                ps->source = ParameterSymbol::parameter_source::scenario_parameter;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // validate parameter initializers

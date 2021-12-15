@@ -104,13 +104,6 @@ void ParameterSymbol::post_parse(int pass)
     }
     case eResolveDataTypes:
     {
-        if (any_parameters_retain) { // model contains a parameters_retain statement
-            // Mark all scenario parameters as fixed_parameter.
-            // Those which are retained will be changed back to scenario_parameter in a subsequent pass.
-            if (source == ParameterSymbol::parameter_source::scenario_parameter) {
-                source = ParameterSymbol::parameter_source::fixed_parameter;
-            }
-        }
         if (any_show) { // model contains a show statement
             // Mark all parameters as hidden
             // Those which are shown will be changed back in a subsequent pass.

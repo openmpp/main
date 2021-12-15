@@ -173,13 +173,7 @@ void AnonGroupSymbol::post_parse(int pass)
             for (auto sym : expanded_list()) {
                 auto symbol_name = sym->name;
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
-                if (ps) {
-                    if (ps->source == ParameterSymbol::parameter_source::scenario_parameter) {
-                        // indicate that this scenario parameter is to be burned into the executable instead of published
-                        ps->source = ParameterSymbol::parameter_source::fixed_parameter;
-                    }
-                }
-                else {
+                if (!ps) {
                     pp_error(LT("error : '") + symbol_name + LT("' in parameters_suppress statement is not a parameter"));
                 }
             }
@@ -187,18 +181,10 @@ void AnonGroupSymbol::post_parse(int pass)
         }
         case eKind::parameters_retain:
         {
-            // Before this pass, all scenario parameters were changed to fixed parameters.
-            // in preparation for this step, which switches retained parameters back to scenario parameters.
             for (auto sym : expanded_list()) {
                 auto symbol_name = sym->name;
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
-                if (ps) {
-                    if (ps->source == ParameterSymbol::parameter_source::fixed_parameter) {
-                        // indicate that this parameter is to be a published scenario parameter, ie not burned into the executable.
-                        ps->source = ParameterSymbol::parameter_source::scenario_parameter;
-                    }
-                }
-                else {
+                if (!ps) {
                     pp_error(LT("error : '") + symbol_name + LT("' in parameters_retain statement is not a parameter"));
                 }
             }
