@@ -28,7 +28,7 @@ public:
     * Constructor for the string type symbol
     */
     StringTypeSymbol()
-        : TypeSymbol("string")
+        : TypeSymbol("std::string")
     {
     }
 

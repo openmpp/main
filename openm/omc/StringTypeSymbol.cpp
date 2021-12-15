@@ -60,7 +60,7 @@ void StringTypeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
 StringTypeSymbol *StringTypeSymbol::find()
 {
-    auto bs = dynamic_cast<StringTypeSymbol *>(get_symbol("string"));
+    auto bs = dynamic_cast<StringTypeSymbol *>(get_symbol("std::string"));
     assert(bs); // only called when valid
     return bs;
 }
