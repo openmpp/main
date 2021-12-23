@@ -1131,6 +1131,16 @@ public:
     static unordered_map<string, string> explicit_labels;
 
     /**
+     * Map of NAME from symbol name to short name.
+     *
+     * This maps "symbol" as a key to the associated short name specified
+     * explicitly by a //NAME statement in the model source code, eg.
+     *   //NAME MyParam.Dim0 Region
+     *   //NAME MyTable.Expr2 avg_income
+     */
+    static unordered_map<string, string> explicit_names;
+
+    /**
      * Map of NOTE from symbol name to note (model source)
      * 
      * This maps "symbol,language" as a key to the associated note specified

@@ -27,6 +27,15 @@ void DimensionSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eAssignLabel:
+    {
+        // If an explicit short name was given by //NAME, use it
+        auto search = explicit_names.find(unique_name);
+        if (search != explicit_names.end()) {
+            dim_name = search->second;
+        }
+        break;
+    }
     case eAssignMembers:
     {
         if (attribute) {

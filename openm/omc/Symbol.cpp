@@ -547,6 +547,8 @@ comment_map_type Symbol::c_comments;
 
 unordered_map<string, string> Symbol::explicit_labels;
 
+unordered_map<string, string> Symbol::explicit_names;
+
 unordered_map<string, string> Symbol::notes_source;
 
 unordered_map<string, string> Symbol::notes_input;
