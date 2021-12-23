@@ -1,6 +1,7 @@
 @echo off
 
 REM Windows: start openM++ UI from model build directory
+REM in order to use copy it into model directory and double click or:
 REM
 REM   cd models/ModelDir
 REM   start_ompp_ui.bat
@@ -26,12 +27,16 @@ REM
 
 setlocal enabledelayedexpansion
 
-for %%D in (.) do set MODEL_NAME=%%~nxD
+for %%D in (.) do set model_dir=%%~nxD
 
+IF "%MODEL_NAME%" == "" (
+  set MODEL_NAME=%model_dir%
+)
 @echo MODEL_NAME  = %MODEL_NAME%
 
-set PUBLISH_DIR=%~dp0%ompp\bin
-
+IF "%PUBLISH_DIR%" == "" (
+  set PUBLISH_DIR=%~dp0%ompp\bin
+)
 @echo PUBLISH_DIR = %PUBLISH_DIR%
 
 if not exist %PUBLISH_DIR% (
@@ -40,7 +45,7 @@ if not exist %PUBLISH_DIR% (
   EXIT 1
 )
 
-set model_root_name=OM_%MODEL_NAME%
+set model_root_name=OM_%model_dir%
 
 set model_root_value=%~dp0
 if %model_root_value:~-1%==\ set model_root_value=%model_root_value:~0,-1%
