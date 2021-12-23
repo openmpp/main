@@ -225,6 +225,9 @@ namespace openm
         /** check if provider name is valid. */
         static bool isValidProviderName(const char * i_sqlProvider);
 
+        /** retrun true if i_keword matched one of SQL reserved keywords, comparison is case neutral and limited by i_length chars */
+        static bool isSqlKeyword(const char * i_keyword, size_t i_length = 0);
+
         /** return max length of db table or view name. */
         static const int maxDbTableNameSize;
 
