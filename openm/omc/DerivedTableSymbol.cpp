@@ -119,13 +119,18 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Measures for derived table.
     // There is an exact one-to-one relationship
     // between measures and accumulators for derived tables.
-    for (auto measure : pp_measures) {
+    for (auto mIt = pp_measures.begin(); mIt != pp_measures.end(); ++mIt) {
+
+        TableMeasureSymbol * measure = *mIt;
+
+        // make measure db column name: it must be unique, alpanumeric and not longer than 8 chars
+        TableMeasureSymbol::to_column_name(name, pp_measures, measure);
 
         TableExprRow tableExpr;
 
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = measure->index;
-        tableExpr.name = mangle_name(measure->measure_name, measure->index);
+        tableExpr.name = measure->measure_name;
         tableExpr.decimals = measure->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "

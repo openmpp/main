@@ -8,6 +8,7 @@
 #include <cassert>
 #include "DerivedTableSymbol.h"
 #include "TableMeasureSymbol.h"
+#include "libopenm/common/omHelper.h"
 
 using namespace std;
 using namespace openm;
@@ -24,6 +25,27 @@ string TableMeasureSymbol::pretty_name() const
     // example:     measure 0: sum(delta(interval(duration)))
     string result = " measure " + to_string(index) + ": " + measure_name;
     return result;
+}
+
+// Update measure name to be suitable as database column name: it must be unique, alpanumeric and not longer than 8 chars
+void TableMeasureSymbol::to_column_name(const string & i_tableName, const list<TableMeasureSymbol *> i_measureLst, TableMeasureSymbol * io_me)
+{
+    assert(io_me);
+    string colName = openm::toAlphaNumeric(io_me->measure_name, OM_COL_NAME_DB_MAX);   // make measure name alpanumeric and truncate it to 8 chars
+
+    for (auto pIt = i_measureLst.cbegin(); pIt != i_measureLst.cend() && *pIt != io_me; ++pIt) {
+        if (colName == (*pIt)->measure_name) {
+            string sId = to_string(io_me->index);
+            colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
+            break;
+        }
+    }
+    if (io_me->measure_name != colName) {
+        // to do: use pp_warning() if we can apply LT without string + concatenation
+        theLog->logFormatted(LT("warning: %s measure [%d] name %s updated to %s"), i_tableName.c_str(), io_me->index, io_me->measure_name.c_str(), colName.c_str());
+
+        io_me->measure_name = colName;      // change measure name
+    }
 }
 
 void TableMeasureSymbol::post_parse(int pass)

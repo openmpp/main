@@ -240,7 +240,10 @@ string IDbExec::makeSqlCreateViewReplace(
     }
 }
 
-// sorted list of SQL reserved keywords, it is incomplete by nature of SQL and mostly based on SQLite documentation
+// list of SQL reserved keywords, it is incomplete by nature of SQL and mostly based on SQLite documentation
+// 
+// it MUST be sorted
+//
 static const char * sqlKeywords[] = {
     "ABORT",
     "ABS",

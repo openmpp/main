@@ -10,6 +10,7 @@
 #include "AttributeSymbol.h"
 #include "LinkToAttributeSymbol.h"
 #include "EnumerationSymbol.h"
+#include "libopenm/common/omHelper.h"
 
 // static
 string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim)
@@ -18,6 +19,27 @@ string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int in
     // For entity tables, the numeric identifier is based on all dimensions, including the analysis dimension
     int numeric_id = index + (after_analysis_dim ? 1 : 0);
     return symbol_with_dimensions->name + ".Dim" + to_string(numeric_id);
+}
+
+// Update dimension name to be suitable as database column name: it must be unique, alpanumeric and not longer than 8 chars
+void DimensionSymbol::to_column_name(const string & i_ownerName, const list<DimensionSymbol *> i_dimLst, DimensionSymbol * io_dim)
+{
+    assert(io_dim);
+    string colName = openm::toAlphaNumeric(io_dim->dim_name, OM_COL_NAME_DB_MAX);  // make dimension name alpanumeric and truncate it to 8 chars
+
+    for (auto pIt = i_dimLst.cbegin(); pIt != i_dimLst.cend() && *pIt != io_dim; ++pIt) {
+        if (colName == (*pIt)->dim_name) {
+            string sId = to_string(io_dim->index);
+            colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
+            break;
+        }
+    }
+    if (io_dim->dim_name != colName) {
+        // to do: use pp_warning() if we can apply LT without string + concatenation
+        theLog->logFormatted(LT("warning: %s dimension [%d] name %s updated to %s"), i_ownerName.c_str(), io_dim->index, io_dim->dim_name.c_str(), colName.c_str());
+
+        io_dim->dim_name = colName;      // change dimension name
+    }
 }
 
 void DimensionSymbol::post_parse(int pass)
@@ -75,4 +97,3 @@ void DimensionSymbol::post_parse(int pass)
         break;
     }
 }
-

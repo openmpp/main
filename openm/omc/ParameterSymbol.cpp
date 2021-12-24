@@ -698,8 +698,14 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.paramTxt.push_back(paramTxt);
         }
 
+
         // The dimensions of the parameter
-        for (auto dim : dimension_list) {
+        for (auto dimIt = dimension_list.begin(); dimIt != dimension_list.end(); ++dimIt) {
+
+            DimensionSymbol * dim = *dimIt;
+
+            // make dimension db column name: it must be unique, alpanumeric and not longer than 8 chars
+            DimensionSymbol::to_column_name(name, dimension_list, dim);
 
             ParamDimsRow paramDims;
 
@@ -707,7 +713,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             assert(es); // logic guarantee
             paramDims.paramId = pp_parameter_id;
             paramDims.dimId = dim->index;
-            paramDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
+            paramDims.name = dim->dim_name;     // Default is dim0, dim1, but can be named in model using =>
             paramDims.typeId = es->type_id;
             metaRows.paramDims.push_back(paramDims);
 
@@ -765,7 +771,12 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
 
         // The dimensions of the table
-        for (auto dim : dimension_list) {
+        for (auto dimIt = dimension_list.begin(); dimIt != dimension_list.end(); ++dimIt) {
+
+            DimensionSymbol * dim = *dimIt;
+
+            // make dimension db column name: it must be unique, alpanumeric and not longer than 8 chars
+            DimensionSymbol::to_column_name(name, dimension_list, dim);
 
             TableDimsRow tableDims;
 
@@ -773,7 +784,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             assert(es); // logic guarantee
             tableDims.tableId = pp_parameter_to_table_id;
             tableDims.dimId = dim->index;
-            tableDims.name = mangle_name(dim->dim_name, dim->index); // Default is dim0, dim1, but can be named in model using =>
+            tableDims.name = dim->dim_name;     // Default is dim0, dim1, but can be named in model using =>
             tableDims.typeId = es->type_id;
             tableDims.isTotal = dim->has_margin;
             tableDims.dimSize = es->pp_size() + dim->has_margin;

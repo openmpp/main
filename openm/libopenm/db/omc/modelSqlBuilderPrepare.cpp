@@ -902,182 +902,60 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
     }
 }
 
-// setup names for dimension and accumulator columns, i.e.: "dim0", "acc1", "expr2"
+// setup names for dimension and accumulator columns, by default it is: "dim0", "acc1", "expr2"
 void ModelSqlBuilder::setColumnNames(MetaModelHolder & io_metaRows)
 {
-    // make unique alpanumeric database column names for parameter dimensions
-    string colName;
-    vector<string> pCols;
-    string sId;
-    int pId = -1;
-    size_t nCol = 0;
-
     for (ParamDimsRow & dimRow : io_metaRows.paramDims) {
-        auto mkRowIt = ParamDicRow::byKey(dimRow.modelId, dimRow.paramId, io_metaRows.paramDic);
-        if (mkRowIt == io_metaRows.paramDic.cend()) {
-            throw DbException(LT("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic"), dimRow.modelId, dimRow.paramId);
-        }
-        if (pId == dimRow.paramId) {
-            nCol++;
-        }
-        else {
-            pId = dimRow.paramId;
-            nCol = 0;
-            pCols.clear();
-        }
 
-        // make column name alpanumeric and truncate it to 8 chars
         if (dimRow.name.empty()) dimRow.name = "dim" + to_string(dimRow.dimId);
 
-        colName = toAlphaNumeric(dimRow.name, OM_COL_NAME_DB_MAX);
-
-        // compare current with previous names and if not unique then append id suffix to column name, ex: Age4
-        for (size_t k = 0; k < nCol; k++) {
-            if (pCols[k] != colName) continue;
-
-            sId = to_string(dimRow.dimId);
-            colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
-        }
-
-        // check result and warn user if column name updated
-        if (dimRow.name != colName) {
-            theLog->logFormatted("warning: parameter %s dimension name %s updated to %s", mkRowIt->paramName.c_str(), dimRow.name.c_str(), colName.c_str());
-
-            dimRow.name = colName;      // change dimension name
-        }
-        pCols.push_back(dimRow.name);   // store column name to check uniqueness
-
-        if (IDbExec::isSqlKeyword(dimRow.name.c_str()))
+        if (IDbExec::isSqlKeyword(dimRow.name.c_str())) {
+            auto mkRowIt = ParamDicRow::byKey(dimRow.modelId, dimRow.paramId, io_metaRows.paramDic);
+            if (mkRowIt == io_metaRows.paramDic.cend()) {
+                throw DbException(LT("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic"), dimRow.modelId, dimRow.paramId);
+            }
             throw DbException(LT("invalid parameter %s dimension [%d] name %s, it is a SQL reserved keyword"), mkRowIt->paramName.c_str(), dimRow.dimId, dimRow.name.c_str());
+        }
     }
-
-    // make unique alpanumeric database column names for output tables dimensions
-    pId = -1;
-    nCol = 0;
 
     for (TableDimsRow & dimRow : io_metaRows.tableDims) {
-        auto mkRowIt = TableDicRow::byKey(dimRow.modelId, dimRow.tableId, io_metaRows.tableDic);
-        if (mkRowIt == io_metaRows.tableDic.cend()) {
-            throw DbException(LT("in table_dims invalid model id: %d and table id: %d: not found in table_dic"), dimRow.modelId, dimRow.tableId);
-        }
-        if (pId == dimRow.tableId) {
-            nCol++;
-        }
-        else {
-            pId = dimRow.tableId;
-            nCol = 0;
-            pCols.clear();
-        }
 
-        // make column name alpanumeric and truncate it to 8 chars
         if (dimRow.name.empty()) dimRow.name = "dim" + to_string(dimRow.dimId);
 
-        colName = toAlphaNumeric(dimRow.name, OM_COL_NAME_DB_MAX);
-
-        // compare current with previous names and if not unique then append id suffix to column name, ex: Provin12
-        for (size_t k = 0; k < nCol; k++) {
-            if (pCols[k] != colName) continue;
-
-            sId = to_string(dimRow.dimId);
-            colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
-        }
-
-        // check result and warn user if column name updated
-        if (dimRow.name != colName) {
-            theLog->logFormatted("warning: table %s dimension name %s updated to %s", mkRowIt->tableName.c_str(), dimRow.name.c_str(), colName.c_str());
-
-            dimRow.name = colName;      // change dimension name
-        }
-        pCols.push_back(dimRow.name);   // store column name to check uniqueness
-
-        if (IDbExec::isSqlKeyword(dimRow.name.c_str()))
+        if (IDbExec::isSqlKeyword(dimRow.name.c_str())) {
+            auto mkRowIt = TableDicRow::byKey(dimRow.modelId, dimRow.tableId, io_metaRows.tableDic);
+            if (mkRowIt == io_metaRows.tableDic.cend()) {
+                throw DbException(LT("in table_dims invalid model id: %d and table id: %d: not found in table_dic"), dimRow.modelId, dimRow.tableId);
+            }
             throw DbException(LT("invalid table %s dimension [%d] name %s, it is a SQL reserved keyword"), mkRowIt->tableName.c_str(), dimRow.dimId, dimRow.name.c_str());
+        }
     }
     
-    // make unique alpanumeric database column names for output tables accumulators
-    pId = -1;
-    nCol = 0;
-
     for (TableAccRow & accRow : io_metaRows.tableAcc) {
-        auto mkRowIt = TableDicRow::byKey(accRow.modelId, accRow.tableId, io_metaRows.tableDic);
-        if (mkRowIt == io_metaRows.tableDic.cend()) {
-            throw DbException(LT("in table_acc invalid model id: %d and table id: %d: not found in table_dic"), accRow.modelId, accRow.tableId);
-        }
-        if (pId == accRow.tableId) {
-            nCol++;
-        }
-        else {
-            pId = accRow.tableId;
-            nCol = 0;
-            pCols.clear();
-        }
 
-        // make column name alpanumeric and truncate it to 8 chars
         if (accRow.name.empty()) accRow.name = "acc" + to_string(accRow.accId);
 
-        colName = toAlphaNumeric(accRow.name, OM_COL_NAME_DB_MAX);
 
-        // compare current with previous names and if not unique then append id suffix to column name, ex: Salary23
-        for (size_t k = 0; k < nCol; k++) {
-            if (pCols[k] != colName) continue;
-
-            sId = to_string(accRow.accId);
-            colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
-        }
-
-        // check result and warn user if column name updated
-        if (accRow.name != colName) {
-            theLog->logFormatted("warning: table %s accumulator name %s updated to %s", mkRowIt->tableName.c_str(), accRow.name.c_str(), colName.c_str());
-
-            accRow.name = colName;      // change dimension name
-        }
-        pCols.push_back(accRow.name);   // store column name to check uniqueness
-
-        if (IDbExec::isSqlKeyword(accRow.name.c_str()))
+        if (IDbExec::isSqlKeyword(accRow.name.c_str())) {
+            auto mkRowIt = TableDicRow::byKey(accRow.modelId, accRow.tableId, io_metaRows.tableDic);
+            if (mkRowIt == io_metaRows.tableDic.cend()) {
+                throw DbException(LT("in table_acc invalid model id: %d and table id: %d: not found in table_dic"), accRow.modelId, accRow.tableId);
+            }
             throw DbException(LT("invalid table %s accumulator [%d] name %s, it is a SQL reserved keyword"), mkRowIt->tableName.c_str(), accRow.accId, accRow.name.c_str());
+        }
     }
 
-    // make unique alpanumeric database column names for output tables expressions
-    pId = -1;
-    nCol = 0;
-
     for (TableExprRow & exprRow : io_metaRows.tableExpr) {
-        auto mkRowIt = TableDicRow::byKey(exprRow.modelId, exprRow.tableId, io_metaRows.tableDic);
-        if (mkRowIt == io_metaRows.tableDic.cend()) {
-            throw DbException(LT("in table_expr invalid model id: %d and table id: %d: not found in table_dic"), exprRow.modelId, exprRow.tableId);
-        }
-        if (pId == exprRow.tableId) {
-            nCol++;
-        }
-        else {
-            pId = exprRow.tableId;
-            nCol = 0;
-            pCols.clear();
-        }
 
-        // make column name alpanumeric and truncate it to 8 chars
         if (exprRow.name.empty()) exprRow.name = "expr" + to_string(exprRow.exprId);
 
-        colName = toAlphaNumeric(exprRow.name, OM_COL_NAME_DB_MAX);
-
-        // compare current with previous names and if not unique then append id suffix to column name, ex: MaxPay42
-        for (size_t k = 0; k < nCol; k++) {
-            if (pCols[k] != colName) continue;
-
-            sId = to_string(exprRow.exprId);
-            colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
-        }
-
-        // check result and warn user if column name updated
-        if (exprRow.name != colName) {
-            theLog->logFormatted("warning: table %s expression name %s updated to %s", mkRowIt->tableName.c_str(), exprRow.name.c_str(), colName.c_str());
-
-            exprRow.name = colName;     // change expression name
-        }
-        pCols.push_back(exprRow.name);  // store column name to check uniqueness
-
-        if (IDbExec::isSqlKeyword(exprRow.name.c_str()))
+        if (IDbExec::isSqlKeyword(exprRow.name.c_str())) {
+            auto mkRowIt = TableDicRow::byKey(exprRow.modelId, exprRow.tableId, io_metaRows.tableDic);
+            if (mkRowIt == io_metaRows.tableDic.cend()) {
+                throw DbException(LT("in table_expr invalid model id: %d and table id: %d: not found in table_dic"), exprRow.modelId, exprRow.tableId);
+            }
             throw DbException(LT("invalid table %s expression [%d] name %s, it is a SQL reserved keyword"), mkRowIt->tableName.c_str(), exprRow.exprId, exprRow.name.c_str());
+        }
     }
 }
 

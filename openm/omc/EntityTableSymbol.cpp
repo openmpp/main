@@ -912,7 +912,12 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // Measures for entity table.
-    for (auto measure : pp_measures) {
+    for (auto mIt = pp_measures.begin(); mIt != pp_measures.end(); ++mIt) {
+
+        TableMeasureSymbol * measure = *mIt;
+
+        // make measure db column name: it must be unique, alpanumeric and not longer than 8 chars
+        TableMeasureSymbol::to_column_name(name, pp_measures, measure);
 
         TableExprRow tableExpr;
 
@@ -921,7 +926,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = etm->index;
-        tableExpr.name = mangle_name(etm->measure_name, etm->index); // Default is Expr0, Expr1, but can be named in model using =>
+        tableExpr.name = etm->measure_name;     // Default is Expr0, Expr1, but can be named in model using =>
         tableExpr.decimals = etm->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "

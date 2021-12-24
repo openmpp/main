@@ -44,6 +44,15 @@ public:
     // Example: BasicDemography.Expr0
     static string symbol_name(const Symbol* table, int index);
 
+    /**
+     * Make measure name suitable for database column name: it must be unique column name consist of 8 alphanumeric characters.
+     *
+     * @param i_tableName    name of the table.
+     * @param i_measureLst  list of measures.
+     * @param[in.out] io_me the measure which name must be validated and updated if required.
+     */
+    static void to_column_name(const string & i_tableName, const list<TableMeasureSymbol *> i_measureLst, TableMeasureSymbol * io_me);
+
     void post_parse(int pass);
 
     string pretty_name() const;

@@ -1961,20 +1961,6 @@ bool Symbol::is_om_developer_function(const char* nm)
     return om_developer_functions.count(nm) == 0 ? false : true;
 }
 
-string Symbol::mangle_name(string name, int index)
-{
-    string result = name;
-    if (result.length() > 8) {
-        // Quick mangle: truncate name and append measure index
-        string suffix = to_string(index);
-        result.resize(7 - suffix.length());
-        result += "_" + suffix;
-    }
-    return result;
-}
-
-
-
 //static
 const string Symbol::token_to_string(const token_type& e)
 {
