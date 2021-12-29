@@ -412,7 +412,7 @@ void ModelInsertSql::insertParamDims(
     if (i_row.paramId < 0) throw DbException(LT("invalid (negative) parameter id: %d"), i_row.paramId);
 
     if (i_row.name.empty()) throw DbException(LT("invalid (empty) parameter dimension name, parameter: %s"), i_paramRow.paramName.c_str());
-    if (i_row.name.length() > OM_COL_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) parameter dimension name: %s, parameter: %s"), OM_COL_NAME_DB_MAX, me.ellipt(i_row.name), i_paramRow.paramName.c_str());
+    if (i_row.name.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (longer than %d) parameter dimension name: %s, parameter: %s"), OM_CODE_DB_MAX, me.ellipt(i_row.name), i_paramRow.paramName.c_str());
     
     if (i_row.dimId < 0) throw DbException(LT("invalid (negative) parameter dimension %s id: %d, parameter: %s"), i_row.name.c_str(), i_row.dimId, i_paramRow.paramName.c_str());
     if (i_row.typeId < 0) throw DbException(LT("invalid (negative) parameter dimension %s type id: %d, parameter: %s"), i_row.name.c_str(), i_row.typeId, i_paramRow.paramName.c_str());
@@ -572,7 +572,7 @@ void ModelInsertSql::insertTableDims(
     if (i_row.tableId < 0) throw DbException(LT("invalid (negative) output table id: %d"), i_tableRow.tableId);
 
     if (i_row.name.empty()) throw DbException(LT("invalid (empty) output table dimension name"));
-    if (i_row.name.length() > OM_COL_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) output table dimension name: %s"), OM_COL_NAME_DB_MAX, i_row.name.c_str());
+    if (i_row.name.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (longer than %d) output table dimension name: %s"), OM_CODE_DB_MAX, i_row.name.c_str());
 
     if (i_row.dimId < 0) throw DbException(LT("invalid (negative) output table dimension %s id: %d"), i_row.name.c_str(), i_row.dimId);
     if (i_row.typeId < 0) throw DbException(LT("invalid (negative) output table dimension %s type id: %d"), i_row.name.c_str(), i_row.typeId);
@@ -648,7 +648,7 @@ void ModelInsertSql::insertTableAcc(IDbExec * i_dbExec, const TableDicRow & i_ta
     if (i_row.accId < 0) throw DbException(LT("invalid (negative) accumulator id: %d, output table: %s"), i_row.accId, i_tableRow.tableName.c_str());
 
     if (i_row.name.empty()) throw DbException(LT("invalid (empty) accumulator name, id: %d, output table: %s"), i_row.accId, i_tableRow.tableName.c_str());
-    if (i_row.name.length() > OM_COL_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) accumulator name: %s, id: %d, output table: %s"), OM_COL_NAME_DB_MAX, i_row.name.c_str(), i_row.accId, i_tableRow.tableName.c_str());
+    if (i_row.name.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (longer than %d) accumulator name: %s, id: %d, output table: %s"), OM_CODE_DB_MAX, i_row.name.c_str(), i_row.accId, i_tableRow.tableName.c_str());
 
     if (i_row.accSrc.empty()) throw DbException(LT("invalid (empty) accumulator expression, id: %d, output table: %s"), i_row.accId, i_tableRow.tableName.c_str());
     if (i_row.accSrc.length() > OM_NAME_DB_MAX)
@@ -709,7 +709,7 @@ void ModelInsertSql::insertTableExpr(IDbExec * i_dbExec, const TableDicRow & i_t
     if (i_row.exprId < 0) throw DbException(LT("invalid (negative) output expression id: %d, output table: %s"), i_row.exprId, i_tableRow.tableName.c_str());
 
     if (i_row.name.empty()) throw DbException(LT("invalid (empty) output expression name, output table: %s"), i_tableRow.tableName.c_str());
-    if (i_row.name.length() > OM_COL_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) output expression name: %s, output table: %s"), OM_COL_NAME_DB_MAX, i_row.name.c_str(), i_tableRow.tableName.c_str());
+    if (i_row.name.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (longer than %d) output expression name: %s, output table: %s"), OM_CODE_DB_MAX, i_row.name.c_str(), i_tableRow.tableName.c_str());
 
     if (i_row.srcExpr.empty()) throw DbException(LT("invalid (empty) source expression, id: %d, output table: %s"), i_row.exprId, i_row.tableId);
     if (i_row.srcExpr.length() > OM_NAME_DB_MAX) 

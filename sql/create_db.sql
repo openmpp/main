@@ -239,10 +239,10 @@ CREATE TABLE parameter_dic_txt
 --
 CREATE TABLE parameter_dims
 (
-  parameter_hid INT        NOT NULL, -- master key
-  dim_id        INT        NOT NULL, -- dimension index
-  dim_name      VARCHAR(8) NOT NULL, -- column name: dim0
-  type_hid      INT        NOT NULL, -- dimension type id
+  parameter_hid INT         NOT NULL, -- master key
+  dim_id        INT         NOT NULL, -- dimension index
+  dim_name      VARCHAR(32) NOT NULL, -- column name: dim0
+  type_hid      INT         NOT NULL, -- dimension type id
   PRIMARY KEY (parameter_hid, dim_id),
   CONSTRAINT parameter_dims_un UNIQUE (parameter_hid, dim_name),
   CONSTRAINT parameter_dims_mk
@@ -328,12 +328,12 @@ CREATE TABLE table_dic_txt
 --
 CREATE TABLE table_dims 
 (
-  table_hid INT        NOT NULL, -- master key
-  dim_id    INT        NOT NULL, -- dimension index
-  dim_name  VARCHAR(8) NOT NULL, -- unique column name of dimension: dim0
-  type_hid  INT        NOT NULL, -- dimension type
-  is_total  SMALLINT   NOT NULL, -- if non-zero then dimension has "total" item
-  dim_size  INT        NOT NULL, -- number of items, including "total" item
+  table_hid INT         NOT NULL, -- master key
+  dim_id    INT         NOT NULL, -- dimension index
+  dim_name  VARCHAR(32) NOT NULL, -- unique column name of dimension: dim0
+  type_hid  INT         NOT NULL, -- dimension type
+  is_total  SMALLINT    NOT NULL, -- if non-zero then dimension has "total" item
+  dim_size  INT         NOT NULL, -- number of items, including "total" item
   PRIMARY KEY (table_hid, dim_id),
   CONSTRAINT table_dims_un UNIQUE (table_hid, dim_name),
   CONSTRAINT table_dims_mk 
@@ -366,7 +366,7 @@ CREATE TABLE table_acc
 (
   table_hid  INT           NOT NULL, -- master key
   acc_id     INT           NOT NULL, -- unique accumulator id
-  acc_name   VARCHAR(8)    NOT NULL, -- unique accumulator name: acc2
+  acc_name   VARCHAR(32)   NOT NULL, -- unique accumulator name: acc2
   is_derived SMALLINT      NOT NULL, -- if non-zero then accumulator is expression on other accumulators
   acc_src    VARCHAR(255)  NOT NULL, -- source expression: acc0 + acc1 
   acc_sql    VARCHAR(2048) NOT NULL, -- db expression: sql subquery
@@ -400,7 +400,7 @@ CREATE TABLE table_expr
 (
   table_hid     INT           NOT NULL, -- master key
   expr_id       INT           NOT NULL, -- unique item id
-  expr_name     VARCHAR(8)    NOT NULL, -- item name: expr2
+  expr_name     VARCHAR(32)   NOT NULL, -- item name: expr2
   expr_decimals INT           NOT NULL, -- number of decimals for that item
   expr_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
   expr_sql      VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)

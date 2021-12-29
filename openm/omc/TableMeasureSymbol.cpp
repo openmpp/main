@@ -27,11 +27,11 @@ string TableMeasureSymbol::pretty_name() const
     return result;
 }
 
-// Update measure name to be suitable as database column name: it must be unique, alpanumeric and not longer than 8 chars
+// Update measure name to be suitable as database column name: it must be unique, alpanumeric and not longer than 32 chars
 void TableMeasureSymbol::to_column_name(const string & i_tableName, const list<TableMeasureSymbol *> i_measureLst, TableMeasureSymbol * io_me)
 {
     assert(io_me);
-    string colName = openm::toAlphaNumeric(io_me->measure_name, OM_COL_NAME_DB_MAX);   // make measure name alpanumeric and truncate it to 8 chars
+    string colName = openm::toAlphaNumeric(io_me->measure_name, OM_CODE_DB_MAX);   // make measure name alpanumeric and truncate it to 32 chars
 
     for (auto pIt = i_measureLst.cbegin(); pIt != i_measureLst.cend() && *pIt != io_me; ++pIt) {
         if (colName == (*pIt)->measure_name) {

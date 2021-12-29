@@ -21,11 +21,11 @@ string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int in
     return symbol_with_dimensions->name + ".Dim" + to_string(numeric_id);
 }
 
-// Update dimension name to be suitable as database column name: it must be unique, alpanumeric and not longer than 8 chars
+// Update dimension name to be suitable as database column name: it must be unique, alpanumeric and not longer than 32 chars
 void DimensionSymbol::to_column_name(const string & i_ownerName, const list<DimensionSymbol *> i_dimLst, DimensionSymbol * io_dim)
 {
     assert(io_dim);
-    string colName = openm::toAlphaNumeric(io_dim->dim_name, OM_COL_NAME_DB_MAX);  // make dimension name alpanumeric and truncate it to 8 chars
+    string colName = openm::toAlphaNumeric(io_dim->dim_name, OM_CODE_DB_MAX);  // make dimension name alpanumeric and truncate it to 32 chars
 
     for (auto pIt = i_dimLst.cbegin(); pIt != i_dimLst.cend() && *pIt != io_dim; ++pIt) {
         if (colName == (*pIt)->dim_name) {
