@@ -29,7 +29,7 @@ public:
 
     DimensionSymbol(Symbol *symbol_with_dimensions, string *pname, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(symbol_with_dimensions, index, after_analysis_dim), decl_loc)
-        , dim_name(pname ? *pname : "Dim" + to_string(index))
+        , short_name(pname ? *pname : "Dim" + to_string(index))
         , index(index)
         , after_analysis_dim(after_analysis_dim)
         , has_margin(has_margin)
@@ -66,7 +66,7 @@ public:
     /**
     * Name of the dimension
     */
-    string dim_name;
+    string short_name;
 
     /**
      * Zero-based index of the dimension in the table.

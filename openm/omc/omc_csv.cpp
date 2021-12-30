@@ -479,7 +479,7 @@ const vector<PDim> getDims(bool i_isIdCsv, const ParameterSymbol * i_param)
 
         const EnumerationSymbol * et = dim->pp_enumeration;
         PDim d = {
-            dim->dim_name,
+            dim->short_name,
             et,
             et->pp_size(),
             1

@@ -713,7 +713,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             assert(es); // logic guarantee
             paramDims.paramId = pp_parameter_id;
             paramDims.dimId = dim->index;
-            paramDims.name = dim->dim_name;     // Default is dim0, dim1, but can be named in model using =>
+            paramDims.name = dim->short_name;     // Default is dim0, dim1, but can be named in model using =>
             paramDims.typeId = es->type_id;
             metaRows.paramDims.push_back(paramDims);
 
@@ -784,7 +784,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             assert(es); // logic guarantee
             tableDims.tableId = pp_parameter_to_table_id;
             tableDims.dimId = dim->index;
-            tableDims.name = dim->dim_name;     // Default is dim0, dim1, but can be named in model using =>
+            tableDims.name = dim->short_name;     // Default is dim0, dim1, but can be named in model using =>
             tableDims.typeId = es->type_id;
             tableDims.isTotal = dim->has_margin;
             tableDims.dimSize = es->pp_size() + dim->has_margin;

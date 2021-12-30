@@ -1491,7 +1491,7 @@ decl_parameter:
 	;
 
 decl_dim_list:
-      decl_dim_list name_opt[dim_name] "[" SYMBOL[enumeration] "]"
+      decl_dim_list name_opt[short_name] "[" SYMBOL[enumeration] "]"
                         {
                             Symbol *enumeration = $enumeration;
                             assert(enumeration);
@@ -1499,7 +1499,7 @@ decl_dim_list:
                                 // add enumeration to parameter's enumeration list
                                 pc.get_parameter_context()->enumeration_list.push_back(enumeration->stable_pp());
 
-                                auto sym = new DimensionSymbol(pc.get_parameter_context(), $dim_name, pc.counter4, false, nullptr, enumeration, false, @enumeration);
+                                auto sym = new DimensionSymbol(pc.get_parameter_context(), $short_name, pc.counter4, false, nullptr, enumeration, false, @enumeration);
                                 assert(sym);
                                 // add dimension symbol to parameter's dimension_list
                                 pc.get_parameter_context()->dimension_list.push_back(sym);
@@ -2284,12 +2284,12 @@ entity_set_dimension_list:
     ;
 
 entity_set_dimension:
-      name_opt[dim_name] "[" symbol_in_table "]"
+      name_opt[short_name] "[" symbol_in_table "]"
                         {
                             Symbol *attribute = $symbol_in_table;
                             assert(attribute);
 
-                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), $dim_name, pc.counter4, false, attribute, nullptr, false, @symbol_in_table);
+                            auto sym = new DimensionSymbol(pc.get_entity_set_context(), $short_name, pc.counter4, false, attribute, nullptr, false, @symbol_in_table);
                             assert(sym);
                             // add dimension to entity set's dimension_list
                             pc.get_entity_set_context()->dimension_list.push_back(sym);
@@ -2391,14 +2391,14 @@ table_margin_opt:
     ;
 
 table_dimension:
-    name_opt[dim_name] symbol_in_table table_margin_opt
+    name_opt[short_name] symbol_in_table table_margin_opt
                         {
                             Symbol *attribute = $symbol_in_table;
                             assert(attribute);
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
-                            auto sym = new DimensionSymbol(pc.get_table_context(), $dim_name, pc.counter4, after_analysis_dim, attribute, nullptr, margin_opt, @symbol_in_table);
+                            auto sym = new DimensionSymbol(pc.get_table_context(), $short_name, pc.counter4, after_analysis_dim, attribute, nullptr, margin_opt, @symbol_in_table);
                             assert(sym);
                             // add dimension to table's dimension_list
                             pc.get_table_context()->dimension_list.push_back(sym);
@@ -2653,7 +2653,7 @@ derived_table_dimension_list:
   ;
 
 derived_table_dimension:
-      name_opt[dim_name] SYMBOL[enumeration] table_margin_opt
+      name_opt[short_name] SYMBOL[enumeration] table_margin_opt
                         {
                             // This block similar to table_dimension block for native tables
                             Symbol *enumeration = $enumeration;
@@ -2661,7 +2661,7 @@ derived_table_dimension:
                             bool margin_opt = $table_margin_opt == token::TK_PLUS;
                             bool after_analysis_dim = pc.counter1 > 0; // true if the analysis dimension precedes this enumeration dimension
 
-                            auto sym = new DimensionSymbol(pc.get_derived_table_context(), $dim_name, pc.counter4, after_analysis_dim, nullptr, enumeration, margin_opt, @enumeration);
+                            auto sym = new DimensionSymbol(pc.get_derived_table_context(), $short_name, pc.counter4, after_analysis_dim, nullptr, enumeration, margin_opt, @enumeration);
                             assert(sym);
                             // add dimension to derived table's dimension_list
                             pc.get_derived_table_context()->dimension_list.push_back(sym);

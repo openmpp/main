@@ -25,20 +25,20 @@ string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int in
 void DimensionSymbol::to_column_name(const string & i_ownerName, const list<DimensionSymbol *> i_dimLst, DimensionSymbol * io_dim)
 {
     assert(io_dim);
-    string colName = openm::toAlphaNumeric(io_dim->dim_name, OM_CODE_DB_MAX);  // make dimension name alpanumeric and truncate it to 32 chars
+    string colName = openm::toAlphaNumeric(io_dim->short_name, OM_CODE_DB_MAX);  // make dimension name alpanumeric and truncate it to 32 chars
 
     for (auto pIt = i_dimLst.cbegin(); pIt != i_dimLst.cend() && *pIt != io_dim; ++pIt) {
-        if (colName == (*pIt)->dim_name) {
+        if (colName == (*pIt)->short_name) {
             string sId = to_string(io_dim->index);
             colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
             break;
         }
     }
-    if (io_dim->dim_name != colName) {
+    if (io_dim->short_name != colName) {
         // to do: use pp_warning() if we can apply LT without string + concatenation
-        theLog->logFormatted(LT("warning: %s dimension [%d] name %s updated to %s"), i_ownerName.c_str(), io_dim->index, io_dim->dim_name.c_str(), colName.c_str());
+        theLog->logFormatted(LT("warning: %s dimension [%d] name %s updated to %s"), i_ownerName.c_str(), io_dim->index, io_dim->short_name.c_str(), colName.c_str());
 
-        io_dim->dim_name = colName;      // change dimension name
+        io_dim->short_name = colName;      // change dimension name
     }
 }
 
@@ -54,7 +54,7 @@ void DimensionSymbol::post_parse(int pass)
         // If an explicit short name was given by //NAME, use it
         auto search = explicit_names.find(unique_name);
         if (search != explicit_names.end()) {
-            dim_name = search->second;
+            short_name = search->second;
         }
         break;
     }
