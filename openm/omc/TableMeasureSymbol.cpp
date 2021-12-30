@@ -23,7 +23,7 @@ string TableMeasureSymbol::symbol_name(const Symbol* table, int index)
 string TableMeasureSymbol::pretty_name() const
 {
     // example:     measure 0: sum(delta(interval(duration)))
-    string result = " measure " + to_string(index) + ": " + measure_name;
+    string result = " measure " + to_string(index) + ": " + short_name;
     return result;
 }
 
@@ -31,20 +31,20 @@ string TableMeasureSymbol::pretty_name() const
 void TableMeasureSymbol::to_column_name(const string & i_tableName, const list<TableMeasureSymbol *> i_measureLst, TableMeasureSymbol * io_me)
 {
     assert(io_me);
-    string colName = openm::toAlphaNumeric(io_me->measure_name, OM_CODE_DB_MAX);   // make measure name alpanumeric and truncate it to 32 chars
+    string colName = openm::toAlphaNumeric(io_me->short_name, OM_CODE_DB_MAX);   // make measure name alpanumeric and truncate it to 32 chars
 
     for (auto pIt = i_measureLst.cbegin(); pIt != i_measureLst.cend() && *pIt != io_me; ++pIt) {
-        if (colName == (*pIt)->measure_name) {
+        if (colName == (*pIt)->short_name) {
             string sId = to_string(io_me->index);
             colName = colName.replace(colName.length() - sId.length(), sId.length(), sId);
             break;
         }
     }
-    if (io_me->measure_name != colName) {
+    if (io_me->short_name != colName) {
         // to do: use pp_warning() if we can apply LT without string + concatenation
-        theLog->logFormatted(LT("warning: %s measure [%d] name %s updated to %s"), i_tableName.c_str(), io_me->index, io_me->measure_name.c_str(), colName.c_str());
+        theLog->logFormatted(LT("warning: %s measure [%d] name %s updated to %s"), i_tableName.c_str(), io_me->index, io_me->short_name.c_str(), colName.c_str());
 
-        io_me->measure_name = colName;      // change measure name
+        io_me->short_name = colName;      // change measure name
     }
 }
 
@@ -60,7 +60,7 @@ void TableMeasureSymbol::post_parse(int pass)
         // If an explicit short name was given by //NAME, use it
         auto search = explicit_names.find(unique_name);
         if (search != explicit_names.end()) {
-            measure_name = search->second;
+            short_name = search->second;
         }
         break;
     }

@@ -2415,15 +2415,15 @@ table_dimension:
     ;
 
 table_expression_list:
-      name_opt[measure_name] expr_for_table[root]
+      name_opt[short_name] expr_for_table[root]
                         {
-                            auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, $measure_name, pc.counter1, @root);
+                            auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, $short_name, pc.counter1, @root);
                             assert(sym);
                             pc.counter1++;  // counter for measures
                         }
-    | table_expression_list "," name_opt[measure_name] expr_for_table[root]
+    | table_expression_list "," name_opt[short_name] expr_for_table[root]
                         {
-                            auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, $measure_name, pc.counter1, @root);
+                            auto sym = new EntityTableMeasureSymbol(pc.get_table_context(), $root, $short_name, pc.counter1, @root);
                             assert(sym);
                             pc.counter1++;  // counter for measures
                         }

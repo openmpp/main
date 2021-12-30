@@ -1232,7 +1232,7 @@ void CodeGen::do_table_interface()
     c += "const std::map<std::string, std::pair<int, int>> om_table_measure = {";
     for (auto table : Symbol::pp_all_tables) {
         for (auto measure : table->pp_measures) {
-            auto key = table->name + "." + measure->measure_name;
+            auto key = table->name + "." + measure->short_name;
             auto table_id = to_string(table->pp_table_id);
             auto measure_id = to_string(measure->index);
             c += "{\"" + key + "\", {" + table_id + ", " + measure_id + "} },";

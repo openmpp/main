@@ -926,7 +926,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = etm->index;
-        tableExpr.name = etm->measure_name;     // Default is Expr0, Expr1, but can be named in model using =>
+        tableExpr.name = etm->short_name;     // Default is Expr0, Expr1, but can be named in model using =>
         tableExpr.decimals = etm->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "

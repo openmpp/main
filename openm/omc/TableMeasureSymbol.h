@@ -29,9 +29,9 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TableMeasureSymbol(Symbol *table, string measure_name, int index, omc::location decl_loc = omc::location())
+    TableMeasureSymbol(Symbol *table, string short_name, int index, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(table, index), decl_loc)
-        , measure_name(measure_name)
+        , short_name(short_name)
         , index(index)
         , table(table->stable_rp())
         , pp_table(nullptr)
@@ -68,7 +68,7 @@ public:
     /**
      * Name of the measure
      */
-    string measure_name;
+    string short_name;
 
     /**
      * Zero-based index of the measure in the table measures.

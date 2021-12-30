@@ -130,7 +130,7 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableExpr.tableId = pp_table_id;
         tableExpr.exprId = measure->index;
-        tableExpr.name = measure->measure_name;
+        tableExpr.name = measure->short_name;
         tableExpr.decimals = measure->decimals;
 
         // construct scale part, e.g. "1.0E-3 * "
