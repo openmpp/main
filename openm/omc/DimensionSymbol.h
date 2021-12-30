@@ -30,6 +30,8 @@ public:
     DimensionSymbol(Symbol *symbol_with_dimensions, string *pname, int index, bool after_analysis_dim, Symbol *attribute, Symbol *enumeration, bool has_margin, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(symbol_with_dimensions, index, after_analysis_dim), decl_loc)
         , short_name(pname ? *pname : "Dim" + to_string(index))
+        , short_name_default("Dim" + to_string(index))
+        , short_name_explicit(pname ? *pname : "")
         , index(index)
         , after_analysis_dim(after_analysis_dim)
         , has_margin(has_margin)
@@ -64,9 +66,19 @@ public:
     void post_parse(int pass);
 
     /**
-    * Name of the dimension
+    * Short name of the dimension
     */
     string short_name;
+
+    /**
+    * Short name of the dimension (generated default name)
+    */
+    string short_name_default;
+
+    /**
+    * Short name of the dimension (provided in model source)
+    */
+    string short_name_explicit;
 
     /**
      * Zero-based index of the dimension in the table.

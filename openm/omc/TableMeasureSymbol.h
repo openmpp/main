@@ -29,9 +29,11 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    TableMeasureSymbol(Symbol *table, string short_name, int index, omc::location decl_loc = omc::location())
+    TableMeasureSymbol(Symbol *table, string *pname, int index, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(table, index), decl_loc)
-        , short_name(short_name)
+        , short_name(pname ? *pname : "Expr" + to_string(index))
+        , short_name_default("Expr" + to_string(index))
+        , short_name_explicit(pname ? *pname : "")
         , index(index)
         , table(table->stable_rp())
         , pp_table(nullptr)
@@ -66,9 +68,19 @@ public:
     }
 
     /**
-     * Name of the measure
+     * Short name of the measure
      */
     string short_name;
+
+    /**
+    * Short name of the measure (generated default name)
+    */
+    string short_name_default;
+
+    /**
+    * Short name of the measure (provided in model source)
+    */
+    string short_name_explicit;
 
     /**
      * Zero-based index of the measure in the table measures.

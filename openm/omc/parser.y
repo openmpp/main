@@ -2685,7 +2685,7 @@ derived_table_dimension:
 derived_table_placeholder_list:
       STRING[placeholder]
                         {
-                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
+                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $placeholder, pc.counter1, @placeholder);
                             assert(sym);
                             delete $placeholder; // delete the string created using new in scanner
                             $placeholder = nullptr;
@@ -2698,7 +2698,7 @@ derived_table_placeholder_list:
                         }
       STRING[placeholder]
                         {
-                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), *$placeholder, pc.counter1, @placeholder);
+                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $placeholder, pc.counter1, @placeholder);
                             assert(sym);
                             delete $placeholder; // delete the string created using new in scanner
                             $placeholder = nullptr;
