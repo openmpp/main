@@ -1236,6 +1236,11 @@ void CodeGen::do_table_interface()
             auto table_id = to_string(table->pp_table_id);
             auto measure_id = to_string(measure->index);
             c += "{\"" + key + "\", {" + table_id + ", " + measure_id + "} },";
+            if (measure->short_name != measure->short_name_default) {
+                // also recognize default short_name in GetTableValue API, eg "MyTable.Expr1"
+                auto key = table->name + "." + measure->short_name_default;
+                c += "{\"" + key + "\", {" + table_id + ", " + measure_id + "} },";
+            }
         }
     }
     c += "};";
