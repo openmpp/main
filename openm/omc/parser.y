@@ -2630,7 +2630,7 @@ decl_derived_table:
                             // Set derived table context for body of derived table declaration
                             pc.set_derived_table_context( derived_table );
                             pc.reset_working_counters();
-                            // working counter1 used for derived table placeholders
+                            // working counter1 used for derived table measures
                             // working counter4 used for derived table classification dimensions
                         }
             "{" derived_table_dimension_list "}" ";"
@@ -2671,10 +2671,10 @@ derived_table_dimension:
                         }
     | "{" 
                         {
-                            // placeholder follows
+                            // measure short_name follows
                             pc.next_word_is_string = true;
                         }
-      derived_table_placeholder_list "}"
+      derived_table_measure_list "}"
                         {
                             // record measures position which is the
                             // 0-based ordinal of the immediately preceding classification dimension.
@@ -2682,27 +2682,27 @@ derived_table_dimension:
                         }
     ;
 
-derived_table_placeholder_list:
-      STRING[placeholder]
+derived_table_measure_list:
+      STRING[short_name]
                         {
-                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $placeholder, pc.counter1, @placeholder);
+                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $short_name, pc.counter1, @short_name);
                             assert(sym);
-                            delete $placeholder; // delete the string created using new in scanner
-                            $placeholder = nullptr;
-                            pc.counter1++;  // counter for placeholders
+                            delete $short_name; // delete the string created using new in scanner
+                            $short_name = nullptr;
+                            pc.counter1++;  // counter for short_names
                         }
-    | derived_table_placeholder_list ","
+    | derived_table_measure_list ","
                         {
-                            // placeholder follows
+                            // short_name follows
                             pc.next_word_is_string = true;
                         }
-      STRING[placeholder]
+      STRING[short_name]
                         {
-                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $placeholder, pc.counter1, @placeholder);
+                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $short_name, pc.counter1, @short_name);
                             assert(sym);
-                            delete $placeholder; // delete the string created using new in scanner
-                            $placeholder = nullptr;
-                            pc.counter1++;  // counter for placeholders
+                            delete $short_name; // delete the string created using new in scanner
+                            $short_name = nullptr;
+                            pc.counter1++;  // counter for measures
                         }
 	;
 
