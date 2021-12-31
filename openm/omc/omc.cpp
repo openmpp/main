@@ -509,6 +509,9 @@ int main(int argc, char * argv[])
             throw HelperException(LT("Finish omc"));
         }
 
+        // Code block containing suggested heuristic names to replace default short-names
+        CodeBlock heuristic_cpp = Symbol::heuristic_short_names_cpp();
+
         theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code

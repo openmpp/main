@@ -66,6 +66,11 @@ public:
     void post_parse(int pass);
 
     /**
+    * Heuristically-generated short name for the dimension
+    */
+    string heuristic_short_name(void) const;
+
+    /**
     * Short name of the dimension
     */
     string short_name;

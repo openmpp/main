@@ -131,3 +131,8 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
         }
     }
 }
+
+string EntityTableMeasureSymbol::heuristic_short_name(void) const
+{
+    return "h_" + short_name;
+}

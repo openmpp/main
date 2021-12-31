@@ -27,7 +27,7 @@ string TableMeasureSymbol::pretty_name() const
     return result;
 }
 
-// Update measure name to be suitable as database column name: it must be unique, alpanumeric and not longer than 32 chars
+// Update measure name to be suitable as database column name: it must be unique, alphanumeric and not longer than 32 chars
 void TableMeasureSymbol::to_column_name(const string & i_tableName, const list<TableMeasureSymbol *> i_measureLst, TableMeasureSymbol * io_me)
 {
     assert(io_me);

@@ -64,6 +64,13 @@ public:
     string get_expression(const ExprForTable *node, expression_style style);
 
     /**
+     * Heuristically-generated short name for the dimension
+     *
+     * @return Result as a string
+     */
+    string heuristic_short_name(void) const;
+
+    /**
      * Root of the expression tree.
      */
     ExprForTable *root;

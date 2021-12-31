@@ -871,6 +871,13 @@ public:
     static bool is_om_developer_function(const char* nm);
 
     /**
+     * Generate code to specify heuristic short names for dimensions and measuires
+     *
+     * @return a CodeBlock containing the generated code
+     */
+    static CodeBlock heuristic_short_names_cpp(void);
+
+    /**
      * Pathnames of use folders.
      * 
      * Used to resolve 'use' statements to physical files. 

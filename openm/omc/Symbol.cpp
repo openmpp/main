@@ -2191,4 +2191,56 @@ const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
 }
 
 
+//static
+CodeBlock Symbol::heuristic_short_names_cpp(void)
+{
+    CodeBlock c;
+
+    // Note heuristic short names for parameter dimensions
+    for (auto param : pp_all_parameters) {
+        for (auto dim : param->dimension_list) {
+            if (dim->short_name_explicit == "") {
+                // no explicit name provided, so get the heuristic candidate short name
+                string hn = dim->heuristic_short_name();
+                c += "//NAME " + param->name + "." + dim->short_name + " " + hn;
+            }
+        }
+    }
+
+    // Note heuristic short names for derived table dimensions
+    for (auto table : pp_all_derived_tables) {
+        for (auto dim : table->dimension_list) {
+            if (dim->short_name_explicit == "") {
+                // no explicit name provided, so get the heuristic candidate short name
+                string hn = dim->heuristic_short_name();
+                c += "//NAME " + table->name + "." + dim->short_name + " " + hn;
+            }
+        }
+    }
+
+    // Note heuristic short names for entity table dimensions and measures
+    for (auto table : pp_all_entity_tables) {
+        // the dimensions
+        for (auto dim : table->dimension_list) {
+            if (dim->short_name_explicit == "") {
+                // no explicit name provided, so get the heuristic candidate short name
+                string hn = dim->heuristic_short_name();
+                c += "//NAME " + table->name + "." + dim->short_name + " " + hn;
+            }
+        }
+        // the measures
+        for (auto measure : table->pp_measures) {
+            EntityTableMeasureSymbol *etms = static_cast<EntityTableMeasureSymbol *>(measure);
+            assert(etms); // parser guarantee
+            if (etms->short_name_explicit == "") {
+                // no explicit name provided, so get the heuristic candidate short name
+                string hn = etms->heuristic_short_name();
+                c += "//NAME " + table->name + "." + etms->short_name + " " + hn;
+            }
+        }
+    }
+
+    return c;
+}
+
 
