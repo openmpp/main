@@ -607,6 +607,8 @@ bool Symbol::option_verify_timelike_attribute_access = true;
 
 bool Symbol::option_weighted_tabulation = false;
 
+bool Symbol::option_use_heuristic_names = false;
+
 bool Symbol::option_censor_event_time = false;
 
 string Symbol::code_page;
@@ -1901,6 +1903,20 @@ void Symbol::defaults_and_options()
     }
 
     {
+        string key = "use_heuristic_names";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_use_heuristic_names = true;
+            }
+            else if (value == "off") {
+                option_use_heuristic_names = false;
+            }
+        }
+    }
+
+    {
         string key = "censor_event_time";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -2203,6 +2219,9 @@ CodeBlock Symbol::heuristic_short_names_cpp(void)
                 // no explicit name provided, so get the heuristic candidate short name
                 string hn = dim->heuristic_short_name();
                 c += "//NAME " + param->name + "." + dim->short_name + " " + hn;
+                if (option_use_heuristic_names) {
+                    dim->short_name = hn;
+                }
             }
         }
     }
@@ -2214,6 +2233,9 @@ CodeBlock Symbol::heuristic_short_names_cpp(void)
                 // no explicit name provided, so get the heuristic candidate short name
                 string hn = dim->heuristic_short_name();
                 c += "//NAME " + table->name + "." + dim->short_name + " " + hn;
+                if (option_use_heuristic_names) {
+                    dim->short_name = hn;
+                }
             }
         }
     }
@@ -2226,6 +2248,9 @@ CodeBlock Symbol::heuristic_short_names_cpp(void)
                 // no explicit name provided, so get the heuristic candidate short name
                 string hn = dim->heuristic_short_name();
                 c += "//NAME " + table->name + "." + dim->short_name + " " + hn;
+                if (option_use_heuristic_names) {
+                    dim->short_name = hn;
+                }
             }
         }
         // the measures
@@ -2236,6 +2261,9 @@ CodeBlock Symbol::heuristic_short_names_cpp(void)
                 // no explicit name provided, so get the heuristic candidate short name
                 string hn = etms->heuristic_short_name();
                 c += "//NAME " + table->name + "." + etms->short_name + " " + hn;
+                if (option_use_heuristic_names) {
+                    etms->short_name = hn;
+                }
             }
         }
     }

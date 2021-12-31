@@ -1342,6 +1342,11 @@ public:
     static bool option_weighted_tabulation;
 
     /**
+     * true or false depending on use_heuristic_names in options statement.
+     */
+    static bool option_use_heuristic_names;
+
+    /**
      * true or false depending on censor_event_time value in options statement.
      */
     static bool option_censor_event_time;
