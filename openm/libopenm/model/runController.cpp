@@ -231,9 +231,25 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
 {
     const vector<TableDicRow> tblVec = metaStore->tableDic->byModelId(modelId);
 
+    size_t nCount = 0;
+    for (const TableDicRow & tblRow : tblVec) {
+        if (!isSuppressed(tblRow.tableId)) nCount++;
+    }
+
+    int64_t lastMs = getMilliseconds();
+    size_t n = 0;
+
     for (const TableDicRow & tblRow : tblVec) {
 
         if (isSuppressed(tblRow.tableId)) continue;     // skip suppressed table
+
+        // report table aggregation progress
+        int64_t now = getMilliseconds();
+        n++;
+        if (now > lastMs + OM_LOG_PROGRESS_TIME) {
+            theLog->logFormatted("Table %zd of %zd: %s", n, nCount, tblRow.tableName.c_str());
+            lastMs = now;
+        }
 
         unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
             i_runId,

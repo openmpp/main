@@ -104,8 +104,18 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
     string sRunId = to_string(i_runId);
     string sModelId = to_string(modelId);
     string paramDot = string(RunOptionsKey::parameterPrefix) + ".";
+    int64_t lastProgressTime = getMilliseconds();
+    size_t paramNumber = 0;
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
+
+        // report parameter initialization progress
+        int64_t now = getMilliseconds();
+        paramNumber++;
+        if (now > lastProgressTime + OM_LOG_PROGRESS_TIME) {
+            theLog->logFormatted("Parameter %zd of %zd: %s", paramNumber, paramVec.size(), paramIt->paramName.c_str());
+            lastProgressTime = now;
+        }
 
         // calculate parameter source: command line (or ini-file), generate "iota", workset, based run, run options
         bool isInserted = false;

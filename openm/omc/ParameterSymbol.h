@@ -130,9 +130,12 @@ public:
     /**
     * C++ code to read parameter from data store.
     *
+    * @param i_paramNumber parameter number to report reading progress.
+    * @param i_paramCount  total number of parameters to report reading progress.
+    *
     * @return A block of code.
     */
-    CodeBlock cxx_read_parameter();
+    CodeBlock cxx_read_parameter(int i_paramNumber, int i_paramCount);
 
     /**
     * return C++ type name of parameter value(s) to read from data store.

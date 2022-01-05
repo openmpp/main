@@ -630,14 +630,23 @@ void CodeGen::do_RunInit()
         c += "";
     }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
+    c += "extern int64_t report_parameter_read_progress(int paramNumber, int paramCount, const char * name, int64_t lastTime);";
+    c += "";
     c += "// Process model dev options for EventTrace";
     c += "process_trace_options(i_runBase);";
     c += "";
     c += "theLog->logMsg(\"Get scenario parameters for process\");";
     c += "";
+    c += "int64_t last_progress_ms = getMilliseconds();";
+    c += "";
+    int nCount = 0;
+    for (auto parameter : Symbol::pp_all_parameters) {
+        if (parameter->source == ParameterSymbol::scenario_parameter) nCount++;
+    }
+    int n = 0;
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
-            c += parameter->cxx_read_parameter();
+            c += parameter->cxx_read_parameter(++n, nCount);
         }
     }
     c += "";
@@ -930,11 +939,20 @@ void CodeGen::do_ModelShutdown()
     }
 
     c += "theLog->logFormatted(\"member=%d Write output tables - start\", simulation_member);";
+    c += "";
+    c += "extern int64_t report_table_write_progress(int member, int tableNumber, const char * name, int64_t lastTime);";
+    c += "";
     c += "// write entity tables (accumulators) and release accumulators memory";
+    c += "int64_t last_progress_ms = getMilliseconds();";
+    c += "int n_table = 0;";
+    c += "";
     for ( auto table : Symbol::pp_all_entity_tables ) {
         if (!table->is_internal) {
-            c += "if (!is_suppressed_write(\"" + table->name + "\", i_model)) i_model->writeOutputTable(\"" +
+            c += "if (!is_suppressed_write(\"" + table->name + "\", i_model)) {"; 
+            c += "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + table->name + "\", last_progress_ms);";
+            c += "i_model->writeOutputTable(\"" +
                 table->name + "\", " + table->cxx_instance + "->n_cells, " + table->cxx_instance + "->acc_storage);";
+            c += "}";
         }
     }
     c += "// at this point table->acc[k][j] will cause memory access violation";
@@ -943,10 +961,13 @@ void CodeGen::do_ModelShutdown()
     c += "// write derived tables (measures) and release measures memory";
     for ( auto derived_table : Symbol::pp_all_derived_tables ) {
         if (!derived_table->is_internal) {
-            c += "if (" + derived_table->cxx_instance + ") i_model->writeOutputTable(\"" +
+            c += "if (" + derived_table->cxx_instance + ") {";
+            c += "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + derived_table->name + "\", last_progress_ms);";
+            c += " i_model->writeOutputTable(\"" +
                 derived_table->name + "\", " + 
                 derived_table->cxx_instance + "->n_cells, " + 
                 derived_table->cxx_instance + "->measure_storage);";
+            c += "}";
         }
     }
     c += "// at this point table->measure[k][j] will cause memory access violation";
