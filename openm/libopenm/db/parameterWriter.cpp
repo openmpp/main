@@ -636,15 +636,14 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
 
     // build sql to select parameter values:
     //
-    // SELECT sub_id,dim0,dim1,param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2, 3
+    // SELECT sub_id, dim0, dim1, param_value FROM ageSex_p20120817 WHERE run_id = 11 ORDER BY 1, 2, 3
     //
-    string nameCsv = "sub_id,";
-    for (const ParamDimsRow & dim : paramDims) {
-        nameCsv += dim.name + ",";
-    }
-    nameCsv += "param_value";
+    string sql = "SELECT sub_id, ";
 
-    string sql = "SELECT " + nameCsv + " FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
+    for (const ParamDimsRow & dim : paramDims) {
+        sql += dim.columnName() + ", ";
+    }
+    sql += "param_value FROM " + paramRunDbTable + " WHERE run_id = " + sRunId;
 
     sql += " ORDER BY 1";
     for (int nDim = 0; nDim < dimCount; nDim++) {
@@ -659,7 +658,12 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
     md5.add(sLine.c_str(), sLine.length());
 
     // append values header
-    sLine = nameCsv + "\n";
+    sLine = "sub_id,";
+    for (const ParamDimsRow & dim : paramDims) {
+        sLine += dim.name + ",";
+    }
+    sLine += "param_value\n";
+
     md5.add(sLine.c_str(), sLine.length());
 
     // append parameter values digest

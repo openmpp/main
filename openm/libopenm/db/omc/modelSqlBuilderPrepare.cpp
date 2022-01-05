@@ -458,7 +458,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // parameter_dims table
-    // unique: model id, parameter id, dimension name; master key: model id, parameter id; foreign key: model id, type id;
+    // unique: model id, parameter id; master key: model id, parameter id; foreign key: model id, type id;
     for (vector<ParamDimsRow>::const_iterator rowIt = io_metaRows.paramDims.cbegin(); rowIt != io_metaRows.paramDims.cend(); ++rowIt) {
 
         ParamDicRow mkRow(rowIt->modelId, rowIt->paramId);
@@ -561,7 +561,7 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
     }
 
     // table_dims table
-    // unique: model id, table id, dimension id; unique: model id, table id, dimension name;
+    // unique: model id, table id, dimension id; unique: model id, table id;
     // master key: model id, table id; foreign key: model id, type id;
     for (vector<TableDimsRow>::const_iterator rowIt = io_metaRows.tableDims.cbegin(); rowIt != io_metaRows.tableDims.cend(); ++rowIt) {
 
@@ -585,16 +585,6 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
         if (nextIt != io_metaRows.tableDims.cend() && TableDimsRow::isKeyEqual(*rowIt, *nextIt))
             throw DbException(LT("in table_dims [%s].[%s] not unique model id: %d, table id: %d and dimension id: %d"), mkRow.tableName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->tableId, rowIt->dimId);
-
-        if (std::any_of(
-            io_metaRows.tableDims.cbegin(),
-            io_metaRows.tableDims.cend(),
-            [rowIt](const TableDimsRow & i_row) -> bool {
-            return
-                i_row.modelId == rowIt->modelId && i_row.tableId == rowIt->tableId && i_row.dimId != rowIt->dimId &&
-                i_row.name == rowIt->name;
-        }
-        )) throw DbException(LT("in table_dims [%s].[%s] not unique model id: %d, table id: %d and dimension name: %s"), mkRow.tableName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->tableId, rowIt->name.c_str());
     }
 
     // table_dims_txt table
@@ -906,56 +896,19 @@ void ModelSqlBuilder::prepareWorkset(const MetaModelHolder & i_metaRows, MetaSet
 void ModelSqlBuilder::setColumnNames(MetaModelHolder & io_metaRows)
 {
     for (ParamDimsRow & dimRow : io_metaRows.paramDims) {
-
-        if (dimRow.name.empty()) dimRow.name = "dim" + to_string(dimRow.dimId);
-
-        if (IDbExec::isSqlKeyword(dimRow.name.c_str())) {
-            auto mkRowIt = ParamDicRow::byKey(dimRow.modelId, dimRow.paramId, io_metaRows.paramDic);
-            if (mkRowIt == io_metaRows.paramDic.cend()) {
-                throw DbException(LT("in parameter_dims invalid model id: %d and parameter id: %d: not found in parameter_dic"), dimRow.modelId, dimRow.paramId);
-            }
-            throw DbException(LT("invalid parameter %s dimension [%d] name %s, it is a SQL reserved keyword"), mkRowIt->paramName.c_str(), dimRow.dimId, dimRow.name.c_str());
-        }
+        if (dimRow.name.empty()) dimRow.name = dimRow.columnName();
     }
 
     for (TableDimsRow & dimRow : io_metaRows.tableDims) {
-
-        if (dimRow.name.empty()) dimRow.name = "dim" + to_string(dimRow.dimId);
-
-        if (IDbExec::isSqlKeyword(dimRow.name.c_str())) {
-            auto mkRowIt = TableDicRow::byKey(dimRow.modelId, dimRow.tableId, io_metaRows.tableDic);
-            if (mkRowIt == io_metaRows.tableDic.cend()) {
-                throw DbException(LT("in table_dims invalid model id: %d and table id: %d: not found in table_dic"), dimRow.modelId, dimRow.tableId);
-            }
-            throw DbException(LT("invalid table %s dimension [%d] name %s, it is a SQL reserved keyword"), mkRowIt->tableName.c_str(), dimRow.dimId, dimRow.name.c_str());
-        }
+        if (dimRow.name.empty()) dimRow.name = dimRow.columnName();
     }
     
     for (TableAccRow & accRow : io_metaRows.tableAcc) {
-
-        if (accRow.name.empty()) accRow.name = "acc" + to_string(accRow.accId);
-
-
-        if (IDbExec::isSqlKeyword(accRow.name.c_str())) {
-            auto mkRowIt = TableDicRow::byKey(accRow.modelId, accRow.tableId, io_metaRows.tableDic);
-            if (mkRowIt == io_metaRows.tableDic.cend()) {
-                throw DbException(LT("in table_acc invalid model id: %d and table id: %d: not found in table_dic"), accRow.modelId, accRow.tableId);
-            }
-            throw DbException(LT("invalid table %s accumulator [%d] name %s, it is a SQL reserved keyword"), mkRowIt->tableName.c_str(), accRow.accId, accRow.name.c_str());
-        }
+        if (accRow.name.empty()) accRow.name = accRow.columnName();
     }
 
     for (TableExprRow & exprRow : io_metaRows.tableExpr) {
-
-        if (exprRow.name.empty()) exprRow.name = "expr" + to_string(exprRow.exprId);
-
-        if (IDbExec::isSqlKeyword(exprRow.name.c_str())) {
-            auto mkRowIt = TableDicRow::byKey(exprRow.modelId, exprRow.tableId, io_metaRows.tableDic);
-            if (mkRowIt == io_metaRows.tableDic.cend()) {
-                throw DbException(LT("in table_expr invalid model id: %d and table id: %d: not found in table_dic"), exprRow.modelId, exprRow.tableId);
-            }
-            throw DbException(LT("invalid table %s expression [%d] name %s, it is a SQL reserved keyword"), mkRowIt->tableName.c_str(), exprRow.exprId, exprRow.name.c_str());
-        }
+        if (exprRow.name.empty()) exprRow.name = exprRow.columnName();
     }
 }
 
@@ -1016,9 +969,13 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
         tblInf.isNullable = paramRow.isExtendable || tblInf.valueTypeIt->isTime();
 
         // collect dimension names
-        tblInf.dimNameVec.clear();
+        tblInf.dimVec.clear();
+        tblInf.colVec.clear();
         for (const ParamDimsRow & dimRow : io_metaRows.paramDims) {
-            if (dimRow.paramId == tblInf.id) tblInf.dimNameVec.push_back(dimRow.name);
+            if (dimRow.paramId == tblInf.id) {
+                tblInf.dimVec.push_back(dimRow.name);
+                tblInf.colVec.push_back(dimRow.columnName());
+            }
         }
 
         paramInfoVec.push_back(tblInf);     // add to parameters info vector
@@ -1037,25 +994,31 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         tblInf.name = tableRow.tableName;
 
         // collect dimension names
-        tblInf.dimNameVec.clear();
+        tblInf.dimVec.clear();
+        tblInf.colVec.clear();
         for (const TableDimsRow & dimRow : io_metaRows.tableDims) {
-            if (dimRow.tableId == tblInf.id) tblInf.dimNameVec.push_back(dimRow.name);
+            if (dimRow.tableId == tblInf.id) {
+                tblInf.dimVec.push_back(dimRow.name);
+                tblInf.colVec.push_back(dimRow.columnName());
+            }
         }
 
         // collect accumulator names
-        tblInf.accNameVec.clear();
         tblInf.accIdVec.clear();
+        tblInf.accNameVec.clear();
+        tblInf.accColVec.clear();
         for (const TableAccRow & accRow : io_metaRows.tableAcc) {
             if (accRow.tableId == tblInf.id) {
                 tblInf.accIdVec.push_back(accRow.accId);
                 tblInf.accNameVec.push_back(accRow.name);
+                tblInf.accColVec.push_back(accRow.columnName());
             }
         }
         if (tblInf.accNameVec.empty()) 
             throw DbException(LT("output table accumulators not found for table: %s"), tableRow.tableName.c_str());
 
         // translate native accumulators into sql subqueries
-        ModelAccumulatorSql ae(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec, io_metaRows.tableAcc);
+        ModelAccumulatorSql ae(tableRow.dbAccTable, tblInf.colVec, tblInf.accIdVec, tblInf.accNameVec, tblInf.accColVec, io_metaRows.tableAcc);
 
         map<string, size_t> nm;     // native accumulators map of (name, table_acc row)
         for (size_t nAcc = 0; nAcc < io_metaRows.tableAcc.size(); nAcc++) {
@@ -1073,11 +1036,11 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         }
 
         // translate expressions into sql
-        ModelAggregationSql aggr(tableRow.dbAccTable, tblInf.dimNameVec, tblInf.accIdVec, tblInf.accNameVec);
+        ModelAggregationSql aggr(tableRow.dbAccTable, tblInf.colVec, tblInf.accIdVec, tblInf.accNameVec, tblInf.accColVec);
 
         for (TableExprRow & exprRow : io_metaRows.tableExpr) {
             if (exprRow.tableId == tblInf.id) {
-                exprRow.sqlExpr = aggr.translateAggregationExpr(tableRow.tableName, exprRow.name, exprRow.srcExpr); // translate expression to sql aggregation
+                exprRow.sqlExpr = aggr.translateAggregationExpr(tableRow.tableName, exprRow.name, exprRow.columnName(), exprRow.srcExpr); // translate expression to sql aggregation
             }
         }
         // if (tblInf.exprVec.empty()) 

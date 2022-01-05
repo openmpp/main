@@ -322,7 +322,7 @@ OutputTableExprReader::OutputTableExprReader(
     string orderBy = " ORDER BY 1";
 
     for (int k = 0; k < dimCount; k++) {
-        sqlQuery += tableDims[k].name + ", ";
+        sqlQuery += tableDims[k].columnName() + ", ";
         orderBy += ", " + to_string(k + 2);
     }
 
@@ -428,7 +428,7 @@ OutputTableAccReader::OutputTableAccReader(
     string orderBy = " ORDER BY 1, 2";
 
     for (int k = 0; k < dimCount; k++) {
-        sqlQuery += tableDims[k].name + ", ";
+        sqlQuery += tableDims[k].columnName() + ", ";
         orderBy += ", " + to_string(k + 3);
     }
 

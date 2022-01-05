@@ -38,11 +38,11 @@ namespace openm
 
     // Columns type for parameter_dims join to model_parameter_dic row
     static const type_info * typeParamDimsRow[] = { 
-        &typeid(decltype(ParamDimsRow::modelId)), 
-        &typeid(decltype(ParamDimsRow::paramId)), 
+        &typeid(decltype(ParamDimsRow::modelId)),
+        &typeid(decltype(ParamDimsRow::paramId)),
         &typeid(decltype(ParamDimsRow::dimId)),
         &typeid(decltype(ParamDimsRow::name)),
-        &typeid(decltype(ParamDimsRow::typeId)) 
+        &typeid(decltype(ParamDimsRow::typeId))
     };
 
     // Size (number of columns) for parameter_dims join to model_parameter_dic row

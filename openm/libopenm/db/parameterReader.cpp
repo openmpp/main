@@ -163,11 +163,11 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, const vector<int> & i_su
     // AND sub_id IN (2, 4, 6, 8)
     // ORDER BY 1, 2, 3
     //
-    string sDimLst;
+    string sColLst;
     string sOrder = "1";
 
     for (int k = 0; k < dimCount; k++) {
-        sDimLst += paramDims[k].name + ", ";
+        sColLst += paramDims[k].columnName() + ", ";
         sOrder += ", " + to_string(k + 2);
     }
 
@@ -176,7 +176,7 @@ void ParameterReader::readParameter(IDbExec * i_dbExec, const vector<int> & i_su
         sIdLst += (k > 0 ? ", " : "") + to_string(i_subIdArr[k]);
     }
 
-    string sql = "SELECT sub_id, " + sDimLst + " param_value" +
+    string sql = "SELECT sub_id, " + sColLst + " param_value" +
         " FROM " + paramDbTable +
         " WHERE run_id = " \
         " (" \

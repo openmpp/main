@@ -11,8 +11,8 @@ struct FncName
     /** if condition then value else other value */
     static constexpr const char * if_case = "OM_IF";
 
-    /** denominator: wrap value as divisor */
-    static constexpr const char * denom = "OM_DENOM";
+    /** divide by: wrap value as divisor */
+    static constexpr const char * div_by = "OM_DIV_BY";
 
     /** average value */
     static constexpr const char * avg = "OM_AVG";
@@ -53,7 +53,7 @@ struct FncTag
 
 static FncTag fncTagArr[] = {
     {FncCode::if_case, false, FncName::if_case, strlen(FncName::if_case)},
-    {FncCode::denom, false, FncName::denom, strlen(FncName::denom)},
+    {FncCode::div_by, false, FncName::div_by, strlen(FncName::div_by)},
     {FncCode::avg, true, FncName::avg, strlen(FncName::avg)},
     {FncCode::sum, true, FncName::sum, strlen(FncName::sum)},
     {FncCode::count, true, FncName::count, strlen(FncName::count)},
@@ -128,7 +128,7 @@ struct LevelDef
 int AggregationColumnExpr::nextExprNumber = 1;   // next aggregation expression number
 
 /** translate output aggregation expression into sql */
-const string ModelAggregationSql::translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_expr)
+const string ModelAggregationSql::translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_colName, const string & i_expr)
 {
     srcMsg = i_outTableName + "." + i_name;
     vector<LevelDef> levelArr;      // array of aggregation expressions by levels
@@ -140,12 +140,12 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
     int level = 1;
 
     levelArr.emplace_back(level);
-    levelArr.back().exprArr.emplace_back(i_name, startExpr);
+    levelArr.back().exprArr.emplace_back(i_colName, startExpr);
 
     // until any expressions to parse repeat translation
     bool isFound = false;
     do {
-        isAccUsedArr.assign(accNameVec.size(), false);  // clear accumulator usage flags
+        isAccUsedArr.assign(accCount, false);  // clear accumulator usage flags
 
         for (AggregationColumnExpr & currExpr : levelArr.back().exprArr) {
 
@@ -241,8 +241,8 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 
         sql += "SELECT " + levelArr[nLev].fromAlias + ".run_id";
 
-        for (const string & dimName : dimNameVec) {
-            sql += ", " + levelArr[nLev].fromAlias + "." + dimName;
+        for (const string & cn : dimCols) {
+            sql += ", " + levelArr[nLev].fromAlias + "." + cn;
         }
 
         for (const AggregationColumnExpr & expr : levelArr[nLev].exprArr) {
@@ -251,7 +251,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 
         sql += " FROM " + accTableName + " " + levelArr[nLev].fromAlias;
 
-        for (int nAcc = 0; nAcc < (int)accNameVec.size(); nAcc++) {
+        for (int nAcc = 0; nAcc < accCount; nAcc++) {
 
             if (!levelArr[nLev].accUsageArr[nAcc] || isFirstUsedAcc(nAcc, levelArr[nLev].accUsageArr)) continue;
 
@@ -261,19 +261,19 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 
             sql += " INNER JOIN (SELECT run_id, ";
 
-            for (const string & dimName : dimNameVec) {
-                sql += dimName + ", ";
+            for (const string & cn : dimCols) {
+                sql += cn + ", ";
             }
 
-            sql += "sub_id, acc_value AS " + accNameVec[nAcc] +
+            sql += "sub_id, acc_value AS " + accCols[nAcc] +
                 " FROM " + accTableName +
-                " WHERE acc_id = " + to_string(accIdVec[nAcc]) +
+                " WHERE acc_id = " + to_string(accIds[nAcc]) +
                 ") " + accAlias;
 
             sql += " ON (" + accAlias + ".run_id = " + levelArr[nLev].fromAlias + ".run_id";
 
-            for (const string & dimName : dimNameVec) {
-                sql += " AND " + accAlias + "." + dimName + " = " + levelArr[nLev].fromAlias + "." + dimName;
+            for (const string & cn : dimCols) {
+                sql += " AND " + accAlias + "." + cn + " = " + levelArr[nLev].fromAlias + "." + cn;
             }
 
             sql += " AND " + accAlias + ".sub_id = " + levelArr[nLev].fromAlias + ".sub_id)";
@@ -285,9 +285,9 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
     for (int nLev = (int)levelArr.size() - 1; nLev >= 0; nLev--) {
 
         int firstAccId = -1;
-        for (int nAcc = 0; nAcc < (int)accIdVec.size(); nAcc++) {
+        for (int nAcc = 0; nAcc < accCount; nAcc++) {
             if (levelArr[nLev].accUsageArr[nAcc]) {
-                firstAccId = accIdVec[nAcc];
+                firstAccId = accIds[nAcc];
                 break;
             }
         }
@@ -296,8 +296,8 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 
         sql += " GROUP BY " + levelArr[nLev].fromAlias + ".run_id";
 
-        for (const string & dimName : dimNameVec) {
-            sql += ", " + levelArr[nLev].fromAlias + "." + dimName;
+        for (const string & cn : dimCols) {
+            sql += ", " + levelArr[nLev].fromAlias + "." + cn;
         }
 
         if (nLev > 0) {
@@ -305,8 +305,8 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
             sql += ") " + levelArr[nLev].innerAlias +
                 " ON (" + levelArr[nLev].innerAlias + ".run_id = " + levelArr[nLev - 1].fromAlias + ".run_id";
 
-            for (const string & dimName : dimNameVec) {
-                sql += " AND " + levelArr[nLev].innerAlias + "." + dimName + " = " + levelArr[nLev - 1].fromAlias + "." + dimName;
+            for (const string & cn : dimCols) {
+                sql += " AND " + levelArr[nLev].innerAlias + "." + cn + " = " + levelArr[nLev - 1].fromAlias + "." + cn;
             }
 
             sql += ")";
@@ -316,11 +316,11 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
     return sql;
 }
 
-// OM_DENOM(acc1 / acc2) 
+// OM_DIV_BY(acc1 / acc2) 
 //    => 
 //      CASE 
-//        WHEN ABS(acc1 / OM_DENOM(acc2)) > 1.0e-37 
-//        THEN acc1 / OM_DENOM(acc2) 
+//        WHEN ABS(acc1 / OM_DIV_BY(acc2)) > 1.0e-37 
+//        THEN acc1 / OM_DIV_BY(acc2) 
 //        ELSE NULL 
 //      END
 //    =>
@@ -399,7 +399,7 @@ const string ModelBaseExpressionSql::translateAllSimpleFnc(const string & i_srcM
 
 /** translate (substitute) non-aggregation function:
 * 
-* OM_DENOM(acc1) 
+* OM_DIV_BY(acc1) 
 *   => 
 *   CASE WHEN ABS(acc1) > 1.0e-37 THEN acc1 ELSE NULL END
 * 
@@ -413,7 +413,7 @@ const string ModelBaseExpressionSql::translateSimpleFnc(const string & i_srcMsg,
     case FncCode::if_case:
         return "CASE WHEN " + i_arg + " END";
 
-    case FncCode::denom:
+    case FncCode::div_by:
         return "CASE WHEN ABS( (" + i_arg + ") ) > 1.0e-37 THEN (" + i_arg + ") ELSE NULL END";
 
     default:
@@ -554,7 +554,7 @@ const string ModelAggregationSql::processAccumulators(const string & i_expr)
 }
 
 // first pass: collect accumulator name usage in expression
-// second pass: translate accumulator names by inserting table alias: acc1 => S.acc1
+// second pass: translate accumulator names by inserting table alias: acc1 => S.ac1
 const string ModelAggregationSql::processAccumulators(
     bool i_isTranslate, int i_level, const string & i_fromAlias, const string & i_expr
     )
@@ -587,10 +587,10 @@ const string ModelAggregationSql::processAccumulators(
             bool isAcc = false;
             size_t nLen = 0;
             int accPos;
-            for (accPos = 0; accPos < (int)accNameVec.size(); accPos++) {
+            for (accPos = 0; accPos < accCount; accPos++) {
                 
-                nLen = accNameVec[accPos].length();
-                isAcc = equalNoCase(accNameVec[accPos].c_str(), i_expr.c_str() + nPos, nLen);
+                nLen = accNames[accPos].length();
+                isAcc = equalNoCase(accNames[accPos].c_str(), i_expr.c_str() + nPos, nLen);
 
                 // check if accumulator name end with right delimiter
                 if (isAcc && nPos + nLen < i_expr.length()) {
@@ -612,14 +612,14 @@ const string ModelAggregationSql::processAccumulators(
             if (isAcc) {
 
                 if (!i_isTranslate) {
-                    expr += accNameVec[accPos];     // push accumulator to output "as is"
+                    expr += accNames[accPos];       // push accumulator to output "as is"
                     isAccUsedArr[accPos] = true;    // collect accumulator usage
                 }
                 else {          // make accumulator db-column name
                     expr += 
                         makeAccTableAlias(accPos, isAccUsedArr, i_level, i_fromAlias) + 
                         "." + 
-                        (isFirstUsedAcc(accPos, isAccUsedArr) ? "acc_value" : accNameVec[accPos]);
+                        (isFirstUsedAcc(accPos, isAccUsedArr) ? "acc_value" : accCols[accPos]);
                 }
                 nPos += nLen - 1;
                 isLeftDelim = false;
@@ -778,7 +778,7 @@ size_t skipIfQuoted(const string & i_srcMsg, size_t i_pos, const string & i_str)
 /** translate output table "native" (non-derived) accumulator into sql CTE subquery. */
 const string ModelAccumulatorSql::translateNativeAccExpr(const string & i_outTableName, const string & i_accName, int i_accId)
 {
-    srcMsg = i_outTableName +"." + i_accName;
+    srcMsg = i_outTableName + "." + i_accName;
 
     // SELECT
     //   run_id, sub_id, dim0, dim1, acc_value
@@ -787,8 +787,8 @@ const string ModelAccumulatorSql::translateNativeAccExpr(const string & i_outTab
     //
     string sql = "SELECT run_id, sub_id, "; 
 
-    for (const string & name : dimNameVec) {
-        sql += name + ", ";
+    for (const string & cn : dimCols) {
+        sql += cn + ", ";
     }
     sql += "acc_value FROM " + accTableName + " WHERE acc_id = " + to_string(i_accId);
 
@@ -797,7 +797,7 @@ const string ModelAccumulatorSql::translateNativeAccExpr(const string & i_outTab
 
 // translate derived expression:
 // 
-// acc0 / OM_DENOM(acc1) 
+// acc0 / OM_DIV_BY(acc1) 
 //    =>
 //      acc0 / CASE WHEN ABS(acc1) > 1.0e-37 THEN acc1 ELSE NULL END 
 //    =>
@@ -811,12 +811,14 @@ const string ModelAccumulatorSql::translateNativeAccExpr(const string & i_outTab
 //   WHERE acc_id = 1
 // )
 // SELECT
-//   A.run_id, A.sub_id, A.dim0, A.dim1,
-//   A.acc_value AS acc0,
-//   A1.acc_value AS acc1,
+//   A.run_id, A.sub_id,
+//   A.dim0       AS "Year",
+//   A.dim1       AS "Age Group",
+//   A.acc_value  AS "Average",
+//   A1.acc_value AS "Max"
 //   (
 //     A.acc_value / CASE WHEN ABS(A1.acc_value) > 1.0e-37 THEN A1.acc_value ELSE NULL END
-//   ) AS Expr0
+//   ) AS "Ratio"
 // FROM T04_FertilityRatesByAgeGroup_a10612268 A
 // INNER JOIN va1 A1 ON (A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1)
 // WHERE A.acc_id = 0;
@@ -827,7 +829,7 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
 )
 {
     srcMsg = i_outTableName + "." + i_accName;
-    isAccUsedArr.assign(accNameVec.size(), false);  // clear accumulator usage flags
+    isAccUsedArr.assign(accCount, false);  // clear accumulator usage flags
 
     // translate (substitute) all non-aggregation functions
     string expr = translateAllSimpleFnc(srcMsg, false, i_expr);
@@ -860,10 +862,10 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
             bool isAcc = false;
             size_t nLen = 0;
             int accPos;
-            for (accPos = 0; accPos < (int)accNameVec.size(); accPos++) {
+            for (accPos = 0; accPos < accCount; accPos++) {
                 
-                nLen = accNameVec[accPos].length();
-                isAcc = equalNoCase(accNameVec[accPos].c_str(), expr.c_str() + nPos, nLen);
+                nLen = accNames[accPos].length();
+                isAcc = equalNoCase(accNames[accPos].c_str(), expr.c_str() + nPos, nLen);
 
                 // check if accumulator name end with right delimiter
                 if (isAcc && nPos + nLen < expr.length()) {
@@ -885,9 +887,9 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
             if (isAcc) {
 
                 // validate: it must be native accumulator
-                const map<string, size_t>::const_iterator it = i_nativeMap.find(accNameVec[accPos]);
+                const map<string, size_t>::const_iterator it = i_nativeMap.find(accNames[accPos]);
                 if (it == i_nativeMap.cend() || it->second >= tableAccVec.size() || tableAccVec[it->second].isDerived)
-                    throw DbException(LT("error in derived accumulator, invalid name: %s or index: %zd in: %s %s"), accNameVec[accPos].c_str(), it->second, srcMsg.c_str(), i_expr.c_str());
+                    throw DbException(LT("error in derived accumulator, invalid name: %s or index: %zd in: %s %s"), accNames[accPos].c_str(), it->second, srcMsg.c_str(), i_expr.c_str());
 
                 // append CTE alias and accumulator value: A1.acc_value or A.acc_value
                 sql += (accPos > 0) ? 

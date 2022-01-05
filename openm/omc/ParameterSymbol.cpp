@@ -704,7 +704,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             DimensionSymbol * dim = *dimIt;
 
-            // make dimension db column name: it must be unique, alpanumeric and not longer than 8 chars
+            // make dimension db column name: it must be unique, alpanumeric and not longer than 255 chars
             DimensionSymbol::to_column_name(name, dimension_list, dim);
 
             ParamDimsRow paramDims;
@@ -775,7 +775,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             DimensionSymbol * dim = *dimIt;
 
-            // make dimension db column name: it must be unique, alpanumeric and not longer than 8 chars
+            // make dimension db column name: it must be unique, alpanumeric and not longer than 255 chars
             DimensionSymbol::to_column_name(name, dimension_list, dim);
 
             TableDimsRow tableDims;
