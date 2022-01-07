@@ -217,21 +217,19 @@ INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  101, 0, 'acc0', 0, 'value_sum()', 'A.acc_value'
+  101, 0, 'acc0', 0, 'value_sum()', 'SELECT run_id, sub_id, dim0, dim1, acc_value FROM salarySex_a_2012882 WHERE acc_id = 0'
   );
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  101, 1, 'acc1', 0, 'value_count()', 
-  'SELECT A1.acc_value FROM salarySex_a_2012882 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1'
+  101, 1, 'acc1', 0, 'value_count()', 'SELECT run_id, sub_id, dim0, dim1, acc_value FROM salarySex_a_2012882 WHERE acc_id = 1'
   );
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  101, 2, 'acc2', 1, 'acc0 + acc1', 
-  '(A.acc_value) + (SELECT A1.acc_value FROM salarySex_a_2012882 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1)'
+  101, 2, 'expr2', 1, 'acc0 + acc1', '(A.acc_value + A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (101, 0, 0, 'Sum of salary by sex', NULL);
@@ -304,7 +302,10 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (102
 INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (102, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
+  (
+  102, 0, 'acc0', 0, 'raw_value()',
+  'SELECT run_id, sub_id, dim0, dim1, dim2, acc_value FROM fullAgeSalary_a_2012883 WHERE acc_id = 0'
+  );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (102, 0, 0, 'Full time salary by age', 'Full time salary by age notes');
 
@@ -350,21 +351,24 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (103
 INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (103, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
+  (
+  103, 0, 'acc0', 0, 'raw_value()', 
+  'SELECT run_id, sub_id, dim0, dim1, acc_value FROM ageSexIncome_a_2012884 WHERE acc_id = 0'
+  );
 
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
   103, 1, 'acc1', 0, 'acc1', 
-  'SELECT A1.acc_value FROM ageSexIncome_a_2012884 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1'
+  'SELECT run_id, sub_id, dim0, dim1, acc_value FROM ageSexIncome_a_2012884 WHERE acc_id = 1'
   );
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  103, 2, 'acc2', 1, 'acc0 - acc1', 
-  '(A.acc_value) - (SELECT A1.acc_value FROM ageSexIncome_a_2012884 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.acc_id = 1)'
+  103, 2, 'expr2', 1, 'acc0 - acc1', 
+  '(A.acc_value - A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (103, 0, 0, 'Income', 'Income notes');
@@ -410,7 +414,10 @@ VALUES
 INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (104, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
+  (
+  104, 0, 'acc0', 0, 'raw_value()',
+  'SELECT run_id, sub_id, acc_value FROM seedOldAge_a_2012885 WHERE acc_id = 0'
+  );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (104, 0, 0, 'Seed', 'Seed notes');
 
