@@ -22,8 +22,8 @@ namespace openm
         /** if condition then value else other value */
         if_case,
 
-        /** denominator: wrap value as divisor */
-        denom,
+        /** divide by: wrap value as divisor */
+        div_by,
 
         /** average value */
         avg,
@@ -72,7 +72,7 @@ namespace openm
             colName(i_colName), srcExpr(i_srcExpr)
         { }
         AggregationColumnExpr(const string & i_srcExpr) :
-            AggregationColumnExpr("ex" + to_string(nextExprNumber++), i_srcExpr)
+            colName("ex" + to_string(nextExprNumber++)), srcExpr(i_srcExpr)
         { }
     };
 
@@ -84,18 +84,22 @@ namespace openm
          * initialization: store output table definition parts.
          *
          * @param[in]   i_accTableName  accumulator table name in database
-         * @param[in]   i_accIdVec      ids of table accumulators
-         * @param[in]   i_accNameVec    names of table accumulators
-         * @param[in]   i_dimNameVec    names of table dimensions
+         * @param[in]   i_dimCols       column names of table dimensions
+         * @param[in]   i_accIds        ids of table accumulators
+         * @param[in]   i_accNames      names of table accumulators
+         * @param[in]   i_accCols       columns names of table accumulators
          */
         ModelBaseExpressionSql(
-            const string & i_accTableName, const vector<string> & i_dimNameVec, const vector<int> & i_accIdVec, const vector<string> & i_accNameVec
-            ) :
+            const string & i_accTableName, const vector<string> & i_dimCols, const vector<int> & i_accIds, const vector<string> & i_accNames, const vector<string> & i_accCols
+        ) :
             accTableName(i_accTableName),
-            dimNameVec(i_dimNameVec),
-            accIdVec(i_accIdVec),
-            accNameVec(i_accNameVec)
-        { }
+            dimCols(i_dimCols),
+            accIds(i_accIds),
+            accNames(i_accNames),
+            accCols(i_accCols)
+        {
+            accCount = (int)accIds.size();
+        }
 
         /** release sql builder resources. */
         ~ModelBaseExpressionSql() noexcept { }
@@ -105,13 +109,19 @@ namespace openm
         const string accTableName;
 
         /** names of table dimensions */
-        const vector<string> dimNameVec;
+        const vector<string> dimCols;
 
         /** ids of table accumulators */
-        const vector<int> accIdVec;
+        const vector<int> accIds;
 
-        /** names of table accumulators */
-        const vector<string> accNameVec;
+        /** names of table accumulators: Acc0, Acc1 */
+        const vector<string> accNames;
+
+        /** column names of table accumulators: acc0, acc1 */
+        const vector<string> accCols;
+
+        /** number of accumulators */
+        int accCount;
 
         /** translate (substitute) all non-aggregation functions
         *
@@ -137,18 +147,20 @@ namespace openm
          * initialization: store output table definition parts.
          *
          * @param[in]   i_accTableName  accumulator table name in database
-         * @param[in]   i_accIdVec      ids of table accumulators
-         * @param[in]   i_accNameVec    names of table accumulators
-         * @param[in]   i_dimNameVec    names of table dimensions
+         * @param[in]   i_dimCols       column names of table dimensions
+         * @param[in]   i_accIds        ids of table accumulators
+         * @param[in]   i_accNames      names of table accumulators
+         * @param[in]   i_accCols       columns names of table accumulators
          */
         ModelAccumulatorSql(
             const string & i_accTableName,
-            const vector<string> & i_dimNameVec, 
-            const vector<int> & i_accIdVec, 
-            const vector<string> & i_accNameVec, 
+            const vector<string> & i_dimCols,
+            const vector<int> & i_accIds, 
+            const vector<string> & i_accNames,
+            const vector<string> & i_accCols,
             const vector<TableAccRow> & i_tableAcc
             ) :
-            ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec),
+            ModelBaseExpressionSql(i_accTableName, i_dimCols, i_accIds, i_accNames, i_accCols),
             tableAccVec(i_tableAcc)
         { }
 
@@ -201,17 +213,19 @@ namespace openm
          * create aggregation sql builder for output table.
          *
          * @param[in]   i_accTableName  accumulator table name in database
-         * @param[in]   i_accIdVec      ids of table accumulators
-         * @param[in]   i_accNameVec    names of table accumulators
-         * @param[in]   i_dimNameVec    names of table dimensions
+         * @param[in]   i_dimCols       column names of table dimensions
+         * @param[in]   i_accIds        ids of table accumulators
+         * @param[in]   i_accNames      names of table accumulators
+         * @param[in]   i_accCols       columns names of table accumulators
          */
         ModelAggregationSql(
             const string & i_accTableName, 
-            const vector<string> & i_dimNameVec, 
-            const vector<int> & i_accIdVec, 
-            const vector<string> & i_accNameVec
+            const vector<string> & i_dimCols,
+            const vector<int> & i_accIds, 
+            const vector<string> & i_accNames,
+            const vector<string> & i_accCols
             ) :
-            ModelBaseExpressionSql(i_accTableName, i_dimNameVec, i_accIdVec, i_accNameVec)
+            ModelBaseExpressionSql(i_accTableName, i_dimCols, i_accIds, i_accNames, i_accCols)
         { }
 
         /** release sql builder resources. */
@@ -221,12 +235,13 @@ namespace openm
          * translate output aggregation expression into sql.
          *
          * @param i_outTableName    output table name
-         * @param i_name            expression name, ie: expr2.
+         * @param i_name            expression name
+         * @param i_colName         expression column name
          * @param i_expr            source expression, ie: OM_AVG(acc2).
          *
          * @return  aggergation sql select query
          */
-        const string translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_expr);
+        const string translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_colName, const string & i_expr);
 
     private:
         /** current source name: output table name and expression name */

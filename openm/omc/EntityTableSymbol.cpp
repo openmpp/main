@@ -916,7 +916,7 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         TableMeasureSymbol * measure = *mIt;
 
-        // make measure db column name: it must be unique, alpanumeric and not longer than 8 chars
+        // make measure db column name: it must be unique, alpanumeric and not longer than 255 chars
         TableMeasureSymbol::to_column_name(name, pp_measures, measure);
 
         TableExprRow tableExpr;

@@ -535,7 +535,7 @@ void ModelSqlBuilder::doAddScalarWorksetParameter(
     )
 {
     // scalar parameter expected: check number of dimensions
-    if (i_paramInfo->dimNameVec.size() != 0) throw DbException(LT("invalid number of dimensions for scalar parameter: %s"), i_name.c_str());
+    if (i_paramInfo->colVec.size() != 0) throw DbException(LT("invalid number of dimensions for scalar parameter: %s"), i_name.c_str());
 
     // make sql to insert parameter value
     // if parameter value is string type then it must be sql-quoted
@@ -573,10 +573,10 @@ void ModelSqlBuilder::addWorksetParameter(
     );
     if (paramInfo == paramInfoVec.cend()) throw DbException(LT("parameter not found in parameters dictionary: %s"), i_name.c_str());
 
-    int dimCount = (int)paramInfo->dimNameVec.size();
+    int colCount = (int)paramInfo->colVec.size();
 
     // if this is scalar parameter then use simplified version of sql
-    if (dimCount <= 0) {
+    if (colCount <= 0) {
         doAddScalarWorksetParameter(i_metaSet.worksetRow.setId, i_name, paramRow->dbSetTable, paramInfo, i_subId, i_valueLst.front());
         paramInfo->isAdded = true;
         return;                     // done with this scalar parameter
@@ -598,7 +598,7 @@ void ModelSqlBuilder::addWorksetParameter(
                 (i_left.modelId == i_right.modelId && i_left.paramId < i_right.paramId);
         }
         );
-    if ((dimCount > 0 && dimRange.first == i_metaRows.paramDims.cend()) || dimCount != (int)(dimRange.second - dimRange.first))
+    if ((colCount > 0 && dimRange.first == i_metaRows.paramDims.cend()) || colCount != (int)(dimRange.second - dimRange.first))
         throw DbException(LT("invalid parameter rank or dimensions not found for parameter: %s"), i_name.c_str());
 
     // get dimensions type and size, calculate total size
@@ -657,18 +657,18 @@ void ModelSqlBuilder::addWorksetParameter(
     // INSERT INTO ageSex_w20120817 (set_id, sub_id, dim0, dim1, param_value) VALUES (1234, 0, 1, 2, 0.014)
     {
         // storage for dimension enums index
-        unique_ptr<int> cellArrUptr(new int[dimCount]);
+        unique_ptr<int> cellArrUptr(new int[colCount]);
         int * cellArr = cellArrUptr.get();
 
-        for (int k = 0; k < dimCount; k++) {
+        for (int k = 0; k < colCount; k++) {
             cellArr[k] = 0;     // initial enumindex is zero
         }
 
         // make constant portion of insert
         string insertPrefix = "INSERT INTO " + paramRow->dbSetTable + " (set_id, sub_id, ";
 
-        for (const string & dimName : paramInfo->dimNameVec) {
-            insertPrefix += dimName + ", ";
+        for (const string & cn : paramInfo->colVec) {
+            insertPrefix += cn + ", ";
         }
         insertPrefix += "param_value) VALUES (" + to_string(i_metaSet.worksetRow.setId) + ", " + to_string(i_subId) + ", ";
 
@@ -684,7 +684,7 @@ void ModelSqlBuilder::addWorksetParameter(
             sql += insertPrefix;
 
             // write dimension enum_id items
-            for (int k = 0; k < dimCount; k++) {
+            for (int k = 0; k < colCount; k++) {
                 snprintf(cellBuf, OM_STR_DB_MAX, "%d, ", dims[k].beginEnumIt[cellArr[k]].enumId);
                 sql += cellBuf;
             }
@@ -703,7 +703,7 @@ void ModelSqlBuilder::addWorksetParameter(
             dbExec->update(sql);
 
             // get next cell indices
-            for (int nDim = dimCount - 1; nDim >= 0; nDim--) {
+            for (int nDim = colCount - 1; nDim >= 0; nDim--) {
                 if (nDim > 0 && cellArr[nDim] >= dims[nDim].size - 1) {
                     cellArr[nDim] = 0;
                 }
@@ -712,7 +712,7 @@ void ModelSqlBuilder::addWorksetParameter(
                     break;
                 }
             }
-            if (cellOffset + 1 < totalSize && dimCount > 0 && cellArr[0] >= dims[0].size) throw DbException(LT("invalid value array size, parameter: %s"), i_name.c_str());
+            if (cellOffset + 1 < totalSize && colCount > 0 && cellArr[0] >= dims[0].size) throw DbException(LT("invalid value array size, parameter: %s"), i_name.c_str());
 
             valueIt++;     // next value
         }
@@ -753,7 +753,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
             );
             for (size_t k = 0; k < i_metaRows.paramDic.size(); k++) {
                 paramCompatibilityView(
-                    providerName, i_metaRows.modelDic, i_metaRows.paramDic[k].paramName, i_metaRows.paramDic[k].dbRunTable, paramInfoVec[k].dimNameVec, wr
+                    providerName, i_metaRows.modelDic, i_metaRows.paramDic[k].paramName, i_metaRows.paramDic[k].dbRunTable, paramInfoVec[k].colVec, wr
                 );
             }
             wr.write("\n");
@@ -766,7 +766,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
             );
             for (size_t k = 0; k < i_metaRows.tableDic.size(); k++) {
                 outputCompatibilityView(
-                    providerName, i_metaRows.modelDic, i_metaRows.tableDic[k].tableName, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k].dimNameVec, wr
+                    providerName, i_metaRows.modelDic, i_metaRows.tableDic[k].tableName, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k].colVec, wr
                 );
             }
             wr.write("\n");
@@ -843,16 +843,16 @@ const void ModelSqlBuilder::paramCreateTable(
         i_runSetId + " INT NOT NULL," +
         " sub_id INT NOT NULL, ";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += dimName + " INT NOT NULL, ";
+    for (const string & cn : i_tblInfo.colVec) {
+        sqlBody += cn + " INT NOT NULL, ";
     }
 
     sqlBody +=
         "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + (i_tblInfo.isNullable ? " NULL" : " NOT NULL") + "," +
         " PRIMARY KEY (" + i_runSetId + ", sub_id";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += ", " + dimName;
+    for (const string & cn : i_tblInfo.colVec) {
+        sqlBody += ", " + cn;
     }
     sqlBody += "));";
 
@@ -916,15 +916,15 @@ const void ModelSqlBuilder::accCreateTable(
         "acc_id INT NOT NULL, " \
         "sub_id INT NOT NULL, ";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += dimName + " INT NOT NULL, ";
+    for (const string & cn : i_tblInfo.colVec) {
+        sqlBody += cn + " INT NOT NULL, ";
     }
 
     sqlBody += "acc_value FLOAT NULL, " \
         "PRIMARY KEY (run_id, acc_id, sub_id";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += ", " + dimName;
+    for (const string & cn : i_tblInfo.colVec) {
+        sqlBody += ", " + cn;
     }
     sqlBody += "));";
 
@@ -948,15 +948,15 @@ const void ModelSqlBuilder::valueCreateTable(
     string sqlBody = "(run_id INT NOT NULL, " \
         "expr_id INT NOT NULL,";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += dimName + " INT NOT NULL, ";
+    for (const string & cn : i_tblInfo.colVec) {
+        sqlBody += cn + " INT NOT NULL, ";
     }
 
     sqlBody += " expr_value FLOAT NULL," \
         " PRIMARY KEY (run_id, expr_id";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += ", " + dimName;
+    for (const string & cn : i_tblInfo.colVec) {
+        sqlBody += ", " + cn;
     }
     sqlBody += "));";
 
@@ -975,12 +975,14 @@ const void ModelSqlBuilder::valueCreateTable(
 //   WHERE acc_id = 1
 // )
 // SELECT
-//   A.run_id, A.sub_id, A.dim0, A.dim1,
-//   A.acc_value AS acc0,
-//   A1.acc_value AS acc1,
+//   A.run_id, A.sub_id,
+//   A.dim0       AS "Year", 
+//   A.dim1       AS "Age Group",
+//   A.acc_value  AS "acc0",
+//   A1.acc_value AS "acc1",
 //   (
 //     A.acc_value / CASE WHEN ABS(A1.acc_value) > 1.0e-37 THEN A1.acc_value ELSE NULL END
-//   ) AS Expr0
+//   ) AS "Expr0"
 // FROM T04_FertilityRatesByAgeGroup_a10612268 A
 // INNER JOIN va1 A1 ON (A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1)
 // WHERE A.acc_id = 0;
@@ -1019,20 +1021,20 @@ const void ModelSqlBuilder::accAllCreateView(
     // start main SELECT run id, sub id, dimensions and first accumulator value: A.acc_value
     sqlBody += " SELECT A.run_id, A.sub_id";
 
-    for (const string & dimName : i_tblInfo.dimNameVec) {
-        sqlBody += ", A." + dimName;
+    for (size_t k = 0; k < i_tblInfo.colVec.size(); k++) {
+        sqlBody += ", A." + i_tblInfo.colVec[k] + " AS \"" + i_tblInfo.dimVec[k] + "\"";
     }
-    sqlBody += ", A.acc_value AS " + accVec[0]->name;
+    sqlBody += ", A.acc_value AS \"" + accVec[0]->name + "\"";
 
     // append the rest of native accumulators as: , A1.acc_value....
     // append derived accumulators sql expressions
     // first accumulator is always native
     for (size_t nAcc = 1; nAcc < accVec.size(); nAcc++) {
         if (!accVec[nAcc]->isDerived) {
-            sqlBody += ", A" + to_string(nAcc) + ".acc_value AS " + accVec[nAcc]->name;
+            sqlBody += ", A" + to_string(nAcc) + ".acc_value AS \"" + accVec[nAcc]->name + "\"";
         }
         else {
-            sqlBody += ", ( " + accVec[nAcc]->accSql + " ) AS " + accVec[nAcc]->name;
+            sqlBody += ", ( " + accVec[nAcc]->accSql + " ) AS \"" + accVec[nAcc]->name + "\"";
         }
     }
 
@@ -1048,8 +1050,8 @@ const void ModelSqlBuilder::accAllCreateView(
         sqlBody += 
             " INNER JOIN va" + to_string(nAcc) + " A" + to_string(nAcc) + " ON (" + aliasDot + "run_id = A.run_id AND " + aliasDot + "sub_id = A.sub_id";
         
-        for (const string & dimName : i_tblInfo.dimNameVec) {
-            sqlBody += " AND " + aliasDot + dimName + " = A." + dimName;
+        for (const string & cn : i_tblInfo.colVec) {
+            sqlBody += " AND " + aliasDot + cn + " = A." + cn;
         }
         sqlBody += ")";
     }
@@ -1081,14 +1083,14 @@ const void ModelSqlBuilder::paramCompatibilityView(
     const ModelDicRow & i_modelRow, 
     const string & i_viewName, 
     const string & i_srcTableName, 
-    const vector<string> & i_dimNames, 
+    const vector<string> & i_colNames,
     ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "SELECT";
 
-    for (size_t k = 0; k < i_dimNames.size(); k++) {
-        sqlBody += " S." + i_dimNames[k] + " AS \"Dim" + to_string(k) + "\",";
+    for (size_t k = 0; k < i_colNames.size(); k++) {
+        sqlBody += " S." + i_colNames[k] + " AS \"Dim" + to_string(k) + "\",";
     }
     sqlBody += " S.param_value AS \"Value\"";
 
@@ -1125,17 +1127,17 @@ const void ModelSqlBuilder::outputCompatibilityView(
     const ModelDicRow & i_modelRow, 
     const string & i_viewName, 
     const string & i_srcTableName, 
-    const vector<string> & i_dimNames, 
+    const vector<string> & i_colNames, 
     ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "SELECT";
 
-    for (size_t k = 0; k < i_dimNames.size(); k++) {
-        sqlBody += " S." + i_dimNames[k] + " AS \"Dim" + to_string(k) + "\",";
+    for (size_t k = 0; k < i_colNames.size(); k++) {
+        sqlBody += " S." + i_colNames[k] + " AS \"Dim" + to_string(k) + "\",";
     }
     sqlBody +=
-        " S.expr_id AS \"Dim" + to_string(i_dimNames.size()) + "\"," \
+        " S.expr_id AS \"Dim" + to_string(i_colNames.size()) + "\"," \
         " S.expr_value AS \"Value\"";
 
     // from value table where run id is first run of that model

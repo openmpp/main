@@ -525,6 +525,30 @@ void report_simulation_progress_beat(int percent, double value)
 }
 
 /**
+ * Report parameters reading progress.
+ */
+int64_t report_parameter_read_progress(int paramNumber, int paramCount, const char * name, int64_t lastTime)
+{
+    int64_t now = getMilliseconds();
+    if (now < lastTime + 5003) return lastTime;     // report not more often than every 5 seconds
+
+    theLog->logFormatted("    %d of %d: %s", paramNumber, paramCount, name);
+    return now;
+}
+
+/**
+ * Report output tables writing progress.
+ */
+int64_t report_table_write_progress(int member, int tableNumber, const char * name, int64_t lastTime)
+{
+    int64_t now = getMilliseconds();
+    if (now < lastTime + 5003) return lastTime;     // report not more often than every 5 seconds
+
+    theLog->logFormatted("member=%d write table %d: %s", member, tableNumber, name);
+    return now;
+}
+
+/**
  * In Modgen, displays a progress message in the UI.
  *
  * See Modgen Developer's Guide for more information.

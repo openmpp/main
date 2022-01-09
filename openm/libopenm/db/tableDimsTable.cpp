@@ -38,11 +38,11 @@ namespace openm
 
     // Columns type for table_dims join to model_table_dic row
     static const type_info * typeTableDimsRow[] = { 
-        &typeid(decltype(TableDimsRow::modelId)), 
-        &typeid(decltype(TableDimsRow::tableId)), 
+        &typeid(decltype(TableDimsRow::modelId)),
+        &typeid(decltype(TableDimsRow::tableId)),
         &typeid(decltype(TableDimsRow::dimId)),
         &typeid(decltype(TableDimsRow::name)),
-        &typeid(decltype(TableDimsRow::typeId)), 
+        &typeid(decltype(TableDimsRow::typeId)),
         &typeid(decltype(TableDimsRow::isTotal)),
         &typeid(decltype(TableDimsRow::dimSize))
     };

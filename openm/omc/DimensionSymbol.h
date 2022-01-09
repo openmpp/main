@@ -55,7 +55,7 @@ public:
     static string symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim);
 
     /**
-     * Make dimension name suitable for database column name: it must be unique column name consist of 8 alphanumeric characters.
+     * Make dimension name suitable for database column name: it must be unique column name consist of 255 alphanumeric characters.
      *
      * @param i_ownerName    name of parameter or table.
      * @param i_dimLst       list of dimensions.

@@ -704,7 +704,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             DimensionSymbol * dim = *dimIt;
 
-            // make dimension db column name: it must be unique, alpanumeric and not longer than 8 chars
+            // make dimension db column name: it must be unique, alpanumeric and not longer than 255 chars
             DimensionSymbol::to_column_name(name, dimension_list, dim);
 
             ParamDimsRow paramDims;
@@ -775,7 +775,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             DimensionSymbol * dim = *dimIt;
 
-            // make dimension db column name: it must be unique, alpanumeric and not longer than 8 chars
+            // make dimension db column name: it must be unique, alpanumeric and not longer than 255 chars
             DimensionSymbol::to_column_name(name, dimension_list, dim);
 
             TableDimsRow tableDims;
@@ -869,7 +869,7 @@ string ParameterSymbol::cxx_dimensions(bool use_zero) const
     return result;
 }
 
-CodeBlock ParameterSymbol::cxx_read_parameter()
+CodeBlock ParameterSymbol::cxx_read_parameter(int i_paramNumber, int i_paramCount)
 {
     CodeBlock c;
 
@@ -903,6 +903,9 @@ CodeBlock ParameterSymbol::cxx_read_parameter()
             c_adjust_code += "value += " + to_string(rng->lower_bound) + ";";
         }
     }
+
+    // last_progress_ms = report_parameter_read_progress(10, 12345, "ageSex", last_progress_ms);
+    c += "last_progress_ms = report_parameter_read_progress(" + to_string(i_paramNumber) + ", " + to_string(i_paramCount) + ", \"" + name + "\", last_progress_ms);";
 
     if (rank() > 0) {
         // om_param_ageSex = std::move(read_om_parameter<double>(i_runBase, "ageSex", N_AGE * N_SEX));

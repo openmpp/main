@@ -464,22 +464,25 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (105
 INSERT INTO
   table_acc (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (105, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
-
-INSERT INTO table_acc 
-  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
-VALUES 
   (
-  105, 1, 'acc1', 0, 'acc1', 
-  'SELECT A1.acc_value FROM incomeByYear_a_2012105 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.acc_id = 1'
+  105, 0, 'acc0', 0, 'raw_value()',
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, acc_value FROM incomeByYear_a_2012105 WHERE acc_id = 0'
   );
 
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  105, 2, 'acc2', 1, 'acc0 - acc1', 
-  '(A.acc_value) - (SELECT A1.acc_value FROM incomeByYear_a_2012105 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.acc_id = 1)'
+  105, 1, 'acc1', 0, 'acc1', 
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, acc_value FROM incomeByYear_a_2012105 WHERE acc_id = 1'
+  );
+
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  105, 2, 'expr2', 1, 'acc0 - acc1', 
+  '(A.acc_value - A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (105, 0, 0, 'Income', 'Income notes');
@@ -558,22 +561,25 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (106
 INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (106, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
-
-INSERT INTO table_acc 
-  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
-VALUES 
   (
-  106, 1, 'acc1', 0, 'acc1', 
-  'SELECT A1.acc_value FROM incomeByLow_a_2012106 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.dim4 = A.dim4 AND A1.acc_id = 1'
+  106, 0, 'acc0', 0, 'raw_value()',
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, dim4, acc_value FROM incomeByLow_a_2012106 WHERE acc_id = 0'
   );
 
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  106, 2, 'acc2', 1, 'acc0 - acc1', 
-  '(A.acc_value) - (SELECT A1.acc_value FROM incomeByLow_a_2012106 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.dim4 = A.dim4 AND A1.acc_id = 1)'
+  106, 1, 'acc1', 0, 'acc1', 
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, dim4, acc_value FROM incomeByLow_a_2012106 WHERE acc_id = 1'
+  );
+
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  106, 2, 'expr2', 1, 'acc0 - acc1', 
+  '(A.acc_value - A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (106, 0, 0, 'Income', 'Income notes');
@@ -652,22 +658,25 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (107
 INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (107, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
-
-INSERT INTO table_acc 
-  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
-VALUES 
   (
-  107, 1, 'acc1', 0, 'acc1', 
-  'SELECT A1.acc_value FROM incomeByMiddle_a_2012107 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.dim4 = A.dim4 AND A1.acc_id = 1'
+  107, 0, 'acc0', 0, 'raw_value()',
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, dim4, acc_value FROM incomeByMiddle_a_2012107 WHERE acc_id = 0'
   );
 
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  107, 2, 'acc2', 1, 'acc0 - acc1', 
-  '(A.acc_value) - (SELECT A1.acc_value FROM incomeByMiddle_a_2012107 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.dim4 = A.dim4 AND A1.acc_id = 1)'
+  107, 1, 'acc1', 0, 'acc1', 
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, dim4, acc_value FROM incomeByMiddle_a_2012107 WHERE acc_id = 1'
+  );
+
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  107, 2, 'expr2', 1, 'acc0 - acc1', 
+  '(A.acc_value - A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (107, 0, 0, 'Income', 'Income notes');
@@ -746,22 +755,25 @@ INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (108
 INSERT INTO table_acc
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql)
 VALUES
-  (108, 0, 'acc0', 0, 'raw_value()', 'A.acc_value');
-
-INSERT INTO table_acc 
-  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
-VALUES 
   (
-  108, 1, 'acc1', 0, 'acc1', 
-  'SELECT A1.acc_value FROM incomeByPeriod_a_2012108 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.dim4 = A.dim4 AND A1.acc_id = 1'
+  108, 0, 'acc0', 0, 'raw_value()',
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, dim4, acc_value FROM incomeByPeriod_a_2012108 WHERE acc_id = 0'
   );
 
 INSERT INTO table_acc 
   (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
 VALUES 
   (
-  108, 2, 'acc2', 1, 'acc0 - acc1', 
-  '(A.acc_value) - (SELECT A1.acc_value FROM incomeByPeriod_a_2012108 A1 WHERE A1.run_id = A.run_id AND A1.sub_id = A.sub_id AND AND A1.dim0 = A.dim0 AND A1.dim1 = A.dim1 AND A1.dim2 = A.dim2 AND A1.dim3 = A.dim3 AND A1.dim4 = A.dim4 AND A1.acc_id = 1)'
+  108, 1, 'acc1', 0, 'acc1', 
+  'SELECT run_id, sub_id, dim0, dim1, dim2, dim3, dim4, acc_value FROM incomeByPeriod_a_2012108 WHERE acc_id = 1'
+  );
+
+INSERT INTO table_acc 
+  (table_hid, acc_id, acc_name, is_derived, acc_src, acc_sql) 
+VALUES 
+  (
+  108, 2, 'expr2', 1, 'acc0 - acc1',
+  '(A.acc_value - A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (108, 0, 0, 'Income', 'Income notes');

@@ -667,12 +667,12 @@ namespace openm
         /** dim_id             INT NOT NULL */
         int dimId;
 
-        /** dim_name           VARCHAR(8) NOT NULL */
+        /** dim_name           VARCHAR(255) NOT NULL */
         string name;
         
         /** model_type_id      INT NOT NULL */
         int typeId;
-        
+
         /** create row with supplied key field values. */
         ParamDimsRow(int i_modelId, int i_paramId, int i_dimId) : 
             modelId(i_modelId), 
@@ -692,6 +692,9 @@ namespace openm
 
         /** equal comparator by unique key: model id, model parameter id, dimension id. */
         static bool isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
+
+        /** retrun db column name based on dimension id, example: dim1 */
+        const string columnName(void) const;
     };
 
 
@@ -901,7 +904,7 @@ namespace openm
         /** dim_id      INT NOT NULL */
         int dimId;
 
-        /** dim_name    VARCHAR(8) NOT NULL */
+        /** dim_name    VARCHAR(255) NOT NULL */
         string name;
         
         /** mod_type_id INT NOT NULL */
@@ -912,7 +915,7 @@ namespace openm
         
         /** dim_size    INT NOT NULL */
         int dimSize;
-        
+
         /** create row with supplied key field values. */
         TableDimsRow(int i_modelId, int i_tableId, int i_dimId) :
             modelId(i_modelId), 
@@ -934,6 +937,9 @@ namespace openm
         
         /** equal comparator by unique key: model id, model table id, dimension id. */
         static bool isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right);
+
+        /** retrun db column name based on dimension id, example: dim1 */
+        const string columnName(void) const;
     };
 
     /** table_dims_txt table row. */
@@ -1004,7 +1010,7 @@ namespace openm
         /** acc_id     INT           NOT NULL */
         int accId;
         
-        /** acc_name   VARCHAR(8)    NOT NULL */
+        /** acc_name   VARCHAR(255)  NOT NULL */
         string name;
 
         /** is_derived SMALLINT      NOT NULL */
@@ -1040,6 +1046,9 @@ namespace openm
 
         /** find row by unique key: model id, model table id, accumulator id. */
         static vector<TableAccRow>::const_iterator byKey(int i_modelId, int i_tableId, int i_accId, const vector<TableAccRow> & i_rowVec);
+
+        /** retrun db column name based on accumulator id, example: acc1 */
+        const string columnName(void) const;
     };
 
     /** table_acc_txt table row. */
@@ -1110,7 +1119,7 @@ namespace openm
         /** expr_id       INT           NOT NULL */
         int exprId;
         
-        /** expr_name     VARCHAR(8)    NOT NULL */
+        /** expr_name     VARCHAR(255)  NOT NULL */
         string name;
         
         /** expr_decimals INT           NOT NULL */
@@ -1143,6 +1152,9 @@ namespace openm
 
         /** equal comparator by unique key: model id, model table id, expr id. */
         static bool isKeyEqual(const TableExprRow & i_left, const TableExprRow & i_right);
+
+        /** retrun db column name based on expression id, example: ex_1 */
+        const string columnName(void) const;
     };
 
     /** table_expr_txt table row. */

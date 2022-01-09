@@ -372,6 +372,12 @@ bool ParamDimsRow::isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & 
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId;
 }
 
+/** retrun db column name based on dimension id, example: dim1 */
+const string ParamDimsRow::columnName() const
+{
+    return "dim" + to_string(dimId);
+}
+
 // parameter_dims_txt join to model_parameter_dic row less comparator by unique key: model id, model parameter id, dimension id, language id.
 bool ParamDimsTxtRow::isKeyLess(const ParamDimsTxtRow & i_left, const ParamDimsTxtRow & i_right)
 {
@@ -477,6 +483,12 @@ bool TableDimsRow::isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & 
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId;
 }
 
+/** retrun db column name based on dimension id, example: dim1 */
+const string TableDimsRow::columnName() const
+{
+    return "dim" + to_string(dimId);
+}
+
 // table_dims_txt join to model_table_dic row less comparator by unique key: model id, model table id, dimension id, language id.
 bool TableDimsTxtRow::isKeyLess(const TableDimsTxtRow & i_left, const TableDimsTxtRow & i_right)
 {
@@ -536,6 +548,12 @@ vector<TableAccRow>::const_iterator TableAccRow::byKey(int i_modelId, int i_tabl
     );
 }
 
+/** retrun db column name based on accumulator id, example: acc1 */
+const string TableAccRow::columnName() const
+{
+    return "acc" + to_string(accId);
+}
+
 // table_acc_txt join to model_table_dic row less comparator by unique key: model id, model table id, accumulator id, language id.
 bool TableAccTxtRow::isKeyLess(const TableAccTxtRow & i_left, const TableAccTxtRow & i_right)
 {
@@ -584,6 +602,12 @@ bool TableExprRow::isKeyEqual(const TableExprRow & i_left, const TableExprRow & 
 {
     return
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId == i_right.exprId;
+}
+
+/** retrun db column name based on expression id, example: expr1 */
+const string TableExprRow::columnName() const
+{
+    return "expr" + to_string(exprId);
 }
 
 // table_expr_txt join to model_table_dic row less comparator by unique key: model id, model table id, expr id, language id.

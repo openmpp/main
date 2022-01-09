@@ -104,8 +104,18 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
     string sRunId = to_string(i_runId);
     string sModelId = to_string(modelId);
     string paramDot = string(RunOptionsKey::parameterPrefix) + ".";
+    int64_t lastProgressTime = getMilliseconds();
+    size_t paramNumber = 0;
 
     for (vector<ParamDicRow>::const_iterator paramIt = paramVec.cbegin(); paramIt != paramVec.cend(); ++paramIt) {
+
+        // report parameter initialization progress
+        int64_t now = getMilliseconds();
+        paramNumber++;
+        if (now > lastProgressTime + OM_LOG_PROGRESS_TIME) {
+            theLog->logFormatted("Parameter %zd of %zd: %s", paramNumber, paramVec.size(), paramIt->paramName.c_str());
+            lastProgressTime = now;
+        }
 
         // calculate parameter source: command line (or ini-file), generate "iota", workset, based run, run options
         bool isInserted = false;
@@ -327,15 +337,15 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
             if (nRank < 0 || nRank != (int)paramDimVec.size())
                 throw DbException("invalid parameter rank or dimensions not found for parameter: %s", paramIt->paramName.c_str());
 
-            string sDimLst = "";
+            string sColLst = "";
             for (int nDim = 0; nDim < nRank; nDim++) {
-                sDimLst += paramDimVec[nDim].name + ", ";
+                sColLst += paramDimVec[nDim].columnName() + ", ";
             }
 
             // copy parameter from workset parameter
             i_dbExec->update(
-                "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sDimLst + " param_value)" +
-                " SELECT " + sRunId + "," + subFlds + ", " + sDimLst + " param_value" +
+                "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sColLst + " param_value)" +
+                " SELECT " + sRunId + "," + subFlds + ", " + sColLst + " param_value" +
                 " FROM " + paramIt->dbSetTable +
                 " WHERE set_id = " + sSetId +
                 (!flt.empty() ? " AND " + flt : "")
@@ -392,14 +402,14 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                 if (nRank < 0 || nRank != (int)paramDimVec.size())
                     throw DbException("invalid parameter rank or dimensions not found for parameter: %s", paramIt->paramName.c_str());
 
-                string sDimLst = "";
+                string sColLst = "";
                 for (int nDim = 0; nDim < nRank; nDim++) {
-                    sDimLst += paramDimVec[nDim].name + ", ";
+                    sColLst += paramDimVec[nDim].columnName() + ", ";
                 }
 
                 i_dbExec->update(
-                    "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sDimLst + " param_value)" +
-                    " SELECT " + sRunId + ", " + subFlds + ", " + sDimLst + " param_value" +
+                    "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sColLst + " param_value)" +
+                    " SELECT " + sRunId + ", " + subFlds + ", " + sColLst + " param_value" +
                     " FROM " + paramIt->dbRunTable +
                     " WHERE run_id = " + to_string(nBaseRunId) +
                     (!flt.empty() ? " AND " + flt : "")

@@ -19,6 +19,7 @@ using namespace std;
 #define OM_RUN_POLL_TIME 17L            /* msec, wait interval for modeling threads polling */
 #define OM_ACTIVE_SLEEP_TIME 37L        /* msec, sleep interval if there any child process activity */
 #define OM_WAIT_SLEEP_TIME 971L         /* msec, sleep interval if no progress in modeling threads */
+#define OM_LOG_PROGRESS_TIME 5003L      /* msec, interval to log progress messages */
 
 // add file and line number to debug log
 //

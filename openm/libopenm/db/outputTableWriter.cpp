@@ -229,7 +229,7 @@ void OutputTableWriter::writeAccumulator(IDbExec * i_dbExec, int i_subId, int i_
     string sql = "INSERT INTO " + accDbTable + " (run_id, acc_id, sub_id";
 
     for (const TableDimsRow & dim : tableDims) {
-        sql += ", " + dim.name;
+        sql += ", " + dim.columnName();
     }
 
     sql += ", acc_value) VALUES (" + to_string(runId) + ", " + to_string(i_accId) + ", " + to_string(i_subId);
@@ -347,15 +347,15 @@ void OutputTableWriter::writeExpression(IDbExec * i_dbExec, int i_nExpression)
     string sql = "INSERT INTO " + valueDbTable + " (run_id";
 
     for (const TableDimsRow & dim : tableDims) {
-        sql += ", " + dim.name;
+        sql += ", " + dim.columnName();
     }
 
     sql += ", expr_id, expr_value) SELECT F.run_id";
 
     for (const TableDimsRow & dim : tableDims) {
-        sql += ", F." + dim.name;
+        sql += ", F." + dim.columnName();
     }
-    sql += ", " + to_string(i_nExpression) + ", F." + tableExpr[i_nExpression].name +
+    sql += ", " + to_string(i_nExpression) + ", F." + tableExpr[i_nExpression].columnName() +
         " FROM (" +
         tableExpr[i_nExpression].sqlExpr +
         ") F WHERE F.run_id = " + to_string(runId);
@@ -382,44 +382,32 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
 
     // build sql to select accumulators and expressions values:
     //
-    // SELECT acc_id,sub_id,dim0,dim1,acc_value
-    // FROM salarySex_a201208171604590148
-    // WHERE run_id = 11
-    // ORDER BY 1, 2, 3, 4
+    // SELECT acc_id, sub_id, dim0, dim1, acc_value FROM salarySex_a201208171 WHERE run_id = 11 ORDER BY 1, 2, 3, 4
     //
-    string accCsv = "acc_id,sub_id,";
+    string accSql = "SELECT acc_id, sub_id, ";
 
     for (const TableDimsRow & dim : tableDims) {
-        accCsv += dim.name + ",";
+        accSql += dim.columnName() + ", ";
     }
-    accCsv += "acc_value";
+    accSql += "acc_value FROM " + accDbTable + " WHERE run_id = " + to_string(runId);
 
-    string accSql = 
-        "SELECT " + accCsv + " FROM " + accDbTable + " WHERE run_id = " + to_string(runId) +
-        " ORDER BY 1, 2";
-
+    accSql += " ORDER BY 1, 2";
     for (int nDim = 0; nDim < dimCount; nDim++) {
         accSql += ", " + to_string(nDim + 3);
     }
 
     // build sql to expressions values:
     //
-    // SELECT expr_id,dim0,dim1,expr_value
-    // FROM salarySex_v201208171604590148
-    // WHERE run_id = 11
-    // ORDER BY 1, 2, 3
+    // SELECT expr_id, dim0, dim1, expr_value FROM salarySex_v201208171 WHERE run_id = 11 ORDER BY 1, 2, 3
     //
-    string exprCsv = "expr_id,";
+    string exprSql = "SELECT expr_id, ";
 
     for (const TableDimsRow & dim : tableDims) {
-        exprCsv += dim.name + ",";
+        exprSql += dim.columnName() + ", ";
     }
-    exprCsv += "expr_value";
+    exprSql += "expr_value FROM " + valueDbTable + " WHERE run_id = " + to_string(runId);
 
-    string exprSql = 
-        "SELECT "+ exprCsv + " FROM " + valueDbTable + " WHERE run_id = " + to_string(runId) +
-        " ORDER BY 1";
-
+    exprSql += " ORDER BY 1";
     for (int nDim = 0; nDim < dimCount; nDim++) {
         exprSql += ", " + to_string(nDim + 2);
     }
@@ -432,7 +420,12 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     md5.add(sLine.c_str(), sLine.length());
 
     // append accumulators header
-    sLine = accCsv + "\n";
+    sLine = "acc_id,sub_id,";
+    for (const TableDimsRow & dim : tableDims) {
+        sLine += dim.name + ",";
+    }
+    sLine += "acc_value\n";
+
     md5.add(sLine.c_str(), sLine.length());
 
     // +2 columns: acc_id, sub_id
@@ -442,7 +435,13 @@ void OutputTableWriter::digestOutput(IDbExec * i_dbExec)
     i_dbExec->selectToRowProcessor(accSql, accAdp, md5AccRd);
 
     // select expression values and append to the digest
-    sLine = exprCsv + "\n";
+    sLine = "expr_id,";
+
+    for (const TableDimsRow & dim : tableDims) {
+        sLine += dim.name + ",";
+    }
+    sLine += "expr_value\n";
+
     md5.add(sLine.c_str(), sLine.length()); // append expressions header
 
     // +1 column: expr_id

@@ -42,7 +42,7 @@ public:
     static string symbol_name(const Symbol* table, int index, string* pname_default);
 
     /**
-     * Make measure name suitable for database column name: it must be unique column name consist of 8 alphanumeric characters.
+     * Make measure name suitable for database column name: it must be unique column name consist of 255 alphanumeric characters.
      *
      * @param i_tableName    name of the table.
      * @param i_measureLst  list of measures.

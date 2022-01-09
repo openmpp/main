@@ -239,12 +239,11 @@ CREATE TABLE parameter_dic_txt
 --
 CREATE TABLE parameter_dims
 (
-  parameter_hid INT         NOT NULL, -- master key
-  dim_id        INT         NOT NULL, -- dimension index
-  dim_name      VARCHAR(32) NOT NULL, -- column name: dim0
-  type_hid      INT         NOT NULL, -- dimension type id
+  parameter_hid INT          NOT NULL, -- master key
+  dim_id        INT          NOT NULL, -- dimension index
+  dim_name      VARCHAR(255) NOT NULL, -- dimension name: Year
+  type_hid      INT          NOT NULL, -- dimension type id
   PRIMARY KEY (parameter_hid, dim_id),
-  CONSTRAINT parameter_dims_un UNIQUE (parameter_hid, dim_name),
   CONSTRAINT parameter_dims_mk
              FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid),
   CONSTRAINT parameter_dims_type_fk
@@ -328,14 +327,13 @@ CREATE TABLE table_dic_txt
 --
 CREATE TABLE table_dims 
 (
-  table_hid INT         NOT NULL, -- master key
-  dim_id    INT         NOT NULL, -- dimension index
-  dim_name  VARCHAR(32) NOT NULL, -- unique column name of dimension: dim0
-  type_hid  INT         NOT NULL, -- dimension type
-  is_total  SMALLINT    NOT NULL, -- if non-zero then dimension has "total" item
-  dim_size  INT         NOT NULL, -- number of items, including "total" item
+  table_hid   INT          NOT NULL, -- master key
+  dim_id      INT          NOT NULL, -- dimension index
+  dim_name    VARCHAR(255) NOT NULL, -- dimension name: Year
+  type_hid    INT          NOT NULL, -- dimension type
+  is_total    SMALLINT     NOT NULL, -- if non-zero then dimension has "total" item
+  dim_size    INT          NOT NULL, -- number of items, including "total" item
   PRIMARY KEY (table_hid, dim_id),
-  CONSTRAINT table_dims_un UNIQUE (table_hid, dim_name),
   CONSTRAINT table_dims_mk 
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
   CONSTRAINT table_dims_type_fk 
@@ -351,7 +349,7 @@ CREATE TABLE table_dims_txt
   dim_id    INT             NOT NULL, -- master key
   lang_id   INT             NOT NULL, -- language id
   descr     VARCHAR(255)    NOT NULL, -- table dimension description
-  note      TEXT,           -- table dimension notes
+  note      TEXT,                     -- table dimension notes
   PRIMARY KEY (table_hid, dim_id, lang_id),
   CONSTRAINT table_dims_txt_mk 
              FOREIGN KEY (table_hid, dim_id) REFERENCES table_dims (table_hid, dim_id),
@@ -366,7 +364,7 @@ CREATE TABLE table_acc
 (
   table_hid  INT           NOT NULL, -- master key
   acc_id     INT           NOT NULL, -- unique accumulator id
-  acc_name   VARCHAR(32)   NOT NULL, -- unique accumulator name: acc2
+  acc_name   VARCHAR(255)  NOT NULL, -- unique accumulator name: acc2
   is_derived SMALLINT      NOT NULL, -- if non-zero then accumulator is expression on other accumulators
   acc_src    VARCHAR(255)  NOT NULL, -- source expression: acc0 + acc1 
   acc_sql    VARCHAR(2048) NOT NULL, -- db expression: sql subquery
@@ -384,8 +382,8 @@ CREATE TABLE table_acc_txt
   table_hid INT          NOT NULL, -- master key
   acc_id    INT          NOT NULL, -- master key
   lang_id   INT          NOT NULL, -- language id
-  descr     VARCHAR(255) NOT NULL, -- item description
-  note      TEXT,        -- item notes
+  descr     VARCHAR(255) NOT NULL, -- accumulator description
+  note      TEXT,                  -- accumulator notes
   PRIMARY KEY (table_hid, acc_id, lang_id),
   CONSTRAINT table_acc_txt_mk 
              FOREIGN KEY (table_hid, acc_id) REFERENCES table_acc (table_hid, acc_id),
@@ -394,14 +392,14 @@ CREATE TABLE table_acc_txt
 );
 
 --
--- Output table expressions (analysis dimension items)
+-- Output table expressions (measures)
 --
 CREATE TABLE table_expr
 (
   table_hid     INT           NOT NULL, -- master key
-  expr_id       INT           NOT NULL, -- unique item id
-  expr_name     VARCHAR(32)   NOT NULL, -- item name: expr2
-  expr_decimals INT           NOT NULL, -- number of decimals for that item
+  expr_id       INT           NOT NULL, -- unique measure id
+  expr_name     VARCHAR(32)   NOT NULL, -- measure name: expr2
+  expr_decimals INT           NOT NULL, -- number of decimals for that measure
   expr_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
   expr_sql      VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
   PRIMARY KEY (table_hid, expr_id),
@@ -418,8 +416,8 @@ CREATE TABLE table_expr_txt
   table_hid INT          NOT NULL, -- master key
   expr_id   INT          NOT NULL, -- master key
   lang_id   INT          NOT NULL, -- language id
-  descr     VARCHAR(255) NOT NULL, -- item description
-  note      TEXT,        -- item notes
+  descr     VARCHAR(255) NOT NULL, -- expression description
+  note      TEXT,                  -- expression notes
   PRIMARY KEY (table_hid, expr_id, lang_id),
   CONSTRAINT table_expr_txt_mk 
              FOREIGN KEY (table_hid, expr_id) REFERENCES table_expr (table_hid, expr_id),
