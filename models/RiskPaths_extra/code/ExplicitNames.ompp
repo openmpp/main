@@ -1,0 +1,8 @@
+options use_heuristic_short_names = off;
+
+//NAME T02_TotalPopulationByYear.Dim0 age
+//NAME T02_TotalPopulationByYear.Expr0 pop
+//NAME T02_TotalPopulationByYear.Expr1 py
+
+//NAME UnionDurationBaseline.Dim0 dimensionfirst
+//NAME UnionDurationBaseline.Dim1 order1
