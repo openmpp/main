@@ -1348,9 +1348,14 @@ public:
     static bool option_weighted_tabulation;
 
     /**
-     * true or false depending on use_heuristic_names in options statement.
+     * true or false depending on use_heuristic_short_names in options statement.
      */
-    static bool option_use_heuristic_names;
+    static bool option_use_heuristic_short_names;
+
+    /**
+     * maximum length of a short name
+     */
+    static size_t short_name_max_length;
 
     /**
      * true or false depending on censor_event_time value in options statement.

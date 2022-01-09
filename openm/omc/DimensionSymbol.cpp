@@ -11,7 +11,6 @@
 #include "LinkToAttributeSymbol.h"
 #include "EnumerationSymbol.h"
 #include "libopenm/common/omHelper.h"
-#include "../libopenm/include/dbExec.h" // for isSqlKeyword
 
 using namespace openm;
 
@@ -29,12 +28,13 @@ string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int in
 void DimensionSymbol::to_column_name(const string & i_ownerName, const list<DimensionSymbol *> i_dimLst, DimensionSymbol * io_dim)
 {
     assert(io_dim);
-    string colName = openm::toAlphaNumeric(io_dim->short_name, OM_NAME_DB_MAX);  // make dimension name alphanumeric and truncate it to 255 chars
+    size_t maxlen = std::min<size_t>(short_name_max_length, OM_NAME_DB_MAX);
+    string colName = openm::toAlphaNumeric(io_dim->short_name, maxlen);  // make dimension name alphanumeric and truncate it to 255 chars
 
     for (auto pIt = i_dimLst.cbegin(); pIt != i_dimLst.cend() && *pIt != io_dim; ++pIt) {
         if (colName == (*pIt)->short_name) {
             string sId = to_string(io_dim->index);
-            if (colName.length() + sId.length() <= OM_CODE_DB_MAX) {
+            if (colName.length() + sId.length() <= maxlen) {
                 // append disambiguating unique numeric suffix
                 colName += sId;
             }
@@ -117,7 +117,7 @@ string DimensionSymbol::heuristic_short_name(void) const
     // Get the dimension's label for the model's default language.
     string lbl = pp_labels[0];
     string unm = unique_name;
-    if (lbl != unm && lbl.length() <= OM_CODE_DB_MAX) {
+    if (lbl != unm && lbl.length() <= short_name_max_length) {
         // Use label from model source code, if not too long.
         hn = lbl;
     }
@@ -129,7 +129,7 @@ string DimensionSymbol::heuristic_short_name(void) const
             // Base the heuristic name on the dimension's attribute.
             string lbl = attr->pp_labels[0];
             string unm = attr->unique_name;
-            if (lbl != unm && lbl.length() <= OM_CODE_DB_MAX) {
+            if (lbl != unm && lbl.length() <= short_name_max_length) {
                 // Use explicit label from model source code.
                 hn = lbl;
             }
@@ -144,7 +144,7 @@ string DimensionSymbol::heuristic_short_name(void) const
             assert(pp_enumeration); // logic guarantee
             string lbl = pp_enumeration->pp_labels[0];
             string unm = pp_enumeration->unique_name;
-            if (lbl != unm && lbl.length() <= OM_CODE_DB_MAX) {
+            if (lbl != unm && lbl.length() <= short_name_max_length) {
                 // Use explicit label from model source code.
                 hn = lbl;
             }
@@ -170,12 +170,6 @@ string DimensionSymbol::heuristic_short_name(void) const
         hn = "X_" + hn;
     }
 
-    if (IDbExec::isSqlKeyword(hn.c_str())) {
-        // Name clashes with a SQL reserved word.
-        // Prepend X_ to make valid name
-        hn = "X_" + hn;
-    }
-
     // trim off trailing "_" if present
     //if (hn.ends_with("_")) { // c++20
     if (hn[hn.length() - 1] == '_') {
@@ -184,11 +178,11 @@ string DimensionSymbol::heuristic_short_name(void) const
 
     // if name is subject to truncation, remove characters from middle rather than truncating from end,
     // because long descriptions often disambiguate at both beginning and end.
-    if (hn.length() > OM_CODE_DB_MAX) {
+    if (hn.length() > short_name_max_length) {
         // replacement string for snipped section
         string r = "_x_";
         // number of characters to snip from middle (excess plus length of replacement)
-        size_t n = hn.length() - OM_CODE_DB_MAX + r.length();
+        size_t n = hn.length() - short_name_max_length + r.length();
         // start of snipped section (middle section of original string)
         size_t p = (hn.length() - n) / 2;
         // replace snipped section with _
@@ -198,7 +192,7 @@ string DimensionSymbol::heuristic_short_name(void) const
     }
 
     // Make name alphanumeric and truncate it to 32 chars.
-    hn = openm::toAlphaNumeric(hn, OM_CODE_DB_MAX);
+    hn = openm::toAlphaNumeric(hn, short_name_max_length);
 
     // trim off trailing "_" if present
     //if (hn.ends_with("_")) { // c++20

@@ -607,7 +607,9 @@ bool Symbol::option_verify_timelike_attribute_access = true;
 
 bool Symbol::option_weighted_tabulation = false;
 
-bool Symbol::option_use_heuristic_names = false;
+bool Symbol::option_use_heuristic_short_names = false;
+
+size_t Symbol::short_name_max_length = 32;
 
 bool Symbol::option_censor_event_time = false;
 
@@ -1906,15 +1908,27 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "use_heuristic_names";
+        string key = "use_heuristic_short_names";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
             if (value == "on") {
-                option_use_heuristic_names = true;
+                option_use_heuristic_short_names = true;
             }
             else if (value == "off") {
-                option_use_heuristic_names = false;
+                option_use_heuristic_short_names = false;
+            }
+        }
+    }
+
+    {
+        string key = "short_name_max_length";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            short_name_max_length = std::stoi(value);
+            if (short_name_max_length < 8 || short_name_max_length > OM_NAME_DB_MAX) {
+                pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be between 8 and 255"));
             }
         }
     }
@@ -2213,7 +2227,7 @@ const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
 //static
 void Symbol::heuristic_short_names(void)
 {
-    if (!option_use_heuristic_names) {
+    if (!option_use_heuristic_short_names) {
         return;
     }
 
