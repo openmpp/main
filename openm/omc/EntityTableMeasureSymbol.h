@@ -23,8 +23,8 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableMeasureSymbol(Symbol *table, ExprForTable *root, string *pname, int index, omc::location decl_loc = omc::location())
-        : TableMeasureSymbol(table, pname, index, decl_loc)
+    EntityTableMeasureSymbol(Symbol *table, ExprForTable *root, string * pname_explicit, int index, omc::location decl_loc = omc::location())
+        : TableMeasureSymbol(table, nullptr, pname_explicit, index, decl_loc)
         , root(root)
     {
     }
@@ -62,13 +62,6 @@ public:
      * @return Result as a \a CodeBlock.
      */
     string get_expression(const ExprForTable *node, expression_style style);
-
-    /**
-     * Heuristically-generated short name for the dimension
-     *
-     * @return Result as a string
-     */
-    string heuristic_short_name(void) const;
 
     /**
      * Root of the expression tree.

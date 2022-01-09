@@ -509,9 +509,6 @@ int main(int argc, char * argv[])
             throw HelperException(LT("Finish omc"));
         }
 
-        // Code block containing suggested heuristic names to replace default short-names
-        CodeBlock heuristic_cpp = Symbol::heuristic_short_names_cpp();
-
         theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code
@@ -565,26 +562,49 @@ int main(int argc, char * argv[])
             );
         cg.do_all();
 
-        const string Missing_dat_name = "Missing.dat.tmp";
-        if (missing_param_defs.size() > 0) {
-            // Some generated output for one or more missing parameters present.
-            if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-                // open output stream for generated definitions for missing parameters
-                ofstream Missing_dat(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()), ios::out | ios::trunc | ios::binary);
-                exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
-                if (Missing_dat.fail()) throw HelperException(LT("error : unable to open %s for writing"), "Missing.dat.tmp");
-                Missing_dat << missing_param_defs;
-                Missing_dat.close();
+        // block for creation of file with missing parameter definitions
+        {
+            const string Missing_dat_name = "Missing.dat.tmp";
+            if (missing_param_defs.size() > 0) {
+                // Some generated output for one or more missing parameters present.
+                if (argStore.isOptionExist(OmcArgKey::paramDir)) {
+                    // open output stream for generated definitions for missing parameters
+                    ofstream Missing_dat(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()), ios::out | ios::trunc | ios::binary);
+                    exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
+                    if (Missing_dat.fail()) throw HelperException(LT("error : unable to open %s for writing"), "Missing.dat.tmp");
+                    Missing_dat << missing_param_defs;
+                    Missing_dat.close();
+                }
+                else {
+                    string msg = "omc : warning : Unable to write missing parameters to " + Missing_dat_name + " - no input parameter directory was specified.";
+                    theLog->logMsg(msg.c_str());
+                }
             }
             else {
-                string msg = "omc : warning : Unable to write missing parameters to " + Missing_dat_name + " - no input parameter directory was specified.";
-                theLog->logMsg(msg.c_str());
+                // Model contains no missing parameters, so delete obsolete Missing.dat.tmp if present
+                if (argStore.isOptionExist(OmcArgKey::paramDir)) {
+                    remove(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()).c_str());
+                }
             }
         }
-        else {
-            // Model contains no missing parameters, so delete obsolete Missing.dat.tmp if present
-            if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-                remove(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()).c_str());
+
+        // block for creation of file with generated short names
+        {
+            CodeBlock generated_names_code = Symbol::build_NAME_code();
+            string inpDir = argStore.strOption(OmcArgKey::inputDir);
+            const string GeneratedNames_ompp_name = "GeneratedNames.ompp.tmp";
+            if (generated_names_code.size() > 0) {
+                // There are one or more generated short names.
+                // open output stream for //NAME statements for generated names
+                ofstream GeneratedNames_ompp(makeFilePath(inpDir.c_str(), GeneratedNames_ompp_name.c_str()), ios::out | ios::trunc | ios::binary);
+                exit_guard<ofstream> onExit_Missing_dat(&GeneratedNames_ompp, &ofstream::close);   // close on exit
+                if (GeneratedNames_ompp.fail()) throw HelperException(LT("error : unable to open %s for writing"), GeneratedNames_ompp_name.c_str());
+                GeneratedNames_ompp << generated_names_code;
+                GeneratedNames_ompp.close();
+            }
+            else {
+                // Model contains no default short names, so delete obsolete HeuristicNames.ompp.tmp if present
+                remove(makeFilePath(inpDir.c_str(), GeneratedNames_ompp_name.c_str()).c_str());
             }
         }
 

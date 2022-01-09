@@ -2683,12 +2683,12 @@ derived_table_dimension:
     ;
 
 derived_table_measure_list:
-      STRING[short_name]
+      STRING[short_name_default]
                         {
-                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $short_name, pc.counter1, @short_name);
+                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $short_name_default, nullptr, pc.counter1, @short_name_default);
                             assert(sym);
-                            delete $short_name; // delete the string created using new in scanner
-                            $short_name = nullptr;
+                            delete $short_name_default; // delete the string created using new in scanner
+                            $short_name_default = nullptr;
                             pc.counter1++;  // counter for short_names
                         }
     | derived_table_measure_list ","
@@ -2696,12 +2696,12 @@ derived_table_measure_list:
                             // short_name follows
                             pc.next_word_is_string = true;
                         }
-      STRING[short_name]
+      STRING[short_name_default]
                         {
-                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $short_name, pc.counter1, @short_name);
+                            auto sym = new TableMeasureSymbol(pc.get_derived_table_context(), $short_name_default, nullptr, pc.counter1, @short_name_default);
                             assert(sym);
-                            delete $short_name; // delete the string created using new in scanner
-                            $short_name = nullptr;
+                            delete $short_name_default; // delete the string created using new in scanner
+                            $short_name_default = nullptr;
                             pc.counter1++;  // counter for measures
                         }
 	;

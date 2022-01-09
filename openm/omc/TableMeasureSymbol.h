@@ -24,16 +24,11 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    /**
-    * Morphing constructor.
-    *
-    * @param [in,out]  sym The symbol to be morphed.
-    */
-    TableMeasureSymbol(Symbol *table, string *pname, int index, omc::location decl_loc = omc::location())
-        : Symbol(symbol_name(table, index), decl_loc)
-        , short_name(pname ? *pname : "Expr" + to_string(index))
-        , short_name_default("Expr" + to_string(index))
-        , short_name_explicit(pname ? *pname : "")
+    TableMeasureSymbol(Symbol* table, string* pname_default, string* pname_explicit, int index, omc::location decl_loc = omc::location())
+        : Symbol(symbol_name(table, index, pname_default), decl_loc)
+        , short_name(pname_explicit ? *pname_explicit : pname_default ? *pname_default : "Expr" + to_string(index))
+        , short_name_default(pname_default ? *pname_default : "Expr" + to_string(index))
+        , short_name_explicit(pname_explicit ? *pname_explicit : "")
         , index(index)
         , table(table->stable_rp())
         , pp_table(nullptr)
@@ -44,7 +39,7 @@ public:
 
     // Construct symbol name for the table measure symbol.
     // Example: BasicDemography.Expr0
-    static string symbol_name(const Symbol* table, int index);
+    static string symbol_name(const Symbol* table, int index, string* pname_default);
 
     /**
      * Make measure name suitable for database column name: it must be unique column name consist of 8 alphanumeric characters.
@@ -58,6 +53,13 @@ public:
     void post_parse(int pass);
 
     string pretty_name() const;
+
+    /**
+     * Heuristically-generated short name for the dimension
+     *
+     * @return Result as a string
+     */
+    string heuristic_short_name(void) const;
 
     /**
      * Return the measure scale transformed into a decimal number

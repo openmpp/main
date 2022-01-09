@@ -9,8 +9,10 @@
 #include "EntityTableAccumulatorSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableSymbol.h"
+#include "AttributeSymbol.h"
 #include "ExprForTable.h"
 #include "Literal.h"
+#include "libopenm/common/omHelper.h"
 
 /**
 * Post-parse operations for EntityTableMeasureSymbol
@@ -130,9 +132,4 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
             return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";
         }
     }
-}
-
-string EntityTableMeasureSymbol::heuristic_short_name(void) const
-{
-    return "h_" + short_name;
 }

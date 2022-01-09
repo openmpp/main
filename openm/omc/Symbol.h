@@ -871,11 +871,17 @@ public:
     static bool is_om_developer_function(const char* nm);
 
     /**
-     * Generate code to specify heuristic short names for dimensions and measuires
+     * Create and apply heuristic short names for dimensions and measures
+     *
+     */
+    static void heuristic_short_names(void);
+
+    /**
+     * Generate code to specify generated short names for dimensions and measures
      *
      * @return a CodeBlock containing the generated code
      */
-    static CodeBlock heuristic_short_names_cpp(void);
+    static CodeBlock build_NAME_code(void);
 
     /**
      * Pathnames of use folders.

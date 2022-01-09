@@ -1670,6 +1670,9 @@ void Symbol::post_parse_all()
         pr.second->post_parse( ePopulateDependencies );
     }
 
+    // Generate and apply heuristic short names as needed
+    heuristic_short_names();
+
     // Determine enumeration metadata required by published parameters
     for (auto param : pp_all_parameters) {
         param->post_parse_mark_enumerations();
@@ -2208,67 +2211,93 @@ const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
 
 
 //static
-CodeBlock Symbol::heuristic_short_names_cpp(void)
+void Symbol::heuristic_short_names(void)
 {
-    CodeBlock c;
+    if (!option_use_heuristic_names) {
+        return;
+    }
 
-    // Note heuristic short names for parameter dimensions
+    // Heuristic short names for parameter dimensions
     for (auto param : pp_all_parameters) {
         for (auto dim : param->dimension_list) {
             if (dim->short_name_explicit == "") {
-                // no explicit name provided, so get the heuristic candidate short name
+                // no explicit name provided so make and use a heuristic short name
                 string hn = dim->heuristic_short_name();
-                c += "//NAME " + param->name + "." + dim->short_name + " " + hn;
-                if (option_use_heuristic_names) {
-                    dim->short_name = hn;
-                }
+                dim->short_name = hn;
             }
         }
     }
 
-    // Note heuristic short names for derived table dimensions
-    for (auto table : pp_all_derived_tables) {
-        for (auto dim : table->dimension_list) {
-            if (dim->short_name_explicit == "") {
-                // no explicit name provided, so get the heuristic candidate short name
-                string hn = dim->heuristic_short_name();
-                c += "//NAME " + table->name + "." + dim->short_name + " " + hn;
-                if (option_use_heuristic_names) {
-                    dim->short_name = hn;
-                }
-            }
-        }
-    }
-
-    // Note heuristic short names for entity table dimensions and measures
-    for (auto table : pp_all_entity_tables) {
+    // Heuristic short names for table dimensions and measures
+    for (auto table : pp_all_tables) {
         // the dimensions
         for (auto dim : table->dimension_list) {
             if (dim->short_name_explicit == "") {
-                // no explicit name provided, so get the heuristic candidate short name
+                // no explicit name provided so make and use a heuristic short name
                 string hn = dim->heuristic_short_name();
-                c += "//NAME " + table->name + "." + dim->short_name + " " + hn;
-                if (option_use_heuristic_names) {
-                    dim->short_name = hn;
-                }
+                dim->short_name = hn;
             }
         }
         // the measures
         for (auto measure : table->pp_measures) {
-            EntityTableMeasureSymbol *etms = static_cast<EntityTableMeasureSymbol *>(measure);
-            assert(etms); // parser guarantee
-            if (etms->short_name_explicit == "") {
-                // no explicit name provided, so get the heuristic candidate short name
-                string hn = etms->heuristic_short_name();
-                c += "//NAME " + table->name + "." + etms->short_name + " " + hn;
-                if (option_use_heuristic_names) {
-                    etms->short_name = hn;
+            if (measure->short_name_explicit == "") {
+                // no explicit name provided so make and use a heuristic short name
+                string hn = measure->heuristic_short_name();
+                measure->short_name = hn;
+            }
+        }
+    }
+}
+
+//static
+CodeBlock Symbol::build_NAME_code(void)
+{
+    CodeBlock c;
+
+    // Generated short names for parameter dimensions
+    for (auto param : pp_all_parameters) {
+        bool first_generated_name = true;
+        for (auto dim : param->dimension_list) {
+            if (dim->short_name != dim->short_name_explicit) {
+                // explicit short name is not being used, so was generated
+                if (first_generated_name) {
+                    c += "";
+                    c += "Parameter: " + param->pp_labels[0];
+                    first_generated_name = false;
                 }
+                c += "//NAME " + param->name + "." + dim->short_name_default + " " + dim->short_name;
+            }
+        }
+    }
+
+    // Generated short names for table dimensions and measures
+    for (auto table : pp_all_tables) {
+        bool first_generated_name = true;
+        // the dimensions
+        for (auto dim : table->dimension_list) {
+            if (dim->short_name != dim->short_name_explicit) {
+                // explicit short name is not being used, so was generated
+                if (first_generated_name) {
+                    c += "";
+                    c += "Table: " + table->pp_labels[0];
+                    first_generated_name = false;
+                }
+                c += "//NAME " + table->name + "." + dim->short_name_default + " " + dim->short_name;
+            }
+        }
+        // the measures
+        for (auto measure : table->pp_measures) {
+            if (measure->short_name != measure->short_name_explicit) {
+                // explicit short name is not being used, so was generated
+                if (first_generated_name) {
+                    c += "";
+                    first_generated_name = false;
+                }
+                c += "//NAME " + table->name + "." + measure->short_name_default + " " + measure->short_name;
             }
         }
     }
 
     return c;
 }
-
 
