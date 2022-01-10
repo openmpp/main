@@ -158,10 +158,10 @@ table Person LAvgY //EN LavgY
 table Person LAvgH //EN LavgH
 [ alive == FALSE && has_income ] 
 {
-	split(cumHcumA, UNIT_INTERVAL_20)
+	split(cumHcumA, UNIT_INTERVAL_20) //EN CumHCumA group
 	*{
-		unit
+		unit //EN Count
 	}
-	*split(integer_age, LIFE_LENGTH_GROUP)
+	*split(integer_age, LIFE_LENGTH_GROUP) //EN Age group
 	*decade
 };
