@@ -598,12 +598,17 @@ int main(int argc, char * argv[])
                 // open output stream for //NAME statements for generated names
                 ofstream GeneratedNames_ompp(makeFilePath(inpDir.c_str(), GeneratedNames_ompp_name.c_str()), ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&GeneratedNames_ompp, &ofstream::close);   // close on exit
-                if (GeneratedNames_ompp.fail()) throw HelperException(LT("error : unable to open %s for writing"), GeneratedNames_ompp_name.c_str());
-                GeneratedNames_ompp << generated_names_code;
-                GeneratedNames_ompp.close();
+                if (GeneratedNames_ompp.fail()) {
+                    string msg = "omc : warning : Unable to open " + GeneratedNames_ompp_name + " for writing.";
+                    theLog->logMsg(msg.c_str());
+                }
+                else {
+                    GeneratedNames_ompp << generated_names_code;
+                    GeneratedNames_ompp.close();
+                }
             }
             else {
-                // Model contains no default short names, so delete obsolete HeuristicNames.ompp.tmp if present
+                // Model contains no generated names, so delete obsolete GeneratedNames.ompp.tmp if present
                 remove(makeFilePath(inpDir.c_str(), GeneratedNames_ompp_name.c_str()).c_str());
             }
         }
