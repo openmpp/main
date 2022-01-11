@@ -1,6 +1,17 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2022_12_10:
+  model: add censor_event_time option to improve simulation speed
+  model: enables entity weights for case-based models
+  model: fix MPI racing bug if model shutdown fast
+  model: update log to notify user on progress of parameters reading and tables writing
+  model, dbcopy, oms: meaningful names for dimensions, expressions and accumulators, increase size up to 255
+  log mpi rank option in model code and in UI
+  Windows batch to start UI from model build directory
+  docker build: add desktop version of RedHat (Rocky Linux)
+  UI: allow user NoAccumulatorsCsv download to increase download prepare speed
+
 2021_11_30:
   support Visual Studio 2022
   make fast and small csv output by dbcopy: NoAccumulatorsCsv option
