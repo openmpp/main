@@ -186,7 +186,14 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableTxt.langCode = lang->name;
             tableTxt.descr = label(*lang);
             tableTxt.note = note(*lang);
-            tableTxt.exprDescr = "Measures (" + lang->name + ")"; // TODO
+            string measures_dim_name = "Measures (" + lang->name + ")";
+            if (lang->name == "EN") {
+                measures_dim_name = "Measure";
+            }
+            else if (lang->name == "FR") {
+                measures_dim_name = "Mesure";
+            }
+            tableTxt.exprDescr = measures_dim_name;
             tableTxt.exprNote = "Measures Note (" + lang->name + ")"; // TODO
             metaRows.tableTxt.push_back(tableTxt);
         }

@@ -534,6 +534,11 @@ public:
     vector<string> pp_labels;
 
     /**
+     * True if symbol label was provided explicitly in model source
+     */
+    vector<bool> pp_labels_explicit;
+
+    /**
      * Search for and process a comment label at a source line.
      *
      * @param pos The position.

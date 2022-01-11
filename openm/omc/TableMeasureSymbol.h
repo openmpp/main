@@ -38,7 +38,7 @@ public:
     }
 
     // Construct symbol name for the table measure symbol.
-    // Example: BasicDemography.Expr0
+    // Example: BasicDemography::Expr0
     static string symbol_name(const Symbol* table, int index, string* pname_default);
 
     /**

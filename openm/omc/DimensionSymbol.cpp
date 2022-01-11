@@ -10,6 +10,7 @@
 #include "AttributeSymbol.h"
 #include "LinkToAttributeSymbol.h"
 #include "EnumerationSymbol.h"
+#include "LanguageSymbol.h"
 #include "libopenm/common/omHelper.h"
 
 using namespace openm;
@@ -18,10 +19,7 @@ using namespace openm;
 string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim)
 {
     assert(symbol_with_dimensions);
-    //// For entity tables, the numeric identifier is based on all dimensions, including the analysis dimension
-    //int numeric_id = index + (after_analysis_dim ? 1 : 0);
-    //return symbol_with_dimensions->name + ".Dim" + to_string(numeric_id);
-    return symbol_with_dimensions->name + ".Dim" + to_string(index);
+    return symbol_with_dimensions->name + "::Dim" + to_string(index);
 }
 
 // Update dimension name to be suitable as database column name: it must be unique, alphanumeric and not longer than 255 chars
@@ -101,6 +99,23 @@ void DimensionSymbol::post_parse(int pass)
             pp_enumeration = dynamic_cast<EnumerationSymbol *>(pp_attribute->pp_data_type);
             if (!pp_enumeration) {
                 pp_error(LT("error : the data-type of '") + pp_attribute->name + LT("' must be an enumeration to be used as a dimension"));
+            }
+        }
+        {
+            // Create fall-back label if not given explicitly
+            for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+                if (!pp_labels_explicit[j]) {
+                    // no explicit label for this language
+                    assert(pp_enumeration); // logic guarantee
+                    if (pp_enumeration->pp_labels_explicit[j]) {
+                        // the underlying enumeration has an explicit label for this language, use it
+                        pp_labels[j] = pp_enumeration->pp_labels[j];
+                    }
+                    else {
+                        // use Dim0, etc.
+                        pp_labels[j] = short_name_default;
+                    }
+                }
             }
         }
         break;

@@ -947,9 +947,13 @@ decl_classification:
                             pc.set_classification_context( $classification );
                             pc.reset_working_counters();
                         }
-            "{" classification_levels "}" ";"
+            "{" classification_levels "}" ";"[decl_end]
                         {
                             // Leaving classification context
+                            // Update the end position of the declaration.
+                            auto cl = pc.get_classification_context();
+                            cl->decl_loc.end = @decl_end.end;
+                            // clean up
                             pc.set_classification_context( nullptr );
                             pc.reset_working_counters();
                         }
@@ -1017,7 +1021,7 @@ decl_partition:
                             pc.set_partition_context($partition);
                             pc.reset_working_counters();
                         }
-            "{" partition_splitpoints "}"[last] ";"
+            "{" partition_splitpoints "}"[last] ";"[decl_end]
                         {
                             // create PartitionEnumeratorSymbol for upper partition interval
                             Symbol *enum_symbol = pc.get_partition_context();
@@ -1027,6 +1031,10 @@ decl_partition:
                             assert(sym);
 
                             // Leaving partition context
+                            // Update the end position of the declaration.
+                            auto part = pc.get_partition_context();
+                            part->decl_loc.end = @decl_end.end;
+                            // clean up
                             pc.set_partition_context( nullptr );
                             pc.reset_working_counters();
                         }

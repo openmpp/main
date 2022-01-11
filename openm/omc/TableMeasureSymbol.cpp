@@ -8,6 +8,7 @@
 #include <cassert>
 #include "DerivedTableSymbol.h"
 #include "TableMeasureSymbol.h"
+#include "LanguageSymbol.h"
 #include "libopenm/common/omHelper.h"
 
 using namespace std;
@@ -17,7 +18,7 @@ using namespace openm;
 string TableMeasureSymbol::symbol_name(const Symbol* table, int index, string* pname_default)
 {
     assert(table);
-    return table->name + "." + (pname_default ? *pname_default : "Expr" + to_string(index));
+    return table->name + "::" + (pname_default ? *pname_default : "Expr" + to_string(index));
 }
 
 string TableMeasureSymbol::pretty_name() const
@@ -156,6 +157,20 @@ void TableMeasureSymbol::post_parse(int pass)
 
         }
         
+        break;
+    }
+    case ePopulateCollections:
+    {
+        {
+            // Create fall-back label if not given explicitly
+            for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+                if (!pp_labels_explicit[j]) {
+                    // no explicit label for this language
+                    // use Expr0, etc.
+                    pp_labels[j] = short_name_default;
+                }
+            }
+        }
         break;
     }
     default:

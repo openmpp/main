@@ -45,7 +45,7 @@ public:
     }
 
     /**
-     * Construct symbol name for the dimension symbol. Example: BasicDemography.Dim0.
+     * Construct symbol name for the dimension symbol. Example: BasicDemography::Dim0.
      *
      * @param symbol_with_dimensions The table or entity set containing the this dimension.
      * @param index          0-based index of the enumeration dimension among all enumeration dimensions in teh table.

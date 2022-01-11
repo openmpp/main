@@ -638,17 +638,23 @@ void Symbol::post_parse(int pass)
             auto def_lab = default_label(*lang_sym);
             assert(def_lab.length() > 0);
             pp_labels.push_back(def_lab);
+            pp_labels_explicit.push_back(false);
             pp_notes.push_back("");
         }
 
-        // Check for presence of a comment label on the same lines as the symbol declaration.
+        // Check for presence of a comment label on the first line and and last line of the symbol declaration.
         if (decl_loc != omc::location() && code_label_allowed) {
             // This symbol has a declaration location in model code which can have an associated source code label
             // Check all lines of the declaration for a valid comment label
             int line_count = decl_loc.end.line - decl_loc.begin.line + 1;
-            for (int j = 0; j < line_count; ++j) {
-                // Construct key for lookup in map of all // comments
-                omc::position pos(decl_loc.begin.filename, decl_loc.begin.line + j, 0);
+            if (line_count >= 1) {
+                // Construct key of first line for lookup in map of all // comments
+                omc::position pos(decl_loc.begin.filename, decl_loc.begin.line, 0);
+                process_symbol_label(pos);
+            }
+            if (line_count >= 2) {
+                // Construct key of last line for lookup in map of all // comments
+                omc::position pos(decl_loc.end.filename, decl_loc.end.line, 0);
                 process_symbol_label(pos);
             }
         }
@@ -660,6 +666,7 @@ void Symbol::post_parse(int pass)
             auto search = explicit_labels.find(key);
             if (search != explicit_labels.end()) {
                 pp_labels[j] = trim(search->second);
+                pp_labels_explicit[j] = true;
             }
         }
 
@@ -720,6 +727,25 @@ void Symbol::post_parse(int pass)
             // Construct key for lookup in map of all // comments
             omc::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
             process_symbol_label(pos);
+        }
+        break;
+    }
+    case eResolveDataTypes:
+    {
+        // propagate explicit label in default language to other languages if missing
+        if (pp_labels_explicit[0]) { // default language of model is always at position 0
+            // symbol has an explicit label in the default language
+            for (int j = 1; j < LanguageSymbol::number_of_languages(); j++) {
+                // iterate other languages
+                if (!pp_labels_explicit[j]) {
+                    // no explicit label for this language
+                    // create a label using the explicit label of the default language
+                    auto lang_sym = LanguageSymbol::id_to_sym[j];
+                    string lbl = pp_labels[0] + " (" + lang_sym->name + ")";
+                    pp_labels[j] = lbl;
+                    pp_labels_explicit[j] = true;
+                }
+            }
         }
         break;
     }
@@ -829,6 +855,7 @@ bool Symbol::process_symbol_label(const omc::position& pos)
                 string lbl = trim(cmt.substr(lang_code.size() + 1));
                 if (lbl.length() > 0) {
                     pp_labels[lang_search->second] = lbl;
+                    pp_labels_explicit[lang_search->second] = true;
                 }
                 else {
                     // ignore empty label
