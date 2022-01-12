@@ -15,9 +15,10 @@ bin/data/*
 etc/
 html/
 
-# models missing parameters .dat
+# model files automatically created by omc
 #
-Missing.dat.tmp
+# Missing.dat.tmp
+# *.tmp
 
 # build results and user settings
 #
