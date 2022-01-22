@@ -29,7 +29,13 @@ void CaseSimulation(case_info &ci)
 
   // Read the record corresponding to the case_id of the case
   long long lCaseID = GetCaseID();
-  ci.in_csv.read_record(lCaseID);
+  bool success = ci.in_csv.read_record(lCaseID);
+  if (!success) {
+      std::stringstream ss;
+      ss << "error : unable to read record " << lCaseID << " (zero-based)";
+      ModelExit(ss.str().c_str());
+      // not reached
+  }
 
   // Initialize the Observation entity for the record used in the current case
   auto oeObservation = new Observation();
