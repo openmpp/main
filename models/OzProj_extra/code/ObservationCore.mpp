@@ -1,0 +1,158 @@
+//LABEL(ObservationCore, EN) Core functionality for the Observation entity
+
+/*NOTE(ObservationCore, EN)
+	This module implements the Observation entity.
+*/
+
+// forward declaration
+struct case_info;
+
+actor Observation //EN Microdata observation
+{
+  //EN Sex
+  SEX o_sex;
+
+  //EN Age
+  RANGE_AGE o_range_age;
+
+  //EN Age
+  AGE_CLASS1 o_age_group1 = AGE_CLASS1(
+    ( o_range_age < 55 ) ? (o_range_age / 5) : 11
+                          );
+
+  //EN Region
+  REGION o_region;
+
+  //EN Native-born
+  logical o_native_born;
+
+  //EN Recent arrival (last 5 years)
+  logical o_recent_arrival;
+
+  //EN Years since arrival
+  RANGE_AGE o_years_since_arrival;
+
+  //EN Indigenous
+  logical o_indigenous;
+
+  //EN Start the Observation entity
+  void Start(case_info *ci);
+
+  //EN Finish the Observation entity
+  void Finish();
+};
+/*NOTE(Observation, EN)
+  An Observation entity holds data from a record in the microdata file.
+  It has no events of its own.
+*/
+
+void Observation::Start(case_info *ci)
+{
+  // Initialize all attributes (OpenM++).
+  initialize_attributes();
+
+  // A valid starting time is required but the value is unimportant because an Observation has no events.
+  time = 0;
+
+  // Process sex
+  int nSex = 0;
+  nSex = (int) ci->in_csv[PMC_SEX];
+  if ( 0 == nSex ) o_sex = MALE;
+  else o_sex = FEMALE;
+
+  // Process age
+  int nAge = 0;
+  nAge = (int) ci->in_csv[PMC_AGE];
+  o_range_age = COERCE(RANGE_AGE, nAge);
+
+  // Process region
+  int nRegion = 0;
+  nRegion = (int) ci->in_csv[PMC_REGION];
+  o_region = (REGION) nRegion;
+
+  // Process native-born
+  int nNative_born = 0;
+  nNative_born = (int) ci->in_csv[PMC_NATIVE_BORN];
+  o_native_born = ( nNative_born == 1 ) ? TRUE : FALSE;
+
+  // Process recent arrival
+  int nRecent_arrival = 0;
+  nRecent_arrival = (int) ci->in_csv[PMC_RECENT_ARRIVAL];
+  o_recent_arrival = ( nRecent_arrival == 1 ) ? TRUE : FALSE;
+
+  // Process years since arrival
+  int nYears_since_arrival = 0;
+  nYears_since_arrival = (int) ci->in_csv[PMC_YEARS_SINCE_ARRIVAL];
+  o_years_since_arrival = COERCE(RANGE_AGE, nYears_since_arrival);
+
+  // Process indigenous
+  int nIndigenous = 0;
+  nIndigenous = (int) ci->in_csv[PMC_INDIGENOUS];
+  o_indigenous =  ( nIndigenous == 1 ) ? TRUE : FALSE;
+
+  // Have the entity enter the simulation (OpenM++).
+  enter_simulation();
+}
+
+void Observation::Finish()
+{
+    // Exit the simulation (OpenM++).
+    exit_simulation();
+}
+
+table Observation MicrodataSex //EN Microdata: Persons by sex
+{
+  o_sex+
+  * { unit }
+};
+
+table Observation MicrodataAge //EN Microdata: Persons by age
+{
+  o_range_age+
+  * { unit }
+};
+
+table Observation MicrodataNativeBorn //EN Microdata: Persons by native-born
+{
+  o_native_born+
+  * { unit }
+};
+
+table Observation MicrodataRecentArrival //EN Microdata: Immigrants by recent arrival
+[ ! o_native_born ]
+{
+  o_recent_arrival+
+  * { unit }
+};
+
+table Observation MicrodataYearsSinceArrival //EN Microdata: Immigrants by years since arrival
+[ ! o_native_born ]
+{
+  o_years_since_arrival+
+  * { unit }
+};
+
+table Observation MicrodataIndigenous //EN Microdata: Indigenous by native-born
+{
+  { unit }
+  * o_native_born
+  * o_indigenous
+};
+
+table Observation MicrodataRegion //EN Microdata: Region by sex
+{
+  { unit }
+  * o_region
+  * o_sex
+};
+
+table_group MicrodataVerification //EN Microdata verification tables
+{
+  MicrodataSex,
+  MicrodataAge,
+  MicrodataRegion,
+  MicrodataNativeBorn,
+  MicrodataRecentArrival,
+  MicrodataYearsSinceArrival,
+  MicrodataIndigenous
+};

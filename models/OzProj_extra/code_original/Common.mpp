@@ -1,0 +1,154 @@
+//LABEL(Common, EN) Shared components
+
+/*NOTE(Common, EN)
+  This module declares types used in multiple modules and models
+*/
+
+classification ONE_COLUMN //EN Value
+{
+  Value //EN Value
+};
+/*NOTE(ONE_COLUMN, EN)
+  Dummy classification used to flip display of 1-D tables and parameters
+  from one row to one column.
+*/
+
+classification SEX //EN Sex
+{
+  //EN Male
+  MALE,
+
+  //EN Female
+  FEMALE
+};
+
+range RANGE_AGE //EN Age
+{ 0, 100 };
+
+range RANGE_AGE_65 //EN Age
+{ 0, 65 };
+
+range RANGE_AGE_85 //EN Age
+{ 0, 85 };
+
+range YEAR //EN Year
+{ 2012, 2061 };
+
+classification AGE_CLASS1 //EN Age
+{
+  //EN 0-4
+  AC1_0_4,
+
+  //EN 5-9
+  AC1_5_9,
+
+  //EN 10-14
+  AC1_10_14,
+
+  //EN 15-19
+  AC1_15_19,
+
+  //EN 20-24
+  AC1_20_24,
+
+  //EN 25-29
+  AC1_25_29,
+
+  //EN 30-34
+  AC1_30_34,
+
+  //EN 35-39
+  AC1_35_39,
+
+  //EN 40-44
+  AC1_40_44,
+
+  //EN 45-49
+  AC1_45_49,
+
+  //EN 50-54
+  AC1_50_54,
+
+  //EN 55+
+  AC1_55_PLUS
+};
+
+classification AGE_CLASS2 //EN Age
+{
+  //EN 0-4
+  AC2_0_4,
+
+  //EN 5-14
+  AC2_5_14,
+
+  //EN 15-24
+  AC2_15_24,
+
+  //EN 25-34
+  AC2_25_34,
+
+  //EN 35-44
+  AC2_35_44,
+
+  //EN 45-54
+  AC2_45_54,
+
+  //EN 55-64
+  AC2_55_64,
+
+  //EN 65-74
+  AC2_65_74,
+
+  //EN 75+
+  AC2_75_PLUS
+};
+
+classification PERSON_ORIGIN //EN Origin of Person
+{
+  //EN Initial population
+  PO_INITIAL_POP,
+
+  //EN Birth during simulation
+  PO_BIRTH,
+
+  //EN Immigrant arriving during simulation
+  PO_IMMIGRANT
+};
+
+classification REGION //EN Region
+{
+  //EN New South Wales
+  REG_NSW,
+
+  //EN Victoria
+  REG_VIC,
+
+  //EN Queensland
+  REG_QLD,
+
+  //EN South Australia
+  REG_SA,
+
+  //EN Western Australia
+  REG_WA,
+
+  //EN Tasmania
+  REG_TAS,
+
+  //EN Northern Territory
+  REG_NT,
+
+  //EN Australian Capital Territory
+  REG_ACT
+};
+
+classification PERSON_MICRODATA_COLUMNS	 //EN fields in the microdata file 
+{
+  PMC_SEX,
+  PMC_AGE,
+  PMC_REGION,
+  PMC_NATIVE_BORN,
+  PMC_RECENT_ARRIVAL,
+  PMC_YEARS_SINCE_ARRIVAL,
+  PMC_INDIGENOUS
+};

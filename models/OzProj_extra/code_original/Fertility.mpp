@@ -1,0 +1,88 @@
+//LABEL(Fertility, EN) Module for fertility
+
+/* NOTE(Fertility, EN)
+	This module implmenets all fertility-related functionality.
+*/
+
+range FERTILE_AGE //EN Age
+{ 15, 49 };
+
+range FERTILITY_YEAR //EN Year
+{ 2012, 2026 };
+
+parameters 
+{
+  //EN Sex ratio at birth
+  double SexRatioAtBirth;
+  /*NOTE(SexRatioAtBirth, EN)
+    Male births per 100 female births.
+  */
+
+  //EN Fertility rate
+  double FertilityRate[FERTILE_AGE][FERTILITY_YEAR];
+  /*NOTE(FertilityRate, EN)
+    Births per 1,000 women.
+    Year dimension is mid-year.
+  */
+
+  //EN Annual hazard of childbirth
+	model_generated double FertilityHazard[FERTILE_AGE][FERTILITY_YEAR];
+
+  //EN Relative Fertility (indigenous)
+  double RelativeFertilityIndigenous[YEAR];
+};
+
+void PreSimulation(void)
+{
+  for (int nA = 0; nA < SIZE(FERTILE_AGE); nA++ ) {
+    for (int nY = 0; nY < SIZE(FERTILITY_YEAR); nY++ ) {
+      double dRate = FertilityRate[nA][nY] / 1000.0;
+      double dHazard = - log( 1 - dRate );
+      FertilityHazard[nA][nY] = dHazard; 
+    }
+  }
+}
+
+actor Person {
+  //EN Births
+  integer births = {0};
+
+  //EN Generation
+  int generation = {0};
+
+  event timeChildbirthEvent, ChildbirthEvent; //EN Childbirth event
+};
+
+// The time function of ChildbirthEvent
+TIME Person::timeChildbirthEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+
+  if ( sex == FEMALE && WITHIN(FERTILE_AGE, integer_age) ) {
+    int nA = RANGE_POS(FERTILE_AGE, integer_age);
+    int nY = RANGE_POS(FERTILITY_YEAR, mid_year);
+    double dHazard = FertilityHazard[nA][nY];
+    double dHazardRatio = 1.0;
+    if ( indigenous) dHazardRatio = RelativeFertilityIndigenous[RANGE_POS(YEAR, mid_year)];
+    dHazard *= dHazardRatio;
+    tEventTime = WAIT( - TIME( log( RandUniform(4) ) / dHazard ) );
+  }
+	return tEventTime;
+}
+
+// The implement function of ChildbirthEvent
+void Person::ChildbirthEvent()
+{
+  births++;
+  Person *peChild = new Person;
+  peChild->Start(NULL, this, 0);
+}
+
+table Person BirthsByYear //EN Births by year
+{
+  mid_year
+  * {
+    births
+  }
+};
+

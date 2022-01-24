@@ -1,0 +1,148 @@
+//LABEL(OzProj, EN) Core simulation functions
+
+/* NOTE(OzProj, EN)
+	This module contains core simulation functions and definitions.
+*/
+
+// The model version number
+version 0, 19, 0, 0;
+
+// The model type
+model_type case_based;
+
+// The data type used to represent time
+time_type double;
+
+// Supported languages
+languages {
+	EN // English
+};
+
+// The ProcessEvents function processes all events
+// until there are none in the event queue.  It is called by 
+// the CaseSimulation function.
+void ProcessEvents( )
+{
+	// Continue processing events until there are no more.
+	// Model code is responsible for ending the case by calling
+	// Finish on all existant actors.
+
+	// The Modgen run-time implements the global event queue gpoEventQueue.
+	while ( !gpoEventQueue->Empty() )
+	{
+		// The global variables gbCancelled and gbErrors
+		// are maintained by the Modgen run-time.
+		if ( gbCancelled || gbErrors )
+		{
+			// The user cancelled the simulation, or run-time errors occurred.
+			// Terminate the case immediately.
+			gpoEventQueue->FinishAllActors();
+		}
+		else
+		{
+			// Age all actors to the time of the next event.
+			gpoEventQueue->WaitUntil( gpoEventQueue->NextEvent() );
+	
+			// Implement the next event.
+			gpoEventQueue->Implement();
+		}
+	}
+
+	// Note that Modgen handles memory cleanup when Finish is called on an actor.
+}
+
+// The CaseSimulation function simulates a single case,
+// and is called by the Simulation function declared later
+// in this module.
+
+void CaseSimulation( )
+{
+  // Initialize the Observation entity for the record used in the current case
+  Observation *oeObservation = new Observation();
+  oeObservation->Start();
+
+  // The following works for undercount rates up to 50%
+  int nAge = oeObservation->o_age_group1;
+  int nSex = oeObservation->o_sex;
+  double dUndercountRate = UndercountRate[nAge][nSex]; // (true - observed) / true
+  double dCorrectionRate = 1.0 / ( 1.0 - dUndercountRate ) - 1.0; // (true / observed) - 1
+  double dRandom = RandUniform(2);
+  int nCopies = 1;
+  if ( dCorrectionRate > 0.0 && dRandom < dCorrectionRate ) nCopies = 2; // undercount
+  else if ( dCorrectionRate < 0.0 && dRandom < -dCorrectionRate ) nCopies = 0; // overcount
+
+  for (int nCopy = 0; nCopy < nCopies; nCopy++ ) {
+    // Initialize the Person entity in the case.
+    Person *pePerson = new Person();
+    pePerson->Start(oeObservation, NULL, 0);
+
+    // Process events until there are no more
+    ProcessEvents();
+  }
+
+  double dSimulationScaleFactor = GetAllCases() / (double) RealWorldStartPopulation;
+  bool bDonor = !oeObservation->o_native_born
+    && oeObservation->o_years_since_arrival <= MaxYearsForImmigrantDonor;
+  if ( bDonor ) {
+    for ( int nYear = 0; nYear < SIZE(YEAR); nYear++ ) {
+      // calculate the number of clones
+      double dImmigrantsScaled = dSimulationScaleFactor * Immigrants[nYear]; 
+      double dCloneRate = (double) dImmigrantsScaled / (double)ImmigrantDonors;
+      int nClones = (int) dCloneRate;
+      double dFraction = dCloneRate - nClones;
+      if ( RandUniform(7) < dFraction ) nClones++;
+      // calculate an exact time of arrival
+      double dArrivalTime = MIN(YEAR) + nYear + 0.5 - RandUniform(8);
+      for ( int nClone = 0; nClone < nClones; nClone++ ) {
+        Person *pePerson = new Person();
+        pePerson->Start(oeObservation, NULL, dArrivalTime);
+        ProcessEvents();
+      }
+    }
+  }
+
+  // Finish the Observation entity
+  oeObservation->Finish();
+}
+
+
+// The Simulation function is called by Modgen to simulate a set of cases.
+void Simulation()
+{
+  // Open the microdata file
+  PersonOpenFile();
+
+  // counter for cases simulated
+  long lCase = 0;
+
+  // The Modgen run-time implements CASES (used below),
+  // which supplies the number of cases to simulate in a particular thread.
+  // 
+  // The following loop for cases is stopped if
+  //  - the simulation is cancelled by the user, with partial reports (gbInterrupted)
+  //  - the simulation is cancelled by the user, with no partial reports (gbCancelled)
+  //  - a run-time error occurs (gbErrors)
+  //
+  // The global variables gbInterrupted, gbCancelled and gbErrors
+  // are maintained by the Modgen run-time.
+  for ( lCase = 0; lCase < CASES() && !gbInterrupted && !gbCancelled && !gbErrors; lCase++ )
+  {
+    // Simulate a case.
+
+    // Tell the Modgen run-time to prepare to simulate a new case.
+    StartCase();
+
+    // Read the record corresponding to the case_id of the case
+    long lCaseID = GetCaseID();
+    PersonGetRecord(lCaseID);
+
+    // Call the CaseSimulation function defined earlier in this module.
+    CaseSimulation();
+
+    // Tell the Modgen run-time that the case has been completed.
+    SignalCase();
+  }
+
+  // Close the microdata file
+  PersonCloseFile();
+}
