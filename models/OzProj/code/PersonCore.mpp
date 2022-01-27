@@ -53,18 +53,33 @@ parameters
 
 void PreSimulation()
 {
+  // Do a first pass through the microdata file before simulating cases.
   input_csv inCsv;
   inCsv.open(MicroDataInputFile);
   ImmigrantDonors = 0;
-  long lRecordCount = 0;
-  while (inCsv.read_record(lRecordCount)) {
-    lRecordCount++;
+  long long nRecordCount = 0;
+  while (inCsv.read_record(nRecordCount)) {
+      nRecordCount++;
     if (inCsv[PMC_NATIVE_BORN] == 0
       && inCsv[PMC_YEARS_SINCE_ARRIVAL] <= MaxYearsForImmigrantDonor ) {
         ImmigrantDonors++;
     }
   }
   inCsv.close();
+  // Issue a warning if the number of records in the input microdata file
+  // differs from the number of records in the simulation.
+  // GetAllCases is used because it works in both ompp and Modgen versions of OzProj.
+  long long nSimulationCases = GetAllCases();
+  if (nRecordCount != nSimulationCases) {
+      std::stringstream ss;
+      ss << "warning : "
+          << nRecordCount
+          << " records in micro data input file but "
+          << nSimulationCases
+          << " cases requested";
+      WriteLogEntry(ss.str().c_str());
+      ;
+  }
 }
 
 actor Person //EN Individual

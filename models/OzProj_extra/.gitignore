@@ -1,0 +1,95 @@
+# openM++ intermediate build and run files
+#
+ompp/bin/
+ompp/build/
+ompp/src/
+*.log
+ompp-linux/
+ompp-mac/
+test_models/
+
+# Modgen-specific
+#
+modgen/bin/
+modgen/build/
+modgen/src/
+
+# build results and user settings
+#
+**/.vs
+**/.vscode
+*.pdb
+*.ipdb
+*.obj
+*.exe
+*.iobj
+*.ilk
+*.sdf
+*.suo
+*.o
+*.lo
+*.la
+*.al
+*.so
+*.so.[0-9]*
+*.a
+*.rej
+*~
+#*#
+.#*
+.*.swp
+*.vcxproj.user
+
+#
+# MacOS and Xcode
+#
+# below is customized version of:
+#  https://github.com/github/gitignore/Global/macOS.gitignore
+#  https://github.com/github/gitignore/Global/Xcode.gitignore
+#  https://github.com/github/gitignore/Objective-C.gitignore
+# Source GitHub/gitignore license: CC0 (world-wide public domain)
+#
+
+# Xcode
+
+## User settings
+xcuserdata/
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Gcc Patch
+/*.gcno
+
+# MacOS
+
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
