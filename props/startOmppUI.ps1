@@ -6,6 +6,10 @@ $publish_dir = "$env:PUBLISH_DIR"
 $oms_url_tickle = "$env:OMS_URL_TICKLE"
 $start_ompp_ui_log = "$env:START_OMPP_UI_LOG"
 
+# create directory for downloads from UI, errors are not critical and can be ignored
+#
+$null = New-Item -Path "$publish_dir\out\download" -ItemType Directory -ea 0
+
 if (!"$env:OM_ROOT") {
   $env:OM_ROOT = Resolve-Path -Path "$publish_dir/../../../.."
   Write-Host "OM_ROOT: $env:OM_ROOT"
