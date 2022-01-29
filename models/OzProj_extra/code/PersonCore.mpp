@@ -65,6 +65,11 @@ void PreSimulation()
     }
   }
   inCsv.close();
+
+  // The number of simulation cases is determined endogenously
+  // based on the number of records in the micro-data input file.
+  // SimulatinCases is a derived parameter used by the simulation framework for case-based models.
+  SimulationCases = lRecordCount;
 }
 
 actor Person //EN Individual

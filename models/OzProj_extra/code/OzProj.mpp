@@ -54,7 +54,7 @@ void CaseSimulation(case_info &ci)
     SimulateEvents();
   }
 
-  double dSimulationScaleFactor = GetAllCases() / (double) RealWorldStartPopulation;
+  double dSimulationScaleFactor = SimulationCases / (double) RealWorldStartPopulation;
   bool bDonor = !oeObservation->o_native_born
     && oeObservation->o_years_since_arrival <= MaxYearsForImmigrantDonor;
   if ( bDonor ) {

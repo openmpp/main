@@ -13,6 +13,13 @@
 
 #include <set> // for set used to hold sorted, deduplicated dirty list of events#
 
+// The number of cases is determined endogenously by model code
+// which sets SimulationCases to the number of records in teh input micro-data file.
+parameters {
+    model_generated int SimulationCases;
+};
+
+
 /**
  * Simulate all events for all entities in the simulation.
  *
@@ -147,9 +154,23 @@ void Simulation()
     Simulation_start(ci);
 
     long  lCase = 0;     // counter for cases simulated
+ 
+    long lCasesToDo = CASES();
+
+    // The following might work in Modgen without anomalies, but that's
+    // not assured because the number of cases in Modgen is determined in scenario properties
+    // and may be inconsistent with the value of the derived parameter SimulationCases.
+    int member_count = GetSubSamples();
+    int member = GetCaseSample();
+    lCasesToDo = SimulationCases / member_count;
+    if (member < (SimulationCases % member_count)) {
+        lCasesToDo++;
+    }
 
     // Loop through all cases.
-    for ( lCase = 0; lCase < CASES() && !gbInterrupted 
+    // The loop in model models uses Cases() but i9s replcaed by lCasesToDo
+    // to allow the model to determine the number of cases to simulate.
+    for ( lCase = 0; lCase < lCasesToDo && !gbInterrupted
           && !gbCancelled && !gbErrors; lCase++ )
     {
         // Tell the Modgen run-time to prepare to simulate a new case.
