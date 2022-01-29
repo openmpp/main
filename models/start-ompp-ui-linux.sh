@@ -85,6 +85,19 @@ then
   exit 1
 fi
 
+# create directory for downloads from UI
+#
+if [ ! -d "$PUBLISH_DIR/out/download" ] ;
+then
+  echo "mkdir -p $PUBLISH_DIR/out/download" | tee -a "$START_OMPP_UI_LOG"
+  mkdir -p "$PUBLISH_DIR/out/download"
+  if [ $? -ne 0 ] ;
+  then
+    echo "Warning: error at mkdir -p $PUBLISH_DIR/out/download" | tee -a "$START_OMPP_UI_LOG"
+    # do not exit: it is not critical error
+  fi
+fi
+
 # default model run template
 # if Debug build then use Debug template else no default template
 #
