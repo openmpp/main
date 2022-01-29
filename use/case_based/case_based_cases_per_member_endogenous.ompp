@@ -3,8 +3,13 @@
 * Framework implementation for case-based models - Model determines number of cases using SetSimulationCases()
 *
 */
-// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// Copyright (c) 2013-2022 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
+
+parameters {
+    //EN Number of cases in each member
+    derived long long CasesPerMember;
+};
 
 /**
 * Called by before_presimulation.
@@ -20,16 +25,28 @@ void after_presimulation_for_framework()
 {
     // Code block for number of cases
     {
-        // For this style of model, the model calls SetSimulationCases()
-        // in PreSimulation to specify the number of cases in the run (over all members)
-        fmk::all_cases = TBD;
+        // For this style of model, the parameter CasesPerMember
+        // gives the number of cases in each member.
+        // The value of the derived parameter CasesPerMember
+        // must be assigned in a PreSimulation function in model code.
 
-        // The number of cases to simulate for this sample member.
-        // Divide the total cases for the entire run by the number of members
-        // and spread any cases in the remainder among the first members (one extra case each)
-        fmk::member_cases = fmk::all_cases / fmk::simulation_members;
-        if (fmk::simulation_member < (fmk::all_cases % fmk::simulation_members)) {
-            fmk::member_cases++;
-        };
+        fmk::member_cases = CasesPerMember;
+
+        fmk::all_cases = fmk::member_cases * fmk::simulation_members;
+
+        if (fmk::SimulationSeed_member_part == 0) {
+            // Normal run, start at member 0
+        }
+        else {
+            // Special run, simulate a single case in the specified member.
+            if (fmk::simulation_member == fmk::SimulationSeed_member_part) {
+                // Simulate one case in the member specified in the combined seed
+                fmk::member_cases = 1;
+            }
+            else {
+                // Ignore all other members
+                fmk::member_cases = 0;
+            }
+        }
     }
 }
