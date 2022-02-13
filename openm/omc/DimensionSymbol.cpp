@@ -19,7 +19,7 @@ using namespace openm;
 string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim)
 {
     assert(symbol_with_dimensions);
-    return symbol_with_dimensions->name + "::Dim" + to_string(index);
+    return symbol_with_dimensions->name + ".Dim" + to_string(index);
 }
 
 // Update dimension name to be suitable as database column name: it must be unique, alphanumeric and not longer than 255 chars

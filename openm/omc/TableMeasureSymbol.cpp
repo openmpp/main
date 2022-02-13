@@ -18,7 +18,7 @@ using namespace openm;
 string TableMeasureSymbol::symbol_name(const Symbol* table, int index, string* pname_default)
 {
     assert(table);
-    return table->name + "::" + (pname_default ? *pname_default : "Expr" + to_string(index));
+    return table->name + "." + (pname_default ? *pname_default : "Expr" + to_string(index));
 }
 
 string TableMeasureSymbol::pretty_name() const
