@@ -2303,7 +2303,7 @@ CodeBlock Symbol::build_NAME_code(void)
                 // explicit short name is not being used, so was generated
                 if (first_generated_name) {
                     c += "";
-                    c += "// Parameter: " + param->pp_labels[0];
+                    c += "// Parameter " + param->name + ": " + param->pp_labels[0];
                     first_generated_name = false;
                 }
                 c += "//NAME " + param->name + "." + dim->short_name_default + " " + dim->short_name;
@@ -2320,7 +2320,7 @@ CodeBlock Symbol::build_NAME_code(void)
                 // explicit short name is not being used, so was generated
                 if (first_generated_name) {
                     c += "";
-                    c += "// Table: " + table->pp_labels[0];
+                    c += "// Table " + table->name + ": " + table->pp_labels[0];
                     first_generated_name = false;
                 }
                 c += "//NAME " + table->name + "." + dim->short_name_default + " " + dim->short_name;
