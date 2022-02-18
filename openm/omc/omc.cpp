@@ -612,6 +612,30 @@ int main(int argc, char * argv[])
             }
         }
 
+        // block for creation of file with import information in csv format
+        {
+            auto content = Symbol::build_imports_csv();
+            const string model_imports_csv_name = "model_imports.csv";
+            if (content.size() > 0) {
+                // There are one or more imports.
+                // open output stream for csv
+                ofstream model_imports_csv(makeFilePath(outDir.c_str(), model_imports_csv_name.c_str()), ios::out | ios::trunc | ios::binary);
+                exit_guard<ofstream> onExit_imports_csv(&model_imports_csv, &ofstream::close);   // close on exit
+                if (model_imports_csv.fail()) {
+                    string msg = "omc : warning : Unable to open " + model_imports_csv_name + " for writing.";
+                    theLog->logMsg(msg.c_str());
+                }
+                else {
+                    model_imports_csv << content;
+                    model_imports_csv.close();
+                }
+            }
+            else {
+                // Model contains no imports, so delete obsolete model_imports.csv if present
+                remove(makeFilePath(inpDir.c_str(), model_imports_csv_name.c_str()).c_str());
+            }
+        }
+
         // create model.message.ini file
         theLog->logMsg("Meta-data processing");
         buildMessageIni(metaRows, inpDir, outDir, Symbol::code_page.c_str(), Symbol::tran_strings);

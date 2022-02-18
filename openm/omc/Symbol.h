@@ -889,6 +889,13 @@ public:
     static CodeBlock build_NAME_code(void);
 
     /**
+     * Generate csv echoing model import statements
+     *
+     * @return a string
+     */
+    static std::string build_imports_csv(void);
+
+    /**
      * Pathnames of use folders.
      * 
      * Used to resolve 'use' statements to physical files. 

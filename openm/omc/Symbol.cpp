@@ -1371,7 +1371,7 @@ void Symbol::post_parse_all()
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_anon_groups.sort( [] (AnonGroupSymbol *a, AnonGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
-    pp_all_imports.sort([](ImportSymbol* a, ImportSymbol* b) { return a->name < b->name; });
+    pp_all_imports.sort( [] (ImportSymbol* a, ImportSymbol* b) { return a->pp_target_param->name < b->pp_target_param->name; } );
     // pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     // pp_all_table_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
@@ -2343,3 +2343,29 @@ CodeBlock Symbol::build_NAME_code(void)
     return c;
 }
 
+//static
+std::string Symbol::build_imports_csv(void)
+{
+    std::string csv;
+
+    bool first_import = true;
+    for (auto import : pp_all_imports) {
+        if (first_import) {
+            // csv header
+            first_import = false;
+            csv += "parameter_name,parameter_rank,from_name,from_model_name,is_sample_dim\n";
+        }
+        std::string parameter_name = import->pp_target_param->name;
+        std::string parameter_rank = std::to_string(import->pp_target_param->rank());
+        std::string from_name = import->upstream_table;
+        std::string from_model_name = import->upstream_model;
+        std::string is_sample_dim = import->sample_dimension_opt ? "TRUE" : "FALSE";
+        csv += parameter_name + ",";
+        csv += parameter_rank + ",";
+        csv += from_name + ",";
+        csv += from_model_name + ",";
+        csv += is_sample_dim + "\n";
+    }
+
+    return csv;
+}
