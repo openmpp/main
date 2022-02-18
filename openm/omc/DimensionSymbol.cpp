@@ -206,7 +206,7 @@ string DimensionSymbol::heuristic_short_name(void) const
         }
     }
 
-    // Make name alphanumeric and truncate it to 32 chars.
+    // Make name alphanumeric and truncate it to maximum length.
     hn = openm::toAlphaNumeric(hn, short_name_max_length);
 
     // trim off trailing "_" if present
