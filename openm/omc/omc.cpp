@@ -591,12 +591,11 @@ int main(int argc, char * argv[])
         // block for creation of file with generated short names
         {
             CodeBlock generated_names_code = Symbol::build_NAME_code();
-            string inpDir = argStore.strOption(OmcArgKey::inputDir);
-            const string GeneratedNames_ompp_name = "GeneratedNames.ompp.tmp";
+            const string GeneratedNames_ompp_name = "GeneratedNames.ompp";
             if (generated_names_code.size() > 0) {
                 // There are one or more generated short names.
                 // open output stream for //NAME statements for generated names
-                ofstream GeneratedNames_ompp(makeFilePath(inpDir.c_str(), GeneratedNames_ompp_name.c_str()), ios::out | ios::trunc | ios::binary);
+                ofstream GeneratedNames_ompp(makeFilePath(outDir.c_str(), GeneratedNames_ompp_name.c_str()), ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&GeneratedNames_ompp, &ofstream::close);   // close on exit
                 if (GeneratedNames_ompp.fail()) {
                     string msg = "omc : warning : Unable to open " + GeneratedNames_ompp_name + " for writing.";
