@@ -29,7 +29,7 @@ table Person T01_LifeExpectancy				//EN Life Expectancy
 
 table Person T02_TotalPopulationByYear		//EN Life table
 {
-	//EN Age
+	//EN Curtate age
 	integer_age *		
 	{
 		unit,								//EN Population start of year
