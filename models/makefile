@@ -25,7 +25,7 @@ model_BIN_DIR = $(model_OUT_PREFIX)/bin
 # models to build
 #
 ifndef MODEL_DIRS
-  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual NewTimeBased_bilingual RiskPaths OzProj OzProjGen Alpha2
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths Alpha2
 endif
 
 #
@@ -69,16 +69,9 @@ publish-views : publish
 run :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) run || { exit $$?; };)
 
-# OzProj models reading microdata from ../../microdata/some.file.csv
-#
-OZ_PROJ_MODELS = OzProj OzProjGen
-
 .PHONY : publish-all
 publish-all : prepare publish
-	$(foreach d,$(filter-out $(OZ_PROJ_MODELS),$(MODEL_DIRS)),cp -pf $(d)/$(model_BIN_DIR)/$(d)* $(local_BIN_DIR);)
-	$(foreach d,$(OZ_PROJ_MODELS),mkdir -p $(local_BIN_DIR)/$d/ompp/bin;)
-	$(foreach d,$(OZ_PROJ_MODELS),cp -pf $(d)/$(model_BIN_DIR)/$(d)* $(local_BIN_DIR)/$d/ompp/bin/;)
-	$(foreach d,$(OZ_PROJ_MODELS),cp -prf $(d)/microdata $(local_BIN_DIR)/$d/;)
+	$(foreach d,$(MODEL_DIRS),cp -pf $(d)/$(model_BIN_DIR)/$(d)* $(local_BIN_DIR);)
 	cp -pf modelOne/*.sql $(local_SQL_DIR)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
 

@@ -1,6 +1,17 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2022_02_02:
+  core: support for case-based models which set the number of cases endogenously:
+  omc: generate better dimension and measure labels if absent in model code
+  raise run-time error if SimulationCases exceeds number of records in micro-data input file
+  UI: new simple version of scenario create and edit page
+  UI: model run output tables selection
+  UI: model presets: simple one click button model run options
+  UI: allow user to switch between tables and parameters tree view between names and labels
+  docker Windows build using VS 2022
+  Windows 11 supported
+
 2022_12_10:
   model: add censor_event_time option to improve simulation speed
   model: enables entity weights for case-based models
