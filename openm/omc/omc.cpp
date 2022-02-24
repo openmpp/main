@@ -615,7 +615,7 @@ int main(int argc, char * argv[])
         // block for creation of file with import information in csv format
         {
             auto content = Symbol::build_imports_csv();
-            const string model_imports_csv_name = "model_imports.csv";
+            const string model_imports_csv_name = model_name + ".imports.csv";
             if (content.size() > 0) {
                 // There are one or more imports.
                 // open output stream for csv
