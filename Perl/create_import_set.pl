@@ -12,7 +12,6 @@ my $script_version = '1.0';
 use Getopt::Long::Descriptive;
 use Cwd;
 use File::Basename;
-use File::Temp qw/ tempfile tempdir /;
 use File::Path qw(make_path remove_tree);
 
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
@@ -171,7 +170,9 @@ while (<IN_FILE>) {
     my $parameter_rank = $fields[1];
     my $from_name = $fields[2];
     my $from_model_name = $fields[3];
-    my $is_sample_dim = $fields[4];
+    my $is_sample_dim = $fields[4] eq 'TRUE';
+    # Table rank is one less than parameter rank if modgen hack used
+    my $table_rank = $parameter_rank - ($is_sample_dim ? 1 : 0);
     if ($from_model_name eq $upstream_model_name) {
         # Found downstream model import for specified upstream model
         $parameters_processed++;
@@ -188,7 +189,9 @@ while (<IN_FILE>) {
         $set_json .= "     ],\n";
         $set_json .= "    },\n";
 
-        # TODO use hack flag column to decide what to do.
+        # Build the csv header for output set.
+        # It will always match the rank of the downstream model parameter.
+        # The first field is sub_id, and the last field is param_value.
         my $out_header = "sub_id";
         for (my $i = 0; $i < $parameter_rank; $i++) {
             $out_header .= ",Dim".$i;
@@ -205,54 +208,58 @@ while (<IN_FILE>) {
         my $zip_out_csv = "${zip_out_csvdir}/${parameter_name}.csv";
         print "zip_out_csv = ${zip_out_csv}\n" if $verbose;
         
-        if (0) {
-            # This code block for testing only, pending line-by-line transformation of table cell to parameter cell
-            my $contents_in = $zip_in->contents($zip_member);
-            print "length=".length($contents_in)."\n" if $verbose;;
-            
-            # TODO placeholder code for testing output zip
-            my $contents_out = $contents_in;
-            my $csv_out_member = $zip_out->addString( $contents_out, $zip_out_csv );
-            $csv_out_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
-        }
-
-        if (1) {
-            # This code block reads the current input run csv line by line and transforms it to the output csv, line by line.
-            # get file handle for the input table csv
+        {
+            # This code block reads the current input csv line by line and transforms it to the output csv.
+            # Get file handle for the input table csv using Zip::MemberRead API.
             my $fh_in = Archive::Zip::MemberRead->new($zip_member);
-            
-            # get file handle for the output parameter csv
-            # Archive::Zip has no method to write to zip through a file handle,
-            # so use a temporary file.
-            
+
+            # open output csv file in staging directory
             open my $fh_out, ">", $zip_out_csv or die "can't open ${zip_out_csv}";
-            #my ($fh_out, $temp_name) = tempfile('create_import_set_tmpXXXXXX');
-            #print "temp_name = ${temp_name}\n" if $verbose;
             $fh_out->write("${out_header}\n");
             
             # read the input table line by line
             # and write the output parameter line by line
-            my $line_in;
             my $first_line = 1;
-            while (defined($line_in = $fh_in->getline())) {
+            my $in_header;
+            while (defined(my $line_in = $fh_in->getline())) {
                 #chomp $line_in; # probably not necessary per documentation of Archive::Zip::MemberRead
                 if ($first_line) {
                     $first_line = 0;
                     # Note that file may start with BOM, in which case those bytes will be at the beginning of $line
-                    print "in_header = ${line_in}\n" if $verbose;
+                    $in_header = $line_in;
+                    print "in_header = ${in_header}\n" if $verbose;
+                    next;
                 }
+                # handle final spurious empty line if present
+                next if length($line_in) == 0;
                 my $line_out;
                 # transform input line to output line
-                $line_out = $line_in; # just for testing
+                # Split input line into fields
+                my @fields_in = split(/[,]/, $line_in);
+                my @fields_out = ();
+                if ($is_sample_dim) {
+                    # The current import uses hacked modgen approach.
+                    # Insert constant sub_id with value 0.
+                    # The true sub_id of the upstream table will be pushed to the explicit dimension Dim0 of downstream parameter (after sub_id)
+                    push @fields_out, '0';
+                    push @fields_out, $fields_in[0]; # the sub_id of the table becomes Dim0 of the parameter
+                }
+                else {
+                    # Modgen hack not used, propagate actual sub_id from table to parameter
+                    push @fields_out, $fields_in[0];
+                }
+                # push the dimension indices of the table to the parameter
+                for (my $dim = 0; $dim < $table_rank; $dim++) {
+                    push @fields_out, $fields_in[$dim + 1];
+                }
+                # Push the value field.
+                # This is the last field in the table record, after any additional accumulator fields
+                push @fields_out, $fields_in[-1];
+                $line_out = join ',', @fields_out;
                 $fh_out->write("${line_out}\n");
             }
             $fh_in->close();
             $fh_out->close();
-            #$zip_out->addFile($temp_name, $zip_out_csv);
-            #my $temp_member = Archive::Zip::Member->newFromFile($temp_name, $zip_out_csv);
-            #$zip_out->addMember($temp_member);
-            #unlink $temp_name;
-            #sleep 1;
         }
     }
 }
@@ -262,26 +269,24 @@ close IN_FILE;
 $set_json .= "  ]\n";
 $set_json .= "}\n";
 
-# write json metadata to output file
+# write json metadata to output file in staging directory
 {
-    my $filename = "test/test.csv";
     open JSON_FILE, ">${zip_out_json}" || die "unable to open ${zip_out_json}";;
     print JSON_FILE $set_json;
     close JSON_FILE;
 }
+sleep 1;
 
 $zip_out->addTree($zip_out_topdir, $zip_out_topdir);
 
-#my $json_member = $zip_out->addString( $set_json, $zip_out_json, COMPRESSION_DEFLATED);
-#$json_member->desiredCompressionMethod( COMPRESSION_DEFLATED );
-
-# Save the zip file
+# Write the zip file
 unless ( $zip_out->writeToFileNamed("${downstream_model_name}.set.${set_name}.zip") == AZ_OK ) {
-    die 'write error';
+    die 'unable to write output zip';
 }
 
 #print "\njson metadata for output set:\n".$json if $verbose;
 
-print "${line} lines read\n" if $verbose;
-print "${parameters_processed} parameters processed\n";
+print "${parameters_processed} downstream ${downstream_model_name} parameters created from upstream ${upstream_model_name} tables\n";
 
+# cleanup - remove staging directory
+remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
