@@ -14,6 +14,8 @@ use Cwd;
 use File::Basename;
 use File::Path qw(make_path remove_tree);
 
+use Text::CSV qw( csv );
+
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use Archive::Zip::MemberRead;
 Archive::Zip::MemberRead->setLineEnd("\x0a"); # change default from \r\n (Windows), because dbcopy uses \n
@@ -126,7 +128,7 @@ my $set_name = $run_name;
 
 # Build set contents
 my $zip_out_topdir = "${downstream_model_name}.set.${set_name}";
-my $zip_out_csvdir = "${zip_out_topdir}/set.${set_name}/";
+my $zip_out_csvdir = "${zip_out_topdir}/set.${set_name}";
 my $zip_out_json = "${zip_out_topdir}/${downstream_model_name}.set.${set_name}.json";
 
 chdir $workdir or die "unable to change directory to ${workdir}";
@@ -153,6 +155,7 @@ $set_json .= "  \"Param\":[\n";
 # and process each import table / parameter.
 
 my $line = 0;
+my $is_first_parameter = 1;
 my $parameters_processed = 0;
 open IN_FILE, '<'.$imports_in || die "failed to open ${imports_in}";
 my $header = <IN_FILE>; # skip header
@@ -182,12 +185,21 @@ while (<IN_FILE>) {
         
         # Add information on this parameter to json file for the set
         # The parameter value description is set equal to the upstream model name followed by the run name 
+        
+        if ($is_first_parameter) {
+            $is_first_parameter = 0;
+        }
+        else {
+            # insert separator before this array element
+            $set_json .= ",\n";
+        }
+        
         $set_json .= "    {\"Name\":\"${parameter_name}\",\n";
         $set_json .= "     \"Subcount\":${subcount},\n";
         $set_json .= "     \"Txt\":[\n";
         $set_json .= "        {\"LangCode\":\"${upstream_lang_code}\",\"Descr\":\"${upstream_model_name}: ${run_name}\"}\n";
-        $set_json .= "     ],\n";
-        $set_json .= "    },\n";
+        $set_json .= "     ]\n";
+        $set_json .= "    }\n";
 
         # Build the csv header for output set.
         # It will always match the rank of the downstream model parameter.
@@ -214,8 +226,10 @@ while (<IN_FILE>) {
             my $fh_in = Archive::Zip::MemberRead->new($zip_member);
 
             # open output csv file in staging directory
-            open my $fh_out, ">", $zip_out_csv or die "can't open ${zip_out_csv}";
+            open my $fh_out, ">:utf8", $zip_out_csv or die "can't open ${zip_out_csv}";
             $fh_out->write("${out_header}\n");
+            
+            my $csv = Text::CSV->new({binary => 1});
             
             # read the input table line by line
             # and write the output parameter line by line
@@ -235,7 +249,9 @@ while (<IN_FILE>) {
                 my $line_out;
                 # transform input line to output line
                 # Split input line into fields
-                my @fields_in = split(/[,]/, $line_in);
+                #my @fields_in = split(/[,]/, $line_in);
+                $csv->parse($line_in) || die "failed to parse ${line_in}";
+                my @fields_in = $csv->fields();
                 my @fields_out = ();
                 if ($is_sample_dim) {
                     # The current import uses hacked modgen approach.
@@ -255,7 +271,9 @@ while (<IN_FILE>) {
                 # Push the value field.
                 # This is the last field in the table record, after any additional accumulator fields
                 push @fields_out, $fields_in[-1];
-                $line_out = join ',', @fields_out;
+                #$line_out = join ',', @fields_out;
+                $csv->combine(@fields_out) || die "failed to combine";
+                $line_out = $csv->string();
                 $fh_out->write("${line_out}\n");
             }
             $fh_in->close();
@@ -289,4 +307,4 @@ unless ( $zip_out->writeToFileNamed("${downstream_model_name}.set.${set_name}.zi
 print "${parameters_processed} downstream ${downstream_model_name} parameters created from upstream ${upstream_model_name} tables\n";
 
 # cleanup - remove staging directory
-remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
+#remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
