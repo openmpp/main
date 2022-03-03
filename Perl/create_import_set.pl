@@ -1,7 +1,8 @@
-# Creates a parameter set with output from an upstream model for use in a downstream model
+#!/usr/bin/perl
+# Copyright (c) 2022 OpenM++ Contributors
+# This code is licensed under the MIT license (see LICENSE.txt for details)
 
-# Details:
-# 
+# Script to create a parameter set with output from an upstream model for use in a downstream model
 
 use strict;
 use warnings;
@@ -11,17 +12,19 @@ my $script_version = '1.0';
 
 use Getopt::Long::Descriptive;
 use Cwd;
-use File::Basename;
 use File::Path qw(make_path remove_tree);
 
 use Text::CSV qw( csv );
 
+# The following module is included explicitly here
+# because otherwise pp does not include it when building executable version of utility
+# because pp does not detect that Text::CSV_PP is required
+# because the module is loaded dynamically at runtime by Txt::CSV, not statically
+use Text::CSV_PP; 
+
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use Archive::Zip::MemberRead;
 Archive::Zip::MemberRead->setLineEnd("\x0a"); # change default from \r\n (Windows), because dbcopy uses \n
-
-# add the directory of this script to search path to use Perl modules
-use lib dirname (__FILE__);
 
 my ($opt, $usage) = describe_options(
 	$script_name.' %o',
@@ -34,7 +37,8 @@ my ($opt, $usage) = describe_options(
 	[ 'downstream|d=s' => 'name of downstream model' ],
 	[ 'workdir|w=s'    => 'path of working directory for zips (default is current directory)',
         { default => '.' } ],
-	[ 'verbose'     => 'verbose log output' ],
+	[ 'keep'           => 'keep and propagate all subs' ],
+	[ 'verbose'        => 'verbose log output' ],
 );
 
 if ($opt->version) {
@@ -67,6 +71,9 @@ length($downstream_model_name) > 0 or die "name of downstream model must be spec
 my $workdir = $opt->workdir;
 -d $workdir or die "working directory ${workdir} not found";
 
+my $keep_all_subs = 0;
+$keep_all_subs = 1 if $opt->keep;
+
 my $verbose = 0;
 $verbose = 1 if $opt->verbose;
 
@@ -89,6 +96,7 @@ if (0) {
 
 # process json file from run zip
 my $upstream_lang_code = '';
+my $upstream_subcount;
 {
     my $run_zip_json = '';
     my $run_zip_model_name = '';
@@ -114,6 +122,12 @@ my $upstream_lang_code = '';
     $run_zip_run_name = $1;
     print "run_zip_run_name=${run_zip_run_name}\n" if $verbose;
     $run_name eq $run_zip_run_name or die "incoherence between upstream run name ${run_name} and run name inside run zip ${run_zip_run_name}";
+    
+    # obtain upstream subcount from json
+    # search for property SubCount
+    $run_zip_json =~ /"SubCount":(\d+)/;
+    $upstream_subcount = $1;
+    print "upstream_subcount=${upstream_subcount}\n" if $verbose;
     
     # obtain upstream default language name
     # search for property LangCode
@@ -149,6 +163,7 @@ my $set_json = '';
 $set_json .= "{\n";
 $set_json .= "  \"ModelName\":\"${downstream_model_name}\",\n";
 $set_json .= "  \"Name\":\"${set_name}\",\n";
+$set_json .= "  \"IsReadonly\":true,\n";
 $set_json .= "  \"Param\":[\n";
 
 # Read the imports csv file
@@ -181,7 +196,22 @@ while (<IN_FILE>) {
         $parameters_processed++;
         print "\ncreating ${parameter_name} from ${from_name}\n" if $verbose;
         
-        my $subcount = 1; # is always 1 for hacked modgen-style import
+        # Parameters with modgen hack have one sub
+        # others have all subs in the run if --keep flag specified,
+        # others just sub 0.
+        my $subcount;
+        if ($is_sample_dim) {
+            # modgen hack
+            $subcount = 1;
+        }
+        elsif ($keep_all_subs) {
+            # tables/parameters assumed to be variable by sub
+            $subcount = $upstream_subcount;
+        }
+        else {
+            # tables/parameters assumed to be constant over subs
+            $subcount = 1;
+        }
         
         # Add information on this parameter to json file for the set
         # The parameter value description is set equal to the upstream model name followed by the run name 
@@ -252,17 +282,29 @@ while (<IN_FILE>) {
                 #my @fields_in = split(/[,]/, $line_in);
                 $csv->parse($line_in) || die "failed to parse ${line_in}";
                 my @fields_in = $csv->fields();
+                my $sub_id = $fields_in[0]; # The sub_id of this record of the upstream table
                 my @fields_out = ();
                 if ($is_sample_dim) {
                     # The current import uses hacked modgen approach.
                     # Insert constant sub_id with value 0.
-                    # The true sub_id of the upstream table will be pushed to the explicit dimension Dim0 of downstream parameter (after sub_id)
+                    # The true sub_id of the upstream table will be pushed to the explicit dimension Dim0 of downstream parameter (the field immediately after sub_id)
                     push @fields_out, '0';
                     push @fields_out, $fields_in[0]; # the sub_id of the table becomes Dim0 of the parameter
                 }
-                else {
-                    # Modgen hack not used, propagate actual sub_id from table to parameter
+                elsif ($keep_all_subs) {
+                    # Modgen hack not used and --keep flag was specified,
+                    # so propagate actual sub_id from table to parameter
                     push @fields_out, $fields_in[0];
+                }
+                else {
+                    # --keep flag not specified, so upstream table is assumed invariant across subs.
+                    # Process only records with sub_id 0 and skip any others.
+                    if ($sub_id == 0) {
+                        push @fields_out, $fields_in[0];
+                    }
+                    else {
+                        next;
+                    }
                 }
                 # push the dimension indices of the table to the parameter
                 for (my $dim = 0; $dim < $table_rank; $dim++) {
@@ -307,4 +349,4 @@ unless ( $zip_out->writeToFileNamed("${downstream_model_name}.set.${set_name}.zi
 print "${parameters_processed} downstream ${downstream_model_name} parameters created from upstream ${upstream_model_name} tables\n";
 
 # cleanup - remove staging directory
-#remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
+remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
