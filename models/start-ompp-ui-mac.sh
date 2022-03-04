@@ -78,15 +78,26 @@ then
   exit 1
 fi
 
-# create directory for downloads from UI
+# create directory for download and upload from UI
 #
-if [ ! -d "$PUBLISH_DIR/out/download" ] ;
+if [ ! -d "$PUBLISH_DIR/io/download" ] ;
 then
-  echo "mkdir -p $PUBLISH_DIR/out/download" | tee -a "$START_OMPP_UI_LOG"
-  mkdir -p "$PUBLISH_DIR/out/download"
+  echo "mkdir -p $PUBLISH_DIR/io/download" | tee -a "$START_OMPP_UI_LOG"
+  mkdir -p "$PUBLISH_DIR/io/download"
   if [ $? -ne 0 ] ;
   then
-    echo "Warning: error at mkdir -p $PUBLISH_DIR/out/download" | tee -a "$START_OMPP_UI_LOG"
+    echo "Warning: error at mkdir -p $PUBLISH_DIR/io/download" | tee -a "$START_OMPP_UI_LOG"
+    # do not exit: it is not critical error
+  fi
+fi
+
+if [ ! -d "$PUBLISH_DIR/io/upload" ] ;
+then
+  echo "mkdir -p $PUBLISH_DIR/io/upload" | tee -a "$START_OMPP_UI_LOG"
+  mkdir -p "$PUBLISH_DIR/io/upload"
+  if [ $? -ne 0 ] ;
+  then
+    echo "Warning: error at mkdir -p $PUBLISH_DIR/io/upload" | tee -a "$START_OMPP_UI_LOG"
     # do not exit: it is not critical error
   fi
 fi
@@ -108,9 +119,9 @@ export OM_CFG_INI_ANY_KEY="true"
 
 # start oms web-service
 #
-echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir "$PUBLISH_DIR" -oms.AllowDownload -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
+echo "bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir "$PUBLISH_DIR" -oms.AllowDownload -oms.AllowUpload -oms.LogRequest | tee -a "$START_OMPP_UI_LOG"
 
-"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir "$PUBLISH_DIR" -oms.AllowDownload -oms.LogRequest \
+"bin/oms" -l localhost:0 -oms.ModelDir "$PUBLISH_DIR" -oms.ModelLogDir "$PUBLISH_DIR" -oms.UrlSaveTo "$OMS_URL_TICKLE" -oms.HomeDir "$PUBLISH_DIR" -oms.AllowDownload -oms.AllowUpload -oms.LogRequest \
   >> "$START_OMPP_UI_LOG" 2>&1 & \
   status=$? \
   OMS_PID=$!

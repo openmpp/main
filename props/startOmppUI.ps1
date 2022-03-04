@@ -6,9 +6,10 @@ $publish_dir = "$env:PUBLISH_DIR"
 $oms_url_tickle = "$env:OMS_URL_TICKLE"
 $start_ompp_ui_log = "$env:START_OMPP_UI_LOG"
 
-# create directory for downloads from UI, errors are not critical and can be ignored
+# create directories for download and upload from UI, errors are not critical and can be ignored
 #
-$null = New-Item -Path "$publish_dir\out\download" -ItemType Directory -ea 0
+$null = New-Item -Path "$publish_dir\io\download" -ItemType Directory -ea 0
+$null = New-Item -Path "$publish_dir\io\upload"   -ItemType Directory -ea 0
 
 if (!"$env:OM_ROOT") {
   $env:OM_ROOT = Resolve-Path -Path "$publish_dir/../../../.."
@@ -17,9 +18,9 @@ if (!"$env:OM_ROOT") {
 $env:OM_CFG_INI_ALLOW = "true"
 $env:OM_CFG_INI_ANY_KEY = "true"
 
-"Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList ""-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.UrlSaveTo ""$oms_url_tickle"" -oms.HomeDir ""$publish_dir"" -oms.AllowDownload -oms.LogRequest""" | Out-File -FilePath $start_ompp_ui_log
+"Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList ""-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.UrlSaveTo ""$oms_url_tickle"" -oms.HomeDir ""$publish_dir"" -oms.AllowDownload -oms.AllowUpload -oms.LogRequest""" | Out-File -FilePath $start_ompp_ui_log
 
-$oms_proc = Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList "-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.UrlSaveTo ""$oms_url_tickle"" -oms.HomeDir ""$publish_dir"" -oms.AllowDownload -oms.LogRequest"
+$oms_proc = Start-Process bin/oms.exe -PassThru -WindowStyle Minimized -ArgumentList "-l localhost:0 -oms.ModelDir ""$publish_dir"" -oms.ModelLogDir ""$publish_dir"" -oms.UrlSaveTo ""$oms_url_tickle"" -oms.HomeDir ""$publish_dir"" -oms.AllowDownload -oms.AllowUpload -oms.LogRequest"
 
 Start-Sleep -s 1
 
