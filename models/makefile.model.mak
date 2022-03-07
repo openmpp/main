@@ -320,7 +320,8 @@ clean-all: clean
 	rm -rf $(MODEL_BUILD_DIR)
 	rm -f $(OUT_BIN_DIR)/$(MODEL_EXE)
 	rm -f $(MODEL_SQLITE)
-	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME).ini
+	rm -f $(OUT_BIN_DIR)/*.ini
+	rm -f $(OUT_BIN_DIR)/*.log
 
 .PHONY: prepare
 prepare:
