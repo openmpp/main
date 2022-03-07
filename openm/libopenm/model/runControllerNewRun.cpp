@@ -206,6 +206,8 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
 
         rn = cleanPathChars(rn, OM_NAME_DB_MAX);
     }
+    setArgOpt(RunOptionsKey::runId, to_string(nRunId));
+    setArgOpt(RunOptionsKey::runName, rn);
 
     // calculate run metadata digest and create new run entry
     RunLstRow rr(nRunId);
@@ -393,9 +395,7 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
 
     for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
-        // skip run id: it is already in database
         // hide connection string: it can contain passwords
-        if (optIt->first == RunOptionsKey::restartRunId) continue;
         if (equalNoCase(optIt->first.c_str(), RunOptionsKey::dbConnStr)) continue;
         if (equalNoCase(optIt->first.c_str(), dbImportPrefix.c_str(), dbImportPrefix.length())) continue;
 

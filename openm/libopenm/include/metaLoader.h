@@ -25,6 +25,9 @@ namespace openm
         /** model run name in database */
         static constexpr const char * runName = "OpenM.RunName";
 
+        /** run id of current model run */
+        static constexpr const char * runId = "OpenM.RunId";
+
         /** model run id to restart model run */
         static constexpr const char * restartRunId = "OpenM.RestartRunId";
 
