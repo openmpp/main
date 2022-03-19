@@ -4,7 +4,10 @@
     <MODGEN_ROOT Condition="'$(MODGEN_ROOT)'==''">$(registry:HKEY_LOCAL_MACHINE\Software\StatCan\Modgen\12@Path)</MODGEN_ROOT>
     <MODGEN_VERSION Condition="'$(MODGEN_VERSION)'==''">12.1</MODGEN_VERSION>
     <!-- hard code to Modgen 12.1.3 for VS 2019 -->
-    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v142</PLATFORM_TOOLSET>
+    <!-- If running in VS 2019, set platform toolset for VC 2019 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'=='' And '$(BuildingInsideVisualStudio)'=='true' And '$(VisualStudioVersion)'=='16.0'">v142</PLATFORM_TOOLSET>
+    <!-- Otherwise, hard code to VS 2022 -->
+    <PLATFORM_TOOLSET Condition="'$(PLATFORM_TOOLSET)'==''">v143</PLATFORM_TOOLSET>
     <CHARACTER_SET Condition="'$(CHARACTER_SET)'==''">Unicode</CHARACTER_SET>
   </PropertyGroup>
 </Project>
