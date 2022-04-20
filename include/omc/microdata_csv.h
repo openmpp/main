@@ -32,25 +32,48 @@ public:
     {
     }
 
-	/**
-	* Expand leading $XYZ/the/file.csv using environment variable XYZ
-	*
-	* @param path Filename to be expanded (in place)
-	*/
-	static void expand(std::string & path)
-	{
-		if (path.length() > 0 && '$' == path[0]) {
-			auto slash_pos = path.find_first_of("\\/:");
-			if (slash_pos == std::string::npos) {
-				slash_pos = path.length();
-			}
-			auto env_name = path.substr(1, slash_pos - 1);
-			auto env_value = std::getenv(env_name.c_str());
-			if (env_value) {
-				path = env_value + path.substr(slash_pos);
-			}
-		}
-	}
+    /**
+    * Expand leading $XYZ/the/file.csv or ${XYZ}the/file.csv using environment variable XYZ.
+    * If XYZ is not defined then treat ${XYZ} as empty "" string: ${XYZ}the/file.csv == the/file.csv
+    *
+    * @param path Filename to be expanded (in place)
+    */
+    static void expand(std::string & path)
+    {
+        if (path.length() > 1 && '$' == path[0]) {
+
+            // if this is $XYZ/the/file.csv
+            if ('{' != path[1]) {
+                auto slash_pos = path.find_first_of("\\/:");
+                if (slash_pos == std::string::npos) {
+                    slash_pos = path.length();
+                }
+                auto env_name = path.substr(1, slash_pos - 1);
+                auto env_value = std::getenv(env_name.c_str());
+                if (env_value) {
+                    path = env_value + path.substr(slash_pos);
+                }
+                // else keep path as is: $XYZ/the/file.csv
+            }
+            else { // if this is ${XYZ}/the/file.csv
+
+                auto end_pos = path.find('}');
+                if (end_pos == std::string::npos) {
+                    return;     // keep path as is: ${XYZ
+                }
+			    auto env_name = path.substr(2, end_pos - 2);
+
+                auto env_value = std::getenv(env_name.c_str());
+                if (env_value) {
+                    path = env_value + path.substr(end_pos + 1);
+                }
+                else {
+                    // treat ${XYZ} as empty "" string, path: ${XYZ}the/file.csv == the/file.csv
+                    path = path.substr(end_pos + 1);
+                }
+            }
+        }
+    }
 
     /**
      * Get the file name.
