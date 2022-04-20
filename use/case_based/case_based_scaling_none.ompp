@@ -17,7 +17,7 @@ namespace fmk {
  *
  * This version does no population scaling.
  * 
- * In tables, the size of the population reflects the number of cases.
+ * In tables, the size of the population reflects the number of total number of cases in the run.
  *
  * @return A double.
  */
