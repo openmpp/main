@@ -680,6 +680,7 @@ for my $model_dir (@model_dirs) {
 					"/p:OM_ROOT=${om_root}",
 					"/p:Configuration=${config}",
 					"/p:Platform=${modgen_platform}",
+					"/p:PLATFORM_TOOLSET=${ms_platform_toolset}",
 					"/p:SCENARIO_NAME=${scenario_name}",
 					"/p:RUN_SCENARIO=false",
 					"/t:Rebuild",
