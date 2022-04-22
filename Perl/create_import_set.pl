@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 my $script_name = 'create_import_set';
-my $script_version = '1.0';
+my $script_version = '1.1';
 
 use Getopt::Long::Descriptive;
 use Cwd;
