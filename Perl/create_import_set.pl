@@ -111,14 +111,14 @@ my $upstream_subcount;
     
     # obtain upstream model name from json
     # search for property ModelName
-    $run_zip_json =~ /"ModelName":"(\w+)"/;
+    $run_zip_json =~ /"ModelName":"([^"]*)"/;
     $run_zip_model_name = $1;
     print "run_zip_model_name = ${run_zip_model_name}\n" if $verbose;
     $upstream_model_name eq $run_zip_model_name or die "incoherence between upstream model name ${upstream_model_name} and model name inside run zip ${run_zip_model_name}";
     
     # obtain upstream run name from json
     # search for property Name
-    $run_zip_json =~ /"Name":"(\w+)"/;
+    $run_zip_json =~ /"Name":"([^"]*)"/;
     $run_zip_run_name = $1;
     print "run_zip_run_name=${run_zip_run_name}\n" if $verbose;
     $run_name eq $run_zip_run_name or die "incoherence between upstream run name ${run_name} and run name inside run zip ${run_zip_run_name}";
@@ -131,7 +131,7 @@ my $upstream_subcount;
     
     # obtain upstream default language name
     # search for property LangCode
-    $run_zip_json =~ /"LangCode":"(\w+)"/;
+    $run_zip_json =~ /"LangCode":"([^"]*)"/;
     $upstream_lang_code = $1;
     print "upstream_lang_code=${upstream_lang_code}\n" if $verbose;
     length($upstream_lang_code) > 0 or die "unable to get default language code from run zip file";
