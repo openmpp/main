@@ -10,9 +10,12 @@
 #include "Symbol.h"
 
 #include "DimensionSymbol.h"
+#include "MeasureDimensionSymbol.h"
 #include "TableMeasureSymbol.h"
 
 class CodeBlock;
+class MeasureDimensionSymbol;
+
 
 /**
 * TableSymbol.
@@ -37,6 +40,7 @@ public:
         , is_internal(false)
         , is_suppressed(false)
         , is_hidden(false)
+        , measure_dimension(nullptr)
         , pp_table_id(-1)
     {
         cxx_type = name;
@@ -176,6 +180,11 @@ public:
      * True if the table is hidden
      */
     bool is_hidden;
+
+    /**
+     * Pointer to the single measure dimension of this table
+     */
+    MeasureDimensionSymbol * measure_dimension;
 
     /**
      * Other tables required by this table.

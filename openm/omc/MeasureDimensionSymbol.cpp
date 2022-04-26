@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "MeasureDimensionSymbol.h"
+#include "LanguageSymbol.h"
 
 using namespace openm;
 
@@ -15,6 +16,19 @@ string MeasureDimensionSymbol::symbol_name(const TableSymbol* table)
 {
     assert(table);
     return table->name + ".measures";
+}
+
+string MeasureDimensionSymbol::default_label(const LanguageSymbol& lang) const
+{
+    if (lang.name == "EN") {
+        return "Measure";
+    }
+    else if (lang.name == "FR") {
+        return "Mesure";
+    }
+    else {
+        return "Measure";
+    }
 }
 
 void MeasureDimensionSymbol::post_parse(int pass)

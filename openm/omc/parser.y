@@ -2414,11 +2414,16 @@ table_dimension:
                             // This is the same as as the 0-based ordinal of the next dimension in the declaration.
                             pc.counter4++;
                         }
-    | "{" table_expression_list "}"
+    | "{" table_expression_list "}"[closing_brace]
                         {
+                            auto table = pc.get_table_context();
+                            assert(table);
                             // record analysis dimension position which is the
                             // 0-based ordinal of the immediately preceding classification dimension.
-                            pc.get_table_context()->measures_position = pc.counter4 - 1;
+                            table->measures_position = pc.counter4 - 1;
+                            // Create the MeasureDimensionSymbol of this table
+                            // with location being the closing brace of the measure dimension (used to match label later)
+                            table->measure_dimension = new MeasureDimensionSymbol(table, @closing_brace);
                         }
     ;
 
@@ -2682,12 +2687,17 @@ derived_table_dimension:
                             // measure short_name follows
                             pc.next_word_is_string = true;
                         }
-      derived_table_measure_list "}"
+      derived_table_measure_list "}"[closing_brace]
                         {
+                            auto table = pc.get_derived_table_context();
+                            assert(table);
                             // record measures position which is the
                             // 0-based ordinal of the immediately preceding classification dimension.
-                            pc.get_derived_table_context()->measures_position = pc.counter4 - 1;
-                        }
+                            table->measures_position = pc.counter4 - 1;
+                            // Create the MeasureDimensionSymbol of this table
+                            // with location being the closing brace of the measure dimension (used to match label later)
+                            table->measure_dimension = new MeasureDimensionSymbol(table, @closing_brace);
+      }
     ;
 
 derived_table_measure_list:
