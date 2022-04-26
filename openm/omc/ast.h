@@ -56,6 +56,7 @@
 #include "MultilinkAttributeSymbol.h"
 #include "EntitySymbol.h"
 #include "DimensionSymbol.h"
+#include "MeasureDimensionSymbol.h"
 #include "TableSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableAccumulatorSymbol.h"

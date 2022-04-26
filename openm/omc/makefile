@@ -129,6 +129,7 @@ LinkAttributeSymbol.cpp \
 LinkToAttributeSymbol.cpp \
 Literal.cpp \
 MaintainedAttributeSymbol.cpp \
+MeasureDimensionSymbol.cpp \
 ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
 MultilinkAttributeSymbol.cpp \

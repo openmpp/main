@@ -227,6 +227,7 @@
     <ClInclude Include="Literal.h" />
     <ClInclude Include="$(BUILD_OMC_SRC_DIR)/parser.hpp" />
     <ClInclude Include="MaintainedAttributeSymbol.h" />
+    <ClInclude Include="MeasureDimensionSymbol.h" />
     <ClInclude Include="ModelSymbol.h" />
     <ClInclude Include="ModelTypeSymbol.h" />
     <ClInclude Include="ModuleSymbol.h" />
@@ -311,6 +312,7 @@
     <ClCompile Include="LinkToAttributeSymbol.cpp" />
     <ClCompile Include="Literal.cpp" />
     <ClCompile Include="MaintainedAttributeSymbol.cpp" />
+    <ClCompile Include="MeasureDimensionSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
     <ClCompile Include="MultilinkAttributeSymbol.cpp" />
