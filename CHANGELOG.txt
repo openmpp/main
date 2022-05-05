@@ -1,6 +1,22 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2022_05_05:
+  c++ omc: create symbol for table measure dimension and associate label if present
+  c++ models: New population scaling framework module case_based_scaling_endogenous_or_none
+  c++ omc: eliminate C++ build warning for endogenous population scaling
+  c++ models: gracefull fallback to current directory if microdata CSV path envirnoment variable undefined
+  c++ models: fix racing at final progress update for sub-values
+  Perl test_models: bug fix Modgen build failure with VS 2019
+  Perl create_import_set: bug fix if upstream run name contains non alphanumeric characters
+  UI and oms: support model run upload
+  UI and oms: disply folders tree in models list
+  UI and oms allow to publish model versions side by side
+  UI and oms: allow to copy workset into other version of the model
+  UI: fix model "Measure" dimension bug: make "MEASURE_nn" name
+  oms: fix error of finding dbcopy if oms started wit -oms.HomeDir
+  dbcopy: fix import from zip if zip located not in current directory
+
 2022_03_22:
   support VS 2022 for Modgen build for x-compatible models
   dbcopy: validate csv file header on reading
