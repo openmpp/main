@@ -86,6 +86,10 @@ void RunState::setProgress(int i_count, double i_value)
         progressValue = i_value;
         updateTime = chrono::system_clock::now();
     }
+    else {
+        if (progressCount < i_count) progressCount = i_count;
+        if (progressValue < i_value) progressValue = i_value;
+    }
 }
 
 /** set model status if not already set as one of final status values */
