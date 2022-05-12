@@ -2325,7 +2325,7 @@ entity_set_filter_opt:
  */
 
 decl_table: // Some code for decl_entity_set and decl_table is nearly identical
-      "table" SYMBOL[agent] SYMBOL[table] // Note that the symbol 'table' is not created in agent context
+      "table" SYMBOL[agent] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
                         {
                             EntityTableSymbol *table = nullptr;
 

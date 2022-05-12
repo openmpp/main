@@ -99,12 +99,12 @@ void EntityHookSymbol::post_parse(int pass)
             assert(hook_fn);
         }
 
-        // Create entry in agent multimap of all hooks.
+        // Create entry in entity multimap of all hooks.
         // The key is the name of the 'to' function
         // (or a placeholder string if the hook is to a self-scheduling attribute).
         pp_agent->pp_hooks.emplace(to_name, pp_from->name);
 
-        // Create entry in agent multimap of all hooks (additionally distinguished by order).
+        // Create entry in entity multimap of all hooks (additionally distinguished by order).
         // The key is constructed using two parts to allow subsequent testing for 
         // ties in hook order.
         string key = to_name + "_om_" + to_string(order);

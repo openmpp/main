@@ -14,17 +14,17 @@
 /**
  * Template for link attributes.
  * 
- * A link attribute is a smart pointer between agents.  Every link attribute has a reciprocal link
- * attribute in another agent.  This makes all links two-way.  That allows side-effects of
- * attribute changes in an agent to propagate 'backwards' across agent links, to affect events,
- * tables, and expression attributes in other agents.
+ * A link attribute is a smart pointer between entities.  Every link attribute has a reciprocal link
+ * attribute in another entity.  This makes all links two-way.  That allows side-effects of
+ * attribute changes in an entity to propagate 'backwards' across entity links, to affect events,
+ * tables, and expression attributes in other entities.
  * 
- * When used to retrieve the value of an attribute in another agent, a link will first
- * synchronize the time of the other agent if the just-in-time simulation option is activated.
+ * When used to retrieve the value of an attribute in another entity, a link will first
+ * synchronize the time of the other entity if the just-in-time simulation option is activated.
  * 
  * To simplify their use in expression attributes, the pointer and dereference operators can be
  * used even if the link attribute is nullptr.  In that case, a pre-constructed static 'null
- * agent' whose attributes are in a freshly initialized state (generally 0) is used for the
+ * entity' whose attributes are in a freshly initialized state (generally 0) is used for the
  * operation.
  *
  * @tparam T               Storage type, e.g. link<Thing>

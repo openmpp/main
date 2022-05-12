@@ -607,6 +607,8 @@ bool Symbol::option_verify_timelike_attribute_access = true;
 
 bool Symbol::option_weighted_tabulation = false;
 
+bool Symbol::option_memory_information = false;
+
 bool Symbol::option_use_heuristic_short_names = false;
 
 size_t Symbol::short_name_max_length = 32;
@@ -689,7 +691,7 @@ void Symbol::post_parse(int pass)
                 // Example: name is "SEX" and unique_name is "Person::SEX".
                 // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
                 // because no global symbol with that name existed in the symbol table at the time.
-                // As it turned out, the source code contained no declared symbol with this name in agent context.
+                // As it turned out, the source code contained no declared symbol with this name in entity context.
  
                 // Search the symbol table for a symbol with the same name in global context.
                 auto it_global = symbols.find(name);
@@ -1078,7 +1080,7 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
             // Example: name is "SEX" and unique_name is "Person::SEX".
             // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
             // because no global symbol with that name existed in the symbol table at the time.
-            // As it turned out, the source code contained no declared symbol with this name in agent context.
+            // As it turned out, the source code contained no declared symbol with this name in entity context.
 
             // Search the symbol table for a symbol with the same name in global context.
             auto it_global = symbols.find(sym->name);
@@ -1931,6 +1933,20 @@ void Symbol::defaults_and_options()
         bool is_time_based = !mts->is_case_based();
         if (is_time_based && option_weighted_tabulation) {
             pp_error(mts->decl_loc, LT("error : weighted tabulation is not allowed with a time-based model, use population scaling instead."));
+        }
+    }
+
+    {
+        string key = "memory_information";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_memory_information = true;
+            }
+            else if (value == "off") {
+                option_memory_information = false;
+            }
         }
     }
 

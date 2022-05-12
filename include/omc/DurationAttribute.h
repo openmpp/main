@@ -61,7 +61,7 @@ public:
     // update duration 
     void advance( T delta_time )
     {
-        bool active = ( NT_condition == nullptr || ((this->agent())->*NT_condition)() );
+        bool active = ( NT_condition == nullptr || ((this->entity())->*NT_condition)() );
         if ( active ) {
             this->set( this->get() + delta_time );
         }

@@ -180,10 +180,10 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         // Log the case checksum if activated
         if (BaseEvent::event_checksum_enabled) fmk::case_checksum_msg(fmk::master_seed, fmk::simulation_member);
 
-        // Debug check for no left-over agents for which Finish was not called (possible model error)
+        // Debug check for no left-over entities for which Finish was not called (possible model error)
         // TODO - consider making an optional warning activated by a model option
         //  which could be turned on/off.
-        assert(0 == BaseEntity::om_active_agents());
+        assert(0 == BaseEntity::om_active_entities());
 
         // cleanup entities and event queue after case has completed.
         BaseEntity::exit_simulation_all();

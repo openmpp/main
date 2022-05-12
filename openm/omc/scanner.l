@@ -370,11 +370,11 @@ blank       [ \t]
                     if (!sym) sym = new Symbol(word, *yylloc);
                 }
                 else {
-                    /* Currently in agent context */
+                    /* Currently in entity context */
                     /* Attempt first to resolve the name in global context (global names have precedence) */
                     sym = Symbol::get_symbol(word);
                     if (!sym) {
-                        /* Resolve name in agent context */
+                        /* Resolve name in entity context */
                         sym = Symbol::get_symbol(word, agent);
                         if (!sym) sym = new Symbol(word, agent, *yylloc);
                         /* Possibly this was a global name not yet encountered in the source code. */

@@ -33,7 +33,7 @@ void AttributeSymbol::create_auxiliary_symbols()
                                           "void",
                                           data_type->name + " om_old, " + data_type->name + " om_new");
     assert(side_effects_fn); // out of memory check
-    side_effects_fn->doc_block = doxygen_short("Implement side effects of changing " + name + " in agent " + agent->name + ".");
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of changing " + name + " in entity " + agent->name + ".");
 
     assert(!notify_fn); // logic guarantee
     notify_fn = new EntityFuncSymbol("om_notify_" + name,
@@ -41,7 +41,7 @@ void AttributeSymbol::create_auxiliary_symbols()
                                           "void",
                                           "");
     assert(notify_fn); // out of memory check
-    notify_fn->doc_block = doxygen_short("Implement notification before changing " + name + " in agent " + agent->name + ".");
+    notify_fn->doc_block = doxygen_short("Implement notification before changing " + name + " in entity " + agent->name + ".");
 }
 
 CodeBlock AttributeSymbol::cxx_declaration_agent()

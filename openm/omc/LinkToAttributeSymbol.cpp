@@ -61,7 +61,7 @@ void LinkToAttributeSymbol::post_parse(int pass)
         pp_link = dynamic_cast<LinkAttributeSymbol *> (pp_symbol(link));
         assert(pp_link); // parser guarantee (link statement)
 
-        // assign direct pointer to attribute in agent at other end of link
+        // assign direct pointer to attribute in entity at other end of link
         Symbol *agent = nullptr;
         if (pp_link->reciprocal_link) {
             // is a one-to-one link

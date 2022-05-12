@@ -11,14 +11,14 @@
 #include "entity_ptr.h"
 
 /**
- * Template for multilink agent member.
+ * Template for multilink entity member.
  * 
  * A multilink is a set of links which form one side of a one-to-many or many-to-mnay
- * link among agents.
+ * link among entities.
  *
  * @tparam T            Type of the link in the collection, e.g. link<Thing>
- * @tparam A            Type of containing agent, e.g. Person
- * @tparam B            Type of the agent in the multi-link set, e.g. Thing
+ * @tparam A            Type of containing entity, e.g. Person
+ * @tparam B            Type of the entity in the multi-link set, e.g. Thing
  * @tparam side_effects Function implementing assignment side effects (constant).
  */
 template<typename T, typename A, typename B, void (A::*side_effects)(), void (A::*insert_reciprocal)(T lnk), void (A::*erase_reciprocal)(T lnk) >
@@ -34,13 +34,13 @@ public:
     // initialization
     void initialize( T initial_value )
     {
-        // set is empty as part of agent construction
+        // set is empty as part of entity construction
     }
 
-    // get pointer to containing agent
-    A *agent()
+    // get pointer to containing entity
+    A *entity()
     {
-        return (A *) ( (char *)this - offset_in_agent );
+        return (A *) ( (char *)this - offset_in_entity );
     }
 
     // standard member functions for std::set containers
@@ -51,11 +51,11 @@ public:
             if (lnk != nullptr) {
                 item = nullptr;
                 // maintain reciprocal link
-                (agent()->*erase_reciprocal)(lnk);
+                (entity()->*erase_reciprocal)(lnk);
             }
         }
 		// process side-effects
-        (agent()->*side_effects)();
+        (entity()->*side_effects)();
     }
 
     size_t size()
@@ -93,9 +93,9 @@ public:
 			    storage.push_back(lnk);
 		    }
     		// process side-effects
-            (agent()->*side_effects)();
+            (entity()->*side_effects)();
             // maintain reciprocal link
-            (agent()->*insert_reciprocal)(lnk);
+            (entity()->*insert_reciprocal)(lnk);
 	    }
     }
 
@@ -105,9 +105,9 @@ public:
             if (item == lnk) {
                 item = nullptr;
     		    // process side-effects
-                (agent()->*side_effects)();
+                (entity()->*side_effects)();
                 // maintain reciprocal link
-                (agent()->*erase_reciprocal)(lnk);
+                (entity()->*erase_reciprocal)(lnk);
                 break;
             }
         }
@@ -170,7 +170,7 @@ public:
             }
         }
 		// process side-effects
-        (agent()->*side_effects)();
+        (entity()->*side_effects)();
     }
 
     // TODO provide access to embedded iterator in std::vector
@@ -178,17 +178,17 @@ public:
     // storage
     std::vector<entity_ptr<B>> storage;
 
-	// offset to containing agent
-	static size_t offset_in_agent;
+	// offset to containing entity
+	static size_t offset_in_entity;
 
 };
 
 /**
- * offset in Agent (static definition)
+ * offset in Entity (static definition)
  * 
- * The offset is used within an instance of multilink to gain access to the enclosing agent to
- * call the side-effects function in the context of the agent and with access to all attributes
- * in the agent.
+ * The offset is used within an instance of multilink to gain access to the enclosing entity to
+ * call the side-effects function in the context of the entity and with access to all attributes
+ * in the entity.
  */
 template<typename T, typename A, typename B, void (A::*side_effects)(), void (A::*insert_reciprocal)(T lnk), void (A::*erase_reciprocal)(T lnk) >
-size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::offset_in_agent = 0;
+size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::offset_in_entity = 0;

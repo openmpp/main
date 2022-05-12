@@ -74,7 +74,7 @@ public:
         cell_in = cell;
 
         // Assign starting attributes required by the increment
-        (agent()->*NT_init_increment)(pending, pending_event_counter);
+        (entity()->*NT_init_increment)(pending, pending_event_counter);
     }
 
     /**
@@ -85,7 +85,7 @@ public:
         assert(active);
 
         // Compute the increment and and push it to the accumulators
-        (agent()->*NT_push_increment)(cell_in, pending, pending_event_counter);
+        (entity()->*NT_push_increment)(cell_in, pending, pending_event_counter);
         active = false;
     }
 
@@ -171,17 +171,17 @@ public:
     bool pending;
 
     /**
-     * get pointer to containing agent.
+     * get pointer to containing entity.
      */
-    A *agent()
+    A *entity()
     {
-        return (A *) ( (char *)this - offset_in_agent );
+        return (A *) ( (char *)this - offset_in_entity );
     }
 
     /**
-     * offset to containing agent.
+     * offset to containing entity.
      */
-	static size_t offset_in_agent;
+	static size_t offset_in_entity;
 };
 
 /**
@@ -197,4 +197,4 @@ template<
     void(A::*NT_init_increment)(int, big_counter),
     void(A::*NT_push_increment)(size_t, int, big_counter)
 >
-size_t Increment<A, NT_name, NT_init_increment, NT_push_increment>::offset_in_agent = 0;
+size_t Increment<A, NT_name, NT_init_increment, NT_push_increment>::offset_in_entity = 0;
