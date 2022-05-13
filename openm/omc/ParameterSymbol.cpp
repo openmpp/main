@@ -300,8 +300,10 @@ CodeBlock ParameterSymbol::cxx_declaration_global_scenario_release(void)
             ")";
     }
     else {
-        // extern thread_local const int & startSeed;
-        h += "extern thread_local const " + cxx_type_of_parameter() + " & " + name + ";";
+        // extern thread_local int om_value_startSeed;
+        // #define startSeed ((const int)om_value_startSeed)
+        h += "extern thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
+        h += "#define " + name + " ((const " + cxx_type_of_parameter() + ") om_value_" + name + ")";
     }
     return h;
 }
@@ -401,11 +403,9 @@ CodeBlock ParameterSymbol::cxx_definition_global_scenario_release(void)
     }
     else {
         // static vector<int> om_param_startSeed;
-        // static thread_local int om_value_startSeed;
-        // thread_local const int & startSeed = om_value_startSeed;
+        // thread_local int om_value_startSeed;
         c += "static std::vector<" + cxx_type_of_parameter() + "> " + alternate_name() + ";";
-        c += "static thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
-        c += "thread_local const " + cxx_type_of_parameter() + " & " + name + " = om_value_" + name + ";";
+        c += "thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
     }
     return c;
 }
