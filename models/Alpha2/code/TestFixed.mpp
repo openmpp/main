@@ -45,7 +45,7 @@ actor Person            //EN Individual
     //EN Set dog ownership
     void StartDogOwnership();
 
-    hook StartDogOwnership, Start;
+    hook StartDogOwnership, Start, 2;
 };
 
 void Person::StartDogOwnership()

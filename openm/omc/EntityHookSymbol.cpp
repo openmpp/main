@@ -127,14 +127,7 @@ void EntityHookSymbol::post_parse(int pass)
         }
 
         // Test for ambiguous hook order and emit warning if found.
-        // 
-        // First test if the hook has no explicit order, but other hooks are present.
-        if (order == 0 && pp_agent->pp_hooks.count(to_name) > 1) {
-            pp_warning(LT("warning : one or more functions hooking to '") + to_name + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));
-        }
-        else {
-            // Second test is if the hook has an explicit order, but is tied to one or more other hooks.
-            // See comment for 'key' above
+        {
             string key = to_name + "_om_" + to_string(order);
             if (pp_agent->pp_hooks_with_order.count(key) > 1) {
                 pp_warning(LT("warning : one or more functions hooking to '") + to_name + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));

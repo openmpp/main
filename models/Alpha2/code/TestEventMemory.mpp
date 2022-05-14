@@ -90,7 +90,7 @@ actor Person
 
     //EN Start city
     void StartCity();
-    hook StartCity, Start;
+    hook StartCity, Start, 1;
 
 	event timeMoveEvent, MoveEvent;
 };

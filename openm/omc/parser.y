@@ -1934,7 +1934,7 @@ hook_order_opt:
                         }
     | /* nothing */
                         {
-                            // default event priority is zero
+                            // default event order is zero
                             $hook_order_opt = new IntegerLiteral( "0" );
                         }
     ;
