@@ -844,18 +844,6 @@ void process_trace_options(IRunBase* const i_runBase)
 }
 
 /**
- * Report memory information after simulating a sub/member/replicate
- *
- */
-void report_memory_information(openm::IModel* const i_model)
-{
-    if constexpr (om_memory_information_on) {
-        theLog->logFormatted(LT("Memory information: "));
-    }
-}
-
-
-/**
 * Helper code used internally by run-time
 *
 * The global definitions below are declared in helper.h.

@@ -218,6 +218,7 @@ public:
     {
         assert(entities);
         entities->erase(iter_in_entities);
+        iter_in_entities = entities->end(); // make invalid
     }
 
     /**
@@ -707,7 +708,7 @@ private:
     std::list<BaseEntity *>::iterator iter_in_entities;
 
     /**
-     * Active entities.
+     * Active entities (polymorphic)
      */
     static thread_local std::list<BaseEntity *> *entities;
 };
@@ -724,7 +725,7 @@ public:
 
     /**
      * Entity allocation operator. This allocator recycles entities of the given type. Note that the
-     * argument of new() is required for the correct signature but is not required or used.
+     * argument of new() is required for the correct signature but is not used.
      *
      * @param count Size of object (required for correct signature)
      *
@@ -736,6 +737,7 @@ public:
         assert(available);
         if ( available->empty() ) {
 			entity = ::new E;
+            ++new_count;
         }
         else {
             entity = available->front();
@@ -764,9 +766,28 @@ public:
         }
     }
 
+    /**
+     * Report runtime memory information about the entity
+     *
+     */
+    static void report_runtime_information(std::string prefix, std::string ent_name, std::size_t ent_size)
+    {
+        std::stringstream ss;
+
+        ss << prefix << ent_name << " size (bytes): " << ent_size;
+        theLog->logMsg(ss.str().c_str());
+        ss.str("");
+
+        ss << prefix << ent_name << " new count: " << new_count;
+        theLog->logMsg(ss.str().c_str());
+        ss.str("");
+    }
+
     static thread_local std::forward_list<E *> *zombies;
     static thread_local std::forward_list<E *> *available;
 
+    /** Count of invocations of 'new' */
+    static thread_local std::size_t new_count;
 };
 
 
@@ -784,3 +805,9 @@ thread_local std::forward_list<E *> *Entity<E>::zombies;
 template<typename E>
 thread_local std::forward_list<E *> *Entity<E>::available;
 
+/**
+* Entity new counter (definition)
+*/
+
+template<typename E>
+thread_local std::size_t Entity<E>::new_count = 0;
