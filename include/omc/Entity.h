@@ -770,7 +770,7 @@ public:
      * Report runtime memory information about the entity
      *
      */
-    static void report_runtime_information(std::string prefix, std::string ent_name, std::size_t ent_size)
+    static void report_resource_use(std::string prefix, std::string ent_name, std::size_t ent_size)
     {
         std::stringstream ss;
 

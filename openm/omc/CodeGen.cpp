@@ -168,14 +168,14 @@ void CodeGen::do_preamble()
         t0 += "";
     }
 
-    if (Symbol::option_runtime_information) {
-        t0 += doxygen_short("Model was built with runtime_information = on.");
-        t0 += "constexpr bool om_runtime_information_on = true;";
+    if (Symbol::option_resource_use) {
+        t0 += doxygen_short("Model was built with resource_use = on.");
+        t0 += "constexpr bool om_resource_use_on = true;";
         t0 += "";
     }
     else {
-        t0 += doxygen_short("Model was built with runtime_information = off.");
-        t0 += "constexpr bool om_runtime_information_on = false;";
+        t0 += doxygen_short("Model was built with resource_use = off.");
+        t0 += "constexpr bool om_resource_use_on = false;";
         t0 += "";
     }
 
@@ -1439,26 +1439,26 @@ void CodeGen::do_RunModel()
     c += "int mem_count = i_model->subValueCount();";
     c += "RunSimulation(mem_id, mem_count, i_model); // Defined by the model framework, generally in a 'use' module";
     c += "";
-    c += "if constexpr (om_runtime_information_on) {";
+    c += "if constexpr (om_resource_use_on) {";
     c +=     "std::string prefix0 = \"member=\" + std::to_string(mem_id) + \" \";";
     c +=     "std::string prefix1 = prefix0 + \"  \"; // prefix with 1 ident"; 
     c +=     "{";
     c +=         "std::stringstream ss;";
-    c +=         "ss << prefix0 << \"Begin runtime information\";";
+    c +=         "ss << prefix0 << \"Begin resource use information\";";
     c +=         "theLog->logMsg(ss.str().c_str());";
     c +=     "}";
 
     for (auto ent : Symbol::pp_all_agents) {
-        c += ent->name + "::report_runtime_information(prefix1, \"" + ent->name + "\", sizeof(" + ent->name + "));";
+        c += ent->name + "::report_resource_use(prefix1, \"" + ent->name + "\", sizeof(" + ent->name + "));";
     }
 
     c +=     "{";
     c +=         "std::stringstream ss;";
-    c +=         "ss << prefix0 << \"End runtime information\";";
+    c +=         "ss << prefix0 << \"End resource use information\";";
     c +=         "theLog->logMsg(ss.str().c_str());";
     c +=     "}";
 
-    c += "} // om_runtime_information_on";
+    c += "} // om_resource_use_on";
 
     c += "";
     c += "BaseEvent::finalize_simulation_runtime();";

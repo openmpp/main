@@ -607,7 +607,7 @@ bool Symbol::option_verify_timelike_attribute_access = true;
 
 bool Symbol::option_weighted_tabulation = false;
 
-bool Symbol::option_runtime_information = false;
+bool Symbol::option_resource_use = false;
 
 bool Symbol::option_use_heuristic_short_names = false;
 
@@ -1937,15 +1937,15 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "runtime_information";
+        string key = "resource_use";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
             if (value == "on") {
-                option_runtime_information = true;
+                option_resource_use = true;
             }
             else if (value == "off") {
-                option_runtime_information = false;
+                option_resource_use = false;
             }
         }
     }

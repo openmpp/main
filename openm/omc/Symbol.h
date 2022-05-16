@@ -1360,9 +1360,9 @@ public:
     static bool option_weighted_tabulation;
 
     /**
-     * true or false depending on runtime_information value in options statement.
+     * true or false depending on resource_use value in options statement.
      */
-    static bool option_runtime_information;
+    static bool option_resource_use;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.
