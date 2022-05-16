@@ -767,6 +767,18 @@ public:
     }
 
     /**
+     * Free available list and release associated memory.
+     */
+    static void free_available()
+    {
+        assert(available);
+        while (!available->empty()) {
+            delete *available->front();
+            available->pop_front();
+        }
+    }
+
+    /**
      * Report runtime memory information about the entity
      *
      */
