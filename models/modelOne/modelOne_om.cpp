@@ -16,16 +16,13 @@ const char * OM_MODEL_DIGEST = "_201208171604590148_";
 // model parameters
 //
 static vector<int> om_param_startSeed;
-static thread_local int om_value_startSeed = { 0 };
-thread_local const int & startSeed = om_value_startSeed;
+thread_local int om_value_startSeed = { 0 };
 
 static vector<int> om_param_baseSalary;
-static thread_local int om_value_baseSalary = { jobKind::partTime };
-thread_local const int & baseSalary = om_value_baseSalary;
+thread_local int om_value_baseSalary = { jobKind::partTime };
 
 static vector<string> om_param_filePath;
-static thread_local string om_value_filePath;
-thread_local const string & filePath = om_value_filePath;
+thread_local string om_value_filePath;
 
 static vector<unique_ptr<double[]>> om_param_ageSex;
 thread_local double * om_value_ageSex = nullptr;
