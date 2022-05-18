@@ -156,9 +156,9 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "return t;";
     }
 
-    // The age_agent() member function
+    // The age_entity() member function
     {
-        auto *fn = new EntityFuncSymbol("age_agent", this, "void", "Time t");
+        auto *fn = new EntityFuncSymbol("age_entity", this, "void", "Time t");
         fn->doc_block = doxygen_short("Age the entity to the given time.");
         CodeBlock& c = fn->func_body;
         c += "if (time < t) {";
@@ -361,7 +361,7 @@ void EntitySymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_links_fn); // initialization guarantee
         finalize_links_fn = new EntityFuncSymbol("om_finalize_links", this);
         assert(finalize_links_fn); // out of memory check
-        finalize_links_fn->doc_block = doxygen_short("Set all links in agent to nullptr when the entity leaves the simulation.");
+        finalize_links_fn->doc_block = doxygen_short("Set all links in entity to nullptr when the entity leaves the simulation.");
         // function body is generated in post-parse phase
     }
 
@@ -370,7 +370,7 @@ void EntitySymbol::create_auxiliary_symbols()
         assert(nullptr == finalize_multilinks_fn); // initialization guarantee
         finalize_multilinks_fn = new EntityFuncSymbol("om_finalize_multilinks", this);
         assert(finalize_multilinks_fn); // out of memory check
-        finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in agent when the entity leaves the simulation.");
+        finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in entity when the entity leaves the simulation.");
         // function body is generated in post-parse phase
     }
 }
@@ -523,8 +523,8 @@ void EntitySymbol::build_body_assign_member_offsets()
     CodeBlock& c = assign_member_offsets_fn->func_body;
 
     for ( auto dm : pp_callback_members ) {
-        // e.g. age.offset_in_agent = (char *)&(this->age) - (char *)this;
-        c += dm->name + ".offset_in_agent = (char *)&(this->" + dm->name + ") - (char *)this;" ;
+        // e.g. age.offset_in_entity = (char *)&(this->age) - (char *)this;
+        c += dm->name + ".offset_in_entity = (char *)&(this->" + dm->name + ") - (char *)this;" ;
     }
 }
 

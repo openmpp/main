@@ -121,10 +121,10 @@ public:
     //    return (T1)get();
     //}
 
-    // get pointer to containing agent
-    A *agent()
+    // get pointer to containing entity
+    A *entity()
     {
-        return (A *) ( (char *)this - offset_in_agent );
+        return (A *) ( (char *)this - offset_in_entity );
     }
 
     void set( T new_value )
@@ -140,7 +140,7 @@ public:
 
             // Before the value of the attribute changes
             if (NT_ntfy_present) {
-                (agent()->*NT_notify)();
+                (entity()->*NT_notify)();
             }
 
             // Change the attribute to the new value
@@ -148,7 +148,7 @@ public:
 
             // After the attribute value has changed
             if (NT_se_present) {
-                (agent()->*NT_side_effects)(old_value, new_value);
+                (entity()->*NT_side_effects)(old_value, new_value);
             }
 
         }
@@ -195,8 +195,8 @@ public:
     // storage
     T value;
 
-	// offset to containing agent
-	static size_t offset_in_agent;
+	// offset to containing entity
+	static size_t offset_in_entity;
 };
 
 /**
@@ -218,7 +218,7 @@ template<
     void (A::*NT_notify)(),
     bool NT_ntfy_present
 >
-size_t Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_agent = 0;
+size_t Attribute<T, T2, A, NT_name, NT_is_time_like, NT_side_effects, NT_se_present, NT_notify, NT_ntfy_present>::offset_in_entity = 0;
 
 // Attribute participation in type resolution based on wrapped types
 // by specializing std::common_type.

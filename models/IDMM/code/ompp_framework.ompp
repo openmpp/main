@@ -17,6 +17,7 @@ use "common_modgen.ompp";
 use "random/random_lcg41.ompp";
 use "time_based/time_based_common.ompp";
 use "time_based/time_based_scaling_none.ompp";
+options resource_use = on;
 #endif
 
 namespace fmk {

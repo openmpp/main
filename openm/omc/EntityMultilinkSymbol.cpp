@@ -21,21 +21,21 @@ void EntityMultilinkSymbol::create_auxiliary_symbols()
                                           agent,
                                           "void",
                                           "");
-    side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in agent " + agent->name + ".");
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in entity " + agent->name + ".");
 
     assert(!insert_fn); // logic guarantee
     insert_fn = new EntityFuncSymbol("om_" + name + "_insert",
                                           agent,
                                           "void",
                                           data_type->name + " lnk");
-    insert_fn->doc_block = doxygen_short("Maintain reciprocal link on insert in multilink " + name + " in agent " + agent->name + ".");
+    insert_fn->doc_block = doxygen_short("Maintain reciprocal link on insert in multilink " + name + " in entity " + agent->name + ".");
 
     assert(!erase_fn); // logic guarantee
     erase_fn = new EntityFuncSymbol("om_" + name + "_erase",
                                           agent,
                                           "void",
                                           data_type->name + " lnk" );
-    erase_fn->doc_block = doxygen_short("Maintain reciprocal link on erase in multilink " + name + " in agent " + agent->name + ".");
+    erase_fn->doc_block = doxygen_short("Maintain reciprocal link on erase in multilink " + name + " in entity " + agent->name + ".");
 }
 
 void EntityMultilinkSymbol::post_parse(int pass)

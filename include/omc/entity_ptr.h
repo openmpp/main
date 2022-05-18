@@ -93,7 +93,7 @@ public:
         else {
             if (BaseEntity::om_access_to_null_entity) {
                 // we are here only if evaluating an identity attribute expression
-                return &A::om_null_agent;
+                return &A::om_null_entity;
             }
             else {
                 // an attempt to derefernece null pointer to entity in model code
@@ -136,7 +136,7 @@ public:
         }
         else {
             // entity_ptr is nullptr, return reference to the 'null' entity
-            return A::om_null_agent;
+            return A::om_null_entity;
         }
     }
 };

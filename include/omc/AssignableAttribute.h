@@ -18,7 +18,7 @@
  *
  * @tparam T               Generic type parameter.
  * @tparam T2              Type of the type being wrapped (e.g. range has inner type int).
- * @tparam A               Type of containing agent.
+ * @tparam A               Type of containing entity.
  * @tparam NT_name         Name of the attribute (non-type argument).
  * @tparam NT_is_time_like Attribute can change between events, like time.
  * @tparam NT_side_effects Function implementing assignment side effects (non-type argument).

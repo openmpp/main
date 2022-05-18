@@ -3,7 +3,7 @@
  * Declares the Event class and associated classes and templates
  *         
  */
-// Copyright (c) 2013-2016 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -65,14 +65,14 @@ public:
 
     virtual Time call_time_func() = 0;
 
-    virtual void call_age_agent() = 0;
+    virtual void call_age_entity() = 0;
 
     virtual Time call_get_censor_time() = 0;
 
     /**
      * Verify time, then age the entity of this event to the time of event occurrence.
      */
-    void verified_age_agent()
+    void verified_age_entity()
     {
         if (!allow_time_travel && event_time < get_time()) {
             // The time of this event is in the local past of the entity within which the event occurs.
@@ -85,7 +85,7 @@ public:
                 get_entity_id()
             );
         }
-        call_age_agent();
+        call_age_entity();
     }
 
     /**
@@ -169,10 +169,10 @@ public:
 		if ( event_id < rhs_event_id ) return true;
 		if ( event_id > rhs_event_id ) return false;
 
-		// lower agent_id wins (created earlier)
-		int agent_id = get_entity_id();
-		int rhs_agent_id = rhs.get_entity_id();
-		if ( agent_id < rhs_agent_id ) return true;
+		// lower entity_id wins (created earlier)
+		int entity_id = get_entity_id();
+		int rhs_entity_id = rhs.get_entity_id();
+		if ( entity_id < rhs_entity_id ) return true;
 		else return false;
     }
 
@@ -202,10 +202,10 @@ public:
         if (lhs_event_id < rhs_event_id) return true;
         if (lhs_event_id > rhs_event_id) return false;
 
-        // lower agent_id wins (created earlier)
-        int lhs_agent_id = lhs->get_entity_id();
-        int rhs_agent_id = rhs->get_entity_id();
-        if (lhs_agent_id < rhs_agent_id) return true;
+        // lower entity_id wins (created earlier)
+        int lhs_entity_id = lhs->get_entity_id();
+        int rhs_entity_id = rhs->get_entity_id();
+        if (lhs_entity_id < rhs_entity_id) return true;
         else return false;
     }
 
@@ -340,17 +340,17 @@ public:
         global_event_counter++;
 
         if (just_in_time) {
-            // age the agent to the time of the event
-            evt->verified_age_agent();
+            // age the entity to the time of the event
+            evt->verified_age_entity();
         }
         else {
-            // Age all agents to the time of the event.
+            // Age all entities to the time of the event.
             // The first argument is the time of the event.
             // The second argument is the entity_id of the entity within which the event occurred.
             // The third argument is the event_id of the event in entity_id.
-            // The second argument allows age_all_agents to detect the model error condition
+            // The second argument allows age_all_entities to detect the model error condition
             // in which time is running backwards in the entity within which the event occurred.
-            BaseEntity::age_all_agents(evt->event_time, evt->get_entity_id(), evt->get_event_id());
+            BaseEntity::age_all_entities(evt->event_time, evt->get_entity_id(), evt->get_event_id());
         }
 
         // update the global event checksum
@@ -579,27 +579,27 @@ public:
         return modgen_event_num;
     }
 
-    // get pointer to containing agent
-    A *agent()
+    // get pointer to containing entity
+    A *entity()
     {
-        return (A *) ( (char *)this - offset_in_agent );
+        return (A *) ( (char *)this - offset_in_entity );
     }
 
     int get_entity_id()
     {
-        return (agent()->om_get_entity_id)();
+        return (entity()->om_get_entity_id)();
     }
 
     Time get_time()
     {
-        return agent()->time.get();
+        return entity()->time.get();
     }
 
     void call_implement_func()
     {
         // Note that implement_function is not a class member.
         // It is a compile-time constant supplied as a template argument.
-        (agent()->*implement_function)();
+        (entity()->*implement_function)();
     }
 
     Time call_time_func()
@@ -609,28 +609,28 @@ public:
             timefunc_event_id = get_event_id();
             timefunc_entity_id = get_entity_id();
         }
-        return (agent()->*time_function)();
+        return (entity()->*time_function)();
     }
 
-    void call_age_agent()
+    void call_age_entity()
     {
-        agent()->age_agent(event_time);
+        entity()->age_entity(event_time);
     }
 
     Time call_get_censor_time()
     {
-        return agent()->get_censor_time();
+        return entity()->get_censor_time();
     }
 
-    // offset to containing agent
-	static size_t offset_in_agent;
+    // offset to containing entity
+	static size_t offset_in_entity;
 };
 
 /**
-* Event offset in Agent (definition)
+* Event offset in Etity (definition)
 */
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(), Time(A::*time_function)()>
-size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_agent = 0;
+size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_entity = 0;
 
 
 /**
@@ -669,27 +669,27 @@ public:
         return modgen_event_num;
     }
 
-    // get pointer to containing agent
-    A *agent()
+    // get pointer to containing entity
+    A *entity()
     {
-        return (A *) ( (char *)this - offset_in_agent );
+        return (A *) ( (char *)this - offset_in_entity );
     }
 
     int get_entity_id()
     {
-        return (agent()->om_get_entity_id)();
+        return (entity()->om_get_entity_id)();
     }
 
     Time get_time()
     {
-        return agent()->time.get();
+        return entity()->time.get();
     }
 
     void call_implement_func()
     {
         // Note that implement_function is not a class member.
         // It is a compile-time constant supplied as a template argument.
-        (agent()->*implement_function)(memory);
+        (entity()->*implement_function)(memory);
     }
 
     Time call_time_func()
@@ -699,26 +699,26 @@ public:
             timefunc_event_id = get_event_id();
             timefunc_entity_id = get_entity_id();
         }
-        return (agent()->*time_function)(&memory);
+        return (entity()->*time_function)(&memory);
     }
 
-    void call_age_agent()
+    void call_age_entity()
     {
-        agent()->age_agent(event_time);
+        entity()->age_entity(event_time);
     }
 
     Time call_get_censor_time()
     {
-        return agent()->get_censor_time();
+        return entity()->get_censor_time();
     }
 
-	// offset to containing agent
-	static size_t offset_in_agent;
+	// offset to containing entity
+	static size_t offset_in_entity;
 };
 
 /**
-* MemoryEvent offset in Agent (definition)
+* MemoryEvent offset in Entity (definition)
 */
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(int), Time(A::*time_function)(int *)>
-size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_agent = 0;
+size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_entity = 0;
 

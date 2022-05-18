@@ -34,7 +34,7 @@ void EntitySetSymbol::create_auxiliary_symbols()
         assert(!update_cell_fn); // initialization guarantee
         update_cell_fn = new EntityFuncSymbol("om_" + name + "_update_cell", agent);
         assert(update_cell_fn); // out of memory check
-        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using attributes in the " + agent->name + " agent.");
+        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using attributes in the " + agent->name + " entity.");
     }
 
     {

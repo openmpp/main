@@ -194,7 +194,7 @@ public:
     }
 
     /**
-     * Name-based constructor in agent context.
+     * Name-based constructor in entity context.
      * 
      * This constructor creates a Symbol with unique name based on
      * @a nm in the context of @a agent, e.g. "Person::time"
@@ -356,7 +356,7 @@ public:
     virtual void post_parse(int pass);
 
     /**
-     * Get the c++ declaration code (in agent scope) associated with the symbol.
+     * Get the c++ declaration code (in entity scope) associated with the symbol.
      * 
      * The code fragment is valid within an agent class declaration.
      * 
@@ -621,7 +621,7 @@ public:
     static bool exists(const string& unm);
 
     /**
-     * Check for existence of symbol with this member name in agent.
+     * Check for existence of symbol with this member name in entity.
      *
      * @param nm    The member name.
      * @param agent The agent.
@@ -1358,6 +1358,11 @@ public:
      * true or false depending on weighted_tabulation value in options statement.
      */
     static bool option_weighted_tabulation;
+
+    /**
+     * true or false depending on resource_use value in options statement.
+     */
+    static bool option_resource_use;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.

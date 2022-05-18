@@ -168,6 +168,17 @@ void CodeGen::do_preamble()
         t0 += "";
     }
 
+    if (Symbol::option_resource_use) {
+        t0 += doxygen_short("Model was built with resource_use = on.");
+        t0 += "constexpr bool om_resource_use_on = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was built with resource_use = off.");
+        t0 += "constexpr bool om_resource_use_on = false;";
+        t0 += "";
+    }
+
     if (Symbol::option_event_trace) {
         t0 += doxygen_short("Model was built with event trace capability.");
         t0 += "constexpr bool om_event_trace_capable = true;";
@@ -797,17 +808,17 @@ void CodeGen::do_ModelStartup()
     c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_agent.om_assign_member_offsets();";
-        c += agent->name + "::om_null_agent.om_initialize_data_members0();";
+        c += agent->name + "::om_null_entity.om_assign_member_offsets();";
+        c += agent->name + "::om_null_entity.om_initialize_data_members0();";
         c += "";
     }
 
     c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
     for (auto agent : Symbol::pp_all_agents) {
         c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_agent.om_initialize_identity_attributes();";
-        c += agent->name + "::om_null_agent.om_initialize_derived_attributes();";
-        c += agent->name + "::om_null_agent.om_reset_derived_attributes();";
+        c += agent->name + "::om_null_entity.om_initialize_identity_attributes();";
+        c += agent->name + "::om_null_entity.om_initialize_derived_attributes();";
+        c += agent->name + "::om_null_entity.om_reset_derived_attributes();";
     }
     c += "";
 
@@ -1026,14 +1037,14 @@ void CodeGen::do_agents()
         t1 += "typedef entity_ptr<" + agent->name + "> " + agent->name + "_ptr;";
     }
 
-	h += "// forward declarations of model agent classes (for links)";
+	h += "// forward declarations of model entity classes (for links)";
     for (auto agent : Symbol::pp_all_agents) {
         h += "class " + agent->name + ";";
     }
     h += "";
     for ( auto agent : Symbol::pp_all_agents ) {
 
-	    h += "// model entity classes";
+        h += "// model entity classes";
         // e.g. class Person : public Entity<Person>
 	    h += "class " + agent->name + " : public Entity<" + agent->name + ">";
         h += "{";
@@ -1104,14 +1115,14 @@ void CodeGen::do_agents()
 
         h += "// The declaration of the static member " + agent->name;
         h += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
-        h += "static thread_local " + agent->name + " " + "om_null_agent;";
+        h += "static thread_local " + agent->name + " " + "om_null_entity;";
 
 	    h += "}; // class " + agent->name;
 	    h += "";
 
         c += "// The definition of the static member " + agent->name;
         c += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
-        c += "thread_local " + agent->name + " " + agent->name + "::om_null_agent;";
+        c += "thread_local " + agent->name + " " + agent->name + "::om_null_entity;";
     }
 
     c += doxygen("Free all zombie agents");
@@ -1126,11 +1137,12 @@ void CodeGen::do_agents()
 
     c += "void BaseEntity::initialize_simulation_runtime()";
     c += "{";
-    c += "agents = new std::list<BaseEntity *>;";
+    c += "entities = new std::list<BaseEntity *>;";
     for ( auto agent : Symbol::pp_all_agents ) {
         // e.g. Person::zombies = new forward_list<Person *>;";
         c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
         c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
+        c += agent->name + "::new_count = 0;";
     }
     c += "event_trace_on = om_event_trace_capable;";
     c += "}";
@@ -1138,20 +1150,21 @@ void CodeGen::do_agents()
 
     c += "void BaseEntity::finalize_simulation_runtime()";
     c += "{";
-    c += "assert(agents->empty());";
-    c += "delete agents;";
-    c += "agents = nullptr;";
-    c += "";
+    c +=     "assert(entities->empty());";
+    c +=     "delete entities;";
+    c +=     "entities = nullptr;";
+    c +=     "";
     for (auto agent : Symbol::pp_all_agents) {
         c += "assert(" + agent->name + "::zombies->empty());";
         c += "delete " + agent->name + "::zombies;";
         c += agent->name + "::zombies = nullptr;";
         c += "";
         c += "for (auto ent : *" + agent->name + "::available) {";
-        c += "delete ent;";
+        c +=     "delete ent;";
         c += "}";
         c += "delete " + agent->name + "::available;";
         c += agent->name + "::available = nullptr;";
+        c += agent->name + "::new_count = 0;";
         c += "";
     }
     c += "}";
@@ -1298,7 +1311,7 @@ void CodeGen::do_event_queue()
     c += "thread_local Time *BaseEvent::global_time = nullptr;";
     c += "";
     c += "// definition of active entity list (declaration in Entity.h)";
-    c += "thread_local std::list<BaseEntity *> *BaseEntity::agents = nullptr;";
+    c += "thread_local std::list<BaseEntity *> *BaseEntity::entities = nullptr;";
     c += "";
     c += "// definition of event_id of current event (declaration in Event.h)";
     c += "thread_local int BaseEvent::current_event_id;";
@@ -1426,9 +1439,31 @@ void CodeGen::do_RunModel()
     c += "int mem_count = i_model->subValueCount();";
     c += "RunSimulation(mem_id, mem_count, i_model); // Defined by the model framework, generally in a 'use' module";
     c += "";
+    c += "if constexpr (om_resource_use_on) {";
+    c +=     "std::string prefix0 = \"member=\" + std::to_string(mem_id) + \" \";";
+    c +=     "std::string prefix1 = prefix0 + \"  \"; // prefix with 1 ident"; 
+    c +=     "{";
+    c +=         "std::stringstream ss;";
+    c +=         "ss << prefix0 << \"Begin resource use information\";";
+    c +=         "theLog->logMsg(ss.str().c_str());";
+    c +=     "}";
+
+    for (auto ent : Symbol::pp_all_agents) {
+        c += ent->name + "::report_resource_use(prefix1, \"" + ent->name + "\", sizeof(" + ent->name + "));";
+    }
+
+    c +=     "{";
+    c +=         "std::stringstream ss;";
+    c +=         "ss << prefix0 << \"End resource use information\";";
+    c +=         "theLog->logMsg(ss.str().c_str());";
+    c +=     "}";
+
+    c += "} // om_resource_use_on";
+
+    c += "";
     c += "BaseEvent::finalize_simulation_runtime();";
     c += "BaseEntity::finalize_simulation_runtime();";
-    c += "}";
+    c += "}"; // RunModel
     c += "";
 }
 

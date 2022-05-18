@@ -28,7 +28,7 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
 
         // Create an EntityFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
         implement_func = new EntityFuncSymbol(ifs, agent, "void", "", true, decl_loc);
-        implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " agent (model code).");
+        implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " entity (model code).");
     }
     else {
         // The functions are created internally (for the internally-generated self-scheduling event)
@@ -138,7 +138,7 @@ void EntityEventSymbol::post_parse(int pass)
                 event_memory ? "int event_mem" : "",
                 false
             );
-            cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " agent.");
+            cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " entity.");
             // Note that the body of the cover implement function is supplied in a subsequent pass below
             // Plug in the cover implement function to replace the original function
             implement_func = cover_implement_func;

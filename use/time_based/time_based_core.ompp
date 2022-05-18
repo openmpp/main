@@ -117,7 +117,7 @@ void SimulateEvents()
 
         if (the_time > simulation_end) {
             // The next event would exceed the maximum simulation time
-            BaseEntity::age_all_agents(simulation_end);
+            BaseEntity::age_all_entities(simulation_end);
             BaseEvent::set_global_time(simulation_end);
             break;
         }
