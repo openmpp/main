@@ -1138,11 +1138,19 @@ void CodeGen::do_agents()
     c += "void BaseEntity::initialize_simulation_runtime()";
     c += "{";
     c += "entities = new std::list<BaseEntity *>;";
-    for ( auto agent : Symbol::pp_all_agents ) {
+    for ( auto ent : Symbol::pp_all_agents ) {
         // e.g. Person::zombies = new forward_list<Person *>;";
-        c += agent->name + "::zombies = new std::forward_list<" + agent->name + " *>;";
-        c += agent->name + "::available = new std::forward_list<" + agent->name + " *>;";
-        c += agent->name + "::new_count = 0;";
+        c += ent->name + "::zombies = new std::forward_list<" + ent->name + " *>;";
+        c += ent->name + "::available = new std::forward_list<" + ent->name + " *>;";
+        c += "";
+        c += "// reset resource use information for " + ent->name;
+        c += ent->name + "::resource_use_reset();";
+        c += "";
+        c += "// reset resource use information for events in " + ent->name;
+        for (auto evt : ent->pp_agent_events) {
+            c += ent->name + "::om_null_entity." + evt->name + ".resource_use_reset();";
+        }
+        c += "";
     }
     c += "event_trace_on = om_event_trace_capable;";
     c += "}";
@@ -1164,7 +1172,6 @@ void CodeGen::do_agents()
         c += "}";
         c += "delete " + agent->name + "::available;";
         c += agent->name + "::available = nullptr;";
-        c += agent->name + "::new_count = 0;";
         c += "";
     }
     c += "}";
@@ -1440,23 +1447,54 @@ void CodeGen::do_RunModel()
     c += "RunSimulation(mem_id, mem_count, i_model); // Defined by the model framework, generally in a 'use' module";
     c += "";
     c += "if constexpr (om_resource_use_on) {";
+    c +=     "// Resource use report";
     c +=     "std::string prefix0 = \"member=\" + std::to_string(mem_id) + \" \";";
     c +=     "std::string prefix1 = prefix0 + \"  \"; // prefix with 1 ident"; 
-    c +=     "{";
-    c +=         "std::stringstream ss;";
-    c +=         "ss << prefix0 << \"Begin resource use information\";";
-    c +=         "theLog->logMsg(ss.str().c_str());";
-    c +=     "}";
+    c +=     "std::string prefix2 = prefix1 + \"  \"; // prefix with 2 idents"; 
+    c +=     "std::string prefix3 = prefix2 + \"  \"; // prefix with 3 idents"; 
+    c +=     "theLog->logFormatted(\"%sResource use report - begin\", prefix0);";
+    c +=     "theLog->logFormatted(\"%s\", prefix0);";
 
     for (auto ent : Symbol::pp_all_agents) {
-        c += ent->name + "::report_resource_use(prefix1, \"" + ent->name + "\", sizeof(" + ent->name + "));";
+        c += "{";
+        c +=     "// Resources for " + ent->name;
+        c +=     "std::stringstream ss;";
+        c +=     "auto ent_name = \"" + ent->name + "\";";
+        c +=     "auto ent_size = sizeof(" + ent->name + ");";
+        c +=     "auto ent_result = " + ent->name + "::resource_use();";
+        c +=     "theLog->logFormatted(\"%s%s storage:\", prefix1, ent_name);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s|        entity        |activations|  bytes    |allocations| Megabytes |\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s| %-20s | %9d | %9d | %9d | %9d |\", prefix2, ent_name, ent_result.activations, ent_size, ent_result.allocations, (ent_size * ent_result.allocations) / 1000000);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
+        //c +=     "ss << prefix1 << ent_name << \" storage: bytes=\" << ent_size << \" allocations=\" << ent_result.allocations << \" activations=\" << ent_result.activations << \" MB=\" << (ent_size * ent_result.allocations) / 1000000.0;";
+        c +=     "theLog->logFormatted(\"%s\", prefix0);";
+        if (ent->pp_agent_events.size()) {
+            c += "theLog->logFormatted(\"%s%s events:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|--------------------------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|       event name               |  wait times  | occurrences  |  per entity  |\", prefix2);";
+            c += "theLog->logFormatted(\"%s|--------------------------------|--------------|--------------|--------------|\", prefix2);";
+            for (auto evt : ent->pp_agent_events) {
+                // Get resource use information for each event in the entity
+                // The static thread_local om_null_entity is used to access the static thread_local function and counters
+                //c += ent->name + "::om_null_entity." + evt->name + ".report_resource_use(prefix3, \"" + evt->event_name + "\");";
+                c += "{";
+                c +=     "// Resources for " + evt->event_name;
+                c +=     "auto evt_name = \"" + evt->event_name + "\";";
+                c +=     "auto evt_result = " + ent->name + "::om_null_entity." + evt->name + ".resource_use();";
+                //c +=     "ss << prefix2 << ios::setw(15) << evt_name << ios::setw(12) << evt_result.time_calculations << evt_result.occurrences << (double) evt_result.occurrences / (double) ent_result.activations;";
+                //c +=     "std::string str = std::format(\"{}|{}|{}|{}|{}|\", prefix2, evt_name, evt_result.time_calculations, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
+                c +=     "theLog->logFormatted(\"%s| %-30s | %12d | %12d | %12.4f |\", prefix2, evt_name, evt_result.time_calculations, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
+                c += "}";
+            }
+            c += "theLog->logFormatted(\"%s|--------------------------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "}";
+        }
     }
 
-    c +=     "{";
-    c +=         "std::stringstream ss;";
-    c +=         "ss << prefix0 << \"End resource use information\";";
-    c +=         "theLog->logMsg(ss.str().c_str());";
-    c +=     "}";
+    c +=   "theLog->logFormatted(\"%sResource use report - end\", prefix0);";
 
     c += "} // om_resource_use_on";
 

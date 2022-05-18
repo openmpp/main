@@ -600,14 +600,20 @@ public:
         // Note that implement_function is not a class member.
         // It is a compile-time constant supplied as a template argument.
         (entity()->*implement_function)();
+        if constexpr (om_resource_use_on) {
+            ++occurrence_count;
+        }
     }
 
     Time call_time_func()
     {
-        if (om_verify_attribute_modification) { // is constexpr
+        if constexpr (om_verify_attribute_modification) {
             // record information about this event for context in possible error message
             timefunc_event_id = get_event_id();
             timefunc_entity_id = get_entity_id();
+        }
+        if constexpr (om_resource_use_on) {
+            ++calculation_count;
         }
         return (entity()->*time_function)();
     }
@@ -622,15 +628,50 @@ public:
         return entity()->get_censor_time();
     }
 
+    /**
+     * Resource use information for the event
+     */
+    static auto resource_use()
+    {
+        struct result { size_t time_calculations; size_t occurrences; };
+        return result { calculation_count, occurrence_count };
+    }
+
+    /**
+     * Reset resource use information for the event
+     */
+    static void resource_use_reset()
+    {
+        calculation_count = 0;
+        occurrence_count = 0;
+    }
+
     // offset to containing entity
 	static size_t offset_in_entity;
+
+    /**
+    * Count of occurrences
+    *
+    * The number of times the event occurred.
+    */
+    static thread_local size_t occurrence_count;
+
+    /**
+    * Count of calculations
+    *
+    * The number of times the event time was computed.
+    */
+    static thread_local size_t calculation_count;
 };
 
-/**
-* Event offset in Etity (definition)
-*/
-template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(), Time(A::*time_function)()>
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
 size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_entity = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
+thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::occurrence_count = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
+thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::calculation_count = 0;
 
 
 /**
@@ -690,14 +731,21 @@ public:
         // Note that implement_function is not a class member.
         // It is a compile-time constant supplied as a template argument.
         (entity()->*implement_function)(memory);
+        if constexpr (om_resource_use_on) {
+            ++occurrence_count;
+        }
+
     }
 
     Time call_time_func()
     {
-        if (om_verify_attribute_modification) { // is constexpr
+        if constexpr (om_verify_attribute_modification) {
             // record information about this event for context in possible error message
             timefunc_event_id = get_event_id();
             timefunc_entity_id = get_entity_id();
+        }
+        if constexpr (om_resource_use_on) {
+            ++calculation_count;
         }
         return (entity()->*time_function)(&memory);
     }
@@ -714,11 +762,29 @@ public:
 
 	// offset to containing entity
 	static size_t offset_in_entity;
+
+    /**
+    * Count of occurrences
+    *
+    * The number of times the event occurred.
+    */
+    static thread_local size_t occurrence_count;
+
+    /**
+    * Count of calculations
+    *
+    * The number of times the event time was computed.
+    */
+    static thread_local size_t calculation_count;
 };
 
-/**
-* MemoryEvent offset in Entity (definition)
-*/
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(int), Time(A::*time_function)(int *)>
 size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_entity = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
+thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::occurrence_count = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
+thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::calculation_count = 0;
+
 

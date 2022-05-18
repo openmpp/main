@@ -734,10 +734,15 @@ public:
     void *operator new( size_t count )
     {
 		E *entity = nullptr;
+        if constexpr (om_resource_use_on) {
+            ++activation_count;
+        }
         assert(available);
         if ( available->empty() ) {
 			entity = ::new E;
-            ++new_count;
+            if constexpr (om_resource_use_on) {
+                ++allocation_count;
+            }
         }
         else {
             entity = available->front();
@@ -779,27 +784,42 @@ public:
     }
 
     /**
-     * Report runtime memory information about the entity
-     *
+     * Resource use information for the entity
      */
-    static void report_resource_use(std::string prefix, std::string ent_name, std::size_t ent_size)
+    static auto resource_use()
     {
-        std::stringstream ss;
+        struct result { size_t allocations; size_t activations; };
+        return result { allocation_count, activation_count };
+    }
 
-        ss << prefix << ent_name << " size (bytes): " << ent_size;
-        theLog->logMsg(ss.str().c_str());
-        ss.str("");
-
-        ss << prefix << ent_name << " new count: " << new_count;
-        theLog->logMsg(ss.str().c_str());
-        ss.str("");
+    /**
+     * Reset resource use information for the entity
+     */
+    static void resource_use_reset()
+    {
+        allocation_count = 0;
+        activation_count = 0;
     }
 
     static thread_local std::forward_list<E *> *zombies;
     static thread_local std::forward_list<E *> *available;
 
-    /** Count of invocations of 'new' */
-    static thread_local std::size_t new_count;
+    /**
+    * Count of allocations
+    *
+    * The number of allocations from c++ memory allocator.
+    * Note that because of re-use, this is not necessarily the same as the number of
+    * invocations of 'new' in model code.
+    */
+    static thread_local std::size_t allocation_count;
+
+    /**
+    * Count of activations
+    * 
+    * The number invocations of 'new' in model code.
+    * This is not necessarily the same as the number of allocations from c++ memory allocator.
+    */
+    static thread_local std::size_t activation_count;
 };
 
 
@@ -817,9 +837,8 @@ thread_local std::forward_list<E *> *Entity<E>::zombies;
 template<typename E>
 thread_local std::forward_list<E *> *Entity<E>::available;
 
-/**
-* Entity new counter (definition)
-*/
+template<typename E>
+thread_local std::size_t Entity<E>::allocation_count = 0;
 
 template<typename E>
-thread_local std::size_t Entity<E>::new_count = 0;
+thread_local std::size_t Entity<E>::activation_count = 0;
