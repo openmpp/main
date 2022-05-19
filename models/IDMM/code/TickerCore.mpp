@@ -65,6 +65,15 @@ void Ticker::Start()
 	age = 0;
 	next_tick = 0; // Arrange that the first tick occurs at the beginning of the simulation
 
+#if defined(OPENM)
+	{
+		// Event time censoring optimization is activated by setting the option censor_event_time in ompp_framework.ompp.
+		// The optimization is (optionally) informed by calling the function set_censor_time when an entity is created.
+		// 
+		set_censor_time(SimulationEnd);
+	}
+#endif
+
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 }

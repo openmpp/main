@@ -174,7 +174,16 @@ void Host::Start()
 		next_change_contacts = (TIME) TIME_INFINITE;
 	}
 
-    // Have the entity enter the simulation (OpenM++).
+#if defined(OPENM)
+	{
+		// Event time censoring optimization is activated by setting the option censor_event_time in ompp_framework.ompp.
+		// The optimization is (optionally) informed by calling the function set_censor_time when an entity is created.
+		// 
+		set_censor_time(SimulationEnd);
+	}
+#endif
+
+	// Have the entity enter the simulation (OpenM++).
     enter_simulation();
 }
 
