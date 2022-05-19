@@ -18,6 +18,14 @@ use "random/random_lcg41.ompp";
 use "case_based/case_based_lcg41.ompp";
 use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
+
+// The following optimization option eliminates censored events from the event queue.
+// It is associated with an optional call to set_censor_time() before an entity enters the simulation
+options censor_event_time = on;
+
+// THe following enables collection and reporting of resource use information for a run.
+options resource_use = on;
+
 #endif
 
 namespace fmk {
