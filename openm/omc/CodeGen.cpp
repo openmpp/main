@@ -1150,6 +1150,10 @@ void CodeGen::do_agents()
         for (auto evt : ent->pp_agent_events) {
             c += ent->name + "::om_null_entity." + evt->name + ".resource_use_reset();";
         }
+        c += "// reset resource use information for multilinks in " + ent->name;
+        for (auto ml : ent->pp_multilink_members) {
+            c += ent->name + "::om_null_entity." + ml->name + ".resource_use_reset();";
+        }
         c += "";
     }
     c += "event_trace_on = om_event_trace_capable;";
@@ -1448,10 +1452,14 @@ void CodeGen::do_RunModel()
     c += "";
     c += "if constexpr (om_resource_use_on) {";
     c +=     "// Resource use report";
-    c +=     "std::string prefix0 = \"member=\" + std::to_string(mem_id) + \" \";";
-    c +=     "std::string prefix1 = prefix0 + \"  \"; // prefix with 1 ident"; 
-    c +=     "std::string prefix2 = prefix1 + \"  \"; // prefix with 2 idents"; 
-    c +=     "std::string prefix3 = prefix2 + \"  \"; // prefix with 3 idents"; 
+    c +=     "std::string prefix0s = \"member=\" + std::to_string(mem_id) + \" \";";
+    c +=     "std::string prefix1s = prefix0s + \"  \"; // prefix with 1 ident";
+    c +=     "std::string prefix2s = prefix1s + \"  \"; // prefix with 2 idents";
+    c +=     "std::string prefix3s = prefix2s + \"  \"; // prefix with 3 idents";
+    c +=     "auto prefix0 = prefix0s.c_str();";
+    c +=     "auto prefix1 = prefix1s.c_str();";
+    c +=     "auto prefix2 = prefix2s.c_str();";
+    c +=     "auto prefix3 = prefix3s.c_str();";
     c +=     "theLog->logFormatted(\"%sResource use report - begin\", prefix0);";
     c +=     "theLog->logFormatted(\"%s\", prefix0);";
 
@@ -1464,31 +1472,45 @@ void CodeGen::do_RunModel()
         c +=     "auto ent_result = " + ent->name + "::resource_use();";
         c +=     "theLog->logFormatted(\"%s%s storage:\", prefix1, ent_name);";
         c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
-        c +=     "theLog->logFormatted(\"%s|        entity        |activations|  bytes    |allocations| Megabytes |\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s|        entity        | activated |  bytes    | allocated | Megabytes |\", prefix2);";
         c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
         c +=     "theLog->logFormatted(\"%s| %-20s | %9d | %9d | %9d | %9d |\", prefix2, ent_name, ent_result.activations, ent_size, ent_result.allocations, (ent_size * ent_result.allocations) / 1000000);";
         c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
-        //c +=     "ss << prefix1 << ent_name << \" storage: bytes=\" << ent_size << \" allocations=\" << ent_result.allocations << \" activations=\" << ent_result.activations << \" MB=\" << (ent_size * ent_result.allocations) / 1000000.0;";
         c +=     "theLog->logFormatted(\"%s\", prefix0);";
+        if (ent->pp_multilink_members.size()) {
+            c += "theLog->logFormatted(\"%s%s multilinks:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|----------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|       multilink      | total slots  |  per entity  |   max slots  |   entity_id  |\", prefix2);";
+            c += "theLog->logFormatted(\"%s|----------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            for (auto ml : ent->pp_multilink_members) {
+                // Get resource use information for each multilink in the entity
+                // The static thread_local om_null_entity is used to access the static thread_local function and counters
+                c += "{";
+                c +=     "// Resources for " + ml->name;
+                c +=     "auto ml_name = \"" + ml->name + "\";";
+                c +=     "auto ml_result = " + ent->name + "::om_null_entity." + ml->name + ".resource_use();";
+                c +=     "theLog->logFormatted(\"%s| %-20s | %12d | %12.4f | %12d | %12d |\", prefix2, ml_name, ml_result.total_slots, (double)ml_result.total_slots/(double)ent_result.allocations , ml_result.max_slots, ml_result.max_slots_id);";
+                c += "}";
+            }
+            c += "theLog->logFormatted(\"%s|----------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+        }
         if (ent->pp_agent_events.size()) {
             c += "theLog->logFormatted(\"%s%s events:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|--------------------------------|--------------|--------------|--------------|\", prefix2);";
-            c += "theLog->logFormatted(\"%s|       event name               |  wait times  | occurrences  |  per entity  |\", prefix2);";
-            c += "theLog->logFormatted(\"%s|--------------------------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|------------------------------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|       event                              |  time calcs  |   censored   | occurrences  |  per entity  |\", prefix2);";
+            c += "theLog->logFormatted(\"%s|------------------------------------------|--------------|--------------|--------------|--------------|\", prefix2);";
             for (auto evt : ent->pp_agent_events) {
                 // Get resource use information for each event in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
-                //c += ent->name + "::om_null_entity." + evt->name + ".report_resource_use(prefix3, \"" + evt->event_name + "\");";
                 c += "{";
                 c +=     "// Resources for " + evt->event_name;
                 c +=     "auto evt_name = \"" + evt->event_name + "\";";
                 c +=     "auto evt_result = " + ent->name + "::om_null_entity." + evt->name + ".resource_use();";
-                //c +=     "ss << prefix2 << ios::setw(15) << evt_name << ios::setw(12) << evt_result.time_calculations << evt_result.occurrences << (double) evt_result.occurrences / (double) ent_result.activations;";
-                //c +=     "std::string str = std::format(\"{}|{}|{}|{}|{}|\", prefix2, evt_name, evt_result.time_calculations, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
-                c +=     "theLog->logFormatted(\"%s| %-30s | %12d | %12d | %12.4f |\", prefix2, evt_name, evt_result.time_calculations, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
+                c +=     "theLog->logFormatted(\"%s| %-40s | %12d | %12d | %12d | %12.4f |\", prefix2, evt_name, evt_result.time_calculations, evt_result.censored_times, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
                 c += "}";
             }
-            c += "theLog->logFormatted(\"%s|--------------------------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|------------------------------------------|--------------|--------------|--------------|--------------|\", prefix2);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "}";
         }

@@ -69,6 +69,8 @@ public:
 
     virtual Time call_get_censor_time() = 0;
 
+    virtual void increment_censor_count() = 0;
+
     /**
      * Verify time, then age the entity of this event to the time of event occurrence.
      */
@@ -118,6 +120,11 @@ public:
             else {
                 // event is censored if time-to-event is infinite
                 censored = (new_event_time == time_infinite);
+            }
+            if constexpr (om_resource_use_on) {
+                if (censored) {
+                    increment_censor_count();
+                }
             }
             if ( in_queue ) {
                 if ( new_event_time != event_time ) {
@@ -628,13 +635,18 @@ public:
         return entity()->get_censor_time();
     }
 
+    void increment_censor_count()
+    {
+        ++censor_count;
+    }
+
     /**
      * Resource use information for the event
      */
     static auto resource_use()
     {
-        struct result { size_t time_calculations; size_t occurrences; };
-        return result { calculation_count, occurrence_count };
+        struct result { size_t time_calculations; size_t censored_times; size_t occurrences; };
+        return result { calculation_count, censor_count, occurrence_count };
     }
 
     /**
@@ -643,6 +655,7 @@ public:
     static void resource_use_reset()
     {
         calculation_count = 0;
+        censor_count = 0;
         occurrence_count = 0;
     }
 
@@ -662,6 +675,14 @@ public:
     * The number of times the event time was computed.
     */
     static thread_local size_t calculation_count;
+
+    /**
+    * Count of censored events
+    *
+    * The number of times the event time is right-censored.
+    * Right-censored events will not occur, so are not entered in the event queue.
+    */
+    static thread_local size_t censor_count;
 };
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
@@ -672,6 +693,9 @@ thread_local size_t Event<A, event_id, event_priority, modgen_event_num, impleme
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
 thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::calculation_count = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
+thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::censor_count = 0;
 
 
 /**
@@ -760,7 +784,31 @@ public:
         return entity()->get_censor_time();
     }
 
-	// offset to containing entity
+    void increment_censor_count()
+    {
+        ++censor_count;
+    }
+
+    /**
+     * Resource use information for the event
+     */
+    static auto resource_use()
+    {
+        struct result { size_t time_calculations; size_t censored_times; size_t occurrences; };
+        return result{ calculation_count, censor_count, occurrence_count };
+    }
+
+    /**
+     * Reset resource use information for the event
+     */
+    static void resource_use_reset()
+    {
+        calculation_count = 0;
+        censor_count = 0;
+        occurrence_count = 0;
+    }
+
+    // offset to containing entity
 	static size_t offset_in_entity;
 
     /**
@@ -776,6 +824,14 @@ public:
     * The number of times the event time was computed.
     */
     static thread_local size_t calculation_count;
+
+    /**
+    * Count of censored events
+    *
+    * The number of times the event time is right-censored.
+    * Right-censored events will not occur, so are not entered in the event queue.
+    */
+    static thread_local size_t censor_count;
 };
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(int), Time(A::*time_function)(int *)>
@@ -787,4 +843,5 @@ thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, i
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
 thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::calculation_count = 0;
 
-
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
+thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::censor_count = 0;

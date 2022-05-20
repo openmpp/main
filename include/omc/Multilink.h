@@ -91,7 +91,14 @@ public:
 		    else {
                 // append the new element to the end of the array
 			    storage.push_back(lnk);
-		    }
+                if constexpr (om_resource_use_on) {
+                    ++slot_count;
+                    if (storage.size() > slot_max) {
+                        slot_max = storage.size();
+                        slot_max_id = entity()->om_get_entity_id();
+                    }
+                }
+            }
     		// process side-effects
             (entity()->*side_effects)();
             // maintain reciprocal link
@@ -178,9 +185,48 @@ public:
     // storage
     std::vector<entity_ptr<B>> storage;
 
-	// offset to containing entity
+    /**
+     * Resource use information for the multilink
+     */
+    static auto resource_use()
+    {
+        struct result { size_t total_slots; size_t max_slots; size_t max_slots_id; };
+        return result { slot_count, slot_max, slot_max_id };
+    }
+
+    /**
+     * Reset resource use information for the multilink
+     */
+    static void resource_use_reset()
+    {
+        slot_count = 0;
+        slot_max = 0;
+        slot_max_id = 0;
+    }
+
+    // offset to containing entity
 	static size_t offset_in_entity;
 
+    /**
+    * Count of slots in multilink
+    *
+    * The number of slots in this multilink over all entities.
+    */
+    static thread_local size_t slot_count;
+
+    /**
+    * Max slots in the multilink
+    *
+    * The maximum number of slots in this multilink over all entities.
+    */
+    static thread_local size_t slot_max;
+
+    /**
+    * entity_id with max slots
+    *
+    * An entity_id with the maximum number of slots.
+    */
+    static thread_local size_t slot_max_id;
 };
 
 /**
@@ -192,3 +238,12 @@ public:
  */
 template<typename T, typename A, typename B, void (A::*side_effects)(), void (A::*insert_reciprocal)(T lnk), void (A::*erase_reciprocal)(T lnk) >
 size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::offset_in_entity = 0;
+
+template<typename T, typename A, typename B, void (A::* side_effects)(), void (A::* insert_reciprocal)(T lnk), void (A::* erase_reciprocal)(T lnk) >
+thread_local size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::slot_count = 0;
+
+template<typename T, typename A, typename B, void (A::* side_effects)(), void (A::* insert_reciprocal)(T lnk), void (A::* erase_reciprocal)(T lnk) >
+thread_local size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::slot_max = 0;
+
+template<typename T, typename A, typename B, void (A::* side_effects)(), void (A::* insert_reciprocal)(T lnk), void (A::* erase_reciprocal)(T lnk) >
+thread_local size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::slot_max_id = 0;
