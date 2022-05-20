@@ -44,9 +44,14 @@ enum jobKind : int
 };
 
 // model parameters
-extern thread_local const int & startSeed;
-extern thread_local const int & baseSalary;
-extern thread_local const string & filePath;
+extern thread_local int om_value_startSeed;
+#define startSeed ((const int)om_value_startSeed)
+
+extern thread_local int om_value_baseSalary;
+#define baseSalary ((const int)om_value_baseSalary)
+
+extern thread_local string om_value_filePath;
+#define filePath ((const string)om_value_filePath)
 
 extern thread_local double * om_value_ageSex;
 extern thread_local int * om_value_salaryAge;
