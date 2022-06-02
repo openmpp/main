@@ -70,11 +70,6 @@ void ChildController::init(void)
             "Invalid first sub-value index: %d or number of sub-values: %d", subFirstId, selfSubCount
             );
 
-    // adjust number of active processes: exit from unused child processes
-    if (msgExec->rank() > groupDef.groupSize * groupDef.groupCount) {
-        theModelRunState->updateStatus(ModelStatus::exit);
-    }
-
     // receive metadata tables from root process
     // receive basic model run options
     // receive broadcasted model messages from root
@@ -82,6 +77,11 @@ void ChildController::init(void)
     modelId = broadcastMetaData();
     broadcastRunOptions();
     broadcastLanguageMessages();
+
+    // adjust number of active processes: exit from unused child processes
+    if (msgExec->rank() > groupDef.groupSize * groupDef.groupCount) {
+        theModelRunState->updateStatus(ModelStatus::exit);
+    }
 }
 
 /** receive broadcasted metadata tables from root process. */
@@ -180,9 +180,9 @@ int ChildController::nextRun(void)
         metaStore->runOptionTable.reset(IRunOptionTable::create(rv));
     }
 
-
     theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit, done
     isFinalExchange = RunState::isFinal(mStatus);
+
     return runId;
 }
 
