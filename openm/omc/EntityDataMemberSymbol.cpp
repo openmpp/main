@@ -13,6 +13,17 @@
 #include "RangeSymbol.h"
 #include "UnknownTypeSymbol.h"
 #include "CodeBlock.h"
+#include "AttributeSymbol.h"
+#include "EntityInternalSymbol.h"
+#include "BuiltinAttributeSymbol.h"
+#include "LinkAttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
+#include "SimpleAttributeSymbol.h"
+#include "EntityArrayMemberSymbol.h"
+#include "EntityEventSymbol.h"
+#include "EntityForeignMemberSymbol.h"
+#include "EntityInternalSymbol.h"
+#include "EntityMultilinkSymbol.h"
 
 using namespace std;
 
@@ -24,6 +35,56 @@ void EntityDataMemberSymbol::change_data_type(TypeSymbol *new_type)
         // maintain global counter of type changes
         ++Symbol::type_changes;
     }
+}
+
+bool EntityDataMemberSymbol::is_attribute(void) const
+{
+    return (bool) dynamic_cast<const AttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_builtin_attribute(void) const
+{
+    return (bool) dynamic_cast<const BuiltinAttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_link_attribute(void) const
+{
+    return (bool) dynamic_cast<const LinkAttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_maintained_attribute(void) const
+{
+    return (bool) dynamic_cast<const MaintainedAttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_simple_attribute(void) const
+{
+    return (bool) dynamic_cast<const SimpleAttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_array(void) const
+{
+    return (bool) dynamic_cast<const EntityArrayMemberSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_event(void) const
+{
+    return (bool) dynamic_cast<const EntityEventSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_foreign(void) const
+{
+    return (bool) dynamic_cast<const EntityForeignMemberSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_internal(void) const
+{
+    return (bool) dynamic_cast<const EntityInternalSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_multilink(void) const
+{
+    return (bool) dynamic_cast<const EntityMultilinkSymbol*>(this);
 }
 
 void EntityDataMemberSymbol::post_parse(int pass)

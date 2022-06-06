@@ -1456,32 +1456,74 @@ void CodeGen::do_RunModel()
     c +=     "std::string prefix1s = prefix0s + \"  \"; // prefix with 1 ident";
     c +=     "std::string prefix2s = prefix1s + \"  \"; // prefix with 2 idents";
     c +=     "std::string prefix3s = prefix2s + \"  \"; // prefix with 3 idents";
+    c +=     "std::string dashes_str (100, '-'); // string consisting of 100 dashes";
     c +=     "auto prefix0 = prefix0s.c_str();";
     c +=     "auto prefix1 = prefix1s.c_str();";
     c +=     "auto prefix2 = prefix2s.c_str();";
     c +=     "auto prefix3 = prefix3s.c_str();";
+    c +=     "auto dashes = dashes_str.c_str();";
     c +=     "theLog->logFormatted(\"%sResource use report - begin\", prefix0);";
     c +=     "theLog->logFormatted(\"%s\", prefix0);";
 
     for (auto ent : Symbol::pp_all_agents) {
-        c += "{";
-        c +=     "// Resources for " + ent->name;
+        auto dml = ent->pp_agent_data_members;
+        size_t members_count = dml.size() + ent->pp_entity_tables.size();
+        size_t ent_internal               = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol *edms) {return edms->is_internal(); });
+        size_t attribute_count            = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_attribute(); });
+        size_t builtin_attribute_count    = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_builtin_attribute(); });
+        size_t link_attribute_count       = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_link_attribute(); });
+        size_t maintained_attribute_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_maintained_attribute(); });
+        size_t simple_attribute_count     = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_simple_attribute(); });
+        size_t array_count                = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_array(); });
+        size_t event_count                = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_event(); });
+        size_t foreign_count              = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_foreign(); });
+        size_t internal_count             = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
+        size_t multilink_count            = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_multilink(); });
+        size_t table_count = ent->pp_entity_tables.size();
+        c += "{ // Begin resource use report for " + ent->name;
         c +=     "std::stringstream ss;";
         c +=     "auto ent_name = \"" + ent->name + "\";";
-        c +=     "auto ent_size = sizeof(" + ent->name + ");";
+        c +=     "auto ent_bytes = sizeof(" + ent->name + ");";
         c +=     "auto ent_result = " + ent->name + "::resource_use();";
-        c +=     "theLog->logFormatted(\"%s%s storage:\", prefix1, ent_name);";
-        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
-        c +=     "theLog->logFormatted(\"%s|        entity        | activated |  bytes    | allocated | Megabytes |\", prefix2);";
-        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
-        c +=     "theLog->logFormatted(\"%s| %-20s | %9d | %9d | %9d | %9d |\", prefix2, ent_name, ent_result.activations, ent_size, ent_result.allocations, (ent_size * ent_result.allocations) / 1000000);";
-        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|-----------|-----------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s%s storage (static):\", prefix1, ent_name);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s| Quantity             |   Value   |\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s| bytes per entity     | %9d |\", prefix2, ent_bytes);";
+        c +=     "theLog->logFormatted(\"%s| data members         | %9d |\", prefix2, " + std::to_string(members_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   attributes         | %9d |\", prefix2, " + std::to_string(attribute_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|     built-in         | %9d |\", prefix2, " + std::to_string(builtin_attribute_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|     simple           | %9d |\", prefix2, " + std::to_string(simple_attribute_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|     maintained       | %9d |\", prefix2, " + std::to_string(maintained_attribute_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|     link             | %9d |\", prefix2, " + std::to_string(link_attribute_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   events             | %9d |\", prefix2, " + std::to_string(event_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   tables             | %9d |\", prefix2, " + std::to_string(table_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   multilink          | %9d |\", prefix2, " + std::to_string(multilink_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   internal           | %9d |\", prefix2, " + std::to_string(internal_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   array              | %9d |\", prefix2, " + std::to_string(array_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|   foreign            | %9d |\", prefix2, " + std::to_string(foreign_count) + ");";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s\", prefix0);";
+        c +=     "theLog->logFormatted(\"%s%s storage (dynamic):\", prefix1, ent_name);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s| Quantity             |   Value   |\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s| Entities activated   | %9d |\", prefix2, ent_result.activations);";
+        c +=     "theLog->logFormatted(\"%s| Entities allocated   | %9d |\", prefix2, ent_result.allocations);";
+        c +=     "theLog->logFormatted(\"%s| Entities Megabytes   | %9d |\", prefix2, (ent_bytes * ent_result.allocations) / 1000000);";
+        c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
         c +=     "theLog->logFormatted(\"%s\", prefix0);";
         if (ent->pp_multilink_members.size()) {
+            c += "{";
+            std::string col1header = "multilink";
+            int col1width = col1header.length();
+            for (auto ml : ent->pp_multilink_members) { col1width = std::max<int>(col1width, ml->name.length()); };
+            c += "int col1width = " + to_string(col1width) + ";";
+            c += "const char * col1header = \"" + col1header + "\";";
             c += "theLog->logFormatted(\"%s%s multilinks:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|----------------------|--------------|--------------|--------------|--------------|\", prefix2);";
-            c += "theLog->logFormatted(\"%s|       multilink      | total slots  |  per entity  |   max slots  |   entity_id  |\", prefix2);";
-            c += "theLog->logFormatted(\"%s|----------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s | total slots  |  per entity  |   max slots  |   entity_id  |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             for (auto ml : ent->pp_multilink_members) {
                 // Get resource use information for each multilink in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1489,17 +1531,24 @@ void CodeGen::do_RunModel()
                 c +=     "// Resources for " + ml->name;
                 c +=     "auto ml_name = \"" + ml->name + "\";";
                 c +=     "auto ml_result = " + ent->name + "::om_null_entity." + ml->name + ".resource_use();";
-                c +=     "theLog->logFormatted(\"%s| %-20s | %12d | %12.4f | %12d | %12d |\", prefix2, ml_name, ml_result.total_slots, (double)ml_result.total_slots/(double)ent_result.allocations , ml_result.max_slots, ml_result.max_slots_id);";
+                c +=     "theLog->logFormatted(\"%s| %-*s | %12d | %12.4f | %12d | %12d |\", prefix2, col1width, ml_name, ml_result.total_slots, (double)ml_result.total_slots/(double)ent_result.allocations , ml_result.max_slots, ml_result.max_slots_id);";
                 c += "}";
             }
-            c += "theLog->logFormatted(\"%s|----------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "}";
         }
         if (ent->pp_agent_events.size()) {
+            c += "{";
+            std::string col1header = "event";
+            int col1width = col1header.length();
+            for (auto evt : ent->pp_agent_events) { col1width = std::max<int>(col1width, evt->event_name.length()); };
+            c += "int col1width = " + to_string(col1width) + ";";
+            c += "const char * col1header = \"" + col1header + "\";";
             c += "theLog->logFormatted(\"%s%s events:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|------------------------------------------|--------------|--------------|--------------|--------------|\", prefix2);";
-            c += "theLog->logFormatted(\"%s|       event                              |  time calcs  |   censored   | occurrences  |  per entity  |\", prefix2);";
-            c += "theLog->logFormatted(\"%s|------------------------------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s | max in queue |  time calcs  |   censored   | occurrences  |  per entity  |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             for (auto evt : ent->pp_agent_events) {
                 // Get resource use information for each event in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1507,13 +1556,92 @@ void CodeGen::do_RunModel()
                 c +=     "// Resources for " + evt->event_name;
                 c +=     "auto evt_name = \"" + evt->event_name + "\";";
                 c +=     "auto evt_result = " + ent->name + "::om_null_entity." + evt->name + ".resource_use();";
-                c +=     "theLog->logFormatted(\"%s| %-40s | %12d | %12d | %12d | %12.4f |\", prefix2, evt_name, evt_result.time_calculations, evt_result.censored_times, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
+                c +=     "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, evt_name, evt_result.max_in_queue, evt_result.time_calculations, evt_result.censored_times, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
                 c += "}";
             }
-            c += "theLog->logFormatted(\"%s|------------------------------------------|--------------|--------------|--------------|--------------|\", prefix2);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "}";
         }
+        if (ent->pp_agent_entity_sets.size()) {
+            c += "{";
+            std::string col1header = "entity set";
+            int col1width = col1header.length();
+            for (auto entset : ent->pp_agent_entity_sets) { col1width = std::max<int>(col1width, entset->name.length()); };
+            c += "int col1width = " + to_string(col1width) + ";";
+            c += "const char * col1header = \"" + col1header + "\";";
+            c += "theLog->logFormatted(\"%s%s entity sets:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |         rank |        cells |              |              |              |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            for (auto entset : ent->pp_agent_entity_sets) {
+                // Get resource use information for each entity set in the entity
+                // The static thread_local om_null_entity is used to access the static thread_local function and counters
+                c += "{";
+                c += "// Resources for " + entset->name;
+                c += "auto entset_name = \"" + entset->name + "\";";
+                c += "int dimension_count = " + to_string(entset->dimension_count()) + ";";
+                c += "int cell_count = " + to_string(entset->cell_count()) + ";";
+                //c += "auto entset_result = " + ent->name + "::om_null_entity." + entset->name + ".resource_use();";
+                c += "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, entset_name, dimension_count, cell_count, 0, 0, 0.0);";
+                c += "}";
+            }
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "}";
+        }
+        if (ent->pp_entity_tables.size()) {
+            c += "{";
+            std::string col1header = "table";
+            int col1width = col1header.length();
+            for (auto tbl : ent->pp_entity_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+            c += "int col1width = " + to_string(col1width) + ";";
+            c += "const char * col1header = \"" + col1header + "\";";
+            c += "theLog->logFormatted(\"%s%s entity tables:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |         rank |        cells |              |              |              |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            for (auto tbl : ent->pp_entity_tables) {
+                // Get resource use information for each entity table in the entity
+                // The static thread_local om_null_entity is used to access the static thread_local function and counters
+                c += "{";
+                c += "// Resources for " + tbl->name;
+                c += "auto tbl_name = \"" + tbl->name + "\";";
+                c += "int dimension_count = " + to_string(tbl->cell_count()) + ";";
+                c += "int cell_count = " + to_string(tbl->cell_count()) + ";";
+                //c += "auto tbl_result = " + ent->name + "::om_null_entity." + tbl->name + ".resource_use();";
+                c += "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, 0, 0, 0.0);";
+                c += "}";
+            }
+            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "}";
+        }
+        c += "} // End resource use report for " + ent->name;
+    }
+    if (Symbol::pp_all_derived_tables.size()) {
+        c += "{";
+        std::string col1header = "derived table";
+        int col1width = col1header.length();
+        for (auto tbl : Symbol::pp_all_derived_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+        c += "int col1width = " + to_string(col1width) + ";";
+        c += "const char * col1header = \"" + col1header + "\";";
+        c += "theLog->logFormatted(\"%s derived tables:\", prefix1);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s| %-*s |         rank |        cells |              |              |              |\", prefix2, col1width, col1header);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+        for (auto tbl : Symbol::pp_all_derived_tables) {
+            c += "{";
+            c += "// Resources for " + tbl->name;
+            c += "auto tbl_name = \"" + tbl->name + "\";";
+            c += "int dimension_count = " + to_string(tbl->cell_count()) + ";";
+            c += "int cell_count = " + to_string(tbl->cell_count()) + ";";
+            c += "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, 0, 0, 0.0);";
+            c += "}";
+        }
+        c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s\", prefix0);";
+        c += "}";
     }
 
     c +=   "theLog->logFormatted(\"%sResource use report - end\", prefix0);";

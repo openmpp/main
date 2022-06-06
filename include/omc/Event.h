@@ -71,6 +71,10 @@ public:
 
     virtual void increment_censor_count() = 0;
 
+    virtual void increment_queue_count() = 0;
+
+    virtual void decrement_queue_count() = 0;
+
     /**
      * Verify time, then age the entity of this event to the time of event occurrence.
      */
@@ -132,6 +136,9 @@ public:
                     event_time = new_event_time;
                     if (censored) {
                         in_queue = false;
+                        if constexpr (om_resource_use_on) {
+                            decrement_queue_count();
+                        }
                     }
                     else {
                         event_queue->insert(this);
@@ -144,6 +151,9 @@ public:
                 if (!censored) {
                     event_queue->insert(this);
                     in_queue = true;
+                    if constexpr (om_resource_use_on) {
+                        increment_queue_count();
+                    }
                 }
             }
         }
@@ -640,13 +650,26 @@ public:
         ++censor_count;
     }
 
+    void increment_queue_count()
+    {
+        ++queue_count;
+        if (queue_count_max < queue_count) {
+            queue_count_max = queue_count;
+        }
+    }
+
+    void decrement_queue_count()
+    {
+        ++queue_count;
+    }
+
     /**
      * Resource use information for the event
      */
     static auto resource_use()
     {
-        struct result { size_t time_calculations; size_t censored_times; size_t occurrences; };
-        return result { calculation_count, censor_count, occurrence_count };
+        struct result { size_t max_in_queue;  size_t time_calculations; size_t censored_times; size_t occurrences; };
+        return result { queue_count_max, calculation_count, censor_count, occurrence_count };
     }
 
     /**
@@ -654,6 +677,8 @@ public:
      */
     static void resource_use_reset()
     {
+        queue_count = 0;
+        queue_count_max = 0;
         calculation_count = 0;
         censor_count = 0;
         occurrence_count = 0;
@@ -661,6 +686,20 @@ public:
 
     // offset to containing entity
 	static size_t offset_in_entity;
+
+    /**
+    * Count in queue
+    *
+    * The count of this event in the queue.
+    */
+    static thread_local size_t queue_count;
+
+    /**
+    * Maximum count in queue
+    *
+    * The maximum count of this event in the queue.
+    */
+    static thread_local size_t queue_count_max;
 
     /**
     * Count of occurrences
@@ -687,6 +726,12 @@ public:
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
 size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_entity = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
+thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::queue_count = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
+thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::queue_count_max = 0;
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(), Time(A::* time_function)()>
 thread_local size_t Event<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::occurrence_count = 0;
@@ -789,13 +834,26 @@ public:
         ++censor_count;
     }
 
+    void increment_queue_count()
+    {
+        ++queue_count;
+        if (queue_count_max < queue_count) {
+            queue_count_max = queue_count;
+        }
+    }
+
+    void decrement_queue_count()
+    {
+        ++queue_count;
+    }
+
     /**
      * Resource use information for the event
      */
     static auto resource_use()
     {
-        struct result { size_t time_calculations; size_t censored_times; size_t occurrences; };
-        return result{ calculation_count, censor_count, occurrence_count };
+        struct result { size_t max_in_queue;  size_t time_calculations; size_t censored_times; size_t occurrences; };
+        return result { queue_count_max, calculation_count, censor_count, occurrence_count };
     }
 
     /**
@@ -803,6 +861,8 @@ public:
      */
     static void resource_use_reset()
     {
+        queue_count = 0;
+        queue_count_max = 0;
         calculation_count = 0;
         censor_count = 0;
         occurrence_count = 0;
@@ -810,6 +870,20 @@ public:
 
     // offset to containing entity
 	static size_t offset_in_entity;
+
+    /**
+    * Count in queue
+    *
+    * The count of this event in the queue.
+    */
+    static thread_local size_t queue_count;
+
+    /**
+    * Maximum count in queue
+    *
+    * The maximum count of this event in the queue.
+    */
+    static thread_local size_t queue_count_max;
 
     /**
     * Count of occurrences
@@ -836,6 +910,12 @@ public:
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::*implement_function)(int), Time(A::*time_function)(int *)>
 size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::offset_in_entity = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
+thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::queue_count = 0;
+
+template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
+thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::queue_count_max = 0;
 
 template<typename A, const int event_id, const int event_priority, const int modgen_event_num, void (A::* implement_function)(int), Time(A::* time_function)(int*)>
 thread_local size_t MemoryEvent<A, event_id, event_priority, modgen_event_num, implement_function, time_function>::occurrence_count = 0;

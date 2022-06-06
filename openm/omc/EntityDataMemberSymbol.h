@@ -9,7 +9,6 @@
 #include <cassert>
 #include "EntityMemberSymbol.h"
 
-
 class CodeBlock;
 
 using namespace std;
@@ -60,6 +59,76 @@ public:
     {
         assert(data_type);  // grammar/initialization guarantee
     }
+
+    /**
+     * Determines if this is an AttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_attribute(void) const;
+
+    /**
+     * Determines if this is a BuiltinAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_builtin_attribute(void) const;
+
+    /**
+     * Determines if this is a LinkAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_link_attribute(void) const;
+
+    /**
+     * Determines if this is a MaintainedAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_maintained_attribute(void) const;
+
+    /**
+     * Determines if this is a SimpleAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_simple_attribute(void) const;
+
+    /**
+     * Determines if this is a EntityArrayMemberSymbol
+     *
+     * @return true or false.
+     */
+    bool is_array(void) const;
+
+    /**
+     * Determines if this is a EntityEventSymbol
+     *
+     * @return true or false.
+     */
+    bool is_event(void) const;
+
+    /**
+     * Determines if this is a EntityForeignMemberSymbol
+     *
+     * @return true or false.
+     */
+    bool is_foreign(void) const;
+
+    /**
+     * Determines if this is a EntityInternalSymbol
+     *
+     * @return true or false.
+     */
+    bool is_internal(void) const;
+
+    /**
+     * Determines if this is a EntityMultilinkSymbol
+     *
+     * @return true or false.
+     */
+    bool is_multilink(void) const;
 
     /**
      * Gets the initial value for the data member.
