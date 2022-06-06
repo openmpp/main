@@ -1462,8 +1462,10 @@ void CodeGen::do_RunModel()
     c +=     "auto prefix2 = prefix2s.c_str();";
     c +=     "auto prefix3 = prefix3s.c_str();";
     c +=     "auto dashes = dashes_str.c_str();";
+    c +=     "theLog->logFormatted(LT(\"Warning : possible performance impact - model built with resource_use = on\"));";
     c +=     "theLog->logFormatted(\"%sResource use report - begin\", prefix0);";
     c +=     "theLog->logFormatted(\"%s\", prefix0);";
+    c += "";
 
     for (auto ent : Symbol::pp_all_agents) {
         auto dml = ent->pp_agent_data_members;
@@ -1513,8 +1515,9 @@ void CodeGen::do_RunModel()
         c +=     "theLog->logFormatted(\"%s| Entities Megabytes   | %9d |\", prefix2, (ent_bytes * ent_result.allocations) / 1000000);";
         c +=     "theLog->logFormatted(\"%s|----------------------|-----------|\", prefix2);";
         c +=     "theLog->logFormatted(\"%s\", prefix0);";
+        c += "";
         if (ent->pp_multilink_members.size()) {
-            c += "{";
+            c += "{ // multilinks";
             std::string col1header = "multilink";
             int col1width = col1header.length();
             for (auto ml : ent->pp_multilink_members) { col1width = std::max<int>(col1width, ml->name.length()); };
@@ -1536,10 +1539,11 @@ void CodeGen::do_RunModel()
             }
             c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
-            c += "}";
+            c += "} // multilinks";
+            c += "";
         }
         if (ent->pp_agent_events.size()) {
-            c += "{";
+            c += "{ // events";
             std::string col1header = "event";
             int col1width = col1header.length();
             for (auto evt : ent->pp_agent_events) { col1width = std::max<int>(col1width, evt->event_name.length()); };
@@ -1561,19 +1565,20 @@ void CodeGen::do_RunModel()
             }
             c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
-            c += "}";
+            c += "} // events";
+            c += "";
         }
         if (ent->pp_agent_entity_sets.size()) {
-            c += "{";
-            std::string col1header = "entity set";
+            c += "{ // sets";
+            std::string col1header = "set";
             int col1width = col1header.length();
             for (auto entset : ent->pp_agent_entity_sets) { col1width = std::max<int>(col1width, entset->name.length()); };
             c += "int col1width = " + to_string(col1width) + ";";
             c += "const char * col1header = \"" + col1header + "\";";
-            c += "theLog->logFormatted(\"%s%s entity sets:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
-            c += "theLog->logFormatted(\"%s| %-*s |         rank |        cells |              |              |              |\", prefix2, col1width, col1header);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s%s sets:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |     rank |    cells |              |              |              |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             for (auto entset : ent->pp_agent_entity_sets) {
                 // Get resource use information for each entity set in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1583,65 +1588,90 @@ void CodeGen::do_RunModel()
                 c += "int dimension_count = " + to_string(entset->dimension_count()) + ";";
                 c += "int cell_count = " + to_string(entset->cell_count()) + ";";
                 //c += "auto entset_result = " + ent->name + "::om_null_entity." + entset->name + ".resource_use();";
-                c += "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, entset_name, dimension_count, cell_count, 0, 0, 0.0);";
+                c += "theLog->logFormatted(\"%s| %-*s | %8d | %8d | %12d | %12d | %12.4f |\", prefix2, col1width, entset_name, dimension_count, cell_count, 0, 0, 0.0);";
                 c += "}";
             }
-            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
-            c += "}";
+            c += "} // sets";
+            c += "";
         }
         if (ent->pp_entity_tables.size()) {
-            c += "{";
+            c += "{ // tables";
             std::string col1header = "table";
             int col1width = col1header.length();
             for (auto tbl : ent->pp_entity_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
             c += "int col1width = " + to_string(col1width) + ";";
+            c += "int suppressed_count = 0; // number of tables suppressed at runtime";
             c += "const char * col1header = \"" + col1header + "\";";
-            c += "theLog->logFormatted(\"%s%s entity tables:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
-            c += "theLog->logFormatted(\"%s| %-*s |         rank |        cells |              |              |              |\", prefix2, col1width, col1header);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s%s tables:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|----------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |     rank |    cells |   accums | measures |              |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|----------|--------------|\", prefix2, col1width, dashes);";
             for (auto tbl : ent->pp_entity_tables) {
                 // Get resource use information for each entity table in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
-                c += "{";
-                c += "// Resources for " + tbl->name;
-                c += "auto tbl_name = \"" + tbl->name + "\";";
-                c += "int dimension_count = " + to_string(tbl->cell_count()) + ";";
-                c += "int cell_count = " + to_string(tbl->cell_count()) + ";";
+                c += "{ // table " + tbl->name;
+                c +=     "auto tbl_name = \"" + tbl->name + "\";";
+                c +=     "bool instantiated = " + tbl->cxx_instance + "; // is nullptr if suppressed at runtime";
+                c +=     "int dimension_count = " + to_string(tbl->dimension_count()) + ";";
+                c +=     "int cell_count = " + to_string(tbl->cell_count()) + ";";
+                c +=     "int accumulator_count = " + to_string(tbl->pp_accumulators.size()) + ";";
+                c +=     "int measure_count = " + to_string(tbl->measure_count()) + ";";
+                c +=     "int collection_count = " + to_string(tbl->n_collections) + ";";
                 //c += "auto tbl_result = " + ent->name + "::om_null_entity." + tbl->name + ".resource_use();";
-                c += "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, 0, 0, 0.0);";
-                c += "}";
+                c +=     "if (instantiated) {";
+                c +=         "theLog->logFormatted(\"%s| %-*s | %8d | %8d | %8d | %8d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, accumulator_count, measure_count, 0.0);";
+                c +=     "}";
+                c +=     "else {";
+                c +=         "++suppressed_count;";
+                c +=     "}";
+                c += "} // table " + tbl->name;
+                c += "";
             }
-            c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
-            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|----------|--------------|\", prefix2, col1width, dashes);";
+            c += "if (suppressed_count > 0) {";
+            c +=     "theLog->logFormatted(\"%s %d %s table(s) suppressed at runtime\", prefix2, suppressed_count, ent_name);";
             c += "}";
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "} // tables";
+            c += "";
         }
         c += "} // End resource use report for " + ent->name;
     }
     if (Symbol::pp_all_derived_tables.size()) {
-        c += "{";
+        c += "{ // derived tables";
         std::string col1header = "derived table";
         int col1width = col1header.length();
         for (auto tbl : Symbol::pp_all_derived_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
         c += "int col1width = " + to_string(col1width) + ";";
+        c += "int suppressed_count = 0; // number of tables suppressed at runtime";
         c += "const char * col1header = \"" + col1header + "\";";
         c += "theLog->logFormatted(\"%s derived tables:\", prefix1);";
-        c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
-        c += "theLog->logFormatted(\"%s| %-*s |         rank |        cells |              |              |              |\", prefix2, col1width, col1header);";
-        c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s| %-*s |     rank |    cells | measures |              |              |\", prefix2, col1width, col1header);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|--------------|--------------|\", prefix2, col1width, dashes);";
         for (auto tbl : Symbol::pp_all_derived_tables) {
-            c += "{";
-            c += "// Resources for " + tbl->name;
-            c += "auto tbl_name = \"" + tbl->name + "\";";
-            c += "int dimension_count = " + to_string(tbl->cell_count()) + ";";
-            c += "int cell_count = " + to_string(tbl->cell_count()) + ";";
-            c += "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, 0, 0, 0.0);";
-            c += "}";
+            c += "{ // table " + tbl->name;
+            c +=     "auto tbl_name = \"" + tbl->name + "\";";
+            c +=     "bool instantiated = " + tbl->cxx_instance + "; // is nullptr if suppressed at runtime";
+            c +=     "int dimension_count = " + to_string(tbl->dimension_count()) + ";";
+            c +=     "int cell_count = " + to_string(tbl->cell_count()) + ";";
+            c +=     "int measure_count = " + to_string(tbl->measure_count()) + ";";
+            c +=     "if (instantiated) {";
+            c +=         "theLog->logFormatted(\"%s| %-*s | %8d | %8d | %8d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, measure_count, 0, 0.0);";
+            c +=     "}";
+            c +=     "else {";
+            c +=         "++suppressed_count;";
+            c +=     "}";
+            c += "} // table " + tbl->name;
         }
-        c += "theLog->logFormatted(\"%s|-%-.*s-|--------------|--------------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
-        c += "theLog->logFormatted(\"%s\", prefix0);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "if (suppressed_count > 0) {";
+        c +=     "theLog->logFormatted(\"%s %d derived table(s) suppressed at runtime\", prefix2, suppressed_count);";
         c += "}";
+        c += "theLog->logFormatted(\"%s\", prefix0);";
+        c += "} // derived tables";
     }
 
     c +=   "theLog->logFormatted(\"%sResource use report - end\", prefix0);";
