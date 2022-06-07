@@ -62,17 +62,18 @@ ProcessGroupDef::ProcessGroupDef(int i_subValueCount, int i_threadCount, bool i_
     int nWorldSize = (i_isRootIdle && i_worldSize > 1) ? i_worldSize - 1 : i_worldSize;
 
     groupSize = i_subValueCount / i_threadCount;
+    if (i_subValueCount % i_threadCount) groupSize++;
     if (groupSize <= 0) groupSize = 1;
     if (groupSize > nWorldSize) groupSize = nWorldSize;
 
-    groupCount = (groupSize > 1) ? nWorldSize / groupSize : (nWorldSize - 1) / groupSize;
+    groupCount = (i_worldSize - 1) / groupSize;
     if (groupCount <= 0) groupCount = 1;
 
     // one-based group number, root is in the last group
     groupOne = (i_worldRank > 0) ? 1 + (i_worldRank - 1) / groupSize : groupCount;
 
     // "active" root: use root process for modeling, else dedicate it for data exchange only
-    isRootActive = !i_isRootIdle && groupSize > 1 && i_worldSize <= groupSize * groupCount;
+    isRootActive = i_worldSize == 1 || (!i_isRootIdle && groupSize > 1 && i_worldSize <= groupSize * groupCount);
 
     // get process rank among other active modeling processes in the group
     bool isInLastGroup = groupOne >= groupCount;

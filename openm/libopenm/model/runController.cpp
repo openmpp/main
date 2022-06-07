@@ -25,7 +25,7 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
     int nProcess = i_isMpiUsed ? i_msgExec->worldSize() : 1;    // number of processes: MPI world size
 
     bool isTask = i_argOpts.intOption(RunOptionsKey::taskId, 0) > 0 || i_argOpts.strOption(RunOptionsKey::taskName) != "";
-    bool isRunId = i_argOpts.intOption(RunOptionsKey::restartRunId, 0) > 0;
+    bool isRestartId = i_argOpts.intOption(RunOptionsKey::restartRunId, 0) > 0;
 
     // multiple processes: create run controller for root or child process
     // single process run: create single process run controller 
@@ -41,7 +41,7 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
         }
     }
     else {
-        if (!isTask && isRunId) {
+        if (!isTask && isRestartId) {
             ctrl.reset(new RestartController(i_argOpts, i_dbExec));
         }
         else {
