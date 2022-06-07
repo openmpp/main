@@ -33,6 +33,16 @@ CodeBlock EntityArrayMemberSymbol::cxx_declaration_agent()
     return h;
 }
 
+size_t EntityArrayMemberSymbol::cell_count() const
+{
+    size_t cells = 1;
+    for (auto dim : pp_dimension_list) {
+        cells *= dim->pp_size();
+    }
+    return cells;
+}
+
+
 void EntityArrayMemberSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

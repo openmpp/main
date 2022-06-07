@@ -46,12 +46,30 @@ public:
     CodeBlock cxx_declaration_agent();
 
     /**
+     * The number of dimensions in the array (rank).
+     *
+     * @return A size_t.
+     */
+    size_t dimension_count() const
+    {
+        return pp_dimension_list.size();
+    }
+
+    /**
+     * The total number of cells in the array.
+     * 
+     * @return An size_t.
+     */
+    size_t cell_count() const;
+
+
+    /**
      * List of dimensions.
      */
     list<Symbol **> dimension_list;
 
     /**
-     * List of symbols (post-parse)
+     * List of dimensions (post-parse)
      */
     list<EnumerationSymbol *> pp_dimension_list;
 };

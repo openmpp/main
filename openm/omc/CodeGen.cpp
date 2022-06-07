@@ -1542,6 +1542,36 @@ void CodeGen::do_RunModel()
             c += "} // multilinks";
             c += "";
         }
+        if (array_count) {
+            std::list<EntityArrayMemberSymbol*> aml; // list of array members
+            for (auto dm : dml) {
+                if (dm->is_array()) {
+                    aml.push_back(dynamic_cast<EntityArrayMemberSymbol*>(dm));
+                }
+            }
+            c += "{ // arrays";
+            std::string col1header = "array";
+            int col1width = col1header.length();
+            for (auto arr : aml) { col1width = std::max<int>(col1width, arr->name.length()); };
+            c += "int col1width = " + to_string(col1width) + ";";
+            c += "const char * col1header = \"" + col1header + "\";";
+            c += "theLog->logFormatted(\"%s%s arrays:\", prefix1, ent_name);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|-------|-------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells |       |       |       |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|-------|-------|\", prefix2, col1width, dashes);";
+            for (auto arr : aml) {
+                c += "{";
+                c +=     "auto arr_name = \"" + arr->name + "\";";
+                c +=     "int dimension_count = " + to_string(arr->dimension_count()) + ";";
+                c +=     "int cell_count = " + to_string(arr->cell_count()) + ";";
+                c +=     "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %5d | %5d | %5d |\", prefix2, col1width, arr_name, dimension_count, cell_count, 0, 0, 0);";
+                c += "}";
+            }
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|-------|-------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "} // arrays";
+            c += "";
+        }
         if (ent->pp_agent_events.size()) {
             c += "{ // events";
             std::string col1header = "event";
@@ -1576,9 +1606,9 @@ void CodeGen::do_RunModel()
             c += "int col1width = " + to_string(col1width) + ";";
             c += "const char * col1header = \"" + col1header + "\";";
             c += "theLog->logFormatted(\"%s%s sets:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
-            c += "theLog->logFormatted(\"%s| %-*s |     rank |    cells |              |              |              |\", prefix2, col1width, col1header);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells |              |              |              |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             for (auto entset : ent->pp_agent_entity_sets) {
                 // Get resource use information for each entity set in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1588,10 +1618,10 @@ void CodeGen::do_RunModel()
                 c += "int dimension_count = " + to_string(entset->dimension_count()) + ";";
                 c += "int cell_count = " + to_string(entset->cell_count()) + ";";
                 //c += "auto entset_result = " + ent->name + "::om_null_entity." + entset->name + ".resource_use();";
-                c += "theLog->logFormatted(\"%s| %-*s | %8d | %8d | %12d | %12d | %12.4f |\", prefix2, col1width, entset_name, dimension_count, cell_count, 0, 0, 0.0);";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %12d | %12d | %12.4f |\", prefix2, col1width, entset_name, dimension_count, cell_count, 0, 0, 0.0);";
                 c += "}";
             }
-            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|--------------|--------------|--------------|\", prefix2, col1width, dashes);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "} // sets";
             c += "";
@@ -1605,9 +1635,9 @@ void CodeGen::do_RunModel()
             c += "int suppressed_count = 0; // number of tables suppressed at runtime";
             c += "const char * col1header = \"" + col1header + "\";";
             c += "theLog->logFormatted(\"%s%s tables:\", prefix1, ent_name);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|----------|--------------|\", prefix2, col1width, dashes);";
-            c += "theLog->logFormatted(\"%s| %-*s |     rank |    cells |   accums | measures |              |\", prefix2, col1width, col1header);";
-            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|----------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|-------|-------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells | accum | measr | colls |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|-------|-------|\", prefix2, col1width, dashes);";
             for (auto tbl : ent->pp_entity_tables) {
                 // Get resource use information for each entity table in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1621,7 +1651,7 @@ void CodeGen::do_RunModel()
                 c +=     "int collection_count = " + to_string(tbl->n_collections) + ";";
                 //c += "auto tbl_result = " + ent->name + "::om_null_entity." + tbl->name + ".resource_use();";
                 c +=     "if (instantiated) {";
-                c +=         "theLog->logFormatted(\"%s| %-*s | %8d | %8d | %8d | %8d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, accumulator_count, measure_count, 0.0);";
+                c +=         "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %5d | %5d | %5d |\", prefix2, col1width, tbl_name, dimension_count, cell_count, accumulator_count, measure_count, collection_count);";
                 c +=     "}";
                 c +=     "else {";
                 c +=         "++suppressed_count;";
@@ -1629,7 +1659,7 @@ void CodeGen::do_RunModel()
                 c += "} // table " + tbl->name;
                 c += "";
             }
-            c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|----------|--------------|\", prefix2, col1width, dashes);";
+            c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|-------|-------|\", prefix2, col1width, dashes);";
             c += "if (suppressed_count > 0) {";
             c +=     "theLog->logFormatted(\"%s %d %s table(s) suppressed at runtime\", prefix2, suppressed_count, ent_name);";
             c += "}";
@@ -1648,9 +1678,9 @@ void CodeGen::do_RunModel()
         c += "int suppressed_count = 0; // number of tables suppressed at runtime";
         c += "const char * col1header = \"" + col1header + "\";";
         c += "theLog->logFormatted(\"%s derived tables:\", prefix1);";
-        c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|--------------|--------------|\", prefix2, col1width, dashes);";
-        c += "theLog->logFormatted(\"%s| %-*s |     rank |    cells | measures |              |              |\", prefix2, col1width, col1header);";
-        c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells | measr |              |              |\", prefix2, col1width, col1header);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|--------------|--------------|\", prefix2, col1width, dashes);";
         for (auto tbl : Symbol::pp_all_derived_tables) {
             c += "{ // table " + tbl->name;
             c +=     "auto tbl_name = \"" + tbl->name + "\";";
@@ -1659,14 +1689,14 @@ void CodeGen::do_RunModel()
             c +=     "int cell_count = " + to_string(tbl->cell_count()) + ";";
             c +=     "int measure_count = " + to_string(tbl->measure_count()) + ";";
             c +=     "if (instantiated) {";
-            c +=         "theLog->logFormatted(\"%s| %-*s | %8d | %8d | %8d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, measure_count, 0, 0.0);";
+            c +=         "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %5d | %12d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, measure_count, 0, 0.0);";
             c +=     "}";
             c +=     "else {";
             c +=         "++suppressed_count;";
             c +=     "}";
             c += "} // table " + tbl->name;
         }
-        c += "theLog->logFormatted(\"%s|-%-.*s-|----------|----------|----------|--------------|--------------|\", prefix2, col1width, dashes);";
+        c += "theLog->logFormatted(\"%s|-%-.*s-|-------|----------|-------|--------------|--------------|\", prefix2, col1width, dashes);";
         c += "if (suppressed_count > 0) {";
         c +=     "theLog->logFormatted(\"%s %d derived table(s) suppressed at runtime\", prefix2, suppressed_count);";
         c += "}";
