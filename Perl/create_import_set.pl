@@ -53,23 +53,23 @@ if ($opt->help) {
 
 # Obtain arguments
 
-$opt->imports or die "name of model imports csv file must be specified using -i";
+$opt->imports or die "Error: name of model imports csv file must be specified using -i";
 my $imports_in = $opt->imports;
--e $imports_in or die "model imports file ${imports_in} not found";
+-e $imports_in or die "Error: model imports file ${imports_in} not found";
 
-$opt->upstream or die "name of upstream model must be specified using -u";
+$opt->upstream or die "Error: name of upstream model must be specified using -u";
 my $upstream_model_name = $opt->upstream;
-length($upstream_model_name) > 0 or die "name of upstream model must be specified using -u";
+length($upstream_model_name) > 0 or die "Error: name of upstream model must be specified using -u";
 
-$opt->run or die "name of upstream model run must be specified using -r";
+$opt->run or die "Error: name of upstream model run must be specified using -r";
 my $run_name = $opt->run;
 
-$opt->downstream or die "name of downstream model must be specified using -d";
+$opt->downstream or die "Error: name of downstream model must be specified using -d";
 my $downstream_model_name = $opt->downstream;
-length($downstream_model_name) > 0 or die "name of downstream model must be specified using -d";
+length($downstream_model_name) > 0 or die "Error: name of downstream model must be specified using -d";
 
 my $workdir = $opt->workdir;
--d $workdir or die "working directory ${workdir} not found";
+-d $workdir or die "Error: working directory ${workdir} not found";
 
 my $keep_all_subs = 0;
 $keep_all_subs = 1 if $opt->keep;
@@ -78,12 +78,12 @@ my $verbose = 0;
 $verbose = 1 if $opt->verbose;
 
 my $run_in_zip = "${workdir}/${upstream_model_name}.run.${run_name}.zip";
--f $run_in_zip or die "upstream run file ${run_in_zip} not found";
+-f $run_in_zip or die "Error: upstream run file ${run_in_zip} not found";
 
 # Read the input zip of the upstream model run
 my $zip_in = Archive::Zip->new();
 unless ( $zip_in->read( ${run_in_zip} ) == AZ_OK ) {
-    die "problem reading ${run_in_zip}";
+    die "Error: problem reading ${run_in_zip}";
 }
 
 if (0) {
@@ -104,7 +104,7 @@ my $upstream_subcount;
     
     my @arr = $zip_in->membersMatching(".*\.json");
     my $count = @arr;
-    $count == 1 || die "${count} matches for json metadata file in run zip";
+    $count == 1 || die "Error: ${count} matches for json metadata file in run zip";
     my $zip_member = $arr[0];
     $run_zip_json = $zip_in->contents($zip_member);
     print "run_zip_json length=".length($run_zip_json)."\n" if $verbose;
@@ -114,14 +114,14 @@ my $upstream_subcount;
     $run_zip_json =~ /"ModelName":"([^"]*)"/;
     $run_zip_model_name = $1;
     print "run_zip_model_name = ${run_zip_model_name}\n" if $verbose;
-    $upstream_model_name eq $run_zip_model_name or die "incoherence between upstream model name ${upstream_model_name} and model name inside run zip ${run_zip_model_name}";
+    $upstream_model_name eq $run_zip_model_name or die "Error: incoherence between upstream model name ${upstream_model_name} and model name inside run zip ${run_zip_model_name}";
     
     # obtain upstream run name from json
     # search for property Name
     $run_zip_json =~ /"Name":"([^"]*)"/;
     $run_zip_run_name = $1;
     print "run_zip_run_name=${run_zip_run_name}\n" if $verbose;
-    $run_name eq $run_zip_run_name or die "incoherence between upstream run name ${run_name} and run name inside run zip ${run_zip_run_name}";
+    $run_name eq $run_zip_run_name or die "Error: incoherence between upstream run name ${run_name} and run name inside run zip ${run_zip_run_name}";
     
     # obtain upstream subcount from json
     # search for property SubCount
@@ -134,7 +134,7 @@ my $upstream_subcount;
     $run_zip_json =~ /"LangCode":"([^"]*)"/;
     $upstream_lang_code = $1;
     print "upstream_lang_code=${upstream_lang_code}\n" if $verbose;
-    length($upstream_lang_code) > 0 or die "unable to get default language code from run zip file";
+    length($upstream_lang_code) > 0 or die "Error: unable to get default language code from run zip file";
 }
 
 # Output set has same name as input run
@@ -145,10 +145,10 @@ my $zip_out_topdir = "${downstream_model_name}.set.${set_name}";
 my $zip_out_csvdir = "${zip_out_topdir}/set.${set_name}";
 my $zip_out_json = "${zip_out_topdir}/${downstream_model_name}.set.${set_name}.json";
 
-chdir $workdir or die "unable to change directory to ${workdir}";
-remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
-make_path $zip_out_topdir || die "unable to create ${zip_out_topdir}";
-make_path $zip_out_csvdir || die "unable to create ${zip_out_csvdir}";
+chdir $workdir or die "Error: unable to change directory to ${workdir}";
+remove_tree $zip_out_topdir || die "Error: unable to remove ${zip_out_topdir}";
+make_path $zip_out_topdir || die "Error: unable to create ${zip_out_topdir}";
+make_path $zip_out_csvdir || die "Error: unable to create ${zip_out_csvdir}";
 
 # Prepare the output set zip
 my $zip_out = Archive::Zip->new();
@@ -172,18 +172,18 @@ $set_json .= "  \"Param\":[\n";
 my $line = 0;
 my $is_first_parameter = 1;
 my $parameters_processed = 0;
-open IN_FILE, '<'.$imports_in || die "failed to open ${imports_in}";
+open IN_FILE, '<'.$imports_in || die "Error: failed to open ${imports_in}";
 my $header = <IN_FILE>; # skip header
 chomp $header;
 $header eq 'parameter_name,parameter_rank,from_name,from_model_name,is_sample_dim'
-   || die "invalid header line in ${imports_in}";
+   || die "Error: invalid header line in ${imports_in}";
 while (<IN_FILE>) {
     $line++;
     my $record = $_;
     chomp $record;
     my @fields = split(/,/, $record);
     my $field_count = @fields;
-    $field_count == 5 || die "invalid number of fields in record ${line} of ${imports_in}";
+    $field_count == 5 || die "Error: invalid number of fields in record ${line} of ${imports_in}";
     my $parameter_name = $fields[0];
     my $parameter_rank = $fields[1];
     my $from_name = $fields[2];
@@ -244,7 +244,7 @@ while (<IN_FILE>) {
         # regexp in line below finds table like TABLE.acc-all.csv, ignores path part
         my @arr = $zip_in->membersMatching(".*\\/${from_name}\\.acc-all\\.csv");
         my $count = @arr;
-        $count == 1 || die "${count} matches for table ${from_name} in run zip";
+        $count == 1 || die "Error: ${count} matches for table ${from_name} in run zip";
         my $zip_member = $arr[0];
         
         my $zip_out_csv = "${zip_out_csvdir}/${parameter_name}.csv";
@@ -256,7 +256,7 @@ while (<IN_FILE>) {
             my $fh_in = Archive::Zip::MemberRead->new($zip_member);
 
             # open output csv file in staging directory
-            open my $fh_out, ">:utf8", $zip_out_csv or die "can't open ${zip_out_csv}";
+            open my $fh_out, ">:utf8", $zip_out_csv or die "Error: can't open ${zip_out_csv}";
             $fh_out->write("${out_header}\n");
             
             my $csv = Text::CSV->new({binary => 1});
@@ -280,7 +280,7 @@ while (<IN_FILE>) {
                 # transform input line to output line
                 # Split input line into fields
                 #my @fields_in = split(/[,]/, $line_in);
-                $csv->parse($line_in) || die "failed to parse ${line_in}";
+                $csv->parse($line_in) || die "Error: failed to parse ${line_in}";
                 my @fields_in = $csv->fields();
                 my $sub_id = $fields_in[0]; # The sub_id of this record of the upstream table
                 my @fields_out = ();
@@ -314,7 +314,7 @@ while (<IN_FILE>) {
                 # This is the last field in the table record, after any additional accumulator fields
                 push @fields_out, $fields_in[-1];
                 #$line_out = join ',', @fields_out;
-                $csv->combine(@fields_out) || die "failed to combine";
+                $csv->combine(@fields_out) || die "Error: failed to combine";
                 $line_out = $csv->string();
                 $fh_out->write("${line_out}\n");
             }
@@ -331,7 +331,7 @@ $set_json .= "}\n";
 
 # write json metadata to output file in staging directory
 {
-    open JSON_FILE, ">${zip_out_json}" || die "unable to open ${zip_out_json}";;
+    open JSON_FILE, ">${zip_out_json}" || die "Error: unable to open ${zip_out_json}";;
     print JSON_FILE $set_json;
     close JSON_FILE;
 }
@@ -349,4 +349,4 @@ unless ( $zip_out->writeToFileNamed("${downstream_model_name}.set.${set_name}.zi
 print "${parameters_processed} downstream ${downstream_model_name} parameters created from upstream ${upstream_model_name} tables\n";
 
 # cleanup - remove staging directory
-remove_tree $zip_out_topdir || die "unable to remove ${zip_out_topdir}";
+remove_tree $zip_out_topdir || die "Error: unable to remove ${zip_out_topdir}";
