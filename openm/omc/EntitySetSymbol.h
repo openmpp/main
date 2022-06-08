@@ -9,6 +9,7 @@
 #include "Symbol.h"
 
 class EntityFuncSymbol;
+class GlobalFuncSymbol;
 class EntityInternalSymbol;
 class AttributeSymbol;
 class IdentityAttributeSymbol;
@@ -40,8 +41,13 @@ public:
         , update_cell_fn(nullptr)
         , insert_fn(nullptr)
         , erase_fn(nullptr)
+        , resource_use_gfn(nullptr)
+        , resource_use_reset_gfn(nullptr)
         , filter(nullptr)
     {
+        count_gvn = name + "_count";
+        max_gvn = name + "_max";
+        inserts_gvn = name + "_inserts";
         create_auxiliary_symbols();
     }
 
@@ -131,4 +137,29 @@ public:
      * List of dimensions
      */
     list<DimensionSymbol *> dimension_list;
+
+    /**
+     * The name of the global variable for the current number of entities in the set.
+     */
+    std::string count_gvn;
+
+    /**
+     * The name of the global variable for the maximum number of entities in the set.
+     */
+    std::string max_gvn;
+
+    /**
+     * The name of the global variable for the number of insertions in the set.
+     */
+    std::string inserts_gvn;
+
+    /**
+     * The global function which reports resource use for the entity set.
+     */
+    GlobalFuncSymbol* resource_use_gfn;
+
+    /**
+     * The global function which resets resource use for the entity set.
+     */
+    GlobalFuncSymbol* resource_use_reset_gfn;
 };

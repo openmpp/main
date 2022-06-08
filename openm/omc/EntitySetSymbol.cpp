@@ -2,7 +2,7 @@
 * @file    EntitySetSymbol.cpp
 * Definitions for the EntitySetSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
@@ -10,6 +10,7 @@
 #include "EntitySymbol.h"
 #include "EntityInternalSymbol.h"
 #include "EntityFuncSymbol.h"
+#include "GlobalFuncSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "RangeSymbol.h"
 #include "DimensionSymbol.h"
@@ -49,6 +50,27 @@ void EntitySetSymbol::create_auxiliary_symbols()
         erase_fn = new EntityFuncSymbol("om_" + name + "_erase", agent);
         assert(erase_fn); // out of memory check
         erase_fn->doc_block = doxygen_short("Erase the entity from the active cell in " + name + ".");
+    }
+
+    {
+        assert(!resource_use_gfn); // initialization guarantee
+        resource_use_gfn = new GlobalFuncSymbol("om_" + name + "_resource_use", "auto", "void");
+        assert(resource_use_gfn); // out of memory check
+        resource_use_gfn->doc_block = doxygen_short("Report resource use of  " + name + ".");
+        auto& c = resource_use_gfn->func_body;
+        c += "struct result { size_t max_count; size_t total_inserts; };";
+        c += "return result { " + max_gvn + ", " + inserts_gvn + " }; ";
+    }
+
+    {
+        assert(!resource_use_reset_gfn); // initialization guarantee
+        resource_use_reset_gfn = new GlobalFuncSymbol("om_" + name + "_resource_use_reset", "void", "void");
+        assert(resource_use_reset_gfn); // out of memory check
+        resource_use_reset_gfn->doc_block = doxygen_short("Reset resource use for  " + name + ".");
+        auto &c = resource_use_reset_gfn->func_body;
+        c += count_gvn + " = 0;";
+        c += max_gvn + " = 0;";
+        c += inserts_gvn + " = 0;";
     }
 }
 
@@ -140,7 +162,18 @@ CodeBlock EntitySetSymbol::cxx_declaration_global()
         assert(es); // integrity check guarantee
         dims += "[" + to_string(es->pp_size()) + "]";
     }
+    h += "";
     h += "extern thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
+    h += "";
+
+    h += "/// Count of entities in set " + name;
+    h += "extern thread_local size_t "  + count_gvn + ";";
+    h += "";
+    h += "/// Maximum count of entities in set " + name;
+    h += "extern thread_local size_t " + max_gvn + ";";
+    h += "";
+    h += "/// Number of moves of entities in set " + name;
+    h += "extern thread_local size_t " + inserts_gvn + ";";
     h += "";
 
     return h;
@@ -159,6 +192,10 @@ CodeBlock EntitySetSymbol::cxx_definition_global()
         dims += "[" + to_string(es->pp_size()) + "]";
     }
     c += "thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
+
+    c += "thread_local size_t " + count_gvn + " = 0;";
+    c += "thread_local size_t " + max_gvn + " = 0;";
+    c += "thread_local size_t " + inserts_gvn + " = 0;";
     c += "";
 
     return c;
@@ -213,6 +250,14 @@ void EntitySetSymbol::build_body_insert()
 {
     CodeBlock& c = insert_fn->func_body;
 
+    c += "if constexpr (om_resource_use_on) {";
+    c +=     "++" + inserts_gvn + ";";
+    c +=     "++" + count_gvn + ";";
+    c +=     "if (" + max_gvn + " < " + count_gvn + ") {";
+    c +=         max_gvn + " = " + count_gvn + ";";
+    c +=     "}";
+    c += "}";
+
     if (dimension_count() == 0) {
         c += name + "->insert(this);" ;
     }
@@ -227,6 +272,10 @@ void EntitySetSymbol::build_body_insert()
 void EntitySetSymbol::build_body_erase()
 {
     CodeBlock& c = erase_fn->func_body;
+
+    c += "if constexpr (om_resource_use_on) {";
+    c +=     "--" + name + "_count;";
+    c += "}";
 
     if (dimension_count() == 0) {
         c += name + "->erase(this);" ;

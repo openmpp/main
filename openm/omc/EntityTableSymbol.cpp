@@ -14,6 +14,7 @@
 #include "AttributeSymbol.h"
 #include "BuiltinAttributeSymbol.h"
 #include "EntityFuncSymbol.h"
+#include "GlobalFuncSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
@@ -56,6 +57,25 @@ void EntityTableSymbol::create_auxiliary_symbols()
         push_increment_fn = new EntityFuncSymbol("om_" + name + "_push_increment", agent, "void", "size_t cell_in, int pending, big_counter pending_event_counter");
         assert(push_increment_fn); // out of memory check
         push_increment_fn->doc_block = doxygen_short("Finalize the increment and push it to the accumulators in " + name + ".");
+    }
+
+    {
+        assert(!resource_use_gfn); // initialization guarantee
+        resource_use_gfn = new GlobalFuncSymbol("om_" + name + "_resource_use", "auto", "void");
+        assert(resource_use_gfn); // out of memory check
+        resource_use_gfn->doc_block = doxygen_short("Report resource use of  " + name + ".");
+        auto& c = resource_use_gfn->func_body;
+        c += "struct result { size_t total_increments; };";
+        c += "return result { " + increments_gvn + " }; ";
+    }
+
+    {
+        assert(!resource_use_reset_gfn); // initialization guarantee
+        resource_use_reset_gfn = new GlobalFuncSymbol("om_" + name + "_resource_use_reset", "void", "void");
+        assert(resource_use_reset_gfn); // out of memory check
+        resource_use_reset_gfn->doc_block = doxygen_short("Reset resource use for  " + name + ".");
+        auto& c = resource_use_reset_gfn->func_body;
+        c += increments_gvn + " = 0;";
     }
 }
 
@@ -243,6 +263,10 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     h += "extern thread_local " + cxx_type + " * " + cxx_instance + ";";
     h += "";
 
+    h += "/// Count of increments pushed to table " + name;
+    h += "extern thread_local size_t " + increments_gvn + ";";
+    h += "";
+
     return h;
 }
 
@@ -256,6 +280,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     // table definition
     // E.g. DurationOfLife theDurationOfLife;
     c += "thread_local " + name + " * " + cxx_instance + " = nullptr;";
+    c += "thread_local size_t " + increments_gvn + " = 0;";
     c += "";
 
     // definition of initialize_accumulators()
@@ -655,6 +680,10 @@ void EntityTableSymbol::build_body_init_increment()
 void EntityTableSymbol::build_body_push_increment()
 {
     CodeBlock& c = push_increment_fn->func_body;
+
+    c += "if constexpr (om_resource_use_on) {";
+    c +=     "++" + increments_gvn + ";";
+    c += "}";
 
     c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
     c += "";

@@ -3,7 +3,7 @@
 * Declares the EntityTableSymbol derived class of the Symbol class.
 * Also declares related classes.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -16,6 +16,7 @@ class EntityTableMeasureSymbol;
 class EntityTableAccumulatorSymbol;
 class EntityTableMeasureAttributeSymbol;
 class EntityFuncSymbol;
+class GlobalFuncSymbol;
 class EntityInternalSymbol;
 class AttributeSymbol;
 class IdentityAttributeSymbol;
@@ -49,6 +50,7 @@ public:
         , n_collections(0)
     {
         cxx_class = "cls_" + name;
+        increments_gvn = name + "_increments";
 
         create_auxiliary_symbols();
     }
@@ -156,4 +158,19 @@ public:
      * Class name used to declare the entity table.
      */
     string cxx_class;
+
+    /**
+     * The name of the global variable for the number of increments pushed to the entity table.
+     */
+    std::string increments_gvn;
+
+    /**
+     * The global function which reports resource use for the entity table.
+     */
+    GlobalFuncSymbol* resource_use_gfn;
+
+    /**
+     * The global function which resets resource use for the entity table.
+     */
+    GlobalFuncSymbol* resource_use_reset_gfn;
 };
