@@ -2,7 +2,7 @@
 * @file    EntityIncrementSymbol.cpp
 * Definitions for the EntityIncrementSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
@@ -51,6 +51,13 @@ CodeBlock EntityIncrementSymbol::cxx_declaration_agent()
         + ">";
     h += name + ";";
     return h;
+}
+
+CodeBlock EntityIncrementSymbol::cxx_initialization_expression(bool type_default) const
+{
+    CodeBlock c;
+    // increments do not participate in this initialization mechanism
+    return c;
 }
 
 CodeBlock EntityIncrementSymbol::cxx_definition_agent()

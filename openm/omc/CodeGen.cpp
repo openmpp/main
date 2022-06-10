@@ -1089,20 +1089,6 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
-	    h += "// Entity table increment members in " + agent->name + " entity";
-	    h += "//";
-	    h += "";
-        for ( auto table : agent->pp_entity_tables ) {
-            auto incr = table->increment;
-            assert(incr); // logic guarantee - every entity table has an associated increment in the entity.
-            h += incr->cxx_declaration_agent();
-            c += incr->cxx_definition_agent();
-        }
-	    h += "";
-	    c += "";
-
-	    h += "";
-	    h += "//";
 	    h += "// Data members in " + agent->name + " entity";
 	    h += "//";
 	    h += "";
@@ -1504,7 +1490,7 @@ void CodeGen::do_RunModel()
 
     for (auto ent : Symbol::pp_all_agents) {
         auto dml = ent->pp_agent_data_members;
-        size_t members_count = dml.size() + ent->pp_entity_tables.size();
+        size_t members_count = dml.size();
         size_t ent_internal               = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol *edms) {return edms->is_internal(); });
         size_t attribute_count            = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_attribute(); });
         size_t builtin_attribute_count    = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_builtin_attribute(); });
@@ -1513,10 +1499,10 @@ void CodeGen::do_RunModel()
         size_t simple_attribute_count     = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_simple_attribute(); });
         size_t array_count                = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_array(); });
         size_t event_count                = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_event(); });
+        size_t increment_count            = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_increment(); });
         size_t foreign_count              = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_foreign(); });
         size_t internal_count             = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
         size_t multilink_count            = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_multilink(); });
-        size_t table_count = ent->pp_entity_tables.size();
         size_t array_size = 0;
 
         c += "{ // Begin resource use tables for " + ent->name;
@@ -1541,7 +1527,7 @@ void CodeGen::do_RunModel()
         c +=         "theLog->logFormatted(\"%s|   Maintained | %5d |       |\", prefix2, " + std::to_string(maintained_attribute_count) + ");";
         c +=         "theLog->logFormatted(\"%s|   Link       | %5d |       |\", prefix2, " + std::to_string(link_attribute_count) + ");";
         c +=         "theLog->logFormatted(\"%s| Events       | %5d |       |\", prefix2, " + std::to_string(event_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Tables       | %5d |       |\", prefix2, " + std::to_string(table_count) + ");";
+        c +=         "theLog->logFormatted(\"%s| Increments   | %5d |       |\", prefix2, " + std::to_string(increment_count) + ");";
         c +=         "theLog->logFormatted(\"%s| Multilink    | %5d |       |\", prefix2, " + std::to_string(multilink_count) + ");";
         c +=         "theLog->logFormatted(\"%s| Internal     | %5d |       |\", prefix2, " + std::to_string(internal_count) + ");";
         c +=         "theLog->logFormatted(\"%s| Array        | %5d |       |\", prefix2, " + std::to_string(array_count) + ");";
@@ -1594,11 +1580,11 @@ void CodeGen::do_RunModel()
                 if (!dm->is_event()) continue;
                 c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Tables:\", \"\");";
-            //for (auto dm : dml) {
-            //    if (!dm->is_increment()) continue;
-            //    c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
-            //}
+            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Increments:\", \"\");";
+            for (auto dm : dml) {
+                if (!dm->is_increment()) continue;
+                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+            }
             c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Multilink:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_multilink()) continue;

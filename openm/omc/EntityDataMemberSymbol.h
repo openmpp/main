@@ -110,6 +110,13 @@ public:
     bool is_event(void) const;
 
     /**
+     * Determines if this is a EntityIncrementSymbol
+     *
+     * @return true or false.
+     */
+    bool is_increment(void) const;
+
+    /**
      * Determines if this is a EntityForeignMemberSymbol
      *
      * @return true or false.

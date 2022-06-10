@@ -2,12 +2,13 @@
 * @file    EntityIncrementSymbol.h
 * Declarations for the EntityIncrementSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include <cassert>
-#include "EntityMemberSymbol.h"
+#include "EntityDataMemberSymbol.h"
+#include "UnknownTypeSymbol.h"
 #include "EntityTableSymbol.h"
 
 
@@ -18,10 +19,10 @@ using namespace std;
 /**
  * Functionality associated with the entity member Increment<> associated with a table
  */
-class EntityIncrementSymbol : public EntityMemberSymbol
+class EntityIncrementSymbol : public EntityDataMemberSymbol
 {
 private:
-    typedef EntityMemberSymbol super;
+    typedef EntityDataMemberSymbol super;
 
 public:
     bool is_base_symbol() const { return false; }
@@ -35,7 +36,7 @@ public:
      * @param decl_loc    (Optional) the declaration location.
      */
     EntityIncrementSymbol(const string member_name, const Symbol *agent, const EntityTableSymbol *table, omc::location decl_loc = omc::location())
-        : EntityMemberSymbol(member_name, agent, decl_loc)
+        : EntityDataMemberSymbol(member_name, agent, UnknownTypeSymbol::find(), decl_loc)
         , table(table)
     {
     }
@@ -45,6 +46,7 @@ public:
         return "Increment for table " + table->name;
     }
 
+    CodeBlock cxx_initialization_expression(bool type_default) const;
 
     CodeBlock cxx_declaration_agent();
 

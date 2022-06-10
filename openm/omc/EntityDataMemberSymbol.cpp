@@ -21,6 +21,7 @@
 #include "SimpleAttributeSymbol.h"
 #include "EntityArrayMemberSymbol.h"
 #include "EntityEventSymbol.h"
+#include "EntityIncrementSymbol.h"
 #include "EntityForeignMemberSymbol.h"
 #include "EntityInternalSymbol.h"
 #include "EntityMultilinkSymbol.h"
@@ -70,6 +71,11 @@ bool EntityDataMemberSymbol::is_array(void) const
 bool EntityDataMemberSymbol::is_event(void) const
 {
     return (bool) dynamic_cast<const EntityEventSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_increment(void) const
+{
+    return (bool) dynamic_cast<const EntityIncrementSymbol*>(this);
 }
 
 bool EntityDataMemberSymbol::is_foreign(void) const
