@@ -1451,7 +1451,9 @@ void CodeGen::do_RunModel()
     c += "BaseEvent::initialize_simulation_runtime();";
     c += "BaseEntity::initialize_simulation_runtime();";
     c += "";
-    c += "if constexpr (om_resource_use_on) {";
+    c += "int sub_id = i_model->subValueId();";
+    c += "int sub_count = i_model->subValueCount();";
+    c += "if (om_resource_use_on) {";
     if (Symbol::pp_all_entity_sets.size()) {
         c += "// reset resource use for entity sets";
         for (auto es : Symbol::pp_all_entity_sets) {
@@ -1467,26 +1469,54 @@ void CodeGen::do_RunModel()
     }
     c += "} // om_resource_use_on";
     c += "";
-    c += "int mem_id = i_model->subValueId();";
-    c += "int mem_count = i_model->subValueCount();";
-    c += "RunSimulation(mem_id, mem_count, i_model); // Defined by the model framework, generally in a 'use' module";
     c += "";
-    c += "if constexpr (om_resource_use_on) {";
+    c += "RunSimulation(sub_id, sub_count, i_model); // Defined by the model framework, generally in a 'use' module";
+    c += "";
+    c += "";
+    c += "int resource_use_sub = 0; // hard-coded sub for resource report";
+    c += "if (om_resource_use_on && (resource_use_sub == sub_id)) {";
     c +=     "// Resource use report";
-    c +=     "std::string prefix0s = \"member=\" + std::to_string(mem_id) + \" \";";
+    //c +=     "std::string prefix0s = \"member=\" + std::to_string(sub_id) + \" \";";
+    c +=     "std::string prefix0s = \" \";";
     c +=     "std::string prefix1s = prefix0s + \"  \"; // prefix with 1 ident";
     c +=     "std::string prefix2s = prefix1s + \"  \"; // prefix with 2 idents";
     c +=     "std::string prefix3s = prefix2s + \"  \"; // prefix with 3 idents";
-    c +=     "std::string dashes_str (500, '-'); // string consisting of 500 dashes";
+    c +=     "std::string dashes_str (500, '-'); // string consisting of 500 -";
+    c +=     "std::string stars_str (500, '*'); // string consisting of 500 *";
     c +=     "auto prefix0 = prefix0s.c_str();";
     c +=     "auto prefix1 = prefix1s.c_str();";
     c +=     "auto prefix2 = prefix2s.c_str();";
     c +=     "auto prefix3 = prefix3s.c_str();";
     c +=     "auto dashes = dashes_str.c_str();";
+    c +=     "auto stars = stars_str.c_str();";
     c +=     "theLog->logFormatted(LT(\"Warning : possible performance impact - model built with resource_use = on\"));";
-    c +=     "theLog->logFormatted(\"%sResource use report - begin\", prefix0);";
+    c +=     "theLog->logFormatted(\"%sResource Use Report - Begin (for sub/member/replicate %d)\", prefix0, sub_id);";
     c +=     "theLog->logFormatted(\"%s\", prefix0);";
     c += "";
+    {
+        c += "{ // Resource Use Summary";
+        c +=     "auto section_title = \"*  Resource Use Summary  *\";";
+        c +=     "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
+        c +=     "theLog->logFormatted(\"%s%s\", prefix1, section_title);";
+        c +=     "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
+        c +=     "theLog->logFormatted(\"%s\", prefix1);";
+
+        c +=     "auto table_title = \" Resource Use Summary\";";
+        c +=     "auto row_sep =         \"+--------------+-------+-------+\";";
+        c +=     "int table_width = (int)strlen(row_sep);";
+        c +=     "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
+        c +=     "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
+        c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+        c +=     "theLog->logFormatted(\"%s| Category     | Count |    MB |\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+        c +=     "theLog->logFormatted(\"%s| Entities     | %5d | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Tables       | %5d | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Sets         | %5d | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Events       | %5d | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+        c +=     "theLog->logFormatted(\"%s\", prefix0);";
+        c += "}";
+    }
 
     for (auto ent : Symbol::pp_all_agents) {
         auto dml = ent->pp_agent_data_members;
@@ -1508,35 +1538,62 @@ void CodeGen::do_RunModel()
         c += "{ // Begin resource use tables for " + ent->name;
         c +=     "std::stringstream ss;";
         c +=     "auto ent_name = \"" + ent->name + "\";";
-        c +=     "theLog->logFormatted(\"%s%s\", prefix1, \"Resource Use Tables for " + ent->name + ":\");";
+        c +=     "auto section_title = \"*  Resource Use Detail for " + ent->name + "  *\";";
+        c +=     "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
+        c +=     "theLog->logFormatted(\"%s%s\", prefix1, section_title);";
+        c +=     "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
         c +=     "theLog->logFormatted(\"%s\", prefix1);";
         c +=     "auto ent_bytes = sizeof(" + ent->name + ");";
         c +=     "auto ent_result = " + ent->name + "::resource_use();";
-        c +=     "{ // entity members (summary)";
-        c +=         "auto table_title = \"    " + ent->name + " Members (summary)\";";
-        c +=         "auto row_sep =         \"+--------------+-------+-------+\";";
-        c +=         "int table_width = (int)strlen(row_sep);";
-        c +=         "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
-        c +=         "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s| Member       | Count | Bytes |\", prefix2);";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s| Attributes   | %5d |       |\", prefix2, " + std::to_string(attribute_count) + ");";
-        c +=         "theLog->logFormatted(\"%s|   Built-in   | %5d |       |\", prefix2, " + std::to_string(builtin_attribute_count) + ");";
-        c +=         "theLog->logFormatted(\"%s|   Simple     | %5d |       |\", prefix2, " + std::to_string(simple_attribute_count) + ");";
-        c +=         "theLog->logFormatted(\"%s|   Maintained | %5d |       |\", prefix2, " + std::to_string(maintained_attribute_count) + ");";
-        c +=         "theLog->logFormatted(\"%s|   Link       | %5d |       |\", prefix2, " + std::to_string(link_attribute_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Events       | %5d |       |\", prefix2, " + std::to_string(event_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Increments   | %5d |       |\", prefix2, " + std::to_string(increment_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Multilink    | %5d |       |\", prefix2, " + std::to_string(multilink_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Internal     | %5d |       |\", prefix2, " + std::to_string(internal_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Array        | %5d |       |\", prefix2, " + std::to_string(array_count) + ");";
-        c +=         "theLog->logFormatted(\"%s| Foreign      | %5d |       |\", prefix2, " + std::to_string(foreign_count) + ");";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s| All          | %5d | %5d |\", prefix2, " + std::to_string(members_count) + ", ent_bytes);";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s\", prefix0);";
-        c +=     "}";
+        {
+            c += "{ // entity instances";
+            c += "auto table_title = \"    " + ent->name + " Instances\";";
+            c += "auto row_sep =         \"+--------------+--------------+-------+\";";
+            c += "int table_width = (int)strlen(row_sep);";
+            c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| Activations  | Allocations  |    MB |\", prefix2);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| %12d | %12d | %5d |\", prefix2, ent_result.activations, ent_result.allocations, (ent_bytes * ent_result.allocations) / 1000000);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            if (multilink_count) {
+                c += "theLog->logFormatted(\"%s%s\", prefix2, \"Note: MB does not include storage of elements of multilinks\");";
+            }
+            if (foreign_count) {
+                c += "theLog->logFormatted(\"%s%s\", prefix2, \"Note: MB does not include storage of elements of foreign objects\");";
+            }
+            c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "}";
+            c += "";
+        }
+        {
+            c +=     "{ // entity members (summary)";
+            c +=         "auto table_title = \"    " + ent->name + " Members (summary)\";";
+            c +=         "auto row_sep =         \"+--------------+-------+-------+\";";
+            c +=         "int table_width = (int)strlen(row_sep);";
+            c +=         "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
+            c +=         "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
+            c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c +=         "theLog->logFormatted(\"%s| Member       | Count | Bytes |\", prefix2);";
+            c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c +=         "theLog->logFormatted(\"%s| Attributes   | %5d |       |\", prefix2, " + std::to_string(attribute_count) + ");";
+            c +=         "theLog->logFormatted(\"%s|   Built-in   | %5d |       |\", prefix2, " + std::to_string(builtin_attribute_count) + ");";
+            c +=         "theLog->logFormatted(\"%s|   Simple     | %5d |       |\", prefix2, " + std::to_string(simple_attribute_count) + ");";
+            c +=         "theLog->logFormatted(\"%s|   Maintained | %5d |       |\", prefix2, " + std::to_string(maintained_attribute_count) + ");";
+            c +=         "theLog->logFormatted(\"%s|   Link       | %5d |       |\", prefix2, " + std::to_string(link_attribute_count) + ");";
+            c +=         "theLog->logFormatted(\"%s| Events       | %5d |       |\", prefix2, " + std::to_string(event_count) + ");";
+            c +=         "theLog->logFormatted(\"%s| Increments   | %5d |       |\", prefix2, " + std::to_string(increment_count) + ");";
+            c +=         "theLog->logFormatted(\"%s| Multilink    | %5d |       |\", prefix2, " + std::to_string(multilink_count) + ");";
+            c +=         "theLog->logFormatted(\"%s| Internal     | %5d |       |\", prefix2, " + std::to_string(internal_count) + ");";
+            c +=         "theLog->logFormatted(\"%s| Array        | %5d |       |\", prefix2, " + std::to_string(array_count) + ");";
+            c +=         "theLog->logFormatted(\"%s| Foreign      | %5d |       |\", prefix2, " + std::to_string(foreign_count) + ");";
+            c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c +=         "theLog->logFormatted(\"%s| All          | %5d | %5d |\", prefix2, " + std::to_string(members_count) + ", ent_bytes);";
+            c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c +=         "theLog->logFormatted(\"%s\", prefix0);";
+            c +=     "}";
+        }
         {
             c += "{ // entity members (detail)";
             c += "auto table_title = \"    " + ent->name + " Members (detail)\";";
@@ -1546,100 +1603,88 @@ void CodeGen::do_RunModel()
             c += "int col1width = " + to_string(col1width) + ";";
             c += "const char * col1header = \"" + col1header + "\";";
             std::string row_sep = "+-" + std::string(col1width, '-') +
-                                                "-+----------------------+";
+                                                "-+-------+";
             c += "auto row_sep = \"" + row_sep + "\";";
             c += "int table_width = (int)strlen(row_sep);";
             c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
             c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s | type                 |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s| %-*s | bytes |\", prefix2, col1width, col1header);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Attributes:\", \"\");";
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  Built-in:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Attributes:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"  Built-in:\", \"\");";
+            // The static thread_local <entity>::om_null_entity is used to access the static thread_local member to determine its size in bytes
             for (auto dm : dml) {
                 if (!dm->is_builtin_attribute()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  Simple:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"  Simple:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_simple_attribute()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  Maintained:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"  Maintained:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_maintained_attribute()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  Link:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"  Link:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_link_attribute()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Events:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %-5s |\", prefix2, col1width, \"Events:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_event()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Increments:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Increments:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_increment()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Multilink:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Multilink:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_multilink()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Internal:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Internal:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_internal()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Array:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Array:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_array()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
-            c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"Foreign:\", \"\");";
+            c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Foreign:\", \"\");";
             for (auto dm : dml) {
                 if (!dm->is_foreign()) continue;
-                c += "theLog->logFormatted(\"%s| %-*s | %-20s |\", prefix2, col1width, \"  " + dm->pretty_name() + "\", \"" + dm->pp_data_type->pretty_name() + "\");";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", sizeof(" + ent->name + "::om_null_entity." + dm->name + "));";
             }
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "}";
         }
-        c +=     "{ // entity instances";
-        c +=         "auto table_title = \"    " + ent->name + " Instances\";";
-        c +=         "auto row_sep =         \"+--------------+--------------+-------+\";";
-        c +=         "int table_width = (int)strlen(row_sep);";
-        c +=         "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
-        c +=         "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s| Activations  | Allocations  |    MB |\", prefix2);";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s| %12d | %12d | %5d |\", prefix2, ent_result.activations, ent_result.allocations, (ent_bytes * ent_result.allocations) / 1000000);";
-        c +=         "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=         "theLog->logFormatted(\"%s\", prefix0);";
-        c +=     "}";
-        c += "";
         if (ent->pp_multilink_members.size()) {
             c += "{ // multilinks";
-            c += "auto table_title = \"    " + ent->name + " Multilinks\";";
+            c += "auto table_title = \"    " + ent->name + " Multilink elements\";";
             std::string col1header = "multilink";
             int col1width = col1header.length();
             for (auto ml : ent->pp_multilink_members) { col1width = std::max<int>(col1width, ml->name.length()); };
             c += "int col1width = " + to_string(col1width) + ";";
             c += "const char * col1header = \"" + col1header + "\";";
             std::string row_sep = "+-" + std::string(col1width, '-') + 
-                                                "-+--------------+--------------+--------------+--------------+";
+                                                "-+--------------+--------------+--------------+-------+";
             c += "auto row_sep = \"" + row_sep + "\";";
             c += "int table_width = (int)strlen(row_sep);";
             c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
             c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s | total slots  |  per entity  |   max slots  |   entity_id  |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s| %-*s |     max size |    entity_id |     avg size |    MB |\", prefix2, col1width, col1header);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "int MB_total = 0;";
             for (auto ml : ent->pp_multilink_members) {
                 // Get resource use information for each multilink in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1647,10 +1692,17 @@ void CodeGen::do_RunModel()
                 c +=     "// Resources for " + ml->name;
                 c +=     "auto ml_name = \"" + ml->name + "\";";
                 c +=     "auto ml_result = " + ent->name + "::om_null_entity." + ml->name + ".resource_use();";
-                c +=     "theLog->logFormatted(\"%s| %-*s | %12d | %12.4f | %12d | %12d |\", prefix2, col1width, ml_name, ml_result.total_slots, (double)ml_result.total_slots/(double)ent_result.allocations , ml_result.max_slots, ml_result.max_slots_id);";
+                c +=     "double avg_size = (double)ml_result.total_slots/(double)ent_result.activations;";
+                c +=     "int payload_bytes = sizeof(void *); // each element of vector is a wrapped pointer";
+                c +=     "int MB = (int)((avg_size * ent_result.allocations * payload_bytes) / 1000000);";
+                c +=     "MB_total += MB;";
+                c +=     "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12.4f | %5d |\", prefix2, col1width, ml_name, ml_result.max_slots, ml_result.max_slots_id, avg_size, MB);";
                 c += "}";
             }
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| %-*s |              |              |              | %5d |\", prefix2,  col1width, \"Total\", MB_total);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, \"Note: MB includes only storage of elements of multilinks\");";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "} // multilinks";
             c += "";
@@ -1850,7 +1902,7 @@ void CodeGen::do_RunModel()
         c += "} // derived tables";
     }
 
-    c +=   "theLog->logFormatted(\"%sResource use report - end\", prefix0);";
+    c +=   "theLog->logFormatted(\"%sResource Use Report - End\", prefix0);";
 
     c += "} // om_resource_use_on";
 

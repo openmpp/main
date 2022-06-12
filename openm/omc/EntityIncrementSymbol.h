@@ -43,7 +43,7 @@ public:
 
     string pretty_name() const
     {
-        return "Increment for table " + table->name;
+        return "Increment for " + table->name;
     }
 
     CodeBlock cxx_initialization_expression(bool type_default) const;
