@@ -1346,8 +1346,12 @@ void Symbol::post_parse_all()
                 // Remove the table's increment from the entity's list of callback members (used to generate offsets)
                 auto& incr = et->increment;
                 auto incr_as_ems = dynamic_cast<EntityMemberSymbol*>(incr);
-                assert(incr_as_ems); // is upcast to base type
+                assert(incr_as_ems); // is upcast in hierarchy to a more base type
                 ent->pp_callback_members.remove_if([incr_as_ems](EntityMemberSymbol* x) { return x == incr_as_ems; });
+                // Remove the table's increment from the entity's list of data members (used to declare/define members)
+                auto incr_as_dms = dynamic_cast<EntityDataMemberSymbol*>(incr);
+                assert(incr_as_dms); // is upcast in hirrarchy to a more base type
+                ent->pp_agent_data_members.remove_if([incr_as_dms](EntityDataMemberSymbol* x) { return x == incr_as_dms; });
             }
         }
         // remove all suppressed entity tables from the master list of entity tables
