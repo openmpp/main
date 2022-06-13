@@ -1473,7 +1473,7 @@ void CodeGen::do_RunModel()
     c += "RunSimulation(sub_id, sub_count, i_model); // Defined by the model framework, generally in a 'use' module";
     c += "";
     c += "";
-    c += "int resource_use_sub = 0; // hard-coded sub for resource report";
+    c += "int resource_use_sub = 0; // hard-coded sub 0 for resource report";
     c += "if (om_resource_use_on && (resource_use_sub == sub_id)) {";
     c +=     "// Resource use report";
     //c +=     "std::string prefix0s = \"member=\" + std::to_string(sub_id) + \" \";";
@@ -1501,18 +1501,21 @@ void CodeGen::do_RunModel()
         c +=     "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
         c +=     "theLog->logFormatted(\"%s\", prefix1);";
 
-        c +=     "auto table_title = \" Resource Use Summary\";";
-        c +=     "auto row_sep =         \"+--------------+-------+-------+\";";
+        c +=     "auto table_title = \"Resource Use Summary\";";
+        c +=     "auto row_sep =         \"+--------------+-------+\";";
         c +=     "int table_width = (int)strlen(row_sep);";
         c +=     "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
         c +=     "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
         c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=     "theLog->logFormatted(\"%s| Category     | Count |    MB |\", prefix2);";
+        c +=     "theLog->logFormatted(\"%s| Category     |    MB |\", prefix2);";
         c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-        c +=     "theLog->logFormatted(\"%s| Entities     | %5d | %5d |\", prefix2, 0, 0);";
-        c +=     "theLog->logFormatted(\"%s| Tables       | %5d | %5d |\", prefix2, 0, 0);";
-        c +=     "theLog->logFormatted(\"%s| Sets         | %5d | %5d |\", prefix2, 0, 0);";
-        c +=     "theLog->logFormatted(\"%s| Events       | %5d | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Entities     | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Multilinks   | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Events       | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Sets         | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s| Tables       | %5d |\", prefix2, 0, 0);";
+        c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+        c +=     "theLog->logFormatted(\"%s| All          | %5d |\", prefix2, 0, 0);";
         c +=     "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
         c +=     "theLog->logFormatted(\"%s\", prefix0);";
         c += "}";
@@ -1700,9 +1703,9 @@ void CodeGen::do_RunModel()
                 c += "}";
             }
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s |              |              |              | %5d |\", prefix2,  col1width, \"Total\", MB_total);";
+            c += "theLog->logFormatted(\"%s| %-*s |              |              |              | %5d |\", prefix2,  col1width, \"All\", MB_total);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s%s\", prefix2, \"Note: MB includes only storage of elements of multilinks\");";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, \"Note: MB is storage of elements of multilinks\");";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "} // multilinks";
             c += "";
@@ -1752,14 +1755,16 @@ void CodeGen::do_RunModel()
             c += "int col1width = " + to_string(col1width) + ";";
             c += "const char * col1header = \"" + col1header + "\";";
             std::string row_sep = "+-" + std::string(col1width, '-') +
-                                                 "-+--------------+--------------+--------------+--------------+--------------+";
+                                                 "-+--------------+--------------+--------------+--------------+--------------+-------+";
             c += "auto row_sep = \"" + row_sep + "\";";
             c += "int table_width = (int)strlen(row_sep);";
             c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
             c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s | max in queue |  time calcs  |     censored |  occurrences |   per entity |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s| %-*s |   time calcs |     censored |  occurrences |   per entity | max in queue |    MB |\", prefix2, col1width, col1header);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "int MB_total = 0;";
+            c += "int set_node_bytes = 4 * sizeof(void *); // assume 3 words for b-tree, plus 1 word for payload (pointer)";
             for (auto evt : ent->pp_agent_events) {
                 // Get resource use information for each event in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1767,9 +1772,14 @@ void CodeGen::do_RunModel()
                 c +=     "// Resources for " + evt->event_name;
                 c +=     "auto evt_name = \"" + evt->event_name + "\";";
                 c +=     "auto evt_result = " + ent->name + "::om_null_entity." + evt->name + ".resource_use();";
-                c +=     "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12d | %12.4f |\", prefix2, col1width, evt_name, evt_result.max_in_queue, evt_result.time_calculations, evt_result.censored_times, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations);";
+                c +=     "int max_in_queue = (int)evt_result.max_in_queue;";
+                c +=     "int MB = (max_in_queue * set_node_bytes) / 1000000;";
+                c +=     "MB_total += MB;";
+                c +=     "theLog->logFormatted(\"%s| %-*s | %12d | %12d | %12d | %12.4f | %12d | %5d |\", prefix2, col1width, evt_name, evt_result.time_calculations, evt_result.censored_times, evt_result.occurrences, (double)evt_result.occurrences / (double)ent_result.activations, max_in_queue, MB);";
                 c += "}";
             }
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| %-*s |              |              |              |              |              | %5d |\", prefix2,  col1width, \"All\", MB_total);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "} // events";
@@ -1784,14 +1794,16 @@ void CodeGen::do_RunModel()
             c += "int col1width = " + to_string(col1width) + ";";
             c += "const char * col1header = \"" + col1header + "\";";
             std::string row_sep = "+-" + std::string(col1width, '-') +
-                                                "-+-------+----------+----------+----------+--------------+";
+                                                "-+-------+----------+----------+--------------+----------+-------+";
             c += "auto row_sep = \"" + row_sep + "\";";
             c += "int table_width = (int)strlen(row_sep);";
             c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
             c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells |  max pop |  inserts |   per entity |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells |  inserts |   per entity |  max pop |    MB |\", prefix2, col1width, col1header);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "int MB_total = 0;";
+            c += "int rb_node_bytes = sizeof(rb_node<void *>);";
             for (auto entset : ent->pp_agent_entity_sets) {
                 // Get resource use information for each entity set in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1801,9 +1813,17 @@ void CodeGen::do_RunModel()
                 c += "int dimension_count = " + to_string(entset->dimension_count()) + ";";
                 c += "int cell_count = " + to_string(entset->cell_count()) + ";";
                 c += "auto entset_result = " + entset->resource_use_gfn->name + "();"; // call the resource use reporting function for this entity set
-                c += "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %8d | %8d | %12.4f |\", prefix2, col1width, entset_name, dimension_count, cell_count, entset_result.max_count, entset_result.total_inserts, (double)entset_result.total_inserts / (double)ent_result.activations);";
+                c += "double inserts_avg = (double)entset_result.total_inserts / (double)ent_result.activations;";
+                c += "int max_count = (int)entset_result.max_count;";
+                c += "int bytes_fixed = sizeof(*" + entset->name + "); // fixed portion for cells";
+                c += "int bytes_nodes = max_count * rb_node_bytes; // variable portion for rb_tree nodes";
+                c += "int MB = (bytes_fixed + bytes_nodes) / 1000000;";
+                c += "MB_total += MB;";
+                c += "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %8d | %12.4f | %8d | %5d |\", prefix2, col1width, entset_name, dimension_count, cell_count, entset_result.total_inserts, inserts_avg, max_count, MB);";
                 c += "}";
             }
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| %-*s |       |          |          |              |          | %5d |\", prefix2,  col1width, \"All\", MB_total);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "} // sets";
@@ -1819,14 +1839,15 @@ void CodeGen::do_RunModel()
             c += "int suppressed_count = 0; // number of tables suppressed at runtime";
             c += "const char * col1header = \"" + col1header + "\";";
             std::string row_sep = "+-" + std::string(col1width, '-') +
-                                                "-+-------+----------+-------+-------+-------+----------+--------------+";
+                                                "-+-------+----------+-------+-------+-------+----------+--------------+-------+";
             c += "auto row_sep = \"" + row_sep + "\";";
             c += "int table_width = (int)strlen(row_sep);";
             c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
             c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells | accum | measr | colls | incrmnts |   per entity |\", prefix2, col1width, col1header);";
+            c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells | accum | measr | colls | incrmnts |   per entity |    MB |\", prefix2, col1width, col1header);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "int MB_total = 0;";
             for (auto tbl : ent->pp_entity_tables) {
                 // Get resource use information for each entity table in the entity
                 // The static thread_local om_null_entity is used to access the static thread_local function and counters
@@ -1835,12 +1856,14 @@ void CodeGen::do_RunModel()
                 c +=     "bool instantiated = " + tbl->cxx_instance + "; // is nullptr if suppressed at runtime";
                 c +=     "int dimension_count = " + to_string(tbl->dimension_count()) + ";";
                 c +=     "int cell_count = " + to_string(tbl->cell_count()) + ";";
-                c +=     "int accumulator_count = " + to_string(tbl->pp_accumulators.size()) + ";";
+                c +=     "int accumulator_count = " + to_string(tbl->accumulator_count()) + ";";
                 c +=     "int measure_count = " + to_string(tbl->measure_count()) + ";";
                 c +=     "int collection_count = " + to_string(tbl->n_collections) + ";";
                 c +=     "auto tbl_result = " + tbl->resource_use_gfn->name + "();"; // call the resource use reporting function for this entity set
                 c +=     "if (instantiated) {";
-                c +=         "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %5d | %5d | %5d | %8d | %12.4f |\", prefix2, col1width, tbl_name, dimension_count, cell_count, accumulator_count, measure_count, collection_count, tbl_result.total_increments, (double)tbl_result.total_increments/(double)ent_result.activations);";
+                c +=         "int MB = (8 * cell_count * accumulator_count) / 1000000;";
+                c +=         "theLog->logFormatted(\"%s| %-*s | %5d | %8d | %5d | %5d | %5d | %8d | %12.4f | %5d |\", prefix2, col1width, tbl_name, dimension_count, cell_count, accumulator_count, measure_count, collection_count, tbl_result.total_increments, (double)tbl_result.total_increments/(double)ent_result.activations, MB);";
+                c +=         "MB_total += MB;";
                 c +=     "}";
                 c +=     "else {";
                 c +=         "++suppressed_count;";
@@ -1848,6 +1871,8 @@ void CodeGen::do_RunModel()
                 c += "} // table " + tbl->name;
                 c += "";
             }
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| %-*s |       |          |       |       |       |          |              | %5d |\", prefix2,  col1width, \"All\", MB_total);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "if (suppressed_count > 0) {";
             c +=     "theLog->logFormatted(\"%s %d %s table(s) suppressed at runtime\", prefix2, suppressed_count, ent_name);";
