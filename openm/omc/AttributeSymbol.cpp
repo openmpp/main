@@ -101,6 +101,7 @@ void AttributeSymbol::create_lagged()
 
     // lagged stores in same type as this attribute
     lagged = new EntityInternalSymbol(lagged_name, agent, data_type);
+    lagged->provenance = name + " (lagged)";
     // note parent attribute for post-parse type resolution in case data_type is unknown
     lagged->parent = this->stable_pp();
 
@@ -108,6 +109,7 @@ void AttributeSymbol::create_lagged()
     auto *typ = NumericSymbol::find(token::TK_big_counter);
     assert(typ); // initialization guarantee
     lagged_event_counter = new EntityInternalSymbol(lagged_counter_name, agent, typ);
+    lagged_event_counter->provenance = name + " (counter at lagged)";
 
     // Add side-effect code to maintain lagged value
     CodeBlock & c = side_effects_fn->func_body;

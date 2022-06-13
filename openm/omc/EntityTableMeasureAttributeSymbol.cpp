@@ -48,7 +48,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             }
             string member_name = in_member_name();
             auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
-            assert(sym);
+            sym->provenance = table->name + " (in) " + attribute->name;
             // note parent attribute for post-parse type resolution in case data_type is unknown
             sym->parent = av->stable_pp();
 			// Push the name into the post parse ignore hash for the current pass.
@@ -62,7 +62,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
             }
             string member_name = in_event_member_name();
             auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
-            assert(sym);
+            sym->provenance = table->name + " (inevent) " + attribute->name;
             // note parent attribute for post-parse type resolution in case data_type is unknown
             sym->parent = av->stable_pp();
 			// Push the name into the post parse ignore hash for the current pass.

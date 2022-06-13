@@ -49,6 +49,11 @@ public:
      */
     void create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool is_developer_supplied);
 
+    string pretty_name() const
+    {
+        return event_name;
+    }
+
     void post_parse(int pass);
 
     /**

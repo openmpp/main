@@ -29,6 +29,7 @@ void EntitySetSymbol::create_auxiliary_symbols()
         auto *typ = NumericSymbol::find(token::TK_int);
         assert(typ); // initialization guarantee
         cell = new EntityInternalSymbol("om_" + name + "_cell", agent, typ);
+        cell->provenance = name + " (current cell)";
     }
 
     {

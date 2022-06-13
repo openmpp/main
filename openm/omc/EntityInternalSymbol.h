@@ -30,6 +30,7 @@ public:
         : EntityDataMemberSymbol(member_name, agent, type)
         , initializer(initializer)
     {
+        provenance = member_name;
     }
 
     string initialization_value(bool type_default) const;
@@ -38,6 +39,16 @@ public:
 
     CodeBlock cxx_declaration_agent();
 
+    string pretty_name() const
+    {
+        return provenance;
+    }
+
     string initializer;
+
+    /**
+     * Short human-readable description of the provenance of this internal symbol.
+     */
+    string provenance;
 };
 
