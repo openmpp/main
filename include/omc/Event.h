@@ -104,6 +104,9 @@ public:
             if (in_queue) {
                 event_queue->erase(this);
                 in_queue = false;
+                if constexpr (om_resource_use_on) {
+                    decrement_queue_count();
+                }
             }
         }
         else if ( is_dirty ) {
@@ -660,7 +663,7 @@ public:
 
     void decrement_queue_count()
     {
-        ++queue_count;
+        --queue_count;
     }
 
     /**
