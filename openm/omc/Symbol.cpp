@@ -2,7 +2,7 @@
  * @file    Symbol.cpp
  * Definitions for the Symbol class.
  */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //#define DEPENDENCY_TEST 1
@@ -563,6 +563,16 @@ SpecialGlobal Symbol::post_simulation("PostSimulation");
 
 SpecialGlobal Symbol::derived_tables("UserTables");
 
+token_type Symbol::counter_ctype = token::TK_int;
+
+token_type Symbol::big_counter_ctype = token::TK_ullong;
+
+token_type Symbol::integer_ctype = token::TK_int;
+
+token_type Symbol::real_ctype = token::TK_double;
+
+token_type Symbol::Time_ctype = token::TK_double;
+
 bool Symbol::any_hide = false;
 
 bool Symbol::any_show = false;
@@ -608,6 +618,8 @@ bool Symbol::option_verify_timelike_attribute_access = true;
 bool Symbol::option_weighted_tabulation = false;
 
 bool Symbol::option_resource_use = false;
+
+bool Symbol::option_entity_member_packing = false;
 
 bool Symbol::option_use_heuristic_short_names = false;
 
@@ -962,15 +974,24 @@ void Symbol::populate_default_symbols(const string &model_name, const string &sc
     sym = new NumericSymbol(token::TK_ldouble, token::TK_long, token::TK_double, "0");
     assert(sym);
  
-    // Changeable numeric types
-    sym = new TimeSymbol(token::TK_double); // Time
+    // Mutable numeric types
+    Time_ctype = token::TK_double;
+    sym = new TimeSymbol(Time_ctype); // Time
     assert(sym);
-    sym = new RealSymbol(token::TK_double); // real
+
+    real_ctype = token::TK_double;
+    sym = new RealSymbol(real_ctype); // real
     assert(sym);
-    sym = new NumericSymbol(token::TK_integer, token::TK_int, "0"); // integer
+
+    integer_ctype = token::TK_int;
+    sym = new NumericSymbol(token::TK_integer, integer_ctype, "0"); // integer
     assert(sym);
-    sym = new NumericSymbol(token::TK_counter, token::TK_int, "0"); // counter
+
+    counter_ctype = token::TK_int;
+    sym = new NumericSymbol(token::TK_counter, counter_ctype, "0"); // counter
     assert(sym);
+
+    big_counter_ctype = token::TK_ullong;
     sym = new NumericSymbol(token::TK_big_counter, token::TK_unsigned, token::TK_long, token::TK_long, "0"); // counter
     assert(sym);
 
@@ -1941,6 +1962,20 @@ void Symbol::defaults_and_options()
     }
 
     {
+        string key = "entity_member_packing";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_entity_member_packing = true;
+            }
+            else if (value == "off") {
+                option_entity_member_packing = false;
+            }
+        }
+    }
+
+    {
         string key = "resource_use";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -2073,6 +2108,12 @@ const size_t Symbol::storage_size(token_type tok)
         return sizeof(char);
     case token::TK_uchar:
         return sizeof(unsigned char);
+    case token::TK_schar:
+        return sizeof(signed char);
+    case token::TK_short:
+        return sizeof(short);
+    case token::TK_ushort:
+        return sizeof(unsigned short);
     case token::TK_int:
         return sizeof(int);
     case token::TK_uint:
@@ -2081,13 +2122,29 @@ const size_t Symbol::storage_size(token_type tok)
         return sizeof(long);
     case token::TK_ulong:
         return sizeof(unsigned long);
+    case token::TK_llong:
+        return sizeof(long long);
+    case token::TK_ullong:
+        return sizeof(unsigned long long);
     case token::TK_float:
         return sizeof(float);
     case token::TK_double:
         return sizeof(double);
+    case token::TK_ldouble:
+        return sizeof(long double);
+    case token::TK_counter: // mutable type
+        return storage_size(counter_ctype);
+    case token::TK_big_counter: // mutable type
+        return storage_size(big_counter_ctype);
+    case token::TK_integer: // mutable type
+        return storage_size(integer_ctype);
+    case token::TK_real: // mutable type
+        return storage_size(real_ctype);
+    case token::TK_Time: // mutable type
+        return storage_size(Time_ctype);
     default:
-        // perhaps more complex logic here, for things like TK_Time, TK_counter, TK_big_counter, etc.
-        return sizeof(double);
+        // bigger things than those with 8 byte alignment
+        return 8;
     }
 }
 

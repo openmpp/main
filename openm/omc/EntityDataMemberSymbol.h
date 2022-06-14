@@ -2,7 +2,7 @@
 * @file    EntityDataMemberSymbol.h
 * Declarations for the EntityDataMemberSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -136,6 +136,13 @@ public:
      * @return true or false.
      */
     bool is_multilink(void) const;
+
+    /**
+    * Gets the alignment size of the data member.
+    *
+    * @return A size_t.
+    */
+    virtual size_t alignment_size() const;
 
     /**
      * Gets the initial value for the data member.

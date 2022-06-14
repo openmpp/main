@@ -2,7 +2,7 @@
 * @file    TypeSymbol.h
 * Declarations for the TypeSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -126,6 +126,13 @@ public:
     /**
      * Determines derived type.
      *
+     * @return true if the type is numeric.
+     */
+    bool is_numeric() const;
+
+    /**
+     * Determines derived type.
+     *
      * @return true if the type is numeric and one of: "real", "float", "double" or "ldouble".
      */
     bool is_numeric_floating() const;
@@ -138,7 +145,7 @@ public:
     bool is_numeric_integer() const;
 
     /**
-     * Determines if the type is a wrapped type, e.g. time, cassificaiton, etc.
+     * Determines if the type is a wrapped type, e.g. time, classificaiton, etc.
      *
      * @return true if the type is wrapped, false otherwise
      */

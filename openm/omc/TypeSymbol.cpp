@@ -2,7 +2,7 @@
 * @file    TypeSymbol.cpp
 * Definitions for the TypeSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
@@ -126,6 +126,14 @@ bool TypeSymbol::is_floating() const
         if (tt == token::TK_float || tt == token::TK_double || tt == token::TK_ldouble ) {
             return true;
         }
+    }
+    return false;
+}
+
+bool TypeSymbol::is_numeric() const
+{
+    if (auto ns = dynamic_cast<const NumericSymbol*>(this)) {
+        return true;
     }
     return false;
 }

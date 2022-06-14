@@ -93,6 +93,29 @@ bool EntityDataMemberSymbol::is_multilink(void) const
     return (bool) dynamic_cast<const EntityMultilinkSymbol*>(this);
 }
 
+size_t EntityDataMemberSymbol::alignment_size() const
+{
+    assert(pp_data_type);
+    if (pp_data_type->is_bool()) {
+        return sizeof(bool); // 1 byte
+    }
+    else if (pp_data_type->is_numeric()) {
+        auto ntyp = dynamic_cast<const NumericSymbol*>(pp_data_type);
+        assert(ntyp); // logic guarantee
+        auto tok = ntyp->type;
+        auto result = Symbol::storage_size(tok);
+        return result;
+    }
+    else if (pp_data_type->is_enumeration()) {
+        auto etyp = dynamic_cast<const EnumerationSymbol*>(pp_data_type);
+        assert(etyp); // logic guarantee
+        auto tok = etyp->storage_type;
+        auto result = Symbol::storage_size(tok);
+        return result;
+    }
+    return  8; // largest alignment for everything except C++ types, enumerations etc.
+}
+
 void EntityDataMemberSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain

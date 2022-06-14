@@ -2,7 +2,7 @@
  * @file    Symbol.h
  * Declarations for the Symbol class.
  */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -1244,6 +1244,31 @@ public:
     static SpecialGlobal derived_tables;
 
     /**
+     * The C type of the mutable type 'counter'
+     */
+    static token_type counter_ctype;
+
+    /**
+     * The C type of the mutable type 'big_counter'
+     */
+    static token_type big_counter_ctype;
+
+    /**
+     * The C type of the mutable type 'integer'
+     */
+    static token_type integer_ctype;
+
+    /**
+     * The C type of the mutable type 'real'
+     */
+    static token_type real_ctype;
+
+    /**
+     * The C type of the mutable type 'Time'
+     */
+    static token_type Time_ctype;
+
+    /**
      * If true, model contains one or more hide statements
      */
     static bool any_hide;
@@ -1363,6 +1388,11 @@ public:
      * true or false depending on resource_use value in options statement.
      */
     static bool option_resource_use;
+
+    /**
+     * true or false depending on entity_member_packing value in options statement.
+     */
+    static bool option_entity_member_packing;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.

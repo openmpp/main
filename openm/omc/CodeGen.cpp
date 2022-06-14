@@ -2,7 +2,7 @@
  * @file    CodeGen.cpp
  * Implements the code generation class.
  */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <iostream>
@@ -1092,9 +1092,39 @@ void CodeGen::do_agents()
 	    h += "// Data members in " + agent->name + " entity";
 	    h += "//";
 	    h += "";
-        for ( auto data_member : agent->pp_agent_data_members ) {
-            h += data_member->cxx_declaration_agent();
-            c += data_member->cxx_definition_agent();
+        if (Symbol::option_entity_member_packing) {
+            // create a temporary copy of the list of data members agent->pp_agent_data_members
+            auto lst = agent->pp_agent_data_members;
+            // sort it in descending order of alignment_size
+            // but sort lexicographically within alignment_size groups
+            lst.sort([](EntityDataMemberSymbol* a, EntityDataMemberSymbol* b) 
+                { return (a->alignment_size() == b->alignment_size()) ? 
+                         (a->name < b->name) :
+                         (a->alignment_size() > b->alignment_size());
+                }
+            );
+            // iterate the sorted list and generate declaration h and definition c
+            size_t alignment_group = 16; // something bigger than 8
+            for (auto data_member : lst) {
+                size_t member_alignment = data_member->alignment_size();
+                if (member_alignment < alignment_group) {
+                    alignment_group = member_alignment;
+                    h += "";
+                    h += "//////////////////////////////////////////////";
+                    h += "// Alignment Group Size = " + std::to_string(alignment_group);
+                    h += "//////////////////////////////////////////////";
+                    h += "";
+                }
+                h += data_member->cxx_declaration_agent();
+                c += data_member->cxx_definition_agent();
+            }
+        }
+        else {
+            // default lexicographic layout
+            for (auto data_member : agent->pp_agent_data_members) {
+                h += data_member->cxx_declaration_agent();
+                c += data_member->cxx_definition_agent();
+            }
         }
 	    h += "";
 	    c += "";

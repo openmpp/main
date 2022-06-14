@@ -8,7 +8,7 @@
 // The following code is written to the header file, not the implementation file
 %code requires {
 
-// Copyright (c) 2013-2018 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -817,12 +817,13 @@ sample_dimension_opt:
 
 
 /*
- * changeable types
+ * mutable types
  */
 
 decl_time_type:
 	  "time_type" cxx_numeric_type[type_to_use] ";"
                         {
+                            Symbol::Time_ctype = (token_type)$type_to_use;
                             // Change properties of existing unitary TimeSymbol
                             auto *sym = TimeSymbol::find();
                             assert(sym);  // Initialization guarantee
@@ -835,6 +836,7 @@ decl_time_type:
 decl_real_type:
       "real_type" cxx_floating_point_type[type_to_use] ";"
                         {
+                            Symbol::real_ctype = (token_type)$type_to_use;
                             // Change properties of existing NumericSymbol
                             auto *sym = NumericSymbol::find(token::TK_real);
                             assert(sym);  // Initialization guarantee
@@ -847,6 +849,7 @@ decl_real_type:
 decl_counter_type:
 	  "counter_type" cxx_unsigned_integral_type[type_to_use] ";"
 						{
+                            Symbol::counter_ctype = (token_type)$type_to_use;
                             // Change properties of existing NumericSymbol
                             auto *sym = NumericSymbol::find(token::TK_counter);
                             assert(sym);  // Initialization guarantee
@@ -859,6 +862,7 @@ decl_counter_type:
 decl_big_counter_type:
 	  "big_counter_type" cxx_unsigned_integral_type[type_to_use] ";"
 						{
+                            Symbol::big_counter_ctype = (token_type)$type_to_use;
                             // Change properties of existing NumericSymbol
                             auto *sym = NumericSymbol::find(token::TK_big_counter);
                             assert(sym);  // Initialization guarantee
@@ -871,6 +875,7 @@ decl_big_counter_type:
 decl_integer_type:
       "integer_type" cxx_signed_integral_type[type_to_use] ";"
                         {
+                            Symbol::integer_ctype = (token_type)$type_to_use;
                             // Change properties of existing NumericSymbol
                             auto *sym = NumericSymbol::find(token::TK_integer);
                             assert(sym);  // Initialization guarantee
