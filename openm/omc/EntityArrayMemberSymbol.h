@@ -62,6 +62,14 @@ public:
      */
     size_t cell_count() const;
 
+    string pretty_name() const
+    {
+        string result = name;
+        for (auto dim : pp_dimension_list) {
+            result += '[' + to_string(dim->pp_size()) + ']';
+        }
+        return result;
+    }
 
     /**
      * List of dimensions.
