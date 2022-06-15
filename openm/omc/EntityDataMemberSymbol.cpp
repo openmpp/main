@@ -2,7 +2,7 @@
 * @file    EntityDataMemberSymbol.cpp
 * Definitions for the EntityDataMemberSymbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include <cassert>
@@ -91,6 +91,31 @@ bool EntityDataMemberSymbol::is_internal(void) const
 bool EntityDataMemberSymbol::is_multilink(void) const
 {
     return (bool) dynamic_cast<const EntityMultilinkSymbol*>(this);
+}
+
+size_t EntityDataMemberSymbol::layout_group() const
+{
+    size_t result = 10; // something big for internal members, etc.
+
+    if (name == "entity_id") {
+        result = 1;
+    }
+    else if (name == "time") {
+        result = 2;
+    }
+    else if (name == "age") {
+        result = 3;
+    }
+    else if (name.rfind("om_", 0) == 0) { // name starts with om_
+        result = 9; // place generated members in a group at the end
+    }
+    else if (is_event()) {
+        result = 9; // the special self-scheduling event has a funny name starting with zzz
+    }
+    else {
+        result = 4; // attributes declared in model code
+    }
+    return result;
 }
 
 size_t EntityDataMemberSymbol::alignment_size() const

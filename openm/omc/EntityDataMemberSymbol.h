@@ -138,6 +138,16 @@ public:
     bool is_multilink(void) const;
 
     /**
+    * Gets the layout group of the data member.
+    * 
+    * Data members are by default laid out in memory by layout group
+    * to facilitate access in a visual debugger.
+    *
+    * @return A size_t.
+    */
+    virtual size_t layout_group() const;
+
+    /**
     * Gets the alignment size of the data member.
     *
     * @return A size_t.

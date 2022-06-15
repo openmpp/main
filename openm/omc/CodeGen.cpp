@@ -1093,7 +1093,7 @@ void CodeGen::do_agents()
 	    h += "//";
 	    h += "";
         if (Symbol::option_entity_member_packing) {
-            // create a temporary copy of the list of data members agent->pp_agent_data_members
+            // create a temporary copy of the list of data members in the entity
             auto lst = agent->pp_agent_data_members;
             // sort it in descending order of alignment_size
             // but sort lexicographically within alignment_size groups
@@ -1120,8 +1120,27 @@ void CodeGen::do_agents()
             }
         }
         else {
-            // default lexicographic layout
-            for (auto data_member : agent->pp_agent_data_members) {
+            // create a temporary copy of the list of data members in the entity
+            auto lst = agent->pp_agent_data_members;
+            // sort it in ascending order of layout group
+            // but sort lexicographically within layout groups
+            lst.sort([](EntityDataMemberSymbol* a, EntityDataMemberSymbol* b)
+                { return (a->layout_group() == b->layout_group()) ?
+                (a->name < b->name) :
+                (a->layout_group() < b->layout_group());
+                }
+            );
+            size_t layout_group_current = 0; // a value less than any layout group
+            for (auto data_member : lst) {
+                size_t layout_group_this = data_member->layout_group();
+                if (layout_group_this > layout_group_current) {
+                    layout_group_current = layout_group_this;
+                    h += "";
+                    h += "//////////////////////////////////////////////";
+                    h += "// Layout Group = " + std::to_string(layout_group_current);
+                    h += "//////////////////////////////////////////////";
+                    h += "";
+                }
                 h += data_member->cxx_declaration_agent();
                 c += data_member->cxx_definition_agent();
             }
