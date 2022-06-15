@@ -218,7 +218,6 @@ public:
     {
         assert(entities);
         entities->erase(iter_in_entities);
-        iter_in_entities = entities->end(); // make invalid
     }
 
     /**
