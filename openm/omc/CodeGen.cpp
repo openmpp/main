@@ -1542,7 +1542,7 @@ void CodeGen::do_RunModel()
         c += "auto stars = stars_str.c_str();";
         c += "int set_node_bytes = 4 * sizeof(void *); // assume 3 words for b-tree, plus 1 word for payload (pointer)";
         c += "int rb_node_bytes = sizeof(rb_node<void *>);";
-        c += "theLog->logFormatted(LT(\"Warning : possible performance impact - model built with resource_use = on\"));";
+        c += "theLog->logFormatted(LT(\"Warning : Model built with resource_use = on\"));";
         c += "theLog->logFormatted(\"%sResource Use Report - Begin (for sub/member/replicate %d)\", prefix0, sub_id);";
         c += "theLog->logFormatted(\"%s\", prefix0);";
         c += "";
