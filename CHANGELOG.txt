@@ -1,7 +1,7 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
-2022-06-17:
+2022-06-18:
   c++: resource use report provide information on resource use by entities, events, sets, and tables during a model run
   c++: entity member packing can reduce the size of entities by packing their members in an efficient order.
   c++: improved entity member layout for model debugging
