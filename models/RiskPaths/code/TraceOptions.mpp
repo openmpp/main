@@ -1,0 +1,9 @@
+//LABEL(TraceOptions, EN) Control options for trace output
+
+/* NOTE(TraceOptions, EN)
+    The options must be set to off for normal use.
+    If the options are on, very large trace output files may be produced by the model.
+*/
+
+options event_trace = off;
+options case_checksum = off;
