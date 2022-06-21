@@ -1,6 +1,21 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2022-06-18:
+  c++: resource use report provide information on resource use by entities, events, sets, and tables during a model run
+  c++: entity member packing can reduce the size of entities by packing their members in an efficient order.
+  c++: improved entity member layout for model debugging
+  wiki: compendium of information about managing memory use in models
+  c++: fix occasional MPI deadlock on parameters send-receive (OncoSimX 3 process 1 subvalue 4 threads not-on-root)
+  c++: Linux release model crush: change scalar parameters declaration and definition
+  R: new R API based on oms web-service, suitable for cloud users
+  Go: include model version and create date-time into json metadata for run, workset and task
+  oms: detect model run exit by exception or by computer restart
+  UI: and oms: ability to cancel model run
+  UI: allow to delete not completed model runs
+  UI: automatically apply default model run settings
+  UI: fix parameter default view layout: last-1 dimension on rows, last on columns
+
 2022_05_05:
   c++ omc: create symbol for table measure dimension and associate label if present
   c++ models: New population scaling framework module case_based_scaling_endogenous_or_none
