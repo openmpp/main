@@ -393,7 +393,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         c += "gini[j] = UNDEF_VALUE;";
         c += "auto &lst = coll[cell][j];";
         c += "lst.sort();";
-        c += "double total_count = distance(lst.begin(), lst.end());";
+        c += "double total_count = (double)distance(lst.begin(), lst.end());";
         c += "if (total_count > 0) {";
         c += "double cum_count = 0.0;";
         c += "double cum_count_prev = 0.0;";
