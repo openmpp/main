@@ -698,7 +698,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     if (is_self_scheduling()) {
         // create the internal symbol for the event time of the self-scheduling derived attribute
         ait = new EntityInternalSymbol("om_ss_time_" + name, agent, NumericSymbol::find(token::TK_Time), "time_infinite");
-        ait->provenance = name + " (scheduled time)";
+        ait->provenance = name + " (next time)";
     }
 }
 
