@@ -33,7 +33,7 @@ double population_scaling_factor()
         denom = get_sum_weight();
     }
     else {
-        denom = fmk::member_cases;
+        denom = (double)fmk::member_cases;
     }
     return (double) SimulatedPopulation / denom;
 }
