@@ -26,7 +26,8 @@ void MultilinkAttributeSymbol::build_body_evaluate()
 
     assert(multilink); // logic guarantee
     if (func == token::TK_count) {
-        c += name + ".set(" + multilink->name + ".size());";
+        // ex. om_mlTestActors_count.set((counter)mlTestActors.size());
+        c += name + ".set((" + pp_data_type->name + ")" + multilink->name + ".size());";
     }
     else if (func == token::TK_sum_over) {
         assert(attribute.size());  // grammar guarantee
