@@ -184,6 +184,18 @@ public:
         return (it == T_splitter.end()) ? max : it->second;
     }
 
+    // Find the interval within which a value falls (overload for int)
+    static int value_to_interval(int value)
+    {
+        return value_to_interval(real(value));
+    }
+
+    // Find the interval within which a value falls (overload for size_t)
+    static int value_to_interval(std::size_t value)
+    {
+        return value_to_interval(real(value));
+    }
+
     // limits (static constants) - declarations
 #if !defined(_MSC_VER)
     // Declared here and defined below in separate template statements
