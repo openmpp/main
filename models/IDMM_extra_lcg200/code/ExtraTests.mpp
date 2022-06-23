@@ -1,4 +1,4 @@
-options event_trace=on;
+//options event_trace=on;
 
 
 // Extra tests for ompp probing
