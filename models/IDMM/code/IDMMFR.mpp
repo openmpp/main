@@ -313,9 +313,9 @@
 */
 
 //LABEL ( IDMMFR, FR ) 
-//LABEL ( ModelStrings, FR ) Chaînes de caractères spécifiques au modèle
+//LABEL ( modgen_ModelStrings, FR ) Chaînes de caractères spécifiques au modèle
 
-/* NOTE ( ModelStrings, FR )	Ce module contient les chaînes de caractères spécifiques au modèle affichées dans le 
+/* NOTE ( modgen_ModelStrings, FR )	Ce module contient les chaînes de caractères spécifiques au modèle affichées dans le 
 	dialogue de progrès.
 */
 
