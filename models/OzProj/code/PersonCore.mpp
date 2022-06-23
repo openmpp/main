@@ -51,7 +51,7 @@ parameters
   double NativeToIndigenous;
 };
 
-void PreSimulation()
+void PreSimulation1()
 {
   // Do a first pass through the microdata file before simulating cases.
   input_csv inCsv;

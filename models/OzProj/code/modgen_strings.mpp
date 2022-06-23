@@ -1,0 +1,7 @@
+// Copyright (c) 2013-2022 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(modgen_strings, EN) Modgen string statements
+
+// Copyright string displayed in About box
+string S_COPYRIGHT1; //EN OzProj © 2014 OpenM++\nBase scenario is based on ABS data © 2013 Commonwealth of Australia.
