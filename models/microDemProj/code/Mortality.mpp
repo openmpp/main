@@ -38,7 +38,7 @@ void Person::MortalityEvent()
 	Finish();
 }
 
-void PreSimulation()
+void PreSimulation2()
 {
 	double	dLower, dUpper, dCenter, dResult, dTarget, dAlive, dDeaths;
 	int		nIterations;
