@@ -32,7 +32,8 @@ parameters
   double RelativeFertilityIndigenous[YEAR];
 };
 
-void PreSimulation3(void)
+/// PreSimulation-related code in Fertility.mpp
+void Fertility_PreSimulation(void)
 {
   for (int nA = 0; nA < SIZE(FERTILE_AGE); nA++ ) {
     for (int nY = 0; nY < SIZE(FERTILITY_YEAR); nY++ ) {

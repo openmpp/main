@@ -21,7 +21,9 @@ parameters
   */
 };
 
-void PreSimulation2(void)
+
+/// PreSimulation-related code in Mortality.mpp
+void Mortality_PreSimulation(void)
 {
   for (int nS = 0; nS < SIZE(SEX); nS++ ) {
     for (int nA = 0; nA < SIZE(RANGE_AGE); nA++ ) {

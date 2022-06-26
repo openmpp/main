@@ -51,7 +51,8 @@ parameters
   double NativeToIndigenous;
 };
 
-void PreSimulation1()
+/// PreSimulation-related code in PersonCore.mpp
+void PersonCore_PreSimulation(void)
 {
   // Do a first pass through the microdata file before simulating cases.
   input_csv inCsv;
