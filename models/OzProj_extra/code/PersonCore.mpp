@@ -51,7 +51,8 @@ parameters
   double NativeToIndigenous;
 };
 
-void PreSimulation()
+/// PreSimulation-related code in PersonCore.mpp
+void PersonCore_PreSimulation(void)
 {
   input_csv inCsv;
   inCsv.open(MicroDataInputFile);

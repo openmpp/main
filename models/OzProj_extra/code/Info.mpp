@@ -1,19 +1,10 @@
 //LABEL(Info, EN) Auxiliary information on the model
 
 /* NOTE(Info, EN)
-	This module contains the copyright string, the model label, and the model note.
+	This module contains the model label and the model note.
 */
 
-// Copyright string displayed in About box
-string S_COPYRIGHT1; //EN OzProj © 2014 OpenM++\nBase scenario is based on ABS data © 2013 Commonwealth of Australia.
-
-// The following string is displayed in the main page of the generated on-line help
-// for the model, and also in Modgen Web.
-
 //LABEL(model, EN) Demonstration Demographic Projection Model
-
-// The following note is displayed in the main page of the generated on-line help
-// for the model, and also in Modgen Web.
 
 /*NOTE(model, EN)
   A series of OzProj model versions accompany the on-line course "Practical Microsimulation".
@@ -24,6 +15,3 @@ string S_COPYRIGHT1; //EN OzProj © 2014 OpenM++\nBase scenario is based on ABS d
 
   The model is based on data from the web site of the Australian Bureau of Statistics.
 */
-
-
-
