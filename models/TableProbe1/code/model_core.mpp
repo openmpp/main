@@ -21,7 +21,8 @@ languages {
 	EN // English
 };
 
-options case_checksum=on event_trace=on;
+// the following line commented to avoid event_trace=on runtime warning in ompp
+//options case_checksum=on event_trace=on;
 
 /**
  * Simulates a single case.
