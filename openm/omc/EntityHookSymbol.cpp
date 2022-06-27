@@ -107,7 +107,7 @@ void EntityHookSymbol::post_parse(int pass)
         // Create entry in entity multimap of all hooks (additionally distinguished by order).
         // The key is constructed using two parts to allow subsequent testing for 
         // ties in hook order.
-        string key = to_name + "_om_" + to_string(order);
+        string key = to->name + " order=" + to_string(order);
         pp_agent->pp_hooks_with_order.emplace(key, pp_from->name);
         break;
     }
@@ -128,9 +128,9 @@ void EntityHookSymbol::post_parse(int pass)
 
         // Test for ambiguous hook order and emit warning if found.
         {
-            string key = to_name + "_om_" + to_string(order);
+            string key = to->name + " order=" + to_string(order); // NB copied from line above
             if (pp_agent->pp_hooks_with_order.count(key) > 1) {
-                pp_warning(LT("warning : one or more functions hooking to '") + to_name + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));
+                pp_warning(LT("warning : one or more functions hooking to '") + to->pretty_name() + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));
             }
         }
 
