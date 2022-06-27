@@ -82,7 +82,7 @@ void Person::Start_StartPop_Neigborhood()
 	if ( lParent == NULL )
 	{
 		// not a child - assign random neighborhood
-		neighborhood = (RANGE_NEIGHBORHOOD) ( RandUniform(5) * SimulatedNeighborhoods );
+		neighborhood = (RANGE_NEIGHBORHOOD_t) ( RandUniform(5) * SimulatedNeighborhoods );
 	}
 	else
 	{

@@ -50,7 +50,8 @@ parameters
 };
 
 
-void PreSimulation()
+/// PreSimulation-related code in Mortality.mpp
+void Mortality_PreSimulation(void)
 {
 	for ( int j = 0; j < SIZE(R_0_5); j++ ){
 		int startI = MCuts[j];

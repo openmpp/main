@@ -61,7 +61,7 @@ parameters
 
 };
 
-void PreSimulation(void)
+void PersonCore_PreSimulation(void)
 {
 	// Set model-generated EndYear to value set by user in scenario properties
 	EndYear = (int) (SIMULATION_END());

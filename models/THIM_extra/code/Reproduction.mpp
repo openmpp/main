@@ -38,16 +38,13 @@ parameters
 
 };
 
-void PreSimulation()
+void Reproduction_PreSimulation(void)
 {
 	// Hard-code values pending removal
 	G_Mean = 1;
 	G_Sd = 0;
 	G_MutSd = 0;
-}
 
-void PreSimulation()
-{
 	// Set the birth rate to that of a stationary population
 	double dSurvivorship = 1.0;
 	double dPersonYearsFertile = 0.0;

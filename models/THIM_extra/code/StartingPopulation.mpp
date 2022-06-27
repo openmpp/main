@@ -34,7 +34,7 @@ parameters
 };
 
 
-void PreSimulation()
+void StartingPopulation_PreSimulation(void)
 {
 
 	double dSurvivorship = 1.0;
@@ -65,9 +65,9 @@ void PreSimulation()
 	}
 	double dTotalPopulation = dReproductiveAdults + dChildren;
 
-	StationaryReproductivePopulationSize = (int) StartingPopulationSize * ( dReproductiveAdults / dTotalPopulation );
+	StationaryReproductivePopulationSize = (int) (StartingPopulationSize * ( dReproductiveAdults / dTotalPopulation ));
 
-	StationaryAdultPopulationSize = (int) StartingPopulationSize * ( dAdults / dTotalPopulation );
+	StationaryAdultPopulationSize = (int) (StartingPopulationSize * ( dAdults / dTotalPopulation ));
 
 	// compute this here instead of in Movement.mpp due to dependencies on other model_generated parameters
 	MaxAdultsInNeighborhood = (int) ( MaxOccupancyFactor * StationaryAdultPopulationSize / SimulatedNeighborhoods );

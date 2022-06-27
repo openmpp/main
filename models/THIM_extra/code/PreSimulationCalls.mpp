@@ -1,0 +1,25 @@
+//LABEL(PreSimulationCalls, EN) Call PreSimulation functions in other modules
+
+/* NOTE(PreSimulationCalls, EN)
+	This module contains the model's single PreSimulation function definition.
+	It calls in order PreSimulation-related functions in other modules.
+*/
+
+extern void Income_PreSimulation(void); // PreSimulation-related code in Income.mpp
+extern void Mortality_PreSimulation(void); // PreSimulation-related code in Mortality.mpp
+extern void PersonCore_PreSimulation(void); // PreSimulation-related code in PersonCore.mpp
+extern void Reproduction_PreSimulation(void); // PreSimulation-related code in Reproduction.mpp
+extern void Sensitivity_PreSimulation(void); // PreSimulation-related code in Sensitivity.mpp
+extern void StartingPopulation_PreSimulation(void); // PreSimulation-related code in StartingPopulation.mpp
+
+
+/// The master PreSimulation function in the model.
+void PreSimulation(void)
+{
+	Income_PreSimulation();
+	Mortality_PreSimulation();
+	PersonCore_PreSimulation();
+	Reproduction_PreSimulation();
+	Sensitivity_PreSimulation();
+	StartingPopulation_PreSimulation();
+}
