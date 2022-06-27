@@ -171,8 +171,6 @@ void Person::ReproductionEvent()
 	Person *paChild = new Person();
 	double dAge = 0;
 	double dTime = time;
-	logical bAt_home = true;
-
 
 	paChild->Start(dAge, dTime, this);
 

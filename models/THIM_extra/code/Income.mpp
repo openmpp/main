@@ -237,7 +237,7 @@ void Person::BaseIncome()
 		{ dEducationEffect = 0; }
 
 	// multiply by the relative income effect
-	if ( lParent != NULL && paTicker->average_income > 0 && lParent->income > 0) 
+	if ( lParent && paTicker->average_income > 0 && lParent->income > 0) 
 		{ dPIncomeEffect = log( lParent->income / paTicker->average_income); }
 	else 
 		{ dPIncomeEffect = 0; } 

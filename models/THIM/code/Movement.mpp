@@ -79,7 +79,7 @@ void Person::Start_Newborn_Neigborhood()
 
 void Person::Start_StartPop_Neigborhood()
 {
-	if ( lParent == NULL )
+	if ( !lParent )
 	{
 		// not a child - assign random neighborhood
 		neighborhood = (RANGE_NEIGHBORHOOD_t) ( RandUniform(5) * SimulatedNeighborhoods );
@@ -99,7 +99,7 @@ void Person::ChangeNeighborhood(RANGE_NEIGHBORHOOD nNeighborhood)
 
 	int nIndex = -1;
 	auto paChild = mlChildren->GetNext( nIndex + 1, &nIndex );
-	while ( paChild != NULL ) {
+	while ( paChild ) {
 		if ( paChild->at_home )
 		{
 			paChild->ChangeNeighborhood( nNeighborhood );

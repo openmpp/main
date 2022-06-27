@@ -135,7 +135,6 @@ void CreateStartingPopulation(void)
 					// create child
 					Person *paChild = new Person();
 					double dAge_child = nAgeOfChild + RandUniform(8);
-					bool bHome_child = true;
 
 					// several arguments are identical to that of parent
 					paChild->Start(dAge_child, dTime, paPerson);

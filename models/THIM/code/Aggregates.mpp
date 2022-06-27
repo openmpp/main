@@ -124,8 +124,6 @@ void Ticker::MaintainAggregates()
 	int nNeighborhood = asAllNeighborhood->Count();
 	for ( int nN = 0; nN < nNeighborhood; nN++ ) 
 	{
-		auto paNeighborhood = asAllNeighborhood->Item( nN );
-
 		anAdultCountByNeighborhood[nN] = 0;
 		anChildCountByNeighborhood[nN] = 0; 
 		adEducationTotalByNeighborhood[nN] = 0.0;
@@ -182,7 +180,7 @@ void Ticker::MaintainAggregates()
 			// cumulate age totals
 			int nA = paPerson->range_age;
 			anPersonCountByAge[nA]++;
-			adEducationTotalByAge[nA] = paPerson->education;
+			adEducationTotalByAge[nA] += paPerson->education;
 			adIncomeTotalByAge[nA] += paPerson->income;
 			adultCount++; 
 		}
@@ -247,7 +245,6 @@ void Ticker::MaintainAggregates()
 		}
 
 		else if ( nA + mortalityAgeBand >= SIZE(RANGE_AGE) ) {
-			int totIncrement = SIZE(RANGE_AGE) - nA;
 			int bottomEnd = nA - mortalityAgeBand; 
 			for ( int i = bottomEnd; i < SIZE(RANGE_AGE); i++ ) {
 				totalIncome += adIncomeTotalByAge[i];
