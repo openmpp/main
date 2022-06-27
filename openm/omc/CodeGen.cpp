@@ -124,6 +124,15 @@ void CodeGen::do_preamble()
     c += "#include <typeinfo>";
     c += "";
 
+    // control warnings produced in generated code
+    c += "#if defined(_MSC_VER)";
+    c += "    // compiler-specific pragmas for MSVC";
+    c += "#endif";
+    c += "#if defined(__GNUC__)";
+    c += "    // compiler-specific pragmas for gcc";
+    c += "    #pragma GCC diagnostic ignored \"-Wunused-variable\"";
+    c += "#endif";
+
     // Get definition code associated with the model_type symbol
     c += model_type_symbol->cxx_definition_global();
     c += "";
