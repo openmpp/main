@@ -152,7 +152,7 @@ int __cdecl DoubleCompare(const void *x1, const void *x2)
 
 dependency(NbhdAvgsForComp_Sorted, NbhdAvgsForComp_Raw);
 dependency(NbhdAvgsForComp, NbhdAvgsForComp_Raw);
-void UserTables()
+void ModelComparison_UserTables(void)
 {
 	double dNbhdValues[SIZE(RANGE_NEIGHBORHOOD)];
 

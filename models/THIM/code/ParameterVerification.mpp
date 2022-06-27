@@ -1,6 +1,6 @@
 //LABEL(ParameterVerification, EN) Parameter Verification
 
-/* NOTE(ZZZUserTables, EN)
+/* NOTE(ParameterVerification, EN)
 	Verifies some parameters to ensure that values fall within valid limits.
 */
 
