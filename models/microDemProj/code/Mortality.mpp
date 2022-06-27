@@ -38,7 +38,7 @@ void Person::MortalityEvent()
 	Finish();
 }
 
-void PreSimulation2()
+void Mortality_PreSimulation()
 {
 	double	dLower, dUpper, dCenter, dResult, dTarget, dAlive, dDeaths;
 	int		nIterations;
@@ -51,7 +51,8 @@ void PreSimulation2()
 			dTarget = LifeExpectancy[nYear][nSex];
 			dLower = 0.1;
 			dUpper = 3.0;
-			while ( abs( dResult - dTarget ) > 0.0001 && nIterations < 10000 )
+			dCenter = (dLower + dUpper) / 2.0;
+			while ( std::abs( dResult - dTarget ) > 0.0001 && nIterations < 10000 )
 			{
 				nIterations++;
 				dCenter = ( dLower + dUpper ) / 2.0;

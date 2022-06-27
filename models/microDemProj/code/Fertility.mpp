@@ -44,7 +44,7 @@ void Person::BirthEvent()
 	peChild->Start(-1, this);
 }
 
-void PreSimulation1()
+void Fertility_PreSimulation()
 {
 	double dSum;
 	for ( int nYear = 0; nYear < SIZE( SIM_YEAR_RANGE ) ; nYear++ )
