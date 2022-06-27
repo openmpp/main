@@ -7,6 +7,9 @@
 	are calculated.  Modgen knows about dependencies of normal tables, but does
 	not handle dependencies of user tables in its design.
 
+	Model code refactored so that this module explicitly calls
+	other UserTables-like functions in other modules first.
+
 	This entire module can be commented out or removed from the project
 	to increase memory and computational efficiency,
 	with no effect on results.
@@ -41,8 +44,17 @@ user_table NbhdStatsbyDec //EN NbhdStatsbyDec
 	* RANGE_NEIGHBORHOOD
 	* DECADE
 };
-void UserTables()
+
+
+extern void IncomeTables_UserTables(void); // UserTables in IncomeTables.mpp
+//extern void ModelComparison_UserTables(void); // UserTables in ModelComparison.mpp
+
+void UserTables(void)
 {
+	// call UserTables functions in other modules first
+	IncomeTables_UserTables();
+	//ModelComparison_UserTables();
+
 	const int nNeighbourhoods = SimulatedNeighborhoods;
 	const int nDecades = SIZE(DECADE);
 

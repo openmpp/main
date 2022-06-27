@@ -215,7 +215,9 @@ user_table YstatsByDecNbhd //EN YstatsByDecNbhd
 	* RANGE_NEIGHBORHOOD
 	* DECADE
 };
-void UserTables()
+
+// UserTables in IncomeTables.mpp
+void IncomeTables_UserTables(void)
 {
 	const int nNeighbourhoods = SimulatedNeighborhoods;
 	const int nDecades = SIZE(DECADE);
