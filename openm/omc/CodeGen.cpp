@@ -131,6 +131,7 @@ void CodeGen::do_preamble()
     c += "#if defined(__GNUC__)";
     c += "    // compiler-specific pragmas for gcc";
     c += "    #pragma GCC diagnostic ignored \"-Wunused-variable\"";
+    c += "    #pragma GCC diagnostic ignored \"-Wunused-but-set-variable\"";
     c += "#endif";
 
     // Get definition code associated with the model_type symbol
