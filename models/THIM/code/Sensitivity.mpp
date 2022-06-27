@@ -10,7 +10,7 @@ parameters
 	model_generated int SensitivityChangeMaxAge;
 };
 
-void PreSimulation()
+void Sensitivity_PreSimulation(void)
 {
 	// Hard-code value pending removal
 	SensitivityChangeMaxAge = 0;

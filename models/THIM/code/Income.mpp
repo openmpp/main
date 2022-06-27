@@ -96,7 +96,8 @@ parameters
 	model_generated double IncomeProfileRates[RANGE_AGE];	//EN Normalized Yinit abscissa values (income)		
 };
 
-void PreSimulation(void)
+/// PreSimulation-related code in Income.mpp
+void Income_PreSimulation(void)
 {	double customFunctionArrayX[SIZE(R_0_99)];
 	double customFunctionArrayY[SIZE(R_0_99)];
 

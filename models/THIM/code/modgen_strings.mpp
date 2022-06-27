@@ -1,6 +1,6 @@
-//LABEL(ModelStrings, EN)	Model-specific strings
+//LABEL(modgen_strings, EN)	Model-specific strings
 
-/*NOTE(ModelStrings, EN)
+/*NOTE(modgen_strings, EN)
 	This module contains model-specific strings used in the progress dialog.
 */
 
