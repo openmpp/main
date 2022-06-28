@@ -610,12 +610,12 @@ void CodeGen::do_RunOnce()
         // Create contents of helpful .dat format file specifying missing parameters.
         if (parameter->source == ParameterSymbol::missing_parameter) {
             if (!any_missing_parameters) {
-                m += "parameters {";
                 any_missing_parameters = true;
+                m += "parameters {";
             }
             m += parameter->dat_definition();
             // create warning message which the model will output whenever it is run
-            c += "theLog->logFormatted(\"model : warning : parameter " + parameter->name + " was missing when model was published\");";
+            c += "theLog->logFormatted(\"warning : parameter '" + parameter->name + "' was missing when the model was built\");";
         }
 
         if (parameter->cumrate) {
@@ -629,7 +629,6 @@ void CodeGen::do_RunOnce()
     }
     if (any_missing_parameters) {
         m += "};";
-        theLog->logMsg("Note: Missing parameters were written to Missing.dat.tmp");
     }
     c += "";
 

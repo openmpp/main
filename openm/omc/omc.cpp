@@ -564,27 +564,25 @@ int main(int argc, char * argv[])
 
         // block for creation of file with missing parameter definitions
         {
-            const string Missing_dat_name = "Missing.dat.tmp";
+            const string Missing_dat_name = "MissingParameters.dat";
             if (missing_param_defs.size() > 0) {
-                // Some generated output for one or more missing parameters present.
-                if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-                    // open output stream for generated definitions for missing parameters
-                    ofstream Missing_dat(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()), ios::out | ios::trunc | ios::binary);
-                    exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
-                    if (Missing_dat.fail()) throw HelperException(LT("error : unable to open %s for writing"), "Missing.dat.tmp");
-                    Missing_dat << missing_param_defs;
-                    Missing_dat.close();
+                // Some generated output for one or more missing parameters.
+                // Open output stream for generated place-holder definitions for missing parameters.
+                ofstream Missing_dat(makeFilePath(outDir.c_str(), Missing_dat_name.c_str()), ios::out | ios::trunc | ios::binary);
+                exit_guard<ofstream> onExit_Missing_dat(&Missing_dat, &ofstream::close);   // close on exit
+                if (Missing_dat.fail()) {
+                    string msg = "warning : Unable to open " + Missing_dat_name + " for writing.";
+                    theLog->logMsg(msg.c_str());
                 }
                 else {
-                    string msg = "omc : warning : Unable to write missing parameters to " + Missing_dat_name + " - no input parameter directory was specified.";
-                    theLog->logMsg(msg.c_str());
+                    Missing_dat << missing_param_defs;
+                    Missing_dat.close();
+                    theLog->logFormatted("note : Missing parameters written to '%sMissingParameters.dat'", outDir.c_str());
                 }
             }
             else {
-                // Model contains no missing parameters, so delete obsolete Missing.dat.tmp if present
-                if (argStore.isOptionExist(OmcArgKey::paramDir)) {
-                    remove(makeFilePath(paramDir.c_str(), Missing_dat_name.c_str()).c_str());
-                }
+                // Model contains no missing parameters, so delete obsolete MissingParameters.dat if present.
+                remove(makeFilePath(outDir.c_str(), Missing_dat_name.c_str()).c_str());
             }
         }
 
