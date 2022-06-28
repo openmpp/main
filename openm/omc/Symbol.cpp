@@ -2337,31 +2337,87 @@ void Symbol::heuristic_short_names(void)
 
     // Heuristic short names for parameter dimensions
     for (auto param : pp_all_parameters) {
-        for (auto dim : param->dimension_list) {
-            if (dim->short_name_explicit == "") {
-                // no explicit name provided so make and use a heuristic short name
-                string hn = dim->heuristic_short_name();
-                dim->short_name = hn;
+        {
+            size_t index = 0;
+            std::set<std::string> names;
+            for (auto dim : param->dimension_list) {
+                if (dim->short_name_explicit == "") {
+                    // no explicit name provided so make and use a heuristic short name
+                    string hn = dim->heuristic_short_name();
+                    if (names.count(hn)) {
+                        // clash detected, append disambiguating suffix
+                        string suffix = "Dim" + std::to_string(index);
+                        assert(short_name_max_length > 10);
+                        if (hn.length() + suffix.length() > short_name_max_length) {
+                            // replace trailing characters with suffix
+                            hn.replace(hn.length() - suffix.length(), suffix.length(), suffix);
+                        }
+                        else {
+                            // append suffix
+                            hn += suffix;
+                        }
+                    }
+                    dim->short_name = hn;
+                }
+                names.insert(dim->short_name);
+                ++index;
             }
         }
     }
 
-    // Heuristic short names for table dimensions and measures
+    // Heuristic short names for table dimensions and table expressions aka measures
     for (auto table : pp_all_tables) {
-        // the dimensions
-        for (auto dim : table->dimension_list) {
-            if (dim->short_name_explicit == "") {
-                // no explicit name provided so make and use a heuristic short name
-                string hn = dim->heuristic_short_name();
-                dim->short_name = hn;
+        {   // the dimensions
+            size_t index = 0;
+            std::set<std::string> names;
+            for (auto dim : table->dimension_list) {
+                if (dim->short_name_explicit == "") {
+                    // no explicit name provided so make and use a heuristic short name
+                    string hn = dim->heuristic_short_name();
+                    if (names.count(hn)) {
+                        // clash detected, append disambiguating suffix
+                        string suffix = "Dim" + std::to_string(index);
+                        assert(short_name_max_length > 10);
+                        if (hn.length() + suffix.length() > short_name_max_length) {
+                            // replace trailing characters with suffix
+                            hn.replace(hn.length() - suffix.length(), suffix.length(), suffix);
+                        }
+                        else {
+                            // append suffix
+                            hn += suffix;
+                        }
+                    }
+                    dim->short_name = hn;
+                }
+                names.insert(dim->short_name);
+                ++index;
             }
         }
-        // the measures
-        for (auto measure : table->pp_measures) {
-            if (measure->short_name_explicit == "") {
-                // no explicit name provided so make and use a heuristic short name
-                string hn = measure->heuristic_short_name();
-                measure->short_name = hn;
+        
+        { // the expressions/measures
+            size_t index = 0;
+            std::set<std::string> names;
+            for (auto measure : table->pp_measures) {
+                if (measure->short_name_explicit == "") {
+                    // no explicit name provided so make and use a heuristic short name
+                    string hn = measure->heuristic_short_name();
+                    if (names.count(hn)) {
+                        // clash detected, append disambiguating suffix
+                        string suffix = "Expr" + std::to_string(index);
+                        assert(short_name_max_length > 10);
+                        if (hn.length() + suffix.length() > short_name_max_length) {
+                            // replace trailing characters with suffix
+                            hn.replace(hn.length() - suffix.length(), suffix.length(), suffix);
+                        }
+                        else {
+                            // append suffix
+                            hn += suffix;
+                        }
+                    }
+                    measure->short_name = hn;
+                }
+                names.insert(measure->short_name);
+                ++index;
             }
         }
     }
