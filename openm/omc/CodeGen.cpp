@@ -125,6 +125,9 @@ void CodeGen::do_preamble()
     c += "";
 
     // control warnings produced in generated code
+    c += "//";
+    c += "// The following pragmas disable known benign warnings in the generated code in this module (om_definitions.cpp)";
+    c += "//";
     c += "#if defined(_MSC_VER)";
     c += "    // compiler-specific pragmas for MSVC";
     c += "#endif";
@@ -132,6 +135,11 @@ void CodeGen::do_preamble()
     c += "    // compiler-specific pragmas for gcc";
     c += "    #pragma GCC diagnostic ignored \"-Wunused-variable\"";
     c += "    #pragma GCC diagnostic ignored \"-Wunused-but-set-variable\"";
+    c += "#endif";
+    c += "#if defined(__clang__)";
+    c += "    // compiler-specific pragmas for clang";
+    c += "    #pragma clang diagnostic ignored \"-Wunused-variable\"";
+    c += "    #pragma clang diagnostic ignored \"-Wunused-but-set-variable\"";
     c += "#endif";
 
     // Get definition code associated with the model_type symbol
