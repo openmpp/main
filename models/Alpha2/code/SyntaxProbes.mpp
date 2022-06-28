@@ -386,6 +386,18 @@ actor Person
     //void SomethingStringee2(std::string s);
 };
 
+// supply definitions to avoid C++ compiler warnings
+void Person::SomeThingThatTakesAPointer(CString* thing) {}
+void Person::SomeThingThatTakesAConstPointer(const CString* thing) {}
+void Person::SomeThingThatTakesAConstDoublePointer(const double* thing) {}
+void Person::SomeThingThatTakesARef(std::vector<double>& thing) {}
+void Person::SomeThingThatTakesAConstRef(const CString& thing) {}
+void Person::SomeThingThatTakesANamespaceQualifiedConstRef(const std::basic_string<char, std::char_traits<char>, std::allocator<char>>& thing) {}
+void Person::SomeReallyLongName(const Some::Really::Long::Thingee& thing) {}
+void Person::SomeReallyLongModifiableName(Some::Really::Long::Thingee& thing) {}
+void Person::GlobalNamespaceRef(::GlobalThing& thing) {}
+void Person::SomethingWithDefaultArguments(int a, int b) {}
+
 // Tests of haz1rate parameters
 parameters {
     haz1rate z_haz1rate_scalar; //EN haz1rate scalar

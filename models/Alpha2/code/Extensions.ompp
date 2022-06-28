@@ -1,5 +1,5 @@
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2022 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(Extensions, EN) Extensions
 
@@ -29,62 +29,50 @@ parameters
 
 void PreSimulation_A()
 {
-    1 + 1;
 }
 
 void PreSimulation01()
 {
-    1 + 1;
 }
 
 void PreSimulation1()
 {
-    1 + 1;
 }
 
 void PreSimulation4()
 {
-    1 + 1;
 }
 
 void PreSimulation()
 {
-    1 + 1;
 }
 
 void PreSimulation()
 {
-    1 + 1;
 }
 
 void UserTables1()
 {
-    1 + 2;
 }
 
 void UserTables2()
 {
-    1 + 2;
 }
 
 void UserTables11()
 {
-    3 + 4;
 }
 
 void PostSimulation()
 {
-    1 + 2;
 }
 
 void PostSimulation()
 {
-    1 + 2;
 }
 
 void PostSimulation42()
 {
-    1 + 2;
 }
 
 extern const int &A;
@@ -95,7 +83,6 @@ const int &A = om_param_A;
 
 void PostSimulation43()
 {
-    1 + 2;
     //A = 5;  // compiler error, as desired
     om_param_A = 5;
 }
@@ -169,6 +156,11 @@ actor Person
     void SomethingStringee(int a, std::string s);
     void SomethingStringee2(std::string s);
 };
+
+// supply definitions to avoid C++ compiler warnings
+void Person::SomethingVariadic(const char* fmt, ...) {}
+void Person::SomethingStringee(int a, std::string s) {}
+void Person::SomethingStringee2(std::string s) {}
 
 
 // Parameter with named dimensions

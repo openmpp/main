@@ -126,8 +126,8 @@ user_table ErrorTest1
 
 void UserTables(void)
 {
-    int index = 20;
-    double value = 1.0;
+    //int index = 20;
+    //double value = 1.0;
 
     // The following line, if uncommented, will give a run-time warning about invalid name
     //value = GetTableValue("ErrorTest1.Value", index);

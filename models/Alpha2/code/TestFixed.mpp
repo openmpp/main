@@ -60,7 +60,6 @@ void PreSimulation()
 {
     double d1 = fixed_double_array[MALE];
     double d2 = fixed_double_array[FEMALE];
-    double d3 = d1 + d2;
 }
 
 
