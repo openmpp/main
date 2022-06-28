@@ -41,9 +41,9 @@ public:
         , update_cell_fn(nullptr)
         , insert_fn(nullptr)
         , erase_fn(nullptr)
+        , filter(nullptr)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
-        , filter(nullptr)
     {
         count_gvn = name + "_count";
         max_gvn = name + "_max";

@@ -46,10 +46,10 @@ public:
         , current_cell_fn(nullptr)
         , init_increment_fn(nullptr)
         , push_increment_fn(nullptr)
-        , resource_use_gfn(nullptr)
-        , resource_use_reset_gfn(nullptr)
         , filter(nullptr)
         , n_collections(0)
+        , resource_use_gfn(nullptr)
+        , resource_use_reset_gfn(nullptr)
     {
         cxx_class = "cls_" + name;
         increments_gvn = name + "_increments";
