@@ -44,7 +44,7 @@ namespace omr {
     void populate_extended_parameter(const std::string name, T *target, const size_t dim0_size, const size_t slice_size, T const *index_series = nullptr, const size_t index_offset = 0)
     {
         for (size_t j = 0; j < slice_size; ++j) {
-            int idx = j;
+            size_t idx = j;
             T prev = 0;
             for (size_t k = 0; k < dim0_size; ++k) {
                 auto& value = target[idx];
