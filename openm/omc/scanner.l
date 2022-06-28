@@ -394,7 +394,7 @@ blank       [ \t]
 			    token_type tok = Symbol::string_to_token( yytext );
                 /* tok has value TK_error if not a keyword */
                 if (Symbol::is_om_outer_keyword(tok)) {
-                    if (pc.brace_level == 0) {
+                    if (pc.brace_level == 0 && pc.parenthesis_level == 0) {
                         /* transition to openM++ declarative island */
     				    BEGIN(om_code);
                         yylval->val_token = tok;
