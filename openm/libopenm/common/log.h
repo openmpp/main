@@ -82,7 +82,7 @@ namespace openm
             ) noexcept;
 
         /** use process rank as log message prefix */
-        void setRank(int i_rank, int i_worldSize) noexcept;
+        void setRank(int i_rank, int i_worldSize) noexcept override;
 
     protected:
         recursive_mutex theMutex;   // mutex to lock for log operations

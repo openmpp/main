@@ -1688,18 +1688,18 @@ void CodeGen::do_RunModel()
         for (auto ent : Symbol::pp_all_agents) {
             auto dml = ent->pp_agent_data_members;
             size_t members_count = dml.size();
-            size_t ent_internal = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
-            size_t attribute_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_attribute(); });
-            size_t builtin_attribute_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_builtin_attribute(); });
-            size_t link_attribute_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_link_attribute(); });
-            size_t maintained_attribute_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_maintained_attribute(); });
-            size_t simple_attribute_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_simple_attribute(); });
-            size_t array_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_array(); });
-            size_t event_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_event(); });
-            size_t increment_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_increment(); });
-            size_t foreign_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_foreign(); });
-            size_t internal_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
-            size_t multilink_count = std::count_if(dml.begin(), dml.end(), [this](EntityDataMemberSymbol* edms) {return edms->is_multilink(); });
+            size_t ent_internal = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
+            size_t attribute_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_attribute(); });
+            size_t builtin_attribute_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_builtin_attribute(); });
+            size_t link_attribute_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_link_attribute(); });
+            size_t maintained_attribute_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_maintained_attribute(); });
+            size_t simple_attribute_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_simple_attribute(); });
+            size_t array_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_array(); });
+            size_t event_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_event(); });
+            size_t increment_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_increment(); });
+            size_t foreign_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_foreign(); });
+            size_t internal_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
+            size_t multilink_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_multilink(); });
             size_t array_size = 0;
 
             c += "{ // Begin resource use tables for " + ent->name;
