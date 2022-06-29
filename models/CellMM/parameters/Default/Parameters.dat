@@ -1,0 +1,112 @@
+parameters {
+	int	P0_StartingPopulationSize = 10000; //EN Starting population size
+	double	PopulationScalingFactor = 1.0; //EN Population Scaling factor
+
+	 //EN mu: Mortality rate
+	double	mu_MortalityRate[REGION][HIV_STATUS] = {
+		(2) {
+			0.02, 0.1, 
+		},
+	};
+
+	 //EN m: TB death rate
+	double	m_TBDeathRate[REGION][HIV_STATUS] = {
+		(2) {
+			0.25, 1.6, 
+		},
+	};
+
+	 //EN k: TB infection rate
+	double	k_TBInfectionRate[REGION][HIV_STATUS] = {
+		(2) {
+			11.4, 7.6, 
+		},
+	};
+
+	 //EN p: TB Proportion of new infections with fast progression
+	double	p_TBFastProportion[REGION][HIV_STATUS] = {
+		(2) {
+			0.11, 0.30, 
+		},
+	};
+
+	 //EN q: TB Proportion of reinfections with fast progression
+	double	q_TBReinfectProportion[REGION][HIV_STATUS] = {
+		(2) {
+			0.077, 0.225, 
+		},
+	};
+
+	 //EN alpha: TB Progression from latent to active
+	double	alpha_TBProgressionRate[REGION][HIV_STATUS] = {
+		(2) {
+			0.0003, 0.08, 
+		},
+	};
+
+	 //EN beta: TB Recovery rate without treatment
+	double	beta_TBUntreatedRecoveryRate[REGION][HIV_STATUS] = {
+		(2) {
+			0.25, 0.4, 
+		},
+	};
+
+	 //EN gamma: TB detection rate of active cases
+	double	gamma_TBDetectionRate[REGION][HIV_STATUS] = {
+		(2) {
+			0.74, 3.0, 
+		},
+	};
+
+	 //EN epsilon: TB Probability of successful treatment for detected cases
+	double	epsilon_TBTreatedRecoveryProportion[REGION][HIV_STATUS] = {
+		(2) {
+			(2) 0.80, 
+		},
+	};
+	int	B_Births = 200; //EN B: B_Births
+
+	 //EN d: HIV transmission rate
+	double	d_HIVContactRate[REGION] = {
+		(2) 0.7, 
+	};
+
+	 //EN lamda: HIV transmission rate reduction parameter
+	double	lamda_HIVReductionParameter[REGION] = {
+		(2) 5.9, 
+	};
+
+	 //EN TB introduction year
+	int	TBIntroductionYear = 200;
+
+	 //EN TB introduction cases
+	int	TBIntroductionCases = 1000;
+
+	 //EN HIV introduction year
+	int	HIVIntroductionYear = 400;
+
+	 //EN HIV introduction cases
+	int	HIVIntroductionCases = 10;
+
+	 //EN Regional distribution of starting population
+	cumrate	InitialPopulationDistribution[REGION] = {
+		100, 0, 
+	};
+
+	 //EN Regional distribution of births
+	cumrate	BirthsDistribution[REGION] = {
+		100, 0, 
+	};
+
+	 //EN Regional distribution for disease introduction
+	double IntroductionDistribution[REGION] = {
+		100, 0, 
+	};
+
+	 //EN Distribution of migration destination
+	cumrate	DestinationDistribution[REGION] = {
+		100, 0, 
+	};
+	double	MigrationRate = 0; //EN Migration rate
+};
+

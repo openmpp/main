@@ -1,0 +1,48 @@
+//LABEL(HIV, EN) HIV transmission and progression
+
+classification HIV_STATUS //EN HIV status
+{
+	HIV_NEGATIVE,	//EN HIV-
+	HIV_POSITIVE	//EN HIV+
+};
+
+
+
+parameters 
+{
+	//EN mu: Mortality rate
+	double mu_MortalityRate[REGION][HIV_STATUS];
+
+	//EN d: HIV transmission rate
+	double d_HIVContactRate[REGION];
+
+	//EN lamda: HIV transmission rate reduction parameter
+	double lamda_HIVReductionParameter[REGION];
+
+	//EN HIV mortality hazard
+	model_generated double HIVMortalityHazard[REGION];
+
+	//EN HIV introduction year
+	int	HIVIntroductionYear;
+
+	//EN HIV introduction cases
+	int HIVIntroductionCases;
+
+};
+
+void HIV_PreSimulation(void)
+{
+	// decompose mortality of HIV+ into components
+	for (int nRegion = 0; nRegion < SIZE(REGION); nRegion++)
+	{
+		HIVMortalityHazard[nRegion] = mu_MortalityRate[nRegion][HIV_POSITIVE] - mu_MortalityRate[nRegion][HIV_NEGATIVE];
+	}
+}
+
+actor Person {
+
+	//EN HIV status
+	HIV_STATUS hiv_status = { HIV_NEGATIVE };
+
+};
+

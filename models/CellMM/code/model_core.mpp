@@ -11,9 +11,9 @@ model_type time_based, just_in_time;
 time_type double;
 
 // Other data types
-//real_type        float;
-//counter_type    ushort;
-//integer_type    short;
+real_type        float;
+counter_type    ushort;
+integer_type    short;
 
 // The following option reduces memory use at the expense of speed
 //options packing_level=2;
@@ -33,12 +33,12 @@ void Simulation()
     paTicker->Start();
 
     // The initial population
-    for ( int nJ = 0; nJ < StartingPopulationSize; nJ++ )
+    for ( int nJ = 0; nJ < (P0_StartingPopulationSize * PopulationScalingFactor); nJ++ )
     {
         // Create a Person entity.
         auto paPerson = new Person();
         // Enter it into the simulation.
-        paPerson->Start();
+        paPerson->Start(true); 	// 'true' means Person is in the starting population
     }
 
     // Simulate events until there are no more.

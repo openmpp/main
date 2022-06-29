@@ -1,0 +1,101 @@
+//LABEL(Common, EN) Common declarations
+
+/* NOTE(Common, EN)
+	This module contains declarations common to multiple modules.
+*/
+
+range YEAR {0, 1000}; //EN Year
+
+
+/*NOTE(TICKER_EVENT_TYPE, EN)
+	This classification is used to report on events for the Ticker actor.
+*/
+classification TICKER_EVENT_TYPE	//EN Ticker Event Type
+{
+	//EN None
+	EVT_TICKER_NONE,
+
+	//EN Tick
+	EVT_TICKER_TICK,
+
+	//EN Birth
+	EVT_TICKER_BIRTH
+};
+
+
+/*NOTE(PERSON_EVENT_TYPE, EN)
+	This classification is used to report on events for the Person actor.
+*/
+classification PERSON_EVENT_TYPE	//EN Person Event Type
+{
+	//EN None
+	EVT_PERSON_NONE,
+
+	//EN Background mortality
+	EVT_PERSON_BACKGROUND_MORTALITY,
+
+	//EN TB transmission
+	EVT_PERSON_TB_TRANSMISSION,
+
+	//EN TB mortality
+	EVT_PERSON_TB_MORTALITY,
+
+	//EN TB progression
+	EVT_PERSON_TB_PROGRESSION,
+
+	//EN TB recovery
+	EVT_PERSON_TB_RECOVERY,
+
+	//EN Migration
+	EVT_PERSON_MIGRATION
+};
+
+parameter_group Demography_Related	//EN Demography related
+{
+	P0_StartingPopulationSize,
+	PopulationScalingFactor,
+
+	mu_MortalityRate,
+	B_Births
+};
+
+parameter_group Region_Related	//EN Region related
+{
+	MigrationRate,
+	InitialPopulationDistribution,
+	BirthsDistribution,
+	IntroductionDistribution,
+	DestinationDistribution
+};
+
+parameter_group DiseaseIntroduction	//EN Disease introduction
+{
+	TBIntroductionYear,
+	TBIntroductionCases,
+
+	HIVIntroductionYear,
+	HIVIntroductionCases
+};
+
+parameter_group TB_Related	//EN TB related
+{
+	m_TBDeathRate,
+	k_TBInfectionRate,
+	p_TBFastProportion,
+	q_TBReinfectProportion,
+	alpha_TBProgressionRate,
+	beta_TBUntreatedRecoveryRate,
+	gamma_TBDetectionRate,
+	epsilon_TBTreatedRecoveryProportion
+};
+
+parameter_group HIV_Related	//EN HIV related
+{
+	mu_MortalityRate,
+	d_HIVContactRate,
+	lamda_HIVReductionParameter
+};
+
+actor_set Person asAllPerson[region]; //EN All Person actors
+
+

@@ -1,0 +1,19 @@
+//LABEL(PreSimulationCalls, EN) Call PreSimulation functions in other modules
+
+/* NOTE(PreSimulationCalls, EN)
+	This module contains the model's single PreSimulation function definition.
+	It calls in order PreSimulation-related functions in other modules.
+*/
+
+extern void Demography_PreSimulation(void); // PreSimulation-related code in Demography.mpp
+extern void HIV_PreSimulation(void); // PreSimulation-related code in HIV.mpp
+extern void TB_PreSimulation(void); // PreSimulation-related code in TB.mpp
+
+
+/// The master PreSimulation function in the model.
+void PreSimulation(void)
+{
+	Demography_PreSimulation();
+	HIV_PreSimulation();
+	TB_PreSimulation();
+}

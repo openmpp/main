@@ -1,0 +1,263 @@
+//LABEL(TB, EN) Tuberculosis transmission and progression
+
+classification TB_STATUS //EN TB status
+{
+	TB_SUSCEPTIBLE,	//EN Susceptible
+	TB_LATENT,		//EN Latent
+	TB_ACTIVE		//EN Active
+};
+
+parameters 
+{
+	//EN m: TB death rate
+	double m_TBDeathRate[REGION][HIV_STATUS];
+	/* NOTE(m_TBDeathRate, EN)
+		Total death rate for persons with TB.
+	*/
+
+	//EN k: TB infection rate
+	double k_TBInfectionRate[REGION][HIV_STATUS];
+	/* NOTE(k_TBInfectionRate, EN)
+	*/
+
+	//EN p: TB Proportion of new infections with fast progression
+	double p_TBFastProportion[REGION][HIV_STATUS];
+	/* NOTE(p_TBFastProportion, EN)
+	*/
+	
+	//EN q: TB Proportion of reinfections with fast progression
+	double q_TBReinfectProportion[REGION][HIV_STATUS];
+	/* NOTE(q_TBReinfectProportion, EN)
+	*/
+	
+	//EN alpha: TB Progression from latent to active
+	double alpha_TBProgressionRate[REGION][HIV_STATUS];
+	/* NOTE(alpha_TBProgressionRate, EN)
+	*/
+	
+	//EN beta: TB Recovery rate without treatment
+	double beta_TBUntreatedRecoveryRate[REGION][HIV_STATUS];
+	/* NOTE(beta_TBUntreatedRecoveryRate, EN)
+	*/
+
+	//EN gamma: TB detection rate of active cases
+	double gamma_TBDetectionRate[REGION][HIV_STATUS];
+	/* NOTE(gamma_TBDetectionRate, EN)
+	*/
+
+	//EN epsilon: TB Probability of successful treatment for detected cases
+	double epsilon_TBTreatedRecoveryProportion[REGION][HIV_STATUS];
+	/* NOTE(epsilon_TBTreatedRecoveryProportion, EN)
+	*/
+
+	//EN TB introduction year
+	int	TBIntroductionYear;
+
+	//EN TB introduction cases
+	int TBIntroductionCases;
+
+	//EN TB mortality hazard
+	model_generated double mx_TBMortalityHazard[REGION][HIV_STATUS];
+
+	//EN TB recovery rate
+	model_generated double b_TBRecoveryRate[REGION][HIV_STATUS];
+};
+
+
+void TB_PreSimulation(void)
+{
+	for (int nRegion = 0; nRegion < SIZE(REGION); nRegion++)
+	{
+		for (int nHivStatus = 0; nHivStatus < SIZE(HIV_STATUS); nHivStatus++ )
+		{
+			mx_TBMortalityHazard[nRegion][nHivStatus] = m_TBDeathRate[nRegion][nHivStatus] - mu_MortalityRate[nRegion][nHivStatus];
+			b_TBRecoveryRate[nRegion][nHivStatus] = beta_TBUntreatedRecoveryRate[nRegion][nHivStatus] + gamma_TBDetectionRate[nRegion][nHivStatus] * epsilon_TBTreatedRecoveryProportion[nRegion][nHivStatus];
+		}
+	}
+}
+
+actor Person {
+	//EN TB status
+	TB_STATUS tb_status = { TB_SUSCEPTIBLE };
+
+	//EN Function to infect with TB
+	void InfectTB();
+
+	//EN TB transmission event
+	event timeTBTransmissionEvent, TBTransmissionEvent;
+
+	//EN TB mortality event
+	event timeTBMortalityEvent, TBMortalityEvent;
+
+	//EN TB progression event
+	event timeTBProgressionEvent, TBProgressionEvent;
+
+	//EN TB recovery event
+	event timeTBRecoveryEvent, TBRecoveryEvent;
+};
+
+void Person::InfectTB()
+{
+	if ( tb_status == TB_SUSCEPTIBLE )
+	{
+		tb_status = (p_TBFastProportion[region][hiv_status] > RandUniform(4)) ? TB_ACTIVE : TB_LATENT;
+	}
+	else if ( tb_status == TB_LATENT )
+	{
+		if ( q_TBReinfectProportion[region][hiv_status] > RandUniform(5) )
+		{
+			tb_status = TB_ACTIVE;
+		}
+	}
+	else
+	{
+		// Nothing to do if the person already has active TB
+	}
+}
+
+TIME Person::timeTBTransmissionEvent()
+{
+	TIME tEvent_time = TIME_INFINITE;
+	if ( tb_status == TB_ACTIVE )
+	{
+		tEvent_time = WAIT( - TIME( log( RandUniform(6) ) / k_TBInfectionRate[region][hiv_status] ) );
+	}
+	return tEvent_time;
+};
+
+void Person::TBTransmissionEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_TB_TRANSMISSION;
+	event_count++;
+
+	// Infect a random Person in the region (if that Person is susceptible)
+	auto paPerson = asAllPerson[region]->GetRandom( RandUniform(7) );
+	// paPerson is guaranteed not to be NULL, since there is at least one Person
+	// in the region (this one).
+	paPerson->InfectTB();
+};
+
+TIME Person::timeTBProgressionEvent()
+{
+	TIME tEvent_time = TIME_INFINITE;
+	if ( tb_status == TB_LATENT )
+	{
+		tEvent_time = WAIT( - TIME( log( RandUniform(9) ) / alpha_TBProgressionRate[region][hiv_status] ) );
+	}
+	return tEvent_time;
+};
+
+void Person::TBProgressionEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_TB_PROGRESSION;
+	event_count++;
+
+	tb_status = TB_ACTIVE;
+};
+
+TIME Person::timeTBRecoveryEvent()
+{
+	TIME tEvent_time = TIME_INFINITE;
+	if ( tb_status == TB_ACTIVE )
+	{
+		tEvent_time = WAIT( - TIME( log( RandUniform(10) ) / b_TBRecoveryRate[region][hiv_status] ) );
+	}
+	return tEvent_time;
+};
+
+void Person::TBRecoveryEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_TB_RECOVERY;
+	event_count++;
+
+	tb_status = TB_LATENT;
+};
+
+TIME Person::timeTBMortalityEvent()
+{
+	TIME tEvent_time = TIME_INFINITE;
+	if ( tb_status == TB_ACTIVE )
+	{
+		tEvent_time = WAIT( - TIME( log( RandUniform(8) ) / mx_TBMortalityHazard[region][hiv_status] ) );
+	}
+	return tEvent_time;
+};
+
+void Person::TBMortalityEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_TB_MORTALITY;
+	event_count++;
+
+	alive = false;
+	Finish();
+};
+
+actor Ticker
+{
+	void NewYearsDayTB();
+
+	hook NewYearsDayTB, NewYearsDay;
+};
+
+
+//EN Initialize TB in the population
+void Ticker::NewYearsDayTB()
+{
+	if ( year == TBIntroductionYear )
+	{
+		double dTotalIntroductionDistribution = 0;
+		for (int nRegion = 0; nRegion < SIZE(REGION); nRegion++)
+		{
+			dTotalIntroductionDistribution += IntroductionDistribution[nRegion];
+		}
+
+		for (int nRegion = 0; nRegion < SIZE(REGION); nRegion++)
+		{
+			int nTotalPersons = asAllPerson[nRegion]->Count();
+
+			if (nTotalPersons == 0 )
+			{
+				// don't attempt to infect if no actors in region.
+				break;
+			}
+
+			int nIntroductionCases = (int) (TBIntroductionCases * PopulationScalingFactor * IntroductionDistribution[nRegion] / dTotalIntroductionDistribution);
+			for (int nJ = 0, nFailures = 0; nJ < nIntroductionCases; nJ++ )
+			{
+				auto paPerson = asAllPerson[nRegion]->GetRandom( RandUniform(3) );
+				// Note that paPerson is guaranteed to be not NULL,
+				// since otherwise the simulation would have ended.
+
+				if ( paPerson->tb_status == TB_SUSCEPTIBLE )
+				{
+					paPerson->InfectTB();
+				}
+				else
+				{
+					// Got a Person who was already infected in this loop.
+					nFailures++;
+
+					// The following somewhat arbitrary test is to avoid endless (or near-endless) loops,
+					// should it be difficult or impossible to infect the number
+					// of requested Persons
+					if ( nFailures > 10 * nTotalPersons ) {
+						break;
+					}
+					else {
+						// try again
+						nJ--;
+					}
+				}
+			}
+		}
+	}
+}
+

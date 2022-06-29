@@ -1,88 +1,117 @@
 //LABEL (TickerCore, EN) Definition and initialization of Ticker actor
 
 /*NOTE(TickerCore, EN)
-    This module contains the basic information associated with a Ticker actor.
-    One single Ticker actor is instantiated in a simulation.  It is used to synchronise
-    time among all of the actors in the population in order to ensure
-    accurate reports.
+	This module contains the basic information associated with a Ticker actor.
+	One single Ticker actor is instantiated in a simulation.  It synchronises
+	time among the actors in the population to ensure accurate reports,
+	and implements populatin-level effects.
 */
-
-range REPORT_TIME  //EN Reporting intervals
-{
-    0, 200
-};
 
 actor Ticker //EN Actor for synchronising population-level activities
 {
-    //EN Report time
-    REPORT_TIME report_time = { 0 };
+	//EN Event count
+	int event_count;
 
-    //EN Time of next Tick event
-    TIME next_tick;
+	//EN Event type
+	TICKER_EVENT_TYPE event_type;
 
-    //LABEL(Ticker.Start, EN) Starts the ticker
-    void    Start();
+	//EN Report time
+	YEAR year;
 
-    //LABEL(Ticker.Finish, EN) Finishes the actor
-    void    Finish();    
+	//EN Time of next Tick event
+	TIME next_tick;
 
-    event    timeTickEvent, TickEvent; //EN Tick event
+	void	Start();
+	void	Finish();
+
+	//EN Implements actions at the start of a New Year
+	void	NewYearsDay();
+
+	//EN Annual clock event
+	event	timeTickEvent, TickEvent;
 };
 
 /* NOTE(Ticker.Start,EN) 
-    Initializes the Ticker actor.
+	Initializes the Ticker actor.
 */
 void Ticker::Start( )
 {
-    // Initialize all attributes (OpenM++).
-    initialize_attributes();
+	// Initialize all attributes (OpenM++).
+	initialize_attributes();
 
-    time = (TIME) 0;
-    age = 0;
-    next_tick = 0;
+	time = (TIME) 0;
+	age = 0;
 
-    // Have the entity enter the simulation (OpenM++).
-    enter_simulation();
+	year = 0;
+
+	// Start of simulation is the start of year 0
+	NewYearsDay();
+
+	// first tick of the clock will occur at year 1.
+	next_tick = 1;
+
+	hook_Start(); // for OpenM++
+
+	// Have the entity enter the simulation (OpenM++).
+	enter_simulation();
 }
 
 
-/*NOTE(Ticker.Finish, EN)
-    The Finish function terminates the simulation of the ticker actor.
+/* NOTE(Ticker.Finish,EN) 
+	Performs any additional processing when closing a Ticker actor.
 */
 void Ticker::Finish()
 {
-    // Have the entity exit the simulation (OpenM++).
-    exit_simulation();
+	// Have the entity exit the simulation (OpenM++).
+	exit_simulation();
 }
 
 
 /* NOTE(Ticker.TickEvent,EN)
-    Increments the clock and synchronizes actors for reporting purposes.
+	Increments the clock and synchronizes actors for reporting purposes.
 */
 TIME Ticker::timeTickEvent()
 {
-    return next_tick;
+	return (TIME_t) next_tick;
 }
 
 void Ticker::TickEvent()
 {
-    // Increment report time
-    report_time = COERCE(REPORT_TIME, report_time + 1);
+	// For reporting on event counts
+	event_type = EVT_TICKER_NONE;
+	event_type = EVT_TICKER_TICK;
+	event_count++;
 
-    // Age all Persons to the current time.
-    int nPerson = asAllPerson->Count();
-    for ( int nJ = 0; nJ < nPerson; nJ++ ) 
-    {
-		auto paPerson = asAllPerson->Item( nJ );
-        paPerson->report_time = report_time;
-    }
+	// Increment report time
+	year = COERCE(YEAR, year + 1);
 
-    // Schedule the next tick.
-    // The next line spreads reporting times evenly over the simulation
-    //next_tick = next_tick + SIMULATION_END() / SIZE(REPORT_TIME);
-    // The next line sets reporting times at equal intervals of size 1.0
-    next_tick = next_tick + (TIME) 1.0;
+	NewYearsDay();
+
+	// Synchronize population to New Year's Day.
+	for( int nRegion = 0; nRegion < SIZE(REGION); nRegion++ )
+	{
+		int nPerson = asAllPerson[nRegion]->Count();
+		for ( int nJ = 0; nJ < nPerson; nJ++ ) {
+			auto paPerson = asAllPerson[nRegion]->Item( nJ );
+			paPerson->year = year;
+
+			paPerson->NewYearsDay();
+		}
+	}
+
+	// Schedule the next tick of the annual clock.
+	next_tick = next_tick + (TIME) 1.0;
 }
 
+/* NOTE(Ticker.NewYearsDay,EN)
+	Code in other modules can hook to this function to implement
+	annual population-level events or perform bookkeeping.
 
+	This function is called at the beginning of the simulation,
+	and immediately after every subsequent change in year.
+*/
+void Ticker::NewYearsDay()
+{
+	hook_NewYearsDay(); // for OpenM++
+}
 

@@ -1,0 +1,96 @@
+//LABEL(Tables, EN) Tables
+
+/* NOTE(Common, EN)
+	This module contains table specifications,
+	as well as table-specific model code.
+*/
+
+table Ticker TickerEvents	//EN Events for Ticker
+{
+	{
+		event(event_count)	//EN Count
+	}  
+	* year
+	* event_type
+};
+
+
+table Person PersonEvents	//EN Events for Persons
+{
+	{
+		event(event_count)	//EN Count
+	}  
+	* year
+	* event_type
+};
+
+
+/*NOTE(LifeDuration, EN)
+	This table contains statistics related to the duration of life.
+	The table filter ensures that only completed lifetimes are reported,
+	i.e. truncated lifetimes at the end of the simulation are excluded.
+*/
+table Person LifeDuration //EN Duration of Life
+[ age_at_death > 0 ]
+{
+	{
+		unit,							//EN Completed lifetimes
+		min_value_in(age_at_death),		//EN Minimum duration of life decimals=4
+		max_value_in(age_at_death),		//EN Maximum duration of life decimals=4
+		value_in(age_at_death) / unit	//EN Life expectancy decimals=4
+	}	//EN Demographic characteristics
+};
+
+table Person PopulationBalance //EN Population balance
+{
+	year
+	* {
+		unit - value_in(newly_born),				//EN Population (start of year)
+		value_in(newly_born),						//EN Births
+		entrances(alive, FALSE),					//EN Deaths
+		value_out(alive),							//EN Population (end of year)
+		duration(),									//EN Person-years lived decimals=1
+		value_in(duration()) / (unit - value_in(newly_born)) //EN Mean age (start of year) decimals=2
+	}	//EN Population characteristics
+};
+
+table Person TBTransitions	//EN Transitions in TB status
+{
+	year
+	* {
+		event(transitions(tb_status, TB_SUSCEPTIBLE, TB_LATENT)),   //EN New latent cases
+		event(transitions(tb_status, TB_SUSCEPTIBLE, TB_ACTIVE)),   //EN New active cases
+		event(transitions(tb_status, TB_LATENT, TB_ACTIVE)), //EN Latent to active
+		event(transitions(tb_status, TB_ACTIVE, TB_LATENT))  //EN Active to latent
+	}
+};
+
+table Person DiseaseStatus	//EN Disease status of the population
+{
+	{
+		duration()	//EN PY's
+	}
+	* region+
+	* hiv_status+
+	* year
+	* tb_status+
+};
+
+table Person MigrationStatistics	//EN Migration Statistics
+{
+	year+
+	* {
+		transitions(region, REGION1, REGION2),	//EN Migration 1->2
+		transitions(region, REGION2, REGION1),	//EN Migration 2->1
+		duration(region, REGION1),				//EN Population (1)
+		duration(region, REGION2),				//EN Population (2)
+
+		transitions(region, REGION1, REGION2) /
+			duration(region, REGION1),			//EN Outmigration rate (1) decimals=5
+
+		transitions(region, REGION2, REGION1) /
+			duration(region, REGION2),			//EN Outmigration rate (2) decimals=5
+
+		duration()	//EN PY's
+	}
+};

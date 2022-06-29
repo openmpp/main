@@ -1,0 +1,37 @@
+//LABEL (Experimental, EN) Experimental code
+
+/* NOTE(Experimental, EN)
+	This module is the ideal place to try out new tables, etc. without
+	touching other modules.
+*/
+
+
+actor Person
+{
+	logical year_trigger = trigger_changes(year);
+};
+
+table Person PopTest //EN Population at start of year
+[ trigger_changes(year) ]
+{
+	year
+	* {
+		unit,					//EN Population
+		value_in(age) / unit,	//EN Average age decimals=4
+		value_in(time) / unit	//EN Average time decimals=4
+	}
+};
+
+table Person PopTest2 //EN Characteristics of new active TB cases
+[ trigger_entrances(tb_status, TB_ACTIVE) ]
+{
+	year
+	* {
+		unit,					//EN New active cases
+		value_in(age) / unit,	//EN Average age decimals=4
+		value_in(time) / unit	//EN Average time decimals=4
+	}
+};
+
+
+
