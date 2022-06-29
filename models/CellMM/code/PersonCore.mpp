@@ -1,0 +1,109 @@
+//LABEL(PersonCore, EN) Core functionality of the Person actor
+
+/* NOTE(PersonCore, EN)
+	This module contains basic funcitonality of the Person actor.
+*/
+
+actor Person            //EN Individual
+{
+	// The variables time and age are automatically defined by Modgen.
+	// Model-specific labels and notes are supplied below.
+
+	//LABEL(Person.time, EN) Time
+	/*NOTE(Person.time, EN)
+		Time is a continuous quantity in this model.
+		A unit of time is a year.
+	*/
+
+	//LABEL(Person.age, EN) Age
+	/*NOTE(Person.age, EN)
+		Age is a continuous quantity in this model.
+		A unit of age is a year.
+	*/
+
+	//EN Event count
+	int event_count;
+
+	//EN Event type
+	PERSON_EVENT_TYPE event_type;
+
+	//EN Year
+	YEAR year = { 0 };
+
+	//EN Is a member of the starting population
+	logical start_pop;
+
+	//EN Implements actions at the start of a New Year
+	void	NewYearsDay();
+
+	//LABEL(Person.Start, EN) Starts the actor
+	void Start(bool bStartPop);
+
+	//LABEL(Person.Finish, EN) Finishes the actor
+	void Finish();
+};
+
+
+/* NOTE(Person.NewYearsDay,EN)
+	Code in other modules can hook to this function to implement
+	annual events or perform bookkeeping.
+*/
+void Person::NewYearsDay()
+{
+	hook_NewYearsDay(); // for OpenM++
+}
+
+/*NOTE(Person.Start, EN)
+	The Start function initializes actor variables before simulation
+	of the actor commences.
+*/
+void Person::Start(bool bStartPop)
+{
+	// Modgen initializes all actor variables
+	// before the code in this function is executed.
+
+	// Initialize all attributes (OpenM++).
+	initialize_attributes();
+
+	age = 0;
+
+	// Default value of time for new actors is the current time in the simulation.
+	// This is what we want for actors born during the simulation.
+	if (bStartPop) {
+		time = 0;
+	}
+
+	// Initialize year to integer part of time.
+	year = (int) time;
+
+	start_pop = bStartPop ? true : false;
+
+	// Start of simulation is the start of year 0
+	if ( time == 0 )
+	{
+		NewYearsDay();
+	}
+
+	hook_Start(); // for OpenM++
+
+	// Have the entity enter the simulation (OpenM++).
+	enter_simulation();
+
+	// After the code in this function is executed,
+	// Modgen initializes events and tables for the actor.
+	// Modgen also outputs starting values to the tracking file if requested.
+}
+
+/*NOTE(Person.Finish, EN)
+	The Finish function terminates the simulation of an actor.
+*/
+void Person::Finish()
+{
+	// Have the entity exit the simulation (OpenM++).
+	exit_simulation();
+
+	// After the code in this function is executed,
+	// Modgen removes the actor from tables and from the simulation.
+	// Modgen also recuperates any memory used by the actor.
+}
+

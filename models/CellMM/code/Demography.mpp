@@ -1,0 +1,156 @@
+//LABEL(Demography, EN) Demography
+
+/* NOTE(Demography, EN)
+	This module contains parameters and events related to demography
+*/
+
+
+parameters 
+{
+	//EN Starting population size
+	int		P0_StartingPopulationSize;
+
+	//EN Population Scaling factor
+	double	PopulationScalingFactor;
+
+	//EN Background mortality hazard
+	model_generated double BackgroundMortalityHazard[REGION];
+
+	//EN B: B_Births
+	int B_Births;
+};
+
+void Demography_PreSimulation(void)
+{
+	for (int nRegion = 0; nRegion < SIZE(REGION); nRegion++)
+	{
+		// Hazard of death without TB and without HIV
+		BackgroundMortalityHazard[nRegion] = mu_MortalityRate[nRegion][HIV_NEGATIVE];
+	}
+}
+
+actor Person
+{
+	//EN Alive
+	logical alive = {TRUE};
+	/*NOTE(Person.alive, EN)
+		Set to true when the actor starts, and to false just before the actor finishes.
+		Since the numeric value of true is 1 and false is 0, this variable
+		can also be used to count actors in tables.
+	*/
+
+	//EN Born during current year
+	logical newly_born;
+
+	//EN Age at death
+	double age_at_death = value_at_exits(alive, TRUE, age);
+
+	//EN Year of birth
+	YEAR year_of_birth;
+
+	//EN Performs New Year's Day bookkeeping operations associated with Demography
+	void NewYearsDayDemography();
+	hook NewYearsDayDemography, NewYearsDay;
+
+	//EN Performs actor initialization associated with Demography
+	void StartDemography();
+	hook StartDemography, Start, 1;
+
+	event timeBackgroundMortalityEvent, BackgroundMortalityEvent;	//EN BackgroundMortality event
+
+};
+
+void Person::StartDemography()
+{
+	newly_born = start_pop ? false : true;
+	year_of_birth = (YEAR_t) time;
+}
+
+void Person::NewYearsDayDemography()
+{
+	// reset the newly_born state when the year changes
+	// (newly_born identifies Persons born in the current year for reporting purposes).
+	if (newly_born)
+	{
+		newly_born = false;
+	}
+}
+
+actor Ticker
+{
+	TIME next_birth_time = {TIME_INFINITE};
+
+	void SetNextBirth();
+	hook SetNextBirth, Start;
+
+	event timeBirthEvent, BirthEvent;  //EN Birth event
+};
+
+
+TIME Ticker::timeBirthEvent()
+{
+	return next_birth_time;
+}
+
+void Ticker::BirthEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_TICKER_NONE;
+	event_type = EVT_TICKER_BIRTH;
+	event_count++;
+
+	// create and start a new person
+	Person *paPerson = new Person();
+	
+	paPerson->Start(false); // 'false' means Person born during the simulation
+
+	// schedule the next birth
+	SetNextBirth();
+}
+
+void Ticker::SetNextBirth()
+{
+	// schedule the next birth as a Poisson process
+	if ( B_Births > 0 ) {
+		next_birth_time = WAIT( - TIME( log( RandUniform(2) ) / (B_Births * PopulationScalingFactor) ) );
+	}
+	else
+	{
+		next_birth_time = TIME_INFINITE;
+	}
+}
+
+/*NOTE(Person.BackgroundMortalityEvent, EN)
+	This event implements a constant hazard of death.
+*/
+
+// The time function of BackgroundMortalityEvent
+TIME Person::timeBackgroundMortalityEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+
+	// Draw a random waiting time to death from an exponential distribution
+	// based on the constant hazard mu1_BackgroundMortality.
+	tEventTime = WAIT( - TIME( log( RandUniform(1) ) / BackgroundMortalityHazard[region] ) );
+
+	return tEventTime;
+}
+
+// The implement function of BackgroundMortalityEvent
+void Person::BackgroundMortalityEvent()
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_BACKGROUND_MORTALITY;
+	event_count++;
+
+	alive = false;
+
+	// Remove the actor from the simulation.
+	Finish();
+}
+
+
+
+
+

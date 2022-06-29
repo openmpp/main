@@ -1,0 +1,89 @@
+//LABEL(Migration, EN) Implements interregional migration
+
+/* NOTE(Migration, EN)
+	Implements interregional migration.
+*/
+
+classification REGION	//EN Region
+{
+	//EN Region 1
+	REGION1,
+
+	//EN Region 2
+	REGION2
+};
+
+parameters
+{
+	//EN Regional distribution of starting population
+	cumrate [1] InitialPopulationDistribution[REGION];
+
+	//EN Regional distribution of births
+	cumrate [1] BirthsDistribution[REGION];
+
+	//EN Regional distribution for disease introduction
+	double IntroductionDistribution[REGION];
+
+	//EN Distribution of migration destination
+	cumrate [1] DestinationDistribution[REGION];
+
+	//EN Migration rate
+	double MigrationRate;
+};
+
+
+actor Person
+{
+	REGION region;
+
+	void StartRegion();
+
+	event timeMigrationEvent, MigrationEvent;
+
+	hook StartRegion, Start, 2;
+};
+
+
+void Person::StartRegion()
+{
+	int nRegion;
+	
+	if ( start_pop ) {
+		Lookup_InitialPopulationDistribution( RandUniform(11), &nRegion );
+	}
+	else
+	{
+		Lookup_BirthsDistribution( RandUniform(14), &nRegion );
+	}
+
+	region = (REGION) nRegion;
+}
+
+
+TIME Person::timeMigrationEvent(void)
+{
+	TIME tEventTime = TIME_INFINITE;
+
+	if ( MigrationRate == 0.0 ) {
+		return TIME_INFINITE;
+	}
+
+	tEventTime = WAIT( - TIME( log( RandUniform(12) ) / MigrationRate ) );
+
+	return tEventTime;
+}
+
+void Person::MigrationEvent(void)
+{
+	// For reporting on event counts
+	event_type = EVT_PERSON_NONE;
+	event_type = EVT_PERSON_MIGRATION;
+	event_count++;
+
+	// retain starting population distribution by region
+	int nRegion;
+	Lookup_DestinationDistribution( RandUniform(13), &nRegion );
+	region = (REGION) nRegion;
+}
+
+
