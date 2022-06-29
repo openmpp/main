@@ -292,6 +292,25 @@ void CodeGen::do_preamble()
     z += "#include \"omc/cumrate.h\"";
     z += "#include \"om_types1.h\"";
 	z += "";
+    // control warnings produced in generated code
+    z += "//";
+    z += "// The following pragmas disable known benign warnings in the generated code in this module (om_fixed_parms.cpp)";
+    z += "//";
+    z += "#if defined(_MSC_VER)";
+    z += "    // compiler-specific pragmas for MSVC";
+    z += "#endif";
+    z += "#if defined(__GNUC__)";
+    z += "    // compiler-specific pragmas for gcc";
+    z += "#endif";
+    z += "#if defined(__clang__)";
+    z += "    // compiler-specific pragmas for clang";
+    z += "    #pragma clang diagnostic ignored \"-Wunused-const-variable\"";
+    z += "#endif";
+    z += "";
+    // declare/define constants possibleused in initializers for undefined values in fixed parameters
+    z += "//";
+    z += "// The following constants are used in floating point parameter initializers";
+    z += "//";
     z += "const double QNAN_F = std::numeric_limits<float>::quiet_NaN();";
     z += "const double QNAN_D = std::numeric_limits<double>::quiet_NaN();";
     z += "const double QNAN_LD = std::numeric_limits<long double>::quiet_NaN();";
