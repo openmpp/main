@@ -1276,9 +1276,12 @@ void DerivedAttributeSymbol::create_side_effects()
     }
     case token::TK_active_spell_delta:
     {
+        auto* typ = pp_data_type; // datatype of attribute, determined as summable type of observed attribute previously
+
         assert(iav); // spell condition
         assert(pp_av2); // observed attribute
         assert(dav); // holds value of observed attribute at beginning of spell
+        assert(typ);
 
         // add side-effect to observed attribute
         CodeBlock& observed_cxx = pp_av2->side_effects_fn->func_body;
@@ -1286,7 +1289,7 @@ void DerivedAttributeSymbol::create_side_effects()
         observed_cxx += "if (om_active) {";
         observed_cxx += "if (" + iav->name + ") {";
         observed_cxx += "// Maintain value for " + pretty_name();
-        observed_cxx += name + ".set(" + pp_av2->name + ".get() - " + dav->name + ".get());";
+        observed_cxx += name + ".set((" + typ->name + ")" + pp_av2->name + ".get() - (" + typ->name + ")" + dav->name + ".get());";
         observed_cxx += "}";
         observed_cxx += "}";
 
@@ -1644,15 +1647,17 @@ void DerivedAttributeSymbol::create_side_effects()
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
+        auto* typ = pp_data_type;
         assert(av);
         assert(k1);
         assert(noted);
+        assert(typ);
         CodeBlock& observed_cxx = av->side_effects_fn->func_body;
         observed_cxx += injection_description();
         observed_cxx += "{";
         observed_cxx += "// Maintain " + pretty_name();
         observed_cxx += "if (om_new == " + k1->value() + ") {";
-        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += name + ".set(" + name + ".get() + (" + typ->name + ")" + noted->name + ".get());";
         observed_cxx += "}";
         observed_cxx += "}";
         break;
@@ -1665,15 +1670,17 @@ void DerivedAttributeSymbol::create_side_effects()
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
+        auto *typ = pp_data_type;
         assert(av);
         assert(k1);
         assert(noted);
+        assert(typ);
         CodeBlock& observed_cxx = av->side_effects_fn->func_body;
         observed_cxx += injection_description();
         observed_cxx += "{";
         observed_cxx += "// Maintain " + pretty_name();
         observed_cxx += "if (om_old == " + k1->value() + ") {";
-        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += name + ".set(" + name + ".get() + (" + typ->name + ")" + noted->name + ".get());";
         observed_cxx += "}";
         observed_cxx += "}";
         break;
@@ -1686,6 +1693,7 @@ void DerivedAttributeSymbol::create_side_effects()
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
+        auto *typ = pp_data_type;
         assert(av);
         assert(k1);
         assert(k2);
@@ -1695,7 +1703,7 @@ void DerivedAttributeSymbol::create_side_effects()
         observed_cxx += "{";
         observed_cxx += "// Maintain " + pretty_name();
         observed_cxx += "if (om_old == " + k1->value() + " && om_new == " + k2->value() + ") {";
-        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += name + ".set(" + name + ".get() + (" + typ->name + ")" + noted->name + ".get());";
         observed_cxx += "}";
         observed_cxx += "}";
         break;
@@ -1708,13 +1716,15 @@ void DerivedAttributeSymbol::create_side_effects()
 
         auto *av = pp_av1;
         auto *noted = pp_av2;
+        auto *typ = pp_data_type;
         assert(av);
         assert(noted);
+        assert(typ);
         CodeBlock& observed_cxx = av->side_effects_fn->func_body;
         observed_cxx += injection_description();
         observed_cxx += "{";
         observed_cxx += "// Maintain " + pretty_name();
-        observed_cxx += name + ".set(" + name + ".get() + " + noted->name + ".get());";
+        observed_cxx += name + ".set(" + name + ".get() + (" + typ->name + ")" + noted->name + ".get());";
         observed_cxx += "}";
         break;
     }
