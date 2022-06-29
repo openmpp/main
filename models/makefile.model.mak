@@ -210,7 +210,7 @@ CPPFLAGS = $(CXXFLAGS)
 
 CXXFLAGS_OMC =
 ifeq ($(PLATFORM_UNAME), Darwin)
-  CXXFLAGS_OMC = -Wno-pessimizing-move -Wno-missing-braces
+  CXXFLAGS_OMC = -Wno-pessimizing-move -Wno-missing-braces -Wno-braced-scalar-init
 endif
 
 #
