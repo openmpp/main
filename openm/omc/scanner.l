@@ -78,6 +78,9 @@ blank       [ \t]
                 /* location maintenance */
    				yylloc->step();
 
+                /* mark-up file - output comments */
+                *drv.outside << yytext;
+
                 /* build comment body */
                 /* comment body does not include comment introducer */
                 pc.comment_body = "";
@@ -240,6 +243,9 @@ blank       [ \t]
 				/* comment interior - not a * or newline */
 				yylloc->step();
 
+                /* mark-up file - output comments */
+                *drv.outside << yytext;
+
                 /* build comment body */
                 pc.comment_body += yytext;
 			}
@@ -247,6 +253,9 @@ blank       [ \t]
 "*"+[^*/\r\n]* {
 				/* comment interior - a * followed by 0 or more ordinary characters */
 				yylloc->step();
+
+                /* mark-up file - output comments */
+                *drv.outside << yytext;
 
                 /* build comment body */
                 pc.comment_body += yytext;
@@ -274,6 +283,9 @@ blank       [ \t]
 
                 /* position maintenance */
 				yylloc->step();
+
+                /* mark-up file - output comments */
+                *drv.outside << yytext;
 
                 /* transition out of comment to previous state */
 				yy_pop_state();
@@ -309,6 +321,9 @@ blank       [ \t]
 
                 /* location maintenance */
                 yylloc->step();
+
+                /* mark-up file - output comments */
+                *drv.outside << yytext;
 
                 /* build comment body, does not include comment introducer or trailing newline */
                 pc.comment_body = yytext + 2;
