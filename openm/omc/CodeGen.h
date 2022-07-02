@@ -55,7 +55,7 @@ public:
     void do_types();
     void do_aggregations();
     void do_parameters();
-    void do_agents();
+    void do_entities();
     void do_entity_sets();
     void do_entity_tables();
     void do_derived_tables();

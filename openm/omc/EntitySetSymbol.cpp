@@ -164,6 +164,7 @@ CodeBlock EntitySetSymbol::cxx_declaration_global()
         dims += "[" + to_string(es->pp_size()) + "]";
     }
     h += "";
+    h += doxygen_short("entity_set: " + label());
     h += "extern thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
     h += "";
 

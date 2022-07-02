@@ -79,7 +79,8 @@ CodeBlock LinkAttributeSymbol::cxx_declaration_agent()
         reciprocal_agent = reciprocal_multilink->pp_agent;
     }
 
-    h += "LinkAttribute<"
+    std::string member_type_name = name + "_om_type";
+    h += "typedef LinkAttribute<"
         + pp_data_type->name + ", "
         + "bool, " // allow access to bool cast in wrapped link
         + agent->name + ", "
@@ -90,8 +91,9 @@ CodeBlock LinkAttributeSymbol::cxx_declaration_agent()
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "
         + (!notify_fn->empty() ? "true" : "false")
-        + ">";
-    h += name + ";";
+        + "> " + member_type_name + ";";
+    h += doxygen_short("attribute(link) " + pp_data_type->name + ": " + label());
+    h += member_type_name + " " + name + ";";
 
     return h;
 }

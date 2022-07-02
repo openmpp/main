@@ -390,7 +390,8 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    h += "Attribute<"
+    std::string member_type_name = name + "_om_type";
+    h += "typedef Attribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
         + agent->name + ", "
@@ -400,8 +401,9 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "
         + (!notify_fn->empty() ? "true" : "false")
-        + ">";
-    h += name + ";";
+        + "> " + member_type_name + ";";
+    h += doxygen_short("attribute(identity) " + pp_data_type->name + ": " + label());
+    h += member_type_name + " " + name + ";";
 
     return h;
 }

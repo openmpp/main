@@ -32,7 +32,7 @@ void CodeGen::do_all()
     do_groups();
     do_table_interface();
     do_table_dependencies();
-    do_agents();
+    do_entities();
 	do_entity_sets();
     do_event_queue();
     do_event_names();
@@ -842,19 +842,19 @@ void CodeGen::do_ModelStartup()
     c += "theLog->logFormatted(\"member=%d Prepare for simulation\", simulation_member);";
 
     c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_entity.om_assign_member_offsets();";
-        c += agent->name + "::om_null_entity.om_initialize_data_members0();";
+    for (auto entity : Symbol::pp_all_agents) {
+        c += "// Entity - " + entity->name;
+        c += entity->name + "::om_null_entity.om_assign_member_offsets();";
+        c += entity->name + "::om_null_entity.om_initialize_data_members0();";
         c += "";
     }
 
     c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "// Entity - " + agent->name;
-        c += agent->name + "::om_null_entity.om_initialize_identity_attributes();";
-        c += agent->name + "::om_null_entity.om_initialize_derived_attributes();";
-        c += agent->name + "::om_null_entity.om_reset_derived_attributes();";
+    for (auto entity : Symbol::pp_all_agents) {
+        c += "// Entity - " + entity->name;
+        c += entity->name + "::om_null_entity.om_initialize_identity_attributes();";
+        c += entity->name + "::om_null_entity.om_initialize_derived_attributes();";
+        c += entity->name + "::om_null_entity.om_reset_derived_attributes();";
     }
     c += "";
 
@@ -1064,31 +1064,31 @@ void CodeGen::do_ModelShutdown()
 	c += "";
 }
 
-void CodeGen::do_agents()
+void CodeGen::do_entities()
 {
     // early forward declarations of entity classes and pointers
     t1 += "// early forward declarations of entity classes and pointers\n";
-    for (auto agent : Symbol::pp_all_agents) {
-        t1 += "class " + agent->name + ";";
-        t1 += "typedef entity_ptr<" + agent->name + "> " + agent->name + "_ptr;";
+    for (auto entity : Symbol::pp_all_agents) {
+        t1 += "class " + entity->name + ";";
+        t1 += "typedef entity_ptr<" + entity->name + "> " + entity->name + "_ptr;";
     }
 
 	h += "// forward declarations of model entity classes (for links)";
-    for (auto agent : Symbol::pp_all_agents) {
-        h += "class " + agent->name + ";";
+    for (auto entity : Symbol::pp_all_agents) {
+        h += "class " + entity->name + ";";
     }
     h += "";
-    for ( auto agent : Symbol::pp_all_agents ) {
+    for ( auto entity : Symbol::pp_all_agents ) {
 
         h += "// model entity classes";
         // e.g. class Person : public Entity<Person>
-	    h += "class " + agent->name + " : public Entity<" + agent->name + ">";
+	    h += "class " + entity->name + " : public Entity<" + entity->name + ">";
         h += "{";
 	    h += "public:";
 
 	    h += "";
         h += doxygen_short("The name of this entity");
-        h += "static constexpr const char * entity_name = \"" + agent->name + "\";";
+        h += "static constexpr const char * entity_name = \"" + entity->name + "\";";
         h += "";
 
         h += doxygen_short("Get the name of this entity");
@@ -1099,18 +1099,18 @@ void CodeGen::do_agents()
         h += "";
 
         h += "//";
-	    h += "// function members in " + agent->name + " entity";
+	    h += "// function members in " + entity->name + " entity";
 	    h += "//";
 	    h += "";
 
 	    h += doxygen_short("operator overload for entity comparison based on entity_id");
-        h += "bool operator< ( " + agent->name + " & rhs )";
+        h += "bool operator< ( " + entity->name + " & rhs )";
         h += "{";
         h +=     "return entity_id < rhs.entity_id;";
         h += "}";
 	    h += "";
 
-        for ( auto func_member : agent->pp_agent_funcs ) {
+        for ( auto func_member : entity->pp_agent_funcs ) {
             h += func_member->cxx_declaration_agent();
             c += func_member->cxx_definition_agent();
             if (func_member->has_line_directive) {
@@ -1125,12 +1125,12 @@ void CodeGen::do_agents()
 
 	    h += "";
 	    h += "//";
-	    h += "// Data members in " + agent->name + " entity";
+	    h += "// Data members in " + entity->name + " entity";
 	    h += "//";
 	    h += "";
         if (Symbol::option_entity_member_packing) {
             // create a temporary copy of the list of data members in the entity
-            auto lst = agent->pp_agent_data_members;
+            auto lst = entity->pp_agent_data_members;
             // sort it in descending order of alignment_size
             // but sort lexicographically within alignment_size groups
             lst.sort([](EntityDataMemberSymbol* a, EntityDataMemberSymbol* b) 
@@ -1157,7 +1157,7 @@ void CodeGen::do_agents()
         }
         else {
             // create a temporary copy of the list of data members in the entity
-            auto lst = agent->pp_agent_data_members;
+            auto lst = entity->pp_agent_data_members;
             // sort it in ascending order of layout group
             // but sort lexicographically within layout groups
             lst.sort([](EntityDataMemberSymbol* a, EntityDataMemberSymbol* b)
@@ -1184,24 +1184,24 @@ void CodeGen::do_agents()
 	    h += "";
 	    c += "";
 
-        h += "// The declaration of the static member " + agent->name;
+        h += "// The declaration of the static member " + entity->name;
         h += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
-        h += "static thread_local " + agent->name + " " + "om_null_entity;";
+        h += "static thread_local " + entity->name + " " + "om_null_entity;";
 
-	    h += "}; // class " + agent->name;
+	    h += "}; // class " + entity->name;
 	    h += "";
 
-        c += "// The definition of the static member " + agent->name;
+        c += "// The definition of the static member " + entity->name;
         c += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
-        c += "thread_local " + agent->name + " " + agent->name + "::om_null_entity;";
+        c += "thread_local " + entity->name + " " + entity->name + "::om_null_entity;";
     }
 
     c += doxygen("Free all zombie agents");
     c += "void BaseEntity::free_all_zombies()";
     c += "{";
-    for ( auto agent : Symbol::pp_all_agents ) {
+    for ( auto entity : Symbol::pp_all_agents ) {
         // e.g. Person::free_zombies();
-        c += agent->name + "::free_zombies();";
+        c += entity->name + "::free_zombies();";
     }
     c += "}";
     c += "";
@@ -1237,16 +1237,16 @@ void CodeGen::do_agents()
     c +=     "delete entities;";
     c +=     "entities = nullptr;";
     c +=     "";
-    for (auto agent : Symbol::pp_all_agents) {
-        c += "assert(" + agent->name + "::zombies->empty());";
-        c += "delete " + agent->name + "::zombies;";
-        c += agent->name + "::zombies = nullptr;";
+    for (auto entity : Symbol::pp_all_agents) {
+        c += "assert(" + entity->name + "::zombies->empty());";
+        c += "delete " + entity->name + "::zombies;";
+        c += entity->name + "::zombies = nullptr;";
         c += "";
-        c += "for (auto ent : *" + agent->name + "::available) {";
+        c += "for (auto ent : *" + entity->name + "::available) {";
         c +=     "delete ent;";
         c += "}";
-        c += "delete " + agent->name + "::available;";
-        c += agent->name + "::available = nullptr;";
+        c += "delete " + entity->name + "::available;";
+        c += entity->name + "::available = nullptr;";
         c += "";
     }
     c += "}";

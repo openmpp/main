@@ -98,6 +98,7 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
     h += "extern const std::map<real, " + token_to_string(storage_type) + "> om_" + name + "_splitter;";
 
     h += "extern const std::string om_name_" + name + ";";
+    h += doxygen_short("Partition {0..." + to_string(pp_size() - 1) + "}: " + label());
     h += "typedef Partition<" + token_to_string(storage_type) + ", "
         + to_string(pp_size()) + ", "
         + "om_" + name + "_lower, "
@@ -106,6 +107,7 @@ CodeBlock PartitionSymbol::cxx_declaration_global()
         + "&om_name_" + name
         + "> "
         + name + ";" ;
+    h += doxygen_short("C-type of " + name + " (" + exposed_type() + ")");
     h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     return h;

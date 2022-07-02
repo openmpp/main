@@ -68,7 +68,7 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     h += "enum " + enum_name() + " : " + token_to_string(storage_type) + " {";
     bool first = true;
     for (auto enumerator : pp_enumerators) {
-        h += doxygen_short(enumerator->name);
+        h += doxygen_short("Classification " + name + "(" + enumerator->name + "): " + enumerator->label());
         if (first) {
             h += enumerator->name + " = 0," ;
             first = false;
@@ -81,12 +81,14 @@ CodeBlock ClassificationSymbol::cxx_declaration_global()
     h += "};";
 
     h += "extern const std::string om_name_" + name + ";";
-    h += "typedef Classification<" 
+    h += doxygen_short("Classification {0..." + to_string(pp_size() - 1) + "}: " + label());
+    h += "typedef Classification<"
         + enum_name() + ", "
         + to_string(pp_size()) + ", "
         + "&om_name_" + name
         + "> "
         + name + ";" ;
+    h += doxygen_short("C-type of " + name + " (" + exposed_type() + ")");
     h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
 
     if (pp_generate_IntIs) {

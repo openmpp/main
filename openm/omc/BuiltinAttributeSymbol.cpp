@@ -46,8 +46,10 @@ CodeBlock BuiltinAttributeSymbol::cxx_declaration_agent()
     CodeBlock h = super::cxx_declaration_agent();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    // example:         Attribute<Time, Person, &Person::time_side_effects> time;
-    h += "AssignableAttribute<"
+
+    std::string member_type_name = name + "_om_type";
+    // example: typedef Attribute<Time, Person, &Person::time_side_effects> time_om_type;
+    h += "typedef AssignableAttribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
         + agent->name + ", "
@@ -57,8 +59,9 @@ CodeBlock BuiltinAttributeSymbol::cxx_declaration_agent()
         + (!side_effects_fn->empty() ? "true" : "false") + ", "
         + "&" + notify_fn->unique_name + ", "
         + (!notify_fn->empty() ? "true" : "false")
-        + ">";
-    h += name + ";";
+        + "> " + member_type_name + ";";
+    h += doxygen_short("attribute(built-in) " + pp_data_type->name + ": " + label());
+    h += member_type_name + " " + name + ";";
 
     return h;
 }

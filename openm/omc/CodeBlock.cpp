@@ -104,6 +104,6 @@ CodeBlock doxygen(string t0, string t1, string t2, string t3, string t4, string 
 CodeBlock doxygen_short(string t1)
 {
     CodeBlock result;
-    result += "/** " + t1 + " */";
+    result += "/// " + t1;
     return result;
 }

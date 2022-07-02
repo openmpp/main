@@ -36,8 +36,9 @@ CodeBlock SimpleAttributeSymbol::cxx_declaration_agent()
     // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to simple attributes
 
-	// example:         AssignableAttribute<bool, Person, &Person::alive_side_effects> alive;
-	h += "AssignableAttribute<"
+	std::string member_type_name = name + "_om_type";
+	// example: typedef AssignableAttribute<bool, Person, &Person::alive_side_effects> alive_om_type;
+	h += "typedef AssignableAttribute<"
 		+ pp_data_type->name + ", "
 		+ pp_data_type->exposed_type() + ", "
 		+ agent->name + ", "
@@ -47,9 +48,11 @@ CodeBlock SimpleAttributeSymbol::cxx_declaration_agent()
 		+ (!side_effects_fn->empty() ? "true" : "false") + ", "
 		+ "&" + notify_fn->unique_name + ", "
 		+ (!notify_fn->empty() ? "true" : "false")
-		+ ">";
-	h += name + ";";
-    return h;
+		+ "> " + member_type_name + ";";
+	h += doxygen_short("attribute(simple) " + pp_data_type->name + ": " + label());
+	h += member_type_name + " " + name + ";";
+
+	return h;
 }
 
 void SimpleAttributeSymbol::post_parse(int pass)

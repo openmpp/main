@@ -62,6 +62,7 @@ CodeBlock RangeSymbol::cxx_declaration_global()
     h += doxygen("Range: " + name);
 
     h += "extern const std::string om_name_" + name + ";";
+    h += doxygen_short("Range {" + to_string(lower_bound) + "..." + to_string(upper_bound) + "}: " + label());
     h += "typedef Range<"
         + token_to_string(storage_type) + ", "
         + to_string(lower_bound) + ", "
@@ -69,7 +70,8 @@ CodeBlock RangeSymbol::cxx_declaration_global()
         + "&om_name_" + name
         + "> "
         + name + ";";
-    h += "typedef " + exposed_type() + " " + name + "_t; // For use in model code";
+    h += doxygen_short("C-type of " + name + " (" + exposed_type() + ")");
+    h += "typedef " + exposed_type() + " " + name + "_t;";
 
     return h;
 }

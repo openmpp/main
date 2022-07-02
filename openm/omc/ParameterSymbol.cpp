@@ -268,6 +268,8 @@ CodeBlock ParameterSymbol::cxx_declaration_global_scenario_debug(void)
 
     if (source != scenario_parameter) return h;
 
+    h += "";
+    h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
     if (rank() > 0) {
         // extern thread_local const double (& UnionDurationBaseline)[2][6];
         h += "extern thread_local const " + cxx_type_of_parameter() + " (& " + name + ")" + cxx_dimensions() + ";";
@@ -293,6 +295,8 @@ CodeBlock ParameterSymbol::cxx_declaration_global_scenario_release(void)
         // extern thread_local double * om_value_UnionDurationBaseline;
         // #define UnionDurationBaseline (*reinterpret_cast<const double(*)[2][6]>(om_value_UnionDurationBaseline))
         h += "extern thread_local " + cxx_type_of_parameter() + " * om_value_" + name + ";";
+        h += "";
+        h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
         h += "#define " +
             name +
             " (*reinterpret_cast<const " + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
@@ -303,6 +307,8 @@ CodeBlock ParameterSymbol::cxx_declaration_global_scenario_release(void)
         // extern thread_local int om_value_startSeed;
         // #define startSeed ((const int)om_value_startSeed)
         h += "extern thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
+        h += "";
+        h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
         h += "#define " + name + " ((const " + cxx_type_of_parameter() + ") om_value_" + name + ")";
     }
     return h;
@@ -317,6 +323,8 @@ CodeBlock ParameterSymbol::cxx_declaration_global(void)
     assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
 
     if (source == derived_parameter) {
+        h += "";
+        h += doxygen_short("Parameter(derived) " + pp_datatype->name + ": " + label());
         if (rank() > 0) {
             // extern thread_local CITY NearestCity[N_CITY];
             h += "extern thread_local " + pp_datatype->name + " " + name + cxx_dimensions() + ";";
@@ -335,12 +343,16 @@ CodeBlock ParameterSymbol::cxx_declaration_global(void)
                 "om_value_" + name
                 + cxx_dimensions() + "; // non-const version for extension";
             // declare const version (reference) for use in model code
+            h += "";
+            h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
             h += "extern const "
                 + pp_datatype->name + " "
                 "(&" + name + ")"
                 + cxx_dimensions() + "; // const alias for use in model code";
         }
         else {
+            h += "";
+            h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
             h += "extern const "
                 + pp_datatype->name + " "
                 + name
@@ -348,6 +360,8 @@ CodeBlock ParameterSymbol::cxx_declaration_global(void)
         }
     }
     if (source == missing_parameter) {
+        h += "";
+        h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
         h += "extern const "
             + pp_datatype->name + " "
             + name
