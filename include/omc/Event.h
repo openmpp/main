@@ -21,6 +21,10 @@ public:
     // ctor
     explicit BaseEvent()
     {
+        memory = 0;
+        in_queue = false;
+        is_dirty = false;
+        is_zombie = false;
     }
 
     // initialization
