@@ -4,7 +4,13 @@
 	This module implements all Emigration-related functionality.
 */
 
-parameters 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters
 {
   //EN Emigration rate 
   double EmigrationRate[SEX][RANGE_AGE_101][YEAR];
@@ -12,6 +18,25 @@ parameters
   //EN Annual hazard of death
 	model_generated double EmigrationHazard[SEX][RANGE_AGE][YEAR];
 };
+
+actor Person
+{
+    //EN Emigrated
+    logical emigrated = { FALSE };
+
+    event timeEmigrationEvent, EmigrationEvent;	//EN Emigration event
+};
+
+table Person DeparturesByYear //EN Departures by mid-year
+[emigrated]
+{
+  {
+    unit
+  }
+  *mid_year
+};
+
+#endif // Hide non-C++ syntactic island from IDE
 
 /// PreSimulation-related code in Emigration.mpp
 void Emigration_PreSimulation(void)
@@ -26,14 +51,6 @@ void Emigration_PreSimulation(void)
     }
   }
 }
-
-actor Person
-{
-  //EN Emigrated
-  logical emigrated = { FALSE };
-
-  event timeEmigrationEvent, EmigrationEvent;	//EN Emigration event
-};
 
 // The time function of EmigrationEvent
 TIME Person::timeEmigrationEvent()
@@ -54,12 +71,3 @@ void Person::EmigrationEvent()
 	// Remove the actor from the simulation.
 	Finish();
 }
-
-table Person DeparturesByYear //EN Departures by mid-year
-[ emigrated ]
-{
-  {
-    unit
-  }
-  * mid_year
-};

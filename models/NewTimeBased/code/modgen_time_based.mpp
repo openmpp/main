@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2021 OpenM++ Contributors
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(modgen_time_based, EN) Modgen simulation framework for time-based cross-compatible models
@@ -10,6 +10,8 @@
     
     It should not be necessary to modify any code in this module.
 */
+
+#if defined(MODGEN)
 
 #include <set> // for set used to hold sorted, deduplicated dirty list of events
 
@@ -189,5 +191,4 @@ void LogSimulationStart()
     ProgressMessage( szBuffer );
 }
 
-
-
+#endif // defined(MODGEN)

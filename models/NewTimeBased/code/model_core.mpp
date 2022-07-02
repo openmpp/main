@@ -4,19 +4,19 @@
     This module contains core simulation functions and definitions.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 // The model type
 model_type time_based, just_in_time;
 
 // The data type used to represent time
 time_type double;
 
-// Other data types
-//real_type        float;
-//counter_type    ushort;
-//integer_type    short;
-
-// The following option reduces memory use at the expense of speed
-//options packing_level=2;
+#endif // Hide non-C++ syntactic island from IDE
 
 // This function is called by the simulation framework to simulate a replicate.
 void Simulation()

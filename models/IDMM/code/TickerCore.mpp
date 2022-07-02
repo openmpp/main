@@ -1,16 +1,3 @@
-/*****************************************************************************
-*	IDMM™: Infectious Disease Microsimulation Model
-*
-*Revisions:
-* +-----+----------+---------------------------------------------------------+
-* | Who |   Date   | Description                                             |
-* +-----+----------+---------------------------------------------------------+
-* | SFG | 02/02/22 | Created                                                 |
-* | SFG | 03/11/28 | Cosmetic changes                                        |
-* +-----+----------+---------------------------------------------------------+
-*
-******************************************************************************/
-
 //LABEL (TickerCore, EN) Definition and initialization of Ticker actor
 
 /*NOTE(TickerCore, EN)
@@ -20,9 +7,14 @@
 	accurate reports.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 classification TICKER_EVENT_TYPE	//EN Ticker Event Type
 {
-
 	//EN None
 	TET_NONE,
 
@@ -53,7 +45,9 @@ actor Ticker				 		//EN Actor for synchronising population-level activities
 	event	timeTickEvent, TickEvent, time_keeping;	//EN Tick event
 };
 
-/* NOTE(Ticker.Start,EN) 
+#endif // Hide non-C++ syntactic island from IDE
+
+/* NOTE(Ticker.Start,EN)
 	Initializes the Ticker actor.
 */
 void Ticker::Start()
@@ -65,7 +59,7 @@ void Ticker::Start()
 	age = 0;
 	next_tick = 0; // Arrange that the first tick occurs at the beginning of the simulation
 
-#if defined(OPENM)
+#if !defined(MODGEN) // hide the following code block from Modgen for x-compatibility
 	{
 		// Event time censoring optimization is activated by setting the option censor_event_time in ompp_framework.ompp.
 		// The optimization is (optionally) informed by calling the function set_censor_time when an entity is created.

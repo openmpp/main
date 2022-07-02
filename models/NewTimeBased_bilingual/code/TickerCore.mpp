@@ -7,6 +7,12 @@
     accurate reports.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 range REPORT_TIME  //EN Reporting intervals
 {
     0, 200
@@ -29,7 +35,9 @@ actor Ticker //EN Actor for synchronising population-level activities
     event    timeTickEvent, TickEvent; //EN Tick event
 };
 
-/* NOTE(Ticker.Start,EN) 
+#endif // Hide non-C++ syntactic island from IDE
+
+/* NOTE(Ticker.Start,EN)
     Initializes the Ticker actor.
 */
 void Ticker::Start( )

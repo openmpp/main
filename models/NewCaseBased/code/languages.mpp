@@ -4,7 +4,11 @@
 	This module contains the supported languages for the model.
 */
 
+#if 0 // Hide non-C++ syntactic island from IDE
+
 // Supported languages
 languages {
     EN // English
 };
+
+#endif // Hide non-C++ syntactic island from IDE

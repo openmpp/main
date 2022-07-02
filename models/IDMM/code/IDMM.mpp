@@ -4,6 +4,12 @@
 	This module contains the core of the IDMM model.  It controls the simulation engine. 
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 // These are the languages in which IDMM can be viewed.
 languages 
 {
@@ -31,6 +37,7 @@ options packing_level=2;
 
 actor_set Host asAllHosts; //EN All Hosts
 
+#endif // Hide non-C++ syntactic island from IDE
 
 void PreSimulation()
 {

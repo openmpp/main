@@ -6,6 +6,12 @@
 	This module contains all table definitions of RiskPaths.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 ///////////////////////////////////////////////////////////////////////////
 // Partitions
 
@@ -29,7 +35,7 @@ table Person T01_LifeExpectancy				//EN Life Expectancy
 
 table Person T02_TotalPopulationByYear		//EN Life table
 {
-	//EN Curtate age
+	//EN Age
 	integer_age *		
 	{
 		unit,								//EN Population start of year
@@ -116,7 +122,4 @@ table_group TG03_Union_Tables		//EN Unions
 	T06_BirthsByUnion, T07_FirstUnionFormation
 };
 
-
-
-
-
+#endif // Hide non-C++ syntactic island from IDE

@@ -4,6 +4,8 @@
     This module contains model-specific strings used in the progress dialog.
 */
 
+#if defined(MODGEN)
+
 string S_MODEL_FINISH;        //EN Finish
 
 string S_MODEL_REPLICATE;    //EN Replicate
@@ -12,3 +14,4 @@ string S_MODEL_SIMULATION;    //EN Simulation
 
 string S_MODEL_START;        //EN Start
 
+#endif // defined(MODGEN)

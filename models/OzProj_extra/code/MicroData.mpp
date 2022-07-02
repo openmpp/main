@@ -6,15 +6,21 @@
     of the microdata file are identical in the two models.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 classification PERSON_MICRODATA_COLUMNS	 //EN fields in the microdata file 
 {
-  PMC_SEX,
-  PMC_AGE,
-  PMC_REGION,
-  PMC_NATIVE_BORN,
-  PMC_RECENT_ARRIVAL,
-  PMC_YEARS_SINCE_ARRIVAL,
-  PMC_INDIGENOUS
+  PMC_SEX,                 //EN Sex
+  PMC_AGE,                 //EN Age
+  PMC_REGION,              //EN Region
+  PMC_NATIVE_BORN,         //EN Native born
+  PMC_RECENT_ARRIVAL,      //EN Recent arrival
+  PMC_YEARS_SINCE_ARRIVAL, //EN Years since arrival
+  PMC_INDIGENOUS           //EN Indigenoue
 };
 
 actor Person //EN Individual
@@ -22,6 +28,8 @@ actor Person //EN Individual
   //EN Write unit record
   void WriteUnitRecord(case_info *ci);
 };
+
+#endif // Hide non-C++ syntactic island from IDE
 
 void Person::WriteUnitRecord(case_info *ci)
 {

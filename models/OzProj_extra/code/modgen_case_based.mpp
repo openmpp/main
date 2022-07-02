@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2021 OpenM++ Contributors
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(modgen_case_based, EN) Modgen simulation framework for case-based cross-compatible models
@@ -11,6 +11,8 @@
     It should not be necessary to modify any code in this module.
 */
 
+#if defined(MODGEN)
+
 #include <set> // for set used to hold sorted, deduplicated dirty list of events#
 
 // The number of cases is determined endogenously by model code
@@ -18,7 +20,6 @@
 parameters {
     model_generated int SimulationCases;
 };
-
 
 /**
  * Simulate all events for all entities in the simulation.
@@ -202,3 +203,5 @@ case_info* CaseInfo(case_info* ci, bool reset)
     }
     return ci_stored;
 }
+
+#endif // defined(MODGEN)

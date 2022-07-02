@@ -4,7 +4,13 @@
 This module implements all functionality related to internal migration
 */
 
-parameters 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters
 {
   //EN Out migration rate
   double OutMigrationRate[SEX][RANGE_AGE_85][REGION];
@@ -33,6 +39,41 @@ actor Person {
   hook StartMigrationClock, Start;
 };
 
+//
+// Migration event
+// 
+
+actor Person{
+    //EN Time of next migration event
+    TIME next_migration_time = { TIME_INFINITE };
+
+//EN Schedule the migration event
+void ScheduleMigrationEvent();
+
+//EN Compute migration probability
+double MigrationProbability();
+
+event timeMigrationEvent, MigrationEvent; //EN Migration event
+};
+
+table Person MigrantsByOriginAndDestination //EN Migrants by origin and destination
+{
+  mid_year +
+  *region //EN Region (from)
+  * {
+    entrances(region, REG_NSW), //EN NSW
+    entrances(region, REG_VIC), //EN VIC
+    entrances(region, REG_QLD), //EN QLD
+    entrances(region, REG_SA),  //EN SA
+    entrances(region, REG_WA),  //EN WA
+    entrances(region, REG_TAS), //EN TAS
+    entrances(region, REG_NT),  //EN NT
+    entrances(region, REG_ACT)  //EN ACT
+  } //EN Region (to)
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
 void Person::StartMigrationClock()
 {
   // First occurrence of migration clock event is when Person entity enters the simulation.
@@ -51,23 +92,6 @@ void Person::MigrationClockEvent()
   next_migration_clock_gong += 1.0;
   ScheduleMigrationEvent();
 }
-
-//
-// Migration event
-// 
-
-actor Person {
-  //EN Time of next migration event
-  TIME next_migration_time = { TIME_INFINITE };
-
-  //EN Schedule the migration event
-  void ScheduleMigrationEvent();
-
-  //EN Compute migration probability
-  double MigrationProbability();
-
-  event timeMigrationEvent, MigrationEvent; //EN Migration event
-};
 
 void Person::ScheduleMigrationEvent()
 {
@@ -103,19 +127,3 @@ void Person::MigrationEvent()
   Lookup_DestinationDist(RandUniform(13), region, &nRegion);
   region = (REGION) nRegion;
 }
-
-table Person MigrantsByOriginAndDestination //EN Migrants by origin and destination
-{
-  mid_year+
-  * region //EN Region (from)
-  * {
-    entrances(region, REG_NSW), //EN NSW
-    entrances(region, REG_VIC), //EN VIC
-    entrances(region, REG_QLD), //EN QLD
-    entrances(region, REG_SA),  //EN SA
-    entrances(region, REG_WA),  //EN WA
-    entrances(region, REG_TAS), //EN TAS
-    entrances(region, REG_NT),  //EN NT
-    entrances(region, REG_ACT)  //EN ACT
-  } //EN Region (to)
-};

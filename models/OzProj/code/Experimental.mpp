@@ -1,10 +1,15 @@
-
-//LABEL(Experimental, EN) Tranistory experiments
+//LABEL(Experimental, EN) Transitory experiments
 
 /*NOTE(Experimental, EN)
   This module is a place to try out various tables and attributes without
   modifying any other modules in the model.
 */
+
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
 
 actor Person {
   ONE_COLUMN one_column = Value;
@@ -76,3 +81,5 @@ table Person Experiment6 //EN PY's by region and year
   * mid_year
   * region
 };
+
+#endif // Hide non-C++ syntactic island from IDE

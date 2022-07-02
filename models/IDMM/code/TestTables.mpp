@@ -1,23 +1,14 @@
-/*****************************************************************************
-*	IDMM™: Infectious Disease Microsimulation Model
-*
-*Revisions:
-* +-----+----------+---------------------------------------------------------+
-* | Who |   Date   | Description                                             |
-* +-----+----------+---------------------------------------------------------+
-* | SFG | 02/02/19 | Created                                                 |
-* | SFG | 03/11/28 | Cosmetic changes                                        |
-* +-----+----------+---------------------------------------------------------+
-*
-******************************************************************************/
-
 //LABEL (TestTables, EN) Tables for testing model
 
 /* NOTE(TestTables, EN)
 	This file contains test tables. 
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
 
+#if 0 // Hide non-C++ syntactic island from IDE
 
 table Host X01_History //EN History of the disease
 {
@@ -27,7 +18,6 @@ table Host X01_History //EN History of the disease
 	* report_time	//EN Report time
 	* disease_phase	//EN Current disease phase
 };
-
 
 table Host X02_Host_Events //EN Events for Hosts
 {
@@ -47,3 +37,4 @@ table Ticker X03_Ticker_Events //EN Events for Ticker
 	* event_type				//EN Event type
 };
 
+#endif // Hide non-C++ syntactic island from IDE

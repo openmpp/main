@@ -4,7 +4,13 @@
 	This module contains the basic information which defines the Person case.
 */
 
-parameters 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters
 {
   //EN Starting population distribution
   cumrate[2] StartPopDistn[SEX][RANGE_AGE];
@@ -126,6 +132,74 @@ actor Person            //EN Individual
   void Finish();
 };
 
+table Person InitialPopCounts //EN Initial population counts
+[simulation_begin]
+{
+  {
+    unit
+  }
+  *range_age +
+  *sex +
+};
+
+table Person InitialIndigenous //EN Initial population by indigenous status
+[simulation_begin]
+{
+  {
+    value_in(indigenous) / unit //EN Proportion indigenous decimals=4
+  }
+  *range_age_65 +
+  *one_column
+};
+
+table Person InitialNativeBorn //EN Initial population by native-born status
+[simulation_begin]
+{
+  {
+    value_in(native_born) / unit //EN Proportion native-born decimals=4
+  }
+  *age_group2 +
+  *sex +
+};
+
+table Person InitialRecentArrival //EN Initial population immigrants by recent-arrival status
+[simulation_begin && !native_born]
+{
+  {
+    value_in(recent_arrival) / unit //EN Proportion recent arrival decimals=4
+  }
+  *age_group2 +
+  *sex +
+};
+
+table Person InitialYearsSinceArrival //EN Initial pop. - immigrants by years since arrival
+[simulation_begin && !native_born]
+{
+  {
+    unit //EN Count
+  }
+  *age_group2 +
+  *years_since_arrival +
+  *sex +
+};
+
+table Person InitialRegion //EN Initial population by region
+[simulation_begin]
+{
+  {
+    unit //EN Persons
+  }
+  *region +
+  *sex +
+};
+
+track Person{
+  sex,
+  integer_age
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
 // The time function of SimulationControlEvent
 TIME Person::timeSimulationControlEvent()
 {
@@ -228,68 +302,3 @@ void Person::Finish()
 	// Modgen also recuperates any memory used by the actor.
 }
 
-table Person InitialPopCounts //EN Initial population counts
-[ simulation_begin ]
-{
-  {
-    unit
-  }
-  * range_age+
-  * sex+
-};
-
-table Person InitialIndigenous //EN Initial population by indigenous status
-[ simulation_begin ]
-{
-  {
-    value_in(indigenous) / unit //EN Proportion indigenous decimals=4
-  }
-  * range_age_65+
-  * one_column
-};
-
-table Person InitialNativeBorn //EN Initial population by native-born status
-[ simulation_begin ]
-{
-  {
-    value_in(native_born) / unit //EN Proportion native-born decimals=4
-  }
-  * age_group2+
-  * sex+
-};
-
-table Person InitialRecentArrival //EN Initial population immigrants by recent-arrival status
-[ simulation_begin && ! native_born ]
-{
-  {
-    value_in(recent_arrival) / unit //EN Proportion recent arrival decimals=4
-  }
-  * age_group2+
-  * sex+
-};
-
-table Person InitialYearsSinceArrival //EN Initial pop. - immigrants by years since arrival
-[ simulation_begin && ! native_born ]
-{
-  {
-    unit //EN Count
-  }
-  * age_group2+
-  * years_since_arrival+
-  * sex+
-};
-
-table Person InitialRegion //EN Initial population by region
-[ simulation_begin ]
-{
-  {
-    unit //EN Persons
-  }
-  * region+
-  * sex+
-};
-
-track Person {
-  sex,
-  integer_age
-};

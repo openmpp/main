@@ -1,22 +1,14 @@
-/*****************************************************************************
-*	IDMM™: Infectious Disease Microsimulation Model
-*
-*Revisions:
-* +-----+----------+---------------------------------------------------------+
-* | Who |   Date   | Description                                             |
-* +-----+----------+---------------------------------------------------------+
-* | SFG | 02/02/19 | Created                                                 |
-* | SFG | 03/11/28 | Cosmetic changes                                        |
-* +-----+----------+---------------------------------------------------------+
-*
-******************************************************************************/
-
 //LABEL (HostCore, EN) Definition and initialization of Host actor
 
 /*NOTE(HostCore, EN)
 	This module contains the basic information associated with a Host actor.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
 
 classification HOST_EVENT_TYPE 	//EN Host Event Type
 {
@@ -130,7 +122,7 @@ actor Host						//EN Host of an infectious disease
 link	Host.mlContactsOut[]		//EN Outgoing social contacts
 		Host.mlContactsIn[];		//EN Incoming social contacts
 
-
+#endif // Hide non-C++ syntactic island from IDE
 
 // Trigger disease infection
 void Host::Infect()
@@ -138,8 +130,6 @@ void Host::Infect()
 	disease_next_phase = DP_LATENT;
 	disease_next_phase_time = 0 + time;
 }
-
-
 
 /* NOTE(Host.Start,EN) 
 	Initializes a new Host.

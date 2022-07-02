@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2020 OpenM++ Contributors (see AUTHORS.txt)
+// Copyright (c) 2013-2022 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(ompp_framework, EN) OpenM++ simulation framework
@@ -8,8 +8,9 @@
     and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h" // For IDE
-#if 0 // Hide from IDE
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+
+#if 0 // Hide non-C++ syntactic island from IDE
 
 // The following modules in OM_ROOT/use will be compiled
 // after all model-specific source code modules, in this order.
@@ -36,7 +37,7 @@ use "case_based/case_based_modgen.ompp";        // Modgen API implementation for
 
 options weighted_tabulation = on;
 
-#endif // Hide from IDE
+#endif // Hide non-C++ syntactic island from IDE
 
 namespace fmk {
 

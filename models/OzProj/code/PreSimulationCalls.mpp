@@ -10,7 +10,6 @@ extern void Mortality_PreSimulation(void); // PreSimulation-related code in Mort
 extern void Fertility_PreSimulation(void); // PreSimulation-related code in Fertility.mpp
 extern void Emigration_PreSimulation(void); // PreSimulation-related code in Emigration.mpp
 
-
 /// The master PreSimulation function in the model.
 void PreSimulation(void)
 {

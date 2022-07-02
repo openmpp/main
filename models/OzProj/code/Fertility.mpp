@@ -4,6 +4,12 @@
 	This module implmenets all fertility-related functionality.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 range FERTILE_AGE //EN Age
 { 15, 49 };
 
@@ -32,6 +38,26 @@ parameters
   double RelativeFertilityIndigenous[YEAR];
 };
 
+actor Person {
+    //EN Births
+    integer births = {0};
+
+//EN Generation
+int generation = {0};
+
+event timeChildbirthEvent, ChildbirthEvent; //EN Childbirth event
+};
+
+table Person BirthsByYear //EN Births by year
+{
+  mid_year
+  * {
+    births
+  }
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
 /// PreSimulation-related code in Fertility.mpp
 void Fertility_PreSimulation(void)
 {
@@ -43,16 +69,6 @@ void Fertility_PreSimulation(void)
     }
   }
 }
-
-actor Person {
-  //EN Births
-  integer births = {0};
-
-  //EN Generation
-  int generation = {0};
-
-  event timeChildbirthEvent, ChildbirthEvent; //EN Childbirth event
-};
 
 // The time function of ChildbirthEvent
 TIME Person::timeChildbirthEvent()
@@ -78,12 +94,3 @@ void Person::ChildbirthEvent()
   auto peChild = new Person;
   peChild->Start(NULL, this, 0);
 }
-
-table Person BirthsByYear //EN Births by year
-{
-  mid_year
-  * {
-    births
-  }
-};
-

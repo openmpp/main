@@ -4,7 +4,13 @@
 	This module contains the basic information which defines the Person case.
 */
 
-parameters 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters
 {
     //EN Annual hazard of death
     double MortalityHazard;
@@ -38,8 +44,6 @@ actor Person            //EN Individual
         Since the numeric value of TRUE is 1 and FALSE is 0, this variable
         can also be used to count actors in tables.
     */
-
-
     
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
 
@@ -49,6 +53,8 @@ actor Person            //EN Individual
     //LABEL(Person.Finish, EN) Finishes the actor
     void Finish();
 };
+
+#endif // Hide non-C++ syntactic island from IDE
 
 /*NOTE(Person.MortalityEvent, EN)
     This event implements a constant hazard of death.
@@ -90,9 +96,6 @@ void Person::Start()
     age = 0;
     time = 0;
 
-    // The following tests ability to change built-in attribute entity_weight (breaks Modgen version).
-    //entity_weight += 0.5;
-
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 
@@ -114,6 +117,8 @@ void Person::Finish()
     // Modgen also recuperates any memory used by the actor.
 }
 
+#if 0 // Hide non-C++ syntactic island from IDE
+
 /*NOTE(DurationOfLife, EN)
     This table contains statistics related to the duration of life.
 */
@@ -127,3 +132,5 @@ table Person DurationOfLife //EN Duration of Life
 
     }    //EN Demographic characteristics
 };
+
+#endif // Hide non-C++ syntactic island from IDE

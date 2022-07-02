@@ -1,5 +1,5 @@
-// Copyright (c) 2013-2014 OpenM++
-// This code is licensed under MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2022 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 //LABEL(ompp_framework, EN) OpenM++ simulation framework
 
@@ -8,8 +8,10 @@
     and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h" // For IDE
-#if 0 // Hide from IDE
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 // The following modules will be compiled and assembled in this order
 // after all model-specific modules.
 use "common.ompp";
@@ -18,7 +20,8 @@ use "random/random_lcg41.ompp";
 use "case_based/case_based_lcg41.ompp";
 use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
-#endif
+
+#endif // Hide non-C++ syntactic island from IDE
 
 namespace fmk {
 

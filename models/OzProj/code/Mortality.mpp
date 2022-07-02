@@ -4,6 +4,12 @@
 	This module implements all mortality-related functionality.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 range RANGE_AGE_101 //EN Age
 { 0, 101 };
 
@@ -21,6 +27,32 @@ parameters
   */
 };
 
+actor Person
+{
+  event timeMortalityEvent, MortalityEvent;	//EN Mortality event
+};
+
+table Person DeathsByAgeSex //EN Deaths by age and sex
+[!alive]
+{
+  {
+    unit
+  }
+  *range_age +
+  *sex +
+};
+
+table Person PersonYearsLived //EN Person-years lived by sex, age and year
+{
+  {
+    duration()
+  }
+  *sex +
+  *range_age +
+  *mid_year
+};
+
+#endif // Hide non-C++ syntactic island from IDE
 
 /// PreSimulation-related code in Mortality.mpp
 void Mortality_PreSimulation(void)
@@ -35,11 +67,6 @@ void Mortality_PreSimulation(void)
     }
   }
 }
-
-actor Person
-{
-  event timeMortalityEvent, MortalityEvent;	//EN Mortality event
-};
 
 /*NOTE(Person.MortalityEvent, EN)
 	This event implements a constant hazard of death.
@@ -64,23 +91,3 @@ void Person::MortalityEvent()
 	// Remove the actor from the simulation.
 	Finish();
 }
-
-table Person DeathsByAgeSex //EN Deaths by age and sex
-[ ! alive ]
-{
-  {
-    unit
-  }
-  * range_age+
-  * sex+
-};
-
-table Person PersonYearsLived //EN Person-years lived by sex, age and year
-{
-  {
-    duration()
-  }
-  * sex+
-  * range_age+
-  * mid_year
-};

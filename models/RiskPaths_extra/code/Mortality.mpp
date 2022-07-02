@@ -9,6 +9,12 @@
 	survival over the whole fertile period.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 ///////////////////////////////////////////////////////////////////////////
 // Parameter definitions
 
@@ -39,7 +45,9 @@ actor Person
 	LIFE_STATE life_status = {LS_ALIVE};	//EN Life Status
 	event timeDeathEvent, DeathEvent;		//EN Death Event 
 };  
- 
+
+#endif // Hide non-C++ syntactic island from IDE
+
 ///////////////////////////////////////////////////////////////////////////
 // Events implementation
 

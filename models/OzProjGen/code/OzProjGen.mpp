@@ -4,6 +4,12 @@
 	This module contains core simulation functions and definitions.
 */
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 // The model version number
 version 0, 22, 0, 0;
 
@@ -23,6 +29,8 @@ parameters
    //EN Output file for synthetic starting population
    file MicroDataOutputFile;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
 
 /**
  * Simulates a single case.
@@ -52,5 +60,3 @@ void Simulation_end(case_info &ci)
 {
   ci.out_csv.close();
 }
-
-
