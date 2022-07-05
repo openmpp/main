@@ -194,7 +194,8 @@ while (<IN_FILE>) {
     if ($from_model_name eq $upstream_model_name) {
         # Found downstream model import for specified upstream model
         $parameters_processed++;
-        print "\ncreating ${parameter_name} from ${from_name}\n" if $verbose;
+        print "\n" if $verbose;
+        print "creating ${parameter_name} from ${from_name}\n";
         
         # Parameters with modgen hack have one sub
         # others have all subs in the run if --keep flag specified,
