@@ -775,45 +775,37 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
+        if (i_runBase->isOptionExist("EventTrace.ShowEvents")) {
+            BaseEntity::event_trace_show_events = i_runBase->boolOption("EventTrace.ShowEvents");
+        }
+
         if (i_runBase->isOptionExist("EventTrace.ShowQueuedEvents")) {
-            bool val = i_runBase->boolOption("EventTrace.ShowQueuedEvents");
-            BaseEntity::event_trace_show_queued_events = val;
+            BaseEntity::event_trace_show_queued_events = i_runBase->boolOption("EventTrace.ShowQueuedEvents");
         }
 
         if (i_runBase->isOptionExist("EventTrace.ShowQueuedSelfSchedulingEvents")) {
-            bool val = i_runBase->boolOption("EventTrace.ShowQueuedSelfSchedulingEvents");
-            BaseEntity::event_trace_show_queued_self_scheduling_events = val;
+            BaseEntity::event_trace_show_queued_self_scheduling_events = i_runBase->boolOption("EventTrace.ShowQueuedSelfSchedulingEvents");
         }
 
         if (i_runBase->isOptionExist("EventTrace.ShowQueuedJustChanges")) {
-            bool val = i_runBase->boolOption("EventTrace.ShowQueuedJustChanges");
-            BaseEntity::event_trace_show_queued_just_changes = val;
+            BaseEntity::event_trace_show_queued_just_changes = i_runBase->boolOption("EventTrace.ShowQueuedJustChanges");
         }
 
         if (i_runBase->isOptionExist("EventTrace.ShowEnterSimulation")) {
-            bool val = i_runBase->boolOption("EventTrace.ShowEnterSimulation");
-            BaseEntity::event_trace_show_enter_simulation = val;
+            BaseEntity::event_trace_show_enter_simulation = i_runBase->boolOption("EventTrace.ShowEnterSimulation");
         }
 
         if (i_runBase->isOptionExist("EventTrace.ShowExitSimulation")) {
-            bool val = i_runBase->boolOption("EventTrace.ShowExitSimulation");
-            BaseEntity::event_trace_show_exit_simulation = val;
+            BaseEntity::event_trace_show_exit_simulation = i_runBase->boolOption("EventTrace.ShowExitSimulation");
         }
 
         if (i_runBase->isOptionExist("EventTrace.ShowSelfSchedulingEvents")) {
-            bool val = i_runBase->boolOption("EventTrace.ShowSelfSchedulingEvents");
-            BaseEntity::event_trace_show_self_scheduling_events = val;
+            BaseEntity::event_trace_show_self_scheduling_events = i_runBase->boolOption("EventTrace.ShowSelfSchedulingEvents");
         }
 
-        if (i_runBase->isOptionExist("EventTrace.MinimumTime")) {
-            double val = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
-            BaseEntity::event_trace_minimum_time = val;
-        }
+        BaseEntity::event_trace_minimum_time = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
 
-        if (i_runBase->isOptionExist("EventTrace.MaximumTime")) {
-            double val = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
-            BaseEntity::event_trace_maximum_time = val;
-        }
+        BaseEntity::event_trace_maximum_time = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
 
         if (i_runBase->isOptionExist("EventTrace.SelectedEntities")) {
             std::list<std::string> entList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEntities"));
@@ -839,7 +831,8 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
-        // The default value of MaximumLines specified below overrides the initial value specified in omc-generated code
+        BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 40);
+
         BaseEntity::event_trace_maximum_lines = i_runBase->intOption("EventTrace.MaximumLines", 100000);
     }
     else {
@@ -847,6 +840,25 @@ void process_trace_options(IRunBase* const i_runBase)
         // Ignore any EventTrace options.
     }
 }
+
+//
+// Definitions of static members for event trace control
+// 
+
+enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;
+bool BaseEntity::event_trace_show_events = true;
+bool BaseEntity::event_trace_show_queued_events = true;
+bool BaseEntity::event_trace_show_queued_self_scheduling_events = true;
+bool BaseEntity::event_trace_show_queued_just_changes = true;
+bool BaseEntity::event_trace_show_enter_simulation = true;
+bool BaseEntity::event_trace_show_exit_simulation = true;
+bool BaseEntity::event_trace_show_self_scheduling_events = true;
+double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();
+double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
+std::unordered_set<int> BaseEntity::event_trace_selected_entities;
+std::unordered_set<int> BaseEntity::event_trace_selected_events;
+int BaseEntity::event_trace_name_column_width = 40;
+int BaseEntity::event_trace_maximum_lines = 100000;
 
 /**
 * Helper code used internally by run-time
