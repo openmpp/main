@@ -180,7 +180,7 @@ void EntityEventSymbol::post_parse(int pass)
 
         if (Symbol::option_event_trace) {
             // Provide the function body for each cover event trace function.
-            // Done in this pass rather than earlier because event_trace_msg needs pp_event_id.
+            // Done in this pass rather than earlier to provide pp_event_id to event_trace_msg.
 
             CodeBlock& ct = time_func->func_body;
             ct += "Time event_time = " + time_func_original->name + (event_memory ? "(p_event_mem);" : "();");
@@ -192,8 +192,8 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + event_name + "\", "
                 + std::to_string(pp_event_id) + ","
                 "\"" + time_func_original->name + "\", "
-                "(double)event_time, "
-                "(double)age.direct_get(), "
+                "(double)event_time, "              // old_time
+                "(double)BaseEvent::stashed_time, " // new_time
                 "(double)BaseEvent::get_global_time(), "
                 "BaseEntity::et_msg_type::eQueuedEvent);"
                 ;
@@ -208,8 +208,8 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + event_name + "\", "
                 + std::to_string(pp_event_id) + ","
                 "\"" + agent->name + "." + event_name + "\", "
-                "(double)time, "
-                "(double)age, "
+                "(double)time, " // current_time
+                "(double)age, "  // current_age
                 "(double)BaseEvent::get_global_time(), "
                 "BaseEntity::et_msg_type::eEventOccurrence);"
                 ;

@@ -114,6 +114,11 @@ public:
             }
         }
         else if ( is_dirty ) {
+            if constexpr (om_event_trace_capable) {
+                // stash the current value of the time of the event for use in event trace code
+                // in cover function of time function.
+                stashed_time = event_time;
+            }
             Time new_event_time = call_time_func();
             bool censored = false;
             if constexpr (om_censor_event_time_on) {
@@ -557,6 +562,11 @@ public:
     {
         return event_checksum_value;
     }
+
+    /**
+     * Stashed scheduled time of a dirty event for use in the cover time function for event trace output.
+     */
+    static thread_local Time stashed_time;
 
 private:
 

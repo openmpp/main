@@ -216,6 +216,7 @@ void CodeGen::do_preamble()
     c += "enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;";
     c += "bool BaseEntity::event_trace_show_queued_events = true;";
     c += "bool BaseEntity::event_trace_show_queued_self_scheduling_events = true;";
+    c += "bool BaseEntity::event_trace_show_queued_just_changes = true;";
     c += "bool BaseEntity::event_trace_show_enter_simulation = true;";
     c += "bool BaseEntity::event_trace_show_exit_simulation = true;";
     c += "bool BaseEntity::event_trace_show_self_scheduling_events = true;";
@@ -1426,6 +1427,8 @@ void CodeGen::do_event_queue()
     c += "// definition of entity_id of event time function being recomputed (declaration in Event.h)";
     c += "thread_local int BaseEvent::timefunc_entity_id;";
     c += "";
+    c += "// definition of stashed time for event trace communication (declaration in Event.h)";
+    c += "thread_local Time BaseEvent::stashed_time = -time_infinite;";
 }
 
 void CodeGen::do_event_names()

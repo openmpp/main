@@ -785,6 +785,11 @@ void process_trace_options(IRunBase* const i_runBase)
             BaseEntity::event_trace_show_queued_self_scheduling_events = val;
         }
 
+        if (i_runBase->isOptionExist("EventTrace.ShowQueuedJustChanges")) {
+            bool val = i_runBase->boolOption("EventTrace.ShowQueuedJustChanges");
+            BaseEntity::event_trace_show_queued_just_changes = val;
+        }
+
         if (i_runBase->isOptionExist("EventTrace.ShowEnterSimulation")) {
             bool val = i_runBase->boolOption("EventTrace.ShowEnterSimulation");
             BaseEntity::event_trace_show_enter_simulation = val;
