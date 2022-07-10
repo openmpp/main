@@ -209,7 +209,7 @@ void AttributeSymbol::post_parse(int pass)
                 "(int)entity_id, "
                 "GetCaseSeed(), "
                 "\"\", " // event_name (empty)
-                + "0, " // event_id (not used)
+                + to_string(pp_attribute_id) + ", " // id (attribute_id)
                 "\"" + name + "\", " // other_name (attribute_name)
                 "(double)om_old, "   // old_value
                 "(double)om_new, "   // new_value

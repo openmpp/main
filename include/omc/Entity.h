@@ -492,7 +492,7 @@ public:
     /**
      * Filter event trace by attributes
      */
-    static std::unordered_set<std::string> event_trace_selected_attributes;
+    static std::unordered_set<int> event_trace_selected_attributes;
 
     /**
      * Used to set report column width for names
@@ -520,7 +520,7 @@ public:
         int entity_id,
         double case_seed,
         const char* event_name,
-        int event_id,
+        int id,
         const char *other_name,
         double dbl1,
         double dbl2,
@@ -570,7 +570,7 @@ public:
             // Entity is not in the specified entity list.
             return;
         }
-        if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(event_id) == 0) {
+        if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(id) == 0) {
             // Event is not in the specified event list.
             return;
         }
@@ -582,7 +582,7 @@ public:
             // Queued self-scheduling events are disabled.
             return;
         }
-        if ((msg_type == et_msg_type::eAttributeChange) && event_trace_selected_attributes.count(other_name) == 0) {
+        if (msg_type == et_msg_type::eAttributeChange && event_trace_selected_attributes.count(id) == 0) {
             // Attribute is not in the specified attribute list.
             return;
         }

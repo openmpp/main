@@ -108,5 +108,8 @@ extern double population_scaling_factor();
 
 // defined in generated code om_definitions.cpp
 extern const char * ModelString(const char * string_name);
-extern const int event_name_to_id(const std::string event_name);
-extern const char* event_id_to_name(int event_id);
+namespace omr {
+    extern const int event_name_to_id(const std::string event_name);
+    extern const char* event_id_to_name(int event_id);
+    extern const int attribute_name_to_id(const std::string attribute_name);
+}

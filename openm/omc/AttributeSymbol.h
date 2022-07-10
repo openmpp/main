@@ -55,6 +55,7 @@ public:
         , side_effects_fn(nullptr)
         , notify_fn(nullptr)
         , is_time_like(false)
+        , pp_attribute_id(-1)
     {
         create_auxiliary_symbols();
     }
@@ -149,5 +150,10 @@ public:
      * The attribute can change between events, like time.
      */
     bool is_time_like;
+
+    /**
+     * The numeric identifier for the attribute.
+     */
+    int pp_attribute_id;
 };
 

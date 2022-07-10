@@ -245,12 +245,11 @@ void handle_backwards_time(
 {
     // The time of this event is in the local past of the entity within which the event occurs.
     // This is caused by an error in model logic.
-    extern const char * event_id_to_name(int event_id); // omc generated function defined in om_definitions.cpp
     std::stringstream ss;
     ss  << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
         << LT("error : Event time ") << std::showpoint << the_event_time
         << LT(" is earlier than current time ") << the_current_time
-        << LT(" in event ") << event_id_to_name(the_event)
+        << LT(" in event ") << omr::event_id_to_name(the_event)
         << LT(" in entity_id ") << the_entity
         << LT(" in simulation member ") << get_simulation_member()
         << LT(" with combined seed ") << get_combined_seed()
@@ -274,7 +273,7 @@ void handle_clairvoyance(
         << LT("error : Attempt to access entity_id ") << the_future_entity
         << LT(" with future time ") << the_future_time
         << LT(" when current time is ") << the_current_time
-        << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id)
+        << LT(" after event ") << omr::event_id_to_name(BaseEvent::current_event_id)
         << LT(" in entity_id ") << BaseEvent::current_entity_id
         << LT(" in simulation member ") << get_simulation_member()
         << LT(" with combined seed ") << get_combined_seed()
@@ -298,7 +297,7 @@ void handle_null_dereference(
         ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
     }
     if (BaseEvent::current_event_id >= 0) {
-        ss << LT(" in or after event ") << event_id_to_name(BaseEvent::current_event_id);
+        ss << LT(" in or after event ") << omr::event_id_to_name(BaseEvent::current_event_id);
     }
     ss << LT(" in simulation member ") << get_simulation_member();
     ss << LT(" with combined seed ") << get_combined_seed();
@@ -318,11 +317,11 @@ void handle_prohibited_attribute_assignment(
     ss << LT("Attempt to modify the attribute ");
     ss << name;
     ss << LT(" by the event time function of event ");
-    ss << event_id_to_name(BaseEvent::timefunc_event_id);
+    ss << omr::event_id_to_name(BaseEvent::timefunc_event_id);
     ss << LT(" in entity_id ") << BaseEvent::timefunc_entity_id;
     ss << LT(" when current time is ") << get_global_time();
     if (BaseEvent::current_event_id >= 0) {
-        ss << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id);
+        ss << LT(" after event ") << omr::event_id_to_name(BaseEvent::current_event_id);
     }
     else {
         ss << LT(" before enter_simulation");
@@ -348,11 +347,11 @@ void handle_prohibited_timelike_attribute_access(
     ss << LT("Attempt to access the time-like attribute ");
     ss << name;
     ss << LT(" by the event time function of event ");
-    ss << event_id_to_name(BaseEvent::timefunc_event_id);
+    ss << omr::event_id_to_name(BaseEvent::timefunc_event_id);
     ss << LT(" in entity_id ") << BaseEvent::timefunc_entity_id;
     ss << LT(" when current time is ") << get_global_time();
     if (BaseEvent::current_event_id >= 0) {
-        ss << LT(" after event ") << event_id_to_name(BaseEvent::current_event_id);
+        ss << LT(" after event ") << omr::event_id_to_name(BaseEvent::current_event_id);
     }
     else {
         ss << LT(" before enter_simulation");
@@ -436,7 +435,7 @@ void handle_bounds_error(
         ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
     }
     if (BaseEvent::current_event_id >= 0) {
-        ss << LT(" in or after event ") << event_id_to_name(BaseEvent::current_event_id);
+        ss << LT(" in or after event ") << omr::event_id_to_name(BaseEvent::current_event_id);
     }
     ss << LT(" in simulation member ") << get_simulation_member();
     ss << LT(" with combined seed ") << get_combined_seed();
@@ -833,7 +832,7 @@ void process_trace_options(IRunBase* const i_runBase)
         if (i_runBase->isOptionExist("EventTrace.SelectedEvents")) {
             std::list<std::string> evtList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
             for (auto str : evtList) {
-                int id = event_name_to_id(str);
+                int id = omr::event_name_to_id(str);
                 if (id >= 0) {
                     BaseEntity::event_trace_selected_events.insert(id);
                 }
@@ -846,7 +845,13 @@ void process_trace_options(IRunBase* const i_runBase)
         if (i_runBase->isOptionExist("EventTrace.SelectedAttributes")) {
             std::list<std::string> attrList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedAttributes"));
             for (auto str : attrList) {
-                BaseEntity::event_trace_selected_attributes.insert(str);
+                int id = omr::attribute_name_to_id(str);
+                if (id >= 0) {
+                    BaseEntity::event_trace_selected_attributes.insert(id);
+                }
+                else {
+                    // ignore unrecognized attribute name
+                }
             }
         }
 
@@ -878,7 +883,7 @@ double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infi
 double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
 std::unordered_set<int> BaseEntity::event_trace_selected_entities;
 std::unordered_set<int> BaseEntity::event_trace_selected_events;
-std::unordered_set<std_string> BaseEntity::event_trace_selected_attributes;
+std::unordered_set<int> BaseEntity::event_trace_selected_attributes;
 
 int BaseEntity::event_trace_name_column_width = 40;
 int BaseEntity::event_trace_maximum_lines = 100000;

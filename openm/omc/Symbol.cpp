@@ -119,6 +119,8 @@ list<ImportSymbol *> Symbol::pp_all_imports;
 
 set<string> Symbol::pp_all_event_names;
 
+set<string> Symbol::pp_all_attribute_names;
+
 list<GlobalFuncSymbol *> Symbol::pp_all_global_funcs;
 
 list<AggregationSymbol *> Symbol::pp_all_aggregations;
@@ -1496,6 +1498,33 @@ void Symbol::post_parse_all()
                 string str = event->event_name;
                 auto iter = pp_all_event_names.find(str);
                 event->pp_event_id = distance(pp_all_event_names.begin(), iter);
+            }
+        }
+    }
+
+    {
+        // Create the amalgamated set of attribute names, in all entities, sorted lexicographically.
+        for (auto* entity : pp_all_agents) {
+            for (auto* dm : entity->pp_agent_data_members) {
+                if (dm->is_attribute()) {
+                    auto attr = dynamic_cast<AttributeSymbol*>(dm);
+                    assert(attr);
+                    string str = attr->name;
+                    pp_all_attribute_names.insert(str);
+                }
+            }
+        }
+
+        // For each attribute in the model, find the index in the sorted set, and assign it as attribute_id
+        for (auto* entity : pp_all_agents) {
+            for (auto* dm : entity->pp_agent_data_members) {
+                if (dm->is_attribute()) {
+                    auto attr = dynamic_cast<AttributeSymbol*>(dm);
+                    assert(attr);
+                    string str = attr->name;
+                    auto iter = pp_all_attribute_names.find(str);
+                    attr->pp_attribute_id = distance(pp_all_attribute_names.begin(), iter);
+                }
             }
         }
     }

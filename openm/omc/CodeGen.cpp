@@ -35,7 +35,7 @@ void CodeGen::do_all()
     do_entities();
 	do_entity_sets();
     do_event_queue();
-    do_event_names();
+    do_event_and_attribute_names();
 
     h += "void StartSimulation(int id);";
     h += "void EndSimulation();";
@@ -1416,11 +1416,11 @@ void CodeGen::do_event_queue()
     c += "thread_local Time BaseEvent::stashed_time = -time_infinite;";
 }
 
-void CodeGen::do_event_names()
+void CodeGen::do_event_and_attribute_names()
 {
     {
-        c += "// get event name given event id";
-        c += "const char * event_id_to_name(int event_id) {";
+        c += "/// get event name given event id";
+        c += "const char * omr::event_id_to_name(int event_id) {";
         c += "static const char * event_name[] = {";
         int id = 0;
         for (auto nm : Symbol::pp_all_event_names) {
@@ -1441,8 +1441,8 @@ void CodeGen::do_event_names()
     }
     c += "";
     {
-        c += "// get event id given event name";
-        c += "const int event_name_to_id(const std::string event_name) {";
+        c += "/// get event id given event name";
+        c += "const int omr::event_name_to_id(const std::string event_name) {";
         c += "static const std::unordered_map<std::string, int> name_to_id = {";
         int id = 0;
         for (auto nm : Symbol::pp_all_event_names) {
@@ -1451,6 +1451,21 @@ void CodeGen::do_event_names()
         }
         c += "};";
         c += "auto srch = name_to_id.find(event_name);";
+        c += "return (srch != name_to_id.end()) ? srch->second : -1;";
+        c += "}";
+    }
+    c += "";
+    {
+        c += "/// get attribute id given event name";
+        c += "const int omr::attribute_name_to_id(const std::string attribute_name) {";
+        c += "static const std::unordered_map<std::string, int> name_to_id = {";
+        int id = 0;
+        for (auto nm : Symbol::pp_all_attribute_names) {
+            c += "{\"" + nm + "\", " + std::to_string(id) + "},";
+            ++id;
+        }
+        c += "};";
+        c += "auto srch = name_to_id.find(attribute_name);";
         c += "return (srch != name_to_id.end()) ? srch->second : -1;";
         c += "}";
     }
