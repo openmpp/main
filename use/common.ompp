@@ -761,8 +761,8 @@ void process_trace_options(IRunBase* const i_runBase)
 
         theLog->logFormatted(LT("Warning : possible performance impact - model built with event_trace = on"));
 
-        if (i_runBase->isOptionExist("EventTrace.ReportStyle")) {
-            std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle");
+        {
+            std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle", "modgen");
             openm::toLower(rptStyle);
             if (rptStyle == "modgen") {
                 BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;
@@ -775,32 +775,44 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
+        BaseEntity::event_trace_show_events = true;
         if (i_runBase->isOptionExist("EventTrace.ShowEvents")) {
             BaseEntity::event_trace_show_events = i_runBase->boolOption("EventTrace.ShowEvents");
         }
 
+        BaseEntity::event_trace_show_queued_events = true;
         if (i_runBase->isOptionExist("EventTrace.ShowQueuedEvents")) {
             BaseEntity::event_trace_show_queued_events = i_runBase->boolOption("EventTrace.ShowQueuedEvents");
         }
 
+        BaseEntity::event_trace_show_queued_self_scheduling_events = true;
         if (i_runBase->isOptionExist("EventTrace.ShowQueuedSelfSchedulingEvents")) {
             BaseEntity::event_trace_show_queued_self_scheduling_events = i_runBase->boolOption("EventTrace.ShowQueuedSelfSchedulingEvents");
         }
 
+        BaseEntity::event_trace_show_queued_just_changes = true;
         if (i_runBase->isOptionExist("EventTrace.ShowQueuedJustChanges")) {
             BaseEntity::event_trace_show_queued_just_changes = i_runBase->boolOption("EventTrace.ShowQueuedJustChanges");
         }
 
+        BaseEntity::event_trace_show_enter_simulation = true;
         if (i_runBase->isOptionExist("EventTrace.ShowEnterSimulation")) {
             BaseEntity::event_trace_show_enter_simulation = i_runBase->boolOption("EventTrace.ShowEnterSimulation");
         }
 
+        BaseEntity::event_trace_show_exit_simulation = true;
         if (i_runBase->isOptionExist("EventTrace.ShowExitSimulation")) {
             BaseEntity::event_trace_show_exit_simulation = i_runBase->boolOption("EventTrace.ShowExitSimulation");
         }
 
+        BaseEntity::event_trace_show_self_scheduling_events = true;
         if (i_runBase->isOptionExist("EventTrace.ShowSelfSchedulingEvents")) {
             BaseEntity::event_trace_show_self_scheduling_events = i_runBase->boolOption("EventTrace.ShowSelfSchedulingEvents");
+        }
+
+        BaseEntity::event_trace_show_attributes = false;
+        if (i_runBase->isOptionExist("EventTrace.ShowAttributes")) {
+            BaseEntity::event_trace_show_attributes = i_runBase->boolOption("EventTrace.ShowAttributes");
         }
 
         BaseEntity::event_trace_minimum_time = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
@@ -831,6 +843,13 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
+        if (i_runBase->isOptionExist("EventTrace.SelectedAttributes")) {
+            std::list<std::string> attrList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedAttributes"));
+            for (auto str : attrList) {
+                BaseEntity::event_trace_selected_attributes.insert(str);
+            }
+        }
+
         BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 40);
 
         BaseEntity::event_trace_maximum_lines = i_runBase->intOption("EventTrace.MaximumLines", 100000);
@@ -842,7 +861,8 @@ void process_trace_options(IRunBase* const i_runBase)
 }
 
 //
-// Definitions of static members for event trace control
+// Definitions of static members for event trace control.
+// Default values below may be overridden by process_trace_options.
 // 
 
 enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;
@@ -853,10 +873,13 @@ bool BaseEntity::event_trace_show_queued_just_changes = true;
 bool BaseEntity::event_trace_show_enter_simulation = true;
 bool BaseEntity::event_trace_show_exit_simulation = true;
 bool BaseEntity::event_trace_show_self_scheduling_events = true;
+bool BaseEntity::event_trace_show_attributes = false;
 double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();
 double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
 std::unordered_set<int> BaseEntity::event_trace_selected_entities;
 std::unordered_set<int> BaseEntity::event_trace_selected_events;
+std::unordered_set<std_string> BaseEntity::event_trace_selected_attributes;
+
 int BaseEntity::event_trace_name_column_width = 40;
 int BaseEntity::event_trace_maximum_lines = 100000;
 

@@ -196,6 +196,28 @@ void AttributeSymbol::post_parse(int pass)
         pp_agent->pp_callback_members.push_back(this);
         break;
     }
+    case ePopulateDependencies:
+    {
+        if (Symbol::option_event_trace) {
+            // inject event trace code into side_effects function
+            CodeBlock& c = side_effects_fn->func_body;
+            c += "";
+            c += "// Code Injection: event trace";
+            c += "if (event_trace_on) "
+                "event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "GetCaseSeed(), "
+                "\"\", " // event_name (empty)
+                + "0, " // event_id (not used)
+                "\"" + name + "\", " // other_name (attribute_name)
+                "(double)om_old, "   // old_value
+                "(double)om_new, "   // new_value
+                "(double)BaseEvent::get_global_time(), "
+                "BaseEntity::et_msg_type::eAttributeChange);"
+                ;
+        }
+    }
     default:
         break;
     }
