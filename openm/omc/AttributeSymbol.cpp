@@ -203,7 +203,7 @@ void AttributeSymbol::post_parse(int pass)
             CodeBlock& c = side_effects_fn->func_body;
             c += "";
             c += "// Code Injection: event trace";
-            c += "if (event_trace_on) "
+            c += "if (event_trace_on && om_active) "
                 "event_trace_msg("
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "

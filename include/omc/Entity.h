@@ -244,7 +244,15 @@ public:
      */
     void enter_simulation()
     {
-        if constexpr(om_event_trace_capable) {
+        om_check_starting_time();
+        om_reset_derived_attributes();
+        om_initialize_identity_attributes();
+        om_initialize_entity_sets();
+        om_initialize_tables();
+        om_initialize_events();
+        make_active();
+        om_active = true;
+        if constexpr (om_event_trace_capable) {
             extern double GetCaseSeed();
             if (event_trace_on) {
                 event_trace_msg(
@@ -261,14 +269,6 @@ public:
                 );
             }
         }
-        om_check_starting_time();
-        om_reset_derived_attributes();
-        om_initialize_identity_attributes();
-        om_initialize_entity_sets();
-        om_initialize_tables();
-        om_initialize_events();
-        make_active();
-        om_active = true;
     }
 
     /**
