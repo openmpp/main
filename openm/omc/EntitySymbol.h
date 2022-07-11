@@ -57,6 +57,7 @@ public:
         , reset_derived_attributes_fn(nullptr)
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
+        , start_trace_fn(nullptr)
         , ss_time_fn(nullptr)
         , ss_implement_fn(nullptr)
         , ss_event(nullptr)
@@ -129,6 +130,11 @@ public:
      * Builds the function body of the function.
      */
     void build_body_finalize_multilinks();
+
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_start_trace();
 
     /**
      * The built-in attribute for time in the agent.
@@ -241,6 +247,11 @@ public:
      * The agent function which empties all multilinks when the agent finishes.
      */
     EntityFuncSymbol *finalize_multilinks_fn;
+
+    /**
+     * The entity function which implements trace messages at the start of the entity lifecycle.
+     */
+    EntityFuncSymbol* start_trace_fn;
 
     /**
      * The data members of this agent

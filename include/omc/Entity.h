@@ -150,6 +150,11 @@ public:
     virtual void om_finalize_multilinks() = 0;
 
     /**
+     * Does trace messages at start of entity lifecycle.
+     */
+    virtual void om_start_trace() = 0;
+
+    /**
      * Age the entity to the given time.
      *
      * @param t The target time.
@@ -269,6 +274,7 @@ public:
                 );
             }
         }
+        om_start_trace();
     }
 
     /**
@@ -410,6 +416,9 @@ public:
 
         // change of attribute value
         eAttributeChange,
+
+        // starting attribute value
+        eAttributeStart,
     };
 
     /**
@@ -582,7 +591,7 @@ public:
             // Queued self-scheduling events are disabled.
             return;
         }
-        if (msg_type == et_msg_type::eAttributeChange && event_trace_selected_attributes.count(id) == 0) {
+        if ((msg_type == et_msg_type::eAttributeChange || msg_type == et_msg_type::eAttributeStart) && event_trace_selected_attributes.count(id) == 0) {
             // Attribute is not in the specified attribute list.
             return;
         }
@@ -735,6 +744,23 @@ public:
                         other_name,  // is name of attribute eg year
                         padding, "",
                         old_value
+                    );
+                }
+                break;
+                case et_msg_type::eAttributeStart:
+                {
+                    auto& start_value = dbl1;
+                    std::stringstream ss;
+                    ss << std::setw(9) << start_value;
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
+                    theTrace->logFormatted("%13.6f   start=%-.10s %08d   %s.%s%*s start=%-16.16g",
+                        global_time,
+                        ss.str().c_str(),
+                        entity_id,
+                        entity_name,
+                        other_name,  // is name of attribute eg year
+                        padding, "",
+                        start_value
                     );
                 }
                 break;

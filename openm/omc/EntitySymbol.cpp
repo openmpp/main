@@ -373,6 +373,15 @@ void EntitySymbol::create_auxiliary_symbols()
         finalize_multilinks_fn->doc_block = doxygen_short("Empty all multilinks in entity when the entity leaves the simulation.");
         // function body is generated in post-parse phase
     }
+
+    // The start_trace member function
+    {
+        assert(nullptr == start_trace_fn); // initialization guarantee
+        start_trace_fn = new EntityFuncSymbol("om_start_trace", this);
+        assert(start_trace_fn); // out of memory check
+        start_trace_fn->doc_block = doxygen_short("Perform trace operations at start of entity lifecycle.");
+        // function body is generated in post-parse phase
+    }
 }
 
 void EntitySymbol::post_parse(int pass)
@@ -511,6 +520,7 @@ void EntitySymbol::post_parse(int pass)
         build_body_finalize_tables();
         build_body_finalize_links();
         build_body_finalize_multilinks();
+        build_body_start_trace();
         break;
     }
     default:
@@ -714,6 +724,37 @@ void EntitySymbol::build_body_finalize_multilinks()
 
     for ( auto mlm : pp_multilink_members ) {
         c += mlm->name + ".clear();";
+    }
+}
+
+void EntitySymbol::build_body_start_trace()
+{
+    CodeBlock& c = start_trace_fn->func_body;
+
+    // Call event_trace_msg for each atttribute to report start value
+    if (Symbol::option_event_trace) {
+        c += "if (event_trace_on) {";
+        for (auto* dm : pp_agent_data_members) {
+            if (dm->is_attribute()) {
+                auto attr = dynamic_cast<AttributeSymbol*>(dm);
+                assert(attr);
+                c += "";
+                c += "// Trace message for starting value of " + attr->name;
+                c += "event_trace_msg("
+                    "\"" + name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"\", " // event_name (empty)
+                    + to_string(attr->pp_attribute_id) + ", " // id (attribute_id)
+                    "\"" + attr->name + "\", " // other_name (attribute_name)
+                    "(double)" + attr->name + ".direct_get(), "   // start_value
+                    "(double)0, "        // unused
+                    "(double)BaseEvent::get_global_time(), "
+                    "BaseEntity::et_msg_type::eAttributeStart);"
+                    ;
+            }
+        }
+        c += "} // event_trace_on";
     }
 }
 
