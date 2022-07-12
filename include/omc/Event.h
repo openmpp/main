@@ -258,6 +258,11 @@ public:
      */
     static void finalize_simulation_runtime()
     {
+        // reset these global values so that diagnostic messages after simulation
+        // don't give misleading information, e.g. handle_bounds_error
+        current_event_id = -1;
+        current_entity_id = -1;
+
         assert(event_queue->empty());
         delete event_queue;
         event_queue = nullptr;
