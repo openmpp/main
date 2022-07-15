@@ -734,16 +734,17 @@ public:
                     auto& old_value = dbl1;
                     auto& new_value = dbl2;
                     std::stringstream ss;
-                    ss << std::setw(9) << new_value;
+                    ss << std::setw(9) << std::setprecision(4) << new_value;
                     int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
-                    theTrace->logFormatted("%13.6f     new=%-.10s %08d   %s.%s%*s old=%.6g",
+                    theTrace->logFormatted("%13.6f     new=%-.10s %08d   %s.%s%*s old=%-.12g,new=%-.12g",
                         global_time,
                         ss.str().c_str(),
                         entity_id,
                         entity_name,
                         other_name,  // is name of attribute eg year
                         padding, "",
-                        old_value
+                        old_value,
+                        new_value
                     );
                 }
                 break;
@@ -751,9 +752,9 @@ public:
                 {
                     auto& start_value = dbl1;
                     std::stringstream ss;
-                    ss << std::setw(9) << start_value;
+                    ss << std::setw(9) << std::setprecision(4) << start_value;
                     int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
-                    theTrace->logFormatted("%13.6f   start=%-.10s %08d   %s.%s%*s start=%-16.16g",
+                    theTrace->logFormatted("%13.6f   start=%-.10s %08d   %s.%s%*s start=%-.12g",
                         global_time,
                         ss.str().c_str(),
                         entity_id,
