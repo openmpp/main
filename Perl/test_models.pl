@@ -885,14 +885,17 @@ for my $model_dir (@model_dirs) {
 				$scenario_name = 'Default';
 			}
 			
-			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
-            # SFG TODO requires alignment to changed .props symbol, FIXED_NAME, etc.
-			my $fixed_parameters_folder = get_property($model_props, 'FIXED_PARAMETERS_FOLDER');
+			# Determine fixed parameter folder from user-modifiable property FIXED_NAME
+            my $fixed_parameters_folder = '';
+			my $fixed_name = get_property($model_props, 'FIXED_NAME');
 			my $enable_fixed_parameters = 'true';
-			if ($fixed_parameters_folder eq '') {
+			if ($fixed_name eq '') {
 				# Default is disabled
 				$enable_fixed_parameters = 'false';
 			}
+            else {
+                $fixed_parameters_folder = "../parameters/".$fixed_name;
+            }
 			
 			# Prepare grid computing option
 			my $grid_computing = 'EMPTY';
@@ -1117,7 +1120,6 @@ for my $model_dir (@model_dirs) {
 			my $scenario_name = 'Default';
 
             my $model_props = 'ompp/Model.vcxproj';
-			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
 			# Determine scenario name from SCENARIO_NAME property
 			$scenario_name = get_property($model_props, 'SCENARIO_NAME');
 			if ($scenario_name eq '') {
@@ -1125,16 +1127,17 @@ for my $model_dir (@model_dirs) {
 				$scenario_name = 'Default';
 			}
 			
-			# Determine fixed parameter folder from user-modifiable property FIXED_PARAMETERS_FOLDER
-			my $fixed_parameters_folder = get_property($model_props, 'FIXED_PARAMETERS_FOLDER');
+			# Determine fixed parameter folder from user-modifiable property FIXED_NAME
+            my $fixed_parameters_folder = '';
+			my $fixed_name = get_property($model_props, 'FIXED_NAME');
 			my $enable_fixed_parameters = 'true';
-			if ($fixed_parameters_folder eq '') {
+			if ($fixed_name eq '') {
 				# Default is disabled
 				$enable_fixed_parameters = 'false';
 			}
-			# SFG TODO partial hack to account for fact that vcxproj is one level deeper than makefile
-			# trim off leading '../' if present
-			$fixed_parameters_folder =~ s@^../@@;
+            else {
+                $fixed_parameters_folder = "parameters/".$fixed_name;
+            }
 					
 			my @make_defines;
 			push @make_defines, "MODEL_NAME=${model_name}";
