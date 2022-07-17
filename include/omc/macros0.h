@@ -15,7 +15,7 @@
 #define MAX( symbol )				(symbol::max)
 #define SIZE( symbol )				(symbol::size)
 #define RANGE_POS( rname, val )     (rname::to_index(val))
-#define COERCE( rname, val )        ((rname##_t)rname::clamp(val)) // static cast to POD of wrapped range type, eg int
+#define COERCE( rname, val )        (rname::clamp(val))
 
 #define WITHIN( rname, val )        (rname::within(val))
 #define POINTS( symbol )		   	(symbol::upper_bounds())
