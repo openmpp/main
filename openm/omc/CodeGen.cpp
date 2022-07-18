@@ -1456,16 +1456,16 @@ void CodeGen::do_event_and_attribute_names()
     }
     c += "";
     {
-        c += "/// get attribute id given event name";
-        c += "const int omr::attribute_name_to_id(const std::string attribute_name) {";
+        c += "/// get attribute id given attribute name";
+        c += "const int omr::member_name_to_id(const std::string member_name) {";
         c += "static const std::unordered_map<std::string, int> name_to_id = {";
         int id = 0;
-        for (auto nm : Symbol::pp_all_attribute_names) {
+        for (auto nm : Symbol::pp_visible_member_names) {
             c += "{\"" + nm + "\", " + std::to_string(id) + "},";
             ++id;
         }
         c += "};";
-        c += "auto srch = name_to_id.find(attribute_name);";
+        c += "auto srch = name_to_id.find(member_name);";
         c += "return (srch != name_to_id.end()) ? srch->second : -1;";
         c += "}";
     }

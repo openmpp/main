@@ -203,20 +203,36 @@ void AttributeSymbol::post_parse(int pass)
             CodeBlock& c = side_effects_fn->func_body;
             c += "";
             c += "// Code Injection: event trace";
-            c += "if (event_trace_on && om_active) "
-                "event_trace_msg("
+            c += "if (event_trace_on && om_active) {";
+            if (!is_link_attribute()) {
+                c += "double old_value = (double)om_old;";
+                c += "double new_value = (double)om_new;";
+            }
+            else {
+                // if link is nullptr, use NaN else use entity_id
+                c += "auto old_ptr = om_old.get();";
+                c += "double old_value = old_ptr ? (double)old_ptr->entity_id : std::numeric_limits<double>::quiet_NaN();";
+                c += "auto new_ptr = om_new.get();";
+                c += "double new_value = new_ptr ? (double)new_ptr->entity_id : std::numeric_limits<double>::quiet_NaN();";
+                c += "if (new_ptr && BaseEntity::event_trace_show_linked_entities) {";
+                c +=     "BaseEntity::event_trace_selected_entities.insert(new_ptr->entity_id);";
+                c += "}";
+            }
+            c +=     "event_trace_msg("
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
                 "GetCaseSeed(), "
                 "\"\", " // event_name (empty)
-                + to_string(pp_attribute_id) + ", " // id (attribute_id)
+                + to_string(pp_member_id) + ", " // id (member_id)
                 "\"" + name + "\", " // other_name (attribute_name)
-                "(double)om_old, "   // old_value
-                "(double)om_new, "   // new_value
+                "old_value, "
+                "new_value, "
                 "(double)BaseEvent::get_global_time(), "
                 "BaseEntity::et_msg_type::eAttributeChange);"
                 ;
+            c += "}";
         }
+        break;
     }
     default:
         break;

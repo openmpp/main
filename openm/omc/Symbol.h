@@ -1102,12 +1102,12 @@ public:
     static set<string> pp_all_event_names;
 
     /**
-    * The attribute names in the model
+    * The visible member names in the model
     *
-    * Note that the set contains no duplicates, but attribute names can be duplicates in different entities.
+    * Note that the set contains no duplicates, but visible member names can be duplicates in different entities.
     * Populated after parsing is complete.
     */
-    static set<string> pp_all_attribute_names;
+    static set<string> pp_visible_member_names;
 
     /**
      * Map of member function qualified names to all identifiers used in the body of the function.

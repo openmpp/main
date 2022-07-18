@@ -37,6 +37,7 @@ public:
         , pp_data_type(nullptr)
         , parent(nullptr)
         , pp_parent(nullptr)
+        , pp_member_id(-1)
     {
     }
 
@@ -209,4 +210,9 @@ public:
      * Refers to a member from which this member was derived
      */
     EntityDataMemberSymbol *pp_parent;
+
+    /**
+     * The numeric identifier for the member.
+     */
+    int pp_member_id;
 };

@@ -494,6 +494,11 @@ public:
     static std::unordered_set<int> event_trace_selected_entities;
 
     /**
+     * Whether to show linked entities
+     */
+    static bool event_trace_show_linked_entities;
+
+    /**
      * Filter event trace by events
      */
     static std::unordered_set<int> event_trace_selected_events;
@@ -546,54 +551,56 @@ public:
             return;
         }
 
-        // Apply event trace filter conditions
-        if (global_time < event_trace_minimum_time) {
-            // Message occurs before the specified time window.
-            return;
-        }
-        if (global_time > event_trace_maximum_time) {
-            // Message occurs after the specified time window.
-            return;
-        }
-        if (msg_type == et_msg_type::eEnterSimulation && !event_trace_show_enter_simulation) {
-            // Entity enter simulation messages are disabled.
-            return;
-        }
-        if (msg_type == et_msg_type::eExitSimulation && !event_trace_show_exit_simulation) {
-            // Entity exit simulation messages are disabled.
-            return;
-        }
-        if (msg_type == et_msg_type::eEventOccurrence && !event_trace_show_events) {
-            // Event occurrence messages are disabled.
-            return;
-        }
-        if (msg_type == et_msg_type::eSelfSchedulingEventOccurrence && !event_trace_show_self_scheduling_events) {
-            // Self-scheduling events are disabled.
-            return;
-        }
-        if (msg_type == et_msg_type::eAttributeChange && (!event_trace_show_attributes || event_trace_selected_attributes.size() == 0)) {
-            // Attribute changes are disabled, or no attributes selected.
-            return;
-        }
-        if (event_trace_selected_entities.size() > 0 && event_trace_selected_entities.count(entity_id) == 0) {
-            // Entity is not in the specified entity list.
-            return;
-        }
-        if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(id) == 0) {
-            // Event is not in the specified event list.
-            return;
-        }
-        if (msg_type == et_msg_type::eQueuedEvent && !event_trace_show_queued_events) {
-            // Queued normal events are disabled.
-            return;
-        }
-        if (msg_type == et_msg_type::eQueuedSelfSchedulingEvent && !event_trace_show_queued_self_scheduling_events) {
-            // Queued self-scheduling events are disabled.
-            return;
-        }
-        if ((msg_type == et_msg_type::eAttributeChange || msg_type == et_msg_type::eAttributeStart) && event_trace_selected_attributes.count(id) == 0) {
-            // Attribute is not in the specified attribute list.
-            return;
+        // Apply event trace filter conditions (but not for modgen-style)
+        if (event_trace_report_style == et_report_style::eReadable) {
+            if (global_time < event_trace_minimum_time) {
+                // Message occurs before the specified time window.
+                return;
+            }
+            if (global_time > event_trace_maximum_time) {
+                // Message occurs after the specified time window.
+                return;
+            }
+            if (msg_type == et_msg_type::eEnterSimulation && !event_trace_show_enter_simulation) {
+                // Entity enter simulation messages are disabled.
+                return;
+            }
+            if (msg_type == et_msg_type::eExitSimulation && !event_trace_show_exit_simulation) {
+                // Entity exit simulation messages are disabled.
+                return;
+            }
+            if (msg_type == et_msg_type::eEventOccurrence && !event_trace_show_events) {
+                // Event occurrence messages are disabled.
+                return;
+            }
+            if (msg_type == et_msg_type::eSelfSchedulingEventOccurrence && !event_trace_show_self_scheduling_events) {
+                // Self-scheduling events are disabled.
+                return;
+            }
+            if (msg_type == et_msg_type::eAttributeChange && (!event_trace_show_attributes || event_trace_selected_attributes.size() == 0)) {
+                // Attribute changes are disabled, or no attributes selected.
+                return;
+            }
+            if (event_trace_selected_entities.size() > 0 && event_trace_selected_entities.count(entity_id) == 0) {
+                // Entity is not in the specified entity list.
+                return;
+            }
+            if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(id) == 0) {
+                // Event is not in the specified event list.
+                return;
+            }
+            if (msg_type == et_msg_type::eQueuedEvent && !event_trace_show_queued_events) {
+                // Queued normal events are disabled.
+                return;
+            }
+            if (msg_type == et_msg_type::eQueuedSelfSchedulingEvent && !event_trace_show_queued_self_scheduling_events) {
+                // Queued self-scheduling events are disabled.
+                return;
+            }
+            if ((msg_type == et_msg_type::eAttributeChange || msg_type == et_msg_type::eAttributeStart) && event_trace_selected_attributes.count(id) == 0) {
+                // Attribute is not in the specified attribute list.
+                return;
+            }
         }
 
         switch (event_trace_report_style) {

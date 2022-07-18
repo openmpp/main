@@ -119,7 +119,7 @@ list<ImportSymbol *> Symbol::pp_all_imports;
 
 set<string> Symbol::pp_all_event_names;
 
-set<string> Symbol::pp_all_attribute_names;
+set<string> Symbol::pp_visible_member_names;
 
 list<GlobalFuncSymbol *> Symbol::pp_all_global_funcs;
 
@@ -1503,27 +1503,21 @@ void Symbol::post_parse_all()
     }
 
     {
-        // Create the amalgamated set of attribute names, in all entities, sorted lexicographically.
+        // Create the amalgamated set of visible member names, in all entities, sorted lexicographically.
         for (auto* entity : pp_all_agents) {
             for (auto* dm : entity->pp_agent_data_members) {
-                if (dm->is_attribute()) {
-                    auto attr = dynamic_cast<AttributeSymbol*>(dm);
-                    assert(attr);
-                    string str = attr->name;
-                    pp_all_attribute_names.insert(str);
+                if (dm->is_attribute() || dm->is_multilink()) {
+                    pp_visible_member_names.insert(dm->name);
                 }
             }
         }
 
-        // For each attribute in the model, find the index in the sorted set, and assign it as attribute_id
+        // For each visible member in the model, find the index in the sorted set, and assign it as member_id
         for (auto* entity : pp_all_agents) {
             for (auto* dm : entity->pp_agent_data_members) {
-                if (dm->is_attribute()) {
-                    auto attr = dynamic_cast<AttributeSymbol*>(dm);
-                    assert(attr);
-                    string str = attr->name;
-                    auto iter = pp_all_attribute_names.find(str);
-                    attr->pp_attribute_id = distance(pp_all_attribute_names.begin(), iter);
+                if (dm->is_attribute() || dm->is_multilink()) {
+                    auto iter = pp_visible_member_names.find(dm->name);
+                    dm->pp_member_id = distance(pp_visible_member_names.begin(), iter);
                 }
             }
         }

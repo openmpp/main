@@ -827,6 +827,15 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
+        BaseEntity::event_trace_show_linked_entities = false;
+        if (i_runBase->isOptionExist("EventTrace.ShowLinkedEntities")) {
+            BaseEntity::event_trace_show_linked_entities = i_runBase->boolOption("EventTrace.ShowLinkedEntities");
+            if (BaseEntity::event_trace_show_linked_entities && 0 == BaseEntity::event_trace_selected_entities.size()) {
+                theLog->logFormatted(LT("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.ShowLinkedEntities"));
+                BaseEntity::event_trace_show_linked_entities = false;
+            }
+        }
+
         if (i_runBase->isOptionExist("EventTrace.SelectedEvents")) {
             std::list<std::string> evtList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEvents"));
             for (auto str : evtList) {
@@ -845,7 +854,7 @@ void process_trace_options(IRunBase* const i_runBase)
             std::list<std::string> attrList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedAttributes"));
             for (auto str : attrList) {
                 if (str.length() == 0) continue; // skip empty items in list
-                int id = omr::attribute_name_to_id(str);
+                int id = omr::member_name_to_id(str);
                 if (id >= 0) {
                     BaseEntity::event_trace_selected_attributes.insert(id);
                 }
@@ -882,6 +891,7 @@ bool BaseEntity::event_trace_show_attributes = false;
 double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();
 double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
 std::unordered_set<int> BaseEntity::event_trace_selected_entities;
+bool BaseEntity::event_trace_show_linked_entities = false;
 std::unordered_set<int> BaseEntity::event_trace_selected_events;
 std::unordered_set<int> BaseEntity::event_trace_selected_attributes;
 

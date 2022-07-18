@@ -638,19 +638,19 @@ void EntitySymbol::build_body_initialize_entity_sets()
 {
     CodeBlock& c = initialize_entity_sets_fn->func_body;
 
-    for (auto entity_set : pp_agent_entity_sets) {
-        c += "// " + entity_set->name;
-        // If the entity set filter is false at initialization, do nothing
-        if (entity_set->filter) {
-            c += "if (" + entity_set->filter->name + ") {" ;
-        }
-        c += entity_set->update_cell_fn->name + "();" ;
-        c += entity_set->insert_fn->name + "();" ;
-        if (entity_set->filter) {
-            c += "}" ;
-        }
-        c += "";
+for (auto entity_set : pp_agent_entity_sets) {
+    c += "// " + entity_set->name;
+    // If the entity set filter is false at initialization, do nothing
+    if (entity_set->filter) {
+        c += "if (" + entity_set->filter->name + ") {";
     }
+    c += entity_set->update_cell_fn->name + "();";
+    c += entity_set->insert_fn->name + "();";
+    if (entity_set->filter) {
+        c += "}";
+    }
+    c += "";
+}
 }
 
 void EntitySymbol::build_body_finalize_entity_sets()
@@ -661,11 +661,11 @@ void EntitySymbol::build_body_finalize_entity_sets()
         c += "// " + entity_set->name;
         // If the entity set filter is false at finalization, do nothing
         if (entity_set->filter) {
-            c += "if (" + entity_set->filter->name + ") {" ;
+            c += "if (" + entity_set->filter->name + ") {";
         }
         c += entity_set->erase_fn->name + "();";
         if (entity_set->filter) {
-            c += "}" ;
+            c += "}";
         }
         c += "";
     }
@@ -713,7 +713,7 @@ void EntitySymbol::build_body_finalize_links()
 {
     CodeBlock& c = finalize_links_fn->func_body;
 
-    for ( auto lav : pp_link_attributes ) {
+    for (auto lav : pp_link_attributes) {
         c += lav->name + ".set(nullptr);";
     }
 }
@@ -722,7 +722,7 @@ void EntitySymbol::build_body_finalize_multilinks()
 {
     CodeBlock& c = finalize_multilinks_fn->func_body;
 
-    for ( auto mlm : pp_multilink_members ) {
+    for (auto mlm : pp_multilink_members) {
         c += mlm->name + ".clear();";
     }
 }
@@ -736,22 +736,38 @@ void EntitySymbol::build_body_start_trace()
         c += "if (event_trace_on) {";
         for (auto* dm : pp_agent_data_members) {
             if (dm->is_attribute()) {
-                auto attr = dynamic_cast<AttributeSymbol*>(dm);
-                assert(attr);
-                c += "";
-                c += "// Trace message for starting value of " + attr->name;
+                c += "{";
+                c += "// Trace message for starting value of " + dm->name;
+                if (!dm->is_link_attribute()) {
+                    c += "double start_value = (double)" + dm->name + ".direct_get();";
+                }
+                else {
+                    // if link is nullptr, use NaN else use entity_id
+                    c += "auto ptr = " + dm->name + ".direct_get().get();";
+                    c += "double start_value = ptr ? (double)ptr->entity_id : std::numeric_limits<double>::quiet_NaN();";
+                    c += "if (ptr && BaseEntity::event_trace_show_linked_entities) {";
+                    c += "BaseEntity::event_trace_selected_entities.insert(ptr->entity_id);";
+                    c += "}";
+                }
                 c += "event_trace_msg("
                     "\"" + name + "\", "
                     "(int)entity_id, "
                     "GetCaseSeed(), "
                     "\"\", " // event_name (empty)
-                    + to_string(attr->pp_attribute_id) + ", " // id (attribute_id)
-                    "\"" + attr->name + "\", " // other_name (attribute_name)
-                    "(double)" + attr->name + ".direct_get(), "   // start_value
+                    + to_string(dm->pp_member_id) + ", " // id (member_id)
+                    "\"" + dm->name + "\", " // other_name (member_name)
+                    "start_value, "   // start_value
                     "(double)0, "        // unused
                     "(double)BaseEvent::get_global_time(), "
                     "BaseEntity::et_msg_type::eAttributeStart);"
                     ;
+                c += "}";
+            }
+            else if (dm->is_multilink()) {
+                c += "{";
+                c += "// Trace message for starting value of multilink " + dm->name;
+                // TODO
+                c += "}";
             }
         }
         c += "} // event_trace_on";
