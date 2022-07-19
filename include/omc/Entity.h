@@ -414,11 +414,26 @@ public:
         // enter simulation
         eExitSimulation,
 
+        // starting attribute value
+        eAttributeStart,
+
         // change of attribute value
         eAttributeChange,
 
-        // starting attribute value
-        eAttributeStart,
+        // starting link attribute value
+        eLinkAttributeStart,
+
+        // change of link attribute value
+        eLinkAttributeChange,
+
+        // starting multilink value
+        eMultilinkStart,
+
+        // change in multilink - insert entity 
+        eMultilinkInsert,
+
+        // change in multilink - erase entity 
+        eMultilinkErase,
     };
 
     /**
@@ -533,9 +548,9 @@ public:
         const char* entity_name,
         int entity_id,
         double case_seed,
-        const char* event_name,
-        int id,
-        const char *other_name,
+        const char* cstr1,
+        int other_id,
+        const char* cstr2,
         double dbl1,
         double dbl2,
         double global_time,
@@ -585,7 +600,7 @@ public:
                 // Entity is not in the specified entity list.
                 return;
             }
-            if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(id) == 0) {
+            if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(other_id) == 0) {
                 // Event is not in the specified event list.
                 return;
             }
@@ -597,7 +612,7 @@ public:
                 // Queued self-scheduling events are disabled.
                 return;
             }
-            if ((msg_type == et_msg_type::eAttributeChange || msg_type == et_msg_type::eAttributeStart) && event_trace_selected_attributes.count(id) == 0) {
+            if ((msg_type == et_msg_type::eAttributeChange || msg_type == et_msg_type::eAttributeStart) && event_trace_selected_attributes.count(other_id) == 0) {
                 // Attribute is not in the specified attribute list.
                 return;
             }
@@ -615,11 +630,12 @@ public:
                 event_trace_maximum_lines--;
 
                 auto& the_time = dbl1;
+                auto& the_name = cstr2;
                 theTrace->logFormatted("%s - actor_id=%d - case_seed=%.0f -  : event=%s - time=%.15f",
                     entity_name,
                     entity_id,
                     case_seed,
-                    other_name,
+                    the_name,
                     the_time);
             }
             break;
@@ -644,6 +660,7 @@ public:
                 case et_msg_type::eEventOccurrence:
                 {
                     //auto& current_time = dbl1;
+                    auto& event_name = cstr1;
                     auto& entity_age = dbl2;
                     int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(event_name)));
                     theTrace->logFormatted("%13.6f   EVENT ********* %08d %s.%s%*s age=%.6f",
@@ -660,6 +677,7 @@ public:
                 {
                     //auto& current_time = dbl1;
                     auto& entity_age = dbl2;
+                    auto& event_name = cstr1;
                     int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(event_name)));
                     theTrace->logFormatted("%13.6f   EVENT(SS) ***** %08d %s.%s%*s age=%.6f",
                         global_time,
@@ -675,17 +693,18 @@ public:
                 {
                     auto& new_time = dbl1;
                     auto& old_time = dbl2;
+                    auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
                     if (event_trace_show_queued_just_changes && (new_time == old_time)) {
                         // Do not report if time-to-event did not change.
                         break;
                     }
-                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(timefn_name)));
                     theTrace->logFormatted("%13.6f     %13.6f %08d     %s.%s%*s old=%.6f,new=%.6f",
                         global_time,
                         new_time,
                         entity_id,
                         entity_name,
-                        other_name, // is name of time function, eg timeMigrationEvent
+                        timefn_name,
                         padding, "",
                         old_time,
                         new_time
@@ -695,6 +714,7 @@ public:
                 case et_msg_type::eQueuedSelfSchedulingEvent:
                 {
                     auto& new_time = dbl1;
+                    auto& event_name = cstr1;
                     theTrace->logFormatted("%13.6f     %13.6f %08d     %s.%s",
                         global_time,
                         new_time,
@@ -708,12 +728,13 @@ public:
                 {
                     auto& entity_time = dbl1;
                     auto& entity_age = dbl2;
-                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
+                    auto& description  = cstr2; // is "enter_simulation"
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(description)));
                     theTrace->logFormatted("%13.6f  ENTER SIMULATION %08d %s.%s%*s time=%.6f,age=%.6f",
                         global_time,
                         entity_id,
                         entity_name,
-                        other_name, // is "enter_simulation"
+                        description,
                         padding, "",
                         entity_time,
                         entity_age
@@ -724,15 +745,34 @@ public:
                 {
                     auto& entity_time = dbl1;
                     auto& entity_age = dbl2;
-                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
+                    auto& description = cstr2; // is "exit_simulation"
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(description)));
                     theTrace->logFormatted("%13.6f  EXIT SIMULATION  %08d %s.%s%*s time=%.6f,age=%.6f",
                         global_time,
                         entity_id,
                         entity_name,
-                        other_name,  // is "exit_simulation"
+                        description,
                         padding, "",
                         entity_time,
                         entity_age
+                    );
+                }
+                break;
+                case et_msg_type::eAttributeStart:
+                {
+                    auto& start_value = dbl1;
+                    auto& attribute_name = cstr2;   // name of attribute eg 'year'
+                    std::stringstream ss;
+                    ss << std::setw(9) << std::setprecision(4) << start_value;
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(attribute_name)));
+                    theTrace->logFormatted("%13.6f   start=%-.10s %08d   %s.%s%*s start=%-.12g",
+                        global_time,
+                        ss.str().c_str(),
+                        entity_id,
+                        entity_name,
+                        attribute_name,
+                        padding, "",
+                        start_value
                     );
                 }
                 break;
@@ -740,35 +780,135 @@ public:
                 {
                     auto& old_value = dbl1;
                     auto& new_value = dbl2;
+                    auto& attribute_name = cstr2;   // name of attribute eg 'year'
                     std::stringstream ss;
                     ss << std::setw(9) << std::setprecision(4) << new_value;
-                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(attribute_name)));
                     theTrace->logFormatted("%13.6f     new=%-.10s %08d   %s.%s%*s old=%-.12g,new=%-.12g",
                         global_time,
                         ss.str().c_str(),
                         entity_id,
                         entity_name,
-                        other_name,  // is name of attribute eg year
+                        attribute_name,  // is name of attribute eg year
                         padding, "",
                         old_value,
                         new_value
                     );
                 }
                 break;
-                case et_msg_type::eAttributeStart:
+                case et_msg_type::eLinkAttributeStart:
                 {
                     auto& start_value = dbl1;
+                    auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
                     std::stringstream ss;
-                    ss << std::setw(9) << std::setprecision(4) << start_value;
-                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(other_name)));
-                    theTrace->logFormatted("%13.6f   start=%-.10s %08d   %s.%s%*s start=%-.12g",
+                    if (start_value >= 0) {
+                        // starting link value is the entity_id of the entity
+                        ss << (int)start_value;
+                    }
+                    else {
+                        // starting link value is nullptr
+                        ss << "nullptr";
+                    }
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(attribute_name)));
+                    theTrace->logFormatted("%13.6f   start=%9.9s %08d   %s.%s%*s start=%s",
                         global_time,
                         ss.str().c_str(),
                         entity_id,
                         entity_name,
-                        other_name,  // is name of attribute eg year
+                        attribute_name,
                         padding, "",
-                        start_value
+                        ss.str().c_str()
+                    );
+                }
+                break;
+                case et_msg_type::eLinkAttributeChange:
+                {
+                    auto& old_value = dbl1;
+                    auto& new_value = dbl2;
+                    auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
+                    std::stringstream ss_new;
+                    if (new_value >= 0) {
+                        // new link value is the entity_id of the entity
+                        ss_new << (int)new_value;
+                    }
+                    else {
+                        // new link value is nullptr
+                        ss_new << "nullptr";
+                    }
+                    std::stringstream ss_old;
+                    if (old_value >= 0) {
+                        // old link value is the entity_id of the entity
+                        ss_old << (int)old_value;
+                    }
+                    else {
+                        // old link value is nullptr
+                        ss_old << "nullptr";
+                    }
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(attribute_name)));
+                    theTrace->logFormatted("%13.6f     new=%9.9s %08d   %s.%s%*s old=%s,new=%s",
+                        global_time,
+                        ss_new.str().c_str(),
+                        entity_id,
+                        entity_name,
+                        attribute_name,  // is name of attribute eg year
+                        padding, "",
+                        ss_old.str().c_str(),
+                        ss_new.str().c_str()
+                    );
+                }
+                break;
+                case et_msg_type::eMultilinkStart:
+                {
+                    auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
+                    auto& contents = cstr1; // comma-separated list of entity_id's
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(multilink_name)));
+                    std::stringstream ss;
+                    theTrace->logFormatted("%13.6f   start=%9.9s %08d   %s.%s%*s contents={%s}",
+                        global_time,
+                        ss.str().c_str(),
+                        entity_id,
+                        entity_name,
+                        multilink_name,
+                        padding, "",
+                        contents
+                    );
+                }
+                break;
+                case et_msg_type::eMultilinkInsert:
+                {
+                    int ent_id = (int)dbl1;
+                    auto& contents = cstr1; // comma-separated list of entity_id's
+                    auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
+                    std::stringstream ss;
+                    ss << ent_id;
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(multilink_name)));
+                    theTrace->logFormatted("%13.6f  insert=%9.9s %08d   %s.%s%*s contents={%s}",
+                        global_time,
+                        ss.str().c_str(),
+                        entity_id,
+                        entity_name,
+                        multilink_name,
+                        padding, "",
+                        contents
+                    );
+                }
+                break;
+                case et_msg_type::eMultilinkErase:
+                {
+                    int ent_id = (int)dbl1;
+                    auto& contents = cstr1; // comma-separated list of entity_id's
+                    auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
+                    std::stringstream ss;
+                    ss << ent_id;
+                    int padding = std::max<int>(0, name_colwidth - int(1 + std::strlen(entity_name) + std::strlen(multilink_name)));
+                    theTrace->logFormatted("%13.6f   erase=%9.9s %08d   %s.%s%*s contents={%s}",
+                        global_time,
+                        ss.str().c_str(),
+                        entity_id,
+                        entity_name,
+                        multilink_name,  // is name of attribute eg year
+                        padding, "",
+                        contents
                     );
                 }
                 break;

@@ -120,6 +120,30 @@ public:
         }
     }
 
+    /**
+     * @fn  std::string Multilink::contents(void) const
+     *
+     * @brief   Gets the contents as a comma-separated list of entity_id's
+     *
+     * @returns A std::string.
+     */
+    std::string contents(void) const
+    {
+        std::string result;
+        bool is_first = true;
+        for (auto& ptr : storage) {
+            if (!ptr) continue; // skip holes indicated by nullptr
+            if (is_first) {
+                is_first = false;
+            }
+            else {
+                result += ",";
+            }
+            result += std::to_string(ptr.get()->entity_id);
+        }
+        return result;
+    }
+
     // Overload of pointer operator to support Modgen syntax for multilink functions.
     // Modgen stores a multi-link as a pointer to a separately allocated object,
     // so model code looks like

@@ -56,20 +56,75 @@ void EntityMultilinkSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
-        // Create function bodies which maintain reciprocal link
         CodeBlock& c_insert = insert_fn->func_body;
         CodeBlock& c_erase = erase_fn->func_body;
+
+        if (Symbol::option_event_trace) {
+            // EventTrace insert
+            c_insert += "// Code Injection: event trace";
+            c_insert += "if (event_trace_on && om_active) {";
+            c_insert +=     "auto ent_ptr = lnk.get();";
+            c_insert +=     "auto lst = " + name + ".contents();";
+            c_insert +=     "event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "GetCaseSeed(), "
+                "lst.c_str(), " // multilink contents as comma-separated entity_id's
+                + to_string(pp_member_id) + ", " // id (member_id)
+                "\"" + name + "\", " // other_name (attribute_name)
+                "(double)ent_ptr->entity_id, "
+                "0, " // unused
+                "(double)BaseEvent::get_global_time(), "
+                "BaseEntity::et_msg_type::eMultilinkInsert);"
+                ;
+            // if requested, add the linked entity to traced entities
+            c_insert +=     "if (BaseEntity::event_trace_show_linked_entities) {";
+            c_insert +=         "BaseEntity::event_trace_selected_entities.insert(ent_ptr->entity_id);";
+            c_insert +=     "}";
+            c_insert += "}";
+            c_insert += "";
+
+            // EventTrace erase
+            c_erase += "// Code Injection: event trace";
+            c_erase += "if (event_trace_on && om_active) {";
+            c_erase +=     "auto ent_ptr = lnk.get();";
+            c_erase +=     "auto lst = " + name + ".contents();";
+            c_erase +=     "event_trace_msg("
+                "\"" + agent->name + "\", "
+                "(int)entity_id, "
+                "GetCaseSeed(), "
+                "lst.c_str(), " // multilink contents as comma-separated entity_id's
+                + to_string(pp_member_id) + ", " // id (member_id)
+                "\"" + name + "\", " // other_name (attribute_name)
+                "(double)ent_ptr->entity_id, "
+                "0, " // unused
+                "(double)BaseEvent::get_global_time(), "
+                "BaseEntity::et_msg_type::eMultilinkErase);"
+                ;
+            c_erase += "}";
+            c_erase += "";
+        }
+        
+        // Maintain reciprocal links
         if (reciprocal_link) {
             // reciprocal link is single
             auto reciprocal = reciprocal_link;
+
+            c_insert += "// Maintain reciprocal link";
             c_insert += "if (lnk.get() != nullptr) lnk->" + reciprocal->name + " = this;";
+
+            c_erase += "// Maintain reciprocal link";
             c_erase += "if (lnk->" + reciprocal->name + ".get().get() == this) lnk->" + reciprocal->name + " = nullptr;";
         }
         else {
             // reciprocal link is multi
             assert(reciprocal_multilink); // grammar guarantee
             auto reciprocal = reciprocal_multilink;
+
+            c_insert += "// Maintain reciprocal multilink";
             c_insert += "lnk->" + reciprocal->name + ".insert(this);";
+
+            c_erase += "// Maintain reciprocal multilink";
             c_erase +=  "lnk->" + reciprocal->name + ".erase(this);";
         }
         break;

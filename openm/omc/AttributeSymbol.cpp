@@ -207,29 +207,42 @@ void AttributeSymbol::post_parse(int pass)
             if (!is_link_attribute()) {
                 c += "double old_value = (double)om_old;";
                 c += "double new_value = (double)om_new;";
+                c += "event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"\", " // event_name (empty)
+                    + to_string(pp_member_id) + ", " // id (member_id)
+                    "\"" + name + "\", " // other_name (attribute_name)
+                    "old_value, "
+                    "new_value, "
+                    "(double)BaseEvent::get_global_time(), "
+                    "BaseEntity::et_msg_type::eAttributeChange);"
+                    ;
             }
             else {
-                // if link is nullptr, use NaN else use entity_id
+                // if link is nullptr, pass -1, else use entity_id
                 c += "auto old_ptr = om_old.get();";
-                c += "double old_value = old_ptr ? (double)old_ptr->entity_id : std::numeric_limits<double>::quiet_NaN();";
+                c += "double old_value = old_ptr ? (double)old_ptr->entity_id : -1.0;";
                 c += "auto new_ptr = om_new.get();";
-                c += "double new_value = new_ptr ? (double)new_ptr->entity_id : std::numeric_limits<double>::quiet_NaN();";
+                c += "double new_value = new_ptr ? (double)new_ptr->entity_id : -1.0;";
+                c += "event_trace_msg("
+                    "\"" + agent->name + "\", "
+                    "(int)entity_id, "
+                    "GetCaseSeed(), "
+                    "\"\", " // event_name (empty)
+                    + to_string(pp_member_id) + ", " // id (member_id)
+                    "\"" + name + "\", " // other_name (attribute_name)
+                    "old_value, "
+                    "new_value, "
+                    "(double)BaseEvent::get_global_time(), "
+                    "BaseEntity::et_msg_type::eLinkAttributeChange);"
+                    ;
+                // if requested, add the linked entity to entities selected for tracing
                 c += "if (new_ptr && BaseEntity::event_trace_show_linked_entities) {";
                 c +=     "BaseEntity::event_trace_selected_entities.insert(new_ptr->entity_id);";
                 c += "}";
             }
-            c +=     "event_trace_msg("
-                "\"" + agent->name + "\", "
-                "(int)entity_id, "
-                "GetCaseSeed(), "
-                "\"\", " // event_name (empty)
-                + to_string(pp_member_id) + ", " // id (member_id)
-                "\"" + name + "\", " // other_name (attribute_name)
-                "old_value, "
-                "new_value, "
-                "(double)BaseEvent::get_global_time(), "
-                "BaseEntity::et_msg_type::eAttributeChange);"
-                ;
             c += "}";
         }
         break;
