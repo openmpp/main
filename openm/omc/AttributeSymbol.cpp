@@ -210,6 +210,7 @@ void AttributeSymbol::post_parse(int pass)
                 c += "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
+                    "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"\", " // event_name (empty)
                     + to_string(pp_member_id) + ", " // id (member_id)
@@ -229,6 +230,7 @@ void AttributeSymbol::post_parse(int pass)
                 c += "event_trace_msg("
                     "\"" + agent->name + "\", "
                     "(int)entity_id, "
+                    "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"\", " // event_name (empty)
                     + to_string(pp_member_id) + ", " // id (member_id)

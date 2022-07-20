@@ -611,6 +611,7 @@ void EntitySymbol::build_body_initialize_events()
                     c += "event_trace_msg("
                         "\"" + name + "\", " // entity name
                         "(int)entity_id, "
+                        "(double)age.direct_get(), "
                         "GetCaseSeed(), "
                         "\"" + d_attr->pretty_name() + "\", "
                         + std::to_string(ss_event->pp_event_id) + ", " // event id of the single event which handles ss attributes
@@ -743,6 +744,7 @@ void EntitySymbol::build_body_start_trace()
                     c += "event_trace_msg("
                         "\"" + name + "\", "
                         "(int)entity_id, "
+                        "(double)age.direct_get(), "
                         "GetCaseSeed(), "
                         "\"\", " // event_name (empty)
                         + to_string(dm->pp_member_id) + ", " // id (member_id)
@@ -760,6 +762,7 @@ void EntitySymbol::build_body_start_trace()
                     c += "event_trace_msg("
                         "\"" + name + "\", "
                         "(int)entity_id, "
+                        "(double)age.direct_get(), "
                         "GetCaseSeed(), "
                         "\"\", " // event_name (empty)
                         + to_string(dm->pp_member_id) + ", " // id (member_id)
@@ -783,6 +786,7 @@ void EntitySymbol::build_body_start_trace()
                 c += "event_trace_msg("
                     "\"" + name + "\", "
                     "(int)entity_id, "
+                    "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "lst.c_str(), " // multilink contents as comma-separated entity_id's
                     + to_string(dm->pp_member_id) + ", " // id (member_id)

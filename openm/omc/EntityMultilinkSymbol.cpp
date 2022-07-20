@@ -68,6 +68,7 @@ void EntityMultilinkSymbol::post_parse(int pass)
             c_insert +=     "event_trace_msg("
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
+                "(double)age.direct_get(), "
                 "GetCaseSeed(), "
                 "lst.c_str(), " // multilink contents as comma-separated entity_id's
                 + to_string(pp_member_id) + ", " // id (member_id)
@@ -92,6 +93,7 @@ void EntityMultilinkSymbol::post_parse(int pass)
             c_erase +=     "event_trace_msg("
                 "\"" + agent->name + "\", "
                 "(int)entity_id, "
+                "(double)age.direct_get(), "
                 "GetCaseSeed(), "
                 "lst.c_str(), " // multilink contents as comma-separated entity_id's
                 + to_string(pp_member_id) + ", " // id (member_id)
