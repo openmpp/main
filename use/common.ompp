@@ -818,6 +818,10 @@ void process_trace_options(IRunBase* const i_runBase)
 
         BaseEntity::event_trace_maximum_time = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
 
+        BaseEntity::event_trace_minimum_age = i_runBase->doubleOption("EventTrace.MinimumAge", -std::numeric_limits<double>::infinity());
+
+        BaseEntity::event_trace_maximum_age = i_runBase->doubleOption("EventTrace.MaximumAge", std::numeric_limits<double>::infinity());
+
         if (i_runBase->isOptionExist("EventTrace.SelectedEntities")) {
             std::list<std::string> entList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEntities"));
             for (auto str : entList) {
@@ -864,7 +868,7 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
-        BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 40);
+        BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 20);
 
         BaseEntity::event_trace_maximum_lines = i_runBase->intOption("EventTrace.MaximumLines", 100000);
     }
@@ -890,6 +894,8 @@ bool BaseEntity::event_trace_show_self_scheduling_events = true;
 bool BaseEntity::event_trace_show_attributes = false;
 double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();
 double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
+double BaseEntity::event_trace_minimum_age = -std::numeric_limits<double>::infinity();
+double BaseEntity::event_trace_maximum_age = std::numeric_limits<double>::infinity();
 std::unordered_set<int> BaseEntity::event_trace_selected_entities;
 bool BaseEntity::event_trace_show_linked_entities = false;
 std::unordered_set<int> BaseEntity::event_trace_selected_events;
