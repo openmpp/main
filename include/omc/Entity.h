@@ -536,6 +536,11 @@ public:
     static std::unordered_set<int> event_trace_selected_attributes;
 
     /**
+     * Whether to select all attributes
+     */
+    static bool event_trace_select_all_attributes;
+
+    /**
      * Used to set report column width for names
      */
     static int event_trace_name_column_width;
@@ -649,7 +654,7 @@ public:
                 || msg_type == et_msg_type::eMultilinkStart
                 || msg_type == et_msg_type::eMultilinkInsert
                 || msg_type == et_msg_type::eMultilinkErase
-                ) && (!event_trace_show_attributes || event_trace_selected_attributes.count(other_id) == 0)) {
+                ) && !(event_trace_select_all_attributes || event_trace_selected_attributes.count(other_id) != 0)) {
                 // Attribute or multilink is not in the selected attributes list.
                 return;
             }

@@ -868,6 +868,11 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
+        BaseEntity::event_trace_select_all_attributes = false;
+        if (i_runBase->isOptionExist("EventTrace.SelectAllAttributes")) {
+            BaseEntity::event_trace_select_all_attributes = i_runBase->boolOption("EventTrace.SelectAllAttributes");
+        }
+
         BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 20);
 
         BaseEntity::event_trace_maximum_lines = i_runBase->intOption("EventTrace.MaximumLines", 100000);
@@ -900,6 +905,7 @@ std::unordered_set<int> BaseEntity::event_trace_selected_entities;
 bool BaseEntity::event_trace_show_linked_entities = false;
 std::unordered_set<int> BaseEntity::event_trace_selected_events;
 std::unordered_set<int> BaseEntity::event_trace_selected_attributes;
+bool BaseEntity::event_trace_select_all_attributes = false;
 
 int BaseEntity::event_trace_name_column_width = 40;
 int BaseEntity::event_trace_maximum_lines = 100000;
