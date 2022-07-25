@@ -471,9 +471,9 @@ public:
     static bool event_trace_show_queued_self_scheduling_events;
 
     /**
-     * Whether to suppress queued events with unchanged time-to-event in the event trace
+     * Whether to show queued events with unchanged time-to-event in the event trace
      */
-    static bool event_trace_show_queued_just_changes;
+    static bool event_trace_show_queued_unchanged;
 
     /**
      * Whether to show enter simulation information in the event trace
@@ -762,7 +762,7 @@ public:
                     auto& new_time = dbl1;
                     auto& old_time = dbl2;
                     auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
-                    if (event_trace_show_queued_just_changes && (new_time == old_time)) {
+                    if (!event_trace_show_queued_unchanged && (new_time == old_time)) {
                         // Do not report if time-to-event did not change.
                         break;
                     }

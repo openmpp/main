@@ -789,9 +789,9 @@ void process_trace_options(IRunBase* const i_runBase)
             BaseEntity::event_trace_show_queued_self_scheduling_events = i_runBase->boolOption("EventTrace.ShowQueuedSelfSchedulingEvents");
         }
 
-        BaseEntity::event_trace_show_queued_just_changes = true;
-        if (i_runBase->isOptionExist("EventTrace.ShowQueuedJustChanges")) {
-            BaseEntity::event_trace_show_queued_just_changes = i_runBase->boolOption("EventTrace.ShowQueuedJustChanges");
+        BaseEntity::event_trace_show_queued_unchanged = false;
+        if (i_runBase->isOptionExist("EventTrace.ShowQueuedUnchanged")) {
+            BaseEntity::event_trace_show_queued_unchanged = i_runBase->boolOption("EventTrace.ShowQueuedUnchanged");
         }
 
         BaseEntity::event_trace_show_enter_simulation = true;
@@ -873,9 +873,9 @@ void process_trace_options(IRunBase* const i_runBase)
             BaseEntity::event_trace_select_all_attributes = i_runBase->boolOption("EventTrace.SelectAllAttributes");
         }
 
-        BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 20);
+        BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 40);
 
-        BaseEntity::event_trace_maximum_lines = i_runBase->intOption("EventTrace.MaximumLines", 100000);
+        BaseEntity::event_trace_maximum_lines = i_runBase->intOption("EventTrace.MaximumLines", 20000);
     }
     else {
         // Model was not compiled with event trace capability.
@@ -892,7 +892,7 @@ enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEnti
 bool BaseEntity::event_trace_show_events = true;
 bool BaseEntity::event_trace_show_queued_events = true;
 bool BaseEntity::event_trace_show_queued_self_scheduling_events = true;
-bool BaseEntity::event_trace_show_queued_just_changes = true;
+bool BaseEntity::event_trace_show_queued_unchanged = false;
 bool BaseEntity::event_trace_show_enter_simulation = true;
 bool BaseEntity::event_trace_show_exit_simulation = true;
 bool BaseEntity::event_trace_show_self_scheduling_events = true;
@@ -908,7 +908,7 @@ std::unordered_set<int> BaseEntity::event_trace_selected_attributes;
 bool BaseEntity::event_trace_select_all_attributes = false;
 
 int BaseEntity::event_trace_name_column_width = 40;
-int BaseEntity::event_trace_maximum_lines = 100000;
+int BaseEntity::event_trace_maximum_lines = 20000;
 
 /**
 * Helper code used internally by run-time
