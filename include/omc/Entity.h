@@ -436,6 +436,9 @@ public:
 
         // change in multilink - erase entity 
         eMultilinkErase,
+
+        // entity added to selected entities because linked
+        eSnowball,
     };
 
     /**
@@ -1007,6 +1010,23 @@ public:
                         name_colwidth,
                         multilink_name,
                         contents
+                    );
+                }
+                break;
+                case et_msg_type::eSnowball:
+                {
+                    auto what = " selected++";
+                    auto& name = cstr2;   // name of the link or multilink, eg 'mlChildren'
+                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s",
+                        global_time,
+                        entity_name,
+                        entity_age,
+                        entity_id,
+                        what_width,
+                        what,
+                        other_id,
+                        name_colwidth,
+                        name
                     );
                 }
                 break;

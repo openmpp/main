@@ -760,21 +760,34 @@ void EntitySymbol::build_body_start_trace()
                     c += "auto ptr = " + dm->name + ".direct_get().get();";
                     c += "double start_value = ptr ? (double)ptr->entity_id : -1.0;";
                     c += "event_trace_msg("
-                        "\"" + name + "\", "
-                        "(int)entity_id, "
-                        "(double)age.direct_get(), "
-                        "GetCaseSeed(), "
-                        "\"\", " // event_name (empty)
-                        + to_string(dm->pp_member_id) + ", " // id (member_id)
-                        "\"" + dm->name + "\", " // other_name (member_name)
-                        "start_value, "   // start_value
-                        "(double)0, "        // unused
-                        "(double)BaseEvent::get_global_time(), "
-                        "BaseEntity::et_msg_type::eLinkAttributeStart);"
+                            "\"" + name + "\", "
+                            "(int)entity_id, "
+                            "(double)age.direct_get(), "
+                            "GetCaseSeed(), "
+                            "\"\", " // event_name (empty)
+                            + to_string(dm->pp_member_id) + ", " // id (member_id)
+                            "\"" + dm->name + "\", " // other_name (member_name)
+                            "start_value, "   // start_value
+                            "(double)0, "        // unused
+                            "(double)BaseEvent::get_global_time(), "
+                            "BaseEntity::et_msg_type::eLinkAttributeStart);"
                         ;
                     // if requested, add the linked entity to entities selected for tracing
-                    c += "if (ptr && BaseEntity::event_trace_show_linked_entities) {";
+                    c += "if (ptr && BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ptr->entity_id) == 0) {";
                     c +=     "BaseEntity::event_trace_selected_entities.insert(ptr->entity_id);";
+                    c +=     "event_trace_msg("
+                                "\"" + name + "\", "
+                                "(int)entity_id, "
+                                "(double)age.direct_get(), "
+                                "GetCaseSeed(), "
+                                "\"\", " // cstr1
+                                "ptr->entity_id, " // other_id
+                                "\"" + dm->name + "\", " // cstr2
+                                "0, " // dbl1
+                                "0, " // dbl2
+                                "(double)BaseEvent::get_global_time(), "
+                                "BaseEntity::et_msg_type::eSnowball);"
+                            ;
                     c += "}";
                 }
                 c += "}";
@@ -797,10 +810,25 @@ void EntitySymbol::build_body_start_trace()
                     "BaseEntity::et_msg_type::eMultilinkStart);"
                     ;
                 // if requested, add all entities in the multilink to the entities selected for tracing
-                c += "if (BaseEntity::event_trace_show_linked_entities) {";
+                c += "if (BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0) {";
                 c +=     "for (auto& lnk : " + dm->name + ".storage) {";
                 c +=         "// bypass any holes in the multilink (indicated by nullptr contents)";
-                c +=         "if (lnk.get()) BaseEntity::event_trace_selected_entities.insert(lnk);";
+                c +=         "if (lnk.get() && BaseEntity::event_trace_selected_entities.count(lnk) == 0) {";
+                c +=             "BaseEntity::event_trace_selected_entities.insert(lnk);";
+                c +=             "event_trace_msg("
+                                    "\"" + name + "\", "
+                                    "(int)entity_id, "
+                                    "(double)age.direct_get(), "
+                                    "GetCaseSeed(), "
+                                    "\"\", " // cstr1
+                                    "lnk, " // other_id
+                                    "\"" + dm->name + "\", " // cstr2
+                                    "0, " // dbl1
+                                    "0, " // dbl2
+                                    "(double)BaseEvent::get_global_time(), "
+                                    "BaseEntity::et_msg_type::eSnowball);"
+                                ;
+                c +=         "}";
                 c +=     "}";
                 c += "}";
                 c += "}";

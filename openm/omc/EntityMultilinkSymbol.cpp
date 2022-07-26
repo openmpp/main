@@ -66,21 +66,34 @@ void EntityMultilinkSymbol::post_parse(int pass)
             c_insert +=     "auto ent_ptr = lnk.get();";
             c_insert +=     "auto lst = " + name + ".contents();";
             c_insert +=     "event_trace_msg("
-                "\"" + agent->name + "\", "
-                "(int)entity_id, "
-                "(double)age.direct_get(), "
-                "GetCaseSeed(), "
-                "lst.c_str(), " // multilink contents as comma-separated entity_id's
-                + to_string(pp_member_id) + ", " // id (member_id)
-                "\"" + name + "\", " // other_name (attribute_name)
-                "(double)ent_ptr->entity_id, "
-                "0, " // unused
-                "(double)BaseEvent::get_global_time(), "
-                "BaseEntity::et_msg_type::eMultilinkInsert);"
-                ;
+                                "\"" + agent->name + "\", "
+                                "(int)entity_id, "
+                                "(double)age.direct_get(), "
+                                "GetCaseSeed(), "
+                                "lst.c_str(), " // multilink contents as comma-separated entity_id's
+                                + to_string(pp_member_id) + ", " // id (member_id)
+                                "\"" + name + "\", " // other_name (attribute_name)
+                                "(double)ent_ptr->entity_id, "
+                                "0, " // unused
+                                "(double)BaseEvent::get_global_time(), "
+                                "BaseEntity::et_msg_type::eMultilinkInsert);"
+                            ;
             // if requested, add the linked entity to traced entities
-            c_insert +=     "if (BaseEntity::event_trace_show_linked_entities) {";
+            c_insert +=     "if (BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ent_ptr->entity_id) == 0) {";
             c_insert +=         "BaseEntity::event_trace_selected_entities.insert(ent_ptr->entity_id);";
+            c_insert +=         "event_trace_msg("
+                                    "\"" + agent->name + "\", "
+                                    "(int)entity_id, "
+                                    "(double)age.direct_get(), "
+                                    "GetCaseSeed(), "
+                                    "\"\", " // cstr1
+                                    "ent_ptr->entity_id, " // other_id
+                                    "\"" + name + "\", " // cstr2
+                                    "0, " // dbl1
+                                    "0, " // dbl2
+                                    "(double)BaseEvent::get_global_time(), "
+                                    "BaseEntity::et_msg_type::eSnowball);"
+                                ;
             c_insert +=     "}";
             c_insert += "}";
             c_insert += "";
