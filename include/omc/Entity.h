@@ -764,6 +764,7 @@ public:
                     auto what = "    queued";
                     auto& new_time = dbl1;
                     auto& old_time = dbl2;
+                    auto& event_name = cstr1;
                     auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
                     if (!event_trace_show_queued_unchanged && (new_time == old_time)) {
                         // Do not report if time-to-event did not change.
@@ -778,7 +779,7 @@ public:
                         what,
                         new_time,
                         name_colwidth,
-                        timefn_name,
+                        event_name,
                         old_time
                     );
                 }
@@ -813,9 +814,9 @@ public:
                         entity_id,
                         what_width,
                         what,
-                        "==========", // no Value
+                        "", // no Value
                         name_colwidth,
-                        "==========",
+                        "",
                         entity_time,
                         entity_age
                     );
@@ -833,9 +834,9 @@ public:
                         entity_id,
                         what_width,
                         what,
-                        "==========", // no Value
+                        "", // no Value
                         name_colwidth,
-                        "==========" // no Name
+                        "" // no Name
                     );
                 }
                 break;
