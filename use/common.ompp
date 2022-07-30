@@ -831,12 +831,21 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
-        BaseEntity::event_trace_show_linked_entities = false;
-        if (i_runBase->isOptionExist("EventTrace.ShowLinkedEntities")) {
-            BaseEntity::event_trace_show_linked_entities = i_runBase->boolOption("EventTrace.ShowLinkedEntities");
-            if (BaseEntity::event_trace_show_linked_entities && 0 == BaseEntity::event_trace_selected_entities.size()) {
-                theLog->logFormatted(LT("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.ShowLinkedEntities"));
-                BaseEntity::event_trace_show_linked_entities = false;
+        if (i_runBase->isOptionExist("EventTrace.SelectedCaseSeeds")) {
+            std::list<std::string> entList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedCaseSeeds"));
+            for (auto str : entList) {
+                if (str.length() == 0) continue; // skip empty items in list
+                double val = std::stod(str);
+                BaseEntity::event_trace_selected_case_seeds.insert(val);
+            }
+        }
+
+        BaseEntity::event_trace_select_linked_entities = false;
+        if (i_runBase->isOptionExist("EventTrace.SelectLinkedEntities")) {
+            BaseEntity::event_trace_select_linked_entities = i_runBase->boolOption("EventTrace.SelectLinkedEntities");
+            if (BaseEntity::event_trace_select_linked_entities && 0 == BaseEntity::event_trace_selected_entities.size()) {
+                theLog->logFormatted(LT("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.SelectLinkedEntities"));
+                BaseEntity::event_trace_select_linked_entities = false;
             }
         }
 
@@ -868,10 +877,9 @@ void process_trace_options(IRunBase* const i_runBase)
             }
         }
 
-        BaseEntity::event_trace_select_all_attributes = false;
-        if (i_runBase->isOptionExist("EventTrace.SelectAllAttributes")) {
-            BaseEntity::event_trace_select_all_attributes = i_runBase->boolOption("EventTrace.SelectAllAttributes");
-        }
+        BaseEntity::event_trace_minimum_attribute = i_runBase->doubleOption("EventTrace.MinimumAttribute", -std::numeric_limits<double>::infinity());
+
+        BaseEntity::event_trace_maximum_attribute = i_runBase->doubleOption("EventTrace.MaximumAttribute", std::numeric_limits<double>::infinity());
 
         BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 40);
 
@@ -901,11 +909,13 @@ double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infi
 double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
 double BaseEntity::event_trace_minimum_age = -std::numeric_limits<double>::infinity();
 double BaseEntity::event_trace_maximum_age = std::numeric_limits<double>::infinity();
+std::unordered_set<double> BaseEntity::event_trace_selected_case_seeds;
 std::unordered_set<int> BaseEntity::event_trace_selected_entities;
-bool BaseEntity::event_trace_show_linked_entities = false;
+bool BaseEntity::event_trace_select_linked_entities = false;
 std::unordered_set<int> BaseEntity::event_trace_selected_events;
 std::unordered_set<int> BaseEntity::event_trace_selected_attributes;
-bool BaseEntity::event_trace_select_all_attributes = false;
+double BaseEntity::event_trace_minimum_attribute = -std::numeric_limits<double>::infinity();
+double BaseEntity::event_trace_maximum_attribute = std::numeric_limits<double>::infinity();
 
 int BaseEntity::event_trace_name_column_width = 40;
 int BaseEntity::event_trace_maximum_lines = 20000;

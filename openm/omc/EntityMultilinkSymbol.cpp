@@ -79,7 +79,7 @@ void EntityMultilinkSymbol::post_parse(int pass)
                                 "BaseEntity::et_msg_type::eMultilinkInsert);"
                             ;
             // if requested, add the linked entity to traced entities
-            c_insert +=     "if (BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ent_ptr->entity_id) == 0) {";
+            c_insert +=     "if (BaseEntity::event_trace_select_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ent_ptr->entity_id) == 0) {";
             c_insert +=         "BaseEntity::event_trace_selected_entities.insert(ent_ptr->entity_id);";
             c_insert +=         "event_trace_msg("
                                     "\"" + agent->name + "\", "

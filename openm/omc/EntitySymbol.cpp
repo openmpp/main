@@ -773,7 +773,7 @@ void EntitySymbol::build_body_start_trace()
                             "BaseEntity::et_msg_type::eLinkAttributeStart);"
                         ;
                     // if requested, add the linked entity to entities selected for tracing
-                    c += "if (ptr && BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ptr->entity_id) == 0) {";
+                    c += "if (ptr && BaseEntity::event_trace_select_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ptr->entity_id) == 0) {";
                     c +=     "BaseEntity::event_trace_selected_entities.insert(ptr->entity_id);";
                     c +=     "event_trace_msg("
                                 "\"" + name + "\", "
@@ -810,7 +810,7 @@ void EntitySymbol::build_body_start_trace()
                     "BaseEntity::et_msg_type::eMultilinkStart);"
                     ;
                 // if requested, add all entities in the multilink to the entities selected for tracing
-                c += "if (BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0) {";
+                c += "if (BaseEntity::event_trace_select_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0) {";
                 c +=     "for (auto& lnk : " + dm->name + ".storage) {";
                 c +=         "// bypass any holes in the multilink (indicated by nullptr contents)";
                 c +=         "if (lnk.get() && BaseEntity::event_trace_selected_entities.count(lnk) == 0) {";

@@ -241,7 +241,7 @@ void AttributeSymbol::post_parse(int pass)
                         "BaseEntity::et_msg_type::eLinkAttributeChange);"
                     ;
                 // if requested, add the linked entity to entities selected for tracing
-                c += "if (new_ptr && BaseEntity::event_trace_show_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(new_ptr->entity_id) == 0) {";
+                c += "if (new_ptr && BaseEntity::event_trace_select_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(new_ptr->entity_id) == 0) {";
                 c +=      "BaseEntity::event_trace_selected_entities.insert(new_ptr->entity_id);";
                 c +=      "event_trace_msg("
                             "\"" + agent->name + "\", "

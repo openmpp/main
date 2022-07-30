@@ -519,6 +519,11 @@ public:
     static double event_trace_maximum_age;
 
     /**
+     * Filter event trace by case seeds
+     */
+    static std::unordered_set<double> event_trace_selected_case_seeds;
+
+    /**
      * Filter event trace by entities
      */
     static std::unordered_set<int> event_trace_selected_entities;
@@ -526,7 +531,7 @@ public:
     /**
      * Whether to show linked entities
      */
-    static bool event_trace_show_linked_entities;
+    static bool event_trace_select_linked_entities;
 
     /**
      * Filter event trace by events
@@ -539,9 +544,14 @@ public:
     static std::unordered_set<int> event_trace_selected_attributes;
 
     /**
-     * Whether to select all attributes
+     * Filter event trace by attribute value (lower bound)
      */
-    static bool event_trace_select_all_attributes;
+    static double event_trace_minimum_attribute;
+
+    /**
+     * Filter event trace by attribute value (upper bound)
+     */
+    static double event_trace_maximum_attribute;
 
     /**
      * Used to set report column width for names
@@ -595,77 +605,11 @@ public:
             return;
         }
 
-        // Apply event trace filter conditions (but not if modgen-style)
-        if (event_trace_report_style == et_report_style::eReadable) {
-            if (global_time < event_trace_minimum_time) {
-                // Message occurs before the specified time window.
-                return;
-            }
-            if (global_time > event_trace_maximum_time) {
-                // Message occurs after the specified time window.
-                return;
-            }
-            if (entity_age < event_trace_minimum_age) {
-                // Message occurs before the specified age window.
-                return;
-            }
-            if (entity_age > event_trace_maximum_age) {
-                // Message occurs after the specified age window.
-                return;
-            }
-            if (msg_type == et_msg_type::eEnterSimulation && !event_trace_show_enter_simulation) {
-                // Entity enter simulation messages are disabled.
-                return;
-            }
-            if (msg_type == et_msg_type::eExitSimulation && !event_trace_show_exit_simulation) {
-                // Entity exit simulation messages are disabled.
-                return;
-            }
-            if (msg_type == et_msg_type::eEventOccurrence && !event_trace_show_events) {
-                // Event occurrence messages are disabled.
-                return;
-            }
-            if (msg_type == et_msg_type::eSelfSchedulingEventOccurrence && !event_trace_show_self_scheduling_events) {
-                // Self-scheduling events are disabled.
-                return;
-            }
-            if (msg_type == et_msg_type::eAttributeChange && (!event_trace_show_attributes || event_trace_selected_attributes.size() == 0)) {
-                // Attribute changes are disabled, or no attributes selected.
-                return;
-            }
-            if (event_trace_selected_entities.size() > 0 && event_trace_selected_entities.count(entity_id) == 0) {
-                // Entity is not in the specified entity list.
-                return;
-            }
-            if ((msg_type == et_msg_type::eEventOccurrence || msg_type == et_msg_type::eQueuedEvent) && event_trace_selected_events.size() > 0 && event_trace_selected_events.count(other_id) == 0) {
-                // Event is not in the specified event list.
-                return;
-            }
-            if (msg_type == et_msg_type::eQueuedEvent && !event_trace_show_queued_events) {
-                // Queued normal events are disabled.
-                return;
-            }
-            if (msg_type == et_msg_type::eQueuedSelfSchedulingEvent && !event_trace_show_queued_self_scheduling_events) {
-                // Queued self-scheduling events are disabled.
-                return;
-            }
-            if ((
-                   msg_type == et_msg_type::eAttributeStart
-                || msg_type == et_msg_type::eAttributeChange
-                || msg_type == et_msg_type::eLinkAttributeStart
-                || msg_type == et_msg_type::eLinkAttributeChange
-                || msg_type == et_msg_type::eMultilinkStart
-                || msg_type == et_msg_type::eMultilinkInsert
-                || msg_type == et_msg_type::eMultilinkErase
-                ) && !(event_trace_select_all_attributes || event_trace_selected_attributes.count(other_id) != 0)) {
-                // Attribute or multilink is not in the selected attributes list.
-                return;
-            }
-        }
+        //
+        // modgen report style
+        // 
 
-        switch (event_trace_report_style) {
-        case et_report_style::eModgen:
-        {
+        if (event_trace_report_style == et_report_style::eModgen) {
             switch (msg_type) {
             case et_msg_type::eEventOccurrence:
             case et_msg_type::eQueuedEvent:
@@ -688,361 +632,449 @@ public:
             default:
                 break;
             }
+            return;
+        }
+
+        //
+        // readable report style
+        // 
+        assert(event_trace_report_style == et_report_style::eReadable);
+
+        // Apply event trace filter conditions
+        if (msg_type == et_msg_type::eEnterSimulation && !event_trace_show_enter_simulation) {
+            // Enter simulation messages are blocked.
+            return;
+        }
+        if (msg_type == et_msg_type::eExitSimulation && !event_trace_show_exit_simulation) {
+            // Entity exit simulation messages are blocked.
+            return;
+        }
+        if (msg_type == et_msg_type::eEventOccurrence && !event_trace_show_events) {
+            // Event occurrence messages are blocked.
+            return;
+        }
+        if (msg_type == et_msg_type::eSelfSchedulingEventOccurrence && !event_trace_show_self_scheduling_events) {
+            // Self-scheduling event messages are blocked.
+            return;
+        }
+        if (msg_type == et_msg_type::eQueuedEvent && !event_trace_show_queued_events) {
+            // Queued event messages are blocked.
+            return;
+        }
+        if (msg_type == et_msg_type::eQueuedSelfSchedulingEvent && !event_trace_show_queued_self_scheduling_events) {
+            // Queued self-scheduling event messages are blocked.
+            return;
+        }
+        if ((
+               msg_type == et_msg_type::eEventOccurrence
+            || msg_type == et_msg_type::eQueuedEvent
+            ) && (event_trace_selected_events.size() > 0 && event_trace_selected_events.count(other_id) == 0)) {
+            // Block event message not in event list (if non-empty).
+            return;
+        }
+        if ((
+               msg_type == et_msg_type::eAttributeStart
+            || msg_type == et_msg_type::eAttributeChange
+            || msg_type == et_msg_type::eLinkAttributeStart
+            || msg_type == et_msg_type::eLinkAttributeChange
+            || msg_type == et_msg_type::eMultilinkStart
+            || msg_type == et_msg_type::eMultilinkInsert
+            || msg_type == et_msg_type::eMultilinkErase
+            ) && (
+                    !event_trace_show_attributes
+                    || (event_trace_selected_attributes.size() > 0 && event_trace_selected_attributes.count(other_id) == 0)
+                    )
+            ) {
+            // Attribute messages blocked, or attribute not in list (if non-empty)
+            return;
+        }
+        if ((msg_type == et_msg_type::eAttributeStart && event_trace_show_attributes)
+            && (
+                   dbl1 < event_trace_minimum_attribute
+                || dbl1 > event_trace_maximum_attribute
+                )
+            ) {
+            // Block attribute initial message with value outside allowed limite
+            return;
+        }
+        if ((msg_type == et_msg_type::eAttributeChange && event_trace_show_attributes)
+            && (
+                   dbl2 < event_trace_minimum_attribute
+                || dbl2 > event_trace_maximum_attribute
+                )
+            ) {
+            // Block attribute chage message with value outside allowed limits
+            return;
+        }
+        if (global_time < event_trace_minimum_time) {
+            // Block message before the allowed time window.
+            return;
+        }
+        if (global_time > event_trace_maximum_time) {
+            // Block message after the allowed time window.
+            return;
+        }
+        if (entity_age < event_trace_minimum_age) {
+            // Block message before the allowed age window.
+            return;
+        }
+        if (entity_age > event_trace_maximum_age) {
+            // Block message after the allowed age window.
+            return;
+        }
+        if (event_trace_selected_entities.size() > 0 && event_trace_selected_entities.count(entity_id) == 0) {
+            // Block message from entity not in list (if non-empty).
+            return;
+        }
+        if (event_trace_selected_case_seeds.size() > 0 && event_trace_selected_case_seeds.count(case_seed) == 0) {
+            // Block message if case seed not in list (if non-empty).
+            return;
+        }
+
+        // target width of name column in report
+        const int name_colwidth = BaseEntity::event_trace_name_column_width;
+
+        // width of 'what' column
+        const int what_width = 11;
+
+        // column headers
+        static bool header_done = false;
+        if (!header_done) {
+            header_done = true;
+            theTrace->logFormatted(
+                "%13s %8.8s %10s %8s %-*s %13s %-*s %s",
+                "Time",
+                "Entity",
+                "Age",
+                "Id",
+                what_width,
+                "Trace",
+                "Value",
+                name_colwidth,
+                "Name",
+                "    Remarks"
+            );
+            event_trace_maximum_lines--;
+        }
+
+        // decrement the count of remaining lines before maximum reached
+        event_trace_maximum_lines--;
+
+        // style is similar to that produced by test_models
+        // using normalize_event_trace in common.pm
+                
+        switch (msg_type) {
+        case et_msg_type::eEventOccurrence:
+        {
+            auto what = "  EVENT";
+            auto& event_name = cstr1;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                "",
+                name_colwidth,
+                event_name
+            );
         }
         break;
-        case et_report_style::eReadable:
-            {
-                // target width of name column in report
-                const int name_colwidth = BaseEntity::event_trace_name_column_width;
-
-                // width of 'what' column
-                const int what_width = 11;
-
-                // column headers
-                static bool header_done = false;
-                if (!header_done) {
-                    header_done = true;
-                    theTrace->logFormatted(
-                        "%13s %8.8s %10s %8s %-*s %13s %-*s %s",
-                        "Time",
-                        "Entity",
-                        "Age",
-                        "Id",
-                        what_width,
-                        "Trace",
-                        "Value",
-                        name_colwidth,
-                        "Name",
-                        "    Remarks"
-                    );
-                    event_trace_maximum_lines--;
-                }
-
-                // decrement the count of remaining lines before maximum reached
-                event_trace_maximum_lines--;
-
-                // style is similar to that produced by test_models
-                // using normalize_event_trace in common.pm
-                
-                switch (msg_type) {
-                case et_msg_type::eEventOccurrence:
-                {
-                    auto what = "  EVENT";
-                    auto& event_name = cstr1;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        "",
-                        name_colwidth,
-                        event_name
-                    );
-                }
+        case et_msg_type::eSelfSchedulingEventOccurrence:
+        {
+            auto what = "  EVENT";
+            auto& event_name = cstr1;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                "", // no Value
+                name_colwidth,
+                event_name // is pretty name, eg trigger_changes(calendar_year)
+            );
+        }
+        break;
+        case et_msg_type::eQueuedEvent:
+        {
+            auto what = "    queued";
+            auto& new_time = dbl1;
+            auto& old_time = dbl2;
+            auto& event_name = cstr1;
+            auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
+            if (!event_trace_show_queued_unchanged && (new_time == old_time)) {
+                // Do not report if time-to-event did not change.
                 break;
-                case et_msg_type::eSelfSchedulingEventOccurrence:
-                {
-                    auto what = "  EVENT";
-                    auto& event_name = cstr1;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        "", // no Value
-                        name_colwidth,
-                        event_name // is pretty name, eg trigger_changes(calendar_year)
-                    );
-                }
-                break;
-                case et_msg_type::eQueuedEvent:
-                {
-                    auto what = "    queued";
-                    auto& new_time = dbl1;
-                    auto& old_time = dbl2;
-                    auto& event_name = cstr1;
-                    auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
-                    if (!event_trace_show_queued_unchanged && (new_time == old_time)) {
-                        // Do not report if time-to-event did not change.
-                        break;
-                    }
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s was %.6f",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        new_time,
-                        name_colwidth,
-                        event_name,
-                        old_time
-                    );
-                }
-                break;
-                case et_msg_type::eQueuedSelfSchedulingEvent:
-                {
-                    auto what = "    queued";
-                    auto& new_time = dbl1;
-                    auto& event_name = cstr1;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        new_time,
-                        name_colwidth,
-                        event_name // is pretty name, eg trigger_changes(calendar_year)
-                    );
-                }
-                break;
-                case et_msg_type::eEnterSimulation:
-                {
-                    auto what = "ENTER";
-                    auto& entity_time = dbl1;
-                    auto& description  = cstr2; // is "enter_simulation"
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s     initial time=%.6f,age=%.6f",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        "", // no Value
-                        name_colwidth,
-                        "",
-                        entity_time,
-                        entity_age
-                    );
-                }
-                break;
-                case et_msg_type::eExitSimulation:
-                {
-                    auto what = "EXIT";
-                    auto& entity_time = dbl1;
-                    auto& description = cstr2; // is "exit_simulation"
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        "", // no Value
-                        name_colwidth,
-                        "" // no Name
-                    );
-                }
-                break;
-                case et_msg_type::eAttributeStart:
-                {
-                    auto what = "    attr";
-                    auto& start_value = dbl1;
-                    auto& attribute_name = cstr2;   // name of attribute eg 'year'
-                    std::stringstream ss;
-                    ss << std::setw(9) << std::setprecision(4) << start_value;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   initial",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        start_value,
-                        name_colwidth,
-                        attribute_name
-                    );
-                }
-                break;
-                case et_msg_type::eAttributeChange:
-                {
-                    auto what = "    attr";
-                    auto& old_value = dbl1;
-                    auto& new_value = dbl2;
-                    auto& attribute_name = cstr2;   // name of attribute eg 'year'
-                    std::stringstream ss;
-                    ss << std::setw(9) << std::setprecision(4) << new_value;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   was %.13g",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        //ss.str().c_str(),
-                        new_value,
-                        name_colwidth,
-                        attribute_name,  // is name of attribute eg year
-                        old_value
-                    );
-                }
-                break;
-                case et_msg_type::eLinkAttributeStart:
-                {
-                    auto what = "    link";
-                    auto& start_value = dbl1;
-                    auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
-                    std::stringstream ss;
-                    if (start_value >= 0) {
-                        // starting link value is the entity_id of the entity
-                        ss << (int)start_value;
-                    }
-                    else {
-                        // starting link value is nullptr
-                        ss << "nullptr";
-                    }
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        ss.str().c_str(),
-                        name_colwidth,
-                        attribute_name
-                    );
-                }
-                break;
-                case et_msg_type::eLinkAttributeChange:
-                {
-                    auto what = "    link";
-                    auto& old_value = dbl1;
-                    auto& new_value = dbl2;
-                    auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
-                    std::stringstream ss_new;
-                    if (new_value >= 0) {
-                        // new link value is the entity_id of the entity
-                        ss_new << (int)new_value;
-                    }
-                    else {
-                        // new link value is nullptr
-                        ss_new << "nullptr";
-                    }
-                    std::stringstream ss_old;
-                    if (old_value >= 0) {
-                        // old link value is the entity_id of the entity
-                        ss_old << (int)old_value;
-                    }
-                    else {
-                        // old link value is nullptr
-                        ss_old << "nullptr";
-                    }
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   was %s",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        ss_new.str().c_str(),
-                        name_colwidth,
-                        attribute_name,
-                        ss_old.str().c_str()
-                    );
-                }
-                break;
-                case et_msg_type::eMultilinkStart:
-                {
-                    auto what = "    multi";
-                    auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
-                    auto& contents = cstr1; // comma-separated list of entity_id's
-                    std::stringstream ss;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial {%s}",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        "", // no Value
-                        name_colwidth,
-                        multilink_name,
-                        contents
-                    );
-                }
-                break;
-                case et_msg_type::eMultilinkInsert:
-                {
-                    auto what = "    multi++";
-                    int ent_id = (int)dbl1;
-                    auto& contents = cstr1; // comma-separated list of entity_id's
-                    auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
-                    std::stringstream ss;
-                    ss << ent_id;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        //ss.str().c_str(),
-                        ent_id,
-                        name_colwidth,
-                        multilink_name,
-                        contents
-                    );
-                }
-                break;
-                case et_msg_type::eMultilinkErase:
-                {
-                    auto what = "    multi--";
-                    int ent_id = (int)dbl1;
-                    auto& contents = cstr1; // comma-separated list of entity_id's
-                    auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
-                    std::stringstream ss;
-                    ss << ent_id;
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        //ss.str().c_str(),
-                        ent_id,
-                        name_colwidth,
-                        multilink_name,
-                        contents
-                    );
-                }
-                break;
-                case et_msg_type::eSnowball:
-                {
-                    auto what = " selected++";
-                    auto& name = cstr2;   // name of the link or multilink, eg 'mlChildren'
-                    theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s",
-                        global_time,
-                        entity_name,
-                        entity_age,
-                        entity_id,
-                        what_width,
-                        what,
-                        other_id,
-                        name_colwidth,
-                        name
-                    );
-                }
-                break;
-                default:
-                    {
-                        assert(false);
-                    }
-                } // switch (msg_type)
             }
-            break;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s was %.6f",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                new_time,
+                name_colwidth,
+                event_name,
+                old_time
+            );
+        }
+        break;
+        case et_msg_type::eQueuedSelfSchedulingEvent:
+        {
+            auto what = "    queued";
+            auto& new_time = dbl1;
+            auto& event_name = cstr1;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                new_time,
+                name_colwidth,
+                event_name // is pretty name, eg trigger_changes(calendar_year)
+            );
+        }
+        break;
+        case et_msg_type::eEnterSimulation:
+        {
+            auto what = "ENTER";
+            auto& entity_time = dbl1;
+            auto& description  = cstr2; // is "enter_simulation"
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s     initial time=%.6f,age=%.6f",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                "", // no Value
+                name_colwidth,
+                "",
+                entity_time,
+                entity_age
+            );
+        }
+        break;
+        case et_msg_type::eExitSimulation:
+        {
+            auto what = "EXIT";
+            auto& entity_time = dbl1;
+            auto& description = cstr2; // is "exit_simulation"
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                "", // no Value
+                name_colwidth,
+                "" // no Name
+            );
+        }
+        break;
+        case et_msg_type::eAttributeStart:
+        {
+            auto what = "    attr";
+            auto& start_value = dbl1;
+            auto& attribute_name = cstr2;   // name of attribute eg 'year'
+            std::stringstream ss;
+            ss << std::setw(9) << std::setprecision(4) << start_value;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   initial",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                start_value,
+                name_colwidth,
+                attribute_name
+            );
+        }
+        break;
+        case et_msg_type::eAttributeChange:
+        {
+            auto what = "    attr";
+            auto& old_value = dbl1;
+            auto& new_value = dbl2;
+            auto& attribute_name = cstr2;   // name of attribute eg 'year'
+            std::stringstream ss;
+            ss << std::setw(9) << std::setprecision(4) << new_value;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   was %.13g",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                //ss.str().c_str(),
+                new_value,
+                name_colwidth,
+                attribute_name,  // is name of attribute eg year
+                old_value
+            );
+        }
+        break;
+        case et_msg_type::eLinkAttributeStart:
+        {
+            auto what = "    link";
+            auto& start_value = dbl1;
+            auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
+            std::stringstream ss;
+            if (start_value >= 0) {
+                // starting link value is the entity_id of the entity
+                ss << (int)start_value;
+            }
+            else {
+                // starting link value is nullptr
+                ss << "nullptr";
+            }
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                ss.str().c_str(),
+                name_colwidth,
+                attribute_name
+            );
+        }
+        break;
+        case et_msg_type::eLinkAttributeChange:
+        {
+            auto what = "    link";
+            auto& old_value = dbl1;
+            auto& new_value = dbl2;
+            auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
+            std::stringstream ss_new;
+            if (new_value >= 0) {
+                // new link value is the entity_id of the entity
+                ss_new << (int)new_value;
+            }
+            else {
+                // new link value is nullptr
+                ss_new << "nullptr";
+            }
+            std::stringstream ss_old;
+            if (old_value >= 0) {
+                // old link value is the entity_id of the entity
+                ss_old << (int)old_value;
+            }
+            else {
+                // old link value is nullptr
+                ss_old << "nullptr";
+            }
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   was %s",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                ss_new.str().c_str(),
+                name_colwidth,
+                attribute_name,
+                ss_old.str().c_str()
+            );
+        }
+        break;
+        case et_msg_type::eMultilinkStart:
+        {
+            auto what = "    multi";
+            auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
+            auto& contents = cstr1; // comma-separated list of entity_id's
+            std::stringstream ss;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial {%s}",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                "", // no Value
+                name_colwidth,
+                multilink_name,
+                contents
+            );
+        }
+        break;
+        case et_msg_type::eMultilinkInsert:
+        {
+            auto what = "    multi++";
+            int ent_id = (int)dbl1;
+            auto& contents = cstr1; // comma-separated list of entity_id's
+            auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
+            std::stringstream ss;
+            ss << ent_id;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                //ss.str().c_str(),
+                ent_id,
+                name_colwidth,
+                multilink_name,
+                contents
+            );
+        }
+        break;
+        case et_msg_type::eMultilinkErase:
+        {
+            auto what = "    multi--";
+            int ent_id = (int)dbl1;
+            auto& contents = cstr1; // comma-separated list of entity_id's
+            auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
+            std::stringstream ss;
+            ss << ent_id;
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                //ss.str().c_str(),
+                ent_id,
+                name_colwidth,
+                multilink_name,
+                contents
+            );
+        }
+        break;
+        case et_msg_type::eSnowball:
+        {
+            auto what = " selected++";
+            auto& name = cstr2;   // name of the link or multilink, eg 'mlChildren'
+            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s",
+                global_time,
+                entity_name,
+                entity_age,
+                entity_id,
+                what_width,
+                what,
+                other_id,
+                name_colwidth,
+                name
+            );
+        }
+        break;
         default:
             {
                 assert(false);
             }
-        } // switch (event_trace_report_style)
+        } // switch (msg_type)
     }
 
     /**
