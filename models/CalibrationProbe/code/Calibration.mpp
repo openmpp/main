@@ -1,0 +1,169 @@
+//LABEL (Calibration, EN) Calibration using event queue
+
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters {
+    bool EnableCalibration;
+    int MortalityCalibrationTarget[REPORT_TIME];
+};
+
+
+actor Ticker
+{
+    //EN Time of next Calibrate event
+    TIME next_calibrate;
+
+    //EN Mortality events deferred by calibration (cumulative)
+    int mortality_deferred;
+
+    //EN Mortality events advanced by calibration (cumulative)
+    int mortality_advanced;
+
+    //EN Mortality events not advanced by calibration because queue exhausted (cumulative)
+    int mortality_deficit;
+
+    // CalibrateEvent should be lower priority than any other event
+    // so that it executes after other tied events which can influence
+    // events in the current calibration interval.
+    event timeCalibrateEvent, CalibrateEvent, 1; //EN Calibrate event
+};
+
+table Person Deaths
+{
+    report_time
+    * {
+        entrances(alive, false) //EN Mortality events
+    }
+};
+
+table Ticker CalibrationReport
+{
+    report_time
+    * {
+        mortality_deferred,      //EN Mortality events deferred
+        mortality_advanced,      //EN Mortality events advanced
+        mortality_deficit        //EN Mortality target deficit
+    }
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+TIME Ticker::timeCalibrateEvent()
+{
+    // is synchronous with TickEvent, but lower priority
+    return EnableCalibration ? next_calibrate : time_infinite;
+}
+
+void Ticker::CalibrateEvent(void)
+{
+    // get event_id of MortalityEvent
+    int event_id_mortality = omr::event_name_to_id("MortalityEvent");
+    assert(event_id_mortality != -1); // MortalityEvent not found
+
+    // width of the target window
+    TIME calibration_window_width = 1.0;
+
+    // The upper bound of the target window, NB is just beyond the current calibration window
+    TIME calibration_window_upper_bound = time + calibration_window_width;
+
+    int calibration_window_target_count = MortalityCalibrationTarget[report_time];
+
+    //
+    // walk the event queue, from present to future
+    // 
+    // add events to defer_list or advance_list
+    // as needed to hit the target count in the calibration time window
+    // 
+    auto& event_queue = *BaseEvent::event_queue; // alias for the model event queue
+    std::forward_list<BaseEvent*> defer_list;    // list of events to defer
+    std::forward_list<BaseEvent*> advance_list;  // list of events to advance
+    int unadjusted_count = 0; // count of scheduled events in the calibration time window before calibration
+    int deferred_events = 0;  // count of scheduled events deferred to the future beyond the calibration time window
+    int advanced_events = 0;  // count of scheduled events advanced from the future to within the calibration time window
+    for (auto evt : event_queue) {
+        int id = evt->get_event_id();
+        if (id != event_id_mortality) {
+            // not a mortality event, skip
+            continue;
+        }
+        double evt_time = evt->event_time;
+        if (evt_time < calibration_window_upper_bound) {
+            // we are inside the target calibration time window
+            ++unadjusted_count;
+            if (unadjusted_count > calibration_window_target_count) {
+                // there is an excess of events within the calibration time window
+                // so add this event to the defer list
+                defer_list.push_front(evt);
+                ++deferred_events;
+            }
+        }
+        else {
+            // we are beyond the calibration time window
+            if (advanced_events + unadjusted_count >= calibration_window_target_count) {
+                // no need to find more events to advance
+                // so stop queue walk
+                break;
+            }
+            // there is a deficit of events within the calibration time window
+            // so add this event to the advance list
+            advance_list.push_front(evt);
+            ++advanced_events;
+        }
+    }
+
+    if (calibration_window_target_count > unadjusted_count && unadjusted_count - calibration_window_target_count != advanced_events) {
+        // there were insufficient events in the queue beyond the the calibration window to meet the target
+        mortality_deficit += calibration_window_target_count - unadjusted_count - advanced_events; // for CalibrationReport
+    }
+
+    if (deferred_events > 0) {
+        mortality_deferred += deferred_events; // for CalibrationReport
+        assert(advanced_events == 0);
+        for (auto evt : defer_list) {
+            // defer this event
+            // remove it from the event queue
+            event_queue.erase(evt);
+            // postpone the event time by one calibration interval
+            evt->event_time += calibration_window_width;
+            // re-insert it to the event queue
+            event_queue.insert(evt);
+        }
+    }
+    else if (advanced_events > 0) {
+        mortality_advanced += advanced_events; // for CalibrationReport
+        // advance this event
+        for (auto evt : advance_list) {
+            // advance this event
+            // remove it from the event queue
+            event_queue.erase(evt);
+            // advance the event time by an integral number of calibration intervals
+            // until it falls within the calibration window
+            TIME new_time = evt->event_time;
+            while (new_time >= calibration_window_upper_bound) {
+                new_time -= calibration_window_width;
+            }
+            evt->event_time = new_time;
+            // re-insert it to the event queue
+            event_queue.insert(evt);
+        }
+    }
+    else {
+        // nothing to do
+    }
+
+    {
+        // schedule next calibration
+        Time t = next_calibrate + 1.0;
+        if (t >= SimulationEnd) {
+            next_calibrate = time_infinite;
+        }
+        else {
+            next_calibrate = t;
+        }
+    }
+}
+

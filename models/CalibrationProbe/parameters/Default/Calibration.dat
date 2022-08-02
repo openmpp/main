@@ -1,0 +1,26 @@
+parameters{
+    bool EnableCalibration = true;
+    int MortalityCalibrationTarget[REPORT_TIME] = {
+        141, //141,
+        144, //144,
+        114, //114,
+        146, //146.
+        142, //142,
+        126, //126,
+        129,
+        139,
+        111,
+        118,
+        112,
+        118,
+        102,
+        110,
+        104,
+        116,
+        114,
+        124,
+        112,
+        112,
+    };
+};
+

@@ -1,0 +1,46 @@
+//LABEL(model_core, EN) Core simulation functions
+
+/* NOTE(model_core, EN)
+    This module contains core simulation functions and definitions.
+*/
+
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+// The model type
+model_type time_based, just_in_time;
+
+// The data type used to represent time
+time_type double;
+
+#endif // Hide non-C++ syntactic island from IDE
+
+// This function is called by the simulation framework to simulate a replicate.
+void Simulation()
+{
+    extern void LogSimulationStart(); // defined elsewhere
+    extern void SimulateEvents(); // defined elsewhere
+
+    // Write simulation start message to log
+    LogSimulationStart();
+
+    // Create the single Ticker entity.
+    auto paTicker = new Ticker();
+    // Enter it into the the simulation.
+    paTicker->Start();
+
+    // The initial population
+    for ( int nJ = 0; nJ < StartingPopulationSize; nJ++ )
+    {
+        // Create a Person entity.
+        auto paPerson = new Person();
+        // Enter it into the simulation.
+        paPerson->Start();
+    }
+
+    // Simulate events until there are no more.
+    SimulateEvents();
+}
