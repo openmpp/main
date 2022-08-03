@@ -804,7 +804,7 @@ public:
             auto& new_time = dbl1;
             auto& old_time = dbl2;
             auto& event_name = cstr1;
-            auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
+            //auto& timefn_name = cstr2; // name of event time function, eg timeMigrationEvent
             if (!event_trace_show_queued_unchanged && (new_time == old_time)) {
                 // Do not report if time-to-event did not change.
                 break;
@@ -845,7 +845,7 @@ public:
         {
             auto what = "ENTER";
             auto& entity_time = dbl1;
-            auto& description  = cstr2; // is "enter_simulation"
+            //auto& description  = cstr2; // is "enter_simulation"
             theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s     initial time=%.6f,age=%.6f",
                 global_time,
                 entity_name,
@@ -864,8 +864,8 @@ public:
         case et_msg_type::eExitSimulation:
         {
             auto what = "EXIT";
-            auto& entity_time = dbl1;
-            auto& description = cstr2; // is "exit_simulation"
+            //auto& entity_time = dbl1;
+            //auto& description = cstr2; // is "exit_simulation"
             theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
                 global_time,
                 entity_name,
