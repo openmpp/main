@@ -23,16 +23,16 @@ actor Ticker
     //EN Mortality events advanced by calibration (cumulative)
     int mortality_advanced;
 
-    //EN Mortality events not advanced by calibration because queue exhausted (cumulative)
+    //EN Deficit in advanced mortality events because queue was exhausted (cumulative)
     int mortality_deficit;
 
     // CalibrateEvent should be lower priority than any other event
-    // so that it executes after other tied events which can influence
+    // so that it executes after other tied events which might influence
     // events in the current calibration interval.
     event timeCalibrateEvent, CalibrateEvent, 1; //EN Calibrate event
 };
 
-table Person Deaths
+table Person MortalityCounts
 {
     report_time
     * {
@@ -93,9 +93,10 @@ void Ticker::CalibrateEvent(void)
         double evt_time = evt->event_time;
         if (evt_time < calibration_window_upper_bound) {
             // we are inside the target calibration time window
+            // update the count of currently scheduled events within the window
             ++unadjusted_count;
             if (unadjusted_count > calibration_window_target_count) {
-                // there is an excess of events within the calibration time window
+                // there is an excess of scheduled events within the calibration time window
                 // so add this event to the defer list
                 defer_list.push_front(evt);
                 ++deferred_events;
@@ -104,7 +105,7 @@ void Ticker::CalibrateEvent(void)
         else {
             // we are beyond the calibration time window
             if (advanced_events + unadjusted_count >= calibration_window_target_count) {
-                // no need to find more events to advance
+                // no need to find more events to advance, have found what's needed
                 // so stop queue walk
                 break;
             }
@@ -116,7 +117,7 @@ void Ticker::CalibrateEvent(void)
     }
 
     if (calibration_window_target_count > unadjusted_count && unadjusted_count - calibration_window_target_count != advanced_events) {
-        // there were insufficient events in the queue beyond the the calibration window to meet the target
+        // there were insufficient events in the queue beyond the calibration window to meet the target
         mortality_deficit += calibration_window_target_count - unadjusted_count - advanced_events; // for CalibrationReport
     }
 
@@ -157,7 +158,7 @@ void Ticker::CalibrateEvent(void)
 
     {
         // schedule next calibration
-        Time t = next_calibrate + 1.0;
+        Time t = next_calibrate + calibration_window_width;
         if (t >= SimulationEnd) {
             next_calibrate = time_infinite;
         }

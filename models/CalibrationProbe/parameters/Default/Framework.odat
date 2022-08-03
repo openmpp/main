@@ -1,5 +1,5 @@
 parameters {
 	long long SimulationSeed = 1;
-	Time SimulationEnd = 21.0;
+	Time SimulationEnd = 20.0;
 };
 
