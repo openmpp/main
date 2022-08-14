@@ -200,6 +200,10 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
 					// Push the name into the post parse ignore hash for the current pass.
 					pp_symbols_ignore.insert(gfs->unique_name);
                 }
+                else if (dynamic_cast<EntityFuncSymbol*>(sym)) {
+                    // emit warning on use of EntityFuncSymbol in declaration of an identity attribute
+                    pp_warning(LT("warning : call to member function '") + sym->name + LT("' in declaration of identity attribute '") + name + LT("'. Consider using a global function instead."));
+                };
             }
         }
     }
