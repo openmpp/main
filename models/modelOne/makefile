@@ -127,6 +127,9 @@ all: model
 .PHONY : model
 model: prepare $(OUT_BIN_DIR)/$(MODEL_EXE)
 
+.PHONY : install
+install : all publish
+
 $(OBJS): | prepare
 $(DEPS): | prepare
 
