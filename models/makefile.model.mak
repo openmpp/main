@@ -287,6 +287,9 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 .PHONY : publish
 publish : $(MODEL_SQLITE) copy_ini
 
+.PHONY : install
+install : model publish
+
 $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
 

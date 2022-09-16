@@ -57,6 +57,9 @@ all : prepare $(MODEL_DIRS)
 $(MODEL_DIRS) :
 	$(MAKE) OMC_CODE_PAGE=$(OMC_CODE_PAGE) -C $@ || { exit $$?; }
 
+.PHONY : install
+install : all publish-all
+
 .PHONY : publish
 publish :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) publish || { exit $$?; };)
