@@ -16,14 +16,15 @@ Anatoly Cherkassky  anatoly-statcan  Anatoly.Cherkassky@canada.ca  StatCan
 Dr Andrew P Smith   virgesmith       A.P.Smith@leeds.ac.uk
 Wojciech Dudek      Wojciech-Dudek   wojciech_dudek@hotmail.com
 
---------------------------
-Contributing Organizations
---------------------------
+-----------------------------
+Intellectual property holders
+-----------------------------
 
 Following organizations are intellectual property holders of OpenM++:
 
 uOttawa: University of Ottawa, www.uottawa.ca
 StatCan: Statistics Canada,    www.statcan.gc.ca
+Her Majesty the Queen in Right of Canada
 
 ----------
 Contact Us
