@@ -2,8 +2,8 @@ Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
 2022-09-23:
-  oms: fix racing at servers start and stop
-  oms API: allow to read parameter values while run in progress
+  oms: fix racing at model run jobs and servers start-stop
+  oms: allow to read parameter values while run in progress
   UI: allow to re-submit model run if it was failed
   UI: display state of computational servers
   UI: move tab close button for better scrolling of long tabs list
