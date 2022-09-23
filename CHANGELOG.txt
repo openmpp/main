@@ -1,6 +1,14 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2022-09-23:
+  oms: fix racing at servers start and stop
+  oms API: allow to read parameter values while run in progress
+  UI: allow to re-submit model run if it was failed
+  UI: display state of computational servers
+  UI: move tab close button for better scrolling of long tabs list
+  UI: add menus as an alternative to the toolbar buttons
+
 2022-08-27:
   event trace: write detailed trace to probe the evolution of entities during a simulation
   warnings eliminated from non-model code
