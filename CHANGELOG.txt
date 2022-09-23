@@ -8,6 +8,7 @@ Please note:
   UI: display state of computational servers
   UI: move tab close button for better scrolling of long tabs list
   UI: add menus as an alternative to the toolbar buttons
+  Docker: build only 2 versions of Linux release and test on Debian 10, 11, Ubuntu 20.04, 22.04, RedHat 8, 9
 
 2022-08-27:
   event trace: write detailed trace to probe the evolution of entities during a simulation
