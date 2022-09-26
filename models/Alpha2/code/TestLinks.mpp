@@ -17,7 +17,7 @@ TIME Person::timeSpawnEvent()
 
 void Person::SpawnEvent()
 {
-	// Create things and add to simulation
+    // Create things and add to simulation
 	Thing *thing1 = new Thing;
 	thing1->Start();
 
@@ -44,23 +44,27 @@ void Person::SpawnEvent()
 	things->Add(thing1);
 	things->Add(thing2);
 
-    // test #1: no dups
-	things->Add(thing2);
+    // enable or disable extra multilink tests
+    bool do_extra_tests = false;
+    if (do_extra_tests) {
+        // test #1: no dups
+        things->Add(thing2);
 
-    // test #2: make a hole
-	things->Remove(thing1);
-    // test #2: and another hole
-	things->Remove(thing2);
-    // test #2: fill holes, in reverse order
-	things->Add(thing2);
-	things->Add(thing1);
+        // test #2: make a hole
+        things->Remove(thing1);
+        // test #2: and another hole
+        things->Remove(thing2);
+        // test #2: fill holes, in reverse order
+        things->Add(thing2);
+        things->Add(thing1);
 
-    // test #3, clear it
-    things->RemoveAll();
+        // test #3, clear it
+        things->RemoveAll();
 
-    // test #4: put them both back into things, using reciprocal link
-    thing1->spawner = this;
-    thing2->spawner = this;
+        // test #4: put them both back into things, using reciprocal link
+        thing1->spawner = this;
+        thing2->spawner = this;
+    }
 
 	spawning_done = TRUE;
 }
