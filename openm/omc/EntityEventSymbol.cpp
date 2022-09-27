@@ -195,7 +195,7 @@ void EntityEventSymbol::post_parse(int pass)
                 "\"" + time_func_original->name + "\", "
                 "(double)event_time, "              // old_time
                 "(double)BaseEvent::stashed_time, " // new_time
-                "(double)BaseEvent::get_global_time(), "
+                "(double)time.direct_get(), "
                 "BaseEntity::et_msg_type::eQueuedEvent);"
                 ;
             ct += "return event_time;";

@@ -769,6 +769,9 @@ void process_trace_options(IRunBase* const i_runBase)
             else if (rptStyle == "readable") {
                 BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eReadable;
             }
+            else if (rptStyle == "csv") {
+                BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eCsv;
+            }
             else {
                 theLog->logFormatted(LT("Warning : unrecognized EventTrace.ReportStyle=%s"), rptStyle.c_str());
             }
@@ -919,6 +922,7 @@ double BaseEntity::event_trace_maximum_attribute = std::numeric_limits<double>::
 
 int BaseEntity::event_trace_name_column_width = 40;
 int BaseEntity::event_trace_maximum_lines = 20000;
+int BaseEntity::event_trace_line_counter = 0;
 
 /**
 * Helper code used internally by run-time

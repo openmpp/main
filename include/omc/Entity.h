@@ -270,12 +270,12 @@ public:
                     "enter_simulation",
                     om_get_time(), // the value of time in the entity before it enters the simulation
                     om_get_age(), // the value of age in the entity before it enters the simulation
-                    get_global_time(),
+                    om_get_time(), // the noted time for event trace
                     et_msg_type::eEnterSimulation
                 );
+                om_start_trace();  // event_trace_msg calls for initial values of attributes
             }
         }
-        om_start_trace();
     }
 
     /**
@@ -450,7 +450,10 @@ public:
         eModgen,
 
         // designed for reading
-        eReadable
+        eReadable,
+
+        // designed for post-processing
+        eCsv
     };
 
     /**
@@ -564,6 +567,11 @@ public:
     static int event_trace_maximum_lines;
 
     /**
+     * Counter for event trace line
+     */
+    static int event_trace_line_counter;
+
+    /**
      * @fn  static void BaseEntity::event_trace_msg( const char* entity_name, int entity_id, double entity_age, double case_seed, const char* cstr1, int other_id, const char* cstr2, double dbl1, double dbl2, double global_time, et_msg_type msg_type)
      *
      * @brief   Format an event trace message and output it to the trace.
@@ -592,7 +600,7 @@ public:
         const char* cstr2,
         double dbl1,
         double dbl2,
-        double global_time,
+        double noted_time,
         et_msg_type msg_type)
     {
         // Apply maximum line limit independent of report style
@@ -636,9 +644,11 @@ public:
         }
 
         //
-        // readable report style
+        // readable or csv report style
         // 
-        assert(event_trace_report_style == et_report_style::eReadable);
+        bool isReadable = event_trace_report_style == et_report_style::eReadable;
+        bool isCsv = event_trace_report_style == et_report_style::eCsv;
+        assert(isReadable || isCsv );
 
         // Apply event trace filter conditions
         if (msg_type == et_msg_type::eEnterSimulation && !event_trace_show_enter_simulation) {
@@ -703,14 +713,14 @@ public:
                 || dbl2 > event_trace_maximum_attribute
                 )
             ) {
-            // Block attribute chage message with value outside allowed limits
+            // Block attribute change message with value outside allowed limits
             return;
         }
-        if (global_time < event_trace_minimum_time) {
+        if (noted_time < event_trace_minimum_time) {
             // Block message before the allowed time window.
             return;
         }
-        if (global_time > event_trace_maximum_time) {
+        if (noted_time > event_trace_maximum_time) {
             // Block message after the allowed time window.
             return;
         }
@@ -741,66 +751,119 @@ public:
         static bool header_done = false;
         if (!header_done) {
             header_done = true;
-            theTrace->logFormatted(
-                "%13s %8.8s %10s %8s %-*s %13s %-*s %s",
-                "Time",
-                "Entity",
-                "Age",
-                "Id",
-                what_width,
-                "Trace",
-                "Value",
-                name_colwidth,
-                "Name",
-                "    Remarks"
-            );
+            if (isReadable) {
+                theTrace->logFormatted(
+                    "%13s %8.8s %10s %8s %-*s %13s %-*s %s",
+                    "Time",
+                    "Entity",
+                    "Age",
+                    "Id",
+                    what_width,
+                    "Trace",
+                    "Value",
+                    name_colwidth,
+                    "Name",
+                    "    Remarks"
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted(
+                    "Line,Time,Entity,Age,Id,Trace,Value,Name,Remarks"
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
             event_trace_maximum_lines--;
         }
 
         // decrement the count of remaining lines before maximum reached
         event_trace_maximum_lines--;
 
-        // style is similar to that produced by test_models
-        // using normalize_event_trace in common.pm
+        // increment the line counter
+        event_trace_line_counter++;
+
+        // Readable style is similar to that produced by test_models
+        // using normalize_event_trace in Perl common.pm
                 
         switch (msg_type) {
         case et_msg_type::eEventOccurrence:
         {
             auto what = "  EVENT";
+            auto what_trimmed = "EVENT";
             auto& event_name = cstr1;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                "",
-                name_colwidth,
-                event_name
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    "", // no value
+                    name_colwidth,
+                    event_name
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",,\"%s\",",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    // no value
+                    event_name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eSelfSchedulingEventOccurrence:
         {
             auto what = "  EVENT";
+            auto what_trimmed = "EVENT";
             auto& event_name = cstr1;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                "", // no Value
-                name_colwidth,
-                event_name // is pretty name, eg trigger_changes(calendar_year)
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    "", // no value
+                    name_colwidth,
+                    event_name // is pretty name, eg trigger_changes(calendar_year)
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",,\"%s\",",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    // no value
+                    event_name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eQueuedEvent:
         {
             auto what = "    queued";
+            auto what_trimmed = "queued";
             auto& new_time = dbl1;
             auto& old_time = dbl2;
             auto& event_name = cstr1;
@@ -809,122 +872,236 @@ public:
                 // Do not report if time-to-event did not change.
                 break;
             }
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s was %.6f",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                new_time,
-                name_colwidth,
-                event_name,
-                old_time
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s was %.6f",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    new_time,
+                    name_colwidth,
+                    event_name,
+                    old_time
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%.13g,\"%s\",\"was %.6f\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    new_time,
+                    event_name,
+                    old_time
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eQueuedSelfSchedulingEvent:
         {
             auto what = "    queued";
+            auto what_trimmed = "queued";
             auto& new_time = dbl1;
             auto& event_name = cstr1;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                new_time,
-                name_colwidth,
-                event_name // is pretty name, eg trigger_changes(calendar_year)
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6f     %-*s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    new_time,
+                    name_colwidth,
+                    event_name // is pretty name, eg trigger_changes(calendar_year)
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%.13g,\"%s\",",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    new_time,
+                    event_name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eEnterSimulation:
         {
             auto what = "ENTER";
-            auto& entity_time = dbl1;
+            auto what_trimmed = "ENTER";
+            //auto& entity_time = dbl1;
             //auto& description  = cstr2; // is "enter_simulation"
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s     initial time=%.6f,age=%.6f",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                "", // no Value
-                name_colwidth,
-                "",
-                entity_time,
-                entity_age
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    "", // no value
+                    name_colwidth,
+                    "" // no name
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",,,",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed
+                    // no value
+                    // no name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eExitSimulation:
         {
             auto what = "EXIT";
+            auto what_trimmed = "EXIT";
             //auto& entity_time = dbl1;
             //auto& description = cstr2; // is "exit_simulation"
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                "", // no Value
-                name_colwidth,
-                "" // no Name
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s %-*s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    "", // no Value
+                    name_colwidth,
+                    "" // no Name
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",,,",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed
+                    // no value
+                    // no name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eAttributeStart:
         {
             auto what = "    attr";
+            auto what_trimmed = "attr";
             auto& start_value = dbl1;
             auto& attribute_name = cstr2;   // name of attribute eg 'year'
             std::stringstream ss;
             ss << std::setw(9) << std::setprecision(4) << start_value;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   initial",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                start_value,
-                name_colwidth,
-                attribute_name
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   initial",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    start_value,
+                    name_colwidth,
+                    attribute_name
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%.13g,\"%s\",\"initial\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    start_value,
+                    attribute_name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eAttributeChange:
         {
             auto what = "    attr";
+            auto what_trimmed = "attr";
             auto& old_value = dbl1;
             auto& new_value = dbl2;
             auto& attribute_name = cstr2;   // name of attribute eg 'year'
             std::stringstream ss;
             ss << std::setw(9) << std::setprecision(4) << new_value;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   was %.13g",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                //ss.str().c_str(),
-                new_value,
-                name_colwidth,
-                attribute_name,  // is name of attribute eg year
-                old_value
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.13g   %-*s   was %.13g",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    //ss.str().c_str(),
+                    new_value,
+                    name_colwidth,
+                    attribute_name,  // is name of attribute eg year
+                    old_value
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%.13g,\"%s\",\"was %.13g\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    new_value,
+                    attribute_name,
+                    old_value
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eLinkAttributeStart:
         {
             auto what = "    link";
+            auto what_trimmed = "link";
             auto& start_value = dbl1;
             auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
             std::stringstream ss;
@@ -936,22 +1113,41 @@ public:
                 // starting link value is nullptr
                 ss << "nullptr";
             }
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                ss.str().c_str(),
-                name_colwidth,
-                attribute_name
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    ss.str().c_str(),
+                    name_colwidth,
+                    attribute_name
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%s,\"%s\",\"initial\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    ss.str().c_str(),
+                    attribute_name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eLinkAttributeChange:
         {
             auto what = "    link";
+            auto what_trimmed = "link";
             auto& old_value = dbl1;
             auto& new_value = dbl2;
             auto& attribute_name = cstr2;   // name of link attribute eg 'lSpouse'
@@ -973,101 +1169,199 @@ public:
                 // old link value is nullptr
                 ss_old << "nullptr";
             }
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   was %s",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                ss_new.str().c_str(),
-                name_colwidth,
-                attribute_name,
-                ss_old.str().c_str()
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   was %s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    ss_new.str().c_str(),
+                    name_colwidth,
+                    attribute_name,
+                    ss_old.str().c_str()
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%s,\"%s\",\"was %s\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    ss_new.str().c_str(),
+                    attribute_name,
+                    ss_old.str().c_str()
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eMultilinkStart:
         {
             auto what = "    multi";
+            auto what_trimmed = "multi";
             auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
             auto& contents = cstr1; // comma-separated list of entity_id's
             std::stringstream ss;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial {%s}",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                "", // no Value
-                name_colwidth,
-                multilink_name,
-                contents
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13s   %-*s   initial {%s}",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    "", // no value
+                    name_colwidth,
+                    multilink_name,
+                    contents
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",,\"%s\",\"initial {%s}\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    // no value
+                    multilink_name,
+                    contents
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eMultilinkInsert:
         {
             auto what = "    multi++";
+            auto what_trimmed = "multi++";
             int ent_id = (int)dbl1;
             auto& contents = cstr1; // comma-separated list of entity_id's
             auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
             std::stringstream ss;
             ss << ent_id;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                //ss.str().c_str(),
-                ent_id,
-                name_colwidth,
-                multilink_name,
-                contents
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    //ss.str().c_str(),
+                    ent_id,
+                    name_colwidth,
+                    multilink_name,
+                    contents
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%d,\"%s\",\"is {%s}\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    ent_id,
+                    multilink_name,
+                    contents
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eMultilinkErase:
         {
             auto what = "    multi--";
+            auto what_trimmed = "multi--";
             int ent_id = (int)dbl1;
             auto& contents = cstr1; // comma-separated list of entity_id's
             auto& multilink_name = cstr2;   // name of the multilink, eg 'mlChildren'
             std::stringstream ss;
             ss << ent_id;
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                //ss.str().c_str(),
-                ent_id,
-                name_colwidth,
-                multilink_name,
-                contents
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s   is {%s}",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    //ss.str().c_str(),
+                    ent_id,
+                    name_colwidth,
+                    multilink_name,
+                    contents
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%d,\"%s\",\"is {%s}\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    ent_id,
+                    multilink_name,
+                    contents
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         case et_msg_type::eSnowball:
         {
             auto what = " selected++";
+            auto what_trimmed = "selected++";
             auto& name = cstr2;   // name of the link or multilink, eg 'mlChildren'
-            theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s",
-                global_time,
-                entity_name,
-                entity_age,
-                entity_id,
-                what_width,
-                what,
-                other_id,
-                name_colwidth,
-                name
-            );
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13d   %-*s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    other_id,
+                    name_colwidth,
+                    name
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%d,\"%s\",",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    other_id,
+                    name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
         }
         break;
         default:
