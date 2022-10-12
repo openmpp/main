@@ -828,11 +828,11 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 // create table sql for parameter run or workset:
 // CREATE TABLE ageSex_p20120817
 // (
-//  run_id      INT   NOT NULL,  -- set_id for workset parameter
-//  sub_id      INT   NOT NULL,
-//  dim0        INT   NOT NULL,
-//  dim1        INT   NOT NULL,
-//  param_value FLOAT NOT NULL,  -- it can be nullable for extended parameter
+//  run_id      INT      NOT NULL,  -- set_id for workset parameter
+//  sub_id      SMALLINT NOT NULL,
+//  dim0        INT      NOT NULL,
+//  dim1        INT      NOT NULL,
+//  param_value FLOAT    NOT NULL,  -- it can be nullable for extended parameter
 //  PRIMARY KEY (run_id, sub_id, dim0, dim1)  -- set_id for workset parameter
 // );
 const void ModelSqlBuilder::paramCreateTable(
@@ -841,7 +841,7 @@ const void ModelSqlBuilder::paramCreateTable(
 {
     string sqlBody = "(" + 
         i_runSetId + " INT NOT NULL," +
-        " sub_id INT NOT NULL, ";
+        " sub_id SMALLINT NOT NULL, ";
 
     for (const string & cn : i_tblInfo.colVec) {
         sqlBody += cn + " INT NOT NULL, ";
@@ -900,12 +900,12 @@ string ModelSqlBuilder::valueDbType(const string & i_sqlProvider, const ParamTbl
 // create table sql for accumulator table:
 // CREATE TABLE salarySex_a20120820
 // (
-//  run_id    INT   NOT NULL,
-//  acc_id    INT   NOT NULL,
-//  sub_id    INT   NOT NULL,
-//  dim0      INT   NOT NULL,
-//  dim1      INT   NOT NULL,
-//  acc_value FLOAT NULL,
+//  run_id    INT      NOT NULL,
+//  acc_id    SMALLINT NOT NULL,
+//  sub_id    SMALLINT NOT NULL,
+//  dim0      INT      NOT NULL,
+//  dim1      INT      NOT NULL,
+//  acc_value FLOAT    NULL,
 //  PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
 // );
 const void ModelSqlBuilder::accCreateTable(
@@ -913,8 +913,8 @@ const void ModelSqlBuilder::accCreateTable(
     ) const
 {
     string sqlBody = "(run_id INT NOT NULL, " \
-        "acc_id INT NOT NULL, " \
-        "sub_id INT NOT NULL, ";
+        "acc_id SMALLINT NULL, " \
+        "sub_id SMALLINT NOT NULL, ";
 
     for (const string & cn : i_tblInfo.colVec) {
         sqlBody += cn + " INT NOT NULL, ";
@@ -934,11 +934,11 @@ const void ModelSqlBuilder::accCreateTable(
 // create table sql for value table:
 // CREATE TABLE salarySex_v20120820
 // (
-//  run_id     INT   NOT NULL,
-//  expr_id    INT   NOT NULL,
-//  dim0       INT   NOT NULL,
-//  dim1       INT   NOT NULL,
-//  expr_value FLOAT NULL,
+//  run_id     INT      NOT NULL,
+//  expr_id    SMALLINT NOT NULL,
+//  dim0       INT      NOT NULL,
+//  dim1       INT      NOT NULL,
+//  expr_value FLOAT    NULL,
 //  PRIMARY KEY (run_id, expr_id, dim0, dim1)
 // );
 const void ModelSqlBuilder::valueCreateTable(
@@ -946,7 +946,7 @@ const void ModelSqlBuilder::valueCreateTable(
     ) const
 {
     string sqlBody = "(run_id INT NOT NULL, " \
-        "expr_id INT NOT NULL,";
+        "expr_id SMALLINT NULL,";
 
     for (const string & cn : i_tblInfo.colVec) {
         sqlBody += cn + " INT NOT NULL, ";

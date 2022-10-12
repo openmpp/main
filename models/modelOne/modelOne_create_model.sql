@@ -485,98 +485,98 @@ INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VA
 
 CREATE TABLE ageSex_p_2012817 
 (
-  run_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (run_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE ageSex_w_2012817
 (
-  set_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (set_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE salaryAge_p_2012818
 (
-  run_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  dim0        INT NOT NULL,
-  dim1        INT NOT NULL,
-  param_value INT NOT NULL,
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (run_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE salaryAge_w_2012818
 (
-  set_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  dim0        INT NOT NULL,
-  dim1        INT NOT NULL,
-  param_value INT NOT NULL,
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (set_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE StartingSeed_p_2012819
 (
-  run_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  param_value INT NOT NULL,
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (run_id, sub_id)
 );
 
 CREATE TABLE StartingSeed_w_2012819
 (
-  set_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  param_value INT NOT NULL,
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (set_id, sub_id)
 );
 
 CREATE TABLE salaryFull_p_2012812
 (
-  run_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  dim0        INT NOT NULL,
-  param_value INT NOT NULL,
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (run_id, sub_id, dim0)
 );
 
 CREATE TABLE salaryFull_w_2012812
 (
-  set_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  dim0        INT NOT NULL,
-  param_value INT NOT NULL,
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (set_id, sub_id, dim0)
 );
 
 CREATE TABLE baseSalary_p_2012811
 (
-  run_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  param_value INT NOT NULL,
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (run_id, sub_id)
 );
 
 CREATE TABLE baseSalary_w_2012811
 (
-  set_id      INT NOT NULL,
-  sub_id      INT NOT NULL,
-  param_value INT NOT NULL,
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  param_value INT      NOT NULL,
   PRIMARY KEY (set_id, sub_id)
 );
 
 CREATE TABLE filePath_p_2012814
 (
   run_id      INT          NOT NULL,
-  sub_id      INT          NOT NULL,
+  sub_id      SMALLINT     NOT NULL,
   param_value VARCHAR(255) NOT NULL,
   PRIMARY KEY (run_id, sub_id)
 );
@@ -584,7 +584,7 @@ CREATE TABLE filePath_p_2012814
 CREATE TABLE filePath_w_2012814
 (
   set_id      INT          NOT NULL,
-  sub_id      INT          NOT NULL,
+  sub_id      SMALLINT     NOT NULL,
   param_value VARCHAR(255) NOT NULL,
   PRIMARY KEY (set_id, sub_id)
 );
@@ -592,7 +592,7 @@ CREATE TABLE filePath_w_2012814
 CREATE TABLE isOldAge_p_2012815 
 (
   run_id      INT      NOT NULL,
-  sub_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
   dim0        INT      NOT NULL,
   param_value SMALLINT NOT NULL,
   PRIMARY KEY (run_id, sub_id, dim0)
@@ -601,7 +601,7 @@ CREATE TABLE isOldAge_p_2012815
 CREATE TABLE isOldAge_w_2012815
 (
   set_id      INT      NOT NULL,
-  sub_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
   dim0        INT      NOT NULL,
   param_value SMALLINT NOT NULL,
   PRIMARY KEY (set_id, sub_id, dim0)
@@ -620,22 +620,22 @@ CREATE TABLE isOldAge_w_2012815
 --
 CREATE TABLE salarySex_a_2012882
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE salarySex_v_2012882
 (
-  run_id     INT   NOT NULL,
-  expr_id    INT   NOT NULL,
-  dim0       INT   NOT NULL,
-  dim1       INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id     INT      NOT NULL,
+  expr_id    SMALLINT NOT NULL,
+  dim0       INT      NOT NULL,
+  dim1       INT      NOT NULL,
+  expr_value FLOAT    NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1)
 );
 
@@ -648,24 +648,24 @@ CREATE TABLE salarySex_v_2012882
 --
 CREATE TABLE fullAgeSalary_a_2012883
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1, dim2)
 );
 
 CREATE TABLE fullAgeSalary_v_2012883
 (
-  run_id     INT   NOT NULL,
-  expr_id    INT   NOT NULL,
-  dim0       INT   NOT NULL,
-  dim1       INT   NOT NULL,
-  dim2       INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id     INT      NOT NULL,
+  expr_id    SMALLINT NOT NULL,
+  dim0       INT      NOT NULL,
+  dim1       INT      NOT NULL,
+  dim2       INT      NOT NULL,
+  expr_value FLOAT    NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1, dim2)
 );
 
@@ -677,22 +677,22 @@ CREATE TABLE fullAgeSalary_v_2012883
 --
 CREATE TABLE ageSexIncome_a_2012884
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
 );
 
 CREATE TABLE ageSexIncome_v_2012884
 (
-  run_id     INT   NOT NULL,
-  expr_id    INT   NOT NULL,
-  dim0       INT   NOT NULL,
-  dim1       INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id     INT      NOT NULL,
+  expr_id    SMALLINT NOT NULL,
+  dim0       INT      NOT NULL,
+  dim1       INT      NOT NULL,
+  expr_value FLOAT    NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1)
 );
 
@@ -703,18 +703,18 @@ CREATE TABLE ageSexIncome_v_2012884
 --
 CREATE TABLE seedOldAge_a_2012885
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id)
 );
 
 CREATE TABLE seedOldAge_v_2012885
 (
-  run_id     INT   NOT NULL,
-  expr_id    INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id     INT      NOT NULL,
+  expr_id    SMALLINT NOT NULL,
+  expr_value FLOAT    NULL,
   PRIMARY KEY (run_id, expr_id)
 );
 

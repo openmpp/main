@@ -884,103 +884,103 @@ INSERT INTO group_pc (model_id, group_id, child_pos, child_group_id, leaf_id) VA
 
 CREATE TABLE salaryByYears_p_2012818
 (
-  run_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (run_id, sub_id, dim0, dim1, dim2, dim3)
 );
 
 CREATE TABLE salaryByYears_w_2012818
 (
-  set_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (set_id, sub_id, dim0, dim1, dim2, dim3)
 );
 
 CREATE TABLE salaryByPeriod_p_2012819
 (
-  run_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  dim4        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  dim4        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (run_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE salaryByPeriod_w_2012819
 (
-  set_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  dim4        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  dim4        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (set_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE salaryByLow_p_201281_10
 (
-  run_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  dim4        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  dim4        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (run_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE salaryByLow_w_201281_10
 (
-  set_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  dim4        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  dim4        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (set_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE salaryByMiddle_p_201281_11
 (
-  run_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  dim4        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  run_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  dim4        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (run_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE salaryByMiddle_w_201281_11
 (
-  set_id      INT   NOT NULL,
-  sub_id      INT   NOT NULL,
-  dim0        INT   NOT NULL,
-  dim1        INT   NOT NULL,
-  dim2        INT   NOT NULL,
-  dim3        INT   NOT NULL,
-  dim4        INT   NOT NULL,
-  param_value FLOAT NULL,     -- float parameter value can be null
+  set_id      INT      NOT NULL,
+  sub_id      SMALLINT NOT NULL,
+  dim0        INT      NOT NULL,
+  dim1        INT      NOT NULL,
+  dim2        INT      NOT NULL,
+  dim3        INT      NOT NULL,
+  dim4        INT      NOT NULL,
+  param_value FLOAT    NULL,     -- float parameter value can be null
   PRIMARY KEY (set_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
@@ -998,26 +998,26 @@ CREATE TABLE salaryByMiddle_w_201281_11
 --
 CREATE TABLE incomeByYear_a_2012105
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  dim3      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1, dim2, dim3)
 );
 
 CREATE TABLE incomeByYear_v_2012105
 (
-  run_id    INT   NOT NULL,
-  expr_id   INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  expr_id   SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  dim3      INT      NOT NULL,
+  expr_value FLOAT   NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1, dim2, dim3)
 );
 
@@ -1032,28 +1032,28 @@ CREATE TABLE incomeByYear_v_2012105
 --
 CREATE TABLE incomeByLow_a_2012106
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  dim4      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  dim3      INT      NOT NULL,
+  dim4      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE incomeByLow_v_2012106
 (
-  run_id    INT   NOT NULL,
-  expr_id   INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  dim4      INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  expr_id   SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  dim3      INT      NOT NULL,
+  dim4      INT      NOT NULL,
+  expr_value FLOAT   NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1, dim2, dim3, dim4)
 );
 
@@ -1068,28 +1068,28 @@ CREATE TABLE incomeByLow_v_2012106
 --
 CREATE TABLE incomeByMiddle_a_2012107
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  dim4      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  dim3      INT      NOT NULL,
+  dim4      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE incomeByMiddle_v_2012107
 (
-  run_id    INT   NOT NULL,
-  expr_id   INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  dim4      INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id     INT      NOT NULL,
+  expr_id    SMALLINT NOT NULL,
+  dim0       INT      NOT NULL,
+  dim1       INT      NOT NULL,
+  dim2       INT      NOT NULL,
+  dim3       INT      NOT NULL,
+  dim4       INT      NOT NULL,
+  expr_value FLOAT    NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1, dim2, dim3, dim4)
 );
 
@@ -1104,28 +1104,28 @@ CREATE TABLE incomeByMiddle_v_2012107
 --
 CREATE TABLE incomeByPeriod_a_2012108
 (
-  run_id    INT   NOT NULL,
-  acc_id    INT   NOT NULL,
-  sub_id    INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  dim4      INT   NOT NULL,
-  acc_value FLOAT NULL,
+  run_id    INT      NOT NULL,
+  acc_id    SMALLINT NOT NULL,
+  sub_id    SMALLINT NOT NULL,
+  dim0      INT      NOT NULL,
+  dim1      INT      NOT NULL,
+  dim2      INT      NOT NULL,
+  dim3      INT      NOT NULL,
+  dim4      INT      NOT NULL,
+  acc_value FLOAT    NULL,
   PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1, dim2, dim3, dim4)
 );
 
 CREATE TABLE incomeByPeriod_v_2012108
 (
-  run_id    INT   NOT NULL,
-  expr_id   INT   NOT NULL,
-  dim0      INT   NOT NULL,
-  dim1      INT   NOT NULL,
-  dim2      INT   NOT NULL,
-  dim3      INT   NOT NULL,
-  dim4      INT   NOT NULL,
-  expr_value FLOAT NULL,
+  run_id     INT      NOT NULL,
+  expr_id    SMALLINT NOT NULL,
+  dim0       INT      NOT NULL,
+  dim1       INT      NOT NULL,
+  dim2       INT      NOT NULL,
+  dim3       INT      NOT NULL,
+  dim4       INT      NOT NULL,
+  expr_value FLOAT    NULL,
   PRIMARY KEY (run_id, expr_id, dim0, dim1, dim2, dim3, dim4)
 );
 
