@@ -78,6 +78,18 @@ namespace openm
         /** table_expr_txt table rows and language code */
         vector<TableExprTxtLangRow> tableExprTxt;
 
+        /** entity_dic table rows */
+        vector<EntityDicRow> entityDic;
+
+        /** entity_dic_txt table rows and language code */
+        vector<EntityDicTxtLangRow> entityTxt;
+
+        /** entity_attr table rows */
+        vector<EntityAttrRow> entityAttr;
+
+        /** entity_attr_txt table rows and language code */
+        vector<EntityAttrTxtLangRow> entityAttrTxt;
+
         /** group_lst table rows */
         vector<GroupLstRow> groupLst;
 

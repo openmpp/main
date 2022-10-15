@@ -398,7 +398,7 @@ CREATE TABLE table_expr
 (
   table_hid     INT           NOT NULL, -- master key
   expr_id       INT           NOT NULL, -- unique measure id
-  expr_name     VARCHAR(32)   NOT NULL, -- measure name: expr2
+  expr_name     VARCHAR(255)  NOT NULL, -- unique measure name: expr2
   expr_decimals INT           NOT NULL, -- number of decimals for that measure
   expr_src      VARCHAR(255)  NOT NULL, -- source expression: OM_AVG(acc3/acc0)
   expr_sql      VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
@@ -510,11 +510,11 @@ CREATE TABLE run_lst
   sub_started   INT          NOT NULL, -- number of sub-values started
   sub_completed INT          NOT NULL, -- number of sub-values completed
   sub_restart   INT          NOT NULL, -- sub-value to restart from
-  create_dt     VARCHAR(32)  NOT NULL, -- start date-time
+  create_dt     VARCHAR(32)  NOT NULL, -- run created date-time
   status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
   run_digest    VARCHAR(32)  NOT NULL, -- digest of the run metadata: model digest, run name, sub count, created date-time, run stamp
-  value_digest  VARCHAR(32),           -- if not NULL then digest of the run
+  value_digest  VARCHAR(32),           -- if not NULL then digest of the run values: all parameters and output tables
   run_stamp     VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (run_id),
   CONSTRAINT run_lst_mk 

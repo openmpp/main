@@ -32,7 +32,6 @@
 		D88C3115234D790400863352 /* typeDicTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C0234D790300863352 /* typeDicTxtTable.cpp */; };
 		D88C3116234D790400863352 /* worksetParamTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C1234D790300863352 /* worksetParamTable.cpp */; };
 		D88C3117234D790400863352 /* taskSetTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C2234D790300863352 /* taskSetTable.cpp */; };
-		D88C3118234D790400863352 /* runParamTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C3234D790300863352 /* runParamTxtTable.cpp */; };
 		D88C3119234D790400863352 /* tableAccTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C4234D790300863352 /* tableAccTable.cpp */; };
 		D88C311A234D790400863352 /* runLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C5234D790300863352 /* runLstTable.cpp */; };
 		D88C311B234D790400863352 /* modelDicTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30C6234D790300863352 /* modelDicTxtTable.cpp */; };
@@ -46,7 +45,6 @@
 		D88C3123234D790400863352 /* tableDimsTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CE234D790300863352 /* tableDimsTxtTable.cpp */; };
 		D88C3124234D790400863352 /* paramDicTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30CF234D790300863352 /* paramDicTable.cpp */; };
 		D88C3125234D790400863352 /* dbExec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D0234D790300863352 /* dbExec.cpp */; };
-		D88C3126234D790400863352 /* runTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D1234D790300863352 /* runTxtTable.cpp */; };
 		D88C3127234D790400863352 /* modelSqlBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30D3234D790300863352 /* modelSqlBuilder.h */; };
 		D88C3128234D790400863352 /* modelExpressionSql.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D4234D790300863352 /* modelExpressionSql.cpp */; };
 		D88C3129234D790400863352 /* modelInsertSql.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30D5234D790300863352 /* modelInsertSql.cpp */; };
@@ -117,7 +115,6 @@
 		D88C30C0234D790300863352 /* typeDicTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = typeDicTxtTable.cpp; sourceTree = "<group>"; };
 		D88C30C1234D790300863352 /* worksetParamTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = worksetParamTable.cpp; sourceTree = "<group>"; };
 		D88C30C2234D790300863352 /* taskSetTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = taskSetTable.cpp; sourceTree = "<group>"; };
-		D88C30C3234D790300863352 /* runParamTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runParamTxtTable.cpp; sourceTree = "<group>"; };
 		D88C30C4234D790300863352 /* tableAccTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableAccTable.cpp; sourceTree = "<group>"; };
 		D88C30C5234D790300863352 /* runLstTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runLstTable.cpp; sourceTree = "<group>"; };
 		D88C30C6234D790300863352 /* modelDicTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelDicTxtTable.cpp; sourceTree = "<group>"; };
@@ -131,7 +128,6 @@
 		D88C30CE234D790300863352 /* tableDimsTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tableDimsTxtTable.cpp; sourceTree = "<group>"; };
 		D88C30CF234D790300863352 /* paramDicTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramDicTable.cpp; sourceTree = "<group>"; };
 		D88C30D0234D790300863352 /* dbExec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dbExec.cpp; sourceTree = "<group>"; };
-		D88C30D1234D790300863352 /* runTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runTxtTable.cpp; sourceTree = "<group>"; };
 		D88C30D3234D790300863352 /* modelSqlBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = modelSqlBuilder.h; sourceTree = "<group>"; };
 		D88C30D4234D790300863352 /* modelExpressionSql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelExpressionSql.cpp; sourceTree = "<group>"; };
 		D88C30D5234D790300863352 /* modelInsertSql.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelInsertSql.cpp; sourceTree = "<group>"; };
@@ -239,7 +235,6 @@
 				D88C30C0234D790300863352 /* typeDicTxtTable.cpp */,
 				D88C30C1234D790300863352 /* worksetParamTable.cpp */,
 				D88C30C2234D790300863352 /* taskSetTable.cpp */,
-				D88C30C3234D790300863352 /* runParamTxtTable.cpp */,
 				D88C30C4234D790300863352 /* tableAccTable.cpp */,
 				D88C30C5234D790300863352 /* runLstTable.cpp */,
 				D88C30C6234D790300863352 /* modelDicTxtTable.cpp */,
@@ -253,7 +248,6 @@
 				D88C30CE234D790300863352 /* tableDimsTxtTable.cpp */,
 				D88C30CF234D790300863352 /* paramDicTable.cpp */,
 				D88C30D0234D790300863352 /* dbExec.cpp */,
-				D88C30D1234D790300863352 /* runTxtTable.cpp */,
 				D88C30D2234D790300863352 /* omc */,
 				D88C30DC234D790300863352 /* groupLstTable.cpp */,
 				D88C30DD234D790300863352 /* tableAccTxtTable.cpp */,
@@ -429,7 +423,6 @@
 				D88C314F234D790400863352 /* splitCsv.cpp in Sources */,
 				D88C310A234D790400863352 /* taskLstTable.cpp in Sources */,
 				D88C3121234D790400863352 /* paramDimsTxtTable.cpp in Sources */,
-				D88C3118234D790400863352 /* runParamTxtTable.cpp in Sources */,
 				D88C3142234D790400863352 /* paramDimsTable.cpp in Sources */,
 				D88C313E234D790400863352 /* typeEnumTxtTable.cpp in Sources */,
 				D88C3135234D790400863352 /* modelWordTable.cpp in Sources */,
@@ -438,7 +431,6 @@
 				D88C3112234D790400863352 /* groupTxtTable.cpp in Sources */,
 				D88C313C234D790400863352 /* dbExecSqlite.cpp in Sources */,
 				D88C313F234D790400863352 /* profileOptionTable.cpp in Sources */,
-				D88C3126234D790400863352 /* runTxtTable.cpp in Sources */,
 				D88C3113234D790400863352 /* typeDicTable.cpp in Sources */,
 				D88C310E234D790400863352 /* tableDicTable.cpp in Sources */,
 				D88C311A234D790400863352 /* runLstTable.cpp in Sources */,

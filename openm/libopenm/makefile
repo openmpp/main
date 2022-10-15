@@ -87,6 +87,10 @@ LIBOPENM_CPPLIST = \
   db/dbExecSqlite.cpp \
   db/dbMetaRow.cpp \
   db/dbValue.cpp \
+  db/entityAttrTable.cpp \
+  db/entityAttrTxtTable.cpp \
+  db/entityDicTable.cpp \
+  db/entityDicTxtTable.cpp \
   db/groupLstTable.cpp \
   db/groupPcTable.cpp \
   db/groupTxtTable.cpp \
@@ -109,8 +113,6 @@ LIBOPENM_CPPLIST = \
   db/profileOptionTable.cpp \
   db/runLstTable.cpp \
   db/runOptionTable.cpp \
-  db/runParamTxtTable.cpp \
-  db/runTxtTable.cpp \
   db/tableAccTable.cpp \
   db/tableAccTxtTable.cpp \
   db/tableDicTable.cpp \
@@ -168,6 +170,10 @@ LIB_OMC_CPPLIST = \
   db/dbExecSqlite.cpp \
   db/dbMetaRow.cpp \
   db/dbValue.cpp \
+  db/entityAttrTable.cpp \
+  db/entityAttrTxtTable.cpp \
+  db/entityDicTable.cpp \
+  db/entityDicTxtTable.cpp \
   db/groupLstTable.cpp \
   db/groupPcTable.cpp \
   db/groupTxtTable.cpp \
@@ -188,8 +194,6 @@ LIB_OMC_CPPLIST = \
   db/profileOptionTable.cpp \
   db/runLstTable.cpp \
   db/runOptionTable.cpp \
-  db/runParamTxtTable.cpp \
-  db/runTxtTable.cpp \
   db/tableAccTable.cpp \
   db/tableAccTxtTable.cpp \
   db/tableDicTable.cpp \

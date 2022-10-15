@@ -254,9 +254,6 @@
     <ClCompile Include="db\runOptionTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\runTxtTable.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="db\tableAccTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
@@ -353,9 +350,6 @@
     <ClCompile Include="db\dbExec.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\runParamTxtTable.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="common\md5.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
@@ -384,6 +378,18 @@
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="db\outputTableReader.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityDicTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityDicTxtTable .cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityAttrTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityAttrTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>
