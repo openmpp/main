@@ -87,13 +87,13 @@ LIBOPENM_CPPLIST = \
   db/dbExecSqlite.cpp \
   db/dbMetaRow.cpp \
   db/dbValue.cpp \
+  db/groupLstTable.cpp \
+  db/groupPcTable.cpp \
+  db/groupTxtTable.cpp \
   db/entityAttrTable.cpp \
   db/entityAttrTxtTable.cpp \
   db/entityDicTable.cpp \
   db/entityDicTxtTable.cpp \
-  db/groupLstTable.cpp \
-  db/groupPcTable.cpp \
-  db/groupTxtTable.cpp \
   db/langLstTable.cpp \
   db/langWordTable.cpp \
   db/modelDicTable.cpp \
