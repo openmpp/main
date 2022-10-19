@@ -102,6 +102,24 @@ namespace openm
             IDbExec * i_dbExec, const TableDicRow & i_tableRow, const map<string, int> & i_langMap, TableExprTxtLangRow & io_row
         );
 
+        /** insert row into entity_dic and model_entity_dic tables. */
+        static void insertEntityDic(IDbExec* i_dbExec, EntityDicRow& io_row);
+
+        /** insert row into entity_dic_txt table. */
+        static void insertEntityText(
+            IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<string, int>& i_langMap, EntityDicTxtLangRow& io_row
+        );
+
+        /** insert row into entity_attr table. */
+        static void insertEntityAttr(
+            IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<int, int>& i_typeIdMap, const EntityAttrRow& i_row
+        );
+
+        /** insert row into entity_attr_txt table. */
+        static void insertEntityAttrText(
+            IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<string, int>& i_langMap, EntityAttrTxtLangRow& io_row
+        );
+
         /** insert row into group_lst table. */
         static void insertGroupLst(IDbExec * i_dbExec, const GroupLstRow & i_row);
 

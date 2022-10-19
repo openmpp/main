@@ -669,6 +669,105 @@ namespace openm
         virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
+    /** entity_dic table public interface. */
+    struct IEntityDicTable : public IMetaLoadedTable<EntityDicRow>
+    {
+        virtual ~IEntityDicTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by unique key: model id, model entity id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static IEntityDicTable* create(IDbExec* i_dbExec, int i_modelId = 0);
+
+        /** binary search row by unique key: model id, model entity id, return NULL if not found. */
+        virtual const EntityDicRow* byKey(int i_modelId, int i_entityId) const = 0;
+
+        /** get list of rows by model id. */
+        virtual vector<EntityDicRow> byModelId(int i_modelId) const = 0;
+
+        /** get first row by model id and entity name or NULL if not found. */
+        virtual const EntityDicRow* byModelIdName(int i_modelId, const string& i_name) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityDicTable* create(IRowBaseVec& io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec& rowsRef(void) = 0;
+    };
+
+    /** entity_dic_txt table public interface. */
+    struct IEntityDicTxtTable : public IMetaLoadedTable<EntityDicTxtRow>
+    {
+        virtual ~IEntityDicTxtTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by unique key: model id, model entity id, language id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static IEntityDicTxtTable* create(IDbExec* i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** binary search row by unique key: model id, model entity id, language id; return NULL if not found. */
+        virtual const EntityDicTxtRow* byKey(int i_modelId, int i_entityId, int i_langId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityDicTxtTable* create(IRowBaseVec& io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec& rowsRef(void) = 0;
+    };
+
+    /** entity_attr table public interface. */
+    struct IEntityAttrTable : public IMetaLoadedTable<EntityAttrRow>
+    {
+        virtual ~IEntityAttrTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by unique key: model id, model entity id, attribute id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static IEntityAttrTable* create(IDbExec* i_dbExec, int i_modelId = 0);
+
+        /** binary search row by unique key: model id, model entity id, attribute id; return NULL if not found. */
+        virtual const EntityAttrRow* byKey(int i_modelId, int i_entityId, int i_attrId) const = 0;
+
+        /** get list of rows by model id and entity id. */
+        virtual vector<EntityAttrRow> byModelIdEntityId(int i_modelId, int i_entityId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityAttrTable* create(IRowBaseVec& io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec& rowsRef(void) = 0;
+    };
+
+    /** entity_attr_txt table public interface. */
+    struct IEntityAttrTxtTable : public IMetaLoadedTable<EntityAttrTxtRow>
+    {
+        virtual ~IEntityAttrTxtTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by unique key: model id, model entity id, attribute id, language id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static IEntityAttrTxtTable* create(IDbExec* i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** binary search row by unique key: model id, model entity id, attribute id, language id; return NULL if not found. */
+        virtual const EntityAttrTxtRow* byKey(int i_modelId, int i_entityId, int i_attrId, int i_langId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityAttrTxtTable* create(IRowBaseVec& io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec& rowsRef(void) = 0;
+    };
+
     /** group_lst table public interface. */
     struct IGroupLstTable : public IMetaLoadedTable<GroupLstRow>
     {
@@ -810,22 +909,6 @@ namespace openm
         static string digestRunMeta(const string & i_modelDigest, const RunLstRow & i_runRow);
     };
 
-    /** run_txt table public interface. */
-    struct IRunTxtTable : public IMetaTable<RunTxtRow>
-    {
-        virtual ~IRunTxtTable() noexcept = 0;
-
-        /** 
-        * select table rows and sorted by primary key: run id and language id.
-        * 
-        * if i_langId >= 0 then select only rows where lang_id = i_langId
-        */
-        static vector<RunTxtRow> select(IDbExec * i_dbExec, int i_langId = -1);
-
-        /** select table row by primary key: run id and language id. */
-        static vector<RunTxtRow> byKey(IDbExec * i_dbExec, int i_runId, int i_langId);
-    };
-
     /** run_option table public interface. */
     struct IRunOptionTable : public IMetaLoadedTable<RunOptionRow>
     {
@@ -869,29 +952,6 @@ namespace openm
 
         /** create new table rows by swap with supplied vector of rows. */
         static IRunOptionTable * create(IRowBaseVec & io_rowVec);
-
-        /** get reference to list of all table rows. */
-        virtual IRowBaseVec & rowsRef(void) = 0;
-    };
-
-    /** run_parameter_txt table public interface. */
-    struct IRunParamTxtTable : public IMetaLoadedTable<RunParamTxtRow>
-    {
-        virtual ~IRunParamTxtTable() noexcept = 0;
-
-        /** 
-        * create new table object and load table rows sorted by primary key: run id, parameter id, language id.
-        * 
-        * if i_runId > 0 then select only rows where run_id = i_runId
-        * if i_langId >= 0 then select only rows where lang_id = i_langId
-        */
-        static IRunParamTxtTable * create(IDbExec * i_dbExec, int i_runId = 0, int i_langId = -1);
-
-        /** binary search row by primary key: run id, parameter id, language id; return NULL if not found. */
-        virtual const RunParamTxtRow * byKey(int i_runId, int i_paramId, int i_langId) const = 0;
-
-        /** create new table rows by swap with supplied vector of rows. */
-        static IRunParamTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;

@@ -229,4 +229,64 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.tableDimsTxt.push_back(tableDimsTxt);
         }
     }
+
+    // TEST ONLY: test entity and entity attributes
+    //
+    if (dimension_count() > 0) // skip zero rank tables because entity must have at least one attribute
+    {
+        // TEST ONLY: copy entities from output tables
+
+        // The entity
+
+        EntityDicRow entityDic;
+
+        entityDic.entityId = pp_table_id;
+        entityDic.entityName = name;
+        metaRows.entityDic.push_back(entityDic);
+
+        // Labels and notes for the entity
+        for (auto lang : Symbol::pp_all_languages) {
+
+            EntityDicTxtLangRow entityTxt;
+
+            entityTxt.entityId = pp_table_id;
+            entityTxt.langCode = lang->name;
+            entityTxt.descr = label(*lang);
+            entityTxt.note = note(*lang);
+
+            metaRows.entityTxt.push_back(entityTxt);
+        }
+
+        // copy entity attributes from output table dimensions
+        //
+        for (auto dimIt = dimension_list.begin(); dimIt != dimension_list.end(); ++dimIt) {
+
+            DimensionSymbol* dim = *dimIt;
+
+            EntityAttrRow entityAttr;
+
+            auto es = dim->pp_enumeration;
+            assert(es); // logic guarantee
+            entityAttr.entityId = pp_table_id;
+            entityAttr.attrId = dim->index;
+            entityAttr.name = dim->short_name;  // any name up to 255 bytes
+            entityAttr.typeId = es->type_id;
+            metaRows.entityAttr.push_back(entityAttr);
+
+            // Labels and notes for the dimensions of the table
+            for (auto lang : Symbol::pp_all_languages) {
+
+                EntityAttrTxtLangRow entityAttrTxt;
+
+                entityAttrTxt.entityId = pp_table_id;
+                entityAttrTxt.attrId = dim->index;
+                entityAttrTxt.langCode = lang->name;
+                entityAttrTxt.descr = dim->label(*lang);
+                entityAttrTxt.note = dim->note(*lang);
+                metaRows.entityAttrTxt.push_back(entityAttrTxt);
+            }
+        }
+    }
+    //
+    // END OF TEST ONLY
 }

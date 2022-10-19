@@ -233,6 +233,9 @@ namespace openm
         /** set output tables meta rows and calculate digests */
         void setTableDicRows(MetaModelHolder & io_metaRows) const;
 
+        /** set entity meta rows and calculate digests */
+        void setEntityDicRows(MetaModelHolder& io_metaRows) const;
+
         /** trim string fields in model metadata rows */
         static void trimModelRows(MetaModelHolder & io_metaRows);
 
@@ -262,6 +265,9 @@ namespace openm
         
         /** calculate output table metadata digest */
         static const tuple<string, string> makeOutTableDigest(const TableDicRow i_tableRow, const MetaModelHolder & i_metaRows);
+
+        /** calculate entity metadata digest */
+        static const string makeEntityDigest(const EntityDicRow i_entityRow, const MetaModelHolder& i_metaRows);
 
         /** calculate model metadata digest and table import digest */
         static const string makeModelDigest(const MetaModelHolder & i_metaRows);

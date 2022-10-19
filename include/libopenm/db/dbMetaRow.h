@@ -1213,6 +1213,202 @@ namespace openm
         static bool uniqueLangKeyEqual(const TableExprTxtLangRow & i_left, const TableExprTxtLangRow & i_right);
     };
 
+    /** entity_dic table row. */
+    struct EntityDicRow : public IMetaRow<EntityDicRow>
+    {
+        /** model_id       INT NOT NULL          */
+        int modelId;
+
+        /** model_entity_id INT NOT NULL          */
+        int entityId;
+
+        /** entity_name     VARCHAR(255) NOT NULL */
+        string entityName;
+
+        /** entity_hid      INT         NOT NULL, -- unique entity id */
+        int entityHid;
+
+        /** entity_digest   VARCHAR(32) NOT NULL  */
+        string digest;
+
+        /** create row with supplied key field values. */
+        EntityDicRow(int i_modelId, int i_entityId) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            entityName(""),
+            entityHid(0),
+            digest("")
+        { }
+
+        /** create row with default empty field values. */
+        EntityDicRow(void) : EntityDicRow(0, 0) { }
+
+        ~EntityDicRow(void) noexcept { }
+
+        /** less comparator by unique key: model id, model entity id. */
+        static bool isKeyLess(const EntityDicRow& i_left, const EntityDicRow& i_right);
+
+        /** equal comparator by primary key: model id, entity id. */
+        static bool isKeyEqual(const EntityDicRow& i_left, const EntityDicRow& i_right);
+
+        /** find row by unique key: model id, model entity id. */
+        static vector<EntityDicRow>::const_iterator byKey(int i_modelId, int i_entityId, const vector<EntityDicRow>& i_rowVec);
+    };
+
+    /** entity_dic_txt table row. */
+    struct EntityDicTxtRow : public IMetaRow<EntityDicTxtRow>
+    {
+        /** model_id    INT NOT NULL */
+        int modelId;
+
+        /** entity_id   INT NOT NULL */
+        int entityId;
+
+        /** lang_id     INT NOT NULL */
+        int langId;
+
+        /** descr       VARCHAR(255) NOT NULL */
+        string descr;
+
+        /** note        VARCHAR(32000)        */
+        string note;
+
+        /** create row with supplied key field values. */
+        EntityDicTxtRow(int i_modelId, int i_entityId, int i_langId) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            langId(i_langId),
+            descr(""),
+            note("")
+        { }
+
+        /** create row with default empty field values. */
+        EntityDicTxtRow(void) : EntityDicTxtRow(0, 0, 0) { }
+
+        ~EntityDicTxtRow(void) noexcept { }
+
+        /** less comparator by unique key: model id, model entity id, language id. */
+        static bool isKeyLess(const EntityDicTxtRow& i_left, const EntityDicTxtRow& i_right);
+
+        /** equal comparator by unique key: model id, model entity id, language id. */
+        static bool isKeyEqual(const EntityDicTxtRow& i_left, const EntityDicTxtRow& i_right);
+    };
+
+    /** entity_dic_txt table row and language code. */
+    struct EntityDicTxtLangRow : public EntityDicTxtRow
+    {
+        /** language code */
+        string langCode;
+
+        /** less comparator by unique key: model id, entity id, language code. */
+        static bool uniqueLangKeyLess(const EntityDicTxtLangRow& i_left, const EntityDicTxtLangRow& i_right);
+
+        /** equal comparator by unique key: model id, entity id, language code. */
+        static bool uniqueLangKeyEqual(const EntityDicTxtLangRow& i_left, const EntityDicTxtLangRow& i_right);
+    };
+
+    /** entity_attr table row. */
+    struct EntityAttrRow : public IMetaRow<EntityAttrRow>
+    {
+        /** model_id    INT NOT NULL */
+        int modelId;
+
+        /** entity_id   INT NOT NULL */
+        int entityId;
+
+        /** attr_id     INT NOT NULL */
+        int attrId;
+
+        /** attr_name   VARCHAR(255) NOT NULL */
+        string name;
+
+        /** mod_type_id INT NOT NULL */
+        int typeId;
+
+        /** is_internal SMALLINT NOT NULL */
+        bool isInternal;
+
+        /** create row with supplied key field values. */
+        EntityAttrRow(int i_modelId, int i_entityId, int i_attrId) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            attrId(i_attrId),
+            name(""),
+            typeId(0),
+            isInternal(false)
+        { }
+
+        /** create row with default empty field values. */
+        EntityAttrRow(void) : EntityAttrRow(0, 0, 0) { }
+
+        ~EntityAttrRow(void) noexcept { }
+
+        /** less comparator by unique key: model id, model entity id, attribute id. */
+        static bool isKeyLess(const EntityAttrRow& i_left, const EntityAttrRow& i_right);
+
+        /** equal comparator by unique key: model id, model entity id, attribute id. */
+        static bool isKeyEqual(const EntityAttrRow& i_left, const EntityAttrRow& i_right);
+
+        /** retrun db column name based on attribute id, example: attr1 */
+        const string columnName(void) const;
+    };
+
+    /** entity_attr_txt table row. */
+    struct EntityAttrTxtRow : public IMetaRow<EntityAttrTxtRow>
+    {
+        /** model_id INT          NOT NULL */
+        int modelId;
+
+        /** entity_id INT         NOT NULL */
+        int entityId;
+
+        /** attr_id   INT         NOT NULL */
+        int attrId;
+
+        /** lang_id  INT          NOT NULL */
+        int langId;
+
+        /** descr    VARCHAR(255) NOT NULL */
+        string descr;
+
+        /** note     VARCHAR(32000) */
+        string note;
+
+        /** create row with supplied key field values. */
+        EntityAttrTxtRow(int i_modelId, int i_entityId, int i_attrId, int i_langId) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            attrId(i_attrId),
+            langId(i_langId),
+            descr(""),
+            note("")
+        { }
+
+        /** create row with default empty field values. */
+        EntityAttrTxtRow(void) : EntityAttrTxtRow(0, 0, 0, 0) { }
+
+        ~EntityAttrTxtRow(void) noexcept { }
+
+        /** less comparator by unique key: model id, model entity id, attribute id, language id. */
+        static bool isKeyLess(const EntityAttrTxtRow& i_left, const EntityAttrTxtRow& i_right);
+
+        /** equal comparator by unique key: model id, model entity id, attribute id, language id. */
+        static bool isKeyEqual(const EntityAttrTxtRow& i_left, const EntityAttrTxtRow& i_right);
+    };
+
+    /** entity_attr_txt table row and language code. */
+    struct EntityAttrTxtLangRow : public EntityAttrTxtRow
+    {
+        /** language code */
+        string langCode;
+
+        /** less comparator by unique key: model id, entity id, attribute name, language code. */
+        static bool uniqueLangKeyLess(const EntityAttrTxtLangRow& i_left, const EntityAttrTxtLangRow& i_right);
+
+        /** equal comparator by unique key: model id, entity id, attribute name, language code. */
+        static bool uniqueLangKeyEqual(const EntityAttrTxtLangRow& i_left, const EntityAttrTxtLangRow& i_right);
+    };
+
     /** group_lst table row. */
     struct GroupLstRow : public IMetaRow<GroupLstRow>
     {
@@ -1461,48 +1657,6 @@ namespace openm
         static vector<RunLstRow>::const_iterator byKey(int i_runId, const vector<RunLstRow> & i_rowVec);
     };
 
-    /** run_txt table row. */
-    struct RunTxtRow : public IMetaRow<RunTxtRow>
-    {
-        /** run_id   INT          NOT NULL */
-        int runId;
-
-        /** model_id INT          NOT NULL */
-        int modelId;
-
-        /** lang_id  INT          NOT NULL */
-        int langId;
-
-        /** descr    VARCHAR(255) NOT NULL */
-        string descr;
-
-        /** note     VARCHAR(32000)          */
-        string note;
-
-        /** create row with supplied primary key field values. */
-        RunTxtRow(int i_runId, int i_langId) : 
-            runId(i_runId),
-            modelId(0),
-            langId(i_langId),
-            descr(""),
-            note("")
-        { }
-
-        /** create row with default empty field values. */
-        RunTxtRow(void) : RunTxtRow(0, 0) { }
-
-        ~RunTxtRow(void) noexcept { }
-
-        /** less comparator by primary key: run id and language id. */
-        static bool isKeyLess(const RunTxtRow & i_left, const RunTxtRow & i_right);
-
-        /** equal comparator by primary key: run id and language id. */
-        static bool isKeyEqual(const RunTxtRow & i_left, const RunTxtRow & i_right);
-
-        /** find row by primary key: run id and language id. */
-        static vector<RunTxtRow>::const_iterator byKey(int i_runId, int i_langId, const vector<RunTxtRow> & i_rowVec);
-    };
-
     /** run_option table row. */
     struct RunOptionRow : public IMetaRow<RunOptionRow>
     {
@@ -1533,53 +1687,6 @@ namespace openm
         /** equal comparator by primary key: run id, option key. */
         static bool isKeyEqual(const RunOptionRow & i_left, const RunOptionRow & i_right);
     };
-
-    /** run_parameter_txt join to model_parameter_dic table row. */
-    struct RunParamTxtRow : public IMetaRow<RunParamTxtRow>
-    {
-        /** run_id       INT NOT NULL */
-        int runId;
-        
-        /** model_id     INT NOT NULL */
-        int modelId;
-        
-        /** parameter_id INT NOT NULL */
-        int paramId;
-        
-        /** lang_id      INT NOT NULL */
-        int langId;
-        
-        /** note         VARCHAR(32000) */
-        string note;
-        
-        /** create row with supplied primary key field values. */
-        RunParamTxtRow(int i_runId, int i_paramId, int i_langId) : 
-            runId(i_runId), 
-            modelId(0), 
-            paramId(i_paramId), 
-            langId(i_langId),
-            note("")
-        { }
-
-        /** create row with default empty field values. */
-        RunParamTxtRow(void) : RunParamTxtRow(0, 0, 0) { }
-
-        ~RunParamTxtRow(void) noexcept { }
-
-        /** less comparator by primary key: run id, parameter id, language id. */
-        static bool isKeyLess(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right);
-
-        /** equal comparator by primary key: run id, parameter id, language id. */
-        static bool isKeyEqual(const RunParamTxtRow & i_left, const RunParamTxtRow & i_right);
-    };
-
-    /** run_parameter_txt table row and language code. */
-    struct RunParamTxtLangRow : public RunParamTxtRow
-    {
-        /** language code */
-        string langCode;
-    };
-
     /** workset_lst table row. */
     struct WorksetLstRow : public IMetaRow<WorksetLstRow>
     {

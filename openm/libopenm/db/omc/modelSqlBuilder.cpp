@@ -186,6 +186,18 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     for (TableExprTxtLangRow & row : io_metaRows.tableExprTxt) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
+    for (EntityDicRow& row : io_metaRows.entityDic) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (EntityDicTxtLangRow& row : io_metaRows.entityTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (EntityAttrRow& row : io_metaRows.entityAttr) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (EntityAttrTxtLangRow& row : io_metaRows.entityAttrTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
     for (GroupLstRow & row : io_metaRows.groupLst) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
@@ -316,6 +328,29 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     for (TableExprTxtLangRow & row : io_metaRows.tableExprTxt) {
         auto tableRowIt = TableDicRow::byKey(row.modelId, row.tableId, io_metaRows.tableDic);
         ModelInsertSql::insertTableExprText(i_dbExec, *tableRowIt, langMap, row);
+    }
+
+    // model entity rows: entity_dic and model_entity_dic
+    for (EntityDicRow& row : io_metaRows.entityDic) {
+        ModelInsertSql::insertEntityDic(i_dbExec, row);
+    }
+
+    // entity text rows: entity_dic_txt
+    for (EntityDicTxtLangRow& row : io_metaRows.entityTxt) {
+        auto entityRowIt = EntityDicRow::byKey(row.modelId, row.entityId, io_metaRows.entityDic);
+        ModelInsertSql::insertEntityText(i_dbExec, *entityRowIt, langMap, row);
+    }
+
+    // entity attribute rows: entity_attr
+    for (const EntityAttrRow& row : io_metaRows.entityAttr) {
+        auto entityRowIt = EntityDicRow::byKey(row.modelId, row.entityId, io_metaRows.entityDic);
+        ModelInsertSql::insertEntityAttr(i_dbExec, *entityRowIt, typeIdMap, row);
+    }
+
+    // entity attribute text rows: entity_attr_txt
+    for (EntityAttrTxtLangRow& row : io_metaRows.entityAttrTxt) {
+        auto entityRowIt = EntityDicRow::byKey(row.modelId, row.entityId, io_metaRows.entityDic);
+        ModelInsertSql::insertEntityAttrText(i_dbExec, *entityRowIt, langMap, row);
     }
 
     // group of parameters or output tables: group_lst
@@ -828,11 +863,11 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
 // create table sql for parameter run or workset:
 // CREATE TABLE ageSex_p20120817
 // (
-//  run_id      INT   NOT NULL,  -- set_id for workset parameter
-//  sub_id      INT   NOT NULL,
-//  dim0        INT   NOT NULL,
-//  dim1        INT   NOT NULL,
-//  param_value FLOAT NOT NULL,  -- it can be nullable for extended parameter
+//  run_id      INT      NOT NULL,  -- set_id for workset parameter
+//  sub_id      SMALLINT NOT NULL,
+//  dim0        INT      NOT NULL,
+//  dim1        INT      NOT NULL,
+//  param_value FLOAT    NOT NULL,  -- it can be nullable for extended parameter
 //  PRIMARY KEY (run_id, sub_id, dim0, dim1)  -- set_id for workset parameter
 // );
 const void ModelSqlBuilder::paramCreateTable(
@@ -841,7 +876,7 @@ const void ModelSqlBuilder::paramCreateTable(
 {
     string sqlBody = "(" + 
         i_runSetId + " INT NOT NULL," +
-        " sub_id INT NOT NULL, ";
+        " sub_id SMALLINT NOT NULL, ";
 
     for (const string & cn : i_tblInfo.colVec) {
         sqlBody += cn + " INT NOT NULL, ";
@@ -900,12 +935,12 @@ string ModelSqlBuilder::valueDbType(const string & i_sqlProvider, const ParamTbl
 // create table sql for accumulator table:
 // CREATE TABLE salarySex_a20120820
 // (
-//  run_id    INT   NOT NULL,
-//  acc_id    INT   NOT NULL,
-//  sub_id    INT   NOT NULL,
-//  dim0      INT   NOT NULL,
-//  dim1      INT   NOT NULL,
-//  acc_value FLOAT NULL,
+//  run_id    INT      NOT NULL,
+//  acc_id    SMALLINT NOT NULL,
+//  sub_id    SMALLINT NOT NULL,
+//  dim0      INT      NOT NULL,
+//  dim1      INT      NOT NULL,
+//  acc_value FLOAT    NULL,
 //  PRIMARY KEY (run_id, acc_id, sub_id, dim0, dim1)
 // );
 const void ModelSqlBuilder::accCreateTable(
@@ -913,8 +948,8 @@ const void ModelSqlBuilder::accCreateTable(
     ) const
 {
     string sqlBody = "(run_id INT NOT NULL, " \
-        "acc_id INT NOT NULL, " \
-        "sub_id INT NOT NULL, ";
+        "acc_id SMALLINT NULL, " \
+        "sub_id SMALLINT NOT NULL, ";
 
     for (const string & cn : i_tblInfo.colVec) {
         sqlBody += cn + " INT NOT NULL, ";
@@ -934,11 +969,11 @@ const void ModelSqlBuilder::accCreateTable(
 // create table sql for value table:
 // CREATE TABLE salarySex_v20120820
 // (
-//  run_id     INT   NOT NULL,
-//  expr_id    INT   NOT NULL,
-//  dim0       INT   NOT NULL,
-//  dim1       INT   NOT NULL,
-//  expr_value FLOAT NULL,
+//  run_id     INT      NOT NULL,
+//  expr_id    SMALLINT NOT NULL,
+//  dim0       INT      NOT NULL,
+//  dim1       INT      NOT NULL,
+//  expr_value FLOAT    NULL,
 //  PRIMARY KEY (run_id, expr_id, dim0, dim1)
 // );
 const void ModelSqlBuilder::valueCreateTable(
@@ -946,7 +981,7 @@ const void ModelSqlBuilder::valueCreateTable(
     ) const
 {
     string sqlBody = "(run_id INT NOT NULL, " \
-        "expr_id INT NOT NULL,";
+        "expr_id SMALLINT NULL,";
 
     for (const string & cn : i_tblInfo.colVec) {
         sqlBody += cn + " INT NOT NULL, ";

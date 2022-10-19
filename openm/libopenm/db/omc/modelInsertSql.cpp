@@ -121,7 +121,7 @@ void ModelInsertSql::insertModelDicText(IDbExec * i_dbExec, const map<string, in
     if (langIt == i_langMap.cend()) throw DbException(LT("invalid language code: %s"), io_row.langCode.c_str());
     io_row.langId = langIt->second;
 
-    // INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1234, 101, 'First model', 'First model note (EN)')
+    // INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (1234, 101, 'First model', 'First model note')
     i_dbExec->update(
         "INSERT INTO model_dic_txt (model_id, lang_id, descr, note) VALUES (" +
         to_string(io_row.modelId) + ", " +
@@ -217,7 +217,7 @@ void ModelInsertSql::insertTypeText(
     // built-in types must already be inserted
     if (TypeDicRow::isBuiltIn(io_row.typeId)) return; 
 
-    // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7890, 101, 'Age', 'Age note (EN)')
+    // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7890, 101, 'Age', 'Age note')
     i_dbExec->update(
         "INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (" +
         to_string(typeIt->second) + ", " +
@@ -272,7 +272,7 @@ void ModelInsertSql::insertTypeEnumText(
     // built-in types must already be inserted
     if (TypeDicRow::isBuiltIn(io_row.typeId)) return; 
 
-    // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7890, 101, 'Age', 'Age note (EN)')
+    // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7890, 101, 'Age', 'Age note')
     i_dbExec->update(
         "INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (" +
         to_string(i_typeHid) + ", " +
@@ -392,7 +392,7 @@ void ModelInsertSql::insertParamText(
     io_row.langId = langIt->second;
 
     // INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) 
-    // VALUES (4321, 10, 'Age by Sex', 'Age by Sex note (EN)')
+    // VALUES (4321, 10, 'Age by Sex', 'Age by Sex note')
     i_dbExec->update(
         "INSERT INTO parameter_dic_txt (parameter_hid, lang_id, descr, note) VALUES (" +
         to_string(i_paramRow.paramHid) + ", " +
@@ -452,7 +452,7 @@ void ModelInsertSql::insertParamDimsText(
     io_row.langId = langIt->second;
 
     // INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) 
-    // VALUES (4321, 1, 101, 'Age', 'Age note (EN)')
+    // VALUES (4321, 1, 101, 'Age', 'Age note')
     i_dbExec->update(
         "INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VALUES (" +
         to_string(i_paramRow.paramHid) + ", " +
@@ -551,7 +551,7 @@ void ModelInsertSql::insertTableText(
     // INSERT INTO table_dic_txt 
     //   (table_hid, lang_id, descr, note, expr_descr, expr_note) 
     // VALUES
-    //   (9876, 101, 'Salary by Sex', 'Salary by Sex note (EN)', '', '', 0)
+    //   (9876, 101, 'Salary by Sex', 'Salary by Sex note', '', '', 0)
     i_dbExec->update(
         "INSERT INTO table_dic_txt (table_hid, lang_id, descr, note, expr_descr, expr_note) VALUES (" +
         to_string(i_tableRow.tableHid) + ", " +
@@ -614,22 +614,10 @@ void ModelInsertSql::insertTableDimsText(
     if (langIt == i_langMap.cend()) throw DbException(LT("invalid language code: %s"), io_row.langCode.c_str());
     io_row.langId = langIt->second;
 
-    // INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) 
-    // SELECT 
-    //   H.table_hid, 
-    //   1,
-    //   (SELECT LL.lang_id FROM lang_lst LL WHERE LL.lang_code = 'EN'),
-    //   'Salary',
-    //   'Salary note (EN)' 
-    // FROM table_dic H
-    // WHERE H.table_digest = '98765432'
-    // AND NOT EXISTS
-    // (
-    //   SELECT * FROM table_dims_txt E 
-    //   WHERE E.table_hid = H.table_hid
-    //   AND E.dim_id = 1
-    //   AND E.lang_id = (SELECT EL.lang_id FROM lang_lst EL WHERE EL.lang_code = 'EN')
-    // );
+    // INSERT INTO table_dims_txt
+    //   (table_hid, dim_id, lang_id, descr, note)
+    // VALUES
+    //   (9876, 1, 101, 'Salary', 'Salary note')
     i_dbExec->update(
         "INSERT INTO table_dims_txt (table_hid, dim_id, lang_id, descr, note) VALUES (" +
         to_string(i_tableRow.tableHid) + ", " +
@@ -763,6 +751,146 @@ void ModelInsertSql::insertTableExprText(
         "INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (" +
         to_string(i_tableRow.tableHid) + ", " +
         to_string(io_row.exprId) + ", " +
+        to_string(langIt->second) + ", " +
+        toQuoted(io_row.descr) + ", " +
+        (io_row.note.empty() ? "NULL" : toQuoted(io_row.note)) +
+        ")");
+}
+
+// insert row into entity_dic and model_entity_dic tables.
+void ModelInsertSql::insertEntityDic(IDbExec* i_dbExec, EntityDicRow& io_row)
+{
+    // validate field values
+    MessageEllipter me;
+    if (io_row.entityId < 0) throw DbException(LT("invalid (negative) entity id: %d"), io_row.entityId);
+
+    if (io_row.entityName.empty()) throw DbException(LT("invalid (empty) entity name, id: %d"), io_row.entityId);
+    if (io_row.entityName.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) entity name: %s"), OM_NAME_DB_MAX, me.ellipt(io_row.entityName));
+
+    if (io_row.digest.empty() || io_row.digest.length() > OM_CODE_DB_MAX)
+        throw DbException(LT("invalid (empty or longer then %d) digest of entity: %s"), OM_CODE_DB_MAX, io_row.entityName.c_str());
+
+    // get new entity Hid
+    i_dbExec->update(
+        "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'entity_hid'"
+    );
+    io_row.entityHid = i_dbExec->selectToInt(
+        "SELECT id_value FROM id_lst WHERE id_key = 'entity_hid'",
+        -1);
+    if (io_row.entityHid <= 0) throw DbException(LT("invalid (not positive) entity Hid of: %s"), io_row.entityName.c_str());
+
+    // INSERT INTO entity_dic
+    //   (entity_hid, entity_name, entity_digest)
+    // VALUES 
+    //   (4567, 'person', '0fde')
+    i_dbExec->update(
+        "INSERT INTO entity_dic" \
+        " (entity_hid, entity_name, entity_digest) VALUES (" +
+        to_string(io_row.entityHid) + ", " +
+        toQuoted(io_row.entityName) + ", " +
+        toQuoted(io_row.digest) +
+        ")");
+
+    // INSERT INTO model_entity_dic 
+    //   (model_id, model_entity_id, entity_hid)
+    // VALUES
+    //   (1234, 8, 4567)
+    i_dbExec->update(
+        "INSERT INTO model_entity_dic (model_id, model_entity_id, entity_hid) VALUES (" +
+        to_string(io_row.modelId) + ", " +
+        to_string(io_row.entityId) + ", " +
+        to_string(io_row.entityHid) +
+        ")");
+}
+
+// insert row into entity_dic_txt table.
+void ModelInsertSql::insertEntityText(
+    IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<string, int>& i_langMap, EntityDicTxtLangRow& io_row
+)
+{
+    // validate field values
+    MessageEllipter me;
+    if (io_row.langCode.empty()) throw DbException(LT("invalid (empty) language code, entity: %s"), i_entityRow.entityName.c_str());
+    if (io_row.descr.empty()) throw DbException(LT("invalid (empty) description, entity: %s"), i_entityRow.entityName.c_str());
+    if (io_row.descr.length() > OM_DESCR_DB_MAX) throw DbException(LT("invalid (longer than %d) entity %s description: %s"), OM_DESCR_DB_MAX, i_entityRow.entityName.c_str(), me.ellipt(io_row.descr));
+    if (io_row.note.length() > OM_STR_DB_MAX) throw DbException(LT("invalid (longer than %d) entity %s notes: %s"), OM_STR_DB_MAX, i_entityRow.entityName.c_str(), me.ellipt(io_row.descr));
+
+
+    // update language id with actual database value
+    map<string, int>::const_iterator langIt = i_langMap.find(io_row.langCode);
+    if (langIt == i_langMap.cend()) throw DbException(LT("invalid language code: %s of entity: %s"), io_row.langCode.c_str(), i_entityRow.entityName.c_str());
+    io_row.langId = langIt->second;
+
+    // INSERT INTO entity_dic_txt 
+    //   (entity_hid, lang_id, descr, note) 
+    // VALUES
+    //   (4567, 101, 'Person entity', 'Person note')
+    i_dbExec->update(
+        "INSERT INTO entity_dic_txt (entity_hid, lang_id, descr, note) VALUES (" +
+        to_string(i_entityRow.entityHid) + ", " +
+        to_string(langIt->second) + ", " +
+        toQuoted(io_row.descr) + ", " +
+        (io_row.note.empty() ? "NULL" : toQuoted(io_row.note)) +
+        ")");
+}
+
+// insert row into entity_attr table.
+void ModelInsertSql::insertEntityAttr(
+    IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<int, int>& i_typeIdMap, const EntityAttrRow& i_row
+)
+{
+    // validate field values
+    if (i_row.entityId < 0) throw DbException(LT("invalid (negative) entity id: %d"), i_entityRow.entityId);
+
+    if (i_row.name.empty()) throw DbException(LT("invalid (empty) entity attribute name"));
+    if (i_row.name.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) entity attribute name: %s"), OM_NAME_DB_MAX, i_row.name.c_str());
+
+    if (i_row.attrId < 0) throw DbException(LT("invalid (negative) entity attribute %s id: %d"), i_row.name.c_str(), i_row.attrId);
+    if (i_row.typeId < 0) throw DbException(LT("invalid (negative) entity attribute %s type id: %d"), i_row.name.c_str(), i_row.typeId);
+
+    // find attribute type Hid by model type id
+    map<int, int>::const_iterator typeIt = i_typeIdMap.find(i_row.typeId);
+    if (typeIt == i_typeIdMap.cend()) throw DbException(LT("invalid type id: %d of attribute %d entity %s"), i_row.typeId, i_row.attrId, i_entityRow.entityName.c_str());
+
+    // INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (4567, 1, 'attr1', 6789, 0)
+    i_dbExec->update(
+        "INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (" +
+        to_string(i_entityRow.entityHid) + ", " +
+        to_string(i_row.attrId) + ", " +
+        toQuoted(i_row.name) + ", " +
+        to_string(typeIt->second) + ", " +
+        (i_row.isInternal ? "1" : "0") +
+        ")");
+}
+
+// insert row into entity_attr_txt table.
+void ModelInsertSql::insertEntityAttrText(
+    IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<string, int>& i_langMap, EntityAttrTxtLangRow& io_row
+)
+{
+    // validate field values
+    MessageEllipter me;
+    if (io_row.attrId < 0) throw DbException(LT("invalid (negative) entityentity attribute id: %d"), io_row.attrId);
+    if (io_row.langCode.empty()) throw DbException(LT("invalid (empty) language code, entity: %s, attribute id: %d"), i_entityRow.entityName.c_str(), io_row.attrId);
+    if (io_row.descr.empty()) throw DbException(LT("invalid (empty) description, entity: %s, attribute id: %d"), i_entityRow.entityName.c_str(), io_row.attrId);
+    if (io_row.descr.length() > OM_DESCR_DB_MAX)
+        throw DbException(LT("invalid (longer than %d) description of attribute id: %d, entity: %s, description: %s"), OM_DESCR_DB_MAX, io_row.attrId, i_entityRow.entityName.c_str(), me.ellipt(io_row.descr));
+    if (io_row.note.length() > OM_STR_DB_MAX)
+        throw DbException(LT("invalid (longer than %d) notes for attribute id: %d, entity: %s, notes: %s"), OM_DESCR_DB_MAX, io_row.attrId, i_entityRow.entityName.c_str(), me.ellipt(io_row.note));
+
+    // update language id with actual database value
+    map<string, int>::const_iterator langIt = i_langMap.find(io_row.langCode);
+    if (langIt == i_langMap.cend()) throw DbException(LT("invalid language code: %s"), io_row.langCode.c_str());
+    io_row.langId = langIt->second;
+
+    // INSERT INTO
+    //   entity_attr_txt (entity_hid, attr_id, lang_id, descr, note) 
+    // VALUES
+    //   (4567, 1, 101, 'Person age', 'Person age note')
+    i_dbExec->update(
+        "INSERT INTO entity_attr_txt (entity_hid, attr_id, lang_id, descr, note) VALUES (" +
+        to_string(i_entityRow.entityHid) + ", " +
+        to_string(io_row.attrId) + ", " +
         to_string(langIt->second) + ", " +
         toQuoted(io_row.descr) + ", " +
         (io_row.note.empty() ? "NULL" : toQuoted(io_row.note)) +

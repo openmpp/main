@@ -21,6 +21,7 @@ void ModelSqlBuilder::setModelMetaRows(MetaModelHolder & io_metaRows) const
     setTypeDicRows(io_metaRows);
     setParamDicRows(io_metaRows);
     setTableDicRows(io_metaRows);
+    setEntityDicRows(io_metaRows);
 
     // calculate model digest
     io_metaRows.modelDic.digest = makeModelDigest(io_metaRows);
@@ -44,7 +45,7 @@ void ModelSqlBuilder::setParamDicRows(MetaModelHolder & io_metaRows) const
 // set output tables meta rows and calculate digests
 void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
 {
-    // make parameter digest and db table parts
+    // make output table digest and db table parts
     for (TableDicRow & tableRow : io_metaRows.tableDic) {
         auto [dgst, impDgst] = makeOutTableDigest(tableRow, io_metaRows);
         tableRow.digest = dgst;
@@ -54,6 +55,15 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
         tableRow.dbExprTable = p + "_v" + s;
         tableRow.dbAccTable = p + "_a" + s;
         tableRow.dbAccAll = p + "_d" + s;
+    }
+}
+
+// set entity meta rows and calculate digests
+void ModelSqlBuilder::setEntityDicRows(MetaModelHolder& io_metaRows) const
+{
+    // make entity digest
+    for (EntityDicRow & entityRow : io_metaRows.entityDic) {
+        entityRow.digest = makeEntityDigest(entityRow, io_metaRows);
     }
 }
 
@@ -79,6 +89,10 @@ void ModelSqlBuilder::sortModelRows(MetaModelHolder & io_metaRows)
     sort(io_metaRows.tableAccTxt.begin(), io_metaRows.tableAccTxt.end(), TableAccTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.tableExpr.begin(), io_metaRows.tableExpr.end(), TableExprRow::isKeyLess);
     sort(io_metaRows.tableExprTxt.begin(), io_metaRows.tableExprTxt.end(), TableExprTxtLangRow::uniqueLangKeyLess);
+    sort(io_metaRows.entityDic.begin(), io_metaRows.entityDic.end(), EntityDicRow::isKeyLess);
+    sort(io_metaRows.entityTxt.begin(), io_metaRows.entityTxt.end(), EntityDicTxtLangRow::uniqueLangKeyLess);
+    sort(io_metaRows.entityAttr.begin(), io_metaRows.entityAttr.end(), EntityAttrRow::isKeyLess);
+    sort(io_metaRows.entityAttrTxt.begin(), io_metaRows.entityAttrTxt.end(), EntityAttrTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.groupLst.begin(), io_metaRows.groupLst.end(), GroupLstRow::isKeyLess);
     sort(io_metaRows.groupTxt.begin(), io_metaRows.groupTxt.end(), GroupTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.groupPc.begin(), io_metaRows.groupPc.end(), GroupPcRow::isKeyLess);
@@ -202,6 +216,27 @@ void ModelSqlBuilder::trimModelRows(MetaModelHolder & io_metaRows)
     }
 
     for (auto & row : io_metaRows.tableExprTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto& row : io_metaRows.entityDic) {
+        row.entityName = trim(row.entityName, loc);
+        row.digest = trim(row.digest, loc);
+    }
+
+    for (auto& row : io_metaRows.entityTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
+
+    for (auto& row : io_metaRows.entityAttr) {
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto& row : io_metaRows.entityAttrTxt) {
         row.langCode = trim(row.langCode, loc);
         row.descr = trim(row.descr, loc);
         row.note = trim(row.note, loc);
@@ -727,6 +762,110 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
             langRow,
             LangLstRow::isCodeLess
         )) throw DbException(LT("in table_expr_txt invalid model id: %d, table id: %d, expr id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->tableId, rowIt->exprId, rowIt->langCode.c_str());
+    }
+
+    // entity_dic table
+    // unique: model id, entity id; unique: model id, entity name; master key: model id
+    for (vector<EntityDicRow>::const_iterator rowIt = io_metaRows.entityDic.cbegin(); rowIt != io_metaRows.entityDic.cend(); ++rowIt) {
+
+        if (rowIt->modelId != mId)
+            throw DbException(LT("in entity_dic invalid model id: %d, expected: %d in row with entity id: %d, name: %s"), rowIt->modelId, mId, rowIt->entityId, rowIt->entityName.c_str());
+
+        vector<EntityDicRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityDic.cend() && EntityDicRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException(LT("in entity_dic not unique model id: %d and entity id: %d"), rowIt->modelId, rowIt->entityId);
+
+        if (std::any_of(
+            io_metaRows.entityDic.cbegin(),
+            io_metaRows.entityDic.cend(),
+            [rowIt](const EntityDicRow& i_row) -> bool {
+                return
+                    i_row.modelId == rowIt->modelId && i_row.entityId != rowIt->entityId && i_row.entityName == rowIt->entityName;
+            }
+        )) throw DbException(LT("in entity_dic not unique model id: %d and entity name: %s"), rowIt->modelId, rowIt->entityName.c_str());
+    }
+
+    // entity_dic_txt table
+    // unique: model id, entity id, language; master key: model id, entity id; foreign key: language code;
+    for (vector<EntityDicTxtLangRow>::iterator rowIt = io_metaRows.entityTxt.begin(); rowIt != io_metaRows.entityTxt.end(); ++rowIt) {
+
+        EntityDicRow mkRow(rowIt->modelId, rowIt->entityId);
+        if (!std::binary_search(
+            io_metaRows.entityDic.cbegin(),
+            io_metaRows.entityDic.cend(),
+            mkRow,
+            EntityDicRow::isKeyLess
+        )) throw DbException(LT("in entity_dic_txt invalid model id: %d and entity id: %d: not found in entity_dic"), rowIt->modelId, rowIt->entityId);
+
+        vector<EntityDicTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityTxt.cend() && EntityDicTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException(LT("in entity_dic_txt not unique model id: %d, entity id: %d and language: %s"), rowIt->modelId, rowIt->entityId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+        )) throw DbException(LT("in entity_dic_txt invalid model id: %d, entity id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->entityId, rowIt->langCode.c_str());
+    }
+
+
+    // entity_attr table
+    // unique: model id, entity id, attribute id; unique: model id, entity id;
+    // master key: model id, entity id; foreign key: model id, type id;
+    for (vector<EntityAttrRow>::const_iterator rowIt = io_metaRows.entityAttr.cbegin(); rowIt != io_metaRows.entityAttr.cend(); ++rowIt) {
+
+        EntityDicRow mkRow(rowIt->modelId, rowIt->entityId);
+        if (!std::binary_search(
+            io_metaRows.entityDic.cbegin(),
+            io_metaRows.entityDic.cend(),
+            mkRow,
+            EntityDicRow::isKeyLess
+        )) throw DbException(LT("in entity_attr invalid model id: %d and entity id: %d: not found in entity_dic"), rowIt->modelId, rowIt->entityId);
+
+        TypeDicRow fkRow(rowIt->modelId, rowIt->typeId);
+        if (!std::binary_search(
+            io_metaRows.typeDic.cbegin(),
+            io_metaRows.typeDic.cend(),
+            fkRow,
+            TypeDicRow::isKeyLess
+        )) throw DbException(LT("in entity_attr [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), mkRow.entityName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
+
+        vector<EntityAttrRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityAttr.cend() && EntityAttrRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException(LT("in entity_attr [%s].[%s] not unique model id: %d, entity id: %d and attribute id: %d"), mkRow.entityName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->entityId, rowIt->attrId);
+    }
+
+    // entity_attr_txt table
+    // unique: model id, entity id, attribute id, language; master key: model id, entity id, attribute name;
+    // foreign key: language code;
+    // cleanup cr or lf in description and notes
+    for (vector<EntityAttrTxtLangRow>::iterator rowIt = io_metaRows.entityAttrTxt.begin(); rowIt != io_metaRows.entityAttrTxt.end(); ++rowIt) {
+
+        EntityAttrRow mkRow(rowIt->modelId, rowIt->entityId, rowIt->attrId);
+        if (!std::binary_search(
+            io_metaRows.entityAttr.cbegin(),
+            io_metaRows.entityAttr.cend(),
+            mkRow,
+            EntityAttrRow::isKeyLess
+        )) throw DbException(LT("in entity_attr_txt invalid model id: %d entity id: %d and attribute id: %s: not found in entity_dic"), rowIt->modelId, rowIt->entityId, rowIt->attrId);
+
+        vector<EntityAttrTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityAttrTxt.cend() && EntityAttrTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException(LT("in entity_attr_txt not unique model id: %d, entity id: %d, attribute id: %d and language: %s"), rowIt->modelId, rowIt->entityId, rowIt->attrId, rowIt->langCode.c_str());
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+        )) throw DbException(LT("in entity_attr_txt invalid model id: %d, entity id: %d, attribute id: %d and language: %s: not found in lang_lst"), rowIt->modelId, rowIt->entityId, rowIt->attrId, rowIt->langCode.c_str());
     }
 
     // group_lst table
@@ -1276,6 +1415,46 @@ const tuple<string, string> ModelSqlBuilder::makeOutTableDigest(const TableDicRo
     }
 
     return { md5Full.getHash(), md5Imp.getHash() };
+}
+
+// calculate entity metadata digest
+const string ModelSqlBuilder::makeEntityDigest(const EntityDicRow i_entityRow, const MetaModelHolder & i_metaRows)
+{
+    // make digest header as entity name
+    MD5 md5Full;
+    md5Full.add("entity_name\n", strlen("entity_name\n"));
+    string sLine = i_entityRow.entityName + "\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+
+    // add attributes: id, name and attribute type digest
+    sLine = "attr_id,attr_name,type_digest\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+
+    EntityAttrRow fkRow(i_entityRow.modelId, i_entityRow.entityId, 0);
+    const auto attrRowIt = std::lower_bound(
+        i_metaRows.entityAttr.cbegin(), i_metaRows.entityAttr.cend(), fkRow, EntityAttrRow::isKeyLess
+    );
+    if (attrRowIt == i_metaRows.entityAttr.cend() || attrRowIt->modelId != i_entityRow.modelId || attrRowIt->entityId != i_entityRow.entityId)
+        throw DbException(LT("in entity_attr [%s] invalid model id: %d and entity id: %d: not found in entity_dic"), i_entityRow.entityName.c_str(), i_entityRow.modelId, i_entityRow.entityId);
+
+    for (vector<EntityAttrRow>::const_iterator rowIt = attrRowIt;
+        rowIt != i_metaRows.entityAttr.cend() && rowIt->modelId == i_entityRow.modelId && rowIt->entityId == i_entityRow.entityId;
+        ++rowIt) {
+
+        // find attribute type
+        TypeDicRow tRow(rowIt->modelId, rowIt->typeId);
+        auto typeRowIt = std::lower_bound(
+            i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
+        );
+        if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
+            throw DbException(LT("in entity_attr [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), i_entityRow.entityName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
+
+        // add attribute to digest: id, name, type digest
+        sLine = to_string(rowIt->attrId) + "," + rowIt->name + "," + typeRowIt->digest + "\n";
+        md5Full.add(sLine.c_str(), sLine.length());
+    }
+
+    return md5Full.getHash();
 }
 
 // calculate model metadata digest

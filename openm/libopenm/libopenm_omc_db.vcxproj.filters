@@ -200,12 +200,6 @@
     <ClCompile Include="db\runOptionTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\runParamTxtTable.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
-    <ClCompile Include="db\runTxtTable.cpp">
-      <Filter>Source Files\db</Filter>
-    </ClCompile>
     <ClCompile Include="db\tableAccTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
@@ -285,6 +279,18 @@
       <Filter>Source Files\db\omc</Filter>
     </ClCompile>
     <ClCompile Include="db\paramImportTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityAttrTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityAttrTxtTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityDicTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityDicTxtTable .cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>

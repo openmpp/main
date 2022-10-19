@@ -199,6 +199,10 @@
     <ClCompile Include="db\dbExec.cpp" />
     <ClCompile Include="db\dbExecSqlite.cpp" />
     <ClCompile Include="db\dbMetaRow.cpp" />
+    <ClCompile Include="db\entityAttrTable.cpp" />
+    <ClCompile Include="db\entityAttrTxtTable.cpp" />
+    <ClCompile Include="db\entityDicTable.cpp" />
+    <ClCompile Include="db\entityDicTxtTable .cpp" />
     <ClCompile Include="db\groupLstTable.cpp" />
     <ClCompile Include="db\groupPcTable.cpp" />
     <ClCompile Include="db\groupTxtTable.cpp" />
@@ -216,12 +220,10 @@
     <ClCompile Include="db\parameterReader.cpp" />
     <ClCompile Include="db\parameterWriter.cpp" />
     <ClCompile Include="db\paramImportTable.cpp" />
-    <ClCompile Include="db\runParamTxtTable.cpp" />
     <ClCompile Include="db\profileLstTable.cpp" />
     <ClCompile Include="db\profileOptionTable.cpp" />
     <ClCompile Include="db\runLstTable.cpp" />
     <ClCompile Include="db\runOptionTable.cpp" />
-    <ClCompile Include="db\runTxtTable.cpp" />
     <ClCompile Include="db\tableAccTable.cpp" />
     <ClCompile Include="db\tableAccTxtTable.cpp" />
     <ClCompile Include="db\tableDicTable.cpp" />

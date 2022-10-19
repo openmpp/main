@@ -55,6 +55,12 @@ namespace openm
         /** lang_lst table rows */
         unique_ptr<ILangLstTable> langLst;
 
+        /** entity_dic table rows */
+        unique_ptr<IEntityDicTable> entityDic;
+
+        /** entity_attr table rows */
+        unique_ptr<IEntityAttrTable> entityAttr;
+
         /** group_lst table rows */
         unique_ptr<IGroupLstTable> groupLst;
 
