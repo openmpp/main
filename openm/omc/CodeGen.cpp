@@ -1097,8 +1097,26 @@ void CodeGen::do_entities()
 	    h += "";
 
         for ( auto func_member : entity->pp_agent_funcs ) {
+            // MSVC in VS 2019/2022 crashes when optimization on with C1001 Internal compiler error
+            // ff the following functions are large.
+            // Workaround is to disable optimization for these specific functions.
+            bool msvc_workaround_needed =
+                (func_member->name == "om_initialize_data_members0")
+                || (func_member->name == "om_initialize_data_members");
             h += func_member->cxx_declaration_agent();
+            if (msvc_workaround_needed) {
+                c += "#if defined (_MSC_VER)";
+                c += "\t// Workaround to MSVC internal compiler error C1001 (BEGIN)";
+                c += "\t#pragma optimize( \"\", off )";
+                c += "#endif";
+            }
             c += func_member->cxx_definition_agent();
+            if (msvc_workaround_needed) {
+                c += "#if defined (_MSC_VER)";
+                c += "\t// Workaround to MSVC internal compiler error C1001 (END)";
+                c += "\t#pragma optimize( \"\", on )";
+                c += "#endif";
+            }
             if (func_member->has_line_directive) {
                 c += 
                     (no_line_directives ? "//#line " : "#line ")
