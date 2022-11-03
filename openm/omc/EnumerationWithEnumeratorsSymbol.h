@@ -65,6 +65,27 @@ public:
     int pp_size() const override;
 
     /**
+     * Determines if this is a ClassificationSymbol
+     *
+     * @return true or false.
+     */
+    bool is_classification(void) const;
+
+    /**
+     * Determines if this is a PartitionSymbol
+     *
+     * @return true or false.
+     */
+    bool is_partition(void) const;
+
+    /**
+     * Determines if this is a BoolSymbol
+     *
+     * @return true or false.
+     */
+    bool is_bool(void) const;
+
+    /**
      * The enumerators of this enumeration
      * 
      *  Populated after parsing is complete.

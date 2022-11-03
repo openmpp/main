@@ -246,14 +246,13 @@ void ParseContext::process_cxx_comment(const string& cmt, const omc::location& l
         }
         string sym_name = cmt.substr(p, q - p);
 
-        // Extract short name
+        // Skip white space between symbol name and export name
         p = cmt.find_first_not_of(" \t", q);
         if (p == std::string::npos) {
             // ignore empty name
             return;
         }
-        q = cmt.find_first_of(" \t", p); // whitespace after short name, or end of string
-        string shrt_nam = cmt.substr(p, q - p);
+        string shrt_nam = cmt.substr(p);
 //        string nam = cmt.substr(p);
 
         // Insert short name into map of all explicit //NAME comments

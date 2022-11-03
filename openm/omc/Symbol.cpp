@@ -2451,6 +2451,35 @@ CodeBlock Symbol::build_NAME_code(void)
 {
     CodeBlock c;
 
+    // Generated short names for enumerators in classifications
+    for (auto etyp : pp_all_enumerations_with_enumerators) {
+        std::string typ_kind = "Unknown";
+        if (etyp->is_classification()) {
+            typ_kind = "Classification";
+        }
+        else if (etyp->is_partition()) {
+            typ_kind = "Partition";
+        }
+        if (etyp->is_bool()) {
+            typ_kind = "bool";
+        }
+        //auto cls = static_cast<ClassificationSymbol*>(typ);
+        //if (!cls) continue;
+        bool first_generated_name = true;
+        for (auto en : etyp->pp_enumerators) {
+            //if (en->short_name != en->short_name_explicit) {
+                // explicit short name is not being used, so was generated
+                if (first_generated_name) {
+                    c += "";
+                    c += "// " + typ_kind + " " + etyp->name + ": " + etyp->pp_labels[0];
+                    first_generated_name = false;
+                }
+                c += "//NAME " + etyp->name + "." + en->name + " db_name=" + en->db_name() + " label=" + en->pp_labels[0];
+                //c += "//NAME " + cls->name + "." + dim->short_name_default + " " + dim->short_name;
+            //}
+        }
+    }
+
     // Generated short names for parameter dimensions
     for (auto param : pp_all_parameters) {
         bool first_generated_name = true;

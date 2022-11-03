@@ -9,6 +9,9 @@
 #include "EnumerationWithEnumeratorsSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "LanguageSymbol.h"
+#include "ClassificationSymbol.h"
+#include "PartitionSymbol.h"
+#include "BoolSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -78,6 +81,21 @@ void EnumerationWithEnumeratorsSymbol::populate_metadata(openm::MetaModelHolder 
 int EnumerationWithEnumeratorsSymbol::pp_size() const
 {
     return pp_enumerators.size();
+}
+
+bool EnumerationWithEnumeratorsSymbol::is_classification(void) const
+{
+    return nullptr != dynamic_cast<const ClassificationSymbol*>(this);
+}
+
+bool EnumerationWithEnumeratorsSymbol::is_partition(void) const
+{
+    return nullptr != dynamic_cast<const PartitionSymbol*>(this);
+}
+
+bool EnumerationWithEnumeratorsSymbol::is_bool(void) const
+{
+    return nullptr != dynamic_cast<const BoolSymbol*>(this);
 }
 
 bool EnumerationWithEnumeratorsSymbol::is_valid_enum_name(const char * i_value) const

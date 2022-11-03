@@ -39,6 +39,26 @@ public:
     void post_parse(int pass) override;
 
 
+    ///**
+    //* Heuristically-generated short name for the enumerator
+    //*/
+    //string heuristic_short_name(void) const;
+
+    ///**
+    //* Short name of the enumerator
+    //*/
+    //string short_name;
+
+    ///**
+    //* Short name of the enumerator (generated default name)
+    //*/
+    //string short_name_default;
+
+    ///**
+    //* Short name of the enumerator (provided in model source)
+    //*/
+    //string short_name_explicit;
+
 	/**
 	* Gets the short 'name' associated with the enumerator in the data store.
 	*
