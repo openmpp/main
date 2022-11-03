@@ -179,7 +179,7 @@
     <ClCompile Include="db\entityAttrTable.cpp" />
     <ClCompile Include="db\entityAttrTxtTable.cpp" />
     <ClCompile Include="db\entityDicTable.cpp" />
-    <ClCompile Include="db\entityDicTxtTable .cpp" />
+    <ClCompile Include="db\entityDicTxtTable.cpp" />
     <ClCompile Include="db\groupLstTable.cpp" />
     <ClCompile Include="db\groupPcTable.cpp" />
     <ClCompile Include="db\groupTxtTable.cpp" />

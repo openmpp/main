@@ -383,7 +383,7 @@
     <ClCompile Include="db\entityDicTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
-    <ClCompile Include="db\entityDicTxtTable .cpp">
+    <ClCompile Include="db\entityDicTxtTable.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="db\entityAttrTable.cpp">
