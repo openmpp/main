@@ -566,7 +566,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
     }
 }
 
-// calculate entity generation digest: based on entity digest, attributes id, name, type digest
+// calculate entity generation digest: based on entity digest, attribute name, type digest
 const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows) const
 {
     // make digest header as entity name
@@ -575,8 +575,8 @@ const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, c
     string sLine = i_entRow->digest + "\n";
     md5Full.add(sLine.c_str(), sLine.length());
 
-    // add attributes: id, name and attribute type digest
-    sLine = "attr_id,attr_name,type_digest\n";
+    // add attributes: name and attribute type digest
+    sLine = "attr_name,type_digest\n";
     md5Full.add(sLine.c_str(), sLine.length());
 
     for (const EntityAttrRow & attr : i_attrRows)
@@ -586,8 +586,8 @@ const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, c
         if (tRow == nullptr)
             throw DbException(LT("in entity_attr [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), i_entRow->entityName.c_str(), attr.name.c_str(), attr.modelId, attr.typeId);
 
-        // add attribute to digest: id, name, type digest
-        sLine = to_string(attr.attrId) + "," + attr.name + "," + tRow->digest + "\n";
+        // add attribute to digest: name, type digest
+        sLine = attr.name + "," + tRow->digest + "\n";
         md5Full.add(sLine.c_str(), sLine.length());
     }
 
