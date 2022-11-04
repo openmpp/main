@@ -172,9 +172,6 @@ namespace openm
         /** entity name */
         const char * entity;
 
-        /** attribute id */
-        const int attributeId;
-
         /** attribute name */
         const char * attribute;
 

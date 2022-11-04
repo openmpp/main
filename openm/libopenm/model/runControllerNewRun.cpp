@@ -464,8 +464,8 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
 {
     if (!modelRunOptions().isMicrodata) return; // exit: microdata entities is not enabled
 
-    // use entity generation digest (based on entity digets, attributes id, name, type digest) 
-    // to find existing entity db table name or create new database table
+    // use entity generation digest (based on entity digest, attributes name, type digest)
+    // to find existing entity generation db table name or create new database table
     for (const auto & em : entityMap)
     {
         // calculate entity table digest (generation digest)
@@ -536,7 +536,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
             //
             const string prv = i_dbExec->provider();
 
-            string sql = "(" \
+            string bodySql = "(" \
                 "run_id INT NOT NULL, " \
                 " entity_key " + IDbExec::bigIntTypeName(prv) + " NOT NULL,";
 
@@ -545,14 +545,14 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
                 const TypeDicRow * t = metaStore->typeDic->byKey(modelId, at.typeId);
                 if (t == nullptr) throw DbException("type not found for entity attribute %s %s", ent->entityName.c_str(), at.name.c_str());
 
-                sql += " " + at.columnName() +
+                bodySql += " " + at.columnName() +
                     " " + IDbExec::valueDbType(prv, t->name, t->typeId) +
                     (isFloatType(t->name.c_str()) ? "," : " NOT NULL,");
             }
 
-            sql += " PRIMARY KEY (run_id, entity_key))";
+            bodySql += " PRIMARY KEY (run_id, entity_key))";
 
-            i_dbExec->update(IDbExec::makeSqlCreateTableIfNotExist(prv, dbTableName, sql));
+            i_dbExec->update(IDbExec::makeSqlCreateTableIfNotExist(prv, dbTableName, bodySql));
         }
 
         // insert run entity row: base run is current run until value digest calculated

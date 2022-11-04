@@ -916,12 +916,12 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // entity must have data member attributes
+    // count eligiable data member attributes
     int nAttr = 0;
-    for (auto dm : pp_agent_data_members) {
-        if (dm->is_attribute()) nAttr++;
+    for (const auto dm : pp_agent_data_members) {
+        if (dm->is_eligible_microdata()) nAttr++;
     }
-    if (!nAttr) return;     // this entity has no data member attributes
+    if (!nAttr) return;     // this entity has no eligible data member attributes
 
     // add entity
     EntityDicRow entityDic;
@@ -931,7 +931,7 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     metaRows.entityDic.push_back(entityDic);
 
     // Labels and notes for the entity
-    for (auto lang : Symbol::pp_all_languages) {
+    for (const auto lang : Symbol::pp_all_languages) {
 
         EntityDicTxtLangRow entityTxt;
 
@@ -944,7 +944,7 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 
     // add eligible entity attributes
-    for (auto dm : pp_agent_data_members) {
+    for (const auto dm : pp_agent_data_members) {
 
         if (!dm->is_eligible_microdata()) continue;
 
@@ -958,7 +958,7 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.entityAttr.push_back(entityAttr);
 
         // Labels and notes
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto lang : Symbol::pp_all_languages) {
 
             EntityAttrTxtLangRow entityAttrTxt;
 

@@ -2188,7 +2188,73 @@ void CodeGen::do_ParameterNameSize(void)
     c += "";
 }
 
+// return entity null instance name: Person -> om_PersonEntityNull
+static string entityNullInstanceName(const string & i_entityName)
+{
+    return "om_"+ i_entityName +"EntityNull";
+}
+
+// return entity null instance this name: Person -> om_PersonEntityNullThis
+static string entityNullInstanceThis(const string & i_entityName)
+{
+    return entityNullInstanceName(i_entityName) + "This";
+}
+
 void CodeGen::do_EntityNameSize(void)
 {
-    // TODO: copy from modelOne
+    size_t nAttr = 0;
+    for (const auto entity : Symbol::pp_all_agents) {
+        for (const auto dm : entity->pp_agent_data_members) {
+            if (dm->is_eligible_microdata()) nAttr++;
+        }
+    }
+
+    c += "namespace openm";
+    c += "{";
+
+    // for each entity with data members declare a pointer to the "null" instance to calculate members offset
+    for (const auto entity : Symbol::pp_all_agents) {
+        for (const auto dm : entity->pp_agent_data_members) {
+            if (dm->is_eligible_microdata()) {
+
+                // #define om_PersonEntityNull (Person::om_null_entity)
+                // static const uint8_t * om_PersonEntityNullThis = reinterpret_cast<const uint8_t *>(&om_PersonEntityNull);
+                //
+                c += "#define " + entityNullInstanceName(entity->name) + " (" + entity->name + "::om_null_entity)";
+                c += "static const uint8_t * " + entityNullInstanceThis(entity->name) + " = reinterpret_cast<const uint8_t *>(&" + entityNullInstanceName(entity->name) + "); ";
+                break;  // done with that entity
+            }
+        }
+    }
+    c += "";
+
+    c += "// size of entity attributes list: all attributes of all entities";
+    c += "const size_t ENTITY_NAME_SIZE_ARR_LEN = " + to_string(nAttr) + ";";
+    c += "";
+    c += "// list of entity attributes name, type, size and member offset";
+    c += "const EntityNameSizeItem EntityNameSizeArr[ENTITY_NAME_SIZE_ARR_LEN] =";
+    c += "{";
+    size_t na = nAttr;
+
+    for (const auto entity : Symbol::pp_all_agents) {
+
+        for (const auto dm : entity->pp_agent_data_members) {
+            if (dm->is_eligible_microdata()) {
+
+                // { "Person", "age", typeid(int), sizeof(int), reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age)) - om_PersonEntityNullThis }
+                //
+                string tn = dm->cxx_type_of();
+                c += "{" \
+                    "\"" + entity->name + "\", " +
+                    "\"" + dm->name + "\", " +
+                    "typeid(" + tn +"), " +
+                    "sizeof(" + tn + "), " +
+                    "reinterpret_cast<const uint8_t *>(&("+ entityNullInstanceName(entity->name) +"."+ dm->name +")) - " + entityNullInstanceThis(entity->name) + 
+                    ((--na > 0) ? "}," : "}");
+            }
+        }
+    }
+    c += "};";
+    c += "}";
+    c += "";
 }

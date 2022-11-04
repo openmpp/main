@@ -11,6 +11,7 @@
 #include "EntitySymbol.h"
 #include "TypeSymbol.h"
 #include "RangeSymbol.h"
+#include "TimeSymbol.h"
 #include "UnknownTypeSymbol.h"
 #include "CodeBlock.h"
 #include "AttributeSymbol.h"
@@ -280,3 +281,31 @@ CodeBlock EntityDataMemberSymbol::cxx_definition_agent()
     return c;
 }
 
+// return C++ type name, raise an exception if type is a string type
+const string EntityDataMemberSymbol::cxx_type_of(void) const
+{
+    string typ;
+
+    if (pp_data_type->is_time()) {
+        // For Time, the type is wrapped
+        auto ts = dynamic_cast<TimeSymbol *>(pp_data_type);
+        assert(ts); // grammar guarantee
+        typ = Symbol::token_to_string(ts->time_type);
+    }
+    else if (pp_data_type->is_numeric_or_bool()) {
+        // For fundamental types (and bool), the name of the symbol is the name of the type
+        typ = pp_data_type->name;
+    }
+    else if (pp_data_type->is_string()) {
+        // For the string type, the type is "std::string"
+        throw HelperException(LT("error : string is not supported as a type for entity data member %s"), name.c_str());
+    }
+    else {
+        // for parameters of type classification, range, or partition
+        // get the underlying storage type
+        auto ens = dynamic_cast<EnumerationSymbol *>(pp_data_type);
+        assert(ens); // grammar guarantee
+        typ = Symbol::token_to_string(ens->storage_type);
+    }
+    return typ;
+}

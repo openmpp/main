@@ -193,6 +193,9 @@ public:
 
     CodeBlock cxx_definition_agent();
 
+    /** return C++ type name, raise an exception if type is a string type. */
+    const string cxx_type_of(void) const;
+
     /**
      * Change the data type in the post-parse phase.
      *
