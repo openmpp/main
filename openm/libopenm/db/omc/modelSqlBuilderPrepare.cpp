@@ -1408,8 +1408,8 @@ const string ModelSqlBuilder::makeEntityDigest(const EntityDicRow i_entityRow, c
     string sLine = i_entityRow.entityName + "\n";
     md5Full.add(sLine.c_str(), sLine.length());
 
-    // add attributes: id, name and attribute type digest
-    sLine = "attr_id,attr_name,type_digest\n";
+    // add attributes: name and attribute type digest
+    sLine = "attr_name,type_digest\n";
     md5Full.add(sLine.c_str(), sLine.length());
 
     EntityAttrRow fkRow(i_entityRow.modelId, i_entityRow.entityId, 0);
@@ -1431,8 +1431,8 @@ const string ModelSqlBuilder::makeEntityDigest(const EntityDicRow i_entityRow, c
         if (typeRowIt == i_metaRows.typeDic.cend() || typeRowIt->modelId != rowIt->modelId || typeRowIt->typeId != rowIt->typeId)
             throw DbException(LT("in entity_attr [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), i_entityRow.entityName.c_str(), rowIt->name.c_str(), rowIt->modelId, rowIt->typeId);
 
-        // add attribute to digest: id, name, type digest
-        sLine = to_string(rowIt->attrId) + "," + rowIt->name + "," + typeRowIt->digest + "\n";
+        // add attribute to digest: name, type digest
+        sLine = rowIt->name + "," + typeRowIt->digest + "\n";
         md5Full.add(sLine.c_str(), sLine.length());
     }
 
