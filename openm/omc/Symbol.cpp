@@ -622,6 +622,8 @@ bool Symbol::option_resource_use = false;
 
 bool Symbol::option_entity_member_packing = false;
 
+bool Symbol::option_all_attributes_visible = false;
+
 bool Symbol::option_use_heuristic_short_names = false;
 
 size_t Symbol::short_name_max_length = 32;
@@ -1513,16 +1515,16 @@ void Symbol::post_parse_all()
         // Create the amalgamated set of visible member names, in all entities, sorted lexicographically.
         for (auto* entity : pp_all_agents) {
             for (auto* dm : entity->pp_agent_data_members) {
-                if (dm->is_attribute() || dm->is_multilink()) {
+                if (dm->is_visible_attribute() || dm->is_multilink()) {
                     pp_visible_member_names.insert(dm->name);
                 }
             }
         }
 
-        // For each visible member in the model, find the index in the sorted set, and assign it as member_id
+        // For each visible member in the model, find the index in the (sorted) set, and assign it as member_id
         for (auto* entity : pp_all_agents) {
             for (auto* dm : entity->pp_agent_data_members) {
-                if (dm->is_attribute() || dm->is_multilink()) {
+                if (dm->is_visible_attribute() || dm->is_multilink()) {
                     auto iter = pp_visible_member_names.find(dm->name);
                     dm->pp_member_id = distance(pp_visible_member_names.begin(), iter);
                 }
@@ -2006,6 +2008,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_entity_member_packing = false;
+            }
+        }
+    }
+
+    {
+        string key = "all_attributes_visible";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_all_attributes_visible = true;
+            }
+            else if (value == "off") {
+                option_all_attributes_visible = false;
             }
         }
     }

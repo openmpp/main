@@ -57,6 +57,7 @@ public:
         , pp_data_type(nullptr)
         , parent(nullptr)
         , pp_parent(nullptr)
+        , pp_member_id(-1)
     {
         assert(data_type);  // grammar/initialization guarantee
     }
@@ -67,6 +68,20 @@ public:
      * @return true or false.
      */
     bool is_attribute(void) const;
+
+    /**
+     * Determines if this is a visible AttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_visible_attribute(void) const;
+
+    /**
+     * Determines if this is eligible microdata
+     *
+     * @return true or false.
+     */
+    bool is_eligible_microdata(void) const;
 
     /**
      * Determines if this is a BuiltinAttributeSymbol

@@ -2380,6 +2380,7 @@ table_filter_opt:
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an anonymous identity attribute for the filter
                             auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(table->agent, BoolSymbol::find(), $root, @root);
+                            aia->is_generated = true;
                             assert(aia);
                             // note identity attribute in table
                             table->filter = aia;

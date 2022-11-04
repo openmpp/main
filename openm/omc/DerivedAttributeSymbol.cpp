@@ -75,6 +75,7 @@ DerivedAttributeSymbol * DerivedAttributeSymbol::create_symbol(const Symbol* age
     }
     else {
         sym = new DerivedAttributeSymbol(agent, tok, av1, av2, prt, cls, k1, k2, k3);
+        sym->is_generated = true;
     }
     return sym;
 }

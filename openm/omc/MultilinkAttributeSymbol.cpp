@@ -287,7 +287,9 @@ Symbol * MultilinkAttributeSymbol::create_symbol(const Symbol *agent, token_type
         sym = it->second;
     else {
         string nm = MultilinkAttributeSymbol::member_name(func, multilink, attribute);
-        sym = new MultilinkAttributeSymbol(agent, func, multilink, attribute);
+        auto the_sym = new MultilinkAttributeSymbol(agent, func, multilink, attribute);
+        the_sym->is_generated = true;
+        sym = the_sym;
     }
 
     return sym;

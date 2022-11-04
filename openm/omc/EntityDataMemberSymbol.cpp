@@ -43,6 +43,27 @@ bool EntityDataMemberSymbol::is_attribute(void) const
     return (bool) dynamic_cast<const AttributeSymbol*>(this);
 }
 
+bool EntityDataMemberSymbol::is_visible_attribute(void) const
+{
+    auto attr = dynamic_cast<const AttributeSymbol*>(this);
+    if (attr) {
+        return Symbol::option_all_attributes_visible ? true : !attr->is_generated;
+    }
+    else {
+        return false;
+    }
+}
+
+bool EntityDataMemberSymbol::is_eligible_microdata(void) const
+{
+    if (is_visible_attribute() && !is_link_attribute()) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 bool EntityDataMemberSymbol::is_builtin_attribute(void) const
 {
     return (bool) dynamic_cast<const BuiltinAttributeSymbol*>(this);

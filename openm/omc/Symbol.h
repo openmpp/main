@@ -1403,6 +1403,11 @@ public:
     static bool option_entity_member_packing;
 
     /**
+     * true or false depending on all_attributes_visible value in options statement.
+     */
+    static bool option_all_attributes_visible;
+
+    /**
      * true or false depending on use_heuristic_short_names in options statement.
      */
     static bool option_use_heuristic_short_names;

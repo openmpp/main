@@ -533,11 +533,10 @@ void EntitySymbol::post_parse(int pass)
 // Mark enumerations required for metadata support for this entity
 void EntitySymbol::post_parse_mark_enumerations(void)
 {
-    // Mark enumerations required for metadata support for this entity attributes
-        // add entity attributes
+    // Mark enumerations required for metadata support for this entity's eligible attributes
     for (auto dm : pp_agent_data_members) {
 
-        if (!dm->is_attribute()) continue;  // skip non-attributes
+        if (!dm->is_eligible_microdata()) continue;
 
         if (dm->pp_data_type->is_enumeration()) {
             auto es = dynamic_cast<EnumerationSymbol *>(dm->pp_data_type);
@@ -765,7 +764,7 @@ void EntitySymbol::build_body_start_trace()
         c +=   "auto the_seed = GetCaseSeed();";
         c += "";
         for (auto* dm : pp_agent_data_members) {
-            if (dm->is_attribute()) {
+            if (dm->is_visible_attribute()) {
                 c += "{";
                 c += "// Trace message for starting value of " + dm->name;
                 if (!dm->is_link_attribute()) {
@@ -944,10 +943,10 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.entityTxt.push_back(entityTxt);
     }
 
-    // add entity attributes
+    // add eligible entity attributes
     for (auto dm : pp_agent_data_members) {
 
-        if (!dm->is_attribute()) continue;  // skip non-attributes
+        if (!dm->is_eligible_microdata()) continue;
 
         EntityAttrRow entityAttr;
 
@@ -955,10 +954,10 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         entityAttr.attrId = dm->pp_member_id;
         entityAttr.name = dm->name;  // any name up to 255 bytes
         entityAttr.typeId = dm->pp_data_type->type_id;
-        entityAttr.isInternal = dm->is_internal() || startWithNoCase(entityAttr.name, "om_");   // om_* attributes are for internal use only
+        entityAttr.isInternal = !dm->is_visible_attribute();
         metaRows.entityAttr.push_back(entityAttr);
 
-        // Labels and notes for the dimensions of the table
+        // Labels and notes
         for (auto lang : Symbol::pp_all_languages) {
 
             EntityAttrTxtLangRow entityAttrTxt;

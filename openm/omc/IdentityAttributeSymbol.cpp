@@ -446,6 +446,7 @@ IdentityAttributeSymbol * IdentityAttributeSymbol::anonymous_identity_attribute(
         string mem_name = "om_aia_" + to_string(numeric_part);
 
         ia = new IdentityAttributeSymbol(mem_name, entity, type, root, decl_loc);
+        ia->is_generated = true;
         assert(ia);
 
         anonymous_key_to_name.insert({ key, ia->unique_name });
