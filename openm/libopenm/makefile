@@ -74,6 +74,7 @@ LIB_OMC_A = $(LIB_OMC_NAME).a
 LIBOPENM_CPPLIST = \
   main.cpp \
   common/argReader.cpp \
+  common/crc32.cpp \
   common/file.cpp \
   common/helper.cpp \
   common/iniReader.cpp \

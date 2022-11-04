@@ -25,10 +25,13 @@ namespace openm
 
         /** db-connection factory: create new db-connection.
          *
-         * @param[in] i_sqlProvider   sql provider name, ie: SQLITE
+         * @param[in] i_sqlProvider   sql provider name, e.g.: SQLITE
          * @param[in] i_connectionStr db connection string
          */
         static IDbExec * create(const string & i_sqlProvider, const string & i_connectionStr);
+
+        /**  retrun sql provider name, e.g.: SQLITE */
+        virtual string provider(void) const = 0;
 
         /**
          * select integer value of first (row,column) or default if no rows or value IS NULL.
@@ -112,7 +115,7 @@ namespace openm
          *
          * @param[in]   i_sql       select sql query
          * @param[in]   i_adapter   row adapter class to create rows and set values
-         * @param[in]   i_processor interface to process each row, ie: calculate sum
+         * @param[in]   i_processor interface to process each row, e.g.: calculate sum
          */
         virtual void selectToRowProcessor(const string & i_sql, const IRowAdapter & i_adapter, IRowProcessor & i_processor) = 0;
 
@@ -228,8 +231,16 @@ namespace openm
         /** retrun true if i_keword matched one of SQL reserved keywords, comparison is case neutral and limited by i_length chars */
         static bool isSqlKeyword(const char * i_keyword, size_t i_length = 0);
 
-        /** return max length of db table or view name. */
-        static const int maxDbTableNameSize;
+        /** max length of db table or view name.
+        * Current max name sizes: PostgreSQL=63 MySQL=64 MSSQL=128 DB2=128 Oracle=128 (Oracle antiques not supported)
+        */
+        static const int maxDbTableNameSize = 63;
+
+        /** make prefix part of db table name by shorten source name, ie: ageSexProvince = > ageSexPr */
+        static const string makeDbNamePrefix(int i_id, const string & i_src);
+
+        /** make unique part of db table name by using digest or crc32(digest) */
+        static const string makeDbNameSuffix(int i_id, const string & i_src, const string i_digest);
 
         /** return type name for BIGINT sql type */
         static string bigIntTypeName(const string & i_sqlProvider);
@@ -240,6 +251,9 @@ namespace openm
         /** return column type DDL for long VARCHAR columns, use it for len > 255. */
         static string textTypeName(const string & i_sqlProvider, int i_size);
 
+        /** return db type name by model type for specific db provider */
+        static string valueDbType(const string & i_sqlProvider, const string & i_typeName, int i_typeId);
+
         /** return sql statement to begin transaction (db-provider specific). */
         static string makeSqlBeginTransaction(const string & i_sqlProvider);
 
@@ -249,7 +263,7 @@ namespace openm
         /**
          * make sql statement to create table if not exists.
          *
-         * @param[in] i_sqlProvider   sql provider name, ie: SQLITE
+         * @param[in] i_sqlProvider   sql provider name, e.g.: SQLITE
          * @param[in] i_tableName     table name to create
          * @param[in] i_tableBodySql  table body definition sql: columns, keys, etc.
          *
@@ -267,7 +281,7 @@ namespace openm
         /**
          * make sql statement to create or replace view.
          *
-         * @param[in] i_sqlProvider   sql provider name, ie: SQLITE
+         * @param[in] i_sqlProvider   sql provider name, e.g.: SQLITE
          * @param[in] i_viewName      view name to create
          * @param[in] i_viewBodySql   view body definition sql
          *
@@ -310,6 +324,20 @@ namespace openm
         * @endcode
         */
         virtual void runSqlScript(const string & i_sqlScript) = 0;
+
+     private:
+        // if max size of db table name is too short then use crc32(md5) digest
+        // table name is: paramNameAsPrefix + _p + md5Suffix, for example: ageSex_p12345678
+        // prefix based on parameter name or output table name
+        // suffix is 32 chars of md5 or 8 chars of crc32
+        // there is extra 2 chars: _p, _w, _v, _a in table name between prefix and suffix
+        //
+        // 2016-08-17: always use short crc32 name suffix
+        // isCrc32Name = minSize < 50;
+
+         static const bool isCrc32Name = true;                                      // if true then use crc32 as db table name suffix
+         static const int dbSuffixSize = isCrc32Name ? 8 : 32;                      // db table suffix name size
+         static const int dbPrefixSize = maxDbTableNameSize - (2 + dbSuffixSize);   // db table prefix name size
     };
 }
 

@@ -16,7 +16,6 @@
 #include <map>
 #include "omc_location.hh"
 #include "libopenm/omLog.h"
-#include "libopenm/db/modelBuilder.h"   // for OM_MAX_BUILTIN_TYPE_ID
 #include "CodeBlock.h"
 #include "Symbol.h"
 #include "LanguageSymbol.h"
@@ -1451,6 +1450,14 @@ void Symbol::post_parse_all()
         }
     }
 
+    {
+        int id = 0;
+        for (auto ent : pp_all_agents) {
+            ent->pp_entity_id = id;
+            ++id;
+        }
+    }
+
     // Sort collection of enumerators in each enumeration in ordinal order
     for (auto enumeration : pp_all_enumerations_with_enumerators) {
         enumeration->pp_enumerators.sort([](EnumeratorSymbol *a, EnumeratorSymbol *b) { return a->ordinal < b->ordinal; });
@@ -1765,6 +1772,11 @@ void Symbol::post_parse_all()
     // Terminate the event time function body for the self-scheduling event (if present)
     for (auto *agent : pp_all_agents) {
         agent->finish_ss_event();
+    }
+
+    // Determine enumeration metadata required by published entity attributes
+    for (auto * agent : pp_all_agents) {
+        agent->post_parse_mark_enumerations();
     }
 
     // Process PreSimulation, PostSimulation, UserTables

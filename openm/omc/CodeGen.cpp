@@ -47,6 +47,7 @@ void CodeGen::do_all()
     do_ModelShutdown();
     do_API_entries();
     do_ParameterNameSize();
+    do_EntityNameSize();
     if (!Symbol::pp_all_strings.empty()) do_model_strings();
 
     // set meta row values and calculate metadata digests: model, types, parameters, output tables
@@ -1255,6 +1256,12 @@ void CodeGen::do_entities()
     }
     c += "}";
     c += "";
+
+
+    // populate meta-data for entities and attributes
+    for (auto entity : Symbol::pp_all_agents) {
+        entity->populate_metadata(metaRows);
+    }
 }
 
 void CodeGen::do_entity_sets()
@@ -2179,4 +2186,9 @@ void CodeGen::do_ParameterNameSize(void)
     c += "};";
     c += "}";
     c += "";
+}
+
+void CodeGen::do_EntityNameSize(void)
+{
+    // TODO: copy from modelOne
 }

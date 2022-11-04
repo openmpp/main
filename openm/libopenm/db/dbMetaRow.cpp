@@ -2,19 +2,9 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#include <regex>
 #include "libopenm/db/dbMetaRow.h"
 
 using namespace openm;
-
-// regex to validate integer number
-static const regex intRx("(^[+-]?)([0-9]+$)");
-
-// regex to validate float number: ^[-+]?(([0-9]+(\.?)([0-9]+)?)|(\.[0-9]+))([eE][-+]?[0-9]+)?$
-static const regex floatRx("^[-+]?(([0-9]+(\\.?)([0-9]+)?)|(\\.[0-9]+))([eE][-+]?[0-9]+)?$");
-
-// float including INF or NAN constants: ^[-+]?((([0-9]+(\.?)([0-9]+)?)|(\.[0-9]+))([E][-+]?[0-9]+)?$)|(INFINITY|INF|NAN)
-// static const regex floatRx("^[-+]?((([0-9]+(\\.?)([0-9]+)?)|(\\.[0-9]+))([E][-+]?[0-9]+)?$)|(INFINITY|INF|NAN)", regex_constants::icase);
 
 // db-row base class
 IRowBase::~IRowBase(void) noexcept { }
@@ -142,75 +132,6 @@ vector<TypeDicRow>::const_iterator TypeDicRow::byKey(int i_modelId, int i_typeId
         [i_modelId, i_typeId](const TypeDicRow & i_row) -> bool 
             { return i_row.modelId == i_modelId && i_row.typeId == i_typeId; }
     );
-}
-
-/** return true if model type is boolean (logical) */
-bool TypeDicRow::isBool(void) const
-{
-    return equalNoCase(name.c_str(), "bool");
-}
-
-/** return true if model type is string (varchar) */
-bool TypeDicRow::isString(void) const
-{
-    return equalNoCase(name.c_str(), "file");
-}
-
-/** return true if model type is bigint (64 bit) */
-bool TypeDicRow::isBigInt(void) const
-{
-    return
-        equalNoCase(name.c_str(), "long") || equalNoCase(name.c_str(), "llong") ||
-        equalNoCase(name.c_str(), "uint") ||equalNoCase(name.c_str(), "ulong") ||
-        equalNoCase(name.c_str(), "ullong");
-}
-
-/** return true if model type is integer: not float, string, boolean, bigint
-* (if type is not a built-in then it must be integer enums) 
-*/
-bool TypeDicRow::isInt(void) const
-{
-    return isBuiltIn() && !isBool() && !isString() && !isFloat() && !isBigInt();
-}
-
-/** return true if i_value string represent valid integer constant */
-bool TypeDicRow::isIntValid(const char * i_value)
-{
-    return i_value != nullptr && regex_match(i_value, intRx);
-}
-
-/** return true if model type is float (float, real, double or time) */
-bool TypeDicRow::isFloat(void) const
-{
-    return
-        equalNoCase(name.c_str(), "float") || equalNoCase(name.c_str(), "double") ||
-        equalNoCase(name.c_str(), "ldouble") || equalNoCase(name.c_str(), "time") ||
-        equalNoCase(name.c_str(), "real");
-}
-
-/** return true if i_value string represent valid floating point constant */
-bool TypeDicRow::isFloatValid(const char * i_value)
-{
-    return i_value != nullptr && regex_match(i_value, floatRx);
-}
-
-/** return true if model type is Time */
-bool TypeDicRow::isTime(void) const
-{
-    return equalNoCase(name.c_str(), "time");
-}
-
-/** return true if lower case of source string one of: "1" "t" "true" */
-bool TypeDicRow::isBoolTrue(const char * i_str)
-{ 
-    return equalNoCase(i_str, "1") || equalNoCase(i_str, "t") || equalNoCase(i_str, "true") || 
-        equalNoCase(i_str, "-1");   // use of -1 is not recommended
-}
-
-/** return true if lower case of source string one of: "1" "t" "true" "0"  "f" "false" */
-bool TypeDicRow::isBoolValid(const char * i_str)
-{ 
-    return isBoolTrue(i_str) || equalNoCase(i_str, "0") || equalNoCase(i_str, "f") || equalNoCase(i_str, "false");
 }
 
 // type_dic_txt join model_type_dic row less comparator by unique key: model id, model type id, language id.

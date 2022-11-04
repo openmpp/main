@@ -38,13 +38,14 @@
     #endif 
 #endif 
 
-#define OM_STRLEN_MAX       INT_MAX     /** max string length supported */
-#define OM_STR_DB_MAX       32000       /** max database string length: notes varchar (clob, text) */
-#define OM_CODE_DB_MAX      32          /** max database length for codes: language code, digests, date-time string */
-#define OM_NAME_DB_MAX      255         /** max database length for names: parameter name, table name, etc. */
-#define OM_DESCR_DB_MAX     255         /** max database length for description: parameter description, table description, etc. */
-#define OM_OPTION_DB_MAX    32000       /** max database length for option value: profile_option, run_option */
-#define OM_SQL_EXPR_DB_MAX  2048        /** max database length for sql expression: accumulator or output table expression */
+#define OM_STRLEN_MAX           INT_MAX /** max string length supported */
+#define OM_STR_DB_MAX           32000   /** max database string length: notes varchar (clob, text) */
+#define OM_CODE_DB_MAX          32      /** max database length for codes: language code, digests, date-time string */
+#define OM_NAME_DB_MAX          255     /** max database length for names: parameter name, table name, etc. */
+#define OM_DESCR_DB_MAX         255     /** max database length for description: parameter description, table description, etc. */
+#define OM_OPTION_DB_MAX        32000   /** max database length for option value: profile_option, run_option */
+#define OM_SQL_EXPR_DB_MAX      2048    /** max database length for sql expression: accumulator or output table expression */
+#define OM_MAX_BUILTIN_TYPE_ID  100     /** max type id for built-int types, ie: int, double, logical */
 
 #define OM_STATE_SAVE_TIME 1811L        /** msec, interval between run state save if any changes in run status */
 #define OM_STATE_BEAT_TIME 1823L        /** msec, interval between run state heart beats update */
@@ -102,6 +103,40 @@ namespace openm
     /** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
     extern const std::string cleanPathChars(const std::string & i_str, int i_maxSize = 0);
 
+    /** return true if model type is boolean (logical) */
+    extern bool isBoolType(const char * i_typeName);
+
+    /** return true if model type is string (varchar) */
+    extern bool isStringType(const char * i_typeName);
+
+    /** return true if model type is bigint (64 bit) */
+    extern bool isBigIntType(const char * i_typeName);
+
+    /** return true if model type is integer: not float, string, boolean, bigint
+    * (if type is not a built-in then it must be integer enums)
+    */
+    extern bool isIntType(const char * i_typeName, int i_typeId);
+
+    /** return true if model type id is built-in type id, ie: int, double, logical */
+    extern bool isBuiltInType(int i_typeId);
+
+    /** return true if model type is float (float, real, double or time) */
+    extern bool isFloatType(const char * i_typeName);
+
+    /** return true if model type is Time */
+    extern bool isTimeType(const char * i_typeName);
+
+    /** return true if i_value string represent valid integer constant */
+    extern bool isIntValid(const char* i_value);
+
+    /** return true if i_value string represent valid floating point constant */
+    extern bool isFloatValid(const char* i_value);
+
+    /** return true if lower case of source string one of: "yes" "1" "true" */
+    extern bool isBoolTrue(const char* i_str);
+
+    /** return true if lower case of source string one of: "yes" "1" "true" "no" "0" "false" */
+    extern bool isBoolValid(const char* i_str);
 
     /** convert i_value string represnting boolean option and return one of:    \n
     * return  1 if i_value is one of: "yes", "1", "true" or empty "" value,     \n

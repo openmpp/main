@@ -6,6 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "helper.h"
+#include "crc32.h"
 #include "dbExec.h"
 using namespace openm;
 
@@ -26,11 +27,6 @@ const char * openm::ORACLE_DB_PROVIDER = "oracle";
 
 /** DB2 db-provider name */
 const char * openm::DB2_DB_PROVIDER = "db2";
-
-/** max length of db table or view name.
-* Current max name sizes: PostgreSQL=63 MySQL=64 MSSQL=128 DB2=128 Oracle=128 (Oracle antiques not supported)
-*/
-const int IDbExec::maxDbTableNameSize = 63;
 
 // db-provider names
 static const char * dbProviderNameArr[] = {
@@ -91,6 +87,44 @@ bool IDbExec::isValidProviderName(const char * i_sqlProvider)
     );
 }
 
+/** make prefix part of db table name by shorten source name, ie: ageSexProvince = > ageSexPr */
+const string IDbExec::makeDbNamePrefix(int i_id, const string & i_src)
+{
+    try {
+        if (i_src.empty()) throw DbException(LT("invalid (empty) source name, id: %d"), i_id);
+
+        // in db table name use only [A-Z,a-z,0-9] and _ underscore
+        // make sure name size not longer than (32 - max prefix size)
+        return toAlphaNumeric(i_src, dbPrefixSize);
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+/** make unique part of db table name by using digest or crc32(digest) */
+const string IDbExec::makeDbNameSuffix(int i_id, const string & i_src, const string i_digest)
+{
+    try {
+        if (i_digest.empty()) throw DbException(LT("invalid (empty) digest for: %s, id: %d"), i_src.c_str(), i_id);
+
+        return isCrc32Name ? crc32String(i_digest) : i_digest;
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
 /** return type name for BIGINT sql type */
 string IDbExec::bigIntTypeName(const string & i_sqlProvider)
 {
@@ -124,6 +158,54 @@ string IDbExec::textTypeName(const string & i_sqlProvider, int i_size)
             return "VARCHAR(" + to_string(i_size) + ")";
         }
         throw DbException("invalid db-provider name: %s", i_sqlProvider.c_str());
+    }
+    catch (DbException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw;
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        throw DbException(ex.what());
+    }
+}
+
+/** return db type name by model type for specific db provider */
+string IDbExec::valueDbType(const string & i_sqlProvider, const string & i_typeName, int i_typeId)
+{
+    try {
+        // C++ ambiguous integral type
+        // (in C/C++, the signedness of char is not specified)
+        if (equalNoCase(i_typeName.c_str(), "char")) return "SMALLINT";
+
+        // C++ signed integral types
+        if (equalNoCase(i_typeName.c_str(), "schar")) return "SMALLINT";
+        if (equalNoCase(i_typeName.c_str(), "short")) return "SMALLINT";
+        if (equalNoCase(i_typeName.c_str(), "int")) return "INT";
+
+        // C++ unsigned integral types
+        if (equalNoCase(i_typeName.c_str(), "uchar")) return "SMALLINT";
+        if (equalNoCase(i_typeName.c_str(), "ushort")) return "INT";
+
+        // Changeable numeric types
+        if (equalNoCase(i_typeName.c_str(), "integer")) return "INT";
+        if (equalNoCase(i_typeName.c_str(), "counter")) return "INT";
+
+        // C++ bool type
+        if (isBoolType(i_typeName.c_str())) return "SMALLINT";
+
+        // C++ int64 and uint64 types
+        if (isBigIntType(i_typeName.c_str())) return bigIntTypeName(i_sqlProvider);
+
+        // C++ floating point types
+        if (isFloatType(i_typeName.c_str())) return floatTypeName(i_sqlProvider);
+
+        // path to a file (a string)
+        if (isStringType(i_typeName.c_str())) return textTypeName(i_sqlProvider, OM_PATH_MAX);
+
+        // model specific types: it must be enum
+        if (!isBuiltInType(i_typeId)) return "INT";
+
+        throw DbException(LT("invalid type name: %s or type id: %d"), i_typeName.c_str(), i_typeId);
     }
     catch (DbException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);

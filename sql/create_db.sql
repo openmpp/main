@@ -724,54 +724,53 @@ CREATE TABLE run_progress
 );
 
 --
--- Run entities list
--- "base run id" is run id where entity values must be selected from
+-- Entity generation:
+-- partial instance of entity, may include only some of entity attributes
 --
-CREATE TABLE run_entity
+CREATE TABLE entity_gen
 (
-  run_id       INT         NOT NULL, -- master key
-  entity_hid   INT         NOT NULL, -- entity unique id
-  base_run_id  INT         NOT NULL, -- source run id to select entity value
-  value_digest VARCHAR(32),          -- if not NULL then digest of entity values for the run
-  PRIMARY KEY (run_id, entity_hid),
-  CONSTRAINT run_entity_mk
-             FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
-  CONSTRAINT run_entity_base_fk
-             FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id),
-  CONSTRAINT run_entity_fk
+  entity_gen_hid  INT         NOT NULL, -- entity generation unique id
+  entity_hid      INT         NOT NULL, -- master key
+  db_entity_table VARCHAR(64) NOT NULL, -- db table name: person_g87abcdef
+  gen_digest      VARCHAR(32) NOT NULL, -- digest of entity generation
+  PRIMARY KEY (entity_gen_hid),
+  CONSTRAINT entity_gen_un UNIQUE (db_entity_table),
+  CONSTRAINT entity_gen_fk
              FOREIGN KEY (entity_hid) REFERENCES entity_dic (entity_hid)
 );
 
 --
--- Run entity text info: description and notes
+-- Entity generation attributes
 --
-CREATE TABLE run_entity_txt
+CREATE TABLE entity_gen_attr
 (
-  run_id     INT           NOT NULL, -- master key
-  entity_hid INT           NOT NULL, -- master key
-  lang_id    INT           NOT NULL, -- language id
-  descr      VARCHAR(255)  NOT NULL, -- run entity description
-  note      VARCHAR(32000),          -- run entity notes
-  PRIMARY KEY (run_id, entity_hid, lang_id),
-  CONSTRAINT run_entity_txt_mk
-             FOREIGN KEY (run_id, entity_hid) REFERENCES run_entity (run_id, entity_hid),
-  CONSTRAINT run_entity_txt_lang_fk
-             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+  entity_gen_hid INT NOT NULL, -- master key
+  attr_id        INT NOT NULL, -- attribute index
+  entity_hid     INT NOT NULL, -- entity unique id
+  PRIMARY KEY (entity_gen_hid, attr_id),
+  CONSTRAINT entity_gen_attr_mk
+             FOREIGN KEY (entity_gen_hid) REFERENCES entity_gen (entity_gen_hid),
+  CONSTRAINT entity_gen_attr_fk
+             FOREIGN KEY (entity_hid, attr_id) REFERENCES entity_attr (entity_hid, attr_id)
 );
 
 --
--- Run entity attributes
+-- Run entities list
+-- "base run id" is run id where values of entity attribute values must be selected from
 --
-CREATE TABLE run_entity_attr
+CREATE TABLE run_entity
 (
-  run_id      INT NOT NULL, -- master key
-  entity_hid  INT NOT NULL, -- master key
-  attr_id     INT NOT NULL, -- entity attribute index
-  PRIMARY KEY (run_id, entity_hid, attr_id),
-  CONSTRAINT entity_attr_mk
-             FOREIGN KEY (run_id, entity_hid) REFERENCES run_entity (run_id, entity_hid),
-  CONSTRAINT entity_attr_type_fk
-             FOREIGN KEY (entity_hid, attr_id) REFERENCES entity_attr (entity_hid, attr_id)
+  run_id         INT         NOT NULL, -- master key
+  entity_gen_hid INT         NOT NULL, -- entity generation unique id
+  base_run_id    INT         NOT NULL, -- source run id to select entity attribute values
+  value_digest   VARCHAR(32),          -- if not NULL then digest of attribute values for the run
+  PRIMARY KEY (run_id, entity_gen_hid),
+  CONSTRAINT run_entity_mk
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
+  CONSTRAINT run_entity_base_fk
+             FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id),
+  CONSTRAINT run_entity_gen_fk
+             FOREIGN KEY (entity_gen_hid) REFERENCES entity_gen (entity_gen_hid)
 );
 
 --

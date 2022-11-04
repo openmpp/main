@@ -255,6 +255,11 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     // insert run description and text
     createRunText(nRunId, nSetId, i_dbExec);
 
+    // insert run entity metadata and create run entity tables
+    if (modelRunOptions().isMicrodata) {
+        createRunEntity(nRunId, i_dbExec);
+    }
+
     // completed: commit the changes
     i_dbExec->commit();
 
@@ -452,4 +457,139 @@ void RunController::createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) 
             toQuoted(row.descr) + ", " +
             (!row.note.empty() ? toQuoted(row.note) : "NULL") + ")");
     }
+}
+
+// insert run entity metadata and create run entity tables
+void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
+{
+    if (!modelRunOptions().isMicrodata) return; // exit: microdata entities is not enabled
+
+    // use entity generation digest (based on entity digets, attributes id, name, type digest) 
+    // to find existing entity db table name or create new database table
+    for (const auto & em : entityMap)
+    {
+        // calculate entity table digest (generation digest)
+        const EntityDicRow * ent = metaStore->entityDic->byModelIdName(modelId, em.first);
+        if (ent == nullptr) throw DbException("Microdata entity name not found: %s", em.first.c_str());
+
+        const string entMd5 = makeEntityGenDigest(ent, em.second);
+        string dbTableName;
+
+        // check if entity generation digest already exists
+        int genHid = i_dbExec->selectToInt(
+            "SELECT entity_gen_hid FROM entity_gen WHERE gen_digest = " + toQuoted(entMd5),
+            -1);
+
+        if (genHid > 0) // if entity generation already exist
+        {
+            // validate: it must be the same entity
+            int eHid = i_dbExec->selectToInt(
+                "SELECT entity_hid FROM entity_gen WHERE gen_digest = " + toQuoted(entMd5),
+                -1);
+            if (eHid != ent->entityHid) throw DbException("Internal error: entity: %s, digest: %s, entity Hid: %d, must be: %d", ent->entityName.c_str(), entMd5.c_str(), eHid, ent->entityHid);
+
+            // select existing db table name
+            dbTableName = i_dbExec->selectToStr("SELECT db_entity_table FROM entity_gen WHERE entity_gen_hid = " + to_string(genHid));
+        }
+        else // make new entity generation db table name and insert new entity generation record
+        {
+            string p = IDbExec::makeDbNamePrefix(ent->entityId, ent->entityName);
+            string s = IDbExec::makeDbNameSuffix(ent->entityId, ent->entityName, entMd5);
+            dbTableName = p + "_g" + s;
+
+            i_dbExec->update(
+                "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'entity_hid'"
+            );
+            genHid = i_dbExec->selectToInt(
+                "SELECT id_value FROM id_lst WHERE id_key = 'entity_hid'",
+                -1);
+            if (genHid <= 0) throw DbException(LT("invalid (not positive) entity Hid of: %s"), ent->entityName.c_str());
+
+            i_dbExec->update(
+                "INSERT INTO entity_gen (entity_gen_hid, entity_hid, db_entity_table, gen_digest)" \
+                " VALUES (" +
+                to_string(genHid) + ", " +
+                to_string(ent->entityHid) + ", " +
+                toQuoted(dbTableName) + ", " +
+                toQuoted(entMd5) + ")");
+
+            for (const EntityAttrRow & at : em.second)
+            {
+                i_dbExec->update(
+                    "INSERT INTO entity_gen_attr (entity_gen_hid, attr_id, entity_hid)" \
+                    " VALUES (" +
+                    to_string(genHid) + ", " +
+                    to_string(at.attrId) + ", " +
+                    to_string(ent->entityHid) + ")");
+            }
+
+            // create entity values table
+            // 
+            // CREATE TABLE person_g87abcdef
+            // (
+            //   run_id     INT    NOT NULL,
+            //   entity_key BIGINT NOT NULL,
+            //   age        INT    NOT NULL,
+            //   income     FLOAT,          -- float attribute value NaN is NULL
+            //   PRIMARY KEY (run_id, entity_key)
+            // )
+            //
+            const string prv = i_dbExec->provider();
+
+            string sql = "(" \
+                "run_id INT NOT NULL, " \
+                " entity_key " + IDbExec::bigIntTypeName(prv) + " NOT NULL,";
+
+            for (const EntityAttrRow & at : em.second)
+            {
+                const TypeDicRow * t = metaStore->typeDic->byKey(modelId, at.typeId);
+                if (t == nullptr) throw DbException("type not found for entity attribute %s %s", ent->entityName.c_str(), at.name.c_str());
+
+                sql += " " + at.columnName() +
+                    " " + IDbExec::valueDbType(prv, t->name, t->typeId) +
+                    (isFloatType(t->name.c_str()) ? "," : " NOT NULL,");
+            }
+
+            sql += " PRIMARY KEY (run_id, entity_key))";
+
+            i_dbExec->update(IDbExec::makeSqlCreateTableIfNotExist(prv, dbTableName, sql));
+        }
+
+        // insert run entity row: base run is current run until value digest calculated
+        i_dbExec->update(
+            "INSERT INTO run_entity (run_id, entity_gen_hid, base_run_id, value_digest)" \
+            " VALUES (" +
+            to_string(i_runId) + ", " +
+            to_string(genHid) + ", " +
+            to_string(i_runId) + ", " +
+            "NULL)");
+    }
+}
+
+// calculate entity generation digest: based on entity digest, attributes id, name, type digest
+const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows) const
+{
+    // make digest header as entity name
+    MD5 md5Full;
+    md5Full.add("entity_digest\n", strlen("entity_digest\n"));
+    string sLine = i_entRow->digest + "\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+
+    // add attributes: id, name and attribute type digest
+    sLine = "attr_id,attr_name,type_digest\n";
+    md5Full.add(sLine.c_str(), sLine.length());
+
+    for (const EntityAttrRow & attr : i_attrRows)
+    {
+        // find attribute type
+        const TypeDicRow * tRow = metaStore->typeDic->byKey(attr.modelId, attr.typeId);
+        if (tRow == nullptr)
+            throw DbException(LT("in entity_attr [%s].[%s] invalid model id: %d and type id: %d: not found in type_dic"), i_entRow->entityName.c_str(), attr.name.c_str(), attr.modelId, attr.typeId);
+
+        // add attribute to digest: id, name, type digest
+        sLine = to_string(attr.attrId) + "," + attr.name + "," + tRow->digest + "\n";
+        md5Full.add(sLine.c_str(), sLine.length());
+    }
+
+    return md5Full.getHash();
 }

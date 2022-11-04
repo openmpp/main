@@ -13,6 +13,15 @@
     #define strNcmpNoCase   strncasecmp
 #endif  // _WIN32
 
+// regex to validate integer number
+static const regex intRx("(^[+-]?)([0-9]+$)");
+
+// regex to validate float number: ^[-+]?(([0-9]+(\.?)([0-9]+)?)|(\.[0-9]+))([eE][-+]?[0-9]+)?$
+static const regex floatRx("^[-+]?(([0-9]+(\\.?)([0-9]+)?)|(\\.[0-9]+))([eE][-+]?[0-9]+)?$");
+
+// float including INF or NAN constants: ^[-+]?((([0-9]+(\.?)([0-9]+)?)|(\.[0-9]+))([E][-+]?[0-9]+)?$)|(INFINITY|INF|NAN)
+// static const regex floatRx("^[-+]?((([0-9]+(\\.?)([0-9]+)?)|(\\.[0-9]+))([E][-+]?[0-9]+)?$)|(INFINITY|INF|NAN)", regex_constants::icase);
+
 // convert string to lower case
 void openm::toLower(string & io_str, const locale & i_locale)
 {
@@ -226,6 +235,77 @@ const string openm::cleanPathChars(const string & i_str, int i_maxSize)
     return sRet;
 }
 
+/** return true if model type is boolean (logical) */
+bool openm::isBoolType(const char * i_typeName)
+{
+    return equalNoCase(i_typeName, "bool");
+}
+
+/** return true if model type is string (varchar) */
+bool openm::isStringType(const char * i_typeName)
+{
+    return equalNoCase(i_typeName, "file");
+}
+
+/** return true if model type is bigint (64 bit) */
+bool openm::isBigIntType(const char * i_typeName)
+{
+    return
+        equalNoCase(i_typeName, "long") || equalNoCase(i_typeName, "llong") ||
+        equalNoCase(i_typeName, "uint") || equalNoCase(i_typeName, "ulong") ||
+        equalNoCase(i_typeName, "ullong");
+}
+
+/** return true if model type is integer: not float, string, boolean, bigint
+* (if type is not a built-in then it must be integer enums)
+*/
+bool openm::isIntType(const char * i_typeName, int i_typeId)
+{
+    return isBuiltInType(i_typeId) &&
+        !isBoolType(i_typeName) && !isStringType(i_typeName) && !isFloatType(i_typeName) && !isBigIntType(i_typeName);
+}
+
+/** return true if model type id is built-in type id, ie: int, double, logical */
+bool openm::isBuiltInType(int i_typeId) { return i_typeId <= OM_MAX_BUILTIN_TYPE_ID; }
+
+/** return true if model type is float (float, real, double or time) */
+bool openm::isFloatType(const char * i_typeName)
+{
+    return
+        equalNoCase(i_typeName, "float") || equalNoCase(i_typeName, "double") ||
+        equalNoCase(i_typeName, "ldouble") || equalNoCase(i_typeName, "time") ||
+        equalNoCase(i_typeName, "real");
+}
+
+/** return true if model type is Time */
+bool openm::isTimeType(const char * i_typeName)
+{
+    return equalNoCase(i_typeName, "time");
+}
+
+/** return true if i_value string represent valid integer constant */
+bool openm::isIntValid(const char* i_value)
+{
+    return i_value != nullptr && regex_match(i_value, intRx);
+}
+
+/** return true if i_value string represent valid floating point constant */
+bool openm::isFloatValid(const char * i_value)
+{
+    return i_value != nullptr && regex_match(i_value, floatRx);
+}
+/** return true if lower case of source string one of: "yes" "1" "true" */
+bool openm::isBoolTrue(const char* i_str)
+{
+    return equalNoCase(i_str, "yes") || equalNoCase(i_str, "1") || equalNoCase(i_str, "true");
+}
+
+/** return true if lower case of source string one of: "yes" "1" "true" "no" "0" "false" */
+bool openm::isBoolValid(const char * i_str)
+{
+    return isBoolTrue(i_str) || equalNoCase(i_str, "no") || equalNoCase(i_str, "0") || equalNoCase(i_str, "false");
+}
+
 /** convert i_value string represnting boolean option and return one of:    \n
 * return  1 if i_value is one of: "yes", "1", "true" or empty "" value,     \n
 * return  0 if i_value is one of: "no", "0", "false",                       \n
@@ -236,7 +316,7 @@ int openm::boolStringToInt(const char * i_value)
 {
     if (i_value == nullptr) return -1;  // NULL value: option not found
 
-    if (i_value[0] == '\0' || equalNoCase(i_value, "1") || equalNoCase(i_value, "yes") || equalNoCase(i_value, "true")) return 1;
+    if (i_value[0] == '\0' || isBoolTrue(i_value)) return 1;
     if (equalNoCase(i_value, "0") || equalNoCase(i_value, "no") || equalNoCase(i_value, "false")) return 0;
 
     return -2;  // incorrect value

@@ -215,7 +215,7 @@ void ModelInsertSql::insertTypeText(
     if (typeIt == i_typeIdMap.cend()) throw DbException(LT("invalid type id: %d"), io_row.typeId);
 
     // built-in types must already be inserted
-    if (TypeDicRow::isBuiltIn(io_row.typeId)) return; 
+    if (isBuiltInType(io_row.typeId)) return; 
 
     // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7890, 101, 'Age', 'Age note')
     i_dbExec->update(
@@ -238,7 +238,7 @@ void ModelInsertSql::insertTypeEnum(IDbExec * i_dbExec, int i_typeHid, const Typ
     if (i_row.enumId < 0) throw DbException(LT("invalid (negative) enum %s id: %d, type id: %d"), i_row.name.c_str(), i_row.enumId, i_row.typeId);
 
     // built-in types must already be inserted
-    if (TypeDicRow::isBuiltIn(i_row.typeId)) return; 
+    if (isBuiltInType(i_row.typeId)) return; 
 
     // INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (7890, 1, 'Middle')
     i_dbExec->update(
@@ -270,7 +270,7 @@ void ModelInsertSql::insertTypeEnumText(
     io_row.langId = langIt->second;
 
     // built-in types must already be inserted
-    if (TypeDicRow::isBuiltIn(io_row.typeId)) return; 
+    if (isBuiltInType(io_row.typeId)) return; 
 
     // INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (7890, 101, 'Age', 'Age note')
     i_dbExec->update(

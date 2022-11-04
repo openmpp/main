@@ -150,6 +150,9 @@
     <ClInclude Include="include\dbValue.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\crc32.h">
+      <Filter>Source Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -391,6 +394,9 @@
     </ClCompile>
     <ClCompile Include="db\entityAttrTxtTable.cpp">
       <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="common\crc32.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

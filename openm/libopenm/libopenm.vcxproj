@@ -160,6 +160,7 @@
     <ClInclude Include="common\log.h" />
     <ClInclude Include="db\dbExecBase.h" />
     <ClInclude Include="db\dbExecSqlite.h" />
+    <ClInclude Include="include\crc32.h" />
     <ClInclude Include="include\dbExec.h" />
     <ClInclude Include="include\dbMetaTable.h" />
     <ClInclude Include="include\dbOutputTable.h" />
@@ -186,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\argReader.cpp" />
+    <ClCompile Include="common\crc32.cpp" />
     <ClCompile Include="common\file.cpp" />
     <ClCompile Include="common\helper.cpp" />
     <ClCompile Include="common\iniReader.cpp" />

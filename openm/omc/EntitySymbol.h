@@ -62,6 +62,7 @@ public:
         , ss_implement_fn(nullptr)
         , ss_event(nullptr)
         , next_ss_id(0)
+        , pp_entity_id(-1)
     {
         create_auxiliary_symbols();
         // Place in earliest sorting group so that missing symbols. e.g. case_id
@@ -75,6 +76,11 @@ public:
     void create_auxiliary_symbols();
 
     void post_parse(int pass);
+
+    /** Mark enumerations required for metadata support for this entity. */
+    void post_parse_mark_enumerations(void);
+
+    void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /**
      * Builds the function body of the function.
@@ -372,5 +378,10 @@ public:
      * Used to assign numeric identifiers to self-scheduling attributes in post-parse processing
      */
     int next_ss_id;
+
+    /**
+     * Numeric identifier. Used for communicating with metadata API.
+     */
+    int pp_entity_id;
 };
 

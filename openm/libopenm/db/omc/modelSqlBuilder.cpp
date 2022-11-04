@@ -17,9 +17,6 @@ IModelBuilder::~IModelBuilder() noexcept { }
 
 // create new model builder and set db table name prefix and suffix rules
 ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & i_sqlDir, const string & i_outputDir, const string & i_sqliteDir) :
-    isCrc32Name(false),
-    dbPrefixSize(0),
-    dbSuffixSize(0),
     sqlDir(i_sqlDir),
     outputDir(i_outputDir),
     isSqlite(false)
@@ -31,21 +28,6 @@ ModelSqlBuilder::ModelSqlBuilder(const string & i_providerNames, const string & 
     isSqlite = dbProviderLst.cend() != std::find(dbProviderLst.cbegin(), dbProviderLst.cend(), SQLITE_DB_PROVIDER);
 
     sqliteDir = !i_sqliteDir.empty() ? i_sqliteDir : outputDir;
-
-    // if max size of db table name is too short then use crc32(md5) digest
-    // table name is: paramNameAsPrefix + _p + md5Suffix, for example: ageSex_p12345678
-    // prefix based on parameter name or output table name
-    // suffix is 32 chars of md5 or 8 chars of crc32
-    // there is extra 2 chars: _p, _w, _v, _a in table name between prefix and suffix
-    //
-    // 2016-08-17: always use short crc32 name suffix
-    // isCrc32Name = minSize < 50;
-    isCrc32Name = true;
-    dbSuffixSize = isCrc32Name ? 8 : 32;
-    dbPrefixSize = IDbExec::maxDbTableNameSize - (2 + dbSuffixSize);
-
-    if (dbPrefixSize < 2 || dbSuffixSize < 8)
-        throw DbException(LT("invalid db table name prefix size: %d or suffix size: %d"), dbPrefixSize, dbSuffixSize);
  }
 
 // validate metadata and return sql script to create new model from supplied metadata rows
@@ -883,7 +865,7 @@ const void ModelSqlBuilder::paramCreateTable(
     }
 
     sqlBody +=
-        "param_value " + valueDbType(i_sqlProvider, i_tblInfo) + (i_tblInfo.isNullable ? " NULL" : " NOT NULL") + "," +
+        "param_value " + IDbExec::valueDbType(i_sqlProvider, i_tblInfo.valueTypeIt->name, i_tblInfo.valueTypeIt->typeId) + (i_tblInfo.isNullable ? " NULL" : " NOT NULL") + "," +
         " PRIMARY KEY (" + i_runSetId + ", sub_id";
 
     for (const string & cn : i_tblInfo.colVec) {
@@ -892,44 +874,6 @@ const void ModelSqlBuilder::paramCreateTable(
     sqlBody += "));";
 
     io_wr.outFs << IDbExec::makeSqlCreateTableIfNotExist(i_sqlProvider, i_dbTableName, sqlBody) << "\n";
-}
-
-// return db type name by model type for specific db provider
-string ModelSqlBuilder::valueDbType(const string & i_sqlProvider, const ParamTblInfo & i_tblInfo)
-{
-    // C++ ambiguous integral type
-    // (in C/C++, the signedness of char is not specified)
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "char")) return "SMALLINT";
-
-    // C++ signed integral types
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "schar")) return "SMALLINT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "short")) return "SMALLINT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "int")) return "INT";
-
-    // C++ unsigned integral types
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "uchar")) return "SMALLINT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "ushort")) return "INT";
-
-    // Changeable numeric types
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "integer")) return "INT";
-    if (equalNoCase(i_tblInfo.valueTypeIt->name.c_str(), "counter")) return "INT";
-
-    // C++ bool type
-    if (i_tblInfo.valueTypeIt->isBool()) return "SMALLINT";
-
-    // C++ int64 and uint64 types
-    if (i_tblInfo.valueTypeIt->isBigInt()) return IDbExec::bigIntTypeName(i_sqlProvider);
-
-    // C++ floating point types
-    if (i_tblInfo.valueTypeIt->isFloat()) return IDbExec::floatTypeName(i_sqlProvider);
-
-    // path to a file (a string)
-    if (i_tblInfo.valueTypeIt->isString()) return IDbExec::textTypeName(i_sqlProvider, OM_PATH_MAX);
-
-    // model specific types: it must be enum
-    if (!i_tblInfo.valueTypeIt->isBuiltIn()) return "INT";
-
-    throw DbException(LT("invalid value type for parameter id: %d, db table name: %s"), i_tblInfo.id, i_tblInfo.name.c_str());
 }
 
 // create table sql for accumulator table:

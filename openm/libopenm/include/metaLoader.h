@@ -112,6 +112,18 @@ namespace openm
         /** include only specified output tables or tables group into run results, ex: -Tables.Retain AgeTable,IncomeGroup */
         static constexpr const char * tableRetain = "Tables.Retain";
 
+        /** store all entities and all non-internal attributes, ex: -Microdata.All true */
+        static constexpr const char* microdataAll = "Microdata.All";
+
+        /** allow to store internal attributes, ex: -Microdata.AllowInternal true */
+        static constexpr const char * microdataInternal = "Microdata.AllowInternal";
+
+        /** options started with "Microdata." used to specify which entity attributes to store, ex: -Microdata.Person age,region,income */
+        static constexpr const char* microdataPrefix = "Microdata";
+
+        /** options started with "MicrodataFilter." used to specify which entity filters, ex: -MicrodataFilter.Person age >= 65 */
+        // static constexpr const char* microdataFilterPrefix = "MicrodataFilter";
+
         /** import parameters from all upstream models last runs, ex: -Import.All true */
         static constexpr const char * importAll = "Import.All";
 
@@ -251,10 +263,11 @@ namespace openm
         }
 
     protected:
-        int modelId;                        // model id in database
-        unique_ptr<MetaHolder> metaStore;   // metadata tables
-        vector<int> paramIdSubArr;          // ids of parameters where sub-values count same as model run sub-values count
-        vector<int> tableIdSuppressArr;     // id's of tables to suppress from calculation and output
+        int modelId;                                    // model id in database
+        unique_ptr<MetaHolder> metaStore;               // metadata tables
+        vector<int> paramIdSubArr;                      // ids of parameters where sub-values count same as model run sub-values count
+        vector<int> tableIdSuppressArr;                 // id's of tables to suppress from calculation and output
+        map<string, vector<EntityAttrRow>> entityMap;   // microdata entity name and list of attributes for each entity
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
@@ -349,7 +362,7 @@ namespace openm
         };
         map<int, ParamImportOpts> paramImportOptsMap;   // parameter id mapped to import options
 
-        // language-specific options: map language id to run description and notes
+        // model run language-specific options: map language id to run description and notes
         map<int, pair<string, string> > langOptsMap;
 
     private:
@@ -372,6 +385,9 @@ namespace openm
 
         /** parse language-specific options to get language code and option value */
         void parseLangOptions(void);
+
+        /** parse microdata run options to get entity names and attributes */
+        void parseEntityOptions(void);
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;

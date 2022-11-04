@@ -73,6 +73,7 @@ public:
     void do_ModelShutdown();
     void do_API_entries();
     void do_ParameterNameSize(void);
+    void do_EntityNameSize(void);
 
     /**
      * CodeBlock for om_types0.h.

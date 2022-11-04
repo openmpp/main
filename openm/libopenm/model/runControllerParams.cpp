@@ -175,22 +175,22 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
             string sVal = argOpts().strOption((paramDot + paramIt->paramName).c_str());
             if (typeRow->isString()) sVal = toQuoted(sVal);  // "file" type is VARCHAR
 
-            if ((typeRow->isInt() || typeRow->isBigInt()) && !TypeDicRow::isIntValid(sVal.c_str()))
+            if ((typeRow->isInt() || typeRow->isBigInt()) && !isIntValid(sVal.c_str()))
                 throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
             
-            if ((typeRow->isFloat() || typeRow->isTime()) && !TypeDicRow::isFloatValid(sVal.c_str()))
+            if ((typeRow->isFloat() || typeRow->isTime()) && !isFloatValid(sVal.c_str()))
                 throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
 
             if (typeRow->isBool()) {
-                if (!TypeDicRow::isBoolValid(sVal.c_str())) 
+                if (!isBoolValid(sVal.c_str())) 
                     throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
 
-                sVal = TypeDicRow::isBoolTrue(sVal.c_str()) ? "1" : "0";
+                sVal = isBoolTrue(sVal.c_str()) ? "1" : "0";
             }
 
             if (!typeRow->isBuiltIn()) {
                 if (isIdValue) {
-                    if (!TypeDicRow::isIntValid(sVal.c_str()))
+                    if (!isIntValid(sVal.c_str()))
                         throw DbException("invalid value '%s' of parameter: %s", sVal.c_str(), paramIt->paramName.c_str());
 
                     int eId = stoi(sVal);

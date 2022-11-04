@@ -14,9 +14,6 @@ using namespace std;
 #include "libopenm/omLog.h"
 #include "dbCommon.h"
 
-/** max type id for built-int types, ie: int, double, logical */
-#define OM_MAX_BUILTIN_TYPE_ID              100
-
 namespace openm
 {
     /** base class for model metadata db-rows */
@@ -307,40 +304,25 @@ namespace openm
         static vector<TypeDicRow>::const_iterator byKey(int i_modelId, int i_typeId, const vector<TypeDicRow> & i_rowVec);
 
         /** return true if model type is boolean (logical) */
-        bool isBool(void) const;
+        bool isBool(void) const { return isBoolType(name.c_str()); };
 
         /** return true if model type is string (varchar) */
-        bool isString(void) const;
+        bool isString(void) const { return isStringType(name.c_str()); };
 
         /** return true if model type is bigint (64 bit) */
-        bool isBigInt(void) const;
+        bool isBigInt(void) const { return isBigIntType(name.c_str()); };
 
         /** return true if model type is integer (not float, string, boolean or bigint) */
-        bool isInt(void) const;
-
-        /** return true if i_value string represent valid integer constant */
-        static bool isIntValid(const char * i_value);
+        bool isInt(void) const { return isIntType(name.c_str(), typeId); };
 
         /** return true if model type is float (float, real, double or time) */
-        bool isFloat(void) const;
-
-        /** return true if i_value string represent valid floating point constant */
-        static bool isFloatValid(const char * i_value);
+        bool isFloat(void) const { return isFloatType(name.c_str()); };
 
         /** return true if model type is Time */
-        bool isTime(void) const;
+        bool isTime(void) const { return isTimeType(name.c_str()); };
 
         /** return true if model type is built-in, ie: int, double, logical */
-        bool isBuiltIn(void) const { return isBuiltIn(typeId); }
-
-        /** return true if model type id is built-in type id, ie: int, double, logical */
-        static bool isBuiltIn(int i_typeId) { return i_typeId <= OM_MAX_BUILTIN_TYPE_ID; }
-
-        /** return true if lower case of source string one of: "1" "t" "true" */
-        static bool isBoolTrue(const char * i_str);
-
-        /** return true if lower case of source string one of: "1" "t" "true" "0"  "f" "false" */
-        static bool isBoolValid(const char * i_str);
+        bool isBuiltIn(void) const { return isBuiltInType(typeId); }
     };
 
     /** type_dic_txt join to model_type_dic table row. */

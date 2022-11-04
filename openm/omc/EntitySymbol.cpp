@@ -22,6 +22,8 @@
 #include "NumericSymbol.h"
 #include "BoolSymbol.h"
 #include "ModelTypeSymbol.h"
+#include "LanguageSymbol.h"
+#include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
 
@@ -528,6 +530,24 @@ void EntitySymbol::post_parse(int pass)
     }
 }
 
+// Mark enumerations required for metadata support for this entity
+void EntitySymbol::post_parse_mark_enumerations(void)
+{
+    // Mark enumerations required for metadata support for this entity attributes
+        // add entity attributes
+    for (auto dm : pp_agent_data_members) {
+
+        if (!dm->is_attribute()) continue;  // skip non-attributes
+
+        if (dm->pp_data_type->is_enumeration()) {
+            auto es = dynamic_cast<EnumerationSymbol *>(dm->pp_data_type);
+            assert(es); // compiler guarantee
+            es->metadata_needed = true;
+        }
+
+    }
+}
+
 void EntitySymbol::build_body_assign_member_offsets()
 {
     CodeBlock& c = assign_member_offsets_fn->func_body;
@@ -887,5 +907,68 @@ void EntitySymbol::finish_ss_event()
         CodeBlock& ct = ss_time_fn->func_body;
         ct += injection_description();;
         ct += "return et;" ;
+    }
+}
+
+void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
+{
+    // Hook into the hierarchical calling chain
+    super::populate_metadata(metaRows);
+
+    // Perform operations specific to this level in the Symbol hierarchy.
+
+    // entity must have data member attributes
+    int nAttr = 0;
+    for (auto dm : pp_agent_data_members) {
+        if (dm->is_attribute()) nAttr++;
+    }
+    if (!nAttr) return;     // this entity has no data member attributes
+
+    // add entity
+    EntityDicRow entityDic;
+
+    entityDic.entityId = pp_entity_id;
+    entityDic.entityName = name;
+    metaRows.entityDic.push_back(entityDic);
+
+    // Labels and notes for the entity
+    for (auto lang : Symbol::pp_all_languages) {
+
+        EntityDicTxtLangRow entityTxt;
+
+        entityTxt.entityId = pp_entity_id;
+        entityTxt.langCode = lang->name;
+        entityTxt.descr = label(*lang);
+        entityTxt.note = note(*lang);
+
+        metaRows.entityTxt.push_back(entityTxt);
+    }
+
+    // add entity attributes
+    for (auto dm : pp_agent_data_members) {
+
+        if (!dm->is_attribute()) continue;  // skip non-attributes
+
+        EntityAttrRow entityAttr;
+
+        entityAttr.entityId = pp_entity_id;
+        entityAttr.attrId = dm->pp_member_id;
+        entityAttr.name = dm->name;  // any name up to 255 bytes
+        entityAttr.typeId = dm->pp_data_type->type_id;
+        entityAttr.isInternal = dm->is_internal() || startWithNoCase(entityAttr.name, "om_");   // om_* attributes are for internal use only
+        metaRows.entityAttr.push_back(entityAttr);
+
+        // Labels and notes for the dimensions of the table
+        for (auto lang : Symbol::pp_all_languages) {
+
+            EntityAttrTxtLangRow entityAttrTxt;
+
+            entityAttrTxt.entityId = pp_entity_id;
+            entityAttrTxt.attrId = dm->pp_member_id;
+            entityAttrTxt.langCode = lang->name;
+            entityAttrTxt.descr = dm->label(*lang);
+            entityAttrTxt.note = dm->note(*lang);
+            metaRows.entityAttrTxt.push_back(entityAttrTxt);
+        }
     }
 }

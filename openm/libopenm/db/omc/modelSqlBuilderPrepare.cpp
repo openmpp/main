@@ -35,8 +35,8 @@ void ModelSqlBuilder::setParamDicRows(MetaModelHolder & io_metaRows) const
         auto [dgst, impDgst] = makeParamDigest(paramRow, io_metaRows);
         paramRow.digest = dgst;
         paramRow.importDigest = impDgst;
-        string p = makeDbNamePrefix(paramRow.paramId, paramRow.paramName);
-        string s = makeDbNameSuffix(paramRow.paramId, paramRow.paramName, paramRow.digest);
+        string p = IDbExec::makeDbNamePrefix(paramRow.paramId, paramRow.paramName);
+        string s = IDbExec::makeDbNameSuffix(paramRow.paramId, paramRow.paramName, paramRow.digest);
         paramRow.dbRunTable = p + "_p" + s;
         paramRow.dbSetTable = p + "_w" + s;
     }
@@ -50,8 +50,8 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
         auto [dgst, impDgst] = makeOutTableDigest(tableRow, io_metaRows);
         tableRow.digest = dgst;
         tableRow.importDigest = impDgst;
-        string p = makeDbNamePrefix(tableRow.tableId, tableRow.tableName);
-        string s = makeDbNameSuffix(tableRow.tableId, tableRow.tableName, tableRow.digest);
+        string p = IDbExec::makeDbNamePrefix(tableRow.tableId, tableRow.tableName);
+        string s = IDbExec::makeDbNameSuffix(tableRow.tableId, tableRow.tableName, tableRow.digest);
         tableRow.dbExprTable = p + "_v" + s;
         tableRow.dbAccTable = p + "_a" + s;
         tableRow.dbAccAll = p + "_d" + s;
@@ -1187,24 +1187,6 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
 
         outInfoVec.push_back(tblInf);   // add to output tables info vector
     }
-}
-
-// make prefix part of db table name by shorten source name, ie: ageSexProvince => ageSexPr
-const string ModelSqlBuilder::makeDbNamePrefix(int i_id, const string & i_src) const
-{
-    if (i_src.empty()) throw DbException(LT("invalid (empty) source name, id: %d"), i_id);
-
-    // in db table name use only [A-Z,a-z,0-9] and _ underscore
-    // make sure name size not longer than (32 - max prefix size)
-    return toAlphaNumeric(i_src, dbPrefixSize);
-}
-
-// make unique part of db table name by using digest or crc32(digest)
-const string ModelSqlBuilder::makeDbNameSuffix(int i_id, const string & i_src, const string i_digest) const
-{
-    if (i_digest.empty()) throw DbException(LT("invalid (empty) digest for: %s, id: %d"), i_src.c_str(), i_id);
-
-    return isCrc32Name ? crc32String(i_digest) : i_digest;
 }
 
 // calculate type digest

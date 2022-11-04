@@ -14,7 +14,6 @@
  
 using namespace std;
 
-
 namespace openm
 {
     /** calculate CRC-32 on next data block of bytes */

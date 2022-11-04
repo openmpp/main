@@ -11,6 +11,22 @@
 using namespace std;
 using namespace openm;
 
+/** find index in i_entityArr by entity name and attribute name, return -1 if names not found */
+int EntityNameSizeItem::byName(const char * i_entityName, const char * i_attrName, const EntityNameSizeItem * const i_entityArr, size_t i_entityArrSize)
+{
+    if (i_entityName == nullptr || i_attrName == nullptr || i_entityArr == nullptr || i_entityArrSize <= 0) return -1;
+
+    for (int k = 0; k < (int)i_entityArrSize; k++)
+    {
+        if (!strncmp(i_entityArr[k].entity, i_entityName, OM_STRLEN_MAX) &&
+            !strncmp(i_entityArr[k].attribute, i_attrName, OM_STRLEN_MAX))
+        {
+            return k;
+        }
+    }
+    return -1;
+}
+
 // atomic bool vector to store sub-value done status
 void DoneVector::init(size_t i_size)
 {

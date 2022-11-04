@@ -27,6 +27,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::profile,
     RunOptionsKey::tableSuppress,
     RunOptionsKey::tableRetain,
+    RunOptionsKey::microdataAll,
+    RunOptionsKey::microdataInternal,
     RunOptionsKey::profile,
     RunOptionsKey::importAll,
     RunOptionsKey::threadCount,
@@ -78,6 +80,7 @@ static const char * prefixOptArr[] = {
     RunOptionsKey::parameterPrefix, 
     RunOptionsKey::subFromPrefix,
     RunOptionsKey::subValuesPrefix,
+    RunOptionsKey::microdataPrefix,
     RunOptionsKey::importPrefix,
     RunOptionsKey::importRunDigestPrefix,
     RunOptionsKey::importRunIdPrefix,
@@ -93,7 +96,6 @@ static const size_t prefixOptSize = sizeof(prefixOptArr) / sizeof(const char *);
 static const char * langSuffixOptArr[] = {
     RunOptionsKey::runDescrSuffix,
     RunOptionsKey::runNotePathSuffix
-
 };
 static const size_t langSuffixOptSize = sizeof(langSuffixOptArr) / sizeof(const char *);
 
@@ -172,6 +174,8 @@ int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore, co
     io_metaStore->tableDims.reset(ITableDimsTable::create(i_dbExec, mId));
     io_metaStore->tableAcc.reset(ITableAccTable::create(i_dbExec, mId));
     io_metaStore->tableExpr.reset(ITableExprTable::create(i_dbExec, mId));
+    io_metaStore->entityDic.reset(IEntityDicTable::create(i_dbExec, mId));
+    io_metaStore->entityAttr.reset(IEntityAttrTable::create(i_dbExec, mId));
     io_metaStore->langLst.reset(ILangLstTable::create(i_dbExec));
     io_metaStore->groupLst.reset(IGroupLstTable::create(i_dbExec, mId));
     io_metaStore->groupPc.reset(IGroupPcTable::create(i_dbExec, mId));
@@ -367,6 +371,11 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 
     // parse language-specific options
     parseLangOptions();
+
+    // parse microdata entity names and attributes
+    parseEntityOptions();
+
+    baseRunOpts.isMicrodata = entityMap.size() > 0; // if entity list is not empty then model run must store entities microdata
 
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
@@ -929,6 +938,63 @@ void MetaLoader::mergeParameterProfile(
         const ProfileOptionRow * optRow = i_profileOpt->byKey(i_profileName, argName.c_str());
         if (optRow != nullptr) {
             argStore.args[argName] = optRow->value;             // add option from database
+        }
+    }
+}
+
+/** parse microdata run options to get entity names and attributes */
+void MetaLoader::parseEntityOptions(void)
+{
+    // make list of entities and list of attributes for each entity
+    bool isAllowInternal = argOpts().boolOption(RunOptionsKey::microdataInternal);  // if true then allow internal attributes
+
+    // if all entities and all attributes included
+    if (argOpts().boolOption(RunOptionsKey::microdataAll)) {
+
+        for (const EntityDicRow & ent : metaStore->entityDic->rows())
+        {
+            vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
+                return
+                    i_row.modelId == modelId && i_row.entityId == ent.entityId && (!i_row.isInternal || isAllowInternal);
+                });
+
+            if (attrs.size() > 0) entityMap.insert_or_assign(ent.entityName, attrs);
+        }
+    }
+    else { // not all entities are included: get attributes for each entity
+
+        string microdataPrefix = string(RunOptionsKey::microdataPrefix) + ".";
+
+        for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
+
+            // find Microdata.EntityName options
+            if (equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal)) continue;  // skip Microdata.All and Microdata.AllowInternal
+
+            if (!equalNoCase(optIt->first.c_str(), microdataPrefix.c_str(), microdataPrefix.length())) continue;
+
+            const string entName = optIt->first.substr(microdataPrefix.length());
+
+            const EntityDicRow * ent = metaStore->entityDic->findFirst(
+                [&entName](const EntityDicRow & i_row) -> bool { return i_row.entityName == entName; }
+            );
+            if (entName.empty() || ent == nullptr) throw DbException("Microdata name not found: %s", entName.c_str());
+
+            // check names of attributes
+            list<string> aLst = splitCsv(optIt->second);
+
+            vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
+                return
+                    i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isAllowInternal) &&
+                    find_if(
+                        aLst.cbegin(),
+                        aLst.cend(),
+                        [&i_row](const string & i_name) -> bool { return i_row.name == i_name; }
+                ) != aLst.cend();
+                });
+            if (aLst.size() <= 0 || aLst.size() != attrs.size()) throw DbException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
+
+            entityMap.insert_or_assign(entName, attrs);
         }
     }
 }

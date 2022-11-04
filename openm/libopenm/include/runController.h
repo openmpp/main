@@ -196,6 +196,12 @@ namespace openm
         // cretate run description and notes using run options or by copy it from workset text
         void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
+        // insert run entity metadata and create run entity tables
+        void createRunEntity(int i_runId, IDbExec* i_dbExec);
+
+        // calculate entity generation digest: based on entity digest, attributes id, name, type digest
+        const string makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows) const;
+
         /** write output tables aggregated values into database, skip suppressed tables */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
 

@@ -36,6 +36,9 @@ namespace openm
         /** if use sparse and abs(value) <= nullValue then value not stored */
         double nullValue;
 
+        /** if true thew model run is writing microdata entities. */
+        bool isMicrodata;
+
         /** if positive then used for simulation progress reporting, ex: every 10% */
         int progressPercent;
 
@@ -48,6 +51,7 @@ namespace openm
             subValueId(0),
             useSparse(false),
             nullValue(FLT_MIN),
+            isMicrodata(false),
             progressPercent(0),
             progressStep(0.0)
         { }
@@ -161,6 +165,37 @@ namespace openm
 
     /** model input parameters name, type and size */
     extern const ParameterNameSizeItem parameterNameSizeArr[];
+
+    /** model entity attributes name, type, size and member offset */
+    struct EntityNameSizeItem
+    {
+        /** entity name */
+        const char * entity;
+
+        /** attribute id */
+        const int attributeId;
+
+        /** attribute name */
+        const char * attribute;
+
+        /** attribute value type */
+        const std::type_info & typeOf;
+
+        /** attribute value bytes size */
+        const size_t size;
+
+        /** attribute value offset in entity this */
+        const ptrdiff_t offset;
+
+        /** find index in i_entityArr by entity name and attribute name, return -1 if names not found */
+        static int byName(const char * i_entityName, const char * i_attrName, const EntityNameSizeItem * const i_entityArr, size_t i_entityArrSize);
+    };
+
+    /** size of entity attributes list: all attributes of all entities */
+    extern const size_t ENTITY_NAME_SIZE_ARR_LEN;
+
+    /** list of entity attributes name, type, size and member offset */
+    extern const EntityNameSizeItem EntityNameSizeArr[];
 
     /** default error message: "unknown model error" */
     extern const char modelUnknownErrorMessage[];

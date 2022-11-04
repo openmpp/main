@@ -8,6 +8,7 @@
 #ifndef OM_I_HELPER_H
 #define OM_I_HELPER_H
 
+#include <regex>
 #include "libopenm/common/omHelper.h"
 
 using namespace std;

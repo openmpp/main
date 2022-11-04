@@ -123,6 +123,7 @@ void ChildController::broadcastRunOptions(void)
     msgExec->bcastInt(ProcessGroupDef::all, &opts.subValueId);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.useSparse);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.nullValue);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(int), &opts.progressPercent);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.progressStep);
 

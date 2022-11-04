@@ -65,9 +65,6 @@ namespace openm
         void buildCompatibilityViews(const MetaModelHolder & i_metaRows) const override;
 
     private:
-        bool isCrc32Name;               // if true then use crc32 as db table name suffix
-        int dbPrefixSize;               // db table prefix name size
-        int dbSuffixSize;               // db table prefix name size
         string sqlDir;                  // sql scripts directory to create database
         string sourceDir;               // source code directory
         string outputDir;               // output directory to write sql script files
@@ -212,9 +209,6 @@ namespace openm
             ModelSqlWriter & io_wr
         ) const;
 
-        /** return db type name by model type for specific db provider, eg: INT or CLOB */
-        static string valueDbType(const string & i_sqlProvider, const ParamTblInfo & i_tblInfo);
-
         /** set field values for workset_lst table row */
         void setWorksetRow(WorksetLstRow & io_wsRow) const;
 
@@ -250,12 +244,6 @@ namespace openm
 
         /** set field values for model_dic table row */
         void setModelDicRow(ModelDicRow & io_mdRow) const;
-
-        /** make prefix part of db table name by shorten source name, ie: ageSexProvince => ageSexPr */
-        const string makeDbNamePrefix(int i_id, const string & i_src) const;
-
-        /** make unique part of db table name by using digest or crc32(digest) */
-        const string makeDbNameSuffix(int i_id, const string & i_src, const string i_digest) const;
 
         /** calculate type digest */
         static const string makeTypeDigest(const TypeDicRow & i_typeRow, const MetaModelHolder & i_metaRows);
