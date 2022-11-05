@@ -213,6 +213,17 @@ void CodeGen::do_preamble()
         c += "thread_local bool BaseEntity::event_trace_on = false;";
     }
 
+    if (Symbol::option_microdata_output) {
+        t0 += doxygen_short("Model was built with microdata output capability.");
+        t0 += "constexpr bool om_microdata_output_capable = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was not built with microdata output capability.");
+        t0 += "constexpr bool om_microdata_output_capable = false;";
+        t0 += "";
+    }
+
     // Let the run-time know whether to generate a running checksum for events
     if (Symbol::option_case_checksum) {
         c += "const bool BaseEvent::event_checksum_enabled = true;";
@@ -661,6 +672,14 @@ void CodeGen::do_RunInit()
     }
     if (!Symbol::option_verify_timelike_attribute_access) {
         c += "theLog->logFormatted(LT(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\"));";
+        c += "";
+    }
+    if (Symbol::option_microdata_output && Symbol::option_microdata_output_warning) {
+        c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with output_microdata = on\"));";
+        c += "";
+    }
+    if (Symbol::option_event_trace && Symbol::option_event_trace_warning) {
+        c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with event_trace = on\"));";
         c += "";
     }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
@@ -2207,6 +2226,25 @@ void CodeGen::do_EntityNameSize(void)
         for (const auto dm : entity->pp_agent_data_members) {
             if (dm->is_eligible_microdata()) nAttr++;
         }
+    }
+
+    if (nAttr == 0) {
+        // special corner case, create a single dummy entry to avoid build time error
+        // which would otherwise occur due to a definition of an array of size 0.
+        c += "namespace openm";
+        c += "{";
+        c +=   "// no eligible attributes, define array with 1 single dummy entry";
+        c +=   "// size of entity attributes list: all attributes of all entities";
+        c +=   "const size_t ENTITY_NAME_SIZE_ARR_LEN = 1;";
+        c +=   "";
+        c +=   "// list of entity attributes name, type, size and member offset";
+        c +=   "const EntityNameSizeItem EntityNameSizeArr[ENTITY_NAME_SIZE_ARR_LEN] =";
+        c +=   "{";
+        c +=     "{ \"\", \"\", typeid(int), sizeof(int), 0 }";
+        c +=   "};";
+        c += "}";
+        c += "";
+        return;
     }
 
     c += "namespace openm";

@@ -57,6 +57,9 @@ bool EntityDataMemberSymbol::is_visible_attribute(void) const
 
 bool EntityDataMemberSymbol::is_eligible_microdata(void) const
 {
+    if (!option_microdata_output) {
+        return false;
+    }
     if (is_visible_attribute() && !is_link_attribute()) {
         return true;
     }
@@ -301,7 +304,7 @@ const string EntityDataMemberSymbol::cxx_type_of(void) const
         throw HelperException(LT("error : string is not supported as a type for entity data member %s"), name.c_str());
     }
     else {
-        // for parameters of type classification, range, or partition
+        // for attributes of type classification, range, or partition
         // get the underlying storage type
         auto ens = dynamic_cast<EnumerationSymbol *>(pp_data_type);
         assert(ens); // grammar guarantee

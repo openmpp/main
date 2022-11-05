@@ -1348,6 +1348,11 @@ public:
     static bool option_event_trace;
 
     /**
+     * true if event_trace microdata warning is enabled in options statement.
+     */
+    static bool option_event_trace_warning;
+
+    /**
      * true/false depending on bounds_errors in options statement.
      */
     static bool option_bounds_errors;
@@ -1406,6 +1411,16 @@ public:
      * true or false depending on all_attributes_visible value in options statement.
      */
     static bool option_all_attributes_visible;
+
+    /**
+     * true or false depending on whether microdata output is enabled.
+     */
+    static bool option_microdata_output;
+
+    /**
+     * true or false depending on whether microdata output runtime warning is emitted.
+     */
+    static bool option_microdata_output_warning;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.

@@ -916,7 +916,7 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    // count eligiable data member attributes
+    // count eligible data member attributes
     int nAttr = 0;
     for (const auto dm : pp_agent_data_members) {
         if (dm->is_eligible_microdata()) nAttr++;

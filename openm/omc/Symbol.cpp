@@ -600,6 +600,8 @@ unordered_map<string, string> Symbol::options;
 
 bool Symbol::option_event_trace = false;
 
+bool Symbol::option_event_trace_warning = true;
+
 bool Symbol::option_bounds_errors = true;
 
 bool Symbol::option_case_checksum = false;
@@ -621,6 +623,10 @@ bool Symbol::option_weighted_tabulation = false;
 bool Symbol::option_resource_use = false;
 
 bool Symbol::option_entity_member_packing = false;
+
+bool Symbol::option_microdata_output = false;
+
+bool Symbol::option_microdata_output_warning = true;
 
 bool Symbol::option_all_attributes_visible = false;
 
@@ -1858,6 +1864,20 @@ void Symbol::defaults_and_options()
     }
 
     {
+        string key = "event_trace_warning";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_event_trace_warning = true;
+            }
+            else if (value == "off") {
+                option_event_trace_warning = false;
+            }
+        }
+    }
+
+    {
         string key = "bounds_errors";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -2022,6 +2042,34 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_all_attributes_visible = false;
+            }
+        }
+    }
+
+    {
+        string key = "microdata_output";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_microdata_output = true;
+            }
+            else if (value == "off") {
+                option_microdata_output = false;
+            }
+        }
+    }
+
+    {
+        string key = "microdata_output_warning";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_microdata_output_warning = true;
+            }
+            else if (value == "off") {
+                option_microdata_output_warning = false;
             }
         }
     }
