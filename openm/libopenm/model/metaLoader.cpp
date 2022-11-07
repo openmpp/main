@@ -945,11 +945,19 @@ void MetaLoader::mergeParameterProfile(
 /** parse microdata run options to get entity names and attributes */
 void MetaLoader::parseEntityOptions(void)
 {
-    // make list of entities and list of attributes for each entity
     bool isAllowInternal = argOpts().boolOption(RunOptionsKey::microdataInternal);  // if true then allow internal attributes
+
+    // microdata disabled: only one row in EntityNameSizeArr with empty "" entitity name and attribute name
+    bool isDisabled = ENTITY_NAME_SIZE_ARR_LEN == 0 ||
+        (ENTITY_NAME_SIZE_ARR_LEN == 1 &&
+            (EntityNameSizeArr[0].entity == nullptr || strnlen(EntityNameSizeArr[0].entity, OM_STRLEN_MAX) == 0 ||
+                (EntityNameSizeArr[0].attribute == nullptr || strnlen(EntityNameSizeArr[0].attribute, OM_STRLEN_MAX) == 0)));
+
 
     // if all entities and all attributes included
     if (argOpts().boolOption(RunOptionsKey::microdataAll)) {
+
+        if (isDisabled) throw DbException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataAll);
 
         for (const EntityDicRow & ent : metaStore->entityDic->rows())
         {
@@ -974,6 +982,8 @@ void MetaLoader::parseEntityOptions(void)
             if (!equalNoCase(optIt->first.c_str(), microdataPrefix.c_str(), microdataPrefix.length())) continue;
 
             const string entName = optIt->first.substr(microdataPrefix.length());
+
+            if (isDisabled) throw DbException("Microdata output disabled, invalid model run option: %s", optIt->first.c_str());
 
             const EntityDicRow * ent = metaStore->entityDic->findFirst(
                 [&entName](const EntityDicRow & i_row) -> bool { return i_row.entityName == entName; }
