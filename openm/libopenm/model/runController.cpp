@@ -27,6 +27,10 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
     bool isTask = i_argOpts.intOption(RunOptionsKey::taskId, 0) > 0 || i_argOpts.strOption(RunOptionsKey::taskName) != "";
     bool isRestartId = i_argOpts.intOption(RunOptionsKey::restartRunId, 0) > 0;
 
+    // init crc-64 static table
+    // it must be done in main thread only and before any crc-64 calls
+    xz_crc64_init();
+
     // multiple processes: create run controller for root or child process
     // single process run: create single process run controller 
     // "restart run": if no modeling task and run id explicitly specified
