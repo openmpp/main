@@ -628,6 +628,8 @@ bool Symbol::option_microdata_output = false;
 
 bool Symbol::option_microdata_output_warning = true;
 
+bool Symbol::option_microdata_on_exit = false;
+
 bool Symbol::option_all_attributes_visible = false;
 
 bool Symbol::option_use_heuristic_short_names = false;
@@ -2070,6 +2072,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_microdata_output_warning = false;
+            }
+        }
+    }
+
+    {
+        string key = "microdata_on_exit";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_microdata_on_exit = true;
+            }
+            else if (value == "off") {
+                option_microdata_on_exit = false;
             }
         }
     }

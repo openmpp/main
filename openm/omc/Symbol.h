@@ -1423,6 +1423,11 @@ public:
     static bool option_microdata_output_warning;
 
     /**
+     * true or false depending on whether microdata is output when entity exits the simulation.
+     */
+    static bool option_microdata_on_exit;
+
+    /**
      * true or false depending on use_heuristic_short_names in options statement.
      */
     static bool option_use_heuristic_short_names;

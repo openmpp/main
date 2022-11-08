@@ -224,6 +224,12 @@ void CodeGen::do_preamble()
         t0 += "";
     }
 
+    {
+        t0 += doxygen_short("Output microdata on entity exit.");
+        t0 += "constexpr bool om_microdata_on_exit = " + std::to_string(Symbol::option_microdata_on_exit) + ";";
+        t0 += "";
+    }
+
     // Let the run-time know whether to generate a running checksum for events
     if (Symbol::option_case_checksum) {
         c += "const bool BaseEvent::event_checksum_enabled = true;";
@@ -1095,6 +1101,9 @@ void CodeGen::do_entities()
 	    h += "";
         h += doxygen_short("The name of this entity");
         h += "static constexpr const char * entity_name = \"" + entity->name + "\";";
+        h += "";
+        h += doxygen_short("The kind of this entity");
+        h += "static constexpr const int entity_kind = " + std::to_string(entity->pp_entity_id) + ";";
         h += "";
 
         h += doxygen_short("Get the name of this entity");
