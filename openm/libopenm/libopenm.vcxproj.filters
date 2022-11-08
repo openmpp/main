@@ -153,6 +153,9 @@
     <ClInclude Include="include\crc32.h">
       <Filter>Source Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\common\xz_crc64.h">
+      <Filter>Header Files\libopenm\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -396,6 +399,9 @@
       <Filter>Source Files\db</Filter>
     </ClCompile>
     <ClCompile Include="common\crc32.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\xz_crc64.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>

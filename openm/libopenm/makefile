@@ -75,6 +75,7 @@ LIBOPENM_CPPLIST = \
   main.cpp \
   common/argReader.cpp \
   common/crc32.cpp \
+  common/crc64.cpp \
   common/file.cpp \
   common/helper.cpp \
   common/iniReader.cpp \
