@@ -18,6 +18,7 @@ using namespace std;
 #include "libopenm/omLog.h"
 #include "libopenm/common/omFile.h"
 #include "libopenm/omModel.h"
+#include "libopenm/common/xz_crc64.h"
 #include "libopenm/db/dbMetaRow.h"
 #include "dbMetaTable.h"
 #include "modelRunState.h"
@@ -64,6 +65,12 @@ namespace openm
 
         /** set modeling progress count and value */
         void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->runStateStore().updateProgress(runId, runOpts.subValueId, i_count, i_value); }
+
+        /** return true if model store microdata in database or CSV file. */
+        const bool isMicrodata(void) const override { return runOpts.isDbMicrodata || runOpts.isCsvMicrodata; };
+
+        /** write microdata into database and/or CSV file. */
+        void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) override;
 
     private:
         int modelId;                        // model id in database

@@ -27,6 +27,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::profile,
     RunOptionsKey::tableSuppress,
     RunOptionsKey::tableRetain,
+    RunOptionsKey::microdataToCsv,
+    RunOptionsKey::microdataToDb,
     RunOptionsKey::microdataAll,
     RunOptionsKey::microdataInternal,
     RunOptionsKey::profile,
@@ -374,8 +376,6 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 
     // parse microdata entity names and attributes
     parseEntityOptions();
-
-    baseRunOpts.isMicrodata = entityMap.size() > 0; // if entity list is not empty then model run must store entities microdata
 
     // merge model run options
     baseRunOpts.useSparse = argStore.boolOption(RunOptionsKey::useSparse);
@@ -945,7 +945,9 @@ void MetaLoader::mergeParameterProfile(
 /** parse microdata run options to get entity names and attributes */
 void MetaLoader::parseEntityOptions(void)
 {
-    bool isAllowInternal = argOpts().boolOption(RunOptionsKey::microdataInternal);  // if true then allow internal attributes
+    bool isToDb = argOpts().boolOption(RunOptionsKey::microdataToDb);       // if true then store microdata in database
+    bool isToCsv = argOpts().boolOption(RunOptionsKey::microdataToCsv);     // if true then write microdata into csv
+    bool isOmAttr = argOpts().boolOption(RunOptionsKey::microdataInternal); // if true then allow internal attributes
 
     // microdata disabled: only one row in EntityNameSizeArr with empty "" entitity name and attribute name
     bool isDisabled = ENTITY_NAME_SIZE_ARR_LEN == 0 ||
@@ -953,17 +955,19 @@ void MetaLoader::parseEntityOptions(void)
             (EntityNameSizeArr[0].entity == nullptr || strnlen(EntityNameSizeArr[0].entity, OM_STRLEN_MAX) == 0 ||
                 (EntityNameSizeArr[0].attribute == nullptr || strnlen(EntityNameSizeArr[0].attribute, OM_STRLEN_MAX) == 0)));
 
+    if (isDisabled && isToDb) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToDb);
+    if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);
 
     // if all entities and all attributes included
     if (argOpts().boolOption(RunOptionsKey::microdataAll)) {
 
-        if (isDisabled) throw DbException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataAll);
+        if (isDisabled) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataAll);
 
         for (const EntityDicRow & ent : metaStore->entityDic->rows())
         {
             vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
                 return
-                    i_row.modelId == modelId && i_row.entityId == ent.entityId && (!i_row.isInternal || isAllowInternal);
+                    i_row.modelId == modelId && i_row.entityId == ent.entityId && (!i_row.isInternal || isOmAttr);
                 });
 
             if (attrs.size() > 0) entityMap.insert_or_assign(ent.entityName, attrs);
@@ -975,15 +979,18 @@ void MetaLoader::parseEntityOptions(void)
 
         for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
-            // find Microdata.EntityName options
-            if (equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal)) continue;  // skip Microdata.All and Microdata.AllowInternal
+            // skip Microdata.toCsv, Microdata.toDb, Microdata.All, Microdata.AllowInternal
+            if (equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToCsv) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToDb) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataAll) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal)) continue;
 
+            // find Microdata.EntityName options
             if (!equalNoCase(optIt->first.c_str(), microdataPrefix.c_str(), microdataPrefix.length())) continue;
 
             const string entName = optIt->first.substr(microdataPrefix.length());
 
-            if (isDisabled) throw DbException("Microdata output disabled, invalid model run option: %s", optIt->first.c_str());
+            if (isDisabled) throw ModelException("Microdata output disabled, invalid model run option: %s", optIt->first.c_str());
 
             const EntityDicRow * ent = metaStore->entityDic->findFirst(
                 [&entName](const EntityDicRow & i_row) -> bool { return i_row.entityName == entName; }
@@ -993,18 +1000,37 @@ void MetaLoader::parseEntityOptions(void)
             // check names of attributes
             list<string> aLst = splitCsv(optIt->second);
 
-            vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
-                return
-                    i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isAllowInternal) &&
-                    find_if(
-                        aLst.cbegin(),
-                        aLst.cend(),
-                        [&i_row](const string & i_name) -> bool { return i_row.name == i_name; }
-                ) != aLst.cend();
-                });
-            if (aLst.size() <= 0 || aLst.size() != attrs.size()) throw DbException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
+            // special case: use all entity attributes, e.g.: -Microdata.Person All
+            if (aLst.size() == 1 && aLst.front() == RunOptionsKey::allValue)
+            {
+                vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
+                    return
+                        i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr);
+                    });
+                if (attrs.size() > 0) entityMap.insert_or_assign(entName, attrs);
+            }
+            else    // use only attributes specified in the list: -Microdata.Person age,income
+            {
+                vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
+                    return
+                        i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr) &&
+                        find_if(
+                            aLst.cbegin(),
+                            aLst.cend(),
+                            [&i_row](const string & i_name) -> bool { return i_row.name == i_name; }
+                    ) != aLst.cend();
+                    });
+                if (aLst.size() <= 0 || aLst.size() != attrs.size()) throw DbException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
 
-            entityMap.insert_or_assign(entName, attrs);
+                entityMap.insert_or_assign(entName, attrs);
+            }
         }
+    }
+
+    // if any entity attributes specified then enable writing into database and/or into csv
+    if (entityMap.size() > 0)
+    {
+        baseRunOpts.isDbMicrodata = isToDb;
+        baseRunOpts.isCsvMicrodata = isToCsv;
     }
 }

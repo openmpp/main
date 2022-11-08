@@ -36,8 +36,11 @@ namespace openm
         /** if use sparse and abs(value) <= nullValue then value not stored */
         double nullValue;
 
-        /** if true thew model run is writing microdata entities. */
-        bool isMicrodata;
+        /** if true then model run is storing microdata in database. */
+        bool isDbMicrodata;
+
+        /** if true then model run is writing microdata into CSV. */
+        bool isCsvMicrodata;
 
         /** if positive then used for simulation progress reporting, ex: every 10% */
         int progressPercent;
@@ -51,7 +54,8 @@ namespace openm
             subValueId(0),
             useSparse(false),
             nullValue(FLT_MIN),
-            isMicrodata(false),
+            isDbMicrodata(false),
+            isCsvMicrodata(false),
             progressPercent(0),
             progressStep(0.0)
         { }
@@ -145,6 +149,17 @@ namespace openm
 
         /** set modeling progress count and value */
         virtual void updateProgress(int i_count, double i_value = 0.0) = 0;
+
+        /** return true if model store microdata in database or CSV file. */
+        virtual const bool isMicrodata(void) const = 0;
+
+        /** write microdata into database and/or CSV file.
+        *
+        * @param   i_entityKind     entity kind id: model metadata entity id in database.
+        * @param   i_microdataKey   unique entity instance id.
+        * @param   i_entityThis     entity class instance this pointer.
+        */
+        virtual void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) = 0;
     };
 
     /** model input parameter name, type and size */

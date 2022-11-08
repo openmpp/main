@@ -141,3 +141,24 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
         throw ModelException("Failed to write output table: %s. %s", i_name, ex.what());
     }
 }
+
+/** write microdata into database and/or CSV file.
+*
+* @param   i_entityKind     entity kind id: model metadata entity id in database.
+* @param   i_microdataKey   unique entity instance id.
+* @param   i_entityThis     entity class instance this pointer.
+*/
+void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
+{
+    if (!isMicrodata()) return;     // microdata writing is not enabled
+
+    if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
+
+    try {
+        // TEST ONLY, not an actual code
+        if (metaStore->entityDic->byKey(modelId, i_entityKind) == nullptr) throw new DbException("entity not found in entities dictionary: %d", i_entityKind);
+    }
+    catch (exception & ex) {
+        throw ModelException("Failed to write microdata entity kind: %d microdata key: %llu. %s", i_entityKind, i_microdataKey, ex.what());
+    }
+}

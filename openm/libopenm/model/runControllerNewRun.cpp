@@ -256,9 +256,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     createRunText(nRunId, nSetId, i_dbExec);
 
     // insert run entity metadata and create run entity tables
-    if (modelRunOptions().isMicrodata) {
-        createRunEntity(nRunId, i_dbExec);
-    }
+    if (modelRunOptions().isDbMicrodata) createRunEntity(nRunId, i_dbExec);
 
     // completed: commit the changes
     i_dbExec->commit();
@@ -462,7 +460,7 @@ void RunController::createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) 
 // insert run entity metadata and create run entity tables
 void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
 {
-    if (!modelRunOptions().isMicrodata) return; // exit: microdata entities is not enabled
+    if (!modelRunOptions().isDbMicrodata) return; // exit: disabled microdata writing into database
 
     // use entity generation digest (based on entity digest, attributes name, type digest)
     // to find existing entity generation db table name or create new database table

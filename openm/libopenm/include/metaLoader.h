@@ -112,6 +112,12 @@ namespace openm
         /** include only specified output tables or tables group into run results, ex: -Tables.Retain AgeTable,IncomeGroup */
         static constexpr const char * tableRetain = "Tables.Retain";
 
+        /** write entity attributes into CSV file, ex: -Microdata.ToCsv true */
+        static constexpr const char * microdataToCsv = "Microdata.ToCsv";
+
+        /** store entity attributes in database, ex: -Microdata.ToDb true */
+        static constexpr const char * microdataToDb = "Microdata.ToDb";
+
         /** store all entities and all non-internal attributes, ex: -Microdata.All true */
         static constexpr const char* microdataAll = "Microdata.All";
 
