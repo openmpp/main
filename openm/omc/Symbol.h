@@ -1423,7 +1423,12 @@ public:
     static bool option_microdata_output_warning;
 
     /**
-     * true or false depending on whether microdata is output when entity exits the simulation.
+     * true or false depending on whether microdata is written when entity enters the simulation.
+     */
+    static bool option_microdata_on_enter;
+
+    /**
+     * true or false depending on whether microdata is written when entity exits the simulation.
      */
     static bool option_microdata_on_exit;
 

@@ -225,7 +225,13 @@ void CodeGen::do_preamble()
     }
 
     {
-        t0 += doxygen_short("Output microdata on entity exit.");
+        t0 += doxygen_short("Write microdata on entity enter.");
+        t0 += "constexpr bool om_microdata_on_enter = " + std::to_string(Symbol::option_microdata_on_enter) + ";";
+        t0 += "";
+    }
+
+    {
+        t0 += doxygen_short("Write microdata on entity exit.");
         t0 += "constexpr bool om_microdata_on_exit = " + std::to_string(Symbol::option_microdata_on_exit) + ";";
         t0 += "";
     }
@@ -1101,6 +1107,7 @@ void CodeGen::do_entities()
 	    h += "";
         h += doxygen_short("The name of this entity");
         h += "static constexpr const char * entity_name = \"" + entity->name + "\";";
+
         h += "";
         h += doxygen_short("The kind of this entity");
         h += "static constexpr const int entity_kind = " + std::to_string(entity->pp_entity_id) + ";";
@@ -1110,6 +1117,15 @@ void CodeGen::do_entities()
         h += "const char * om_get_entity_name()";
         h += "{";
         h +=     "return entity_name;";
+        h += "}";
+        h += "";
+
+        h += doxygen_short("Microdata output helper function for this entity");
+        h += "void write_microdata(void) {";
+        h +=     "assert(i_model);";
+        h +=     "uint64_t microdata_key = entity_id; // for testing";
+        h +=     "i_model->writeMicrodata(entity_kind, microdata_key, this);";
+        h +=     "//theTrace->logFormatted(\"DEBUG Microdata entity_kind=%d microdata_key=%d age=%g\", entity_kind, microdata_key, (double)age);";
         h += "}";
         h += "";
 
@@ -1283,6 +1299,9 @@ void CodeGen::do_entities()
         c += "";
     }
     c += "}";
+    c += "";
+    c += "// Definition of BaseEntity::i_model (declaration in Entity.h)";
+    c += "thread_local openm::IModel* BaseEntity::i_model = nullptr;";
     c += "";
 
 
@@ -1583,6 +1602,10 @@ void CodeGen::do_RunModel()
 	c += "// Model simulation";
 	c += "void RunModel(openm::IModel * const i_model)";
     c += "{";
+
+    c += "// provide access to run-time interface for entities";
+    c += "BaseEntity::i_model = i_model;";
+    c += "";
 
     c += "// initialize entity tables";
 	for ( auto table : Symbol::pp_all_entity_tables ) {
@@ -2292,9 +2315,9 @@ void CodeGen::do_EntityNameSize(void)
                 //
                 string tn = dm->cxx_type_of();
                 c += "{" +
-                    to_string(entity->pp_entity_id) + "\", " +
+                    to_string(entity->pp_entity_id) + ", " +
                     "\"" + entity->name + "\", " +
-                    to_string(dm->pp_member_id) + "\", " +
+                    to_string(dm->pp_member_id) + ", " +
                     "\"" + dm->name + "\", " +
                     "typeid(" + tn +"), " +
                     "sizeof(" + tn + "), " +
