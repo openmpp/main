@@ -138,6 +138,15 @@ void ChildController::broadcastRunOptions(void)
         paramIdSubArr.resize(n);
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
     }
+
+    // broadcast number of microdata attributes and attribute indices in entity array
+    n = (int)entityIdxArr.size();
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+    if (n > 0) {
+        entityIdxArr.resize(n);
+        msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, entityIdxArr.data());
+    }
 }
 
 /** receive broadcasted model messages from root process. */
@@ -256,12 +265,12 @@ void ChildController::writeAccumulators(
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-    if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", i_name);
+    if (tblRow == nullptr) throw DbException("output table not found in tables dictionary: %s", i_name);
 
     int accIndex = (int)metaStore->tableAcc->indexOf(
         [&](const TableAccRow & i_row) -> bool { return i_row.modelId == modelId && i_row.tableId == tblRow->tableId; }
     );
-    if (accIndex < 0) throw new DbException("output table accumulators not found: %s", i_name);
+    if (accIndex < 0) throw DbException("output table accumulators not found: %s", i_name);
 
     // send accumulators to root process
     for (auto & ap : io_accValues) {

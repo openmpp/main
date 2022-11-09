@@ -2249,7 +2249,7 @@ void CodeGen::do_EntityNameSize(void)
         c +=   "// list of entity attributes name, type, size and member offset";
         c +=   "const EntityNameSizeItem EntityNameSizeArr[ENTITY_NAME_SIZE_ARR_LEN] =";
         c +=   "{";
-        c +=     "{ \"\", \"\", typeid(int), sizeof(int), 0 }";
+        c +=     "{ 0, \"\", 0, \"\", typeid(int), sizeof(int), 0 }";
         c +=   "};";
         c += "}";
         c += "";
@@ -2288,11 +2288,13 @@ void CodeGen::do_EntityNameSize(void)
         for (const auto dm : entity->pp_agent_data_members) {
             if (dm->is_eligible_microdata()) {
 
-                // { "Person", "age", typeid(int), sizeof(int), reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age)) - om_PersonEntityNullThis }
+                // { 0, "Person", 7, "age", typeid(int), sizeof(int), reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age)) - om_PersonEntityNullThis }
                 //
                 string tn = dm->cxx_type_of();
-                c += "{" \
+                c += "{" +
+                    to_string(entity->pp_entity_id) + "\", " +
                     "\"" + entity->name + "\", " +
+                    to_string(dm->pp_member_id) + "\", " +
                     "\"" + dm->name + "\", " +
                     "typeid(" + tn +"), " +
                     "sizeof(" + tn + "), " +

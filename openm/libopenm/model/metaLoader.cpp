@@ -1028,9 +1028,29 @@ void MetaLoader::parseEntityOptions(void)
     }
 
     // if any entity attributes specified then enable writing into database and/or into csv
+    // find attribute indices in EntityNameSizeArr to use in model child processes
     if (entityMap.size() > 0)
     {
         baseRunOpts.isDbMicrodata = isToDb;
         baseRunOpts.isCsvMicrodata = isToCsv;
+
+        for (auto const & ep : entityMap)
+        {
+            for (const EntityAttrRow & attr : ep.second)
+            {
+                int idx = EntityNameSizeItem::byName(ep.first.c_str(), attr.name.c_str());
+                if (idx < 0) throw ModelException("Microdata attribute not found in entity attributes array: %s %s", ep.first.c_str(), attr.name.c_str());
+
+                entityIdxArr.push_back(idx);
+            }
+        }
+
+        // check for duplicates
+        sort(entityIdxArr.begin(), entityIdxArr.end());
+        for (size_t n = 1; n < entityIdxArr.size(); n++)
+        {
+            if (entityIdxArr[n] == entityIdxArr[n - 1])
+                throw ModelException("Microdata attribute duplicate: %s %s", EntityNameSizeArr[entityIdxArr[n]].entity, EntityNameSizeArr[entityIdxArr[n]].attribute);
+        }
     }
 }

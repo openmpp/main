@@ -200,6 +200,15 @@ void RootController::broadcastRunOptions(void)
     if (n > 0) {
         msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
     }
+
+
+    // broadcast number of microdata attributes and attribute indices in entity array
+    n = (int)entityIdxArr.size();
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+    if (n > 0) {
+        msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, entityIdxArr.data());
+    }
 }
 
 /** broadcast model messages from root to all child processes. */
@@ -619,7 +628,7 @@ bool RootController::receiveSubValues(void)
 
         // accumulator received: write it into database
         const TableDicRow * tblRow = metaStore->tableDic->byKey(modelId, accRecv.tableId);
-        if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary, id: %d", accRecv.tableId);
+        if (tblRow == nullptr) throw DbException("output table not found in tables dictionary, id: %d", accRecv.tableId);
 
         unique_ptr<IOutputTableWriter> writer(IOutputTableWriter::create(
             accRecv.runId,

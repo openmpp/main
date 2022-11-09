@@ -257,7 +257,7 @@ ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFo
     }
 
     if (doFormatValue == nullptr)
-        throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported}
+        throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported
 }
 
 /** convert value to string using snprintf. */

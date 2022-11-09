@@ -268,11 +268,15 @@ namespace openm
             return binary_search(tableIdSuppressArr.cbegin(), tableIdSuppressArr.cend(), i_tableId);
         }
 
+        /** retrun indices of microdata entity attributes in EntityNameSizeArr */
+        const vector<int> & entityIndex(void) const { return entityIdxArr; }
+
     protected:
         int modelId;                                    // model id in database
         unique_ptr<MetaHolder> metaStore;               // metadata tables
         vector<int> paramIdSubArr;                      // ids of parameters where sub-values count same as model run sub-values count
         vector<int> tableIdSuppressArr;                 // id's of tables to suppress from calculation and output
+        vector<int> entityIdxArr;                       // microdata attributes indices in EntityNameSizeArr
         map<string, vector<EntityAttrRow>> entityMap;   // microdata entity name and list of attributes for each entity
 
         /** create metadata loader. */

@@ -282,13 +282,13 @@ void RunController::doWriteAccumulators(
 {
     // find output table db row and accumulators
     const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-    if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", i_name);
+    if (tblRow == nullptr) throw DbException("output table not found in tables dictionary: %s", i_name);
 
     // find index of first accumulator: table rows ordered by model id, table id and accumulators id
     int nAcc = (int)metaStore->tableAcc->indexOf(
         [&](const TableAccRow & i_row) -> bool { return i_row.modelId == modelId && i_row.tableId == tblRow->tableId; }
     );
-    if (nAcc < 0) throw new DbException("output table accumulators not found: %s", i_name);
+    if (nAcc < 0) throw DbException("output table accumulators not found: %s", i_name);
 
     // write accumulators into database
     if (!isSuppressed(tblRow->tableId)) {

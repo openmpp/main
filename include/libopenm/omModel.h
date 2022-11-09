@@ -153,7 +153,7 @@ namespace openm
         /** return true if model store microdata in database or CSV file. */
         virtual const bool isMicrodata(void) const = 0;
 
-        /** write microdata into database and/or CSV file.
+        /** write microdata into the database and/or CSV file.
         *
         * @param   i_entityKind     entity kind id: model metadata entity id in database.
         * @param   i_microdataKey   unique entity instance id.
@@ -184,8 +184,14 @@ namespace openm
     /** model entity attributes name, type, size and member offset */
     struct EntityNameSizeItem
     {
+        /** entity metadata id in database */
+        int entityId;
+
         /** entity name */
         const char * entity;
+
+        /** attribute metadata id in database */
+        int attributeId;
 
         /** attribute name */
         const char * attribute;
@@ -200,7 +206,7 @@ namespace openm
         const ptrdiff_t offset;
 
         /** find index in i_entityArr by entity name and attribute name, return -1 if names not found */
-        static int byName(const char * i_entityName, const char * i_attrName, const EntityNameSizeItem * const i_entityArr, size_t i_entityArrSize);
+        static int byName(const char * i_entityName, const char * i_attrName);
     };
 
     /** size of entity attributes list: all attributes of all entities */

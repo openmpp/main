@@ -6,6 +6,8 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "dbValue.h"
+
 using namespace openm;
 
 /** model exception default error message */
@@ -39,6 +41,30 @@ ModelBase::ModelBase(
 
     for (const TableDicRow & tblRow : tblVec) {
         if (!runCtrl->isSuppressed(tblRow.tableId)) tableDoneVec.push_back(TableDoneItem(tblRow));
+    }
+
+    // if microdata writing enabled then setup attributes list for each entity
+    // and initialize converters from attribute value to string
+    if (isMicrodata())
+    {
+        string dblFmt = metaStore->runOptionTable->strValue(runId, RunOptionsKey::doubleFormat);
+
+        vector<int> idxArr = runCtrl->entityIndex();
+        int eId = -1;
+
+        for (size_t k = 0; k < idxArr.size(); k++)
+        {
+            int n = idxArr[k];
+
+            if (eId != EntityNameSizeArr[n].entityId) {
+                eId = EntityNameSizeArr[n].entityId;
+                entityVec.push_back(EntityItem(eId));
+            }
+            EntityItem & eLast = entityVec.back();
+
+            eLast.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
+            eLast.attrs.back().fmtValue.reset(new ValueFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
+        }
     }
 }
 
@@ -110,7 +136,7 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
 
         // find output table db row
         const TableDicRow * tblRow = metaStore->tableDic->byModelIdName(modelId, i_name);
-        if (tblRow == nullptr) throw new DbException("output table not found in tables dictionary: %s", i_name);
+        if (tblRow == nullptr) throw DbException("output table not found in tables dictionary: %s", i_name);
 
         int tblId = tblRow->tableId;
 
@@ -142,7 +168,7 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
     }
 }
 
-/** write microdata into database and/or CSV file.
+/** write microdata into the database and/or CSV file.
 *
 * @param   i_entityKind     entity kind id: model metadata entity id in database.
 * @param   i_microdataKey   unique entity instance id.
@@ -155,8 +181,23 @@ void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        // TEST ONLY, not an actual code
-        if (metaStore->entityDic->byKey(modelId, i_entityKind) == nullptr) throw new DbException("entity not found in entities dictionary: %d", i_entityKind);
+        // TEST ONLY, work in progress
+        const auto eIt = find_if(
+            entityVec.cbegin(),
+            entityVec.cend(),
+            [i_entityKind](const EntityItem & ei) -> bool { return ei.entityId == i_entityKind; }
+        );
+        if (eIt == entityVec.cend()) throw DbException("entity not found in entities dictionary: %d", i_entityKind);
+
+        string s;
+        for (size_t k = 0; k < eIt->attrs.size(); k++)
+        {
+            const EntityAttrItem & attr = eIt->attrs[k];
+            int idx = attr.idxOf;
+            s += attr.fmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[idx].offset);
+            s += ",";
+        }
+        theTrace->logMsg(s.c_str());
     }
     catch (exception & ex) {
         throw ModelException("Failed to write microdata entity kind: %d microdata key: %llu. %s", i_entityKind, i_microdataKey, ex.what());

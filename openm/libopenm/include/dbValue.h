@@ -82,7 +82,7 @@ namespace openm
     };
 
     /** converter for value column (parameter, accumulator or expression value) to string */
-    class ValueFormatter : public IValueFormatter 
+    class ValueFormatter : public IValueFormatter
     {
     public:
         static const char * nullValueString;    /** NULL value as string */
@@ -111,10 +111,10 @@ namespace openm
         const type_info & typeOf;
 
         /** value buffer to store string of the value */
-        char valueStr[OM_STR_DB_MAX + 1];
+        char valueStr[OM_STR_DB_MAX + 1] = "";
 
         // value to string converter handler
-        function<int (const void * i_value, size_t i_size, char * io_buffer)> doFormatValue;
+        function<int(const void * i_value, size_t i_size, char * io_buffer)> doFormatValue;
 
     private:
         ValueFormatter(const ValueFormatter &) = delete;
