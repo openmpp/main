@@ -8,10 +8,6 @@
 #include "dbValue.h"
 using namespace openm;
 
-const char * ValueFormatter::nullValueString = "null";      /** NULL value as string */
-const char * ValueFormatter::trueValueString = "true";      /** true boolean value as string */
-const char * ValueFormatter::falseValueString = "false";    /** false boolean value as string */
-
 namespace openm
 {
     /** clear value with zeros */
@@ -44,6 +40,28 @@ namespace openm
     {
         double dVal = static_cast<double>(i_value.dlVal);
         return dVal;
+    }
+
+    /** convert bool value to string : return "true" or "false" */
+    int BoolFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+    {
+        bool isVal = *static_cast<const bool *>(i_value);
+        if (isVal) {
+            strncpy(io_buffer, trueValueString, i_size);
+        }
+        else {
+            strncpy(io_buffer, falseValueString, i_size);
+        }
+        io_buffer[i_size - 1] = '\0';
+        return (int)strnlen(io_buffer, i_size);
+    }
+
+    /** convert varchar value to string: make a copy of source string */
+    int StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+    {
+        strncpy(io_buffer, static_cast<const char *>(i_value), i_size);
+        io_buffer[i_size - 1] = '\0';
+        return (int)strnlen(io_buffer, i_size);
     }
 }
 
@@ -135,139 +153,6 @@ void ValueRowAdapter::set(IRowBase * i_row, int i_column, const void * i_value) 
     throw DbException("db column number out of range");
 }
 
-namespace
-{
-    // convert value to string using snprintf: integer and float values.
-    template<typename TValue>
-    int FormatHandler(const void * i_value, size_t i_size, char * io_buffer, const char * i_format)
-    {
-        TValue val = *static_cast<const TValue *>(i_value);
-        return snprintf(io_buffer, i_size, i_format, val);
-    }
-
-    // convert bool value to string: return "true" or "false"
-    int BoolFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
-    {
-        bool isVal = *static_cast<const bool *>(i_value);
-        if (isVal) {
-            strncpy(io_buffer, ValueFormatter::trueValueString, i_size);
-        }
-        else {
-            strncpy(io_buffer, ValueFormatter::falseValueString, i_size);
-        }
-        io_buffer[i_size - 1] = '\0';
-        return (int)strnlen(io_buffer, i_size);
-    }
-
-    // convert varchar value to string: make a copy of source string
-    int StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
-    {
-        strncpy(io_buffer, static_cast<const char *>(i_value), i_size);
-        io_buffer[i_size - 1] = '\0';
-        return (int)strnlen(io_buffer, i_size);
-    }
-}
-
-/** new converter for value column, use std::string type for VARCHAR input parameters */
-ValueFormatter::ValueFormatter(const type_info & i_type, const char * i_doubleFormat) :
-    typeOf(i_type),
-    doFormatValue(nullptr)
-{
-    if (typeOf == typeid(char)) {
-        doFormatValue = bind(FormatHandler<char>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhd");
-    }
-    if (typeOf == typeid(unsigned char)) {
-        doFormatValue = bind(FormatHandler<unsigned char>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhu");
-    }
-    if (typeOf == typeid(short)) {
-        doFormatValue = bind(FormatHandler<short>, placeholders::_1, placeholders::_2, placeholders::_3, "%hd");
-    }
-    if (typeOf == typeid(unsigned short)) {
-        doFormatValue = bind(FormatHandler<unsigned short>, placeholders::_1, placeholders::_2, placeholders::_3, "%hu");
-    }
-    if (typeOf == typeid(int)) {
-        doFormatValue = bind(FormatHandler<int>, placeholders::_1, placeholders::_2, placeholders::_3, "%d");
-    }
-    if (typeOf == typeid(unsigned int)) {
-        doFormatValue = bind(FormatHandler<unsigned int>, placeholders::_1, placeholders::_2, placeholders::_3, "%u");
-    }
-    if (typeOf == typeid(long)) {
-        doFormatValue = bind(FormatHandler<long>, placeholders::_1, placeholders::_2, placeholders::_3, "%ld");
-    }
-    if (typeOf == typeid(unsigned long)) {
-        doFormatValue = bind(FormatHandler<unsigned long>, placeholders::_1, placeholders::_2, placeholders::_3, "%lu");
-    }
-    if (typeOf == typeid(long long)) {
-        doFormatValue = bind(FormatHandler<long long>, placeholders::_1, placeholders::_2, placeholders::_3, "%lld");
-    }
-    if (typeOf == typeid(unsigned long long)) {
-        doFormatValue = bind(FormatHandler<unsigned long long>, placeholders::_1, placeholders::_2, placeholders::_3, "%llu");
-    }
-    if (typeOf == typeid(int8_t)) {
-        doFormatValue = bind(FormatHandler<int8_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhd");
-    }
-    if (typeOf == typeid(uint8_t)) {
-        doFormatValue = bind(FormatHandler<uint8_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hhu");
-    }
-    if (typeOf == typeid(int16_t)) {
-        doFormatValue = bind(FormatHandler<int16_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hd");
-    }
-    if (typeOf == typeid(uint16_t)) {
-        doFormatValue = bind(FormatHandler<uint16_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%hu");
-    }
-    if (typeOf == typeid(int32_t)) {
-        doFormatValue = bind(FormatHandler<int32_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%d");
-    }
-    if (typeOf == typeid(uint32_t)) {
-        doFormatValue = bind(FormatHandler<uint32_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%u");
-    }
-    if (typeOf == typeid(int64_t)) {
-        doFormatValue = bind(FormatHandler<int64_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%lld");
-    }
-    if (typeOf == typeid(uint64_t)) {
-        doFormatValue = bind(FormatHandler<uint64_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%llu");
-    }
-    if (typeOf == typeid(bool)) {
-        doFormatValue = BoolFormatHandler;
-    }
-    if (typeOf == typeid(float)) {
-        doFormatValue = bind(
-            FormatHandler<float>,
-            placeholders::_1, placeholders::_2, placeholders::_3,
-            ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
-        );
-    }
-    if (typeOf == typeid(double)) {
-        doFormatValue = bind(
-            FormatHandler<double>,
-            placeholders::_1, placeholders::_2, placeholders::_3,
-            ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
-        );
-    }
-    if (typeOf == typeid(long double)) {
-        doFormatValue = bind(
-            FormatHandler<long double>,
-            placeholders::_1, placeholders::_2, placeholders::_3,
-            ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
-        );
-    }
-    if (typeOf == typeid(string)) {
-        doFormatValue = StrFormatHandler;
-    }
-
-    if (doFormatValue == nullptr)
-        throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported
-}
-
-/** convert value to string using snprintf. */
-const char * ValueFormatter::formatValue(const void * i_value, bool i_isNull)
-{
-    if (i_isNull) return nullValueString;
-
-    doFormatValue(i_value, sizeof(valueStr), valueStr);
-    return valueStr;
-}
-
 /** new row digester for value table row, use std::string type for VARCHAR input parameters */
 ValueRowDigester::ValueRowDigester(int i_idCount, const type_info & i_type, MD5 * io_md5, const char * i_doubleFormat) :
     idCount(i_idCount),
@@ -299,7 +184,7 @@ void ValueRowDigester::processRow(IRowBaseUptr & i_row)
             md5->add(row->strVal.c_str(), row->strVal.length());
         }
         else {
-            md5->add(ValueFormatter::nullValueString, strnlen(ValueFormatter::nullValueString, OM_STR_DB_MAX));
+            md5->add(nullValueString, strnlen(nullValueString, OM_STR_DB_MAX));
         }
     }
 

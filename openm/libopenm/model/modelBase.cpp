@@ -66,12 +66,12 @@ ModelBase::ModelBase(
                 if (runOpts.isCsvMicrodata && !csvBuf.empty()) {    // write previous entity csv header line
                     theTrace->logMsg(csvBuf.c_str());
                 }
-                csvBuf = "Id";
+                csvBuf = "key";
             }
             EntityItem & eLast = entityVec.back();
 
             eLast.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
-            eLast.attrs.back().fmtValue.reset(new ValueFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
+            eLast.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
 
             if (runOpts.isCsvMicrodata) {   // make csv header line
                 csvBuf += ",";
