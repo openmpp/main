@@ -121,6 +121,7 @@ namespace openm
         };
 
         vector<EntityItem> entityVec;   // microdata entities to write into database or csv
+        string csvBuf;                  // microdata csv write buffer
 
     private:
         ModelBase(const ModelBase & i_model) = delete;

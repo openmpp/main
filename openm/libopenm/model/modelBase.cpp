@@ -47,6 +47,8 @@ ModelBase::ModelBase(
     // and initialize converters from attribute value to string
     if (isMicrodata())
     {
+        if (runOpts.isCsvMicrodata) csvBuf.reserve(OM_STR_DB_MAX);
+
         string dblFmt = metaStore->runOptionTable->strValue(runId, RunOptionsKey::doubleFormat);
 
         vector<int> idxArr = runCtrl->entityIndex();
@@ -57,13 +59,28 @@ ModelBase::ModelBase(
             int n = idxArr[k];
 
             if (eId != EntityNameSizeArr[n].entityId) {
+
                 eId = EntityNameSizeArr[n].entityId;
                 entityVec.push_back(EntityItem(eId));
+
+                if (runOpts.isCsvMicrodata && !csvBuf.empty()) {    // write previous entity csv header line
+                    theTrace->logMsg(csvBuf.c_str());
+                }
+                csvBuf = "Id";
             }
             EntityItem & eLast = entityVec.back();
 
             eLast.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
             eLast.attrs.back().fmtValue.reset(new ValueFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
+
+            if (runOpts.isCsvMicrodata) {   // make csv header line
+                csvBuf += ",";
+                csvBuf += EntityNameSizeArr[n].attribute;
+            }
+        }
+
+        if (runOpts.isCsvMicrodata && !csvBuf.empty()) {   // write last entity csv header line
+            theTrace->logMsg(csvBuf.c_str());
         }
     }
 }
@@ -189,15 +206,20 @@ void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const 
         );
         if (eIt == entityVec.cend()) throw DbException("entity not found in entities dictionary: %d", i_entityKind);
 
-        string s;
-        for (size_t k = 0; k < eIt->attrs.size(); k++)
-        {
-            const EntityAttrItem & attr = eIt->attrs[k];
-            int idx = attr.idxOf;
-            s += attr.fmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[idx].offset);
-            s += ",";
+        // if csv output enabled then write line into csv file
+        if (runOpts.isCsvMicrodata) {
+
+            csvBuf.clear();
+            csvBuf += to_string(i_microdataKey);
+
+            for (size_t k = 0; k < eIt->attrs.size(); k++)
+            {
+                const EntityAttrItem & attr = eIt->attrs[k];
+                csvBuf += ",";
+                csvBuf += attr.fmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset);
+            }
+            theTrace->logMsg(csvBuf.c_str());
         }
-        theTrace->logMsg(s.c_str());
     }
     catch (exception & ex) {
         throw ModelException("Failed to write microdata entity kind: %d microdata key: %llu. %s", i_entityKind, i_microdataKey, ex.what());

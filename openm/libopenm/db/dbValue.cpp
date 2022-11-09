@@ -162,8 +162,7 @@ namespace
     // convert varchar value to string: make a copy of source string
     int StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
     {
-        string sVal = *static_cast<const string *>(i_value);
-        strncpy(io_buffer, sVal.c_str(), i_size);
+        strncpy(io_buffer, static_cast<const char *>(i_value), i_size);
         io_buffer[i_size - 1] = '\0';
         return (int)strnlen(io_buffer, i_size);
     }

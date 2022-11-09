@@ -93,7 +93,7 @@ namespace openm
 
         /** return string value of run option by i_key or default value if not found. */
         string strOption(const char * i_key, const string & i_default = "") const noexcept override {
-            return metaStore->runOptionTable ? metaStore->runOptionTable->strValue(currentRunId(), i_key) : i_default;
+            return metaStore->runOptionTable ? metaStore->runOptionTable->strValue(currentRunId(), i_key, i_default) : i_default;
         }
 
         /** return boolean value of run option by i_key or false if not found or value is not "yes", "1", "true" or empty "" string. */
@@ -108,7 +108,7 @@ namespace openm
         * return -2 otherwise.
         */
         int boolOptionToInt(const char * i_key) const noexcept override {
-            return metaStore->runOptionTable ? metaStore->runOptionTable->boolValueToInt(currentRunId(), i_key) : false;
+            return metaStore->runOptionTable ? metaStore->runOptionTable->boolValueToInt(currentRunId(), i_key) : -1;
         }
 
         /** return int value of run option by i_key or default if not found or can not be converted to int. */
