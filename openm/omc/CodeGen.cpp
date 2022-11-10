@@ -226,13 +226,19 @@ void CodeGen::do_preamble()
 
     {
         t0 += doxygen_short("Write microdata on entity enter.");
-        t0 += "constexpr bool om_microdata_on_enter = " + std::to_string(Symbol::option_microdata_on_enter) + ";";
+        t0 += "constexpr bool om_microdata_write_on_enter = " + std::to_string(Symbol::option_microdata_write_on_enter) + ";";
         t0 += "";
     }
 
     {
         t0 += doxygen_short("Write microdata on entity exit.");
-        t0 += "constexpr bool om_microdata_on_exit = " + std::to_string(Symbol::option_microdata_on_exit) + ";";
+        t0 += "constexpr bool om_microdata_write_on_exit = " + std::to_string(Symbol::option_microdata_write_on_exit) + ";";
+        t0 += "";
+    }
+
+    {
+        t0 += doxygen_short("Write microdata on any event.");
+        t0 += "constexpr bool om_microdata_write_on_event = " + std::to_string(Symbol::option_microdata_write_on_event) + ";";
         t0 += "";
     }
 
@@ -1117,15 +1123,6 @@ void CodeGen::do_entities()
         h += "const char * om_get_entity_name()";
         h += "{";
         h +=     "return entity_name;";
-        h += "}";
-        h += "";
-
-        h += doxygen_short("Microdata output helper function for this entity");
-        h += "void write_microdata(void) {";
-        h +=     "assert(i_model);";
-        h +=     "uint64_t microdata_key = entity_id; // for testing";
-        h +=     "i_model->writeMicrodata(entity_kind, microdata_key, this);";
-        h +=     "//theTrace->logFormatted(\"DEBUG Microdata entity_kind=%d microdata_key=%d age=%g\", entity_kind, microdata_key, (double)age);";
         h += "}";
         h += "";
 

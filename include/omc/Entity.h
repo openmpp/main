@@ -22,6 +22,12 @@
 class BaseEntity
 {
 public:
+
+    /**
+     * Access to run-time interface
+     */
+    static thread_local openm::IModel* i_model;
+
     /**
      * Explicitly declared virtual destructor
      * to allow safe delete of instances of derived classes.
@@ -167,6 +173,11 @@ public:
     virtual void make_zombie() = 0;
 
     /**
+     * Handle microdata output.
+     */
+    virtual void write_microdata() = 0;
+
+    /**
      * Age all entities to the given time.
      * 
      * If originating_entity_id is not supplied, no check for time running backwards is performed
@@ -257,6 +268,9 @@ public:
         om_initialize_events();
         make_active();
         om_active = true;
+        if constexpr (om_microdata_output_capable && om_microdata_write_on_enter) {
+            write_microdata();
+        }
         if constexpr (om_event_trace_capable) {
             extern double GetCaseSeed();
             if (event_trace_on) {
@@ -302,6 +316,9 @@ public:
                     et_msg_type::eExitSimulation
                 );
             }
+        }
+        if constexpr (om_microdata_output_capable && om_microdata_write_on_exit) {
+            write_microdata();
         }
         om_finalize_entity_sets();
         om_finalize_tables();

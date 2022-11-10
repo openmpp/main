@@ -71,6 +71,8 @@ public:
 
     virtual void call_age_entity() = 0;
 
+    virtual void call_write_microdata() = 0;
+
     virtual Time call_get_censor_time() = 0;
 
     virtual void increment_censor_count() = 0;
@@ -359,7 +361,7 @@ public:
         if ( BaseEvent::event_queue->empty() ) {
             return false;
         }
-
+        
         // get the next event from front of the event queue
         auto *evt = *BaseEvent::event_queue->begin();
 
@@ -396,6 +398,10 @@ public:
 
         // implement the event (can mark other events dirty as side-effect)
         evt->call_implement_func();
+
+        if constexpr (om_microdata_output_capable && om_microdata_write_on_event) {
+            evt->call_write_microdata();
+        }
 
         // mark the event as requiring recalculation of occurrence time
         evt->make_dirty();
@@ -660,6 +666,11 @@ public:
     void call_age_entity()
     {
         entity()->age_entity(event_time);
+    }
+
+    void call_write_microdata()
+    {
+        entity()->write_microdata();
     }
 
     Time call_get_censor_time()

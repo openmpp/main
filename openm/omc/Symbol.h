@@ -1425,12 +1425,17 @@ public:
     /**
      * true or false depending on whether microdata is written when entity enters the simulation.
      */
-    static bool option_microdata_on_enter;
+    static bool option_microdata_write_on_enter;
 
     /**
      * true or false depending on whether microdata is written when entity exits the simulation.
      */
-    static bool option_microdata_on_exit;
+    static bool option_microdata_write_on_exit;
+
+    /**
+     * true or false depending on whether microdata is written after any event.
+     */
+    static bool option_microdata_write_on_event;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.

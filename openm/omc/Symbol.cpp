@@ -628,9 +628,11 @@ bool Symbol::option_microdata_output = false;
 
 bool Symbol::option_microdata_output_warning = true;
 
-bool Symbol::option_microdata_on_enter = false;
+bool Symbol::option_microdata_write_on_enter = false;
 
-bool Symbol::option_microdata_on_exit = false;
+bool Symbol::option_microdata_write_on_exit = false;
+
+bool Symbol::option_microdata_write_on_event = false;
 
 bool Symbol::option_all_attributes_visible = false;
 
@@ -2079,29 +2081,43 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "microdata_on_enter";
+        string key = "microdata_write_on_enter";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
             if (value == "on") {
-                option_microdata_on_enter = true;
+                option_microdata_write_on_enter = true;
             }
             else if (value == "off") {
-                option_microdata_on_enter = false;
+                option_microdata_write_on_enter = false;
             }
         }
     }
 
     {
-        string key = "microdata_on_exit";
+        string key = "microdata_write_on_exit";
         auto iter = options.find(key);
         if (iter != options.end()) {
             string value = iter->second;
             if (value == "on") {
-                option_microdata_on_exit = true;
+                option_microdata_write_on_exit = true;
             }
             else if (value == "off") {
-                option_microdata_on_exit = false;
+                option_microdata_write_on_exit = false;
+            }
+        }
+    }
+
+    {
+        string key = "microdata_write_on_event";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_microdata_write_on_event = true;
+            }
+            else if (value == "off") {
+                option_microdata_write_on_event = false;
             }
         }
     }
