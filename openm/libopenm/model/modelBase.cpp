@@ -58,22 +58,24 @@ ModelBase::ModelBase(
         {
             int n = idxArr[k];
 
+            // if this is a new entity id then create new entity item, EntityNameSizeArr must be ordered by entity id
             if (eId != EntityNameSizeArr[n].entityId) {
 
                 eId = EntityNameSizeArr[n].entityId;
-                entityVec.push_back(EntityItem(eId));
+                entityItemMap.insert_or_assign(eId, EntityItem(eId));
 
                 if (runOpts.isCsvMicrodata && !csvBuf.empty()) {    // write previous entity csv header line
                     theTrace->logMsg(csvBuf.c_str());
                 }
                 csvBuf = "key";
             }
-            EntityItem & eLast = entityVec.back();
+            // add attributes to entity and create attribute value to string converter
+            auto eLast = entityItemMap.find(eId);
 
-            eLast.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
-            eLast.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
+            eLast->second.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
+            eLast->second.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
 
-            if (runOpts.isCsvMicrodata) {   // make csv header line
+            if (runOpts.isCsvMicrodata) {   // make csv header line for the entity
                 csvBuf += ",";
                 csvBuf += EntityNameSizeArr[n].attribute;
             }
@@ -198,13 +200,9 @@ void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        // TEST ONLY, work in progress
-        const auto eIt = find_if(
-            entityVec.cbegin(),
-            entityVec.cend(),
-            [i_entityKind](const EntityItem & ei) -> bool { return ei.entityId == i_entityKind; }
-        );
-        if (eIt == entityVec.cend()) throw DbException("entity not found in entities dictionary: %d", i_entityKind);
+        // check if any microdata write required for tis entity kind
+        const auto eIt = entityItemMap.find(i_entityKind);
+        if (eIt == entityItemMap.cend()) return;
 
         // if csv output enabled then write line into csv file
         if (runOpts.isCsvMicrodata) {
@@ -212,9 +210,9 @@ void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const 
             csvBuf.clear();
             csvBuf += to_string(i_microdataKey);
 
-            for (size_t k = 0; k < eIt->attrs.size(); k++)
+            for (size_t k = 0; k < eIt->second.attrs.size(); k++)
             {
-                const EntityAttrItem & attr = eIt->attrs[k];
+                const EntityAttrItem & attr = eIt->second.attrs[k];
                 csvBuf += ",";
                 csvBuf += attr.fmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset);
             }

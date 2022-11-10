@@ -120,8 +120,8 @@ namespace openm
             EntityItem(int i_entityId) :entityId(i_entityId) {}
         };
 
-        vector<EntityItem> entityVec;   // microdata entities to write into database or csv
-        string csvBuf;                  // microdata csv write buffer
+        map<int, EntityItem> entityItemMap; // microdata entities to write into database or csv
+        string csvBuf;                      // microdata csv write buffer
 
     private:
         ModelBase(const ModelBase & i_model) = delete;
