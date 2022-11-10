@@ -225,6 +225,17 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "return age.get();";
     }
 
+    // The write_microdata() member function
+    {
+        auto* fn = new EntityFuncSymbol("write_microdata", this, "void", "");
+        fn->doc_block = doxygen_short("Handle microdata output.");
+        CodeBlock& c = fn->func_body;
+        c += "if constexpr(om_microdata_output_capable) {";
+        c +=     "uint64_t microdata_key = entity_id; // for testing";
+        c +=     "i_model->writeMicrodata(entity_kind, microdata_key, this);";
+        c += "}";
+    }
+
     // The assign_member_offsets member function
     {
         assert(!assign_member_offsets_fn); // initialization guarantee
