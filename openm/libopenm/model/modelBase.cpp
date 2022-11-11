@@ -52,26 +52,28 @@ ModelBase::ModelBase(
         string dblFmt = metaStore->runOptionTable->strValue(runId, RunOptionsKey::doubleFormat);
 
         vector<int> idxArr = runCtrl->entityIndex();
-        int eId = -1;
+        // int eId = -1;
 
         for (size_t k = 0; k < idxArr.size(); k++)
         {
             int n = idxArr[k];
 
-            // if this is a new entity id then create new entity item, EntityNameSizeArr must be ordered by entity id
-            if (eId != EntityNameSizeArr[n].entityId) {
+            // find entity if it is already exist
+            // if entity does not exist then create new entity item
+            int eId = EntityNameSizeArr[n].entityId;
+            auto eLast = entityItemMap.find(eId);
 
-                eId = EntityNameSizeArr[n].entityId;
-                entityItemMap.insert_or_assign(eId, EntityItem(eId));
+            if (eLast == entityItemMap.end()) {
+
+                eLast = entityItemMap.insert({ eId, EntityItem(eId) }).first;
 
                 if (runOpts.isCsvMicrodata && !csvBuf.empty()) {    // write previous entity csv header line
                     theTrace->logMsg(csvBuf.c_str());
                 }
                 csvBuf = "key";
             }
-            // add attributes to entity and create attribute value to string converter
-            auto eLast = entityItemMap.find(eId);
 
+            // add attribute to this entity
             eLast->second.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
             eLast->second.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
 
@@ -200,7 +202,7 @@ void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        // check if any microdata write required for tis entity kind
+        // check if any microdata write required for this entity kind
         const auto eIt = entityItemMap.find(i_entityKind);
         if (eIt == entityItemMap.cend()) return;
 
