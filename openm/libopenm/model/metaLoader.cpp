@@ -995,7 +995,7 @@ void MetaLoader::parseEntityOptions(void)
             const EntityDicRow * ent = metaStore->entityDic->findFirst(
                 [&entName](const EntityDicRow & i_row) -> bool { return i_row.entityName == entName; }
             );
-            if (entName.empty() || ent == nullptr) throw DbException("Microdata name not found: %s", entName.c_str());
+            if (entName.empty() || ent == nullptr) throw ModelException("Microdata name not found: %s", entName.c_str());
 
             // check names of attributes
             list<string> aLst = splitCsv(optIt->second);
@@ -1011,16 +1011,18 @@ void MetaLoader::parseEntityOptions(void)
             }
             else    // use only attributes specified in the list: -Microdata.Person age,income
             {
-                vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
-                    return
-                        i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr) &&
-                        find_if(
-                            aLst.cbegin(),
-                            aLst.cend(),
-                            [&i_row](const string & i_name) -> bool { return i_row.name == i_name; }
-                    ) != aLst.cend();
-                    });
-                if (aLst.size() <= 0 || aLst.size() != attrs.size()) throw DbException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
+                vector<EntityAttrRow> attrs;
+                for (const string & name : aLst)
+                {
+                    const EntityAttrRow * aRow = metaStore->entityAttr->findFirst(
+                        [&](const EntityAttrRow & i_row) -> bool {
+                            return i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr) && i_row.name == name;
+                        }
+                    );
+                    if (aRow == nullptr) throw ModelException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
+
+                    attrs.push_back(*aRow);
+                }
 
                 entityMap.insert_or_assign(entName, attrs);
             }
@@ -1046,11 +1048,13 @@ void MetaLoader::parseEntityOptions(void)
         }
 
         // check for duplicates
-        sort(entityIdxArr.begin(), entityIdxArr.end());
-        for (size_t n = 1; n < entityIdxArr.size(); n++)
+        vector<int> cv(entityIdxArr.cbegin(), entityIdxArr.cend());
+        std::sort(cv.begin(), cv.end());
+
+        for (size_t n = 1; n < cv.size(); n++)
         {
-            if (entityIdxArr[n] == entityIdxArr[n - 1])
-                throw ModelException("Microdata attribute duplicate: %s %s", EntityNameSizeArr[entityIdxArr[n]].entity, EntityNameSizeArr[entityIdxArr[n]].attribute);
+            if (cv[n] == cv[n - 1])
+                throw ModelException("Microdata attribute duplicate: %s %s", EntityNameSizeArr[cv[n]].entity, EntityNameSizeArr[cv[n]].attribute);
         }
     }
 }
