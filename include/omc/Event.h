@@ -857,6 +857,11 @@ public:
         entity()->age_entity(event_time);
     }
 
+    void call_write_microdata()
+    {
+        entity()->write_microdata();
+    }
+
     Time call_get_censor_time()
     {
         return entity()->get_censor_time();
