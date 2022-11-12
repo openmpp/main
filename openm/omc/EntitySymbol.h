@@ -60,6 +60,8 @@ public:
         , start_trace_fn(nullptr)
         , ss_time_fn(nullptr)
         , ss_implement_fn(nullptr)
+        , get_entity_key_fn(nullptr)
+        , get_microdata_key_fn(nullptr)
         , ss_event(nullptr)
         , next_ss_id(0)
         , pp_entity_id(-1)
@@ -368,6 +370,16 @@ public:
      * The implement function of the self-scheduling event.
      */
     EntityFuncSymbol *ss_implement_fn;
+
+    /**
+     * The get_entity_ley function.
+     */
+    EntityFuncSymbol* get_entity_key_fn;
+
+    /**
+     * The get_microdata_key() function.
+     */
+    EntityFuncSymbol* get_microdata_key_fn;
 
     /**
      * The self-scheduling event.

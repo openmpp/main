@@ -231,9 +231,31 @@ void EntitySymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Handle microdata output.");
         CodeBlock& c = fn->func_body;
         c += "if constexpr(om_microdata_output_capable) {";
-        c +=     "uint64_t microdata_key = entity_id; // for testing";
+        c +=     "uint64_t microdata_key = get_microdata_key();";
         c +=     "i_model->writeMicrodata(entity_kind, microdata_key, this);";
         c += "}";
+    }
+
+    // The get_entity_key() member function
+    {
+        auto* fn = new EntityFuncSymbol("get_entity_key", this, "uint64_t", "");
+        fn->doc_block = doxygen_short("Get entity key.");
+        CodeBlock& c = fn->func_body;
+        c += "// The following default function body was generated because none was supplied in model code.";
+        c += "uint64_t microdata_key = entity_id;";
+        c += "return microdata_key;";
+        get_entity_key_fn = fn;
+    }
+
+    // The get_microdata_key() member function
+    {
+        auto* fn = new EntityFuncSymbol("get_microdata_key", this, "uint64_t", "");
+        fn->doc_block = doxygen_short("Get microdata key.");
+        CodeBlock& c = fn->func_body;
+        c += "// The following default function body was generated because none was supplied in model code.";
+        c += "uint64_t microdata_key = get_entity_key();";
+        c += "return microdata_key;";
+        get_microdata_key_fn = fn;
     }
 
     // The assign_member_offsets member function
