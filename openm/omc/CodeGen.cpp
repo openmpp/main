@@ -696,6 +696,10 @@ void CodeGen::do_RunInit()
         c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with output_microdata = on\"));";
         c += "";
     }
+    if (Symbol::option_microdata_output && Symbol::option_weighted_tabulation) {
+        c += "theLog->logFormatted(LT(\"Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations\"));";
+        c += "";
+    }
     if (Symbol::option_event_trace && Symbol::option_event_trace_warning) {
         c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with event_trace = on\"));";
         c += "";
