@@ -125,6 +125,7 @@ void ChildController::broadcastRunOptions(void)
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.nullValue);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isDbMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isCsvMicrodata);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isTraceMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(int), &opts.progressPercent);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.progressStep);
 
@@ -193,6 +194,8 @@ int ChildController::nextRun(void)
 
     theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit, done
     isFinalExchange = RunState::isFinal(mStatus);
+
+    if (!isFinalExchange && runId > 0) openCsvMicrodata(runId); // create microdata CSV files for new model run
 
     return runId;
 }

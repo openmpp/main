@@ -166,9 +166,9 @@ int SingleController::nextRun(void)
     // read new run options
     metaStore->runOptionTable.reset(IRunOptionTable::create(dbExec, runId));
 
-    // reset write status for sub-values
-    isSubDone.reset();
+    isSubDone.reset();  // reset write status for sub-values
 
+    openCsvMicrodata(runId);  // create microdata CSV files for new model run
     return runId;
 }
 

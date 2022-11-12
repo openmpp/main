@@ -190,6 +190,7 @@ void RootController::broadcastRunOptions(void)
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.nullValue);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isDbMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isCsvMicrodata);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isTraceMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(int), &opts.progressPercent);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.progressStep);
 
@@ -317,6 +318,7 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     // if this is a root modeling group then store run options in root metadata holder
     if (i_runGroup.groupOne == rootRunGroup().groupOne) metaStore->runOptionTable.swap(roTable);
 
+    openCsvMicrodata(nRunId);   // create microdata CSV files for new model run
     return nRunId;
 }
 

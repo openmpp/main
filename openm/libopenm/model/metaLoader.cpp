@@ -27,8 +27,10 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::profile,
     RunOptionsKey::tableSuppress,
     RunOptionsKey::tableRetain,
-    RunOptionsKey::microdataToCsv,
     RunOptionsKey::microdataToDb,
+    RunOptionsKey::microdataToCsv,
+    RunOptionsKey::microdataToTrace,
+    RunOptionsKey::microdataCsvDir,
     RunOptionsKey::microdataAll,
     RunOptionsKey::microdataInternal,
     RunOptionsKey::profile,
@@ -947,6 +949,7 @@ void MetaLoader::parseEntityOptions(void)
 {
     bool isToDb = argOpts().boolOption(RunOptionsKey::microdataToDb);       // if true then store microdata in database
     bool isToCsv = argOpts().boolOption(RunOptionsKey::microdataToCsv);     // if true then write microdata into csv
+    bool isToTrace = argOpts().boolOption(RunOptionsKey::microdataToTrace); // if true then write microdata into trace output
     bool isOmAttr = argOpts().boolOption(RunOptionsKey::microdataInternal); // if true then allow internal attributes
 
     // microdata disabled: only one row in EntityNameSizeArr with empty "" entitity name and attribute name
@@ -957,6 +960,15 @@ void MetaLoader::parseEntityOptions(void)
 
     if (isDisabled && isToDb) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToDb);
     if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);
+    if (isDisabled && isToTrace) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToTrace);
+
+    // make list of microdata entity names and attributes
+    struct EntAttrs
+    {
+        string name;                    // entity name
+        vector<EntityAttrRow> attrs;    // list of attributes
+    };
+    vector<EntAttrs> entVec;
 
     // if all entities and all attributes included
     if (argOpts().boolOption(RunOptionsKey::microdataAll)) {
@@ -970,7 +982,7 @@ void MetaLoader::parseEntityOptions(void)
                     i_row.modelId == modelId && i_row.entityId == ent.entityId && (!i_row.isInternal || isOmAttr);
                 });
 
-            if (attrs.size() > 0) entityMap.insert_or_assign(ent.entityName, attrs);
+            if (attrs.size() > 0) entVec.push_back({ ent.entityName, attrs });
         }
     }
     else { // not all entities are included: get attributes for each entity
@@ -979,9 +991,11 @@ void MetaLoader::parseEntityOptions(void)
 
         for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
-            // skip Microdata.toCsv, Microdata.toDb, Microdata.All, Microdata.AllowInternal
-            if (equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToCsv) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToDb) ||
+            // skip common microdata options, for example: -Microdata.ToCsv
+            if (equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToDb) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToCsv) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToTrace) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataCsvDir) ||
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataAll) ||
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal)) continue;
 
@@ -1007,7 +1021,7 @@ void MetaLoader::parseEntityOptions(void)
                     return
                         i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr);
                     });
-                if (attrs.size() > 0) entityMap.insert_or_assign(entName, attrs);
+                if (attrs.size() > 0) entVec.push_back({ entName, attrs });
             }
             else    // use only attributes specified in the list: -Microdata.Person age,income
             {
@@ -1024,24 +1038,25 @@ void MetaLoader::parseEntityOptions(void)
                     attrs.push_back(*aRow);
                 }
 
-                entityMap.insert_or_assign(entName, attrs);
+                entVec.push_back({ entName, attrs });
             }
         }
     }
 
     // if any entity attributes specified then enable writing into database and/or into csv
     // find attribute indices in EntityNameSizeArr to use in model child processes
-    if (entityMap.size() > 0)
+    if (entVec.size() > 0)
     {
         baseRunOpts.isDbMicrodata = isToDb;
         baseRunOpts.isCsvMicrodata = isToCsv;
+        baseRunOpts.isTraceMicrodata = isToTrace;
 
-        for (auto const & ep : entityMap)
+        for (auto const & ea : entVec)
         {
-            for (const EntityAttrRow & attr : ep.second)
+            for (const EntityAttrRow & attr : ea.attrs)
             {
-                int idx = EntityNameSizeItem::byName(ep.first.c_str(), attr.name.c_str());
-                if (idx < 0) throw ModelException("Microdata attribute not found in entity attributes array: %s %s", ep.first.c_str(), attr.name.c_str());
+                int idx = EntityNameSizeItem::byName(ea.name.c_str(), attr.name.c_str());
+                if (idx < 0) throw ModelException("Microdata attribute not found in entity attributes array: %s %s", ea.name.c_str(), attr.name.c_str());
 
                 entityIdxArr.push_back(idx);
             }

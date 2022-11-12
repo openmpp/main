@@ -43,49 +43,15 @@ ModelBase::ModelBase(
         if (!runCtrl->isSuppressed(tblRow.tableId)) tableDoneVec.push_back(TableDoneItem(tblRow));
     }
 
-    // if microdata writing enabled then setup attributes list for each entity
-    // and initialize converters from attribute value to string
-    if (isMicrodata())
+    // trace microdata writing enabled then write csv header for each entity and allocate csv buffer
+    if (runOpts.isTraceMicrodata)
     {
-        if (runOpts.isCsvMicrodata) csvBuf.reserve(OM_STR_DB_MAX);
-
-        string dblFmt = metaStore->runOptionTable->strValue(runId, RunOptionsKey::doubleFormat);
-
-        vector<int> idxArr = runCtrl->entityIndex();
-        // int eId = -1;
-
-        for (size_t k = 0; k < idxArr.size(); k++)
-        {
-            int n = idxArr[k];
-
-            // find entity if it is already exist
-            // if entity does not exist then create new entity item
-            int eId = EntityNameSizeArr[n].entityId;
-            auto eLast = entityItemMap.find(eId);
-
-            if (eLast == entityItemMap.end()) {
-
-                eLast = entityItemMap.insert({ eId, EntityItem(eId) }).first;
-
-                if (runOpts.isCsvMicrodata && !csvBuf.empty()) {    // write previous entity csv header line
-                    theTrace->logMsg(csvBuf.c_str());
-                }
-                csvBuf = "key";
-            }
-
-            // add attribute to this entity
-            eLast->second.attrs.push_back(EntityAttrItem(EntityNameSizeArr[n].attributeId, n));
-            eLast->second.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[n].typeOf, dblFmt.c_str()));
-
-            if (runOpts.isCsvMicrodata) {   // make csv header line for the entity
-                csvBuf += ",";
-                csvBuf += EntityNameSizeArr[n].attribute;
-            }
+        for (const auto & eRow : metaStore->entityDic->rows())
+        { 
+            csvBuf = runCtrl->getHeaderCsvMicrodata(eRow.entityId);
+            if (!csvBuf.empty()) theTrace->logMsg(csvBuf.c_str());
         }
-
-        if (runOpts.isCsvMicrodata && !csvBuf.empty()) {   // write last entity csv header line
-            theTrace->logMsg(csvBuf.c_str());
-        }
+        csvBuf.reserve(OM_STR_DB_MAX);
     }
 }
 
@@ -202,22 +168,10 @@ void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        // check if any microdata write required for this entity kind
-        const auto eIt = entityItemMap.find(i_entityKind);
-        if (eIt == entityItemMap.cend()) return;
+        auto [isFound, entItem] = runCtrl->writeMicrodata(i_entityKind, i_microdataKey, i_entityThis);
 
-        // if csv output enabled then write line into csv file
-        if (runOpts.isCsvMicrodata) {
-
-            csvBuf.clear();
-            csvBuf += to_string(i_microdataKey);
-
-            for (size_t k = 0; k < eIt->second.attrs.size(); k++)
-            {
-                const EntityAttrItem & attr = eIt->second.attrs[k];
-                csvBuf += ",";
-                csvBuf += attr.fmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset);
-            }
+        if (isFound && runOpts.isTraceMicrodata) {
+            RunController::makeCsvLineMicrodata(entItem, i_microdataKey, i_entityThis, csvBuf);
             theTrace->logMsg(csvBuf.c_str());
         }
     }

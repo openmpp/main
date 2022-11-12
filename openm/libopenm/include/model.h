@@ -67,17 +67,18 @@ namespace openm
         void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->runStateStore().updateProgress(runId, runOpts.subValueId, i_count, i_value); }
 
         /** return true if model store microdata in database or CSV file. */
-        const bool isMicrodata(void) const override { return runOpts.isDbMicrodata || runOpts.isCsvMicrodata; };
+        const bool isMicrodata(void) const override { return runOpts.isDbMicrodata || runOpts.isCsvMicrodata || runOpts.isTraceMicrodata; };
 
         /** write microdata into the database and/or CSV file. */
         void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) override;
 
     private:
-        int modelId;                        // model id in database
-        int runId;                          // model run id
-        RunController * runCtrl;            // run controller interface
-        const MetaHolder * metaStore;       // metadata tables
-        RunOptions runOpts;                 // model run options
+        int modelId;                    // model id in database
+        int runId;                      // model run id
+        RunController * runCtrl;        // run controller interface
+        const MetaHolder * metaStore;   // metadata tables
+        RunOptions runOpts;             // model run options
+        string csvBuf;                  // microdata csv write buffer
 
         ModelBase(
             int i_modelId,
@@ -97,31 +98,7 @@ namespace openm
             TableDoneItem(const TableDicRow & i_tableRow) : tableId(i_tableRow.tableId), isDone(false)
             { }
         };
-
         vector<TableDoneItem> tableDoneVec;     // status for all output tables of sub-value
-
-        // entity attribute item to write microdata into database or csv file
-        struct EntityAttrItem
-        {
-            int attrId;                     // entity attribute metadata id
-            int idxOf;                      // attribute index in EntityNameSizeArr
-            unique_ptr<IValueFormatter> fmtValue;   // attribute value to string converter for csv output
-
-            EntityAttrItem(int i_attrId, int i_index) : attrId(i_attrId), idxOf(i_index) {}
-        };
-
-        // entity item to write microdata into database or csv file
-        struct EntityItem
-        {
-            int entityId;                   // entity metadata id
-            string filePath;                // if not empty then microdata csv file path
-            vector<EntityAttrItem> attrs;   // entity attributes
-
-            EntityItem(int i_entityId) :entityId(i_entityId) {}
-        };
-
-        map<int, EntityItem> entityItemMap; // microdata entities to write into database or csv
-        string csvBuf;                      // microdata csv write buffer
 
     private:
         ModelBase(const ModelBase & i_model) = delete;

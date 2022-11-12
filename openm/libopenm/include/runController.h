@@ -8,6 +8,7 @@
 #ifndef RUN_CTRL_H
 #define RUN_CTRL_H
 
+#include <fstream>
 #include "metaLoader.h"
 
 using namespace std;
@@ -26,6 +27,9 @@ namespace openm
 
         /** number of modeling processes: MPI world size */
         int processCount;
+
+        /** modeling processes rank: MPI rank */
+        int processRank;
 
         /** create run controller, load metadata tables and broadcast it to all modeling processes. */
         static RunController * create(const ArgReader & i_argOpts, bool i_isMpiUsed, IDbExec * i_dbExec, IMsgExec * i_msgExec);
@@ -129,12 +133,47 @@ namespace openm
         /** return a copy of all run options as [key, value] pairs, ordered by key. */
         vector<pair<string, string>> allOptions(void) const noexcept override;
 
+        /** entity attribute item to write microdata into database or csv file */
+        struct EntityAttrItem
+        {
+            int attrId;                             /** entity attribute metadata id */
+            int idxOf;                              /** attribute index in EntityNameSizeArr */
+            unique_ptr<IValueFormatter> fmtValue;   /** attribute value to string converter for csv output */
+
+            EntityAttrItem(int i_attrId, int i_index) : attrId(i_attrId), idxOf(i_index) {}
+        };
+
+        /** entity item to write microdata into database or csv file */
+        struct EntityItem
+        {
+            int entityId;                   /** entity metadata id */
+            vector<EntityAttrItem> attrs;   /** entity attributes */
+            string csvHdr;                  /** microdata csv header line */
+
+            EntityItem(int i_entityId) : entityId(i_entityId) {}
+        };
+
+        /** write microdata into the database and/or CSV file.
+        *
+        * @param   i_entityKind     entity kind id: model metadata entity id in database.
+        * @param   i_microdataKey   unique entity instance id.
+        * @param   i_entityThis     entity class instance this pointer.
+        */
+        tuple<bool, const EntityItem &> writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis);
+
+        /** return microdata entity csv file header */
+        const string getHeaderCsvMicrodata(int i_entityKind) const;
+
+        /** make attributes csv line by converting attribute values into string */
+        static void makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line);
+
     protected:
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
             subFirstId(0),
             selfSubCount(0),
-            processCount(1)
+            processCount(1),
+            processRank(0)
         { }
 
         /** get number of sub-values, read and broadcast metadata. */
@@ -177,6 +216,9 @@ namespace openm
         /** merge updated sub-values run statue into database */
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
+        /** create microdata CSV files for new model run. */
+        void openCsvMicrodata(int i_runId);
+
     private:
         /** sub-value run states for all modeling threads */
         RunStateHolder runStateHolder;
@@ -196,7 +238,7 @@ namespace openm
         // cretate run description and notes using run options or by copy it from workset text
         void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
-        // insert run entity metadata and create run entity tables
+        // insert run entity metadata and create run entity database tables
         void createRunEntity(int i_runId, IDbExec* i_dbExec);
 
         // calculate entity generation digest: based on entity digest, attributes id, name, type digest
@@ -240,6 +282,33 @@ namespace openm
             const ParamSubOpts & i_subOpts,
             IDbExec * i_dbExec
         ) const;
+
+
+        map<int, EntityItem> entityMap;    // microdata entities to write into database or csv
+
+        struct EntityCsvItem
+        {
+            int entityId;               // entity metadata id
+            string filePath;            // if not empty then microdata csv file path
+            //
+            recursive_mutex theMutex;   // mutex to lock for csv write operations
+            bool isReady;               // if true then csv output file open and ready to use
+            string csvBuf;              // microdata csv write buffer
+            ofstream csvSt;             // csv output stream
+        };
+        map<int, EntityCsvItem> entityCsvMap;   // microdata entities to write into database or csv
+
+        // initialize microdata entity writing
+        void initMicrodata(void);
+
+        /** close microdata CSV files after model run completed. */
+        void closeCsvMicrodata(void) noexcept;
+
+        /** write microdata into CSV files. */
+        void doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis);
+
+        /** write line into microdata CSV file, close file and raise exception on error. */
+        void doCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line);
 
     private:
         RunController(const RunController & i_runCtrl) = delete;

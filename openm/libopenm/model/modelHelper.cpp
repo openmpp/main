@@ -16,7 +16,7 @@ int EntityNameSizeItem::byName(const char * i_entityName, const char * i_attrNam
 {
     if (ENTITY_NAME_SIZE_ARR_LEN <= 0) return -1;
 
-    for (int k = 0; k < ENTITY_NAME_SIZE_ARR_LEN; k++)
+    for (int k = 0; k < (int)ENTITY_NAME_SIZE_ARR_LEN; k++)
     {
         if (!strncmp(EntityNameSizeArr[k].entity, i_entityName, OM_STRLEN_MAX) &&
             !strncmp(EntityNameSizeArr[k].attribute, i_attrName, OM_STRLEN_MAX))

@@ -118,7 +118,8 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
 
     // if this is a part of modeling task then find next input set from that task
     int nSetId = 0;
-    string dtStr = makeDateTime(chrono::system_clock::now());
+    string runTs = makeTimeStamp(chrono::system_clock::now());
+    string dtStr = toDateTimeString(runTs);
 
     if (i_taskRunId > 0) {
         i_dbExec->update(
@@ -208,6 +209,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     }
     setArgOpt(RunOptionsKey::runId, to_string(nRunId));
     setArgOpt(RunOptionsKey::runName, rn);
+    setArgOpt(RunOptionsKey::runCreated, runTs);
 
     // calculate run metadata digest and create new run entry
     RunLstRow rr(nRunId);
@@ -457,20 +459,64 @@ void RunController::createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) 
     }
 }
 
-// insert run entity metadata and create run entity tables
+// insert run entity metadata and create run entity database tables
 void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
 {
-    if (!modelRunOptions().isDbMicrodata) return; // exit: disabled microdata writing into database
+    if (!modelRunOptions().isDbMicrodata) return;   // exit: disabled microdata writing into database
+
+    // make list of microdata entity id's and attributes
+    struct EntAttrs
+    {
+        int entityId;           // entity id
+        vector<int> attrIds;    // ordered list of entity attribute id's
+    };
+    vector<EntAttrs> entVec;
+
+    {
+        auto eIt = entVec.end();
+
+        for (int idx : entityIdxArr)
+        {
+            int eId = EntityNameSizeArr[idx].entityId;
+
+            eIt = find_if(
+                entVec.begin(),
+                entVec.end(),
+                [eId](EntAttrs & ea) -> bool { return ea.entityId = eId; }
+            );
+            if (eIt == entVec.end()) {  // new entity
+
+                // sort attribut id's of previos entity
+                if (entVec.size() > 0) {
+                    EntAttrs & eLast = entVec.back();
+                    std::sort(eLast.attrIds.begin(), eLast.attrIds.end());
+                }
+
+                // add new entity
+                eIt = entVec.emplace(entVec.end(), EntAttrs{ eId, {} });
+            }
+        }
+    }
 
     // use entity generation digest (based on entity digest, attributes name, type digest)
     // to find existing entity generation db table name or create new database table
-    for (const auto & em : entityMap)
+    for (const auto & ea : entVec)
     {
-        // calculate entity table digest (generation digest)
-        const EntityDicRow * ent = metaStore->entityDic->byModelIdName(modelId, em.first);
-        if (ent == nullptr) throw DbException("Microdata entity name not found: %s", em.first.c_str());
+        // find entity and attributes metadata
+        const EntityDicRow * ent = metaStore->entityDic->byKey(modelId, ea.entityId);
+        if (ent == nullptr) throw DbException("Microdata entity id not found: %d", ea.entityId);
 
-        const string entMd5 = makeEntityGenDigest(ent, em.second);
+        vector<EntityAttrRow> attrs;
+        for (int aId : ea.attrIds)
+        { 
+            const EntityAttrRow * a = metaStore->entityAttr->byKey(modelId, ea.entityId, aId);
+            if (a == nullptr) throw DbException("Microdata attribute not found, entity: %s attribute id: %d", ent->entityName.c_str(), aId);
+
+            attrs.push_back(*a);
+        }
+
+        // calculate entity table digest (generation digest)
+        const string entMd5 = makeEntityGenDigest(ent, attrs);
         string dbTableName;
 
         // check if entity generation digest already exists
@@ -511,7 +557,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
                 toQuoted(dbTableName) + ", " +
                 toQuoted(entMd5) + ")");
 
-            for (const EntityAttrRow & at : em.second)
+            for (const EntityAttrRow & at : attrs)
             {
                 i_dbExec->update(
                     "INSERT INTO entity_gen_attr (entity_gen_hid, attr_id, entity_hid)" \
@@ -538,7 +584,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
                 "run_id INT NOT NULL, " \
                 " entity_key " + IDbExec::bigIntTypeName(prv) + " NOT NULL,";
 
-            for (const EntityAttrRow & at : em.second)
+            for (const EntityAttrRow & at : attrs)
             {
                 const TypeDicRow * t = metaStore->typeDic->byKey(modelId, at.typeId);
                 if (t == nullptr) throw DbException("type not found for entity attribute %s %s", ent->entityName.c_str(), at.name.c_str());

@@ -5,12 +5,14 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include <filesystem>
 #include "model.h"
 #include "modelHelper.h"
 #include "runControllerImpl.h"
 
 using namespace std;
 using namespace openm;
+namespace fs = std::filesystem;
 
 // model run basic support public interface
 IRunOptions::~IRunOptions() noexcept { }
@@ -56,6 +58,7 @@ RunController * RunController::create(const ArgReader & i_argOpts, bool i_isMpiU
 
     // load metadata tables and broadcast it to all modeling processes
     ctrl->init();
+    ctrl->initMicrodata();
 
     return ctrl.release();
 }
@@ -116,6 +119,9 @@ void RunController::doShutdownOnExit(ModelStatus i_status, int i_runId, int i_ta
         }
         i_dbExec->commit();
     }
+
+    // close microdata csv files
+    closeCsvMicrodata();
 }
 
 /** implementation model process shutdown: update run state and cleanup resources. */
@@ -191,6 +197,9 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
         }
         i_dbExec->commit();
     }
+
+    // close microdata csv files
+    closeCsvMicrodata();
 
     if (isRunError) return;     // run completed with errors, exit without expressions calculation
 
@@ -421,3 +430,177 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
 
     i_dbExec->commit();
 }
+
+// initialize microdata entity writing
+void RunController::initMicrodata(void)
+{
+    bool isAnyCsv = modelRunOptions().isCsvMicrodata || modelRunOptions().isTraceMicrodata;
+    if (!isAnyCsv && !modelRunOptions().isDbMicrodata) return;
+
+    // setup attributes list for each entity and initialize converters from attribute value to string
+    string dblFmt = argOpts().strOption(RunOptionsKey::doubleFormat);
+
+    for (int idx : entityIdxArr)
+    {
+        // find entity if it is already exist
+        // if entity does not exist then create new entity item
+        int eId = EntityNameSizeArr[idx].entityId;
+        auto eLast = entityMap.find(eId);
+
+        if (eLast == entityMap.end()) {
+            eLast = entityMap.insert({ eId, EntityItem(eId) }).first;
+            if (isAnyCsv) {
+                eLast->second.csvHdr = "key";
+            }
+        }
+
+        // add attribute to this entity
+        eLast->second.attrs.push_back(EntityAttrItem(EntityNameSizeArr[idx].attributeId, idx));
+        eLast->second.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[idx].typeOf, dblFmt.c_str()));
+
+        if (isAnyCsv) {   // make csv header line for the entity
+            eLast->second.csvHdr += ",";
+            eLast->second.csvHdr += EntityNameSizeArr[idx].attribute;
+        }
+    }
+}
+
+/** write microdata into the database and/or CSV file. */
+tuple<bool, const RunController::EntityItem &> RunController::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
+{
+    if (!modelRunOptions().isDbMicrodata && !modelRunOptions().isCsvMicrodata && !modelRunOptions().isTraceMicrodata) {
+        return { false, EntityItem(i_entityKind) };     // microdata writing is not enabled
+    }
+
+    // check if any microdata write required for this entity kind
+    const auto eIt = entityMap.find(i_entityKind);
+    if (eIt == entityMap.cend()) return { false, EntityItem(i_entityKind) };
+
+    if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
+
+    if (modelRunOptions().isCsvMicrodata) doCsvMicrodata(eIt->second, i_microdataKey, i_entityThis);
+
+    return { true, eIt->second };
+}
+
+/** return microdata entity csv file header */
+const string RunController::getHeaderCsvMicrodata(int i_entityKind) const
+{
+    const auto eIt = entityMap.find(i_entityKind);
+    return (eIt != entityMap.cend()) ? eIt->second.csvHdr : "";
+}
+
+/** create microdata CSV files for new model run. */
+void RunController::openCsvMicrodata(int i_runId)
+{
+    if (!modelRunOptions().isCsvMicrodata) return;   // exit: microdata csv is not enabled
+
+    // make file stamp for csv file names: ModelName.Person.2018_11_10_22_47_46_076.0012.microdata.csv
+    string stamp;
+
+    if (metaStore->runOptionTable->isExist(i_runId, RunOptionsKey::taskRunId)) {
+        stamp = "." + metaStore->runOptionTable->strValue(i_runId, RunOptionsKey::runCreated);
+    }
+    if (processCount > 1) {
+        size_t n = to_string(processCount).length();
+        string sr = string(n, '0') + to_string(processRank);
+        stamp += (stamp.empty() ? "." : "-") + sr.substr(sr.length() - n);
+    }
+
+    string dir = metaStore->runOptionTable->strValue(i_runId, RunOptionsKey::microdataCsvDir);
+    
+    // for each entity create new microdata csv file and write csv header line
+    entityCsvMap.clear();
+
+    for (const auto & entIt : entityMap)
+    {
+        int eId = entIt.first;
+        const auto eRow = metaStore->entityDic->byKey(modelId, eId);
+        if (eRow == nullptr) throw ModelException("Microdata entity not found, entity kind: %d", eId);
+
+        fs::path p(dir);
+        string fp = p.append(OM_MODEL_NAME).concat("." + eRow->entityName + stamp + ".microdata.csv").generic_string();
+
+        entityCsvMap[eId].entityId = eId;
+        entityCsvMap[eId].filePath = fp;
+        entityCsvMap[eId].csvBuf.reserve(OM_STR_DB_MAX);
+
+        entityCsvMap[eId].csvSt.open(fp, ios::out | ios::trunc);
+        entityCsvMap[eId].isReady = !entityCsvMap[eId].csvSt.fail();
+        if (!entityCsvMap[eId].isReady) 
+            throw HelperException("microdata CSV file open error, entity: %s %s", eRow->entityName.c_str(), fp.c_str());
+
+        doCsvLineMicrodata(entityCsvMap[eId], entIt.second.csvHdr);   // write micordata line into csv
+    }
+}
+
+/** close microdata CSV files after model run completed. */
+void RunController::closeCsvMicrodata(void) noexcept
+{
+    try {
+        for (auto & e : entityCsvMap)
+        {
+            {
+                lock_guard<recursive_mutex> lck(e.second.theMutex); // lock the log 
+
+                e.second.isReady = false;
+                try {
+                    e.second.csvSt.close();
+                }
+                catch (...) {}
+            }
+        }
+        entityCsvMap.clear();
+    }
+    catch (...) {
+    }
+}
+
+/** write microdata into CSV file. */
+void RunController::doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis)
+{
+    auto ecIt = entityCsvMap.find(i_entityItem.entityId);
+    if (ecIt == entityCsvMap.end()) throw ModelException("microdata CSV not found, entity kind: %d microdata key: %llu", i_entityItem.entityId, i_microdataKey);
+
+    EntityCsvItem & eCsv = ecIt->second;
+
+    lock_guard<recursive_mutex> lck(eCsv.theMutex); // lock the log 
+
+    if (!eCsv.isReady) return;  // output csv file is not ready: not open or it was write error
+
+    // converte attribute values into string and write into csv file
+    makeCsvLineMicrodata(i_entityItem, i_microdataKey, i_entityThis, eCsv.csvBuf);
+    doCsvLineMicrodata(eCsv, eCsv.csvBuf);
+}
+
+/** make attributes csv line by converting attribute values into string */
+void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
+{
+    io_line.clear();
+    io_line += to_string(i_microdataKey);
+
+    for (size_t k = 0; k < i_entityItem.attrs.size(); k++)
+    {
+        const EntityAttrItem & attr = i_entityItem.attrs[k];
+        io_line += ",";
+        io_line += attr.fmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset);
+    }
+}
+
+/** write line into microdata CSV file, close file and raise exception on error. */
+void RunController::doCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line)
+{
+    // write micordata line into csv
+    io_entityCsvItem.csvSt << i_line << '\n';
+
+    if (io_entityCsvItem.csvSt.fail()) {
+        io_entityCsvItem.isReady = false;
+
+        try { io_entityCsvItem.csvSt.close(); }
+        catch (...) {}
+
+        throw HelperException("microdata CSV write error, entity kind: %d microdata key: %llu %s", io_entityCsvItem.entityId, io_entityCsvItem.filePath.c_str());
+    }
+    // theTrace->logMsg(eCsv.csvBuf.c_str());
+}
+

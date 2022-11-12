@@ -42,6 +42,9 @@ namespace openm
         /** if true then model run is writing microdata into CSV. */
         bool isCsvMicrodata;
 
+        /** if true then model run is writing microdata into trace output. */
+        bool isTraceMicrodata;
+
         /** if positive then used for simulation progress reporting, ex: every 10% */
         int progressPercent;
 
@@ -56,6 +59,7 @@ namespace openm
             nullValue(FLT_MIN),
             isDbMicrodata(false),
             isCsvMicrodata(false),
+            isTraceMicrodata(false),
             progressPercent(0),
             progressStep(0.0)
         { }

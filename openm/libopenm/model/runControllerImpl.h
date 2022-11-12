@@ -98,7 +98,8 @@ namespace openm
             dbExec(i_dbExec),
             msgExec(i_msgExec)
         {
-            processCount = i_processCount; 
+            processCount = i_processCount;
+            processRank = 0;
         }
 
         /** last cleanup */
@@ -218,6 +219,7 @@ namespace openm
             isFinalExchange(false)
         {
             processCount = i_processCount; 
+            processRank = i_msgExec->rank();
         }
 
         /** last cleanup */

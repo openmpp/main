@@ -25,8 +25,11 @@ namespace openm
         /** model run name in database */
         static constexpr const char * runName = "OpenM.RunName";
 
-        /** run id of current model run */
+        /** read-only option, current model run id */
         static constexpr const char * runId = "OpenM.RunId";
+
+        /** read-only option, current model run create timestamp, ex: 2018_11_10_22_47_46_076 */
+        static constexpr const char * runCreated = "OpenM.RunCreated";
 
         /** model run id to restart model run */
         static constexpr const char * restartRunId = "OpenM.RestartRunId";
@@ -55,7 +58,7 @@ namespace openm
         /** modeling task run name in database */
         static constexpr const char * taskRunName = "OpenM.TaskRunName";
 
-        /** modeling task run id */
+        /** read-only option, modeling task run id */
         static constexpr const char * taskRunId = "OpenM.TaskRunId";
 
         /** modeling task under external supervision */
@@ -112,11 +115,17 @@ namespace openm
         /** include only specified output tables or tables group into run results, ex: -Tables.Retain AgeTable,IncomeGroup */
         static constexpr const char * tableRetain = "Tables.Retain";
 
-        /** write entity attributes into CSV file, ex: -Microdata.ToCsv true */
+        /** store entity microdata in database, ex: -Microdata.ToDb true */
+        static constexpr const char * microdataToDb = "Microdata.ToDb";
+
+        /** write entity microdata into CSV file, ex: -Microdata.ToCsv true */
         static constexpr const char * microdataToCsv = "Microdata.ToCsv";
 
-        /** store entity attributes in database, ex: -Microdata.ToDb true */
-        static constexpr const char * microdataToDb = "Microdata.ToDb";
+        /** write entity microdata into trace output, ex: -Microdata.ToTrace true */
+        static constexpr const char * microdataToTrace = "Microdata.ToTrace";
+
+        /** write entity microdata into CSV file, ex: -Microdata.CsvDir csv/output/dir */
+        static constexpr const char * microdataCsvDir = "Microdata.CsvDir";
 
         /** store all entities and all non-internal attributes, ex: -Microdata.All true */
         static constexpr const char* microdataAll = "Microdata.All";
@@ -268,16 +277,12 @@ namespace openm
             return binary_search(tableIdSuppressArr.cbegin(), tableIdSuppressArr.cend(), i_tableId);
         }
 
-        /** retrun indices of microdata entity attributes in EntityNameSizeArr */
-        const vector<int> & entityIndex(void) const { return entityIdxArr; }
-
     protected:
-        int modelId;                                    // model id in database
-        unique_ptr<MetaHolder> metaStore;               // metadata tables
-        vector<int> paramIdSubArr;                      // ids of parameters where sub-values count same as model run sub-values count
-        vector<int> tableIdSuppressArr;                 // id's of tables to suppress from calculation and output
-        vector<int> entityIdxArr;                       // microdata attributes indices in EntityNameSizeArr
-        map<string, vector<EntityAttrRow>> entityMap;   // microdata entity name and list of attributes for each entity
+        int modelId;                        // model id in database
+        unique_ptr<MetaHolder> metaStore;   // metadata tables
+        vector<int> paramIdSubArr;          // ids of parameters where sub-values count same as model run sub-values count
+        vector<int> tableIdSuppressArr;     // id's of tables to suppress from calculation and output
+        vector<int> entityIdxArr;           // microdata attributes indices in EntityNameSizeArr
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :
