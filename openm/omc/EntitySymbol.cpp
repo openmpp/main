@@ -231,8 +231,10 @@ void EntitySymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Handle microdata output.");
         CodeBlock& c = fn->func_body;
         c += "if constexpr(om_microdata_output_capable) {";
+        c +=     "int event_id = BaseEvent::current_event_id;";
+        c +=     "const char * event_name = omr::event_id_to_name(event_id);";
         c +=     "uint64_t microdata_key = get_microdata_key();";
-        c +=     "i_model->writeMicrodata(entity_kind, microdata_key, this);";
+        c +=     "i_model->writeMicrodata(entity_kind, microdata_key, /* event_name, */ this);";
         c += "}";
     }
 
