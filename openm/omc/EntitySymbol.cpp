@@ -233,8 +233,9 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "if constexpr(om_microdata_output_capable) {";
         c +=     "int event_id = BaseEvent::current_event_id;";
         c +=     "const char * event_name = omr::event_id_to_name(event_id);";
+        c +=     "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
         c +=     "uint64_t microdata_key = get_microdata_key();";
-        c +=     "i_model->writeMicrodata(entity_kind, microdata_key, /* event_name, */ this);";
+        c +=     "i_model->writeMicrodata(entity_kind, microdata_key, /* event_name, is_same_entity, */ this);";
         c += "}";
     }
 
