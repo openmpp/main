@@ -48,6 +48,7 @@ void CodeGen::do_all()
     do_API_entries();
     do_ParameterNameSize();
     do_EntityNameSize();
+    do_EventIdName();
     if (!Symbol::pp_all_strings.empty()) do_model_strings();
 
     // set meta row values and calculate metadata digests: model, types, parameters, output tables
@@ -2326,6 +2327,29 @@ void CodeGen::do_EntityNameSize(void)
                     ((--na > 0) ? "}," : "}");
             }
         }
+    }
+    c += "};";
+    c += "}";
+    c += "";
+}
+
+void CodeGen::do_EventIdName(void)
+{
+    c += "namespace openm";
+    c += "{";
+    c += "// size of event list: all events in all entities";
+    // note addition of extra entry to handle possible id=-1, name="(no event)"
+    c += "const size_t EVENT_ID_NAME_SIZE = " + to_string(1 + Symbol::pp_all_event_names.size()) + ";";
+
+    c += "// list of events id, name";
+    c += "const EventIdNameItem EventIdNameArr[EVENT_ID_NAME_SIZE] =";
+    c += "{";
+    c += "{-1, \"(no event)\"},";
+
+    int id = 0;
+    for (const auto nm : Symbol::pp_all_event_names) {
+        c += "{" + std::to_string(id) + ", \"" + nm + "\"},";
+        ++id;
     }
     c += "};";
     c += "}";

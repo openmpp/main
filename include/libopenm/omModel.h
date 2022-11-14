@@ -219,6 +219,22 @@ namespace openm
     /** list of entity attributes name, type, size and member offset */
     extern const EntityNameSizeItem EntityNameSizeArr[];
 
+    /** model events id, name */
+    struct EventIdNameItem
+    {
+        /** event id */
+        int eventId;
+
+        /** event name */
+        const char * eventName;
+    };
+
+    /** size of event list: all events in all entities */
+    extern const size_t EVENT_ID_NAME_ARR_LEN;
+
+    /** list of events id, name */
+    extern const EventIdNameItem EventIdNameArr[];
+
     /** default error message: "unknown model error" */
     extern const char modelUnknownErrorMessage[];
 

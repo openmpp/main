@@ -74,6 +74,7 @@ public:
     void do_API_entries();
     void do_ParameterNameSize(void);
     void do_EntityNameSize(void);
+    void do_EventIdName(void);
 
     /**
      * CodeBlock for om_types0.h.
