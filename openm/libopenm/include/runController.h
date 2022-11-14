@@ -242,7 +242,7 @@ namespace openm
         void createRunEntity(int i_runId, IDbExec* i_dbExec);
 
         // calculate entity generation digest: based on entity digest, attributes id, name, type digest
-        const string makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows) const;
+        const string makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows, bool i_isUseEvents) const;
 
         /** write output tables aggregated values into database, skip suppressed tables */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;

@@ -227,6 +227,9 @@ namespace openm
 
         /** event name */
         const char * eventName;
+
+        /** return event name by event id or NULL if id not found */
+        static const char * byId(int i_eventId);
     };
 
     /** size of event list: all events in all entities */
@@ -234,6 +237,9 @@ namespace openm
 
     /** list of events id, name */
     extern const EventIdNameItem EventIdNameArr[];
+
+    /** if true then write microdata events into database and/or CSV */
+    #define OM_USE_MICRODATA_EVENTS (EVENT_ID_NAME_ARR_LEN > 1)
 
     /** default error message: "unknown model error" */
     extern const char modelUnknownErrorMessage[];

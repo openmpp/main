@@ -293,7 +293,7 @@ bool ParamDimsRow::isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & 
     return i_left.modelId == i_right.modelId && i_left.paramId == i_right.paramId && i_left.dimId == i_right.dimId;
 }
 
-/** retrun db column name based on dimension id, example: dim1 */
+/** return db column name based on dimension id, example: dim1 */
 const string ParamDimsRow::columnName() const
 {
     return "dim" + to_string(dimId);
@@ -404,7 +404,7 @@ bool TableDimsRow::isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & 
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.dimId == i_right.dimId;
 }
 
-/** retrun db column name based on dimension id, example: dim1 */
+/** return db column name based on dimension id, example: dim1 */
 const string TableDimsRow::columnName() const
 {
     return "dim" + to_string(dimId);
@@ -469,7 +469,7 @@ vector<TableAccRow>::const_iterator TableAccRow::byKey(int i_modelId, int i_tabl
     );
 }
 
-/** retrun db column name based on accumulator id, example: acc1 */
+/** return db column name based on accumulator id, example: acc1 */
 const string TableAccRow::columnName() const
 {
     return "acc" + to_string(accId);
@@ -525,7 +525,7 @@ bool TableExprRow::isKeyEqual(const TableExprRow & i_left, const TableExprRow & 
         i_left.modelId == i_right.modelId && i_left.tableId == i_right.tableId && i_left.exprId == i_right.exprId;
 }
 
-/** retrun db column name based on expression id, example: expr1 */
+/** return db column name based on expression id, example: expr1 */
 const string TableExprRow::columnName() const
 {
     return "expr" + to_string(exprId);
@@ -637,7 +637,7 @@ bool EntityAttrRow::isKeyEqual(const EntityAttrRow& i_left, const EntityAttrRow&
         i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.attrId == i_right.attrId;
 }
 
-/** retrun db column name based on attribute id, example: attr1 */
+/** return db column name based on attribute id, example: attr1 */
 const string EntityAttrRow::columnName() const
 {
     return "attr" + to_string(attrId);

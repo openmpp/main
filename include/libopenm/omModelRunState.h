@@ -145,7 +145,7 @@ namespace openm
         /** return true if model in shutdown state: modeling completed or one of exiting */
         virtual bool isShutdownOrFinal(void) = 0;
 
-        /** retrun model run state data */
+        /** return model run state data */
         virtual RunState get(void) = 0;
 
         /** set model status if not already set as one of final status values */

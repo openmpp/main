@@ -84,7 +84,7 @@ namespace omr {
 
 
     /**
-    * model build environment to report at run time if user the model as: run model.exe -OpenM.Version
+    * model build environment to report at run time if user run the model as: model.exe -OpenM.Version
     */
     /** platform name: Windows 32 bit, Windows 64 bit, Linux or Apple (MacOS) */
     extern const char * modelTargetOsName;

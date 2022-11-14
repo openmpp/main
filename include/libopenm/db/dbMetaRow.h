@@ -675,7 +675,7 @@ namespace openm
         /** equal comparator by unique key: model id, model parameter id, dimension id. */
         static bool isKeyEqual(const ParamDimsRow & i_left, const ParamDimsRow & i_right);
 
-        /** retrun db column name based on dimension id, example: dim1 */
+        /** return db column name based on dimension id, example: dim1 */
         const string columnName(void) const;
     };
 
@@ -920,7 +920,7 @@ namespace openm
         /** equal comparator by unique key: model id, model table id, dimension id. */
         static bool isKeyEqual(const TableDimsRow & i_left, const TableDimsRow & i_right);
 
-        /** retrun db column name based on dimension id, example: dim1 */
+        /** return db column name based on dimension id, example: dim1 */
         const string columnName(void) const;
     };
 
@@ -1029,7 +1029,7 @@ namespace openm
         /** find row by unique key: model id, model table id, accumulator id. */
         static vector<TableAccRow>::const_iterator byKey(int i_modelId, int i_tableId, int i_accId, const vector<TableAccRow> & i_rowVec);
 
-        /** retrun db column name based on accumulator id, example: acc1 */
+        /** return db column name based on accumulator id, example: acc1 */
         const string columnName(void) const;
     };
 
@@ -1135,7 +1135,7 @@ namespace openm
         /** equal comparator by unique key: model id, model table id, expr id. */
         static bool isKeyEqual(const TableExprRow & i_left, const TableExprRow & i_right);
 
-        /** retrun db column name based on expression id, example: ex_1 */
+        /** return db column name based on expression id, example: ex_1 */
         const string columnName(void) const;
     };
 
@@ -1331,7 +1331,7 @@ namespace openm
         /** equal comparator by unique key: model id, model entity id, attribute id. */
         static bool isKeyEqual(const EntityAttrRow& i_left, const EntityAttrRow& i_right);
 
-        /** retrun db column name based on attribute id, example: attr1 */
+        /** return db column name based on attribute id, example: attr1 */
         const string columnName(void) const;
     };
 

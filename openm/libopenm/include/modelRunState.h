@@ -38,7 +38,7 @@ namespace openm
         /** return true if model in shutdown state: modeling completed or one of exiting */
         bool isShutdownOrFinal(void) override;
 
-        /** retrun model run state data */
+        /** return model run state data */
         RunState get(void) override;
 
         /** set model status if not already set as one of final status values */

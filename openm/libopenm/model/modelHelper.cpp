@@ -27,6 +27,31 @@ int EntityNameSizeItem::byName(const char * i_entityName, const char * i_attrNam
     return -1;
 }
 
+/** return event name by event id or NULL if id not found. */
+const char * EventIdNameItem::byId(int i_eventId)
+{
+    // code below assumes EventIdNameArr first element is a special "no event" entry
+    // the rest of EventIdNameArr elements ordered by event id and that id is an index for event name
+    // for example:
+    // {
+    //   -1, "(no event)",
+    //    0, "BirthEvent",
+    //    1, "RetirementEvent",
+    //    2, "DeathEvent"
+    // }
+
+    if (EVENT_ID_NAME_ARR_LEN <= 0) return nullptr;
+
+    // check special case "no event" at the first element of EventIdNameArr
+    if (EventIdNameArr[0].eventId == i_eventId) return EventIdNameArr[0].eventName;
+
+    // if event (id + 1) is an index of EventIdNameArr array then return event name by (id + 1) index
+    if (0 < i_eventId + 1 && i_eventId + 1 < EVENT_ID_NAME_ARR_LEN) {
+        return (EventIdNameArr[i_eventId + 1].eventId == i_eventId) ? EventIdNameArr[i_eventId + 1].eventName : nullptr;
+    }
+    return nullptr; // not found
+}
+
 // atomic bool vector to store sub-value done status
 void DoneVector::init(size_t i_size)
 {

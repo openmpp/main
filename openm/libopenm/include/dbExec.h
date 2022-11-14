@@ -30,7 +30,7 @@ namespace openm
          */
         static IDbExec * create(const string & i_sqlProvider, const string & i_connectionStr);
 
-        /**  retrun sql provider name, e.g.: SQLITE */
+        /**  return sql provider name, e.g.: SQLITE */
         virtual string provider(void) const = 0;
 
         /**
@@ -228,7 +228,7 @@ namespace openm
         /** check if provider name is valid. */
         static bool isValidProviderName(const char * i_sqlProvider);
 
-        /** retrun true if i_keword matched one of SQL reserved keywords, comparison is case neutral and limited by i_length chars */
+        /** return true if i_keword matched one of SQL reserved keywords, comparison is case neutral and limited by i_length chars */
         static bool isSqlKeyword(const char * i_keyword, size_t i_length = 0);
 
         /** max length of db table or view name.

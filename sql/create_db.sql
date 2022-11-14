@@ -731,7 +731,8 @@ CREATE TABLE entity_gen
 (
   entity_gen_hid  INT         NOT NULL, -- entity generation unique id
   entity_hid      INT         NOT NULL, -- master key
-  db_entity_table VARCHAR(64) NOT NULL, -- db table name: person_g87abcdef
+  is_events       SMALLINT    NOT NULL, -- if non-zero then store entity events
+  db_entity_table VARCHAR(64) NOT NULL, -- db table name: Person_g87abcdef or Person_e87abcdef
   gen_digest      VARCHAR(32) NOT NULL, -- digest of entity generation
   PRIMARY KEY (entity_gen_hid),
   CONSTRAINT entity_gen_un UNIQUE (db_entity_table),

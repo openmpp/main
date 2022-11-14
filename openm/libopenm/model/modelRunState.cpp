@@ -130,7 +130,7 @@ bool ModelRunState::isShutdownOrFinal(void)
     return RunState::isShutdownOrFinal(theStatus);
 }
 
-/** retrun model run state data */
+/** return model run state data */
 RunState ModelRunState::get(void)
 {
     lock_guard<recursive_mutex> lck(theMutex);

@@ -2339,17 +2339,25 @@ void CodeGen::do_EventIdName(void)
     c += "{";
     c += "// size of event list: all events in all entities";
     // note addition of extra entry to handle possible id=-1, name="(no event)"
-    c += "const size_t EVENT_ID_NAME_SIZE = " + to_string(1 + Symbol::pp_all_event_names.size()) + ";";
+    if (Symbol::option_microdata_write_on_event) {
+        c += "const size_t EVENT_ID_NAME_ARR_LEN = " + to_string(1 + Symbol::pp_all_event_names.size()) + ";";
+    }
+    else {
+        c += "const size_t EVENT_ID_NAME_ARR_LEN = 1;";
+    }
+    c += "";
 
     c += "// list of events id, name";
-    c += "const EventIdNameItem EventIdNameArr[EVENT_ID_NAME_SIZE] =";
+    c += "const EventIdNameItem EventIdNameArr[EVENT_ID_NAME_ARR_LEN] =";
     c += "{";
     c += "{-1, \"(no event)\"},";
 
-    int id = 0;
-    for (const auto nm : Symbol::pp_all_event_names) {
-        c += "{" + std::to_string(id) + ", \"" + nm + "\"},";
-        ++id;
+    if (Symbol::option_microdata_write_on_event) {
+        int id = 0;
+        for (const auto nm : Symbol::pp_all_event_names) {
+            c += "{" + std::to_string(id) + ", \"" + nm + "\"},";
+            ++id;
+        }
     }
     c += "};";
     c += "}";

@@ -26,7 +26,7 @@ namespace openm
         /** close db-connection and cleanup connection resources. */
         ~DbExecSqlite(void) noexcept;
 
-        /**  retrun sql provider name, e.g.: SQLITE */
+        /**  return sql provider name, e.g.: SQLITE */
         string provider(void) const override { return SQLITE_DB_PROVIDER; }
 
         /** select integer value of first (row,column) or default if no rows or value IS NULL. */
