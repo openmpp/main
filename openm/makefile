@@ -30,10 +30,10 @@ libsqlite: prepare
 	$(MAKE) -C $(LIBSQLITE_DIR) 
 
 libopenm: prepare libsqlite
-	$(MAKE) -C $(LIBOPENM_DIR) -f makefile.openm.mak
+	$(MAKE) -C $(LIBOPENM_DIR) libopenm
 
 lib_omc: prepare libsqlite
-	$(MAKE) -C $(LIBOPENM_DIR) -f makefile.omc.mak
+	$(MAKE) -C $(LIBOPENM_DIR) lib_omc
 
 omc: lib_omc
 	$(MAKE) -C $(OMC_DIR) 
