@@ -896,6 +896,13 @@ public:
     static std::string build_imports_csv(void);
 
     /**
+     * Replace Modgen syntax in a NOTE by equivalent markdown.
+     *
+     * @param cmt The comment.
+     */
+    static std::string normalize_note(const std::string& txt);
+
+    /**
      * Pathnames of use folders.
      * 
      * Used to resolve 'use' statements to physical files. 
@@ -1441,6 +1448,11 @@ public:
      * true or false depending on use_heuristic_short_names in options statement.
      */
     static bool option_use_heuristic_short_names;
+
+    /**
+     * true or false depending on convert_modgen_note_syntax in options statement.
+     */
+    static bool option_convert_modgen_note_syntax;
 
     /**
      * maximum length of a short name

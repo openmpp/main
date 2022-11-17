@@ -320,8 +320,8 @@ void ParseContext::process_c_comment(const string& cmt, const omc::location& loc
             // ignore empty label
             return;
         }
-        string note = normalize_note(cmt.substr(p));
-        
+        string note = cmt.substr(p);
+
         // Insert note into appropriate map of NOTE comments
         if (is_scenario_parameter_value || is_fixed_parameter_value) {
             Symbol::notes_input.emplace(key, note);
@@ -337,75 +337,4 @@ void ParseContext::process_c_comment(const string& cmt, const omc::location& loc
     Symbol::c_comments.insert(element);
 }
 
-string ParseContext::normalize_note(const string & txt)
-{
-    string result;
-    result.reserve(txt.length());
-
-    auto lines = openm::splitCsv(txt, "\n");
-    // trim leading and trailing white space
-    for (auto & line : lines) {
-        line = openm::trim(line);
-    }
-
-    bool in_code_block = false;
-    for (auto & line : lines) {
-        if (in_code_block) {
-            if (line.length() == 0) {
-                // empty line with no leading >
-                // leave code block mode
-                result += "```\n";
-                in_code_block = false;
-                // fall through to normal mode for current line
-            }
-            else if (line[0] == '>') {
-                // non-empty line with leading >
-                // append content to code block and
-                // continue in code block mode
-                result += line.substr(1) + '\n';
-                continue;
-            }
-            else {
-                // non-empty line without leading >
-                // leave code block mode
-                result += "```\n";
-                in_code_block = false;
-                // fall through to normal mode for current line
-            }
-        }
-        // normal mode (not code block)
-        if (line.length() == 0) {
-            // empty line, echo it
-            result += '\n';
-        }
-        else if (line[0] == '>') {
-            // non-empty line with leading >
-            // enter code block mode
-            result += "```\n";
-            in_code_block = true;
-            // append content to code block and
-            // continue in code block mode
-            result += line.substr(1) + '\n';
-            continue;
-        }
-        else if (line.substr(0,2) == "- ") {
-            // non-empty line with leading "- "
-            // echo, but change "- " to markdown notation for item in list
-            result += "* " + line.substr(2) + '\n';
-        }
-        else {
-            // normal content, echo it
-            result += line + '\n';
-        }
-    }
-    // all lines have been processed
-    // finish code block mode if active
-    if (in_code_block) {
-        // leave code block mode
-        result += "```\n";
-        in_code_block = false;
-    }
-
-    return result;
-}
 

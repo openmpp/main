@@ -638,6 +638,8 @@ bool Symbol::option_all_attributes_visible = false;
 
 bool Symbol::option_use_heuristic_short_names = false;
 
+bool Symbol::option_convert_modgen_note_syntax = true;
+
 size_t Symbol::short_name_max_length = 32;
 
 bool Symbol::option_censor_event_time = false;
@@ -2151,6 +2153,20 @@ void Symbol::defaults_and_options()
     }
 
     {
+        string key = "convert_modgen_note_syntax";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_convert_modgen_note_syntax = true;
+            }
+            else if (value == "off") {
+                option_convert_modgen_note_syntax = false;
+            }
+        }
+    }
+
+    {
         string key = "short_name_max_length";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -2677,4 +2693,76 @@ std::string Symbol::build_imports_csv(void)
     }
 
     return csv;
+}
+
+std::string Symbol::normalize_note(const std::string& txt)
+{
+    string result;
+    result.reserve(txt.length());
+
+    auto lines = openm::splitCsv(txt, "\n");
+    // trim leading and trailing white space
+    for (auto& line : lines) {
+        line = openm::trim(line);
+    }
+
+    bool in_code_block = false;
+    for (auto& line : lines) {
+        if (in_code_block) {
+            if (line.length() == 0) {
+                // empty line with no leading >
+                // leave code block mode
+                result += "```\n";
+                in_code_block = false;
+                // fall through to normal mode for current line
+            }
+            else if (line[0] == '>') {
+                // non-empty line with leading >
+                // append content to code block and
+                // continue in code block mode
+                result += line.substr(1) + '\n';
+                continue;
+            }
+            else {
+                // non-empty line without leading >
+                // leave code block mode
+                result += "```\n";
+                in_code_block = false;
+                // fall through to normal mode for current line
+            }
+        }
+        // normal mode (not code block)
+        if (line.length() == 0) {
+            // empty line, echo it
+            result += '\n';
+        }
+        else if (line[0] == '>') {
+            // non-empty line with leading >
+            // enter code block mode
+            result += "```\n";
+            in_code_block = true;
+            // append content to code block and
+            // continue in code block mode
+            result += line.substr(1) + '\n';
+            continue;
+        }
+        else if (line.substr(0, 2) == "- ") {
+            // non-empty line with leading "- "
+            // echo, but change "- " to markdown notation for item in list
+            result += "* " + line.substr(2) + '\n';
+        }
+        else {
+            // normal content, echo it
+            result += line + '\n';
+        }
+    }
+    // all lines have been processed
+    // finish code block mode if active
+    if (in_code_block) {
+        // leave code block mode
+        result += "```\n";
+        in_code_block = false;
+    }
+
+    return result;
 }

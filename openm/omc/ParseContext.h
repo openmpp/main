@@ -260,13 +260,6 @@ public:
     void process_c_comment(const string& cmt, const omc::location& loc);
 
     /**
-     * Normalize a NOTE.
-     *
-     * @param cmt The comment.
-     */
-    string normalize_note(const string & txt);
-
-    /**
      * comment location.
      */
     omc::location comment_location;

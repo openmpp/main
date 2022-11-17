@@ -509,6 +509,20 @@ int main(int argc, char * argv[])
             throw HelperException(LT("Finish omc"));
         }
 
+        // convert Modgen NOTE syntax to markdown
+        if (Symbol::option_convert_modgen_note_syntax) {
+            // iterate collection of NOTES in model source code notes
+            for (const auto& [key, value] : Symbol::notes_source) {
+                auto new_note = Symbol::normalize_note(value);
+                Symbol::notes_input[key] = new_note;
+            }
+            // iterate collection of NOTES in parameter value notes
+            for (const auto& [key, value] : Symbol::notes_input) {
+                auto new_note = Symbol::normalize_note(value);
+                Symbol::notes_input[key] = new_note;
+            }
+        }
+
         theLog->logMsg("Code & meta-data generation");
 
         // open output streams for generated code
