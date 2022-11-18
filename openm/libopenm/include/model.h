@@ -70,7 +70,7 @@ namespace openm
         const bool isMicrodata(void) const override { return runOpts.isDbMicrodata || runOpts.isCsvMicrodata || runOpts.isTraceMicrodata; };
 
         /** write microdata into the database and/or CSV file. */
-        void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) override;
+        void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis) override;
 
     private:
         int modelId;                    // model id in database
@@ -78,7 +78,7 @@ namespace openm
         RunController * runCtrl;        // run controller interface
         const MetaHolder * metaStore;   // metadata tables
         RunOptions runOpts;             // model run options
-        string csvBuf;                  // microdata csv write buffer
+        string microdataBuf;            // microdata write buffer
 
         ModelBase(
             int i_modelId,

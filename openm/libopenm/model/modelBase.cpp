@@ -48,10 +48,10 @@ ModelBase::ModelBase(
     {
         for (const auto & eRow : metaStore->entityDic->rows())
         { 
-            csvBuf = runCtrl->getHeaderCsvMicrodata(eRow.entityId);
-            if (!csvBuf.empty()) theTrace->logMsg(csvBuf.c_str());
+            microdataBuf = runCtrl->csvHeaderMicrodata(eRow.entityId);
+            if (!microdataBuf.empty()) theTrace->logMsg(microdataBuf.c_str());
         }
-        csvBuf.reserve(OM_STR_DB_MAX);
+        microdataBuf.reserve(OM_STR_DB_MAX);
     }
 }
 
@@ -159,20 +159,22 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
 *
 * @param   i_entityKind     entity kind id: model metadata entity id in database.
 * @param   i_microdataKey   unique entity instance id.
+* @param   i_eventId        event id, if microdata events enabled.
+* @param   i_isSameEntity   if true then event entity the same as microdata entity.
 * @param   i_entityThis     entity class instance this pointer.
 */
-void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
+void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis)
 {
     if (!isMicrodata()) return;     // microdata writing is not enabled
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        auto [isFound, entItem] = runCtrl->writeMicrodata(i_entityKind, i_microdataKey, i_entityThis);
+        auto [isFound, entItem] = runCtrl->writeMicrodata(i_entityKind, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
 
         if (isFound && runOpts.isTraceMicrodata) {
-            RunController::makeCsvLineMicrodata(entItem, i_microdataKey, i_entityThis, csvBuf);
-            theTrace->logMsg(csvBuf.c_str());
+            runCtrl->makeCsvLineMicrodata(entItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
+            theTrace->logMsg(microdataBuf.c_str());
         }
     }
     catch (exception & ex) {

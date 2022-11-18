@@ -130,8 +130,11 @@ namespace openm
         /** store all entities and all non-internal attributes, ex: -Microdata.All true */
         static constexpr const char* microdataAll = "Microdata.All";
 
-        /** allow to store internal attributes, ex: -Microdata.AllowInternal true */
-        static constexpr const char * microdataInternal = "Microdata.AllowInternal";
+        /** allow to use internal attributes, ex: -Microdata.UseInternal true */
+        static constexpr const char * microdataInternal = "Microdata.UseInternal";
+
+        /** allow to use entity events, ex: -Microdata.UseEvents true */
+        static constexpr const char * microdataEvents = "Microdata.UseEvents";
 
         /** options started with "Microdata." used to specify which entity attributes to store, ex: -Microdata.Person age,region,income */
         static constexpr const char* microdataPrefix = "Microdata";

@@ -45,6 +45,9 @@ namespace openm
         /** if true then model run is writing microdata into trace output. */
         bool isTraceMicrodata;
 
+        /** if true then model run is writing microdata events. */
+        bool isMicrodataEvents;
+
         /** if positive then used for simulation progress reporting, ex: every 10% */
         int progressPercent;
 
@@ -60,6 +63,7 @@ namespace openm
             isDbMicrodata(false),
             isCsvMicrodata(false),
             isTraceMicrodata(false),
+            isMicrodataEvents(false),
             progressPercent(0),
             progressStep(0.0)
         { }
@@ -161,9 +165,11 @@ namespace openm
         *
         * @param   i_entityKind     entity kind id: model metadata entity id in database.
         * @param   i_microdataKey   unique entity instance id.
+        * @param   i_eventId        event id, if microdata events enabled.
+        * @param   i_isSameEntity   if true then event entity the same as microdata entity.
         * @param   i_entityThis     entity class instance this pointer.
         */
-        virtual void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) = 0;
+        virtual void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis) = 0;
     };
 
     /** model input parameter name, type and size */

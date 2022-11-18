@@ -15,13 +15,13 @@ namespace openm
     {
         isVal = false;
         fVal = 0.0;
-        dVal = 0.0; 
-        dlVal = 0.0; 
+        dVal = 0.0;
+        dlVal = 0.0;
         llVal = 0;
         ullVal = 0;
         szVal = nullptr;
     }
-    
+
     /** return double part of db value */
     template<> double DbValue::castDouble<double, double>(const DbValue & i_value)
     {
@@ -46,12 +46,18 @@ namespace openm
     int BoolFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
     {
         bool isVal = *static_cast<const bool *>(i_value);
-        if (isVal) {
-            strncpy(io_buffer, trueValueString, i_size);
-        }
-        else {
-            strncpy(io_buffer, falseValueString, i_size);
-        }
+
+        strncpy(io_buffer, (isVal ? trueValueString : falseValueString), i_size);
+        io_buffer[i_size - 1] = '\0';
+        return (int)strnlen(io_buffer, i_size);
+    }
+
+    /** convert bool value to SQL constant: return "1" or "0" */
+    int BoolSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+    {
+        bool isVal = *static_cast<const bool *>(i_value);
+
+        strncpy(io_buffer, (isVal ? "1" : "0"), i_size);
         io_buffer[i_size - 1] = '\0';
         return (int)strnlen(io_buffer, i_size);
     }
@@ -60,6 +66,14 @@ namespace openm
     int StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
     {
         strncpy(io_buffer, static_cast<const char *>(i_value), i_size);
+        io_buffer[i_size - 1] = '\0';
+        return (int)strnlen(io_buffer, i_size);
+    }
+
+    /** convert string value into SQL constant: return 'quoted source value' */
+    int StrSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+    {
+        strncpy(io_buffer, toQuoted(static_cast<const char *>(i_value)).c_str(), i_size);
         io_buffer[i_size - 1] = '\0';
         return (int)strnlen(io_buffer, i_size);
     }

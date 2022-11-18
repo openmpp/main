@@ -136,9 +136,10 @@ namespace openm
         /** entity attribute item to write microdata into database or csv file */
         struct EntityAttrItem
         {
-            int attrId;                             /** entity attribute metadata id */
-            int idxOf;                              /** attribute index in EntityNameSizeArr */
-            unique_ptr<IValueFormatter> fmtValue;   /** attribute value to string converter for csv output */
+            int attrId;                                 /** entity attribute metadata id */
+            int idxOf;                                  /** attribute index in EntityNameSizeArr */
+            unique_ptr<IValueFormatter> fmtValue;       /** attribute value to string converter for csv output */
+            unique_ptr<IValueFormatter> sqlFmtValue;    /** attribute value to string converter for database insert */
 
             EntityAttrItem(int i_attrId, int i_index) : attrId(i_attrId), idxOf(i_index) {}
         };
@@ -148,7 +149,9 @@ namespace openm
         {
             int entityId;                   /** entity metadata id */
             vector<EntityAttrItem> attrs;   /** entity attributes */
+            string genDigest;               /** entity generation digest */
             string csvHdr;                  /** microdata csv header line */
+            string sqlInsPrefix;            /** microdata sql statement prefix */
 
             EntityItem(int i_entityId) : entityId(i_entityId) {}
         };
@@ -157,15 +160,17 @@ namespace openm
         *
         * @param   i_entityKind     entity kind id: model metadata entity id in database.
         * @param   i_microdataKey   unique entity instance id.
+        * @param   i_eventId        event id, if microdata events enabled.
+        * @param   i_isSameEntity   if true then event entity the same as microdata entity.
         * @param   i_entityThis     entity class instance this pointer.
         */
-        tuple<bool, const EntityItem &> writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis);
+        tuple<bool, const EntityItem &> writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line);
 
         /** return microdata entity csv file header */
-        const string getHeaderCsvMicrodata(int i_entityKind) const;
+        const string csvHeaderMicrodata(int i_entityKind) const;
 
         /** make attributes csv line by converting attribute values into string */
-        static void makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line);
+        void makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line) const;
 
     protected:
         /** create run controller */
@@ -216,6 +221,12 @@ namespace openm
         /** merge updated sub-values run statue into database */
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
+        /** write microdata into database. */
+        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line) = 0;
+
+        /** write microdata into database. */
+        void doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line);
+
         /** create microdata CSV files for new model run. */
         void openCsvMicrodata(int i_runId);
 
@@ -239,7 +250,10 @@ namespace openm
         void createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) const;
 
         // insert run entity metadata and create run entity database tables
-        void createRunEntity(int i_runId, IDbExec* i_dbExec);
+        void createRunEntityTables(IDbExec* i_dbExec);
+
+        // insert run entity rows for all entities in that model run
+        void insertRunEntity(int i_runId, IDbExec * i_dbExec);
 
         // calculate entity generation digest: based on entity digest, attributes id, name, type digest
         const string makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows, bool i_isUseEvents) const;
@@ -283,8 +297,8 @@ namespace openm
             IDbExec * i_dbExec
         ) const;
 
-
-        map<int, EntityItem> entityMap;    // microdata entities to write into database or csv
+        // microdata entities to write into database or csv
+        map<int, EntityItem> entityMap;
 
         struct EntityCsvItem
         {
@@ -293,10 +307,9 @@ namespace openm
             //
             recursive_mutex theMutex;   // mutex to lock for csv write operations
             bool isReady;               // if true then csv output file open and ready to use
-            string csvBuf;              // microdata csv write buffer
             ofstream csvSt;             // csv output stream
         };
-        map<int, EntityCsvItem> entityCsvMap;   // microdata entities to write into database or csv
+        map<int, EntityCsvItem> entityCsvMap;   // microdata entities to write into csv
 
         // initialize microdata entity writing
         void initMicrodata(void);
@@ -305,10 +318,10 @@ namespace openm
         void closeCsvMicrodata(void) noexcept;
 
         /** write microdata into CSV files. */
-        void doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis);
+        void doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line);
 
         /** write line into microdata CSV file, close file and raise exception on error. */
-        void doCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line);
+        void writeCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line);
 
     private:
         RunController(const RunController & i_runCtrl) = delete;

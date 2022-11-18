@@ -126,6 +126,7 @@ void ChildController::broadcastRunOptions(void)
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isDbMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isCsvMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isTraceMicrodata);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isMicrodataEvents);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(int), &opts.progressPercent);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.progressStep);
 
@@ -318,4 +319,9 @@ void ChildController::sendStatusUpdate(void)
         unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
         msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
     }
+}
+
+/** write microdata into database. */
+void ChildController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & /* io_line */)
+{
 }

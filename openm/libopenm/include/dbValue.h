@@ -93,23 +93,45 @@ namespace openm
         return snprintf(io_buffer, i_size, i_format, val);
     }
 
+    /** convert value to string using snprintf: integer and float values. */
+    template<typename TValue>
+    int FloatSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer, const char * i_format)
+    {
+        TValue val = *static_cast<const TValue *>(i_value);
+
+        if (std::isfinite<TValue>(val)) {
+            return snprintf(io_buffer, i_size, i_format, val);
+        }
+        // else copy "NULL" into output buffer
+        strncpy(io_buffer, "NULL", i_size);
+        io_buffer[i_size - 1] = '\0';
+        return (int)strnlen(io_buffer, i_size);
+    }
+
     /** convert bool value to string: return "true" or "false" */
     extern int BoolFormatHandler(const void * i_value, size_t i_size, char * io_buffer);
 
-    /** convert varchar value to string : make a copy of source string */
+    /** convert bool value to SQL constant: return "1" or "0" */
+    extern int BoolSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer);
+
+    /** convert value to string: make a copy of source string */
     extern int StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer);
+
+    /** convert string value into SQL constant: return 'quoted source value' */
+    extern int StrSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer);
 
     /** converter for value column (parameter, accumulator or expression value) to string */
     template<const size_t valueLen>
     class ValueFormatterBase : public IValueFormatter
     {
     public:
-        /** new converter for value column.
+        /** converter for value column into string.
          *
          * @param[in] i_type             value type, use std::string type for VARCHAR input parameters
+         * @param[in] i_isSqlFormat      if true then convert into SQL constant: 'quoted string values' and 1/0 for boolean values
          * @param[in] i_doubleFormat     if not null or empty then printf format for float and doubles, default: %.15g
          */
-        ValueFormatterBase(const type_info & i_type, const char * i_doubleFormat = "") :
+        ValueFormatterBase(const type_info & i_type, bool i_isSqlFormat = false, const char * i_doubleFormat = "") :
             typeOf(i_type),
             doFormatValue(nullptr)
         {
@@ -167,37 +189,79 @@ namespace openm
             if (typeOf == typeid(uint64_t)) {
                 doFormatValue = bind(FormatHandler<uint64_t>, placeholders::_1, placeholders::_2, placeholders::_3, "%llu");
             }
-            if (typeOf == typeid(bool)) {
-                doFormatValue = BoolFormatHandler;
+
+            if (!i_isSqlFormat) {   // not a SQL constant: simple snprintf formatted values
+
+                if (typeOf == typeid(bool)) {
+                    doFormatValue = BoolFormatHandler;
+                }
+                if (typeOf == typeid(float)) {
+                    doFormatValue = bind(
+                        FormatHandler<float>,
+                        placeholders::_1, placeholders::_2, placeholders::_3,
+                        ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
+                    );
+                }
+                if (typeOf == typeid(double)) {
+                    doFormatValue = bind(
+                        FormatHandler<double>,
+                        placeholders::_1, placeholders::_2, placeholders::_3,
+                        ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
+                    );
+                }
+                if (typeOf == typeid(long double)) {
+                    doFormatValue = bind(
+                        FormatHandler<long double>,
+                        placeholders::_1, placeholders::_2, placeholders::_3,
+                        ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
+                    );
+                }
+                if (typeOf == typeid(string)) {
+                    doFormatValue = StrFormatHandler;
+                }
             }
-            if (typeOf == typeid(float)) {
-                doFormatValue = bind(
-                    FormatHandler<float>,
-                    placeholders::_1, placeholders::_2, placeholders::_3,
-                    ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
-                );
-            }
-            if (typeOf == typeid(double)) {
-                doFormatValue = bind(
-                    FormatHandler<double>,
-                    placeholders::_1, placeholders::_2, placeholders::_3,
-                    ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
-                );
-            }
-            if (typeOf == typeid(long double)) {
-                doFormatValue = bind(
-                    FormatHandler<long double>,
-                    placeholders::_1, placeholders::_2, placeholders::_3,
-                    ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
-                );
-            }
-            if (typeOf == typeid(string)) {
-                doFormatValue = StrFormatHandler;
+            else {      // SQL constant: 'quoted strings', '1' or '0' for booleans, NULL if floats are not finite
+
+                if (typeOf == typeid(bool)) {
+                    doFormatValue = BoolSqlFormatHandler;
+                }
+                if (typeOf == typeid(float)) {
+                    doFormatValue = bind(
+                        FloatSqlFormatHandler<float>,
+                        placeholders::_1, placeholders::_2, placeholders::_3,
+                        ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
+                    );
+                }
+                if (typeOf == typeid(double)) {
+                    doFormatValue = bind(
+                        FloatSqlFormatHandler<double>,
+                        placeholders::_1, placeholders::_2, placeholders::_3,
+                        ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
+                    );
+                }
+                if (typeOf == typeid(long double)) {
+                    doFormatValue = bind(
+                        FloatSqlFormatHandler<long double>,
+                        placeholders::_1, placeholders::_2, placeholders::_3,
+                        ((i_doubleFormat != nullptr && i_doubleFormat[0] != '\0') ? i_doubleFormat : "%.15g")
+                    );
+                }
+                if (typeOf == typeid(string)) {
+                    doFormatValue = StrSqlFormatHandler;
+                }
             }
 
             if (doFormatValue == nullptr)
                 throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported
         }
+
+        /** converter for value column into string.
+         *
+         * @param[in] i_type             value type, use std::string type for VARCHAR input parameters
+         * @param[in] i_doubleFormat     if not null or empty then printf format for float and doubles, default: %.15g
+         */
+        ValueFormatterBase(const type_info & i_type, const char * i_doubleFormat = "") :
+            ValueFormatterBase(i_type, false, i_doubleFormat) {}
 
         /**
          * IValueFormatter interface implementation: convert value to string using snprintf.
@@ -209,7 +273,7 @@ namespace openm
          */
         const char * formatValue(const void * i_value, bool i_isNull = false) override
         {
-            if (i_isNull) return nullValueString;
+            if (i_isNull || i_value == nullptr) return nullValueString;
 
             doFormatValue(i_value, valueLen, valueStr);
             return valueStr;

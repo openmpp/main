@@ -258,7 +258,10 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     createRunText(nRunId, nSetId, i_dbExec);
 
     // insert run entity metadata and create run entity tables
-    if (modelRunOptions().isDbMicrodata) createRunEntity(nRunId, i_dbExec);
+    if (modelRunOptions().isDbMicrodata) {
+        createRunEntityTables(i_dbExec);
+        insertRunEntity(nRunId, i_dbExec);
+    }
 
     // completed: commit the changes
     i_dbExec->commit();
@@ -460,7 +463,7 @@ void RunController::createRunText(int i_runId, int i_setId, IDbExec * i_dbExec) 
 }
 
 // insert run entity metadata and create run entity database tables
-void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
+void RunController::createRunEntityTables(IDbExec* i_dbExec)
 {
     if (!modelRunOptions().isDbMicrodata) return;   // exit: disabled microdata writing into database
 
@@ -486,22 +489,42 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
             );
             if (eIt == entVec.end()) {  // new entity
 
-                // sort attribut id's of previos entity
+                // sort attribute id's of previous entity
                 if (entVec.size() > 0) {
                     EntAttrs & eLast = entVec.back();
+                    if (eLast.attrIds.empty()) throw ModelException("Microdata attribute id's array is empty for entity kind: %d", eLast.entityId);
+
                     std::sort(eLast.attrIds.begin(), eLast.attrIds.end());
                 }
 
                 // add new entity
                 eIt = entVec.emplace(entVec.end(), EntAttrs{ eId, {} });
             }
+
+            // add new attribute id to current entity
+            eIt->attrIds.push_back(EntityNameSizeArr[idx].attributeId);
         }
+        if (entVec.empty()) throw ModelException("Microdata entity index array is empty");
+
+        // sort attribute id's of last entity
+        EntAttrs & eLast = entVec.back();
+        if (eLast.attrIds.empty()) throw ModelException("Microdata attribute id's array is empty for entity kind: %d", eLast.entityId);
+
+        std::sort(eLast.attrIds.begin(), eLast.attrIds.end());
     }
 
     // use entity generation digest (based on entity digest, attributes name, type digest)
     // to find existing entity generation db table name or create new database table
     for (const auto & ea : entVec)
     {
+        // check:
+        // if entity generation digest is not empty
+        // then enity run tables already created and enityMap already initalized
+        auto entIt = entityMap.find(ea.entityId);
+        if (entIt == entityMap.end()) throw ModelException("Microdata entity map entry not found by id: %d", ea.entityId);
+
+        if (!entIt->second.genDigest.empty()) continue; // this entity already initialzed
+
         // find entity and attributes metadata
         const EntityDicRow * ent = metaStore->entityDic->byKey(modelId, ea.entityId);
         if (ent == nullptr) throw DbException("Microdata entity id not found: %d", ea.entityId);
@@ -516,7 +539,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
         }
 
         // calculate entity table digest (generation digest)
-        const string entMd5 = makeEntityGenDigest(ent, attrs, OM_USE_MICRODATA_EVENTS);
+        const string entMd5 = makeEntityGenDigest(ent, attrs, modelRunOptions().isMicrodataEvents);
         string dbTableName;
 
         // check if entity generation digest already exists
@@ -539,7 +562,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
         {
             string p = IDbExec::makeDbNamePrefix(ent->entityId, ent->entityName);
             string s = IDbExec::makeDbNameSuffix(ent->entityId, ent->entityName, entMd5);
-            dbTableName = p + (OM_USE_MICRODATA_EVENTS ? "_e" : "_g") + s;
+            dbTableName = p + (modelRunOptions().isMicrodataEvents ? "_e" : "_g") + s;
 
             i_dbExec->update(
                 "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'entity_hid'"
@@ -554,7 +577,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
                 " VALUES (" +
                 to_string(genHid) + ", " +
                 to_string(ent->entityHid) + ", " +
-                (OM_USE_MICRODATA_EVENTS ? "1, " : "0, ") +
+                (modelRunOptions().isMicrodataEvents ? "1, " : "0, ") +
                 toQuoted(dbTableName) + ", " +
                 toQuoted(entMd5) + ")");
 
@@ -574,8 +597,8 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
             // (
             //   run_id     INT    NOT NULL,
             //   entity_key BIGINT NOT NULL,
-            //   age        INT    NOT NULL,
-            //   income     FLOAT,          -- float attribute value NaN is NULL
+            //   attr4      INT    NOT NULL,
+            //   attr7      FLOAT,          -- float attribute value NaN is NULL
             //   PRIMARY KEY (run_id, entity_key)
             // )
             //
@@ -586,8 +609,8 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
             //   run_id     INT    NOT NULL,
             //   entity_key BIGINT NOT NULL,
             //   event_id   INT    NOT NULL,
-            //   age        INT    NOT NULL,
-            //   income     FLOAT,          -- float attribute value NaN is NULL
+            //   attr4      INT    NOT NULL,
+            //   attr7      FLOAT,          -- float attribute value NaN is NULL
             //   PRIMARY KEY (run_id, entity_key, event_id)
             // )
             const string prv = i_dbExec->provider();
@@ -596,7 +619,7 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
                 "run_id INT NOT NULL, " \
                 " entity_key " + IDbExec::bigIntTypeName(prv) + " NOT NULL,";
 
-            if (OM_USE_MICRODATA_EVENTS) bodySql += " event_id INT NOT NULL,";
+            if (modelRunOptions().isMicrodataEvents) bodySql += " event_id INT NOT NULL,";
 
             for (const EntityAttrRow & at : attrs)
             {
@@ -612,6 +635,41 @@ void RunController::createRunEntity(int i_runId, IDbExec* i_dbExec)
 
             i_dbExec->update(IDbExec::makeSqlCreateTableIfNotExist(prv, dbTableName, bodySql));
         }
+
+        // create slql prefix to insert microdata into db
+        //
+        // INSERT INTO Person_g87abcdef (run_id, entity_key, attr4, attr7) VALUES (
+        //
+        entIt->second.sqlInsPrefix = "INSERT INTO " + dbTableName + "(run_id, entity_key";
+
+        if (modelRunOptions().isMicrodataEvents) entIt->second.sqlInsPrefix += ", event_id";
+
+        for (const EntityAttrRow & at : attrs)
+        {
+            entIt->second.sqlInsPrefix += ", " + at.columnName();
+        }
+        entIt->second.sqlInsPrefix += ") VALUES (";
+
+        entIt->second.genDigest = entMd5;   // this entity is initialzed now
+    }
+}
+
+// insert run entity rows for all entities in that model run
+void RunController::insertRunEntity(int i_runId, IDbExec * i_dbExec)
+{
+    if (!modelRunOptions().isDbMicrodata) return;   // exit: disabled microdata writing into database
+
+    // use entity generation digest (based on entity digest, attributes name, type digest)
+    // to find existing entity generation db table name or create new database table
+    for (const auto & e : entityMap)
+    {
+        const auto & ent = e.second;
+
+        // find entity generation by digest
+        int genHid = i_dbExec->selectToInt(
+            "SELECT entity_gen_hid FROM entity_gen WHERE gen_digest = " + toQuoted(ent.genDigest),
+            -1);
+        if (genHid < 0) throw DbException("Entity %d generation not found by digest: %s", ent.entityId, ent.genDigest.c_str());
 
         // insert run entity row: base run is current run until value digest calculated
         i_dbExec->update(

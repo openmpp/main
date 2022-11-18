@@ -451,12 +451,14 @@ void RunController::initMicrodata(void)
             eLast = entityMap.insert({ eId, EntityItem(eId) }).first;
             if (isAnyCsv) {
                 eLast->second.csvHdr = "key";
+                if (modelRunOptions().isMicrodataEvents) eLast->second.csvHdr += ",event";
             }
         }
 
         // add attribute to this entity
         eLast->second.attrs.push_back(EntityAttrItem(EntityNameSizeArr[idx].attributeId, idx));
         eLast->second.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[idx].typeOf, dblFmt.c_str()));
+        eLast->second.attrs.back().sqlFmtValue.reset(new ShortFormatter(EntityNameSizeArr[idx].typeOf, true, dblFmt.c_str()));
 
         if (isAnyCsv) {   // make csv header line for the entity
             eLast->second.csvHdr += ",";
@@ -466,7 +468,7 @@ void RunController::initMicrodata(void)
 }
 
 /** write microdata into the database and/or CSV file. */
-tuple<bool, const RunController::EntityItem &> RunController::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
+tuple<bool, const RunController::EntityItem &> RunController::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line)
 {
     if (!modelRunOptions().isDbMicrodata && !modelRunOptions().isCsvMicrodata && !modelRunOptions().isTraceMicrodata) {
         return { false, EntityItem(i_entityKind) };     // microdata writing is not enabled
@@ -474,17 +476,45 @@ tuple<bool, const RunController::EntityItem &> RunController::writeMicrodata(int
 
     // check if any microdata write required for this entity kind
     const auto eIt = entityMap.find(i_entityKind);
-    if (eIt == entityMap.cend()) return { false, EntityItem(i_entityKind) };
+    if (eIt == entityMap.cend()) return { false, EntityItem(i_entityKind) };    // do not write this entity
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
-    if (modelRunOptions().isCsvMicrodata) doCsvMicrodata(eIt->second, i_microdataKey, i_entityThis);
+    if (modelRunOptions().isCsvMicrodata) doCsvMicrodata(eIt->second, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, io_line);
+    if (modelRunOptions().isDbMicrodata) writeDbMicrodata(eIt->second, i_microdataKey, i_eventId, i_entityThis, io_line);
 
     return { true, eIt->second };
 }
 
+/** write microdata into database. */
+void RunController::doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line)
+{
+    // build sql insert
+    io_line.clear();
+    io_line += i_entityItem.sqlInsPrefix;   // INSERT Person_g87abcdef (....) VALUES (
+
+    // add microdata key
+    io_line += to_string(i_microdataKey);
+    io_line += ", " + to_string(i_runId);
+    if (modelRunOptions().isMicrodataEvents) io_line += ", " + to_string(i_eventId);
+
+    // add microdata values
+    for (size_t k = 0; k < i_entityItem.attrs.size(); k++)
+    {
+        const EntityAttrItem & attr = i_entityItem.attrs[k];
+        io_line += ", ";
+        io_line += attr.sqlFmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset);
+    }
+    io_line += ")";
+
+    // update in transaction scope
+    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+    i_dbExec->update(io_line);
+    i_dbExec->commit();
+}
+
 /** return microdata entity csv file header */
-const string RunController::getHeaderCsvMicrodata(int i_entityKind) const
+const string RunController::csvHeaderMicrodata(int i_entityKind) const
 {
     const auto eIt = entityMap.find(i_entityKind);
     return (eIt != entityMap.cend()) ? eIt->second.csvHdr : "";
@@ -523,14 +553,13 @@ void RunController::openCsvMicrodata(int i_runId)
 
         entityCsvMap[eId].entityId = eId;
         entityCsvMap[eId].filePath = fp;
-        entityCsvMap[eId].csvBuf.reserve(OM_STR_DB_MAX);
 
         entityCsvMap[eId].csvSt.open(fp, ios::out | ios::trunc);
         entityCsvMap[eId].isReady = !entityCsvMap[eId].csvSt.fail();
         if (!entityCsvMap[eId].isReady) 
             throw HelperException("microdata CSV file open error, entity: %s %s", eRow->entityName.c_str(), fp.c_str());
 
-        doCsvLineMicrodata(entityCsvMap[eId], entIt.second.csvHdr);   // write micordata line into csv
+        writeCsvLineMicrodata(entityCsvMap[eId], entIt.second.csvHdr);   // write micordata line into csv
     }
 }
 
@@ -557,7 +586,7 @@ void RunController::closeCsvMicrodata(void) noexcept
 }
 
 /** write microdata into CSV file. */
-void RunController::doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis)
+void RunController::doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line)
 {
     auto ecIt = entityCsvMap.find(i_entityItem.entityId);
     if (ecIt == entityCsvMap.end()) throw ModelException("microdata CSV not found, entity kind: %d microdata key: %llu", i_entityItem.entityId, i_microdataKey);
@@ -569,15 +598,23 @@ void RunController::doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_m
     if (!eCsv.isReady) return;  // output csv file is not ready: not open or it was write error
 
     // converte attribute values into string and write into csv file
-    makeCsvLineMicrodata(i_entityItem, i_microdataKey, i_entityThis, eCsv.csvBuf);
-    doCsvLineMicrodata(eCsv, eCsv.csvBuf);
+    makeCsvLineMicrodata(i_entityItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, io_line);
+    writeCsvLineMicrodata(eCsv, io_line);
 }
 
 /** make attributes csv line by converting attribute values into string */
-void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
+void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line) const
 {
     io_line.clear();
     io_line += to_string(i_microdataKey);
+
+    if (modelRunOptions().isMicrodataEvents) {
+        const char * name = EventIdNameItem::byId(i_eventId);
+        if (name == nullptr) throw ModelException("entity event name not found by event id: %d, entity kind: %d microdata key: %llu", i_eventId, i_entityItem.entityId, i_microdataKey);
+        io_line += ",";
+        if (!i_isSameEntity) io_line += "*";
+        io_line += name;
+    }
 
     for (size_t k = 0; k < i_entityItem.attrs.size(); k++)
     {
@@ -588,7 +625,7 @@ void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64
 }
 
 /** write line into microdata CSV file, close file and raise exception on error. */
-void RunController::doCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line)
+void RunController::writeCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line)
 {
     // write micordata line into csv
     io_entityCsvItem.csvSt << i_line << '\n';
@@ -601,6 +638,5 @@ void RunController::doCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const s
 
         throw HelperException("microdata CSV write error, entity kind: %d microdata key: %llu %s", io_entityCsvItem.entityId, io_entityCsvItem.filePath.c_str());
     }
-    // theTrace->logMsg(eCsv.csvBuf.c_str());
 }
 

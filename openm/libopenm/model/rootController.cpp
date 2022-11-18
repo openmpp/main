@@ -191,6 +191,7 @@ void RootController::broadcastRunOptions(void)
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isDbMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isCsvMicrodata);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isTraceMicrodata);
+    msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &opts.isMicrodataEvents);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(int), &opts.progressPercent);
     msgExec->bcastValue(ProcessGroupDef::all, typeid(double), &opts.progressStep);
 
@@ -795,4 +796,12 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
     } while (isAnyActive && --nAttempt > 0);
 
     return isAnyReceived;
+}
+
+/** write microdata into database. */
+void RootController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line)
+{
+    if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
+
+    // doDbMicrodata(dbExec, i_entityItem, runId, i_microdataKey, i_eventId, i_entityThis, io_line);
 }

@@ -301,3 +301,11 @@ bool RestartController::childExchange(void)
     }
     return false;
 }
+
+/** write microdata into database. */
+void RestartController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line)
+{
+    if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
+
+    doDbMicrodata(dbExec, i_entityItem, runId, i_microdataKey, i_eventId, i_entityThis, io_line);
+}

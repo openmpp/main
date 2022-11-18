@@ -33,6 +33,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::microdataCsvDir,
     RunOptionsKey::microdataAll,
     RunOptionsKey::microdataInternal,
+    RunOptionsKey::microdataEvents,
     RunOptionsKey::profile,
     RunOptionsKey::importAll,
     RunOptionsKey::threadCount,
@@ -950,7 +951,7 @@ void MetaLoader::parseEntityOptions(void)
     bool isToDb = argOpts().boolOption(RunOptionsKey::microdataToDb);       // if true then store microdata in database
     bool isToCsv = argOpts().boolOption(RunOptionsKey::microdataToCsv);     // if true then write microdata into csv
     bool isToTrace = argOpts().boolOption(RunOptionsKey::microdataToTrace); // if true then write microdata into trace output
-    bool isOmAttr = argOpts().boolOption(RunOptionsKey::microdataInternal); // if true then allow internal attributes
+    bool isOmAttr = argOpts().boolOption(RunOptionsKey::microdataInternal); // if true then allow to use internal attributes
 
     // microdata disabled: only one row in EntityNameSizeArr with empty "" entitity name and attribute name
     bool isDisabled = ENTITY_NAME_SIZE_ARR_LEN == 0 ||
@@ -961,6 +962,9 @@ void MetaLoader::parseEntityOptions(void)
     if (isDisabled && isToDb) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToDb);
     if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);
     if (isDisabled && isToTrace) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToTrace);
+
+    bool isEvents = argOpts().boolOption(RunOptionsKey::microdataEvents);   // if true then use entity events
+    if (isEvents && !OM_USE_MICRODATA_EVENTS) throw ModelException("Microdata events disabled, invalid model run option: %s", RunOptionsKey::microdataEvents);
 
     // make list of microdata entity names and attributes
     struct EntAttrs
@@ -997,7 +1001,8 @@ void MetaLoader::parseEntityOptions(void)
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToTrace) ||
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataCsvDir) ||
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataAll) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal)) continue;
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal) ||
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataEvents)) continue;
 
             // find Microdata.EntityName options
             if (!equalNoCase(optIt->first.c_str(), microdataPrefix.c_str(), microdataPrefix.length())) continue;
@@ -1044,12 +1049,15 @@ void MetaLoader::parseEntityOptions(void)
     }
 
     // if any entity attributes specified then enable writing into database and/or into csv
-    // find attribute indices in EntityNameSizeArr to use in model child processes
+    // find attribute indices in EntityNameSizeArr to use
     if (entVec.size() > 0)
     {
+        if (!isToDb && !isToCsv) isToTrace = true;  // if any microdata attributes specified and output to database and to csv disabled then do output to trace
+
         baseRunOpts.isDbMicrodata = isToDb;
         baseRunOpts.isCsvMicrodata = isToCsv;
         baseRunOpts.isTraceMicrodata = isToTrace;
+        baseRunOpts.isMicrodataEvents = isEvents;
 
         for (auto const & ea : entVec)
         {
