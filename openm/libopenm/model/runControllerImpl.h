@@ -81,7 +81,7 @@ namespace openm
         DoneVector isSubDone;   // size of [sub-value count], if true then all sub-value accumulators saved in database
 
         /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line) override;
+        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
 
     private:
         SingleController(const SingleController & i_runCtrl) = delete;
@@ -204,7 +204,7 @@ namespace openm
         bool receiveStatusUpdate(long i_waitTime = 0L);
 
         /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line) override;
+        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
 
     private:
         RootController(const RootController & i_runCtrl) = delete;
@@ -291,7 +291,7 @@ namespace openm
         void sendStatusUpdate(void);
 
         /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line) override;
+        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
 
     private:
         ChildController(const ChildController & i_runCtrl) = delete;
@@ -358,7 +358,7 @@ namespace openm
         bool cleanupRestartSubValue(void);
 
         /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line) override;
+        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
 
     private:
         RestartController(const RestartController & i_runCtrl) = delete;

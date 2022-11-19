@@ -231,11 +231,34 @@ void EntitySymbol::create_auxiliary_symbols()
         fn->doc_block = doxygen_short("Handle microdata output.");
         CodeBlock& c = fn->func_body;
         c += "if constexpr(om_microdata_output_capable) {";
+        c += "uint64_t microdata_key = get_microdata_key();";
+        c += "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
+        c += "int event_id = BaseEvent::current_event_id;";
+        c += "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
+        c += "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
+        c += "}";
+        /*
+        * it is also possible to check microdata run-time options:
+        *
+        *   i_model->runOptions()->isDbMicrodata     : write into database
+        *   i_model->runOptions()->isCsvMicrodata    : write into EntityName.csv file(s)
+        *   i_model->runOptions()->isTraceMicrodata  : write into the trace
+        *   i_model->runOptions()->isMicrodataEvents : write events into csv
+        *
+        * For example:
+        *
+        c += "if constexpr(om_microdata_output_capable) {";
+        c += "uint64_t microdata_key = get_microdata_key();";
+        c += "if (i_model->runOptions()->isDbMicrodata) {";
+        c +=     "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
+        c += "}";
+        c += "if (i_model->runOptions()->isCsvMicrodata || i_model->runOptions()->isTraceMicrodata) {";
         c +=     "int event_id = BaseEvent::current_event_id;";
         c +=     "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
-        c +=     "uint64_t microdata_key = get_microdata_key();";
-        c +=     "i_model->writeMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
+        c +=     "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
         c += "}";
+        c += "}";
+        */
     }
 
     // The get_entity_key() member function

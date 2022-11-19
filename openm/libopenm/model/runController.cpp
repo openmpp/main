@@ -467,36 +467,40 @@ void RunController::initMicrodata(void)
     }
 }
 
-/** write microdata into the database and/or CSV file. */
-tuple<bool, const RunController::EntityItem &> RunController::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line)
+// check if any microdata write required for this entity kind
+tuple<bool, const RunController::EntityItem &> RunController::findEntityItem(int i_entityKind) const
 {
-    if (!modelRunOptions().isDbMicrodata && !modelRunOptions().isCsvMicrodata && !modelRunOptions().isTraceMicrodata) {
-        return { false, EntityItem(i_entityKind) };     // microdata writing is not enabled
-    }
+    const auto eIt = entityMap.find(i_entityKind);
+    if (eIt == entityMap.cend()) return { false, EntityItem(i_entityKind) };   // not found
+
+    return { true, eIt->second };   // found
+}
+
+/** write microdata into the database. */
+void RunController::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
+{
+    if (!modelRunOptions().isDbMicrodata) return;
 
     // check if any microdata write required for this entity kind
-    const auto eIt = entityMap.find(i_entityKind);
-    if (eIt == entityMap.cend()) return { false, EntityItem(i_entityKind) };    // do not write this entity
+    auto [isFound, entItem] = findEntityItem(i_entityKind);
+    if (!isFound) return;
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
-    if (modelRunOptions().isCsvMicrodata) doCsvMicrodata(eIt->second, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, io_line);
-    if (modelRunOptions().isDbMicrodata) writeDbMicrodata(eIt->second, i_microdataKey, i_eventId, i_entityThis, io_line);
-
-    return { true, eIt->second };
+    // write microdata into database or send it to the root process
+    writeDbMicrodata(entItem, i_microdataKey, i_entityThis, io_line);
 }
 
 /** write microdata into database. */
-void RunController::doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line)
+void RunController::doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
 {
     // build sql insert
     io_line.clear();
     io_line += i_entityItem.sqlInsPrefix;   // INSERT Person_g87abcdef (....) VALUES (
 
-    // add microdata key
-    io_line += to_string(i_microdataKey);
-    io_line += ", " + to_string(i_runId);
-    if (modelRunOptions().isMicrodataEvents) io_line += ", " + to_string(i_eventId);
+    // add row key: run id and microdata key
+    io_line += to_string(i_runId);
+    io_line += ", " + to_string(i_microdataKey);
 
     // add microdata values
     for (size_t k = 0; k < i_entityItem.attrs.size(); k++)
@@ -511,6 +515,35 @@ void RunController::doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entit
     unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
     i_dbExec->update(io_line);
     i_dbExec->commit();
+}
+
+/** write microdata into CSV file. */
+void RunController::writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line)
+{
+    if (!modelRunOptions().isCsvMicrodata) return;
+
+    // if event filter is enabled then check if event id is in the filter
+    if (modelRunOptions().isMicrodataEvents && !entityUseEvents[i_eventId]) return; // this event id is not in events filter
+
+    // check if any microdata write required for this entity kind
+    auto [isFound, entItem] = findEntityItem(i_entityKind);
+    if (!isFound) return;
+
+    if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
+
+    // find csv output tsream by entity id
+    auto ecIt = entityCsvMap.find(i_entityKind);
+    if (ecIt == entityCsvMap.end()) throw ModelException("microdata CSV not found, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
+
+    EntityCsvItem & eCsv = ecIt->second;
+
+    lock_guard<recursive_mutex> lck(eCsv.theMutex); // lock csv stream
+
+    if (!eCsv.isReady) return;  // output csv file is not ready: not open or it was write error
+
+    // convert attribute values into string and write into csv file
+    makeCsvLineMicrodata(entItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, io_line);
+    writeCsvLineMicrodata(eCsv, io_line);
 }
 
 /** return microdata entity csv file header */
@@ -585,32 +618,19 @@ void RunController::closeCsvMicrodata(void) noexcept
     }
 }
 
-/** write microdata into CSV file. */
-void RunController::doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line)
-{
-    auto ecIt = entityCsvMap.find(i_entityItem.entityId);
-    if (ecIt == entityCsvMap.end()) throw ModelException("microdata CSV not found, entity kind: %d microdata key: %llu", i_entityItem.entityId, i_microdataKey);
-
-    EntityCsvItem & eCsv = ecIt->second;
-
-    lock_guard<recursive_mutex> lck(eCsv.theMutex); // lock the log 
-
-    if (!eCsv.isReady) return;  // output csv file is not ready: not open or it was write error
-
-    // converte attribute values into string and write into csv file
-    makeCsvLineMicrodata(i_entityItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, io_line);
-    writeCsvLineMicrodata(eCsv, io_line);
-}
-
 /** make attributes csv line by converting attribute values into string */
 void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line) const
 {
     io_line.clear();
+    if (modelRunOptions().isMicrodataEvents && !entityUseEvents[i_eventId]) return; // this event id is not in events filter
+
     io_line += to_string(i_microdataKey);
 
     if (modelRunOptions().isMicrodataEvents) {
+
         const char * name = EventIdNameItem::byId(i_eventId);
         if (name == nullptr) throw ModelException("entity event name not found by event id: %d, entity kind: %d microdata key: %llu", i_eventId, i_entityItem.entityId, i_microdataKey);
+
         io_line += ",";
         if (!i_isSameEntity) io_line += "*";
         io_line += name;

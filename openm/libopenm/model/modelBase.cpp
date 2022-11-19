@@ -155,7 +155,27 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
     }
 }
 
-/** write microdata into the database and/or CSV file.
+/** write microdata into the database.
+*
+* @param   i_entityKind     entity kind id: model metadata entity id in database.
+* @param   i_microdataKey   unique entity instance id.
+* @param   i_entityThis     entity class instance this pointer.
+*/
+void ModelBase::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
+{
+    if (!runOptions()->isDbMicrodata) return;   // microdata writing is not enabled
+
+    if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
+
+    try {
+        runCtrl->writeDbMicrodata(i_entityKind, i_microdataKey, i_entityThis, microdataBuf);
+    }
+    catch (exception & ex) {
+        throw ModelException("Failed to write microdata entity kind: %d microdata key: %llu. %s", i_entityKind, i_microdataKey, ex.what());
+    }
+}
+
+/** write microdata into the CSV file or into trace.
 *
 * @param   i_entityKind     entity kind id: model metadata entity id in database.
 * @param   i_microdataKey   unique entity instance id.
@@ -163,18 +183,22 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
 * @param   i_isSameEntity   if true then event entity the same as microdata entity.
 * @param   i_entityThis     entity class instance this pointer.
 */
-void ModelBase::writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis)
+void ModelBase::writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis)
 {
-    if (!isMicrodata()) return;     // microdata writing is not enabled
+    if (!runOptions()->isCsvMicrodata && !runOptions()->isTraceMicrodata) return;   // microdata writing is not enabled
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        auto [isFound, entItem] = runCtrl->writeMicrodata(i_entityKind, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
+        if (runOptions()->isCsvMicrodata) runCtrl->writeCsvMicrodata(i_entityKind, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
 
-        if (isFound && runOpts.isTraceMicrodata) {
-            runCtrl->makeCsvLineMicrodata(entItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
-            theTrace->logMsg(microdataBuf.c_str());
+        // check if any microdata write required for this entity kind
+        if (runOptions()->isTraceMicrodata) {
+            auto [isFound, entItem] = runCtrl->findEntityItem(i_entityKind);
+            if (isFound) {
+                runCtrl->makeCsvLineMicrodata(entItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
+                theTrace->logMsg(microdataBuf.c_str());
+            }
         }
     }
     catch (exception & ex) {

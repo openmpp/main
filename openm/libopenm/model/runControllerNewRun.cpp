@@ -476,16 +476,14 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
     vector<EntAttrs> entVec;
 
     {
-        auto eIt = entVec.end();
-
         for (int idx : entityIdxArr)
         {
             int eId = EntityNameSizeArr[idx].entityId;
 
-            eIt = find_if(
+            auto eIt = find_if(
                 entVec.begin(),
                 entVec.end(),
-                [eId](EntAttrs & ea) -> bool { return ea.entityId = eId; }
+                [eId](EntAttrs & ea) -> bool { return ea.entityId == eId; }
             );
             if (eIt == entVec.end()) {  // new entity
 
@@ -539,7 +537,7 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
         }
 
         // calculate entity table digest (generation digest)
-        const string entMd5 = makeEntityGenDigest(ent, attrs, modelRunOptions().isMicrodataEvents);
+        const string entMd5 = makeEntityGenDigest(ent, attrs);
         string dbTableName;
 
         // check if entity generation digest already exists
@@ -562,7 +560,7 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
         {
             string p = IDbExec::makeDbNamePrefix(ent->entityId, ent->entityName);
             string s = IDbExec::makeDbNameSuffix(ent->entityId, ent->entityName, entMd5);
-            dbTableName = p + (modelRunOptions().isMicrodataEvents ? "_e" : "_g") + s;
+            dbTableName = p + "_g" + s;
 
             i_dbExec->update(
                 "UPDATE id_lst SET id_value = id_value + 1 WHERE id_key = 'entity_hid'"
@@ -573,11 +571,10 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
             if (genHid <= 0) throw DbException(LT("invalid (not positive) entity Hid of: %s"), ent->entityName.c_str());
 
             i_dbExec->update(
-                "INSERT INTO entity_gen (entity_gen_hid, entity_hid, is_events, db_entity_table, gen_digest)" \
+                "INSERT INTO entity_gen (entity_gen_hid, entity_hid, db_entity_table, gen_digest)" \
                 " VALUES (" +
                 to_string(genHid) + ", " +
                 to_string(ent->entityHid) + ", " +
-                (modelRunOptions().isMicrodataEvents ? "1, " : "0, ") +
                 toQuoted(dbTableName) + ", " +
                 toQuoted(entMd5) + ")");
 
@@ -601,25 +598,11 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
             //   attr7      FLOAT,          -- float attribute value NaN is NULL
             //   PRIMARY KEY (run_id, entity_key)
             // )
-            //
-            // Or:
-            // 
-            // CREATE TABLE Person_e87abcdef
-            // (
-            //   run_id     INT    NOT NULL,
-            //   entity_key BIGINT NOT NULL,
-            //   event_id   INT    NOT NULL,
-            //   attr4      INT    NOT NULL,
-            //   attr7      FLOAT,          -- float attribute value NaN is NULL
-            //   PRIMARY KEY (run_id, entity_key, event_id)
-            // )
             const string prv = i_dbExec->provider();
 
             string bodySql = "(" \
                 "run_id INT NOT NULL, " \
                 " entity_key " + IDbExec::bigIntTypeName(prv) + " NOT NULL,";
-
-            if (modelRunOptions().isMicrodataEvents) bodySql += " event_id INT NOT NULL,";
 
             for (const EntityAttrRow & at : attrs)
             {
@@ -641,8 +624,6 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
         // INSERT INTO Person_g87abcdef (run_id, entity_key, attr4, attr7) VALUES (
         //
         entIt->second.sqlInsPrefix = "INSERT INTO " + dbTableName + "(run_id, entity_key";
-
-        if (modelRunOptions().isMicrodataEvents) entIt->second.sqlInsPrefix += ", event_id";
 
         for (const EntityAttrRow & at : attrs)
         {
@@ -683,12 +664,12 @@ void RunController::insertRunEntity(int i_runId, IDbExec * i_dbExec)
 }
 
 // calculate entity generation digest: based on entity digest, attribute name, type digest
-const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows, bool i_isUseEvents) const
+const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows) const
 {
     // make digest header as entity name
     MD5 md5Full;
-    md5Full.add("entity_digest,is_events\n", strlen("entity_digest,is_events\n"));
-    string sLine = i_entRow->digest + "," + (i_isUseEvents? "1" : "0") + "\n";
+    md5Full.add("entity_digest\n", strlen("entity_digest,is_events\n"));
+    string sLine = i_entRow->digest + "\n";
     md5Full.add(sLine.c_str(), sLine.length());
 
     // add attributes: name and attribute type digest

@@ -156,7 +156,15 @@ namespace openm
             EntityItem(int i_entityId) : entityId(i_entityId) {}
         };
 
-        /** write microdata into the database and/or CSV file.
+        /** write microdata into the database.
+        *
+        * @param   i_entityKind     entity kind id: model metadata entity id in database.
+        * @param   i_microdataKey   unique entity instance id.
+        * @param   i_entityThis     entity class instance this pointer.
+        */
+        void writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis, string & io_line);
+
+        /** write microdata into the CSV file.
         *
         * @param   i_entityKind     entity kind id: model metadata entity id in database.
         * @param   i_microdataKey   unique entity instance id.
@@ -164,13 +172,16 @@ namespace openm
         * @param   i_isSameEntity   if true then event entity the same as microdata entity.
         * @param   i_entityThis     entity class instance this pointer.
         */
-        tuple<bool, const EntityItem &> writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line);
+        void writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line);
 
         /** return microdata entity csv file header */
         const string csvHeaderMicrodata(int i_entityKind) const;
 
         /** make attributes csv line by converting attribute values into string */
         void makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line) const;
+
+        /** check if any microdata write required for this entity kind */
+        tuple<bool, const RunController::EntityItem &> findEntityItem(int i_entityKind) const;
 
     protected:
         /** create run controller */
@@ -221,11 +232,11 @@ namespace openm
         /** merge updated sub-values run statue into database */
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
-        /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line) = 0;
+        /** write microdata into database or send it to teh root process. */
+        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) = 0;
 
         /** write microdata into database. */
-        void doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & io_line);
+        void doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, const void * i_entityThis, string & io_line);
 
         /** create microdata CSV files for new model run. */
         void openCsvMicrodata(int i_runId);
@@ -256,7 +267,7 @@ namespace openm
         void insertRunEntity(int i_runId, IDbExec * i_dbExec);
 
         // calculate entity generation digest: based on entity digest, attributes id, name, type digest
-        const string makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows, bool i_isUseEvents) const;
+        const string makeEntityGenDigest(const EntityDicRow * i_entRow, const vector<EntityAttrRow> i_attrRows) const;
 
         /** write output tables aggregated values into database, skip suppressed tables */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;

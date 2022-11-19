@@ -133,8 +133,8 @@ namespace openm
         /** allow to use internal attributes, ex: -Microdata.UseInternal true */
         static constexpr const char * microdataInternal = "Microdata.UseInternal";
 
-        /** allow to use entity events, ex: -Microdata.UseEvents true */
-        static constexpr const char * microdataEvents = "Microdata.UseEvents";
+        /** filter entity events, ex: -Microdata.Events Birth,Union or -Microdata.Events All */
+        static constexpr const char * microdataEvents = "Microdata.Events";
 
         /** options started with "Microdata." used to specify which entity attributes to store, ex: -Microdata.Person age,region,income */
         static constexpr const char* microdataPrefix = "Microdata";
@@ -286,6 +286,7 @@ namespace openm
         vector<int> paramIdSubArr;          // ids of parameters where sub-values count same as model run sub-values count
         vector<int> tableIdSuppressArr;     // id's of tables to suppress from calculation and output
         vector<int> entityIdxArr;           // microdata attributes indices in EntityNameSizeArr
+        vector<bool> entityUseEvents;       // microdata event filter: if this array[event id] is true then use this event
 
         /** create metadata loader. */
         MetaLoader(const ArgReader & i_argStore) :

@@ -66,11 +66,11 @@ namespace openm
         /** set modeling progress count and value */
         void updateProgress(int i_count, double i_value = 0.0) override { runCtrl->runStateStore().updateProgress(runId, runOpts.subValueId, i_count, i_value); }
 
-        /** return true if model store microdata in database or CSV file. */
-        const bool isMicrodata(void) const override { return runOpts.isDbMicrodata || runOpts.isCsvMicrodata || runOpts.isTraceMicrodata; };
+        /** write microdata into the database */
+        virtual void writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) override;
 
-        /** write microdata into the database and/or CSV file. */
-        void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis) override;
+        /** write microdata into CSV file or into trace */
+        virtual void writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis) override;
 
     private:
         int modelId;                    // model id in database

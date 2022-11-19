@@ -963,8 +963,33 @@ void MetaLoader::parseEntityOptions(void)
     if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);
     if (isDisabled && isToTrace) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToTrace);
 
-    bool isEvents = argOpts().boolOption(RunOptionsKey::microdataEvents);   // if true then use entity events
-    if (isEvents && !OM_USE_MICRODATA_EVENTS) throw ModelException("Microdata events disabled, invalid model run option: %s", RunOptionsKey::microdataEvents);
+    // use any entity event: -Microdata.Events All or events from filter: -Microdata.Events Birth,Union
+    const string evtNames = argOpts().strOption(RunOptionsKey::microdataEvents);
+    if (!OM_USE_MICRODATA_EVENTS && !evtNames.empty())
+        throw ModelException("Microdata events disabled, invalid model run option: %s %s", RunOptionsKey::microdataEvents, evtNames.c_str());
+
+    bool isEvents = !evtNames.empty();
+    if (isEvents) {
+        if (evtNames == RunOptionsKey::allValue) {
+            entityUseEvents.resize(EVENT_ID_NAME_ARR_LEN - 1, true);    // enable all events
+        }
+        else {  // enable only events where name is in filter
+            entityUseEvents.resize(EVENT_ID_NAME_ARR_LEN - 1, false);
+
+            list<string> eLst = splitCsv(evtNames);
+            for (const string & name : eLst)
+            {
+                auto e = std::find_if(
+                    EventIdNameArr + 1,
+                    EventIdNameArr + EVENT_ID_NAME_ARR_LEN,
+                    [name](const EventIdNameItem & ein) -> bool { return ein.eventName == name; }
+                );
+                if (e == EventIdNameArr + EVENT_ID_NAME_ARR_LEN) throw ModelException("Invalid microdata event name: %s", name.c_str());
+
+                entityUseEvents[e->eventId] = true;     // enable this event
+            }
+        }
+    }
 
     // make list of microdata entity names and attributes
     struct EntAttrs
@@ -1002,7 +1027,9 @@ void MetaLoader::parseEntityOptions(void)
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataCsvDir) ||
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataAll) ||
                 equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataEvents)) continue;
+                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataEvents)) {
+                continue;
+            }
 
             // find Microdata.EntityName options
             if (!equalNoCase(optIt->first.c_str(), microdataPrefix.c_str(), microdataPrefix.length())) continue;

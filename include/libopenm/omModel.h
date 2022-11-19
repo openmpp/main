@@ -158,10 +158,15 @@ namespace openm
         /** set modeling progress count and value */
         virtual void updateProgress(int i_count, double i_value = 0.0) = 0;
 
-        /** return true if model store microdata in database or CSV file. */
-        virtual const bool isMicrodata(void) const = 0;
+        /** write microdata into the database.
+        *
+        * @param   i_entityKind     entity kind id: model metadata entity id in database.
+        * @param   i_microdataKey   unique entity instance id.
+        * @param   i_entityThis     entity class instance this pointer.
+        */
+        virtual void writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis) = 0;
 
-        /** write microdata into the database and/or CSV file.
+        /** write microdata into CSV file or into trace.
         *
         * @param   i_entityKind     entity kind id: model metadata entity id in database.
         * @param   i_microdataKey   unique entity instance id.
@@ -169,7 +174,7 @@ namespace openm
         * @param   i_isSameEntity   if true then event entity the same as microdata entity.
         * @param   i_entityThis     entity class instance this pointer.
         */
-        virtual void writeMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis) = 0;
+        virtual void writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis) = 0;
     };
 
     /** model input parameter name, type and size */

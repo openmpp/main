@@ -149,6 +149,22 @@ void ChildController::broadcastRunOptions(void)
         entityIdxArr.resize(n);
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, entityIdxArr.data());
     }
+
+    // broadcast microdata entity events usage boolean array
+    n = (int)entityUseEvents.size();
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+    if (n > 0) {
+        entityUseEvents.resize(n);
+
+        vector<int> evtUsage(n);
+        msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
+
+        for (size_t k = 0; k < (size_t)n; k++)
+        {
+            entityUseEvents[k] = evtUsage[k] != 0;
+        }
+    }
 }
 
 /** receive broadcasted model messages from root process. */
@@ -322,6 +338,6 @@ void ChildController::sendStatusUpdate(void)
 }
 
 /** write microdata into database. */
-void ChildController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, const void * i_entityThis, string & /* io_line */)
+void ChildController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & /* io_line */)
 {
 }
