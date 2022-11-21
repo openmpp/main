@@ -240,6 +240,8 @@ void EntitySymbol::create_auxiliary_symbols()
         /*
         * it is also possible to check microdata run-time options:
         *
+        *   i_model->runOptions()->isMicrodata()     : microdata output enabled at run time
+        *   i_model->runOptions()->isTextMicrodata() : microdata text output enabled: output to CSV or to trace
         *   i_model->runOptions()->isDbMicrodata     : write into database
         *   i_model->runOptions()->isCsvMicrodata    : write into EntityName.csv file(s)
         *   i_model->runOptions()->isTraceMicrodata  : write into the trace
@@ -252,7 +254,7 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "if (i_model->runOptions()->isDbMicrodata) {";
         c +=     "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
         c += "}";
-        c += "if (i_model->runOptions()->isCsvMicrodata || i_model->runOptions()->isTraceMicrodata) {";
+        c += "if (i_model->runOptions()->isTextMicrodata()) {";
         c +=     "int event_id = BaseEvent::current_event_id;";
         c +=     "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
         c +=     "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
