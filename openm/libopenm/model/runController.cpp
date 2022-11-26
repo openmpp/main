@@ -159,6 +159,15 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 {
     updateRunState(i_dbExec, runStateStore().saveUpdated(true)); // update run status for all sub-values
 
+    // get the last portion of microdata and write it into database 
+    if (modelRunOptions().isDbMicrodata)
+    {
+        theLog->logFormatted("Writing microdata into database, run: %d", i_runId);
+
+        auto io_entityMdRows = pullDbMicrodata(true);    // get all microdata rows now
+        doDbMicrodata(i_dbExec, io_entityMdRows);
+    }
+
     // update run status: all sub-values completed at this point
     string sDt = makeDateTime(chrono::system_clock::now());
     bool isRunError = false;
@@ -260,7 +269,7 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
         int64_t now = getMilliseconds();
         n++;
         if (now > lastMs + OM_LOG_PROGRESS_TIME) {
-            theLog->logFormatted("Table %zd of %zd: %s", n, nCount, tblRow.tableName.c_str());
+            theLog->logFormatted("Table %zu of %zu: %s", n, nCount, tblRow.tableName.c_str());
             lastMs = now;
         }
 
@@ -434,8 +443,7 @@ void RunController::updateRunState(IDbExec * i_dbExec, const map<pair<int, int>,
 // initialize microdata entity writing
 void RunController::initMicrodata(void)
 {
-    bool isAnyCsv = modelRunOptions().isCsvMicrodata || modelRunOptions().isTraceMicrodata;
-    if (!isAnyCsv && !modelRunOptions().isDbMicrodata) return;
+    if (!modelRunOptions().isMicrodata()) return;
 
     // setup attributes list for each entity and initialize converters from attribute value to string
     string dblFmt = argOpts().strOption(RunOptionsKey::doubleFormat);
@@ -449,7 +457,7 @@ void RunController::initMicrodata(void)
 
         if (eLast == entityMap.end()) {
             eLast = entityMap.insert({ eId, EntityItem(eId) }).first;
-            if (isAnyCsv) {
+            if (modelRunOptions().isTextMicrodata()) {
                 eLast->second.csvHdr = "key";
                 if (modelRunOptions().isMicrodataEvents) eLast->second.csvHdr += ",event";
             }
@@ -460,10 +468,47 @@ void RunController::initMicrodata(void)
         eLast->second.attrs.back().fmtValue.reset(new ShortFormatter(EntityNameSizeArr[idx].typeOf, dblFmt.c_str()));
         eLast->second.attrs.back().sqlFmtValue.reset(new ShortFormatter(EntityNameSizeArr[idx].typeOf, true, dblFmt.c_str()));
 
-        if (isAnyCsv) {   // make csv header line for the entity
+        if (modelRunOptions().isTextMicrodata()) {   // make csv header line for the entity
             eLast->second.csvHdr += ",";
             eLast->second.csvHdr += EntityNameSizeArr[idx].attribute;
         }
+    }
+
+    // setup database row layout, prepare statement helpers and buffers
+    for (auto & ent : entityMap)
+    {
+        ptrdiff_t off = sizeof(int) + sizeof(uint64_t); // add size of run id and microdata key
+
+        for (auto & attr : ent.second.attrs)
+        {
+            attr.rowOffset = off;
+            off += EntityNameSizeArr[attr.idxOf].size;
+        }
+        ent.second.rowSize = off;   // database row size
+
+        entityDbMap[ent.first].entityId = ent.first;    // add database rows buffer
+
+        // create db values setters and types array for insert statement
+        ent.second.rowSetter.push_back(DbValueSetter(typeid(int)));         // run id
+        ent.second.rowSetter.push_back(DbValueSetter(typeid(uint64_t)));    // microdata key
+        ent.second.rowTypes.push_back(&typeid(int));                        // run id
+        ent.second.rowTypes.push_back(&typeid(uint64_t));                   // microdata key
+
+        for (const EntityAttrItem & attr : ent.second.attrs)
+        {
+            ent.second.rowSetter.push_back(DbValueSetter(EntityNameSizeArr[attr.idxOf].typeOf));
+            ent.second.rowTypes.push_back(&ent.second.rowSetter.back().valueType());
+        }
+    }
+}
+
+namespace
+{
+    // copy bytes source into destination and return next destination offset
+    ptrdiff_t memCopyTo(uint8_t * io_dst, ptrdiff_t i_offset, const void * i_src, size_t i_size)
+    {
+        memcpy(io_dst + i_offset, i_src, i_size);
+        return i_offset + i_size;
     }
 }
 
@@ -476,8 +521,8 @@ tuple<bool, const RunController::EntityItem &> RunController::findEntityItem(int
     return { true, eIt->second };   // found
 }
 
-/** write microdata into the database. */
-void RunController::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
+/** push microdata database rows into the buffer. */
+void RunController::pushDbMicrodata(int i_runId, int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
 {
     if (!modelRunOptions().isDbMicrodata) return;
 
@@ -487,34 +532,215 @@ void RunController::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, 
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
-    // write microdata into database or send it to the root process
-    writeDbMicrodata(entItem, i_microdataKey, i_entityThis, io_line);
+    // pack entity attribute values into database row buffer
+    auto ed = entityDbMap.find(i_entityKind);
+    if (ed == entityDbMap.end()) throw ModelException("Not found entity in entity DB map, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
+    auto & eDb = ed->second;
+
+    lock_guard<recursive_mutex> lck(eDb.theMutex); // lock the database buffer
+
+    unique_ptr<uint8_t> btArr(new uint8_t[entItem.rowSize]);
+    uint8_t * pVal = btArr.get();
+
+    size_t nOff = 0;
+    nOff = memCopyTo(pVal, nOff, &i_runId, sizeof(int));                // first column: run id
+    nOff = memCopyTo(pVal, nOff, &i_microdataKey, sizeof(uint64_t));    // second column: microdata key
+
+    // copy attributes value
+    for (const auto & attr : entItem.attrs)
+    {
+        nOff = memCopyTo(pVal, nOff, (reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset), EntityNameSizeArr[attr.idxOf].size);
+    }
+
+    eDb.rowLst.push_back(move(btArr));  // append to database microdata row buffer
+}
+
+/** pull microdata database rows from the buffer.
+* if i_isNow is true then return current microdata rows for all entities
+* else return non empty results only
+*   if microdata row count is more than upper bound
+*   or
+*   if microdata row count is more than lower bound
+*   time since last save is moe than microdata save time interval
+*/
+map<int, list<unique_ptr<uint8_t>>> RunController::pullDbMicrodata(bool i_isNow)
+{
+    map<int, list<unique_ptr<uint8_t>>> entMdRows;
+
+    if (!modelRunOptions().isDbMicrodata) return entMdRows;   // return empty values
+
+    // check interval since last save and microdata total row count
+    bool isSave = i_isNow;
+    chrono::system_clock::time_point nowTime = chrono::system_clock::now();
+
+    if (!isSave)
+    {
+        size_t nRows = 0;
+        bool isTime = false;
+
+        for (auto & ed : entityDbMap)
+        {
+            EntityDbItem & eDb = ed.second;
+            auto [isT, n] = statusDbMicrodata(nowTime, eDb);
+            isTime |= isT;
+            nRows += n;
+            isSave = nRows > MaxSizeToSaveMicrodata || (isTime && nRows > MinSizeToSaveMicrodata);
+            if (isSave) break;
+        }
+    }
+
+    // move current microdata rows for each entity into return map
+    if (isSave)
+    {
+        for (auto & ed : entityDbMap)
+        {
+            EntityDbItem & eDb = ed.second;
+            entMdRows.insert(pair<int, list<unique_ptr<uint8_t>>>({ ed.first, moveDbMicrodata(nowTime, eDb) }));
+        }
+    }
+
+    return entMdRows;
+}
+
+/** by entity id return status of microdata db rows:
+*   true of false if last save time more than save time intreval
+*   and microdata rows count
+*/
+tuple<bool, size_t> RunController::statusDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & i_entityDbItem)
+{
+    lock_guard<recursive_mutex> lck(i_entityDbItem.theMutex);   // lock the database buffer
+
+    return {
+        i_entityDbItem.lastSaveTime + chrono::milliseconds(OM_MICRODATA_SAVE_TIME) < i_nowTime,
+        i_entityDbItem.rowLst.size()
+    };
+}
+
+/** return microdata db rows and clear row list */
+list<unique_ptr<uint8_t>> && RunController::moveDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & io_entityDbItem)
+{
+    lock_guard<recursive_mutex> lck(io_entityDbItem.theMutex);  // lock the database buffer
+
+    io_entityDbItem.lastSaveTime = i_nowTime;
+    return move(io_entityDbItem.rowLst);
 }
 
 /** write microdata into database. */
-void RunController::doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
+size_t RunController::doDbMicrodata(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows)
 {
-    // build sql insert
-    io_line.clear();
-    io_line += i_entityItem.sqlInsPrefix;   // INSERT Person_g87abcdef (....) VALUES (
+    size_t rowCount = 0;
 
-    // add row key: run id and microdata key
-    io_line += to_string(i_runId);
-    io_line += ", " + to_string(i_microdataKey);
-
-    // add microdata values
-    for (size_t k = 0; k < i_entityItem.attrs.size(); k++)
+    for (auto & e : entityMap)
     {
-        const EntityAttrItem & attr = i_entityItem.attrs[k];
-        io_line += ", ";
-        io_line += attr.sqlFmtValue->formatValue(reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset);
-    }
-    io_line += ")";
+        auto & ent = e.second;
 
-    // update in transaction scope
-    unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
-    i_dbExec->update(io_line);
-    i_dbExec->commit();
+        const auto & mrIt = io_entityMdRows.find(ent.entityId);
+        if (mrIt == io_entityMdRows.cend()) continue;           // no db rows for that entity
+        if (mrIt->second.empty()) continue;                     // no db rows for that entity
+
+        // make insert sql statement:
+        //
+        // INSERT Person_g87abcdef (run_id, entity_key, attr0, attr3) VALUES (?, ?, ?, ?)
+        //
+        int nAttrs = (int)ent.attrs.size();
+
+        string insSql = ent.sqlInsPrefix + "?, ?";  // INSERT Person_g87abcdef (....) VALUES (?, ?
+ 
+        for (int k = 0; k < nAttrs; k++)
+        {
+            insSql += ", ?";
+        }
+        insSql += ")";
+
+        // storage for sub value id, dimension items and db row values
+        unique_ptr<DbValue> valVecUptr(new DbValue[2 + nAttrs]);        // run id, microdata key, attributes
+        DbValue * valVec = valVecUptr.get();
+        
+        // insert entity microdata rows in transaction scope
+        {
+            unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+            {
+                // prepare insert statement
+                exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
+                i_dbExec->createStatement(insSql, (int)ent.rowTypes.size(), ent.rowTypes.data());
+
+                for (list<unique_ptr<uint8_t>>::const_iterator rIt = mrIt->second.cbegin(); rIt != mrIt->second.cend(); ++rIt)
+                {
+                    // add row key: run id and microdata key
+                    const uint8_t * pVal = rIt->get();
+
+                    int rId = *static_cast<const int *>(static_cast<const void *>(pVal));
+                    uint64_t mKey = *static_cast<const uint64_t *>(static_cast<const void *>(pVal + sizeof(int)));
+                    valVec[0] = DbValue(rId);
+                    valVec[1] = DbValue(mKey);
+
+                    // add microdata attribute values
+                    for (size_t k = 0; k < ent.attrs.size(); k++)
+                    {
+                        ent.rowSetter[k + 2].set(static_cast<const void *>(pVal + ent.attrs[k].rowOffset), valVec[k + 2]);
+                    }
+
+                    // insert cell value into parameter table
+                    i_dbExec->executeStatement(2 + nAttrs, valVec);
+                    rowCount++;
+                }
+            }
+            i_dbExec->commit();
+        }
+    }
+
+    return rowCount;
+}
+
+/** write microdata into database using sql insert literal. */
+size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows)
+{
+    size_t rowCount = 0;
+    string sql;
+    sql.reserve(OM_STR_DB_MAX);
+
+    for (const auto & e : entityMap)
+    {
+        const auto & ent = e.second;
+
+        const auto & mrIt = io_entityMdRows.find(ent.entityId);
+        if (mrIt == io_entityMdRows.cend()) continue;           // no db rows for that entity
+        if (mrIt->second.empty()) continue;                     // no db rows for that entity
+
+        // insert entity microdata rows in transaction scope
+        {
+            unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
+
+            for (list<unique_ptr<uint8_t>>::const_iterator rIt = mrIt->second.cbegin(); rIt != mrIt->second.cend(); ++rIt)
+            {
+                // build sql insert
+                sql.clear();
+                sql += ent.sqlInsPrefix;   // INSERT Person_g87abcdef (....) VALUES (
+
+                // add row key: run id and microdata key
+                const uint8_t * pVal = rIt->get();
+
+                int rId = *static_cast<const int *>(static_cast<const void *>(pVal));
+                uint64_t mKey = *static_cast<const uint64_t *>(static_cast<const void *>(pVal + sizeof(int)));
+
+                sql += to_string(rId) + ", " + to_string(mKey);
+
+                // add microdata values
+                for (const EntityAttrItem & attr : ent.attrs)
+                {
+                    sql += ", ";
+                    sql += attr.sqlFmtValue->formatValue(pVal + attr.rowOffset);
+                }
+                sql += ")";
+
+                i_dbExec->update(sql);  // insert microdata row
+                rowCount++;
+            }
+            i_dbExec->commit();
+        }
+    }
+
+    return rowCount;
 }
 
 /** write microdata into CSV file. */
@@ -603,7 +829,7 @@ void RunController::closeCsvMicrodata(void) noexcept
         for (auto & e : entityCsvMap)
         {
             {
-                lock_guard<recursive_mutex> lck(e.second.theMutex); // lock the log 
+                lock_guard<recursive_mutex> lck(e.second.theMutex); // lock csv stream
 
                 e.second.isReady = false;
                 try {

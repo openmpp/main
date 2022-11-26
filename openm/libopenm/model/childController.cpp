@@ -336,8 +336,3 @@ void ChildController::sendStatusUpdate(void)
         msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
     }
 }
-
-/** write microdata into database. */
-void ChildController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & /* io_line */)
-{
-}

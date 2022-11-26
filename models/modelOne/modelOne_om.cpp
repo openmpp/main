@@ -43,6 +43,10 @@ thread_local unique_ptr<FullAgeSalary> theFullAgeSalary;    // full time by age 
 thread_local unique_ptr<AgeSexIncome> theAgeSexIncome;      // age by sex income
 thread_local unique_ptr<SeedOldAge> theSeedOldAge;          // seed old age output values
 
+// special empty entity instances
+thread_local Person Person::om_null_entity;
+thread_local Other Other::om_null_entity;
+
 // large model parameters
 //
 #ifdef MODEL_ONE_LARGE
@@ -240,6 +244,12 @@ void ModelShutdown(IModel * const i_model)
 #endif  // MODEL_ONE_LARGE
 }
 
+// entity events, id must be and index in events array
+const int BIRTH_EVENT_ID = 0;
+const int RETIRE_EVENT_ID = 1;
+const int DEATH_EVENT_ID = 2;
+const int OM_SS_EVENT_ID = 3;   // entity special event: internal system events
+
 namespace openm
 {
     // model API entries holder
@@ -301,4 +311,64 @@ namespace openm
     };
 
 #endif  // MODEL_ONE_LARGE
+
+    // Entity instances to calculate attributes member offset
+    #define om_PersonEntityNull (Person::om_null_entity)
+    static const uint8_t * om_PersonEntityNullThis = reinterpret_cast<const uint8_t *>(&om_PersonEntityNull);
+
+    #define om_OtherEntityNull (Other::om_null_entity)
+    static const uint8_t * om_OtherEntityNullThis = reinterpret_cast<const uint8_t *>(&om_OtherEntityNull);
+
+    // size of entity attributes list: all attributes of all entities
+    const size_t ENTITY_NAME_SIZE_ARR_LEN = 14;
+
+    // list of entity attributes name, type, size and member offset
+    const EntityNameSizeItem EntityNameSizeArr[ENTITY_NAME_SIZE_ARR_LEN] = {
+        { 0, "Person", 0, "Age",         typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age)) - om_PersonEntityNullThis },
+        { 0, "Person", 1, "AgeGroup",    typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age_group)) - om_PersonEntityNullThis },
+        { 0, "Person", 2, "Sex",         typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.sex)) - om_PersonEntityNullThis },
+        { 0, "Person", 3, "Income",      typeid(double),   sizeof(double),   reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.income)) - om_PersonEntityNullThis },
+        { 0, "Person", 4, "Salary",      typeid(double),   sizeof(double),   reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.salary)) - om_PersonEntityNullThis },
+        { 0, "Person", 5, "SalaryGroup", typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.salary_group)) - om_PersonEntityNullThis },
+        { 0, "Person", 6, "FullTime",    typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.full_time)) - om_PersonEntityNullThis },
+        { 0, "Person", 7, "IsOldAge",    typeid(bool),     sizeof(bool),     reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.is_old_age)) - om_PersonEntityNullThis },
+        { 0, "Person", 8, "Pension",     typeid(double),   sizeof(double),   reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.pension)) - om_PersonEntityNullThis },
+        { 0, "Person", 9, "crc",         typeid(uint64_t), sizeof(uint64_t), reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.crc)) - om_PersonEntityNullThis },
+        { 1, "Other", 20, "Age",         typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_OtherEntityNull.age)) - om_OtherEntityNullThis },
+        { 1, "Other", 21, "AgeGroup",    typeid(int),      sizeof(int),      reinterpret_cast<const uint8_t *>(&(om_OtherEntityNull.age_group)) - om_OtherEntityNullThis },
+        { 1, "Other", 22, "Income",      typeid(double),   sizeof(double),   reinterpret_cast<const uint8_t *>(&(om_OtherEntityNull.income)) - om_OtherEntityNullThis },
+        { 1, "Other", 23, "crc",         typeid(uint64_t), sizeof(uint64_t), reinterpret_cast<const uint8_t *>(&(om_OtherEntityNull.crc)) - om_OtherEntityNullThis }
+    };
+
+    // size of event list: all events in all entities
+    const size_t EVENT_ID_NAME_ARR_LEN = 5;
+
+    // list of events id, name
+    // id must be and index in events array
+    const EventIdNameItem EventIdNameArr[EVENT_ID_NAME_ARR_LEN] =
+    {
+        {-1, "(no event)"},
+        {BIRTH_EVENT_ID,  "Birth"},
+        {RETIRE_EVENT_ID,  "Retire"},
+        {DEATH_EVENT_ID,  "Death"},
+        {OM_SS_EVENT_ID,  "om_ss_event"}
+    };
+
+    // if microdata disabled by compiler:
+    /*
+    // size of entity attributes list: all attributes of all entities
+    const size_t ENTITY_NAME_SIZE_ARR_LEN = 1;
+
+    // list of entity attributes name, type, size and member offset
+    const EntityNameSizeItem EntityNameSizeArr[ENTITY_NAME_SIZE_ARR_LEN] = { { 0, "", 0, "", typeid(int), sizeof(int), 0 } };
+
+    // size of event list: all events in all entities
+    const size_t EVENT_ID_NAME_ARR_LEN = 1;
+
+    // list of events id, name
+    const EventIdNameItem EventIdNameArr[EVENT_ID_NAME_ARR_LEN] =
+    {
+        {-1, "(no event)"}
+    };
+    */
 }

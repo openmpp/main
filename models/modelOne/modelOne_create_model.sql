@@ -34,6 +34,7 @@ INSERT INTO model_word (model_id, lang_id, word_code, word_value) VALUES (1, 1, 
 --
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 4, 4);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 7, 7);
+INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 12, 12);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 14, 14);
 INSERT INTO model_type_dic (model_id, model_type_id, type_hid) VALUES (1, 21, 21);
 
@@ -61,7 +62,9 @@ INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (104, 0, 'Full 
 INSERT INTO type_dic_txt (type_hid, lang_id, descr, note) VALUES (104, 1, 'Temps plein ou partiel', NULL);
 
 --
--- enums for model-specific types, age, salary and full-or-part enum id's not zero-based
+-- enums for model-specific classification types: age group, sex, salary group, full-or-part
+-- only sex enum id is zero based
+-- age, salary and full-or-part enum id's are not zero-based
 --
 INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (101, 10, '10-20');
 INSERT INTO type_enum_lst (type_hid, enum_id, enum_name) VALUES (101, 20, '20-30');

@@ -809,11 +809,3 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
 
     return isAnyReceived;
 }
-
-/** write microdata into database. */
-void RootController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
-{
-    if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
-
-    // doDbMicrodata(dbExec, i_entityItem, runId, i_microdataKey, i_entityThis, io_line);
-}

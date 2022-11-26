@@ -196,7 +196,7 @@ MPI_Comm MpiExec::commByGroupOne(int i_groupOne)
 
 /** wait until MPI request completed.
 *
-* @param[in]     i_pollTime  dealy in millisends between test MPI request status
+* @param[in]     i_pollTime  delay in millisends between test MPI request status
 * @param[in,out] io_request  MPI request to wait
 */
 void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {

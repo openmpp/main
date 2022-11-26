@@ -415,7 +415,7 @@ namespace
     // return true if option value is "true", "1", "yes" (case insensitive) or empty "" value
     // return false if option is not specified or one of: "false", "0", "no"
     // raise exception otherwise
-    static bool parseBoolOption(const char * i_key, const ArgReader & i_argStore)
+    bool parseBoolOption(const char * i_key, const ArgReader & i_argStore)
     {
         int nOpt = i_argStore.boolOptionToInt(i_key);
         if (nOpt < -1) {

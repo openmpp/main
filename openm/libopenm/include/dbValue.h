@@ -81,9 +81,40 @@ namespace openm
         ValueRowAdapter & operator=(const ValueRowAdapter &) = delete;
     };
 
-    inline const char * nullValueString = "null";      /** NULL value as string */
-    inline const char * trueValueString = "true";      /** true boolean value as string */
-    inline const char * falseValueString = "false";    /** false boolean value as string */
+    /** set DbValue by casting a pointer to the value */
+    class DbValueSetter
+    {
+    public:
+        /** create DbValue setter.
+         *
+         * @param[in] i_type    value type, use std::string type for VARCHAR values
+         */
+        DbValueSetter(const type_info & i_type);
+
+        /** set DbValue by casting a pointer to the value */
+        void set(const void * i_value, DbValue & o_dbVal);
+
+        /** return value type */
+        const type_info & valueType(void) const { return typeOf; };
+
+    private:
+        /** value type, use std::string type for VARCHAR values */
+        const type_info & typeOf;
+
+        /** set DbValue by casting a pointer to the value */
+        function<void(const void * i_value, DbValue & o_dbVal)> doSetValue;
+
+        /** set DbValue by casting a pointer to the value */
+        template<typename TValue> static void setValue(const void * i_value, DbValue & o_dbVal)
+        {
+            TValue val = *static_cast<const TValue *>(i_value);
+            o_dbVal = DbValue(val);
+        }
+
+    private:
+        // DbValueSetter(const DbValueSetter &) = delete;
+        DbValueSetter & operator=(const DbValueSetter &) = delete;
+    };
 
     /** convert value to string using snprintf: integer and float values. */
     template<typename TValue>
@@ -120,6 +151,10 @@ namespace openm
     /** convert string value into SQL constant: return 'quoted source value' */
     extern int StrSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer);
 
+    inline const char * nullValueString = "null";      /** NULL value as string */
+    inline const char * trueValueString = "true";      /** true boolean value as string */
+    inline const char * falseValueString = "false";    /** false boolean value as string */
+
     /** converter for value column (parameter, accumulator or expression value) to string */
     template<const size_t valueLen>
     class ValueFormatterBase : public IValueFormatter
@@ -127,7 +162,7 @@ namespace openm
     public:
         /** converter for value column into string.
          *
-         * @param[in] i_type             value type, use std::string type for VARCHAR input parameters
+         * @param[in] i_type             value type, use std::string type for VARCHAR values
          * @param[in] i_isSqlFormat      if true then convert into SQL constant: 'quoted string values' and 1/0 for boolean values
          * @param[in] i_doubleFormat     if not null or empty then printf format for float and doubles, default: %.15g
          */
@@ -252,12 +287,12 @@ namespace openm
             }
 
             if (doFormatValue == nullptr)
-                throw DbException("invalid type to use as input parameter or output table value");  // conversion to target type is not supported
+                throw DbException("invalid value type to convert to string");  // conversion to target type is not supported
         }
 
         /** converter for value column into string.
          *
-         * @param[in] i_type             value type, use std::string type for VARCHAR input parameters
+         * @param[in] i_type             value type, use std::string type for VARCHAR values
          * @param[in] i_doubleFormat     if not null or empty then printf format for float and doubles, default: %.15g
          */
         ValueFormatterBase(const type_info & i_type, const char * i_doubleFormat = "") :
@@ -280,7 +315,7 @@ namespace openm
         }
 
     private:
-        /** value type, use std::string type for VARCHAR input parameters */
+        /** value type, use std::string type for VARCHAR values */
         const type_info & typeOf;
 
         /** value buffer to store string of the value */

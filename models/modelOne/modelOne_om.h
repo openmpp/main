@@ -10,6 +10,7 @@
 using namespace std;
 
 #include "libopenm/omModel.h"
+#include "libopenm/common/xz_crc64.h"
 
 // use large input parameters and output tables
 //
@@ -35,6 +36,10 @@ const size_t N_AGE = 4;
 const size_t N_SEX = 2;
 const size_t N_SALARY = 3;
 const size_t N_FULL = 2;
+
+// age, salary and full or part time classification enums are not zero based
+const int MIN_AGE = 10;         // min enum id for age group classification type
+const int MIN_SALARY = 100;     // min enum id for salary classification type
 
 // model type "full": full or part time job
 enum jobKind : int
@@ -82,6 +87,74 @@ extern thread_local double * om_value_salaryByMiddle;
 #define salaryByMiddle  (*reinterpret_cast<const double(*)[N_AGE][N_SEX][N_SALARY][N_YEARS][N_MIDDLE]>(om_value_salaryByMiddle))
 
 #endif  // MODEL_ONE_LARGE
+
+// model entities
+// 
+
+// entity events, id must be and index in events array
+extern const int BIRTH_EVENT_ID;
+extern const int RETIRE_EVENT_ID;
+extern const int DEATH_EVENT_ID;
+extern const int OM_SS_EVENT_ID;
+
+class Person
+{
+public:
+    uint64_t entityId = -1;             // entity id, must be unique
+    static const int entityKind = 0;    // entity metadata id in database
+
+    // entity attributes
+    int age = 0;                        // person age
+    int age_group = MIN_AGE;            // age group classification enum id
+    int sex = 0;                        // sex is a zero classification enums
+    double income = 0.0;                // person income
+    double salary = 0.0;                // person salary
+    int salary_group = MIN_SALARY;      // salary level classification enum id
+    int full_time = jobKind::partTime;  // full or part time classification enum id
+    bool is_old_age = false;            // is old age boolean
+    double pension = 0.0;               // person pension
+    uint64_t crc = 0;                   // entity crc64
+
+public:
+    Person(int i_subId, int i_personNumber);
+    Person(void) : Person(0, 0) {};
+    ~Person(void) noexcept {}
+
+    void enter_simulation(openm::IModel * const i_model);   // enter simulation event
+    void birth_event(openm::IModel * const i_model);        // birth event
+    void retire_event(openm::IModel * const i_model);       // retire event
+    void death_event(openm::IModel * const i_model);        // death event
+    void exit_simulation(openm::IModel * const i_model);    // exit simulation event
+
+    static thread_local Person om_null_entity;
+};
+
+class Other
+{
+public:
+    uint64_t entityId = -1;             // entity id, must be unique
+    static const int entityKind = 1;    // entity metadata id in database
+
+    // entity attributes
+    int age = 0;                        // other age
+    int age_group = MIN_AGE;            // age group classification enum id
+    double income = 0.0;                // other income
+    uint64_t crc = 0;                   // entity crc64
+
+public:
+    Other(int i_subId, int i_otherNumber);
+    Other(void) : Other(0, 0) {};
+    ~Other(void) noexcept {}
+
+    void enter_simulation(openm::IModel * const i_model);   // enter simulation event
+    void birth_event(openm::IModel * const i_model);        // birth event
+    void retire_event(openm::IModel * const i_model);       // retire event
+    void death_event(openm::IModel * const i_model);        // death event
+    void exit_simulation(openm::IModel * const i_model);    // exit simulation event
+
+    // static empty instance, used to retrieve members offset
+    static thread_local Other om_null_entity;
+};
 
 // model output tables
 //

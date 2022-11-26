@@ -168,7 +168,7 @@ void ModelBase::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, cons
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
     try {
-        runCtrl->writeDbMicrodata(i_entityKind, i_microdataKey, i_entityThis, microdataBuf);
+        runCtrl->pushDbMicrodata(runId, i_entityKind, i_microdataKey, i_entityThis);
     }
     catch (exception & ex) {
         throw ModelException("Failed to write microdata entity kind: %d microdata key: %llu. %s", i_entityKind, i_microdataKey, ex.what());
@@ -185,7 +185,7 @@ void ModelBase::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, cons
 */
 void ModelBase::writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis)
 {
-    if (!runOptions()->isCsvMicrodata && !runOptions()->isTraceMicrodata) return;   // microdata writing is not enabled
+    if (!runOptions()->isTextMicrodata()) return;   // microdata writing is not enabled
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 

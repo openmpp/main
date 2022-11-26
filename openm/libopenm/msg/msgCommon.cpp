@@ -128,7 +128,7 @@ IPackedAdapter * IPackedAdapter::create(MsgTag i_msgTag)
     return new EmptyPackedAdapter(i_msgTag);
 }
 
-/** return byte size to pack source array: reurn always zero */
+/** return byte size to pack source array: return always zero */
 size_t IPackedAdapter::packedSize(const type_info & /*i_type*/, size_t /*i_size*/)
 {
     return 0;
