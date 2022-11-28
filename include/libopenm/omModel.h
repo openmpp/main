@@ -36,16 +36,16 @@ namespace openm
         /** if use sparse and abs(value) <= nullValue then value not stored */
         double nullValue;
 
-        /** if true then model run is storing microdata in database. */
+        /** if true then model run is storing microdata in database */
         bool isDbMicrodata;
 
-        /** if true then model run is writing microdata into CSV. */
+        /** if true then model run is writing microdata into CSV */
         bool isCsvMicrodata;
 
-        /** if true then model run is writing microdata into trace output. */
+        /** if true then model run is writing microdata into trace output */
         bool isTraceMicrodata;
 
-        /** if true then model run is writing microdata events. */
+        /** if true then model run is using microdata events */
         bool isMicrodataEvents;
 
         /** if positive then used for simulation progress reporting, ex: every 10% */
@@ -68,6 +68,12 @@ namespace openm
             progressStep(0.0)
         { }
         ~RunOptions(void) noexcept { }
+
+        /** retrun true if any microdata output enabled */
+        bool isMicrodata(void) const { return isDbMicrodata || isCsvMicrodata || isTraceMicrodata; }
+
+        /** retrun true if microdata output to text enabled: output to CSV or to trace */
+        bool isTextMicrodata(void) const { return isCsvMicrodata || isTraceMicrodata; }
     };
 
     /** public interface to get model run options */

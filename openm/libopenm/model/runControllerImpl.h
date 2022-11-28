@@ -62,7 +62,7 @@ namespace openm
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, taskRunId, dbExec); }
 
-        /** communicate with child threads to receive status update. */
+        /** communicate with between main therad and modeling threads to receive status update. */
         virtual bool childExchange(void) override;
 
     protected:
@@ -79,9 +79,6 @@ namespace openm
         bool isWaitTaskRun;     // if true then task run under external supervision
         IDbExec * dbExec;       // db-connection
         DoneVector isSubDone;   // size of [sub-value count], if true then all sub-value accumulators saved in database
-
-        /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
 
     private:
         SingleController(const SingleController & i_runCtrl) = delete;
@@ -203,9 +200,6 @@ namespace openm
         /** receive status update from all child processes. */
         bool receiveStatusUpdate(long i_waitTime = 0L);
 
-        /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
-
     private:
         RootController(const RootController & i_runCtrl) = delete;
         RootController & operator=(const RootController & i_runCtrl) = delete;
@@ -290,9 +284,6 @@ namespace openm
         /** send sub-values run status update to root */
         void sendStatusUpdate(void);
 
-        /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
-
     private:
         ChildController(const ChildController & i_runCtrl) = delete;
         ChildController & operator=(const ChildController & i_runCtrl) = delete;
@@ -339,7 +330,7 @@ namespace openm
         /** model process shutdown if exiting without completion (ie: exit on error). */
         virtual void shutdownOnExit(ModelStatus i_status) override { doShutdownOnExit(i_status, runId, 0, dbExec); }
 
-        /** communicate with child threads to receive status update. */
+        /** communicate with between main therad and modeling threads to receive status update. */
         virtual bool childExchange(void) override;
 
     private:
@@ -356,9 +347,6 @@ namespace openm
 
         // find sub-value to restart the run and update run status
         bool cleanupRestartSubValue(void);
-
-        /** write microdata into database. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) override;
 
     private:
         RestartController(const RestartController & i_runCtrl) = delete;

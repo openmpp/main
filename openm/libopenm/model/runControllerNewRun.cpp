@@ -530,7 +530,7 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
         vector<EntityAttrRow> attrs;
         for (int aId : ea.attrIds)
         { 
-            const EntityAttrRow * a = metaStore->entityAttr->byKey(modelId, ea.entityId, aId);
+            const EntityAttrRow * a = metaStore->entityAttr->byKey(modelId, ent->entityId, aId);
             if (a == nullptr) throw DbException("Microdata attribute not found, entity: %s attribute id: %d", ent->entityName.c_str(), aId);
 
             attrs.push_back(*a);
@@ -620,14 +620,18 @@ void RunController::createRunEntityTables(IDbExec* i_dbExec)
         }
 
         // create slql prefix to insert microdata into db
+        // attributes column order is the same as attributes in model run options, ex: attr7, attr4
         //
-        // INSERT INTO Person_g87abcdef (run_id, entity_key, attr4, attr7) VALUES (
+        // INSERT INTO Person_g87abcdef (run_id, entity_key, attr7, attr4) VALUES (
         //
         entIt->second.sqlInsPrefix = "INSERT INTO " + dbTableName + "(run_id, entity_key";
 
-        for (const EntityAttrRow & at : attrs)
+        for (const EntityAttrItem & a : entIt->second.attrs)
         {
-            entIt->second.sqlInsPrefix += ", " + at.columnName();
+            const EntityAttrRow * aIt = metaStore->entityAttr->byKey(modelId, ent->entityId, a.attrId);
+            if (aIt == nullptr) throw DbException("Microdata attribute not found, entity: %s attribute id: %d", ent->entityName.c_str(), a.attrId);
+
+            entIt->second.sqlInsPrefix += ", " + aIt->columnName();
         }
         entIt->second.sqlInsPrefix += ") VALUES (";
 

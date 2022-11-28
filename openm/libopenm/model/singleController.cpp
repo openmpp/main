@@ -223,23 +223,26 @@ void SingleController::writeAccumulators(
     }
 }
 
-/** communicate with child threads to receive status update. */
+/** communicate with between main therad and modeling threads to receive status update. */
 bool SingleController::childExchange(void)
 {
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
+    bool isActivity = false;    // child activity status: if true then there is status update or microdata received
+
+    // update run state and progress
     auto stm = runStateStore().saveUpdated();
     if (stm.size() > 0) {
         updateRunState(dbExec, stm);
-        return true;
+        isActivity = true;
     }
-    return false;
-}
 
-/** write microdata into database. */
-void SingleController::writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line)
-{
-    if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
-
-    doDbMicrodata(dbExec, i_entityItem, runId, i_microdataKey, i_entityThis, io_line);
+    // write microdata into database
+    if (modelRunOptions().isDbMicrodata)
+    {
+        auto io_entityMdRows = pullDbMicrodata();
+        size_t nRows = doDbMicrodata(dbExec, io_entityMdRows);
+        isActivity = isActivity || (nRows > 0);
+    }
+    return isActivity;
 }

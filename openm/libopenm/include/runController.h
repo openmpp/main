@@ -10,8 +10,12 @@
 
 #include <fstream>
 #include "metaLoader.h"
+#include "dbValue.h"
 
 using namespace std;
+
+static constexpr size_t MinSizeToSaveMicrodata = 512 * 1024;        /** lower bound microdata row count to save in database */
+static constexpr size_t MaxSizeToSaveMicrodata = 2 * 1024 * 1024;   /** upper bound microdata row count to save in database */
 
 namespace openm
 {
@@ -138,6 +142,7 @@ namespace openm
         {
             int attrId;                                 /** entity attribute metadata id */
             int idxOf;                                  /** attribute index in EntityNameSizeArr */
+            ptrdiff_t rowOffset = 0;                    /** attribute value offset in database row buffer */
             unique_ptr<IValueFormatter> fmtValue;       /** attribute value to string converter for csv output */
             unique_ptr<IValueFormatter> sqlFmtValue;    /** attribute value to string converter for database insert */
 
@@ -147,22 +152,26 @@ namespace openm
         /** entity item to write microdata into database or csv file */
         struct EntityItem
         {
-            int entityId;                   /** entity metadata id */
-            vector<EntityAttrItem> attrs;   /** entity attributes */
-            string genDigest;               /** entity generation digest */
-            string csvHdr;                  /** microdata csv header line */
-            string sqlInsPrefix;            /** microdata sql statement prefix */
+            int entityId;                       /** entity metadata id */
+            vector<EntityAttrItem> attrs;       /** entity attributes */
+            string genDigest;                   /** entity generation digest */
+            string csvHdr;                      /** microdata csv header line */
+            size_t rowSize = 0;                 /** database row size */
+            string sqlInsPrefix;                /** microdata sql statement prefix */
+            vector<DbValueSetter> rowSetter;    /** function helpers to set column value of insert statement */
+            vector<const type_info *> rowTypes; /** column types of insert statement */
 
             EntityItem(int i_entityId) : entityId(i_entityId) {}
         };
 
-        /** write microdata into the database.
+        /** push microdata database rows into the buffer.
         *
+        * @param   i_runId          model run id.
         * @param   i_entityKind     entity kind id: model metadata entity id in database.
         * @param   i_microdataKey   unique entity instance id.
         * @param   i_entityThis     entity class instance this pointer.
         */
-        void writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis, string & io_line);
+        void pushDbMicrodata(int i_runId, int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis);
 
         /** write microdata into the CSV file.
         *
@@ -232,11 +241,21 @@ namespace openm
         /** merge updated sub-values run statue into database */
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
-        /** write microdata into database or send it to teh root process. */
-        virtual void writeDbMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, const void * i_entityThis, string & io_line) = 0;
+        /** pull microdata database rows from the buffer.
+        * if i_isNow is true then return current microdata rows for all entities
+        * else return non empty results only
+        *   if microdata row count is more than upper bound
+        *   or
+        *   if microdata row count is more than lower bound
+        *   time since last save is moe than microdata save time interval
+        */
+        map<int, list<unique_ptr<uint8_t>>> pullDbMicrodata(bool i_isNow = false);
 
-        /** write microdata into database. */
-        void doDbMicrodata(IDbExec * i_dbExec, const EntityItem & i_entityItem, int i_runId, uint64_t i_microdataKey, const void * i_entityThis, string & io_line);
+        /** write microdata into database and return inserted rows count */
+        size_t doDbMicrodata(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows);
+
+        /** write microdata into database using sql insert literal and return inserted rows count */
+        size_t doDbMicrodataSql(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows);
 
         /** create microdata CSV files for new model run. */
         void openCsvMicrodata(int i_runId);
@@ -311,6 +330,27 @@ namespace openm
         // microdata entities to write into database or csv
         map<int, EntityItem> entityMap;
 
+        // microdata entity to strore in database
+        struct EntityDbItem
+        {
+            int entityId;                           // entity metadata id
+            //
+            recursive_mutex theMutex;               // mutex to lock for db write operations
+            list<unique_ptr<uint8_t>> rowLst;       // microdata list of rows
+            chrono::system_clock::time_point lastSaveTime = chrono::system_clock::time_point::min();  // last time of save
+        };
+        map<int, EntityDbItem> entityDbMap;         // map entity id to database microdata buffer
+
+        /** by entity id return status of microdata db rows:
+        *   true of false if last save time more than save time intreval
+        *   and microdata rows count
+        */
+        tuple<bool, size_t> statusDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & i_entityDbItem);
+
+        /** return microdata db rows and clear row list */
+        list<unique_ptr<uint8_t>> && moveDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & io_entityDbItem);
+
+        // microdata entity to write into csv
         struct EntityCsvItem
         {
             int entityId;               // entity metadata id
@@ -320,16 +360,13 @@ namespace openm
             bool isReady;               // if true then csv output file open and ready to use
             ofstream csvSt;             // csv output stream
         };
-        map<int, EntityCsvItem> entityCsvMap;   // microdata entities to write into csv
+        map<int, EntityCsvItem> entityCsvMap;   // map entity id to microdata entity csv file
 
         // initialize microdata entity writing
         void initMicrodata(void);
 
         /** close microdata CSV files after model run completed. */
         void closeCsvMicrodata(void) noexcept;
-
-        /** write microdata into CSV files. */
-        void doCsvMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line);
 
         /** write line into microdata CSV file, close file and raise exception on error. */
         void writeCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, const string & i_line);

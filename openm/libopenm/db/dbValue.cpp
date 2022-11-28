@@ -77,6 +77,49 @@ namespace openm
         io_buffer[i_size - 1] = '\0';
         return (int)strnlen(io_buffer, i_size);
     }
+
+    /** create DbValue setter.
+    *
+    * @param[in] i_type    value type, use std::string type for VARCHAR values
+    */
+    DbValueSetter::DbValueSetter(const type_info & i_type) :
+        typeOf(i_type),
+        doSetValue(nullptr)
+    {
+        if (i_type == typeid(char)) doSetValue = setValue<char>;
+        if (i_type == typeid(unsigned char)) doSetValue = setValue<unsigned char>;
+        if (i_type == typeid(short)) doSetValue = setValue<short>;
+        if (i_type == typeid(unsigned short)) doSetValue = setValue<unsigned short>;
+        if (i_type == typeid(int)) doSetValue = setValue<int>;
+        if (i_type == typeid(unsigned int)) doSetValue = setValue<unsigned int>;
+        if (i_type == typeid(long)) doSetValue = setValue<long>;
+        if (i_type == typeid(unsigned long)) doSetValue = setValue<unsigned long>;
+        if (i_type == typeid(long long)) doSetValue = setValue<long long>;
+        if (i_type == typeid(unsigned long long)) doSetValue = setValue<unsigned long long>;
+        if (i_type == typeid(int8_t)) doSetValue = setValue<int8_t>;
+        if (i_type == typeid(uint8_t)) doSetValue = setValue<uint8_t>;
+        if (i_type == typeid(int16_t)) doSetValue = setValue<int16_t>;
+        if (i_type == typeid(uint16_t)) doSetValue = setValue<uint16_t>;
+        if (i_type == typeid(int32_t)) doSetValue = setValue<int32_t>;
+        if (i_type == typeid(uint32_t)) doSetValue = setValue<uint32_t>;
+        if (i_type == typeid(int64_t)) doSetValue = setValue<int64_t>;
+        if (i_type == typeid(uint64_t)) doSetValue = setValue<uint64_t>;
+        if (i_type == typeid(bool)) doSetValue = setValue<bool>;
+        if (i_type == typeid(float)) doSetValue = setValue<float>;
+        if (i_type == typeid(double)) doSetValue = setValue<double>;
+        if (i_type == typeid(long double)) doSetValue = setValue<long double>;
+        if (i_type == typeid(char *)) doSetValue = setValue<char *>;
+
+        if (doSetValue == nullptr) throw DbException("invalid type to set database value"); // conversion to target type is not supported
+    }
+
+    /** set DbValue by casting a pointer */
+    void DbValueSetter::set(const void * i_value, DbValue & o_dbVal)
+    {
+        if (i_value == nullptr) throw DbException("invalid NULL pointer to database value");
+
+        doSetValue(i_value, o_dbVal);
+    }
 }
 
 /** create empty row of value table */

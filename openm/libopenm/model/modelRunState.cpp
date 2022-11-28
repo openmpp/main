@@ -208,7 +208,7 @@ const map<pair<int, int>, RunState> RunStateHolder::saveUpdated(bool i_isNow)
 {
     lock_guard<recursive_mutex> lck(theMutex);
 
-    // if no dealy requested then return updates now
+    // if no delay requested then return updates now
     if (i_isNow) {
         return map<pair<int, int>, RunState>(move(updateStateMap)); // move updates out: return updated run states and clear it
     }

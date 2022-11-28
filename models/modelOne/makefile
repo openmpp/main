@@ -158,11 +158,13 @@ publish : $(MODEL_SQLITE) copy_ini
 $(MODEL_SQLITE) : \
   $(OM_SQL_DIR)/create_db.sql \
   $(MODEL_NAME)_create_model.sql \
+  $(MODEL_NAME)_create_entity.sql \
   $(MODEL_NAME)_insert_param.sql
 	rm -f $(MODEL_SQLITE)
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/create_db.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQL_DIR)/insert_default.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_model.sql
+	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_create_entity.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(MODEL_NAME)_insert_param.sql
 
 .PHONY : publish-views
@@ -250,6 +252,18 @@ run:
 		-OpenM.TaskRunName "Task Run with NotSuppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Tables.Retain ageSexIncome,AdditionalTables \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-Microdata.All -Microdata.ToDb \
+		-OpenM.RunName "Microdata in database" \
+		-EN.RunDescription "Write microdata into database" \
+		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-Microdata.All -Microdata.ToCsv -Microdata.Events All \
+		-OpenM.RunName "Microdata in CSV" \
+		-EN.RunDescription "Write microdata into CSV files" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 
 .PHONY: clean

@@ -69,7 +69,7 @@ static ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunC
 // run modeling threads to calculate sub-values
 static ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl);
 
-// exchange between root and child modeling processes and modeling threads, sleep if no child activity
+// exchange between root and child modeling processes or between main therad and modeling threads, sleep if no child activity
 static void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl);
 
 // log model version, runtime version and modeling environment
@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
                 // create next run id: find model input data set
                 int runId = runCtrl->nextRun();
                 if (runId <= 0) {
-                    childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // exchange between root and child processes and threads, if any, or sleep
+                    childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // exchange between root and child processes or between main thread and modeling threads
                     continue;                                                   // no input: completed or waiting for additional input
                 }
                 theLog->logFormatted("Run: %d %s", runId, runCtrl->strOption(RunOptionsKey::runName).c_str());
@@ -332,7 +332,7 @@ ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl)
     return ExitStatus::OK;
 }
 
-// exchange between root and child modeling processes and modeling threads, sleep if no child activity
+// exchange between root and child modeling processes or between main therad and modeling threads, sleep if no child activity
 void childExchangeOrSleep(long i_waitTime, RunController * i_runCtrl)
 {
     long nExchange = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;

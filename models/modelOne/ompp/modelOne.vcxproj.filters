@@ -35,4 +35,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\modelOne.ini">
+      <Filter>IniFiles</Filter>
+    </None>
+    <None Include="..\modelOne.message.ini">
+      <Filter>IniFiles</Filter>
+    </None>
+  </ItemGroup>
 </Project>

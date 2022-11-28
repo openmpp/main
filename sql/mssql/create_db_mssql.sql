@@ -13,9 +13,9 @@ CREATE TABLE id_lst
   PRIMARY KEY (id_key)
 );
 
--- 
+--
 -- Language list
--- 
+--
 CREATE TABLE lang_lst
 (
   lang_id   INT          NOT NULL, -- unique language id across all models
@@ -25,16 +25,16 @@ CREATE TABLE lang_lst
   CONSTRAINT lang_un UNIQUE (lang_code)
 );
 
--- 
+--
 -- Language: list of keywords in specific language: all, min, max
--- 
+--
 CREATE TABLE lang_word
 (
   lang_id    INT          NOT NULL, -- master key
   word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
   word_value VARCHAR(255) NOT NULL, -- actual word in that language
   PRIMARY KEY (lang_id, word_code),
-  CONSTRAINT lang_word_mk 
+  CONSTRAINT lang_word_mk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -50,31 +50,31 @@ CREATE TABLE model_dic
   model_ver       VARCHAR(32)  NOT NULL, -- model version
   create_dt       VARCHAR(32)  NOT NULL, -- create date-time
   default_lang_id INT          NOT NULL, -- model default language
-  PRIMARY KEY (model_id), 
+  PRIMARY KEY (model_id),
   CONSTRAINT model_dic_un UNIQUE (model_digest),
-  CONSTRAINT model_dic_lang_fk 
+  CONSTRAINT model_dic_lang_fk
              FOREIGN KEY (default_lang_id) REFERENCES lang_lst (lang_id)
 );
 
 --
 -- Model(s) list text info
 --
-CREATE TABLE model_dic_txt 
+CREATE TABLE model_dic_txt
 (
   model_id INT             NOT NULL, -- master key
   lang_id  INT             NOT NULL, -- language id
   descr    VARCHAR(255)    NOT NULL, -- model description
   note     TEXT,                     -- model notes
   PRIMARY KEY (model_id, lang_id),
-  CONSTRAINT model_dic_txt_mk 
+  CONSTRAINT model_dic_txt_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
-  CONSTRAINT model_dic_txt_lang_fk 
+  CONSTRAINT model_dic_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
--- 
+--
 -- Model language-specific messages (translated strings)
--- 
+--
 CREATE TABLE model_word
 (
   model_id   INT          NOT NULL, -- master key
@@ -82,15 +82,15 @@ CREATE TABLE model_word
   word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
   word_value VARCHAR(255) NULL,     -- if not NULL then actual word in that language
   PRIMARY KEY (model_id, lang_id, word_code),
-  CONSTRAINT model_word_mk 
+  CONSTRAINT model_word_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
-  CONSTRAINT model_word_fk 
+  CONSTRAINT model_word_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
--- 
+--
 -- Types for parameters and dimensions
--- 
+--
 CREATE TABLE type_dic
 (
   type_hid      INT          NOT NULL, -- unique type id
@@ -102,9 +102,9 @@ CREATE TABLE type_dic
   CONSTRAINT type_dic_un UNIQUE (type_digest)
 );
 
--- 
--- Model types: for parameters and dimensions for each model 
--- 
+--
+-- Model types: for parameters and dimensions for each model
+--
 CREATE TABLE model_type_dic
 (
   model_id      INT NOT NULL, -- master key
@@ -112,15 +112,15 @@ CREATE TABLE model_type_dic
   type_hid      INT NOT NULL, -- type id
   PRIMARY KEY (model_id, model_type_id),
   CONSTRAINT model_type_dic_un UNIQUE (model_id, type_hid),
-  CONSTRAINT model_type_dic_mk 
+  CONSTRAINT model_type_dic_mk
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid),
   CONSTRAINT model_type_dic_fk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
 
--- 
+--
 -- Types text: description and notes for the type
--- 
+--
 CREATE TABLE type_dic_txt
 (
   type_hid    INT             NOT NULL, -- master key
@@ -128,9 +128,9 @@ CREATE TABLE type_dic_txt
   descr       VARCHAR(255)    NOT NULL, -- type description
   note        TEXT,                     -- type notes
   PRIMARY KEY (type_hid, lang_id),
-  CONSTRAINT type_dic_txt_mk 
+  CONSTRAINT type_dic_txt_mk
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid),
-  CONSTRAINT type_dic_txt_lang_fk 
+  CONSTRAINT type_dic_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -148,9 +148,9 @@ CREATE TABLE type_enum_lst
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid)
 );
 
--- 
+--
 -- Enum value text: description and notes for type values
--- 
+--
 CREATE TABLE type_enum_txt
 (
   type_hid    INT             NOT NULL, -- master key
@@ -159,9 +159,9 @@ CREATE TABLE type_enum_txt
   descr       VARCHAR(255)    NOT NULL, -- value description
   note        TEXT,                     -- value notes
   PRIMARY KEY (type_hid, enum_id, lang_id),
-  CONSTRAINT type_enum_txt_mk 
+  CONSTRAINT type_enum_txt_mk
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid),
-  CONSTRAINT type_enum_txt_lang_fk 
+  CONSTRAINT type_enum_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -197,9 +197,9 @@ CREATE TABLE model_parameter_dic
   is_hidden          SMALLINT NOT NULL, -- if non-zero then parameter is hidden
   PRIMARY KEY (model_id, model_parameter_id),
   CONSTRAINT model_parameter_dic_un UNIQUE (model_id, parameter_hid),
-  CONSTRAINT model_parameter_dic_mk 
+  CONSTRAINT model_parameter_dic_mk
              FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid),
-  CONSTRAINT model_parameter_dic_fk 
+  CONSTRAINT model_parameter_dic_fk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
 
@@ -253,7 +253,7 @@ CREATE TABLE parameter_dims
 --
 -- Dimensions text info for parameter
 --
-CREATE TABLE parameter_dims_txt 
+CREATE TABLE parameter_dims_txt
 (
   parameter_hid INT             NOT NULL, -- master key
   dim_id        INT             NOT NULL, -- master key
@@ -261,9 +261,9 @@ CREATE TABLE parameter_dims_txt
   descr         VARCHAR(255)    NOT NULL, -- table dimension description
   note          TEXT,                     -- table dimension notes
   PRIMARY KEY (parameter_hid, dim_id, lang_id),
-  CONSTRAINT parameter_dims_txt_mk 
+  CONSTRAINT parameter_dims_txt_mk
              FOREIGN KEY (parameter_hid, dim_id) REFERENCES parameter_dims (parameter_hid, dim_id),
-  CONSTRAINT parameter_dims_txt_lang_fk 
+  CONSTRAINT parameter_dims_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -288,7 +288,7 @@ CREATE TABLE table_dic
 --
 -- Model output result tables
 --
-CREATE TABLE model_table_dic 
+CREATE TABLE model_table_dic
 (
   model_id       INT      NOT NULL, -- master key
   model_table_id INT      NOT NULL, -- model table id
@@ -298,16 +298,16 @@ CREATE TABLE model_table_dic
   is_hidden      SMALLINT NOT NULL, -- if non-zero then output table is hidden
   PRIMARY KEY (model_id, model_table_id),
   CONSTRAINT model_table_dic_un UNIQUE (model_id, table_hid),
-  CONSTRAINT model_table_dic_mk 
+  CONSTRAINT model_table_dic_mk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
-  CONSTRAINT model_table_dic_fk 
+  CONSTRAINT model_table_dic_fk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
 
 --
 -- Output result tables text info
 --
-CREATE TABLE table_dic_txt 
+CREATE TABLE table_dic_txt
 (
   table_hid  INT             NOT NULL, -- master key
   lang_id    INT             NOT NULL, -- language id
@@ -316,16 +316,16 @@ CREATE TABLE table_dic_txt
   expr_descr VARCHAR(255)    NOT NULL, -- table expressions (analysis dimension) description
   expr_note  TEXT,                     -- table expressions (analysis dimension) notes
   PRIMARY KEY (table_hid, lang_id),
-  CONSTRAINT table_dic_txt_mk 
+  CONSTRAINT table_dic_txt_mk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
-  CONSTRAINT table_dic_txt_lang_fk 
+  CONSTRAINT table_dic_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
 --
 -- Dimensions for output tables
 --
-CREATE TABLE table_dims 
+CREATE TABLE table_dims
 (
   table_hid   INT          NOT NULL, -- master key
   dim_id      INT          NOT NULL, -- dimension index
@@ -334,16 +334,16 @@ CREATE TABLE table_dims
   is_total    SMALLINT     NOT NULL, -- if non-zero then dimension has "total" item
   dim_size    INT          NOT NULL, -- number of items, including "total" item
   PRIMARY KEY (table_hid, dim_id),
-  CONSTRAINT table_dims_mk 
+  CONSTRAINT table_dims_mk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid),
-  CONSTRAINT table_dims_type_fk 
+  CONSTRAINT table_dims_type_fk
              FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid)
 );
 
 --
 -- Dimensions text info for output tables
 --
-CREATE TABLE table_dims_txt 
+CREATE TABLE table_dims_txt
 (
   table_hid INT             NOT NULL, -- master key
   dim_id    INT             NOT NULL, -- master key
@@ -351,33 +351,33 @@ CREATE TABLE table_dims_txt
   descr     VARCHAR(255)    NOT NULL, -- table dimension description
   note      TEXT,                     -- table dimension notes
   PRIMARY KEY (table_hid, dim_id, lang_id),
-  CONSTRAINT table_dims_txt_mk 
+  CONSTRAINT table_dims_txt_mk
              FOREIGN KEY (table_hid, dim_id) REFERENCES table_dims (table_hid, dim_id),
-  CONSTRAINT table_dims_txt_lang_fk 
+  CONSTRAINT table_dims_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
 --
 -- Output table accumulators
 --
-CREATE TABLE table_acc 
+CREATE TABLE table_acc
 (
   table_hid  INT           NOT NULL, -- master key
   acc_id     INT           NOT NULL, -- unique accumulator id
   acc_name   VARCHAR(255)  NOT NULL, -- unique accumulator name: acc2
   is_derived SMALLINT      NOT NULL, -- if non-zero then accumulator is expression on other accumulators
-  acc_src    VARCHAR(255)  NOT NULL, -- source expression: acc0 + acc1 
+  acc_src    VARCHAR(255)  NOT NULL, -- source expression: acc0 + acc1
   acc_sql    VARCHAR(2048) NOT NULL, -- db expression: sql subquery
   PRIMARY KEY (table_hid, acc_id),
   CONSTRAINT table_acc_un UNIQUE (table_hid, acc_name),
-  CONSTRAINT table_acc_mk 
+  CONSTRAINT table_acc_mk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid)
 );
 
 --
 -- Output table accumulators text info
 --
-CREATE TABLE table_acc_txt 
+CREATE TABLE table_acc_txt
 (
   table_hid INT          NOT NULL, -- master key
   acc_id    INT          NOT NULL, -- master key
@@ -385,9 +385,9 @@ CREATE TABLE table_acc_txt
   descr     VARCHAR(255) NOT NULL, -- accumulator description
   note      TEXT,                  -- accumulator notes
   PRIMARY KEY (table_hid, acc_id, lang_id),
-  CONSTRAINT table_acc_txt_mk 
+  CONSTRAINT table_acc_txt_mk
              FOREIGN KEY (table_hid, acc_id) REFERENCES table_acc (table_hid, acc_id),
-  CONSTRAINT table_acc_txt_lang_fk 
+  CONSTRAINT table_acc_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -404,14 +404,14 @@ CREATE TABLE table_expr
   expr_sql      VARCHAR(2048) NOT NULL, -- db expression: AVG(S.acc3/S.acc0)
   PRIMARY KEY (table_hid, expr_id),
   CONSTRAINT table_expr_un UNIQUE (table_hid, expr_name),
-  CONSTRAINT table_expr_mk 
+  CONSTRAINT table_expr_mk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid)
 );
 
 --
 -- Output table expressions text info
 --
-CREATE TABLE table_expr_txt 
+CREATE TABLE table_expr_txt
 (
   table_hid INT          NOT NULL, -- master key
   expr_id   INT          NOT NULL, -- master key
@@ -419,9 +419,87 @@ CREATE TABLE table_expr_txt
   descr     VARCHAR(255) NOT NULL, -- expression description
   note      TEXT,                  -- expression notes
   PRIMARY KEY (table_hid, expr_id, lang_id),
-  CONSTRAINT table_expr_txt_mk 
+  CONSTRAINT table_expr_txt_mk
              FOREIGN KEY (table_hid, expr_id) REFERENCES table_expr (table_hid, expr_id),
-  CONSTRAINT table_expr_txt_lang_fk 
+  CONSTRAINT table_expr_txt_lang_fk
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Entities
+--
+CREATE TABLE entity_dic
+(
+  entity_hid    INT          NOT NULL, -- unique entity id
+  entity_name   VARCHAR(255) NOT NULL, -- entity name
+  entity_digest VARCHAR(32)  NOT NULL, -- entity digest
+  PRIMARY KEY (entity_hid),
+  CONSTRAINT entity_dic_un UNIQUE (entity_digest)
+);
+
+--
+-- Model entities
+--
+CREATE TABLE model_entity_dic
+(
+  model_id        INT      NOT NULL, -- master key
+  model_entity_id INT      NOT NULL, -- model entity id
+  entity_hid      INT      NOT NULL, -- master key
+  PRIMARY KEY (model_id, model_entity_id),
+  CONSTRAINT model_entity_dic_un UNIQUE (model_id, entity_hid),
+  CONSTRAINT model_entity_dic_mk
+             FOREIGN KEY (entity_hid) REFERENCES entity_dic (entity_hid),
+  CONSTRAINT model_entity_dic_fk
+             FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
+);
+
+--
+-- Entity text info: description and notes
+--
+CREATE TABLE entity_dic_txt
+(
+  entity_hid INT            NOT NULL, -- master key
+  lang_id    INT            NOT NULL, -- language id
+  descr      VARCHAR(255)   NOT NULL, -- entity description
+  note       TEXT,                    -- entity notes
+  PRIMARY KEY (entity_hid, lang_id),
+  CONSTRAINT entity_dic_txt_mk
+             FOREIGN KEY (entity_hid) REFERENCES entity_dic (entity_hid),
+  CONSTRAINT entity_dic_txt_lang_fk
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Entity attributes
+--
+CREATE TABLE entity_attr
+(
+  entity_hid  INT          NOT NULL, -- master key
+  attr_id     INT          NOT NULL, -- attribute index
+  attr_name   VARCHAR(255) NOT NULL, -- attribute name: Year
+  type_hid    INT          NOT NULL, -- attribute type
+  is_internal SMALLINT     NOT NULL, -- if non-zero then attribute is internal, e.g.: om_attr_year
+  PRIMARY KEY (entity_hid, attr_id),
+  CONSTRAINT entity_attr_mk
+             FOREIGN KEY (entity_hid) REFERENCES entity_dic (entity_hid),
+  CONSTRAINT entity_attr_type_fk
+             FOREIGN KEY (type_hid) REFERENCES type_dic (type_hid)
+);
+
+--
+-- Entity attributes text info: description and notes
+--
+CREATE TABLE entity_attr_txt
+(
+  entity_hid INT            NOT NULL, -- master key
+  attr_id    INT            NOT NULL, -- master key
+  lang_id    INT            NOT NULL, -- language id
+  descr      VARCHAR(255)   NOT NULL, -- entity attribute description
+  note       TEXT,                    -- entity attribute notes
+  PRIMARY KEY (entity_hid, attr_id, lang_id),
+  CONSTRAINT entity_attr_txt_mk
+             FOREIGN KEY (entity_hid, attr_id) REFERENCES entity_attr (entity_hid, attr_id),
+  CONSTRAINT entity_attr_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -437,7 +515,7 @@ CREATE TABLE group_lst
   is_hidden    SMALLINT     NOT NULL, -- if non-zero then group is hidden
   PRIMARY KEY (model_id, group_id),
   CONSTRAINT group_lst_un UNIQUE (model_id, group_name),
-  CONSTRAINT group_lst_mk 
+  CONSTRAINT group_lst_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
 
@@ -452,9 +530,9 @@ CREATE TABLE group_txt
   descr    VARCHAR(255)    NOT NULL, -- group description
   note     TEXT,                     -- group notes
   PRIMARY KEY (model_id, group_id, lang_id),
-  CONSTRAINT group_txt_mk 
+  CONSTRAINT group_txt_mk
              FOREIGN KEY (model_id, group_id) REFERENCES group_lst (model_id, group_id),
-  CONSTRAINT parameter_group_txt_lang_fk 
+  CONSTRAINT parameter_group_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -469,7 +547,7 @@ CREATE TABLE group_pc
   child_group_id INT NULL,     -- if not IS NULL then child group
   leaf_id        INT NULL,     -- if not IS NULL then parameter id or table id
   PRIMARY KEY (model_id, group_id, child_pos),
-  CONSTRAINT group_pc_mk 
+  CONSTRAINT group_pc_mk
              FOREIGN KEY (model_id, group_id) REFERENCES group_lst (model_id, group_id)
 );
 
@@ -493,7 +571,7 @@ CREATE TABLE profile_option
   option_key   VARCHAR(255)   NOT NULL, -- section.key, ie: OpenM.Threads
   option_value TEXT           NOT NULL, -- option value
   PRIMARY KEY (profile_name, option_key),
-  CONSTRAINT profile_option_mk 
+  CONSTRAINT profile_option_mk
              FOREIGN KEY (profile_name) REFERENCES profile_lst(profile_name)
 );
 
@@ -517,7 +595,7 @@ CREATE TABLE run_lst
   value_digest  VARCHAR(32),           -- if not NULL then digest of the run values: all parameters and output tables
   run_stamp     VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (run_id),
-  CONSTRAINT run_lst_mk 
+  CONSTRAINT run_lst_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
 
@@ -531,9 +609,9 @@ CREATE TABLE run_txt
   descr    VARCHAR(255)    NOT NULL, -- model run description
   note     TEXT,                     -- model run notes
   PRIMARY KEY (run_id, lang_id),
-  CONSTRAINT run_txt_mk 
+  CONSTRAINT run_txt_mk
              FOREIGN KEY (run_id) REFERENCES run_lst(run_id),
-  CONSTRAINT run_txt_lang 
+  CONSTRAINT run_txt_lang
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -548,7 +626,7 @@ CREATE TABLE run_option
   option_key   VARCHAR(255)   NOT NULL, -- section.key, ie: OpenM.Threads
   option_value TEXT           NOT NULL, -- option value
   PRIMARY KEY (run_id, option_key),
-  CONSTRAINT run_option_mk 
+  CONSTRAINT run_option_mk
              FOREIGN KEY (run_id) REFERENCES run_lst(run_id)
 );
 
@@ -564,9 +642,9 @@ CREATE TABLE run_parameter
   sub_count     INT         NOT NULL, -- sub-values count
   value_digest  VARCHAR(32),          -- if not NULL then digest of parameter value for the run
   PRIMARY KEY (run_id, parameter_hid),
-  CONSTRAINT run_parameter_mk 
+  CONSTRAINT run_parameter_mk
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
-  CONSTRAINT run_parameter_base_fk 
+  CONSTRAINT run_parameter_base_fk
              FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id),
   CONSTRAINT run_parameter_fk
              FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid)
@@ -582,9 +660,9 @@ CREATE TABLE run_parameter_txt
   lang_id       INT             NOT NULL, -- language id
   note          TEXT,                     -- parameter value notes
   PRIMARY KEY (run_id, parameter_hid, lang_id),
-  CONSTRAINT run_parameter_txt_mk 
+  CONSTRAINT run_parameter_txt_mk
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
-  CONSTRAINT run_parameter_txt_fk 
+  CONSTRAINT run_parameter_txt_fk
              FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid),
   CONSTRAINT run_parameter_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
@@ -618,9 +696,9 @@ CREATE TABLE run_table
   base_run_id  INT         NOT NULL, -- source run id to select output table value
   value_digest VARCHAR(32),          -- if not NULL then digest of table value for the run
   PRIMARY KEY (run_id, table_hid),
-  CONSTRAINT run_table_mk 
+  CONSTRAINT run_table_mk
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
-  CONSTRAINT run_table_base_fk 
+  CONSTRAINT run_table_base_fk
              FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id),
   CONSTRAINT run_table_fk
              FOREIGN KEY (table_hid) REFERENCES table_dic (table_hid)
@@ -641,13 +719,63 @@ CREATE TABLE run_progress
   progress_count INT         NOT NULL, -- progress count: percent completed
   progress_value FLOAT       NOT NULL, -- progress value: number of cases (case based) or time (time based)
   PRIMARY KEY (run_id, sub_id),
-  CONSTRAINT run_progress_mk 
+  CONSTRAINT run_progress_mk
              FOREIGN KEY (run_id) REFERENCES run_lst (run_id)
 );
 
 --
+-- Entity generation:
+-- partial instance of entity, may include only some of entity attributes
+--
+CREATE TABLE entity_gen
+(
+  entity_gen_hid  INT         NOT NULL, -- entity generation unique id
+  entity_hid      INT         NOT NULL, -- master key
+  db_entity_table VARCHAR(64) NOT NULL, -- db table name: Person_g87abcdef or Person_e87abcdef
+  gen_digest      VARCHAR(32) NOT NULL, -- digest of entity generation
+  PRIMARY KEY (entity_gen_hid),
+  CONSTRAINT entity_gen_un UNIQUE (db_entity_table),
+  CONSTRAINT entity_gen_fk
+             FOREIGN KEY (entity_hid) REFERENCES entity_dic (entity_hid)
+);
+
+--
+-- Entity generation attributes
+--
+CREATE TABLE entity_gen_attr
+(
+  entity_gen_hid INT NOT NULL, -- master key
+  attr_id        INT NOT NULL, -- attribute index
+  entity_hid     INT NOT NULL, -- entity unique id
+  PRIMARY KEY (entity_gen_hid, attr_id),
+  CONSTRAINT entity_gen_attr_mk
+             FOREIGN KEY (entity_gen_hid) REFERENCES entity_gen (entity_gen_hid),
+  CONSTRAINT entity_gen_attr_fk
+             FOREIGN KEY (entity_hid, attr_id) REFERENCES entity_attr (entity_hid, attr_id)
+);
+
+--
+-- Run entities list
+-- "base run id" is run id where values of entity attribute values must be selected from
+--
+CREATE TABLE run_entity
+(
+  run_id         INT         NOT NULL, -- master key
+  entity_gen_hid INT         NOT NULL, -- entity generation unique id
+  base_run_id    INT         NOT NULL, -- source run id to select entity attribute values
+  value_digest   VARCHAR(32),          -- if not NULL then digest of attribute values for the run
+  PRIMARY KEY (run_id, entity_gen_hid),
+  CONSTRAINT run_entity_mk
+             FOREIGN KEY (run_id) REFERENCES run_lst (run_id),
+  CONSTRAINT run_entity_base_fk
+             FOREIGN KEY (base_run_id) REFERENCES run_lst (run_id),
+  CONSTRAINT run_entity_gen_fk
+             FOREIGN KEY (entity_gen_hid) REFERENCES entity_gen (entity_gen_hid)
+);
+
+--
 -- Workset (working set of model input parameters):
---   it can be a full set, which include all model parameters 
+--   it can be a full set, which include all model parameters
 --   or subset and include only some parameters
 -- each model must have "default" workset:
 --   default workset must include ALL model parameters (it is a full set)
@@ -688,9 +816,9 @@ CREATE TABLE workset_txt
   descr    VARCHAR(255)    NOT NULL, -- working set description
   note     TEXT,                     -- working set notes
   PRIMARY KEY (set_id, lang_id),
-  CONSTRAINT workset_txt_mk 
+  CONSTRAINT workset_txt_mk
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
-  CONSTRAINT workset_txt_lang 
+  CONSTRAINT workset_txt_lang
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -704,7 +832,7 @@ CREATE TABLE workset_parameter
   sub_count      INT NOT NULL, -- sub-values count
   default_sub_id INT NOT NULL, -- default sub-value id
   PRIMARY KEY (set_id, parameter_hid),
-  CONSTRAINT workset_parameter_mk 
+  CONSTRAINT workset_parameter_mk
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id),
   CONSTRAINT workset_parameter_param_fk
              FOREIGN KEY (parameter_hid) REFERENCES parameter_dic (parameter_hid)
@@ -720,7 +848,7 @@ CREATE TABLE workset_parameter_txt
   lang_id       INT             NOT NULL, -- language id
   note          TEXT,                     -- parameter value note
   PRIMARY KEY (set_id, parameter_hid, lang_id),
-  CONSTRAINT workset_parameter_txt_mk 
+  CONSTRAINT workset_parameter_txt_mk
              FOREIGN KEY (set_id, parameter_hid) REFERENCES workset_parameter (set_id, parameter_hid),
   CONSTRAINT workset_parameter_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
@@ -737,7 +865,7 @@ CREATE TABLE task_lst
   task_name VARCHAR(255) NOT NULL, -- task name
   PRIMARY KEY (task_id),
   CONSTRAINT task_lst_un UNIQUE (model_id, task_name),
-  CONSTRAINT task_lst_mk 
+  CONSTRAINT task_lst_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id)
 );
 
@@ -751,9 +879,9 @@ CREATE TABLE task_txt
   descr   VARCHAR(255)    NOT NULL, -- task description
   note    TEXT,                     -- task notes
   PRIMARY KEY (task_id, lang_id),
-  CONSTRAINT task_txt_mk 
+  CONSTRAINT task_txt_mk
              FOREIGN KEY (task_id) REFERENCES task_lst(task_id),
-  CONSTRAINT task_txt_lang 
+  CONSTRAINT task_txt_lang
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -765,15 +893,15 @@ CREATE TABLE task_set
   task_id INT NOT NULL, -- master key
   set_id  INT NOT NULL, -- input working set id
   PRIMARY KEY (task_id, set_id),
-  CONSTRAINT task_set_mk 
+  CONSTRAINT task_set_mk
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id),
-  CONSTRAINT task_set_fk 
+  CONSTRAINT task_set_fk
              FOREIGN KEY (set_id) REFERENCES workset_lst (set_id)
 );
 
 --
 -- Task run history and status
--- if status = w (wait) then 
+-- if status = w (wait) then
 --    model wait and NOT completed until other process set status to one of finals: s,x,e
 --    model check if any new sets inserted into task_set and run it as they arrive
 --
@@ -788,7 +916,7 @@ CREATE TABLE task_run_lst
   update_dt   VARCHAR(32)  NOT NULL, -- last update date-time
   run_stamp   VARCHAR(32)  NOT NULL, -- process run stamp, by default is log time stamp
   PRIMARY KEY (task_run_id),
-  CONSTRAINT task_run_lst_mk 
+  CONSTRAINT task_run_lst_mk
              FOREIGN KEY (task_id) REFERENCES task_lst (task_id)
 );
 
@@ -805,8 +933,8 @@ CREATE TABLE task_run_set
   set_id      INT NOT NULL, -- if > 0 then input working set id used to run the model
   task_id     INT NOT NULL, -- link to task list
   PRIMARY KEY (task_run_id, run_id),
-  CONSTRAINT task_rs_un 
+  CONSTRAINT task_rs_un
              UNIQUE (task_run_id, set_id),
-  CONSTRAINT task_rs_mk 
+  CONSTRAINT task_rs_mk
              FOREIGN KEY (task_run_id) REFERENCES task_run_lst (task_run_id)
 );

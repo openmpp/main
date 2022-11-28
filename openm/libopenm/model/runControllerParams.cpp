@@ -113,7 +113,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
         int64_t now = getMilliseconds();
         paramNumber++;
         if (now > lastProgressTime + OM_LOG_PROGRESS_TIME) {
-            theLog->logFormatted("Parameter %zd of %zd: %s", paramNumber, paramVec.size(), paramIt->paramName.c_str());
+            theLog->logFormatted("Parameter %zu of %zu: %s", paramNumber, paramVec.size(), paramIt->paramName.c_str());
             lastProgressTime = now;
         }
 
