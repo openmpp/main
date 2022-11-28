@@ -1,6 +1,6 @@
-parameters{
-    bool EnableCalibration = true;
-    int MortalityCalibrationTarget[REPORT_TIME] = {
+parameters {
+    bool EnableAlignment = true;
+    int MortalityAlignmentTarget[REPORT_TIME] = {
         141, //141,
         144, //144,
         114, //114,

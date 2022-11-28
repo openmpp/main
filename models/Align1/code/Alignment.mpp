@@ -1,4 +1,4 @@
-//LABEL (Calibration, EN) Calibration using event queue
+//LABEL (Alignment, EN) Alignment using event queue
 
 #if !defined(MODGEN) // Hide from Modgen for x-compatible models
 #include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
@@ -7,29 +7,29 @@
 #if 0 // Hide non-C++ syntactic island from IDE
 
 parameters {
-    bool EnableCalibration;
-    int MortalityCalibrationTarget[REPORT_TIME];
+    bool EnableAlignment;
+    int MortalityAlignmentTarget[REPORT_TIME];
 };
 
 
 actor Ticker
 {
-    //EN Time of next Calibrate event
-    TIME next_calibrate;
+    //EN Time of next Alignment event
+    TIME next_alignment;
 
-    //EN Mortality events deferred by calibration (cumulative)
+    //EN Mortality events deferred by alignment (cumulative)
     int mortality_deferred;
 
-    //EN Mortality events advanced by calibration (cumulative)
+    //EN Mortality events advanced by alignment (cumulative)
     int mortality_advanced;
 
     //EN Deficit in advanced mortality events because queue was exhausted (cumulative)
     int mortality_deficit;
 
-    // CalibrateEvent should be lower priority than any other event
+    // AlignmentEvent should be lower priority than any other event
     // so that it executes after other tied events which might influence
-    // events in the current calibration interval.
-    event timeCalibrateEvent, CalibrateEvent, 1; //EN Calibrate event
+    // events in the current alignment interval.
+    event timeAlignmentEvent, AlignmentEvent, 1; //EN Alignment event
 };
 
 table Person MortalityCounts
@@ -40,7 +40,7 @@ table Person MortalityCounts
     }
 };
 
-table Ticker CalibrationReport
+table Ticker AlignmentReport
 {
     report_time
     * {
@@ -52,38 +52,38 @@ table Ticker CalibrationReport
 
 #endif // Hide non-C++ syntactic island from IDE
 
-TIME Ticker::timeCalibrateEvent()
+TIME Ticker::timeAlignmentEvent()
 {
     // is synchronous with TickEvent, but lower priority
-    return EnableCalibration ? next_calibrate : time_infinite;
+    return EnableAlignment ? next_alignment : time_infinite;
 }
 
-void Ticker::CalibrateEvent(void)
+void Ticker::AlignmentEvent(void)
 {
     // get event_id of MortalityEvent
     int event_id_mortality = omr::event_name_to_id("MortalityEvent");
     assert(event_id_mortality != -1); // MortalityEvent not found
 
     // width of the target window
-    TIME calibration_window_width = 1.0;
+    TIME alignment_window_width = 1.0;
 
-    // The upper bound of the target window, NB is just beyond the current calibration window
-    TIME calibration_window_upper_bound = time + calibration_window_width;
+    // The upper bound of the target window, NB is just beyond the current alignment window
+    TIME alignment_window_upper_bound = time + alignment_window_width;
 
-    int calibration_window_target_count = MortalityCalibrationTarget[report_time];
+    int alignment_window_target_count = MortalityAlignmentTarget[report_time];
 
     //
     // walk the event queue, from present to future
     // 
     // add events to defer_list or advance_list
-    // as needed to hit the target count in the calibration time window
+    // as needed to hit the target count in the alignment time window
     // 
     auto& event_queue = *BaseEvent::event_queue; // alias for the model event queue
     std::forward_list<BaseEvent*> defer_list;    // list of events to defer
     std::forward_list<BaseEvent*> advance_list;  // list of events to advance
-    int unadjusted_count = 0; // count of scheduled events in the calibration time window before calibration
-    int deferred_events = 0;  // count of scheduled events deferred to the future beyond the calibration time window
-    int advanced_events = 0;  // count of scheduled events advanced from the future to within the calibration time window
+    int unadjusted_count = 0; // count of scheduled events in the alignment time window before alignment
+    int deferred_events = 0;  // count of scheduled events deferred to the future beyond the alignment time window
+    int advanced_events = 0;  // count of scheduled events advanced from the future to within the alignment time window
     for (auto evt : event_queue) {
         int id = evt->get_event_id();
         if (id != event_id_mortality) {
@@ -91,61 +91,61 @@ void Ticker::CalibrateEvent(void)
             continue;
         }
         double evt_time = evt->event_time;
-        if (evt_time < calibration_window_upper_bound) {
-            // we are inside the target calibration time window
+        if (evt_time < alignment_window_upper_bound) {
+            // we are inside the target alignment time window
             // update the count of currently scheduled events within the window
             ++unadjusted_count;
-            if (unadjusted_count > calibration_window_target_count) {
-                // there is an excess of scheduled events within the calibration time window
+            if (unadjusted_count > alignment_window_target_count) {
+                // there is an excess of scheduled events within the alignment time window
                 // so add this event to the defer list
                 defer_list.push_front(evt);
                 ++deferred_events;
             }
         }
         else {
-            // we are beyond the calibration time window
-            if (advanced_events + unadjusted_count >= calibration_window_target_count) {
+            // we are beyond the alignment time window
+            if (advanced_events + unadjusted_count >= alignment_window_target_count) {
                 // no need to find more events to advance, have found what's needed
                 // so stop queue walk
                 break;
             }
-            // there is a deficit of events within the calibration time window
+            // there is a deficit of events within the alignment time window
             // so add this event to the advance list
             advance_list.push_front(evt);
             ++advanced_events;
         }
     }
 
-    if (calibration_window_target_count > unadjusted_count && unadjusted_count - calibration_window_target_count != advanced_events) {
-        // there were insufficient events in the queue beyond the calibration window to meet the target
-        mortality_deficit += calibration_window_target_count - unadjusted_count - advanced_events; // for CalibrationReport
+    if (alignment_window_target_count > unadjusted_count && unadjusted_count - alignment_window_target_count != advanced_events) {
+        // there were insufficient events in the queue beyond the alignment window to meet the target
+        mortality_deficit += alignment_window_target_count - unadjusted_count - advanced_events; // for AlignmentReport
     }
 
     if (deferred_events > 0) {
-        mortality_deferred += deferred_events; // for CalibrationReport
+        mortality_deferred += deferred_events; // for AlignmentReport
         assert(advanced_events == 0);
         for (auto evt : defer_list) {
             // defer this event
             // remove it from the event queue
             event_queue.erase(evt);
-            // postpone the event time by one calibration interval
-            evt->event_time += calibration_window_width;
+            // postpone the event time by one alignment interval
+            evt->event_time += alignment_window_width;
             // re-insert it to the event queue
             event_queue.insert(evt);
         }
     }
     else if (advanced_events > 0) {
-        mortality_advanced += advanced_events; // for CalibrationReport
+        mortality_advanced += advanced_events; // for AlignmentReport
         // advance this event
         for (auto evt : advance_list) {
             // advance this event
             // remove it from the event queue
             event_queue.erase(evt);
-            // advance the event time by an integral number of calibration intervals
-            // until it falls within the calibration window
+            // advance the event time by an integral number of alignment intervals
+            // until it falls within the alignment window
             TIME new_time = evt->event_time;
-            while (new_time >= calibration_window_upper_bound) {
-                new_time -= calibration_window_width;
+            while (new_time >= alignment_window_upper_bound) {
+                new_time -= alignment_window_width;
             }
             evt->event_time = new_time;
             // re-insert it to the event queue
@@ -157,13 +157,13 @@ void Ticker::CalibrateEvent(void)
     }
 
     {
-        // schedule next calibration
-        Time t = next_calibrate + calibration_window_width;
+        // schedule next alignment
+        Time t = next_alignment + alignment_window_width;
         if (t >= SimulationEnd) {
-            next_calibrate = time_infinite;
+            next_alignment = time_infinite;
         }
         else {
-            next_calibrate = t;
+            next_alignment = t;
         }
     }
 }
