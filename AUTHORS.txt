@@ -11,11 +11,11 @@ Anatoly Cherkassky  amc1999     openmpp99@gmail.com        uOttawa
 
 Contributors:
 
-De Gouffe, Julien   jd-statcan       julien.degouffe@canada.ca     StatCan
-Anatoly Cherkassky  anatoly-statcan  Anatoly.Cherkassky@canada.ca  StatCan
-Dr Andrew P Smith   virgesmith       A.P.Smith@leeds.ac.uk
-Wojciech Dudek      Wojciech-Dudek   wojciech_dudek@hotmail.com
-Nadeau, Claude                       claude.nadeau@statcan.gc.ca   StatCan
+De Gouffe, Julien   jd-statcan              julien.degouffe@canada.ca     StatCan
+Anatoly Cherkassky  anatoly-statcan         Anatoly.Cherkassky@canada.ca  StatCan
+Dr Andrew P Smith   virgesmith              A.P.Smith@leeds.ac.uk
+Wojciech Dudek      Wojciech-Dudek          wojciech_dudek@hotmail.com
+Nadeau, Claude      claude.nadeau@canada.ca claude.nadeau@statcan.gc.ca   StatCan
 
 -----------------------------
 Intellectual property holders
