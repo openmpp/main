@@ -2,6 +2,8 @@ From: Nadeau, Claude (StatCan) <claude.nadeau@statcan.gc.ca>
 Date: Thu, Dec 1, 2022 at 12:34 PM
 Subject: Contribution to OpenM++
 To: "openmpp99@gmail.com" <openmpp99@gmail.com>
+Cc: "Garner, Rochelle (StatCan)" <rochelle.garner@statcan.gc.ca>
+
 
 Good afternoon,
 
