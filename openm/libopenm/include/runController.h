@@ -241,6 +241,10 @@ namespace openm
         /** merge updated sub-values run statue into database */
         void updateRunState(IDbExec * i_dbExec, const map<pair<int, int>, RunState> i_updated) const;
 
+        // microdata entities to write into database or csv
+        map<int, EntityItem> entityMap;
+        vector<int> entityIds;          // sorted microdata entity id's
+
         /** pull microdata database rows from the buffer.
         * if i_isNow is true then return current microdata rows for all entities
         * else return non empty results only
@@ -251,11 +255,87 @@ namespace openm
         */
         map<int, list<unique_ptr<uint8_t>>> pullDbMicrodata(bool i_isNow = false);
 
-        /** write microdata into database and return inserted rows count */
-        size_t doDbMicrodata(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows);
+        /** interface to opaque list of bytes rows */
+        struct IRowsFirstNext
+        {
+            /** move pointer to the first row, return NULL if row list is empty. */
+            virtual uint8_t * toFirst(void) = 0;
+
+            /** move pointer to the next row, return NULL at the end of rows. */
+            virtual uint8_t * toNext(void) = 0;
+        };
+
+        /** list of bytes rows wrapped into IRowsFirstNext interface */
+        struct ListFirstNext : IRowsFirstNext
+        {
+            /** create interface to opaque list of bytes rows */
+            ListFirstNext(list<unique_ptr<uint8_t>>::const_iterator i_begin, list<unique_ptr<uint8_t>>::const_iterator i_end) {
+                beginIt = i_begin;
+                endIt = i_end;
+                rowIt = i_begin;
+            }
+
+            /** move pointer to the first row, return NULL if row list is empty. */
+            virtual uint8_t * toFirst(void) override
+            {
+                rowIt = beginIt;
+                return rowIt != endIt ? rowIt->get() : nullptr;
+            }
+
+            /** move pointer to the next row, return NULL at the end of rows. */
+            virtual uint8_t * toNext(void) override
+            {
+                if (rowIt == endIt) return nullptr;
+
+                ++rowIt;
+                return rowIt != endIt ? rowIt->get() : nullptr;
+            }
+        private:
+            list<unique_ptr<uint8_t>>::const_iterator beginIt;  // first row
+            list<unique_ptr<uint8_t>>::const_iterator endIt;    // after last row
+            list<unique_ptr<uint8_t>>::const_iterator rowIt;    // current row
+        };
+
+        /** array of bytes rows wrapped into IRowsFirstNext interface */
+        struct BytesFirstNext : IRowsFirstNext
+        {
+            /** create interface to opaque list of bytes rows */
+            BytesFirstNext(size_t i_rowCount, size_t i_rowSize, uint8_t * i_rows) : count(i_rowCount), size(i_rowSize) {
+                totalSize = size * count;
+                pRows = i_rows;
+                rowNow = 0;
+            }
+
+            /** move pointer to the first row, return NULL if row list is empty. */
+            virtual uint8_t * toFirst(void) override
+            {
+                if (pRows == nullptr || count <= 0 || size <= 0) return nullptr;
+
+                rowNow = 0;
+                return size <= totalSize ? pRows : nullptr;
+            }
+
+            /** move pointer to the next row, return NULL at the end of rows. */
+            virtual uint8_t * toNext(void) override
+            {
+                if (pRows == nullptr || count <= 0 || size <= 0 || rowNow >= count) return nullptr;
+
+                rowNow++;
+                return (rowNow + 1) * size <= totalSize ? pRows + (rowNow * size) : nullptr;
+            }
+        private:
+            size_t count = 0;       // rows count
+            size_t size = 0;        // row size in bytes
+            size_t totalSize = 0;   // total size in bytes
+            uint8_t * pRows;        // array of bytes [count, size]
+            size_t rowNow = 0;      // current row index
+        };
+
+        /** write entity microdata rows into database and return inserted rows count */
+        size_t doDbMicrodata(IDbExec * i_dbExec, int i_entityId, IRowsFirstNext & i_entityMdRows);
 
         /** write microdata into database using sql insert literal and return inserted rows count */
-        size_t doDbMicrodataSql(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows);
+        size_t doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t>>> & i_entityMdRows);
 
         /** create microdata CSV files for new model run. */
         void openCsvMicrodata(int i_runId);
@@ -326,9 +406,6 @@ namespace openm
             const ParamSubOpts & i_subOpts,
             IDbExec * i_dbExec
         ) const;
-
-        // microdata entities to write into database or csv
-        map<int, EntityItem> entityMap;
 
         // microdata entity to strore in database
         struct EntityDbItem

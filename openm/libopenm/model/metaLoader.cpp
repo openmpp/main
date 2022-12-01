@@ -994,6 +994,7 @@ void MetaLoader::parseEntityOptions(void)
     // make list of microdata entity names and attributes
     struct EntAttrs
     {
+        int entityId;                   // entity id
         string name;                    // entity name
         vector<EntityAttrRow> attrs;    // list of attributes
     };
@@ -1011,7 +1012,7 @@ void MetaLoader::parseEntityOptions(void)
                     i_row.modelId == modelId && i_row.entityId == ent.entityId && (!i_row.isInternal || isOmAttr);
                 });
 
-            if (attrs.size() > 0) entVec.push_back({ ent.entityName, attrs });
+            if (attrs.size() > 0) entVec.push_back({ ent.entityId, ent.entityName, attrs });
         }
     }
     else { // not all entities are included: get attributes for each entity
@@ -1053,7 +1054,7 @@ void MetaLoader::parseEntityOptions(void)
                     return
                         i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr);
                     });
-                if (attrs.size() > 0) entVec.push_back({ entName, attrs });
+                if (attrs.size() > 0) entVec.push_back({ ent->entityId, entName, attrs });
             }
             else    // use only attributes specified in the list: -Microdata.Person age,income
             {
@@ -1070,7 +1071,7 @@ void MetaLoader::parseEntityOptions(void)
                     attrs.push_back(*aRow);
                 }
 
-                entVec.push_back({ entName, attrs });
+                entVec.push_back({ ent->entityId, entName, attrs });
             }
         }
     }
@@ -1097,7 +1098,7 @@ void MetaLoader::parseEntityOptions(void)
             }
         }
 
-        // check for duplicates
+        // check for attribute duplicates
         vector<int> cv(entityIdxArr.cbegin(), entityIdxArr.cend());
         std::sort(cv.begin(), cv.end());
 

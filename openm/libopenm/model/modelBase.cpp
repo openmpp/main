@@ -197,7 +197,7 @@ void ModelBase::writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey, int
             auto [isFound, entItem] = runCtrl->findEntityItem(i_entityKind);
             if (isFound) {
                 runCtrl->makeCsvLineMicrodata(entItem, i_microdataKey, i_eventId, i_isSameEntity, i_entityThis, microdataBuf);
-                theTrace->logMsg(microdataBuf.c_str());
+                if (!microdataBuf.empty()) theTrace->logMsg(microdataBuf.c_str());
             }
         }
     }

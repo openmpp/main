@@ -24,15 +24,15 @@ namespace openm
         /** return message tag */
         MsgTag tag(void) const noexcept override { return msgTag; }
 
-        /** pack vector of db rows into char vector: return empty vector. */
-        const vector<char> pack(const IRowBaseVec & /* i_rowVec */) const override
+        /** pack vector of db rows into byte vector: return empty vector. */
+        const vector<uint8_t> pack(const IRowBaseVec & /* i_rowVec */) const override
         { 
             lock_guard<recursive_mutex> lck(msgMutex);
-            vector<char> packedData;
+            vector<uint8_t> packedData;
             return packedData;
         }
 
-        /** unpack from char[] into vector of rows (does nothing). */
+        /** unpack from byte[] into vector of rows (does nothing). */
         void unpackTo(int /* i_packSize */, void * /* i_packedData */, IRowBaseVec & /* io_rowVec */) const override { }
 
     private:

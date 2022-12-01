@@ -46,7 +46,7 @@ const char * EventIdNameItem::byId(int i_eventId)
     if (EventIdNameArr[0].eventId == i_eventId) return EventIdNameArr[0].eventName;
 
     // if event (id + 1) is an index of EventIdNameArr array then return event name by (id + 1) index
-    if (0 < i_eventId + 1 && i_eventId + 1 < EVENT_ID_NAME_ARR_LEN) {
+    if (0 < i_eventId + 1 && i_eventId + 1 < (int)EVENT_ID_NAME_ARR_LEN) {
         return (EventIdNameArr[i_eventId + 1].eventId == i_eventId) ? EventIdNameArr[i_eventId + 1].eventName : nullptr;
     }
     return nullptr; // not found
@@ -173,4 +173,3 @@ int RunGroup::rankBySubValueId(int i_subId) const
     }
     return nRank;
 }
-

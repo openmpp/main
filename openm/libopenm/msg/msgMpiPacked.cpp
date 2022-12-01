@@ -72,7 +72,7 @@ string MpiPacked::unpackStr(int i_packedSize, void * i_packedData, int & io_pack
 * @param[in] i_size      size of array
 * @param[in] i_valueArr  array of values to be packed
 */
-unique_ptr<char> MpiPacked::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
+unique_ptr<uint8_t> MpiPacked::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
 {
     if (i_size <= 0 || i_size >= INT_MAX) throw MsgException("Invalid size of array to send: %zu", i_size);
     if (i_valueArr == nullptr) throw MsgException("Invalid (nullptr) to array to send");
@@ -81,7 +81,7 @@ unique_ptr<char> MpiPacked::packArray(const type_info & i_type, size_t i_size, v
     int packSize = packedSize(i_type, i_size);
     int packPos = 0;
 
-    unique_ptr<char> packedData(new char[packSize]);
+    unique_ptr<uint8_t> packedData(new uint8_t[packSize]);
 
     int mpiRet = MPI_Pack(i_valueArr, srcSize, toMpiType(i_type), packedData.get(), packSize, &packPos, MPI_COMM_WORLD);
     if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet);

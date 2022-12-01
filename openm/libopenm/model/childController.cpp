@@ -96,6 +96,8 @@ int ChildController::broadcastMetaData(void)
     broadcastMetaTable<ITableDimsTable>(MsgTag::tableDims, metaStore->tableDims);
     broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
     broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
+    broadcastMetaTable<IEntityDicTable>(MsgTag::entityDic, metaStore->entityDic);
+    broadcastMetaTable<IEntityAttrTable>(MsgTag::entityAttr, metaStore->entityAttr);
 
     // find model by name digest
     metaStore->modelRow = metaStore->modelTable->byNameDigest(OM_MODEL_NAME, OM_MODEL_DIGEST);
@@ -241,6 +243,7 @@ void ChildController::shutdownWaitAll(void)
 /** model run shutdown: save results and update run status. */
 void ChildController::shutdownRun(int /*i_runId*/)
 { 
+    sendMicrodata(true);    // send microdata to the root process
     sendStatusUpdate();     // send status update for that run
     msgExec->waitSendAll(); // wait for send completion, if any outstanding
 }
@@ -311,20 +314,26 @@ bool ChildController::childExchange(void)
     // wait for send completion, if any outstanding
     msgExec->waitSendAll();
 
+    // send microdata to the root process
+    size_t nRows = sendMicrodata(false);
+    bool isActivity = nRows > 0;        // child activity status: if true then there is a status update or microdata sent
+
     // get process-wide model run state
-    // if model status same and last progress report sent recently then exit
+    // send update on model status change or if it is a time to send progress report
     auto nowTime = chrono::system_clock::now();
     ModelStatus mStatus = theModelRunState->status();
-    if (mStatus == lastModelStatus && nowTime < lastTimeStatus + chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
-        return false;
-    }
-    
-    sendStatusUpdate();     // send status update
 
-    lastModelStatus = mStatus;
-    lastTimeStatus = nowTime;
-    isFinalExchange = RunState::isFinal(mStatus);
-    return true;
+    if (mStatus != lastModelStatus || nowTime >= lastTimeStatus + chrono::milliseconds(OM_WAIT_SLEEP_TIME)) {
+
+        sendStatusUpdate();     // send status update
+
+        lastModelStatus = mStatus;
+        lastTimeStatus = nowTime;
+        isFinalExchange = RunState::isFinal(mStatus);
+
+        isActivity = true;
+    }
+    return isActivity;
 }
 
 /** send sub-values run status update to root */
@@ -335,4 +344,69 @@ void ChildController::sendStatusUpdate(void)
         unique_ptr<IPackedAdapter> packAdp(IPackedAdapter::create(MsgTag::statusUpdate));
         msgExec->startSendPacked(IMsgExec::rootRank, rsVec, *packAdp);
     }
+}
+
+/** send microdata db rows to to the root process */
+size_t ChildController::sendMicrodata(bool i_isLast)
+{
+    if (!modelRunOptions().isDbMicrodata) return 0;
+
+    // pull microdata db rows for all entities
+    auto entityMdRows = pullDbMicrodata(i_isLast);
+    if (!i_isLast && entityMdRows.size() <= 0) return 0;  // no microdata rows
+
+    // for each entity send to the root microdata size message: row count, last message flag, run id
+    size_t entCount = entityIds.size();
+    size_t rowCount = 0;                        // total rows for all microdata entities
+    {
+        size_t nSize = entCount + 2;
+        unique_ptr<int> sizeUptr(new int[nSize]);
+        int * pSize = sizeUptr.get();
+
+        for (size_t k = 0; k < entCount; k++)
+        {
+            int eId = entityIds[k];
+            auto mdIt = entityMdRows.find(eId);
+            if (mdIt == entityMdRows.end()) continue;   // no db rows for that entity
+
+            pSize[k] = (int)mdIt->second.size();
+            rowCount += pSize[k];
+        }
+        pSize[entCount] = i_isLast ? 1 : 0;     // last message flag: if true then it is run shutdown
+        pSize[entCount + 1] = runId;
+
+        msgExec->startSend(IMsgExec::rootRank, MsgTag::microdataSize, typeid(int), nSize, sizeUptr.release());
+    }
+
+    if (rowCount <= 0) return rowCount;     // no db rows for any entity
+
+    // send db rows to the root for each entity where row count is non-zero
+    for (size_t k = 0; k < entCount; k++)
+    {
+        int eId = entityIds[k];
+        auto mdIt = entityMdRows.find(eId);
+        if (mdIt == entityMdRows.end()) continue;   // no db rows for that entity
+        if (mdIt->second.size() <= 0) continue;     // no db rows for that entity
+
+        // send entity db rows to the root
+        auto & mdRows = mdIt->second;
+        {
+            const auto emIt = entityMap.find(eId);
+            if (emIt == entityMap.cend()) throw ModelException("Microdata entity map entry not found by id: %d", eId);
+
+            size_t dbRowSize = emIt->second.rowSize;
+            size_t dataSize = dbRowSize * mdRows.size();
+            unique_ptr<uint8_t> rowsUptr(new uint8_t[dataSize]);
+            uint8_t * pRows = rowsUptr.get();
+            ptrdiff_t nOff = 0;
+
+            for (auto & rIt : mdRows)
+            {
+                nOff = memCopyTo(pRows, nOff, rIt.release(), dbRowSize);
+            }
+            msgExec->startSend(IMsgExec::rootRank, MsgTag::microdata, typeid(uint8_t), dataSize, rowsUptr.release());
+        }
+    }
+
+    return rowCount;
 }

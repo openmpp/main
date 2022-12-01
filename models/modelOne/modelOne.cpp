@@ -276,16 +276,6 @@ void RunModel(IModel * const i_model)
     */
 }
 
-namespace
-{
-    // copy bytes source into destination and return next destination offset
-    ptrdiff_t memCopyTo(uint8_t * io_dst, ptrdiff_t i_offset, const void * i_src, size_t i_size)
-    {
-        memcpy(io_dst + i_offset, i_src, i_size);
-        return i_offset + i_size;
-    }
-}
-
 // create person entity
 Person::Person(int i_subId, int i_personNumber)
 {

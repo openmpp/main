@@ -59,7 +59,7 @@ namespace openm
         static string unpackStr(int i_packedSize, void * i_packedData, int & io_packPos);
 
         /** return an MPI_Pack'ed copy of source array. */
-        static unique_ptr<char> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
+        static unique_ptr<uint8_t> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
 
         /** return an MPI_Pack'ed copy of source string array. */
         static unique_ptr<char> packArray(size_t i_size, const string * i_valueArr);
@@ -131,16 +131,16 @@ namespace openm
         MsgTag tag(void) const noexcept override { return rowMsgTag; }
 
         /**
-         * pack vector of metadata db rows into char vector.
+         * pack vector of metadata db rows into byte vector.
          *
          * @param[in] i_rowVec source vector of metadata db rows
          */
-        const vector<char> pack(const IRowBaseVec & i_rowVec) const override
+        const vector<uint8_t> pack(const IRowBaseVec & i_rowVec) const override
         {
             lock_guard<recursive_mutex> lck(msgMutex);
 
             int packSize = packedSize(i_rowVec);
-            vector<char> packedData(packSize);
+            vector<uint8_t> packedData(packSize);
 
             int packPos = 0;
             int rowCount = (int)i_rowVec.size();
@@ -153,7 +153,7 @@ namespace openm
         }
 
         /**
-         * unpack from char[] message bufer into vector of metadata db rows.
+         * unpack from byte[] message bufer into vector of metadata db rows.
          *
          * @param[in]     i_packSize    total size in bytes of i_packedData buffer
          * @param[in]     i_packedData  source MPI message buffer to unpack

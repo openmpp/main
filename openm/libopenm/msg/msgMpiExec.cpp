@@ -397,7 +397,7 @@ void MpiExec::bcastSendPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPa
         MPI_Comm mComm = commByGroupOne(i_groupOne);
 
         // pack db rows
-        vector<char> packedData = i_adapter.pack(io_rowVec);
+        vector<uint8_t> packedData = i_adapter.pack(io_rowVec);
 
         if (packedData.size() <= 0 || packedData.size() >= INT_MAX)
             throw MsgException("Invalid size of data to broadcast: %zu", packedData.size());

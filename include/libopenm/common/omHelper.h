@@ -103,6 +103,9 @@ namespace openm
     /** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
     extern const std::string cleanPathChars(const std::string & i_str, int i_maxSize = 0);
 
+    /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
+    extern const std::string replaceAll(const std::string & i_src, const char * i_oldValue, const char * i_newValue);
+
     /** return true if model type is boolean (logical) */
     extern bool isBoolType(const char * i_typeName);
 
@@ -146,8 +149,8 @@ namespace openm
     */
     extern int boolStringToInt(const char * i_value);
 
-    /** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
-    extern const std::string replaceAll(const std::string & i_src, const char * i_oldValue, const char * i_newValue);
+    /** copy bytes source into destination and return next destination offset */
+    ptrdiff_t memCopyTo(uint8_t * io_dst, ptrdiff_t i_offset, const void * i_src, size_t i_size);
 
     /** make date-time string, ie: 2012-08-17 16:04:59.148 */
     extern const std::string makeDateTime(const std::chrono::system_clock::time_point & i_time);

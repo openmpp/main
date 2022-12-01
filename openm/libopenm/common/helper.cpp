@@ -22,7 +22,7 @@ static const regex floatRx("^[-+]?(([0-9]+(\\.?)([0-9]+)?)|(\\.[0-9]+))([eE][-+]
 // float including INF or NAN constants: ^[-+]?((([0-9]+(\.?)([0-9]+)?)|(\.[0-9]+))([E][-+]?[0-9]+)?$)|(INFINITY|INF|NAN)
 // static const regex floatRx("^[-+]?((([0-9]+(\\.?)([0-9]+)?)|(\\.[0-9]+))([E][-+]?[0-9]+)?$)|(INFINITY|INF|NAN)", regex_constants::icase);
 
-// convert string to lower case
+/** convert string to lower case */
 void openm::toLower(string & io_str, const locale & i_locale)
 {
     transform(
@@ -33,7 +33,7 @@ void openm::toLower(string & io_str, const locale & i_locale)
         );
 }
 
-// convert string to lower case
+/** convert string to lower case */
 void openm::toLower(char * io_str, const locale & i_locale)
 {
     if (io_str != NULL) {
@@ -41,7 +41,7 @@ void openm::toLower(char * io_str, const locale & i_locale)
     }
 }
 
-// convert string to upper case
+/** convert string to upper case */
 void openm::toUpper(string & io_str, const locale & i_locale)
 {
     transform(
@@ -52,7 +52,7 @@ void openm::toUpper(string & io_str, const locale & i_locale)
         );
 }
 
-// convert string to upper case
+/** convert string to upper case */
 void openm::toUpper(char * io_str, const locale & i_locale)
 {
     if (io_str != NULL) {
@@ -60,20 +60,20 @@ void openm::toUpper(char * io_str, const locale & i_locale)
     }
 }
 
-// case neutral string comparison
+/** case neutral string comparison */
 int openm::compareNoCase(const char * i_left, const char * i_right, size_t i_length)
 {
     return
         strNcmpNoCase(i_left != NULL ? i_left : "", i_right != NULL ? i_right : "", ((i_length > 0) ? i_length : OM_STRLEN_MAX));
 }
 
-// case neutral string equal comparison
+/** case neutral string equal comparison */
 bool openm::equalNoCase(const char * i_left, const char * i_right, size_t i_length)
 {
     return compareNoCase(i_left, i_right, i_length) == 0;
 }
 
-// check if string start with i_start, using case neutral string comparison
+/** check if string start with i_start, using case neutral string comparison */
 bool openm::startWithNoCase(const string & i_str, const char * i_start)
 {
     if (i_start == NULL) return false;
@@ -84,7 +84,7 @@ bool openm::startWithNoCase(const string & i_str, const char * i_start)
         0 == compareNoCase(i_str.c_str(), i_start, len);
 }
 
-// check if string end with i_end, using case neutral string comparison
+/** check if string end with i_end, using case neutral string comparison */
 bool openm::endWithNoCase(const string & i_str, const char * i_end)
 {
     if (i_end == NULL) return false;
@@ -95,7 +95,7 @@ bool openm::endWithNoCase(const string & i_str, const char * i_end)
         0 == compareNoCase(i_str.c_str() + (i_str.length() - len), i_end);
 }
 
-// Trim leading space characters
+/** trim leading blank and space characters */
 string openm::trimLeft(const string & i_str, const locale & i_locale)
 {
     for (string::const_iterator it = i_str.begin(); it != i_str.end(); ++it) {
@@ -104,7 +104,7 @@ string openm::trimLeft(const string & i_str, const locale & i_locale)
     return "";  // string is empty or has only space chars
 }
 
-// Trim trailing space characters
+/** trim trailing blank and space characters */
 string openm::trimRight(const string & i_str, const locale & i_locale)
 {
     for (string::const_reverse_iterator revIt = i_str.rbegin(); revIt != i_str.rend(); ++revIt) {
@@ -113,7 +113,7 @@ string openm::trimRight(const string & i_str, const locale & i_locale)
     return "";  // string is empty or has only space chars
 }
 
-// Trim leading and trailing space characters
+/** trim leading and trailing blank and space characters */
 string openm::trim(const string & i_str, const locale & i_locale)
 {
     string::const_iterator begIt;
@@ -131,7 +131,7 @@ string openm::trim(const string & i_str, const locale & i_locale)
     return i_str.substr(begIt - i_str.begin(), (i_str.rend() - endIt) - (begIt - i_str.begin()));
 }
 
-// Replace all <cr> or <lf> with blank space character
+/** replace all <cr> or <lf> with blank space character */
 void openm::blankCrLf(string & io_str)
 {
     for (string::value_type & it : io_str) {
@@ -187,7 +187,7 @@ const string openm::toString(double i_val)
     return st.str();
 }
 
-// replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores
+/** replace all non [A-Z,a-z,0-9] by _ underscore and remove repetitive underscores. */
 const string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
 {
     string sRet;
@@ -212,7 +212,7 @@ const string openm::toAlphaNumeric(const string & i_str, int i_maxSize)
     return sRet;
 }
 
-// replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore
+/** replace all non non-printable and any of "'`$}{@><:|?*&^;/\ by _ underscore. */
 const string openm::cleanPathChars(const string & i_str, int i_maxSize)
 {
     string sRet;
@@ -233,6 +233,27 @@ const string openm::cleanPathChars(const string & i_str, int i_maxSize)
         if (i_maxSize > 0 && len >= i_maxSize) return sRet;     // if max size supplied then return up to max size chars
     }
     return sRet;
+}
+
+/** replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty */
+const string openm::replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue)
+{
+    if (i_oldValue == NULL || i_oldValue[0] == '\0') return i_src;  // nothing to find
+    if (i_newValue == NULL || i_newValue[0] == '\0') return i_src;  // nothing to replace
+
+    size_t len = strnlen(i_oldValue, OM_STRLEN_MAX);
+    string dst = i_src;
+
+    bool isFound = false;
+    do {
+        size_t pos = dst.find(i_oldValue);
+        isFound = pos != string::npos;
+
+        if (isFound) dst = dst.replace(pos, len, i_newValue);
+
+    } while (isFound);
+
+    return dst;
 }
 
 /** return true if model type is boolean (logical) */
@@ -322,7 +343,14 @@ int openm::boolStringToInt(const char * i_value)
     return -2;  // incorrect value
 }
 
-// make date-time string, ie: 2012-08-17 16:04:59.148
+/** copy bytes source into destination and return next destination offset */
+ptrdiff_t openm::memCopyTo(uint8_t * io_dst, ptrdiff_t i_offset, const void * i_src, size_t i_size)
+{
+    memcpy(io_dst + i_offset, i_src, i_size);
+    return i_offset + i_size;
+}
+
+/** make date-time string, ie: 2012-08-17 16:04:59.148 */
 const string openm::makeDateTime(const chrono::system_clock::time_point & i_time)
 {
     time_t sys_time = chrono::system_clock::to_time_t(i_time);
@@ -339,7 +367,7 @@ const string openm::makeDateTime(const chrono::system_clock::time_point & i_time
     return st.str();
 }
 
-// make timestamp string, ie: 2012_08_17_16_04_59_148
+/** make timestamp string, ie: 2012_08_17_16_04_59_148 */
 const string openm::makeTimeStamp(const chrono::system_clock::time_point & i_time)
 {
     time_t sys_time = chrono::system_clock::to_time_t(i_time);
@@ -356,7 +384,7 @@ const string openm::makeTimeStamp(const chrono::system_clock::time_point & i_tim
     return st.str();
 }
 
-// make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148
+/** make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148 */
 const string openm::toDateTimeString(const string & i_timestamp)
 {
     string dtStr = i_timestamp;
@@ -374,7 +402,7 @@ const string openm::toDateTimeString(const string & i_timestamp)
     return dtStr;
 }
 
-// return number of milliseconds since epoch to measure intervals
+/** return number of milliseconds since epoch to measure intervals */
 int64_t openm::getMilliseconds(void)
 {
 #ifndef _WIN32
@@ -391,7 +419,7 @@ int64_t openm::getMilliseconds(void)
 #endif
 }
 
-// format message into supplied buffer using vsnprintf()
+/** format message into supplied buffer using vsnprintf() */
 void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args)
 {
     // if buffer is null or too short or too long (error in size) then exit
@@ -422,28 +450,7 @@ const char * openm::elliptString(const char * i_src, size_t i_size, char * io_bu
     return io_buffer;
 }
 
-// replace all occurence of i_oldValue by i_newValue, both old and new values must be not empty
-const string openm::replaceAll(const string & i_src, const char * i_oldValue, const char * i_newValue)
-{
-    if (i_oldValue == NULL || i_oldValue[0] == '\0') return i_src;  // nothing to find
-    if (i_newValue == NULL || i_newValue[0] == '\0') return i_src;  // nothing to replace
-
-    size_t len = strnlen(i_oldValue, OM_STRLEN_MAX);
-    string dst = i_src;
-
-    bool isFound = false;
-    do {
-        size_t pos = dst.find(i_oldValue);
-        isFound = pos != string::npos;
-
-        if (isFound) dst = dst.replace(pos, len, i_newValue);
-
-    } while (isFound);
-
-    return dst;
-}
-
-// normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8"
+/** normalize language name by removing encoding part, replace _ by - and lower case: "en-ca" from "en_CA.UTF-8" */
 const string openm::normalizeLanguageName(const string & i_srcLanguage)
 {
     string lang = replaceAll(i_srcLanguage, "_", "-");
@@ -455,7 +462,7 @@ const string openm::normalizeLanguageName(const string & i_srcLanguage)
     return lang;
 }
 
-// normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
+/** normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
 const list<string> openm::splitLanguageName(const string & i_srcLanguage)
 {
     // normalize: convert form en_CA.UTF-8 into en-ca

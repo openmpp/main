@@ -40,7 +40,7 @@ size_t IPackedAdapter::packedSize(const type_info & i_type, size_t i_size)
 }
 
 // return new allocated and packed copy of source array.
-unique_ptr<char> IPackedAdapter::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
+unique_ptr<uint8_t> IPackedAdapter::packArray(const type_info & i_type, size_t i_size, void * i_valueArr)
 {
     lock_guard<recursive_mutex> lck(msgMutex);
     return MpiPacked::packArray(i_type, i_size, i_valueArr);
@@ -135,9 +135,9 @@ size_t IPackedAdapter::packedSize(const type_info & /*i_type*/, size_t /*i_size*
 }
 
 /** return pack'ed copy of source array: return always empty. */
-unique_ptr<char> IPackedAdapter::packArray(const type_info & /*i_type*/, size_t /*i_size*/, void * /*i_valueArr*/)
+unique_ptr<uint8_t> IPackedAdapter::packArray(const type_info & /*i_type*/, size_t /*i_size*/, void * /*i_valueArr*/)
 {
-    unique_ptr<char> packedData(new char[0]);
+    unique_ptr<uint8_t> packedData(new uint8_t[0]);
     return packedData;
 }
 

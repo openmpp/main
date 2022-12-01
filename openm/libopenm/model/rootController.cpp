@@ -1,6 +1,6 @@
 /**
 * @file
-* OpenM++ modeling library: 
+* OpenM++ modeling library:
 * root process run controller class to create new model run(s), send input parameters to children and receieve output tables.
 */
 // Copyright (c) 2013-2015 OpenM++
@@ -142,6 +142,9 @@ void RootController::init(void)
             "Invalid first sub-value index: %d or number of sub-values: %d", subFirstId, selfSubCount
             );
 
+    // initial value is not to receive microdata from any child process
+    isMicrodataFromRank.assign(msgExec->worldSize(), false);
+
     // broadcast metadata tables from root to all child processes
     // broadcast basic model run options
     // broadcast model messages from root to all child processes
@@ -168,6 +171,8 @@ void RootController::broadcastMetaData(void)
     broadcastMetaTable<ITableDimsTable>(MsgTag::tableDims, metaStore->tableDims);
     broadcastMetaTable<ITableAccTable>(MsgTag::tableAcc, metaStore->tableAcc);
     broadcastMetaTable<ITableExprTable>(MsgTag::tableExpr, metaStore->tableExpr);
+    broadcastMetaTable<IEntityDicTable>(MsgTag::entityDic, metaStore->entityDic);
+    broadcastMetaTable<IEntityAttrTable>(MsgTag::entityAttr, metaStore->entityAttr);
 }
 
 // broadcast meta table db rows
@@ -241,7 +246,7 @@ void RootController::broadcastLanguageMessages(void)
     msgExec->bcastSendPacked(ProcessGroupDef::all, codeValueVec, *packAdp);
 }
 
-/** next run for root process: create new run and input parameters in database and support data exchange. 
+/** next run for root process: create new run and input parameters in database and support data exchange.
 *
 * - (a) find id of source working set for input parameters
 * - (b) create new "run" in database (if required)
@@ -267,7 +272,7 @@ void RootController::broadcastLanguageMessages(void)
 * (c) prepare model input parameters
 * ----------------------------------
 * it creates a copy of input paramters from source working set under destination run_id
-* 
+*
 * search for input parameter value in following order: \n
 *   - use value of parameter specified as command line or ini-file argument or from profile_option table
 *   - use parameter.csv file if parameters csv directory specified
@@ -325,13 +330,14 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     IRowBaseVec & rv = roTable->rowsRef();
     msgExec->bcastSendPacked(i_runGroup.groupOne, rv, *packAdp);
 
-    // create list of accumulators to be received from child modeling processes 
+    // create list of accumulators to be received from child modeling processes
     appendAccReceiveList(nRunId, i_runGroup);
 
     // if this is a root modeling group then store run options in root metadata holder
     if (i_runGroup.groupOne == rootRunGroup().groupOne) metaStore->runOptionTable.swap(roTable);
 
-    openCsvMicrodata(nRunId);   // create microdata CSV files for new model run
+    // create microdata CSV files for new model run
+    openCsvMicrodata(nRunId);
     return nRunId;
 }
 
@@ -344,9 +350,28 @@ bool RootController::childExchange(void)
     if (msgExec == nullptr) throw MsgException("invalid (NULL) message passing interface");
     if (dbExec == nullptr) throw ModelException("invalid (NULL) database connection");
 
-    // try to receive sub-values and wait for send completion, if any outstanding
+    // try to receive sub-values
     bool isReceived = receiveSubValues();
-    msgExec->waitSendAll();
+
+    // write root process microdata into database
+    bool isAnyMicrodata = false;
+    if (modelRunOptions().isDbMicrodata)
+    {
+        auto entityMdRows = pullDbMicrodata();
+
+        for (auto & emd : entityMdRows)
+        {
+            ListFirstNext rowsLfn(emd.second.cbegin(), emd.second.cend());
+            size_t nRows = doDbMicrodata(dbExec, emd.first, rowsLfn);
+            isAnyMicrodata = isAnyMicrodata || (nRows > 0);
+        }
+    }
+
+    // try to receive microdata from children
+    bool isChildMicrodata = receiveMicrodata(OM_ACTIVE_SLEEP_TIME);
+    isAnyMicrodata = isAnyMicrodata || isChildMicrodata;
+
+    msgExec->waitSendAll();     // wait for send completion, if any outstanding
 
     // receive status update from children and save it
     bool isStatusUpdate = receiveStatusUpdate(OM_ACTIVE_SLEEP_TIME);
@@ -361,9 +386,11 @@ bool RootController::childExchange(void)
         if (rootGroupDef.isRootActive && rg.groupOne == rootRunGroup().groupOne) continue;
         if (rg.state.isFinal()) continue;    // group already shutdown
 
-        // check if all run sub-values completed then finalize run completed in database
+        // if all run sub-values completed and all microdata completed for that group
+        // then finalize run completed in database
         if (rg.runId > 0) {
-            if (rg.isSubDone.isAll()) {
+            if (rg.isSubDone.isAll() && isAllMicrodataReceived(rg)) {
+
                 isCompleted = true;
                 doShutdownRun(rg.runId, taskRunId, dbExec); // run completed
                 rg.reset();                                 // group is ready for next run
@@ -400,7 +427,7 @@ bool RootController::childExchange(void)
         }
     }
 
-    return isReceived || isCompleted || isNewRun || isStatusUpdate;
+    return isReceived || isCompleted || isNewRun || isStatusUpdate || isAnyMicrodata;
 }
 
 /** model process shutdown if exiting without completion (ie: exit on error). */
@@ -412,7 +439,7 @@ void RootController::shutdownOnExit(ModelStatus i_status)
 }
 
 /** model process shutdown: wait for all child to be completed and do final cleanup. */
-void RootController::shutdownWaitAll(void) 
+void RootController::shutdownWaitAll(void)
 {
     // receive outstanding run results
     long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
@@ -426,6 +453,15 @@ void RootController::shutdownWaitAll(void)
             accRecvLst.cend(),
             [](AccReceive i_recv) -> bool { return !i_recv.isReceived; }
         );
+
+        if (receiveMicrodata()) isReceived = true;  // receive outstanding microdata
+        if (!isAnyToRecv) {
+            for (RunGroup & rg : runGroupLst)
+            {
+                isAnyToRecv = !isAllMicrodataReceived(rg);  // check if all microdata received
+                if (isAnyToRecv) break;
+            }
+        }
 
         // receive sub-values status update and set model process status to final: done, exit, error
         receiveStatusUpdate();
@@ -476,7 +512,7 @@ void RootController::shutdownWaitAll(void)
 }
 
 /** model run shutdown: save results and update run status. */
-void RootController::shutdownRun(int i_runId) 
+void RootController::shutdownRun(int i_runId)
 {
     // receive outstanding sub-values for that run id
     long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
@@ -490,6 +526,11 @@ void RootController::shutdownRun(int i_runId)
             accRecvLst.cend(),
             [i_runId](AccReceive i_recv) -> bool { return i_recv.runId == i_runId && !i_recv.isReceived; }
         );
+
+        if (receiveMicrodata()) isReceived = true;  // try to receive microdata
+        if (!isAnyToRecv) {
+            isAnyToRecv = !isAllMicrodataReceived(rootRunGroup());  // check if all microdata received
+        }
 
         // receive sub-values status update and set model process status to final: done, exit, error
         receiveStatusUpdate();
@@ -614,6 +655,13 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
             accRecvLst.push_back(
                 AccReceive(i_runId, nSub, subValueCount, nRank, tblId, accVec[nAcc].accId, nAcc, valSize)
             );
+
+            // if microdata is required then set this process rank as "active" to receive microdata from
+            if (modelRunOptions().isDbMicrodata)
+            {
+                lock_guard<recursive_mutex> lck(mdRcvMutex);    // lock microdata receive queue
+                isMicrodataFromRank[nRank] = true;              // this child rank must send microdata
+            }
         }
     }
 }
@@ -744,7 +792,7 @@ bool RootController::updateModelRunStatus(void)
 
     // all group are at final status (exit, done or error)
     if (isAllDone) theModelRunState->updateStatus(maxStatus);   // set model process status to final
-    
+
     return !theModelRunState->isError();
 }
 
@@ -787,7 +835,7 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
 
             // if status of all child processes is exit or done then set entire group as exit or done
             if (!rootGroupDef.isRootActive || rg.groupOne != rootRunGroup().groupOne) {     // it not an active root group
-                
+
                 bool isAllExit = true;
                 bool isAllDone = true;
 
@@ -808,4 +856,175 @@ bool RootController::receiveStatusUpdate(long i_waitTime)
     } while (isAnyActive && --nAttempt > 0);
 
     return isAnyReceived;
+}
+
+/** receive microdata from children and save it */
+bool RootController::receiveMicrodata(long i_waitTime)
+{
+    if (!modelRunOptions().isDbMicrodata) return false;
+
+    // from all active children receive microdata row counts message
+    bool isAnyReceived = false;
+    size_t entCount = entityIds.size();
+    {
+        vector<int> mdSizeArr(entCount + 2, 0); // row count for each entity, last message flag, run Id
+
+        for (RunGroup & rg : runGroupLst) {
+
+            for (int n = 0; n < rg.childCount; n++) {
+
+                // try to receive child microdata size
+                bool isOk = msgExec->tryReceive(
+                    n + rg.firstChildRank, MsgTag::microdataSize, typeid(int), mdSizeArr.size(), mdSizeArr.data()
+                );
+                if (!isOk) continue;    // no microdata size message from that child
+
+                EntityMdReceive eRcv{
+                    n + rg.firstChildRank,      // child process rank
+                    mdSizeArr[entCount] != 0,   // last message flag
+                    mdSizeArr[entCount + 1]     // child run id
+                };
+                eRcv.count.assign(mdSizeArr.cbegin(), mdSizeArr.cend() - 2);
+
+                // if it is last message from the child
+                // or if there is any microdata then append this child to receiver queue
+                {
+                    lock_guard<recursive_mutex> lck(mdRcvMutex);
+
+                    if (eRcv.isLast || any_of(eRcv.count.cbegin(), eRcv.count.cend(), [](size_t n) -> bool { return n > 0; }))
+                    {
+                        entityMdRcvLst.push_back(eRcv);
+                        isAnyReceived = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // check if microdata is in the receiving queue
+    bool isAnyActive = false;
+    {
+        lock_guard<recursive_mutex> lck(mdRcvMutex);
+
+        isAnyActive = any_of(
+            entityMdRcvLst.cbegin(),
+            entityMdRcvLst.cend(),
+            [](EntityMdReceive recv) -> bool {
+                return any_of(recv.count.cbegin(), recv.count.cend(), [](size_t n) -> bool { return n > 0; });
+            });
+    }
+
+    // receive microdata rows
+    if (isAnyActive)
+    {
+        long nAttempt = 1 + i_waitTime / OM_ACTIVE_SLEEP_TIME;
+
+        do {
+            isAnyActive = false;
+
+            int entId = 0;
+            size_t rowCount = 0;
+            size_t rowSize = 0;
+            unique_ptr<uint8_t> rowsUptr;
+
+            // find microdata in the queue where row count > 0
+            // receive microdata rows and set row count = 0 to clear receive request
+            {
+                lock_guard<recursive_mutex> lck(mdRcvMutex);
+
+                for (auto & eRcv : entityMdRcvLst)
+                {
+                    for (size_t k = 0; rowCount <= 0 && k < entCount; k++)
+                    {
+                        if (eRcv.count[k] <= 0) continue;       // no microdata for that entity
+
+                        entId = entityIds[k];
+                        const auto emIt = entityMap.find(entId);
+                        if (emIt == entityMap.cend()) throw ModelException("Microdata entity map entry not found by id: %d", entId);
+
+                        const auto & ent = emIt->second;
+
+                        // try to receive entity microdata rows from the child
+                        {
+                            rowSize = ent.rowSize;
+                            size_t dataSize = rowSize * eRcv.count[k];
+                            rowsUptr.reset(new uint8_t[dataSize]);
+
+                            bool isOk = msgExec->tryReceive(
+                                eRcv.childRank, MsgTag::microdata, typeid(uint8_t), dataSize, rowsUptr.get()
+                            );
+                            if (!isOk) continue;    // no microdata rows message from that child
+
+                            isAnyReceived = true;       // microdata received
+                            rowCount = eRcv.count[k];   // microdata received
+                            eRcv.count[k] = 0;          // clear receive rows request
+                        }
+                    }
+                    if (rowCount > 0) break;    // microdata received
+                }
+            }
+
+            // save microdata rows into database
+            if (rowCount > 0) {
+                BytesFirstNext rowsBfn(rowCount, rowSize, rowsUptr.get());
+                doDbMicrodata(dbExec, entId, rowsBfn);     // write microdata rows into database
+            }
+            rowsUptr.reset();
+
+            if (isAnyActive && nAttempt > 0) {
+                this_thread::sleep_for(chrono::milliseconds(OM_ACTIVE_SLEEP_TIME));
+            }
+        } while (isAnyActive && --nAttempt > 0);
+    }
+
+    // remove children messages where all microdata received from the queue
+    // do not remove last message from the child
+    {
+        lock_guard<recursive_mutex> lck(mdRcvMutex);
+
+        entityMdRcvLst.remove_if([](EntityMdReceive recv) -> bool {
+            return !recv.isLast &&
+            all_of(recv.count.cbegin(), recv.count.cend(), [](size_t n) -> bool { return n <= 0; });
+            });
+    }
+    return isAnyReceived;
+}
+
+/** return true if all microdata received from group of children. */
+bool RootController::isAllMicrodataReceived(RunGroup & i_runGroup)
+{
+    if (!modelRunOptions().isDbMicrodata) return true;
+
+    for (int n = 0; n < i_runGroup.childCount; n++)
+    {
+        if (!isAllMicrodataReceived(n + i_runGroup.firstChildRank)) return false;   // not all microdata received from that child
+    }
+    return true;
+}
+
+/** return true if all microdata received from child process. */
+bool RootController::isAllMicrodataReceived(int i_childRank)
+{
+    if (!modelRunOptions().isDbMicrodata) return true;
+
+    lock_guard<recursive_mutex> lck(mdRcvMutex);        // lock microdata receive queue
+
+    if (!isMicrodataFromRank[i_childRank]) return true; // microdata not required from that child process
+
+    // for that chid all microdata messages must be received
+    // and last message also should be received
+    bool isLast = false;
+
+    for (const auto & eRcv : entityMdRcvLst)
+    {
+        if (eRcv.childRank != i_childRank) continue;    // skip: it is other model run process
+
+        bool isAllMd = all_of(
+            eRcv.count.cbegin(), eRcv.count.cend(), [](size_t n) -> bool { return n <= 0; }
+        );
+        if (!isAllMd) return false; // there is outstandig microdata to receive
+
+        if (eRcv.isLast) isLast = true; // last microdata message received from the child
+    }
+    return isLast;
 }

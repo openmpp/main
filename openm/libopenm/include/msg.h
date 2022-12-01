@@ -30,11 +30,17 @@ namespace openm
         /** reserved and should not be used */
         unused = 0,
 
+        /** initial message at process start */
+        initial,
+
         /** modeling job status */
         statusUpdate,
 
-        /** initial message at process start */
-        initial,
+        /** microdata row count for each entity */
+        microdataSize,
+
+        /** microdata entity rows */
+        microdata,
 
         /** lang_lst db rows */
         langLst = 32,
@@ -69,6 +75,12 @@ namespace openm
         /** table_expr db rows */
         tableExpr,
 
+        /** entity_dic db rows */
+        entityDic,
+
+        /** entity_attr db rows */
+        entityAttr,
+
         /** run_option db rows */
         runOption,
 
@@ -99,17 +111,17 @@ namespace openm
         virtual MsgTag tag(void) const noexcept = 0;
 
         /**
-         * pack vector of db rows into char vector.
+         * pack vector of db rows into byte vector.
          *
          * @param[in] i_rowVec   vector of db rows to pack
          */
-        virtual const vector<char> pack(const IRowBaseVec & i_rowVec) const = 0;
+        virtual const vector<uint8_t> pack(const IRowBaseVec & i_rowVec) const = 0;
 
         /**
-         * unpack from char[] into vector of rows.
+         * unpack from byte[] into vector of rows.
          *
          * @param[in]     i_packSize   size of array to unpack
-         * @param[in]     i_packedData char array to unpack
+         * @param[in]     i_packedData byte array to unpack
          * @param[in,out] io_rowVec    vector to push back received db rows
          */
         virtual void unpackTo(int i_packSize, void * i_packedData, IRowBaseVec & io_rowVec) const = 0;
@@ -118,7 +130,7 @@ namespace openm
         static size_t packedSize(const type_info & i_type, size_t i_size);
 
         /** return new allocated and packed copy of source array. */
-        static unique_ptr<char> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
+        static unique_ptr<uint8_t> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
     };
 
     /** public interface for message passing */

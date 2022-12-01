@@ -144,7 +144,7 @@ namespace openm
         /** return run id of root process model run, if root process is doing any model runs */
         int currentRunId(void) const noexcept override {
             try {
-                return (rootGroupDef.isRootActive && !runGroupLst.empty()) ? runGroupLst.crbegin()->runId : 0;
+                return (rootGroupDef.isRootActive && !runGroupLst.empty()) ? runGroupLst.back().runId : 0;
             }
             catch (...) {
                 return 0;
@@ -199,6 +199,30 @@ namespace openm
 
         /** receive status update from all child processes. */
         bool receiveStatusUpdate(long i_waitTime = 0L);
+
+        // microdata receive status: row count and size for all entities where microdata required
+        struct EntityMdReceive
+        {
+            int childRank = 0;      // child rank to receive microdata from
+            bool isLast = false;    // if true then it is last entity microdata on model shutdown
+            int childRunId = 0;     // child process run id
+            vector<size_t> count;   // microdata row count for each entity
+        };
+
+        // microdata receive queue
+        recursive_mutex mdRcvMutex;             // mutex to lock for receive operations
+        //
+        list<EntityMdReceive> entityMdRcvLst;
+        vector<bool> isMicrodataFromRank;       // array [worldSize], if value true for the rank then microdata must be received
+
+        /** receive microdata from children and save it */
+        bool receiveMicrodata(long i_waitTime = 0L);
+
+        /** return true if all microdata received from group of children. */
+        bool isAllMicrodataReceived(RunGroup & i_runGroup);
+
+        /** return true if all microdata received from child process. */
+        bool isAllMicrodataReceived(int i_childRank);
 
     private:
         RootController(const RootController & i_runCtrl) = delete;
@@ -283,6 +307,9 @@ namespace openm
 
         /** send sub-values run status update to root */
         void sendStatusUpdate(void);
+
+        /** send microdata db rows to to the root process */
+        size_t sendMicrodata(bool i_isLast);
 
     private:
         ChildController(const ChildController & i_runCtrl) = delete;

@@ -230,6 +230,19 @@ bool SingleController::childExchange(void)
 
     bool isActivity = false;    // child activity status: if true then there is status update or microdata received
 
+    // write microdata into database
+    if (modelRunOptions().isDbMicrodata)
+    {
+        auto entityMdRows = pullDbMicrodata();
+
+        for (auto & emd : entityMdRows)
+        {
+            ListFirstNext rowsLfn(emd.second.cbegin(), emd.second.cend());
+            size_t nRows = doDbMicrodata(dbExec, emd.first, rowsLfn);
+            isActivity = isActivity || (nRows > 0);
+        }
+    }
+
     // update run state and progress
     auto stm = runStateStore().saveUpdated();
     if (stm.size() > 0) {
@@ -237,12 +250,5 @@ bool SingleController::childExchange(void)
         isActivity = true;
     }
 
-    // write microdata into database
-    if (modelRunOptions().isDbMicrodata)
-    {
-        auto io_entityMdRows = pullDbMicrodata();
-        size_t nRows = doDbMicrodata(dbExec, io_entityMdRows);
-        isActivity = isActivity || (nRows > 0);
-    }
     return isActivity;
 }

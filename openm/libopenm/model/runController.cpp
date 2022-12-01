@@ -164,8 +164,13 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
     {
         theLog->logFormatted("Writing microdata into database, run: %d", i_runId);
 
-        auto io_entityMdRows = pullDbMicrodata(true);    // get all microdata rows now
-        doDbMicrodata(i_dbExec, io_entityMdRows);
+        auto entityMdRows = pullDbMicrodata(true);    // get all microdata rows now
+
+        for (auto & emd : entityMdRows)
+        {
+            ListFirstNext rowsLfn(emd.second.cbegin(), emd.second.cend());
+            doDbMicrodata(i_dbExec, emd.first, rowsLfn);                    // write microdata rows into database
+        }
     }
 
     // update run status: all sub-values completed at this point
@@ -499,17 +504,11 @@ void RunController::initMicrodata(void)
             ent.second.rowSetter.push_back(DbValueSetter(EntityNameSizeArr[attr.idxOf].typeOf));
             ent.second.rowTypes.push_back(&ent.second.rowSetter.back().valueType());
         }
-    }
-}
 
-namespace
-{
-    // copy bytes source into destination and return next destination offset
-    ptrdiff_t memCopyTo(uint8_t * io_dst, ptrdiff_t i_offset, const void * i_src, size_t i_size)
-    {
-        memcpy(io_dst + i_offset, i_src, i_size);
-        return i_offset + i_size;
+        entityIds.push_back(ent.first); // add to array of entity id's for microdata child exchange
     }
+
+    std::sort(entityIds.begin(), entityIds.end());  // sorted array of entity id's
 }
 
 // check if any microdata write required for this entity kind
@@ -625,77 +624,75 @@ list<unique_ptr<uint8_t>> && RunController::moveDbMicrodata(chrono::system_clock
     return move(io_entityDbItem.rowLst);
 }
 
-/** write microdata into database. */
-size_t RunController::doDbMicrodata(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows)
+/** write entity microdata rows into database. */
+size_t RunController::doDbMicrodata(IDbExec * i_dbExec, int i_entityId, IRowsFirstNext & i_entityMdRows)
 {
+    const auto emIt = entityMap.find(i_entityId);
+    if (emIt == entityMap.cend()) throw ModelException("Microdata entity map entry not found by id: %d", i_entityId);
+
+    auto & ent = emIt->second;
     size_t rowCount = 0;
 
-    for (auto & e : entityMap)
+    // make insert sql statement:
+    //
+    // INSERT Person_g87abcdef (run_id, entity_key, attr0, attr3) VALUES (?, ?, ?, ?)
+    //
+    int nAttrs = (int)ent.attrs.size();
+
+    string insSql = ent.sqlInsPrefix + "?, ?";  // INSERT Person_g87abcdef (....) VALUES (?, ?
+
+    for (int k = 0; k < nAttrs; k++)
     {
-        auto & ent = e.second;
+        insSql += ", ?";
+    }
+    insSql += ")";
 
-        const auto & mrIt = io_entityMdRows.find(ent.entityId);
-        if (mrIt == io_entityMdRows.cend()) continue;           // no db rows for that entity
-        if (mrIt->second.empty()) continue;                     // no db rows for that entity
+    // storage for sub value id, dimension items and db row values
+    unique_ptr<DbValue> valVecUptr(new DbValue[2 + nAttrs]);        // run id, microdata key, attributes
+    DbValue * valVec = valVecUptr.get();
 
-        // make insert sql statement:
-        //
-        // INSERT Person_g87abcdef (run_id, entity_key, attr0, attr3) VALUES (?, ?, ?, ?)
-        //
-        int nAttrs = (int)ent.attrs.size();
+    // insert entity microdata rows in transaction scope
+    uint8_t * pRow = i_entityMdRows.toFirst();
 
-        string insSql = ent.sqlInsPrefix + "?, ?";  // INSERT Person_g87abcdef (....) VALUES (?, ?
- 
-        for (int k = 0; k < nAttrs; k++)
+    if (pRow == nullptr) return 0;  // no db rows for that entity
+    {
+        unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
         {
-            insSql += ", ?";
-        }
-        insSql += ")";
+            // prepare insert statement
+            exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
+            i_dbExec->createStatement(insSql, (int)ent.rowTypes.size(), ent.rowTypes.data());
 
-        // storage for sub value id, dimension items and db row values
-        unique_ptr<DbValue> valVecUptr(new DbValue[2 + nAttrs]);        // run id, microdata key, attributes
-        DbValue * valVec = valVecUptr.get();
-        
-        // insert entity microdata rows in transaction scope
-        {
-            unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
-            {
-                // prepare insert statement
-                exit_guard<IDbExec> onExit(i_dbExec, &IDbExec::releaseStatement);
-                i_dbExec->createStatement(insSql, (int)ent.rowTypes.size(), ent.rowTypes.data());
+            do {
+                // add row key: run id and microdata key
+                int rId = *static_cast<const int *>(static_cast<const void *>(pRow));
+                uint64_t mKey = *static_cast<const uint64_t *>(static_cast<const void *>(pRow + sizeof(int)));
+                valVec[0] = DbValue(rId);
+                valVec[1] = DbValue(mKey);
 
-                for (list<unique_ptr<uint8_t>>::const_iterator rIt = mrIt->second.cbegin(); rIt != mrIt->second.cend(); ++rIt)
+                // add microdata attribute values
+                for (size_t k = 0; k < ent.attrs.size(); k++)
                 {
-                    // add row key: run id and microdata key
-                    const uint8_t * pVal = rIt->get();
-
-                    int rId = *static_cast<const int *>(static_cast<const void *>(pVal));
-                    uint64_t mKey = *static_cast<const uint64_t *>(static_cast<const void *>(pVal + sizeof(int)));
-                    valVec[0] = DbValue(rId);
-                    valVec[1] = DbValue(mKey);
-
-                    // add microdata attribute values
-                    for (size_t k = 0; k < ent.attrs.size(); k++)
-                    {
-                        ent.rowSetter[k + 2].set(static_cast<const void *>(pVal + ent.attrs[k].rowOffset), valVec[k + 2]);
-                    }
-
-                    // insert cell value into parameter table
-                    i_dbExec->executeStatement(2 + nAttrs, valVec);
-                    rowCount++;
+                    ent.rowSetter[k + 2].set(static_cast<const void *>(pRow + ent.attrs[k].rowOffset), valVec[k + 2]);
                 }
-            }
-            i_dbExec->commit();
+
+                // insert cell value into parameter table
+                i_dbExec->executeStatement(2 + nAttrs, valVec);
+
+                rowCount++;
+                pRow = i_entityMdRows.toNext();     // move to the next row
+
+            } while (pRow != nullptr);
         }
+        i_dbExec->commit();
     }
 
     return rowCount;
 }
 
 /** write microdata into database using sql insert literal. */
-size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, map<int, list<unique_ptr<uint8_t>>> & io_entityMdRows)
+size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t>>> & i_entityMdRows)
 {
-    size_t rowCount = 0;
+    size_t rowCount = 0;    // total rows inserted
     string sql;
     sql.reserve(OM_STR_DB_MAX);
 
@@ -703,22 +700,24 @@ size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, map<int, list<unique_
     {
         const auto & ent = e.second;
 
-        const auto & mrIt = io_entityMdRows.find(ent.entityId);
-        if (mrIt == io_entityMdRows.cend()) continue;           // no db rows for that entity
-        if (mrIt->second.empty()) continue;                     // no db rows for that entity
+        const auto mdIt = i_entityMdRows.find(ent.entityId);
+        if (mdIt == i_entityMdRows.cend()) continue;            // no db rows for that entity
+        if (mdIt->second.empty()) continue;                     // no db rows for that entity
+
+        const auto & mdRows = mdIt->second;
 
         // insert entity microdata rows in transaction scope
         {
             unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
-            for (list<unique_ptr<uint8_t>>::const_iterator rIt = mrIt->second.cbegin(); rIt != mrIt->second.cend(); ++rIt)
+            for (const auto & md : mdRows)
             {
                 // build sql insert
                 sql.clear();
                 sql += ent.sqlInsPrefix;   // INSERT Person_g87abcdef (....) VALUES (
 
                 // add row key: run id and microdata key
-                const uint8_t * pVal = rIt->get();
+                const uint8_t * pVal = md.get();
 
                 int rId = *static_cast<const int *>(static_cast<const void *>(pVal));
                 uint64_t mKey = *static_cast<const uint64_t *>(static_cast<const void *>(pVal + sizeof(int)));
