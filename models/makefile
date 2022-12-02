@@ -64,10 +64,6 @@ install : all publish-all
 publish :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) publish || { exit $$?; };)
 
-.PHONY : publish-views
-publish-views : publish
-	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) publish-views || { exit $$?; };)
-
 .PHONY : run
 run :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) run || { exit $$?; };)

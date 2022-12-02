@@ -298,10 +298,8 @@ copy_ini:
 	@if [ -e $(MODEL_NAME).ini ] ; then cp -pvf $(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
 	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pvf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
 
-.PHONY : publish-views
-publish-views : publish
+publish-views : $(MODEL_SQLITE) $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
-	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
 
 #
 # run the model
