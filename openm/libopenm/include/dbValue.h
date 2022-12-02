@@ -130,7 +130,7 @@ namespace openm
     {
         TValue val = *static_cast<const TValue *>(i_value);
 
-        if (std::isfinite<TValue>(val)) {
+        if (isfinite(static_cast<TValue>(val))) {
             return snprintf(io_buffer, i_size, i_format, val);
         }
         // else copy "NULL" into output buffer
