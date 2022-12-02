@@ -48,9 +48,8 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -pthread -fPIC -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD_EXTENSION $(CC_ASAN_FLAGS) $(BD_CFLAGS)
-CCFLAGS = $(CXXFLAGS)
-CPPFLAGS = $(CXXFLAGS)
+CFLAGS = -Wall -pthread -fPIC -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD_EXTENSION $(CC_ASAN_FLAGS) $(BD_CFLAGS)
+CPPFLAGS = $(CFLAGS)
 
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
@@ -74,7 +73,7 @@ $(DEPS_DIR)/%.d : %.c
 	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
 $(OBJ_DIR)/%.o : %.c
-	$(CC) $(CCFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
+	$(CC) $(CFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
 
 $(OUT_DIR)/$(LIBSQLITE_A) : $(OBJS)
 	$(AR) rcs $@ $^

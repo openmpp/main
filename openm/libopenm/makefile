@@ -62,67 +62,209 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CFLAGS = -pthread -fPIC -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) \
+CPPFLAGS = -Wall -pthread -fPIC -D$(OM_DB_DEF) -D$(OM_MSG_DEF) -D$(OM_UCVT_DEF) \
   -I$(INCLUDE_G_DIR) -I$(INCLUDE_L_DIR) $(OM_DB_CFLAGS) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
 
-CCFLAGS =  -Wall $(CFLAGS)
-CXXFLAGS = -Wall -std=c++17 $(CFLAGS)
+CFLAGS = $(CPPFLAGS)
+CXXFLAGS = -std=c++17 $(CPPFLAGS)
 
-# build libopenm by default
-# build libopenm_omc_db if: make lib_omc
+LIBOPENM_A = libopenm$(BIN_POSTFIX)$(MSG_POSTFIX).a
 
-ifeq (libopenm, $(filter libopenm,$(MAKECMDGOALS)))
-  include makefile.openm.include.mak
-endif
-ifeq (all, $(MAKECMDGOALS))
-  include makefile.openm.include.mak
-endif
-ifeq (, $(MAKECMDGOALS))
-  include makefile.openm.include.mak
-endif
+LIB_OMC_NAME = libopenm_omc_db$(BIN_POSTFIX)
+LIB_OMC_A = $(LIB_OMC_NAME).a
 
-ifeq (lib_omc, $(filter lib_omc,$(MAKECMDGOALS)))
-  include makefile.lib_omc.include.mak
-endif
+LIBOPENM_CPPLIST = \
+  main.cpp \
+  common/argReader.cpp \
+  common/crc32.cpp \
+  common/file.cpp \
+  common/helper.cpp \
+  common/iniReader.cpp \
+  common/log.cpp \
+  common/md5.cpp \
+  common/splitCsv.cpp \
+  common/utf8Convert.cpp \
+  db/dbExec.cpp \
+  db/dbExecBase.cpp \
+  db/dbExecProvider.cpp \
+  db/dbExecSqlite.cpp \
+  db/dbMetaRow.cpp \
+  db/dbValue.cpp \
+  db/groupLstTable.cpp \
+  db/groupPcTable.cpp \
+  db/groupTxtTable.cpp \
+  db/entityAttrTable.cpp \
+  db/entityAttrTxtTable.cpp \
+  db/entityDicTable.cpp \
+  db/entityDicTxtTable.cpp \
+  db/langLstTable.cpp \
+  db/langWordTable.cpp \
+  db/modelDicTable.cpp \
+  db/modelDicTxtTable.cpp \
+  db/modelWordTable.cpp \
+  db/outputTableReader.cpp \
+  db/outputTableWriter.cpp \
+  db/paramDicTable.cpp \
+  db/paramDicTxtTable.cpp \
+  db/paramDimsTable.cpp \
+  db/paramDimsTxtTable.cpp \
+  db/paramImportTable.cpp \
+  db/parameterReader.cpp \
+  db/parameterWriter.cpp \
+  db/paramImportTable.cpp \
+  db/profileLstTable.cpp \
+  db/profileOptionTable.cpp \
+  db/runLstTable.cpp \
+  db/runOptionTable.cpp \
+  db/tableAccTable.cpp \
+  db/tableAccTxtTable.cpp \
+  db/tableDicTable.cpp \
+  db/tableDicTxtTable.cpp \
+  db/tableDimsTable.cpp \
+  db/tableDimsTxtTable.cpp \
+  db/tableExprTable.cpp \
+  db/tableExprTxtTable.cpp \
+  db/taskLstTable.cpp \
+  db/taskRunLstTable.cpp \
+  db/taskRunSetTable.cpp \
+  db/taskSetTable.cpp \
+  db/taskTxtTable.cpp \
+  db/typeDicTable.cpp \
+  db/typeDicTxtTable.cpp \
+  db/typeEnumLstTable.cpp \
+  db/typeEnumTxtTable.cpp \
+  db/worksetLstTable.cpp \
+  db/worksetParamTable.cpp \
+  db/worksetParamTxtTable.cpp \
+  db/worksetTxtTable.cpp \
+  model/childController.cpp \
+  model/metaHolder.cpp \
+  model/metaLoader.cpp \
+  model/modelBase.cpp \
+  model/modelHelper.cpp \
+  model/modelRunState.cpp \
+  model/restartController.cpp \
+  model/rootController.cpp \
+  model/runController.cpp \
+  model/runControllerNewRun.cpp \
+  model/runControllerParams.cpp \
+  model/singleController.cpp \
+  msg/msgCommon.cpp \
+  msg/msgExecBase.cpp \
+  msg/msgMpiExec.cpp \
+  msg/msgMpiMetaPacked.cpp \
+  msg/msgMpiPacked.cpp \
+  msg/msgMpiRecv.cpp \
+  msg/msgMpiSend.cpp 
 
-LIB_A = $(LIB_TARGET)$(BIN_POSTFIX)$(MSG_POSTFIX).a
+LIB_OMC_CPPLIST = \
+  common/argReader.cpp \
+  common/crc32.cpp \
+  common/file.cpp \
+  common/helper.cpp \
+  common/iniReader.cpp \
+  common/log.cpp \
+  common/md5.cpp \
+  common/splitCsv.cpp \
+  common/utf8Convert.cpp \
+  db/dbExec.cpp \
+  db/dbExecBase.cpp \
+  db/dbExecProvider.cpp \
+  db/dbExecSqlite.cpp \
+  db/dbMetaRow.cpp \
+  db/dbValue.cpp \
+  db/entityAttrTable.cpp \
+  db/entityAttrTxtTable.cpp \
+  db/entityDicTable.cpp \
+  db/entityDicTxtTable.cpp \
+  db/groupLstTable.cpp \
+  db/groupPcTable.cpp \
+  db/groupTxtTable.cpp \
+  db/langLstTable.cpp \
+  db/langWordTable.cpp \
+  db/modelDicTable.cpp \
+  db/modelDicTxtTable.cpp \
+  db/modelWordTable.cpp \
+  db/outputTableWriter.cpp \
+  db/paramDicTable.cpp \
+  db/paramDicTxtTable.cpp \
+  db/paramDimsTable.cpp \
+  db/paramDimsTxtTable.cpp \
+  db/paramImportTable.cpp \
+  db/parameterReader.cpp \
+  db/parameterWriter.cpp \
+  db/profileLstTable.cpp \
+  db/profileOptionTable.cpp \
+  db/runLstTable.cpp \
+  db/runOptionTable.cpp \
+  db/tableAccTable.cpp \
+  db/tableAccTxtTable.cpp \
+  db/tableDicTable.cpp \
+  db/tableDicTxtTable.cpp \
+  db/tableDimsTable.cpp \
+  db/tableDimsTxtTable.cpp \
+  db/tableExprTable.cpp \
+  db/tableExprTxtTable.cpp \
+  db/taskLstTable.cpp \
+  db/taskRunLstTable.cpp \
+  db/taskRunSetTable.cpp \
+  db/taskSetTable.cpp \
+  db/taskTxtTable.cpp \
+  db/typeDicTable.cpp \
+  db/typeDicTxtTable.cpp \
+  db/typeEnumLstTable.cpp \
+  db/typeEnumTxtTable.cpp \
+  db/worksetLstTable.cpp \
+  db/worksetParamTable.cpp \
+  db/worksetParamTxtTable.cpp \
+  db/worksetTxtTable.cpp \
+  db/omc/modelExpressionSql.cpp \
+  db/omc/modelInsertSql.cpp \
+  db/omc/modelSqlBuilder.cpp \
+  db/omc/modelSqlBuilderPrepare.cpp \
+  db/omc/modelSqlWriter.cpp
 
-RT_SRC  := $(filter %.cpp,$(LIB_SRC))
-RT_OBJS := $(foreach root,$(RT_SRC),$(OBJ_DIR)/$(notdir $(root:.cpp=.o)))
-RT_DEPS := $(foreach root,$(RT_SRC),$(DEPS_DIR)/$(notdir $(root:.cpp=.d)))
+RT_OBJS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
+RT_DEPS := $(foreach root,$(LIBOPENM_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
 
-RT_C_SRC  := $(filter %.c,$(LIB_SRC))
-RT_C_OBJS := $(foreach root,$(RT_C_SRC),$(OBJ_DIR)/$(notdir $(root:.c=.o)))
-RT_C_DEPS := $(foreach root,$(RT_C_SRC),$(DEPS_DIR)/$(notdir $(root:.c=.d)))
+OMC_OBJS := $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.o),$(OBJ_DIR)/$(notdir $(root)))
+OMC_DEPS := $(foreach root,$(LIB_OMC_CPPLIST:.cpp=.d),$(DEPS_DIR)/$(notdir $(root)))
 
-#
-# targets and rules
-#
+vpath %.cpp $(CURDIR)
+vpath %.cpp $(CURDIR)/common
+vpath %.cpp $(CURDIR)/db
+vpath %.cpp $(CURDIR)/db/omc
+vpath %.cpp $(CURDIR)/model
+vpath %.cpp $(CURDIR)/msg
+     
 .PHONY : all
-all: libopenm
+all: libopenm lib_omc
 
-libopenm : prepare $(OUT_DIR)/$(LIB_A)
+.PHONY : libopenm
+libopenm: prepare $(OUT_DIR)/$(LIBOPENM_A)
 
-lib_omc : prepare $(OUT_DIR)/$(LIB_A)
+.PHONY : lib_omc
+lib_omc: prepare $(OUT_DIR)/$(LIB_OMC_A)
 
-$(RT_DEPS):   | prepare
-$(RT_C_DEPS): | prepare
-$(RT_OBJS):   | prepare
-$(RT_C_OBJS): | prepare
+$(RT_DEPS): | prepare
+$(RT_OBJS): | prepare
 
-$(RT_DEPS) : $(RT_SRC)
-	$(CPP) -MM $(CXXFLAGS) $< -MF $@
+$(OMC_DEPS): | prepare
+$(OMC_OBJS): | prepare
 
-$(RT_C_DEPS) : $(RT_C_SRC)
-	$(CPP) -MM $(CCFLAGS) $< -MF $@
+$(DEPS_DIR)/%.d : %.cpp
+	$(CPP) -MM $(CPPFLAGS) $< -MF $@
 
-$(RT_OBJS) : $(RT_SRC)
+$(OBJ_DIR)/%.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
 
-$(RT_C_OBJS) : $(RT_C_SRC)
-	$(CC) $(CCFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
+$(OBJ_DIR)/xz_crc64.o : common/xz_crc64.c $(INCLUDE_G_DIR)/libopenm/common/xz_crc64.h
+	$(CC) $(CFLAGS) -c $< -o $(OBJ_DIR)/$(@F)
+	
+$(OUT_DIR)/$(LIBOPENM_A) : $(RT_OBJS) $(OBJ_DIR)/xz_crc64.o
+	$(AR) rcs $@ $^
 
-$(OUT_DIR)/$(LIB_A) : $(RT_OBJS) $(RT_C_OBJS)
+$(OUT_DIR)/$(LIB_OMC_A) : $(OMC_OBJS)
 	$(AR) rcs $@ $^
 
 .PHONY: clean
@@ -132,7 +274,8 @@ clean:
 
 .PHONY: clean-all
 clean-all: clean
-	rm -f $(OUT_DIR)/$(LIB_A)
+	rm -f $(OUT_DIR)/$(LIBOPENM_A)
+	rm -f $(OUT_DIR)/$(LIB_OMC_A)
 	rm -rf $(BUILD_PROJ_DIR)
 
 .PHONY: prepare
@@ -145,5 +288,6 @@ prepare:
 # if target is not clean or prepare
 ifeq (0, $(words $(findstring $(MAKECMDGOALS), clean clean-all prepare)))
     -include $(RT_DEPS)
-    -include $(RT_C_DEPS)
+    -include $(OMC_DEPS)
 endif
+
