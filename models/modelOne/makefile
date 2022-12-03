@@ -153,7 +153,7 @@ SQLITE_EXE = sqlite3
 MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
 .PHONY : publish
-publish : $(MODEL_SQLITE) copy_ini
+publish : $(MODEL_SQLITE) publish-views copy_ini
 
 $(MODEL_SQLITE) : \
   $(OM_SQL_DIR)/create_db.sql \
@@ -169,7 +169,7 @@ $(MODEL_SQLITE) : \
 
 .PHONY : publish-views
 publish-views : \
-  publish \
+  $(MODEL_SQLITE) \
   $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql \
   $(MODEL_NAME)_optional_views.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
@@ -261,7 +261,7 @@ run:
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Microdata.All -Microdata.ToCsv -Microdata.Events All \
+		-Microdata.All -Microdata.ToCsv -Microdata.CsvDir $(OUT_BIN_DIR) -Microdata.Events All \
 		-OpenM.RunName "Microdata in CSV" \
 		-EN.RunDescription "Write microdata into CSV files" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"

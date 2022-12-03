@@ -16,7 +16,7 @@ SELECT * FROM sqlite_master WHERE 0 = 1;
 -- if you don't need it then ignore everything below
 --
 
-CREATE VIEW LanguageDic AS
+CREATE VIEW IF NOT EXISTS LanguageDic AS
 SELECT 
   L.lang_id   AS "LanguageID", 
   L.lang_code AS "LanguageCode", 
@@ -26,7 +26,7 @@ SELECT
   (SELECT LWX.word_value FROM lang_word LWX WHERE LWX.lang_id = L.lang_id AND LWX.word_code = 'max') AS "Max"
 FROM lang_lst L;
 
-CREATE VIEW ModelDic AS
+CREATE VIEW IF NOT EXISTS ModelDic AS
 SELECT 
   M.model_name AS "Name", 
   T.descr      AS "Description", 
@@ -38,7 +38,7 @@ FROM model_dic M
 INNER JOIN model_dic_txt T ON (T.model_id = M.model_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
-CREATE VIEW ModelInfoDic AS
+CREATE VIEW IF NOT EXISTS ModelInfoDic AS
 SELECT
   R.create_dt  AS "Time", 
   ''           AS "Directory", 
@@ -62,7 +62,7 @@ INNER JOIN run_txt RT ON (RT.run_id = R.run_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND R.run_id = (SELECT MIN(FR.run_id) FROM run_lst FR WHERE FR.model_id = M.model_id);
 
-CREATE VIEW ScenarioDic AS
+CREATE VIEW IF NOT EXISTS ScenarioDic AS
 SELECT
   R.create_dt  AS "Name", 
   RT.descr     AS "Description", 
@@ -88,9 +88,9 @@ INNER JOIN run_txt RT ON (RT.run_id = R.run_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND R.run_id = (SELECT MIN(FR.run_id) FROM run_lst FR WHERE FR.model_id = M.model_id);
 
-CREATE VIEW SimulationInfoDic AS SELECT * FROM ModelInfoDic;
+CREATE VIEW IF NOT EXISTS SimulationInfoDic AS SELECT * FROM ModelInfoDic;
 
-CREATE VIEW TypeDic AS
+CREATE VIEW IF NOT EXISTS TypeDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   L.dic_id        AS "DicID"
@@ -98,7 +98,7 @@ FROM type_dic L
 INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
-CREATE VIEW SimpleTypeDic AS
+CREATE VIEW IF NOT EXISTS SimpleTypeDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   L.type_name     AS "Name"
@@ -107,7 +107,7 @@ INNER JOIN model_type_dic M ON (M.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 0;
 
-CREATE VIEW LogicalDic AS
+CREATE VIEW IF NOT EXISTS LogicalDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   L.type_name     AS "Name",
@@ -122,7 +122,7 @@ INNER JOIN type_enum_txt ET ON (ET.type_hid = E.type_hid AND ET.enum_id = E.enum
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 1;
 
-CREATE VIEW ClassificationDic AS
+CREATE VIEW IF NOT EXISTS ClassificationDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   L.type_name     AS "Name",
@@ -136,7 +136,7 @@ INNER JOIN type_dic_txt MT ON (MT.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 2;
 
-CREATE VIEW ClassificationValueDic AS
+CREATE VIEW IF NOT EXISTS ClassificationValueDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   E.enum_id       AS "EnumValue",
@@ -151,7 +151,7 @@ INNER JOIN type_enum_txt ET ON (ET.type_hid = E.type_hid AND ET.enum_id = E.enum
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 2;
 
-CREATE VIEW RangeDic AS
+CREATE VIEW IF NOT EXISTS RangeDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   L.type_name     AS "Name",
@@ -172,7 +172,7 @@ INNER JOIN type_dic_txt MT ON (MT.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 3;
 
-CREATE VIEW RangeValueDic AS
+CREATE VIEW IF NOT EXISTS RangeValueDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   E.enum_name     AS "Value"
@@ -182,7 +182,7 @@ INNER JOIN type_enum_lst E ON (E.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 3;
 
-CREATE VIEW PartitionDic AS
+CREATE VIEW IF NOT EXISTS PartitionDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   L.type_name     AS "Name",
@@ -196,7 +196,7 @@ INNER JOIN type_dic_txt MT ON (MT.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 4;
 
-CREATE VIEW PartitionValueDic AS
+CREATE VIEW IF NOT EXISTS PartitionValueDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   E.enum_id       AS "Position",
@@ -208,7 +208,7 @@ INNER JOIN type_enum_lst E ON (E.type_hid = M.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 4;
 
-CREATE VIEW PartitionIntervalDic AS
+CREATE VIEW IF NOT EXISTS PartitionIntervalDic AS
 SELECT
   M.model_type_id AS "TypeID", 
   E.enum_id       AS "Position",
@@ -221,7 +221,7 @@ INNER JOIN type_enum_txt ET ON (ET.type_hid = E.type_hid AND ET.enum_id = E.enum
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND L.dic_id = 4;
 
--- CREATE VIEW LinkTypeDic AS
+-- CREATE VIEW IF NOT EXISTS LinkTypeDic AS
 -- SELECT
 --   M.model_type_id AS "TypeID", 
 --   M.type_name     AS "Name",
@@ -230,7 +230,7 @@ AND L.dic_id = 4;
 -- WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 -- AND M.dic_id = 5;
 
-CREATE VIEW ParameterDic AS
+CREATE VIEW IF NOT EXISTS ParameterDic AS
 SELECT
   M.model_parameter_id AS "ParameterID", 
   L.parameter_name     AS "Name", 
@@ -251,7 +251,7 @@ LEFT OUTER JOIN run_parameter_txt RT ON (RT.parameter_hid = DT.parameter_hid AND
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND RT.run_id = (SELECT MIN(MR.run_id) FROM run_lst MR WHERE MR.model_id = M.model_id);
 
-CREATE VIEW ParameterDimensionDic AS
+CREATE VIEW IF NOT EXISTS ParameterDimensionDic AS
 SELECT
   M.model_parameter_id AS "ParameterID", 
   D.dim_id             AS "DisplayPosition", 
@@ -263,7 +263,7 @@ INNER JOIN parameter_dims D ON (D.parameter_hid = M.parameter_hid)
 INNER JOIN model_type_dic MTD ON (MTD.type_hid = L.type_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
-CREATE VIEW ParameterGroupDic AS
+CREATE VIEW IF NOT EXISTS ParameterGroupDic AS
 SELECT
   M.group_id     AS "ParameterGroupID", 
   M.group_name   AS "Name", 
@@ -277,7 +277,7 @@ INNER JOIN group_txt GT ON (GT.model_id = M.model_id AND GT.group_id = M.group_i
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_parameter <> 0;
 
-CREATE VIEW ParameterGroupMemberDic AS
+CREATE VIEW IF NOT EXISTS ParameterGroupMemberDic AS
 SELECT
   M.group_id        AS "ParameterGroupID", 
   PC.child_pos      AS "Position", 
@@ -288,7 +288,7 @@ INNER JOIN group_pc PC ON (PC.model_id = M.model_id AND PC.group_id = M.group_id
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_parameter <> 0;
 
-CREATE VIEW TableDic AS
+CREATE VIEW IF NOT EXISTS TableDic AS
 SELECT
   M.model_table_id AS "TableID", 
   L.table_name     AS "Name", 
@@ -308,7 +308,7 @@ INNER JOIN table_dic_txt T ON (T.table_hid = M.table_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_user = 0;
 
-CREATE VIEW UserTableDic AS
+CREATE VIEW IF NOT EXISTS UserTableDic AS
 SELECT
   M.model_table_id AS "TableID", 
   L.table_name     AS "Name", 
@@ -328,7 +328,7 @@ INNER JOIN table_dic_txt T ON (T.table_hid = M.table_hid)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_user <> 0;
 
-CREATE VIEW TableClassDic AS
+CREATE VIEW IF NOT EXISTS TableClassDic AS
 SELECT
   M.model_table_id  AS "TableID", 
   D.dim_id          AS "Position",
@@ -345,7 +345,7 @@ INNER JOIN model_type_dic MTD ON (MTD.type_hid = D.type_hid)
 INNER JOIN table_dims_txt T ON (T.table_hid = D.table_hid AND T.dim_id = D.dim_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
-CREATE VIEW TableExpressionDic AS
+CREATE VIEW IF NOT EXISTS TableExpressionDic AS
 SELECT
   M.model_table_id AS "TableID", 
   E.expr_id        AS "ExpressionID", 
@@ -360,7 +360,7 @@ INNER JOIN table_expr E ON (E.table_hid = L.table_hid)
 INNER JOIN table_expr_txt T ON (T.table_hid = M.table_hid AND T.expr_id = E.expr_id)
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM);
 
-CREATE VIEW TableGroupDic AS
+CREATE VIEW IF NOT EXISTS TableGroupDic AS
 SELECT
   M.group_id     AS "TableGroupID", 
   M.group_name   AS "Name", 
@@ -373,7 +373,7 @@ INNER JOIN group_txt GT ON (GT.model_id = M.model_id AND GT.group_id = M.group_i
 WHERE M.model_id = (SELECT MIN(FM.model_id) FROM model_dic FM)
 AND M.is_parameter = 0;
 
-CREATE VIEW TableGroupMemberDic AS
+CREATE VIEW IF NOT EXISTS TableGroupMemberDic AS
 SELECT
   M.group_id        AS "TableGroupID", 
   PC.child_pos      AS "Position", 
