@@ -153,7 +153,7 @@ SQLITE_EXE = sqlite3
 MODEL_SQLITE = $(OUT_BIN_DIR)/$(MODEL_NAME).sqlite
 
 .PHONY : publish
-publish : $(MODEL_SQLITE) publish-views copy_ini
+publish : $(MODEL_SQLITE) copy_ini
 
 $(MODEL_SQLITE) : \
   $(OM_SQL_DIR)/create_db.sql \
@@ -179,9 +179,6 @@ publish-views : \
 copy_ini:
 	@if [ -e modelOne.ini ] ; then cp -pf modelOne.ini $(OUT_BIN_DIR) ; fi
 	@if [ -e modelOne.message.ini ] ; then cp -pf modelOne.message.ini $(OUT_BIN_DIR) ; fi
-
-.PHONY : publish_views
-publish_views : publish
 
 #
 # run the model
