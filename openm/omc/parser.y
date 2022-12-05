@@ -971,17 +971,17 @@ decl_classification:
             ;
 
 classification_levels:
-      SYMBOL
+      name_opt[short_name] SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
-                            auto *sym = new ClassificationEnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            auto *sym = new ClassificationEnumeratorSymbol($SYMBOL, $short_name, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             assert(sym);
                             pc.counter1++;  // counter for classification levels
                         }
-      | classification_levels "," SYMBOL
+      | classification_levels "," name_opt[short_name] SYMBOL
                         {
                             // morph existing symbol to EnumeratorSymbol
-                            auto *sym = new ClassificationEnumeratorSymbol($SYMBOL, pc.get_classification_context(), pc.counter1, @SYMBOL);
+                            auto *sym = new ClassificationEnumeratorSymbol($SYMBOL, $short_name, pc.get_classification_context(), pc.counter1, @SYMBOL);
                             assert(sym);
                             pc.counter1++;  // counter for classification levels
                         }
