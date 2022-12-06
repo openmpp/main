@@ -328,15 +328,24 @@ namespace openm
             list = 4        // list of sub id's
         };
 
+        // enum to indicate where to get sub-values of input parameter: database input workset, csv file or generate iota
+        enum class FromSub : int
+        {
+            defaultValue = 0,   // SubFrom option not defined
+            db = 1,             // sub values from database input workset
+            csv = 2,            // sub values from csv file
+            iota = 3            // generate iota sub values
+        };
+
         // parameter sub-values options:
         // SubFrom:   get sub-values from "db", "iota" or "csv"
         // SubValues: can be list of id's: 1,2,3,4 or range: [1,4] or mask: x0F or single id: 7 or default id: "default"
         struct ParamSubOpts
         {
-            int subCount = 1;                                   // number of sub-values
-            KindSubIds kind = KindSubIds::none;                 // is it a single sub id, range or list of id's
-            vector<int> subIds;                                 // list of sub id's to use, if not default id
-            const char * from = RunOptionsKey::defaultValue;    // get sub-values from: "db", "iota" or "csv"
+            int subCount = 1;                       // number of sub-values
+            KindSubIds kind = KindSubIds::none;     // is it a single sub id, range or list of id's
+            vector<int> subIds;                     // list of sub id's to use, if not default id
+            FromSub from = FromSub::defaultValue;   // get sub-values from: "db", "iota" or "csv"
         };
 
         map<int, ParamSubOpts> subOptsMap;  // map parameter id to sub-values options

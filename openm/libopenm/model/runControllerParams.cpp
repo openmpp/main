@@ -141,10 +141,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
         // find sub-value rule to get parameter sub-values
         // if parameter does not have sub-values then it would be "default" rule
         ParamSubOpts subOpts = subOptsById(*paramIt, nParamSubCount, defaultSubId);
-        bool isFromDb = subOpts.from == RunOptionsKey::dbSubValue;
-        bool isFromCsv = subOpts.from == RunOptionsKey::csvSubValue;
-        bool isFromIota = subOpts.from == RunOptionsKey::iotaSubValue;
-        bool isFromDefault = subOpts.from == RunOptionsKey::defaultValue;
+        bool isFromDb = subOpts.from == FromSub::db;
+        bool isFromCsv = subOpts.from == FromSub::csv;
+        bool isFromIota = subOpts.from == FromSub::iota;
+        bool isFromDefault = !isFromDb && !isFromCsv && !isFromIota;
 
         if (!isParamDir && isFromCsv) throw DbException("invalid (empty) parameter.csv file path for parameter: %s", paramIt->paramName.c_str());
 
@@ -518,10 +518,10 @@ const MetaLoader::ParamSubOpts RunController::subOptsById(const ParamDicRow & i_
 
     if (const auto psIt = subOptsMap.find(i_paramRow.paramId); psIt != subOptsMap.cend()) { // options found, use copy of it
         ps = psIt->second;
-        if (ps.from == RunOptionsKey::iotaSubValue) return ps;  // iota sub-values, return options as is
+        if (ps.from == FromSub::iota) return ps;  // iota sub-values, return options as is
     }
     else {  // not found: create default options
-        ps.from = RunOptionsKey::defaultValue;
+        ps.from = FromSub::defaultValue;
         ps.subCount = i_subCount;
     }
 

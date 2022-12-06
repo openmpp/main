@@ -489,11 +489,11 @@ void MetaLoader::parseParamSubOpts(void)
 
                 ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
 
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = RunOptionsKey::dbSubValue;
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = RunOptionsKey::iotaSubValue;
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) ps.from = RunOptionsKey::csvSubValue;
+                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = FromSub::db;
+                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = FromSub::iota;
+                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) ps.from = FromSub::csv;
 
-                if (ps.from != RunOptionsKey::dbSubValue && ps.from != RunOptionsKey::iotaSubValue && ps.from != RunOptionsKey::csvSubValue)
+                if (ps.from != FromSub::db && ps.from != FromSub::iota && ps.from != FromSub::csv)
                     throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
                         optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
             }
@@ -611,12 +611,12 @@ void MetaLoader::parseParamSubOpts(void)
         // if from option specified and number of sub-values not explicitly specified by "SubValues."
         // then assume number of sub-values for the model run
         // if from option not specified then use default rules
-        if (ps.second.from != RunOptionsKey::defaultValue) {
+        if (ps.second.from != FromSub::defaultValue) {
             if (ps.second.kind == KindSubIds::none) ps.second.subCount = subValueCount;
         }
 
         // if SubFrom.Parameter = iota then parameter cannot have SubId.Parameter or SubValues.Parameter option
-        if (ps.second.from == RunOptionsKey::iotaSubValue && ps.second.kind != KindSubIds::none)
+        if (ps.second.from == FromSub::iota && ps.second.kind != KindSubIds::none)
             throw ModelException(
                 "invalid options for parameter %s: option %s cannot be combined with %s",
                 metaStore->paramDic->byKey(modelId, ps.first)->paramName.c_str(), RunOptionsKey::iotaSubValue, RunOptionsKey::subValuesPrefix
