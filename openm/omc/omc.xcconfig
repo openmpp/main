@@ -31,7 +31,7 @@ OMC_BISON_SEARCH = true
 OMC_BISON_HOME_PATH = $(HOME)/bison/bin
 OMC_BISON_HOME_LDFLAGS = $(HOME)/bison/lib
 
-OMC_BISON_BREW = bison@3.8
+OMC_BISON_BREW = bison
 OMC_BISON_BREW_x86_PATH = /usr/local/opt/$(OMC_BISON_BREW)/bin
 OMC_BISON_BREW_x86_LDFLAGS = /usr/local/opt/$(OMC_BISON_BREW)/lib
 OMC_BISON_BREW_ARM64_PATH = /opt/homebrew/opt/$(OMC_BISON_BREW)/bin
