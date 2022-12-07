@@ -17,6 +17,9 @@
 		D87BC4902478532E00EDF729 /* runControllerParams.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D87BC48F2478532D00EDF729 /* runControllerParams.cpp */; };
 		D87BC4922478536400EDF729 /* outputTableReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D87BC4912478536400EDF729 /* outputTableReader.cpp */; };
 		D87BC4942478537200EDF729 /* paramImportTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D87BC4932478537200EDF729 /* paramImportTable.cpp */; };
+		D88C15B429412ECA00C0D24E /* xz_crc64.c in Sources */ = {isa = PBXBuildFile; fileRef = D88C15B229412ECA00C0D24E /* xz_crc64.c */; };
+		D88C15B529412ECA00C0D24E /* crc32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C15B329412ECA00C0D24E /* crc32.cpp */; };
+		D88C15B729412F1500C0D24E /* crc32.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C15B629412F1500C0D24E /* crc32.h */; };
 		D88DBEA9234D677900EFFC85 /* msgMpi.h in Headers */ = {isa = PBXBuildFile; fileRef = D88DBE36234D677800EFFC85 /* msgMpi.h */; };
 		D88DBEAA234D677900EFFC85 /* msgMpiSend.h in Headers */ = {isa = PBXBuildFile; fileRef = D88DBE37234D677800EFFC85 /* msgMpiSend.h */; };
 		D88DBEAB234D677900EFFC85 /* msgMpiExec.h in Headers */ = {isa = PBXBuildFile; fileRef = D88DBE38234D677800EFFC85 /* msgMpiExec.h */; };
@@ -126,6 +129,9 @@
 		D87BC48F2478532D00EDF729 /* runControllerParams.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runControllerParams.cpp; sourceTree = "<group>"; };
 		D87BC4912478536400EDF729 /* outputTableReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = outputTableReader.cpp; sourceTree = "<group>"; };
 		D87BC4932478537200EDF729 /* paramImportTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = paramImportTable.cpp; sourceTree = "<group>"; };
+		D88C15B229412ECA00C0D24E /* xz_crc64.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = xz_crc64.c; sourceTree = "<group>"; };
+		D88C15B329412ECA00C0D24E /* crc32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crc32.cpp; sourceTree = "<group>"; };
+		D88C15B629412F1500C0D24E /* crc32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crc32.h; sourceTree = "<group>"; };
 		D88DBE36234D677800EFFC85 /* msgMpi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = msgMpi.h; sourceTree = "<group>"; };
 		D88DBE37234D677800EFFC85 /* msgMpiSend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = msgMpiSend.h; sourceTree = "<group>"; };
 		D88DBE38234D677800EFFC85 /* msgMpiExec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = msgMpiExec.h; sourceTree = "<group>"; };
@@ -322,6 +328,8 @@
 		D88DBE83234D677800EFFC85 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				D88C15B329412ECA00C0D24E /* crc32.cpp */,
+				D88C15B229412ECA00C0D24E /* xz_crc64.c */,
 				D88DBE84234D677800EFFC85 /* md5.cpp */,
 				D88DBE85234D677800EFFC85 /* log.cpp */,
 				D88DBE86234D677800EFFC85 /* argReader.cpp */,
@@ -338,6 +346,7 @@
 		D88DBE8E234D677800EFFC85 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				D88C15B629412F1500C0D24E /* crc32.h */,
 				D87BC489247852F800EDF729 /* dbValue.h */,
 				D88DBE8F234D677800EFFC85 /* helper.h */,
 				D88DBE90234D677800EFFC85 /* metaHolder.h */,
@@ -422,6 +431,7 @@
 				D88DBEBB234D677900EFFC85 /* dbExecSqlite.h in Headers */,
 				D87BC48A247852F800EDF729 /* dbValue.h in Headers */,
 				D88DBEAE234D677900EFFC85 /* msgEmpty.h in Headers */,
+				D88C15B729412F1500C0D24E /* crc32.h in Headers */,
 				D88DBF06234D677900EFFC85 /* dbMetaTable.h in Headers */,
 				D88DBEAA234D677900EFFC85 /* msgMpiSend.h in Headers */,
 				D88DBF05234D677900EFFC85 /* msg.h in Headers */,
@@ -519,6 +529,7 @@
 				D88DBEDE234D677900EFFC85 /* groupLstTable.cpp in Sources */,
 				D88DBECF234D677900EFFC85 /* paramDimsTxtTable.cpp in Sources */,
 				D88DBECD234D677900EFFC85 /* worksetTxtTable.cpp in Sources */,
+				D88C15B529412ECA00C0D24E /* crc32.cpp in Sources */,
 				D88DBEC3234D677900EFFC85 /* typeDicTxtTable.cpp in Sources */,
 				D83F4E1B28FA85240026F89F /* entityAttrTable.cpp in Sources */,
 				D88DBED2234D677900EFFC85 /* paramDicTable.cpp in Sources */,
@@ -539,6 +550,7 @@
 				D88DBEC5234D677900EFFC85 /* taskSetTable.cpp in Sources */,
 				D88DBEF3234D677900EFFC85 /* tableExprTxtTable.cpp in Sources */,
 				D88DBEC4234D677900EFFC85 /* worksetParamTable.cpp in Sources */,
+				D88C15B429412ECA00C0D24E /* xz_crc64.c in Sources */,
 				D88DBEBF234D677900EFFC85 /* tableDicTxtTable.cpp in Sources */,
 				D88DBF13234D677900EFFC85 /* childController.cpp in Sources */,
 				D88DBF0E234D677900EFFC85 /* singleController.cpp in Sources */,
