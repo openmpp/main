@@ -639,6 +639,8 @@ bool Symbol::option_all_attributes_visible = false;
 
 bool Symbol::option_use_heuristic_short_names = false;
 
+bool Symbol::option_enable_heuristic_names_for_enumerators = true;
+
 bool Symbol::option_convert_modgen_note_syntax = true;
 
 size_t Symbol::short_name_max_length = 32;
@@ -2154,6 +2156,20 @@ void Symbol::defaults_and_options()
     }
 
     {
+        string key = "enable_heuristic_names_for_enumerators";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_enable_heuristic_names_for_enumerators = true;
+            }
+            else if (value == "off") {
+                option_enable_heuristic_names_for_enumerators = false;
+            }
+        }
+    }
+
+    {
         string key = "convert_modgen_note_syntax";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -2501,37 +2517,39 @@ void Symbol::heuristic_short_names(void)
     }
 
     // Heuristic short names for enumerators in classifications
-    for (auto etyp : pp_all_enumerations_with_enumerators) {
-        // Do classification enumerators only.
-        if (!etyp->is_classification()) continue;
-        {
-            // index and names are for heuristic name clash detection and disambiguation
-            size_t index = 0;
-            std::set<std::string> names;
+    if (option_enable_heuristic_names_for_enumerators) {
+        for (auto etyp : pp_all_enumerations_with_enumerators) {
+            // Do classification enumerators only.
+            if (!etyp->is_classification()) continue;
+            {
+                // index and names are for heuristic name clash detection and disambiguation
+                size_t index = 0;
+                std::set<std::string> names;
 
-            for (auto en : etyp->pp_enumerators) {
-                auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(en);
-                assert(ce); // logic guarantee, only classification symbols are processed in outer loop
-                if (ce->short_name_explicit == "") {
-                    // no explicit name provided so make and use a heuristic short name
-                    string hn = ce->heuristic_short_name();
-                    if (names.count(hn)) {
-                        // clash detected, append disambiguating suffix
-                        string suffix = "Enum" + std::to_string(index);
-                        assert(short_name_max_length > 10);
-                        if (hn.length() + suffix.length() > short_name_max_length) {
-                            // replace trailing characters with suffix
-                            hn.replace(hn.length() - suffix.length(), suffix.length(), suffix);
+                for (auto en : etyp->pp_enumerators) {
+                    auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(en);
+                    assert(ce); // logic guarantee, only classification symbols are processed in outer loop
+                    if (ce->short_name_explicit == "") {
+                        // no explicit name provided so make and use a heuristic short name
+                        string hn = ce->heuristic_short_name();
+                        if (names.count(hn)) {
+                            // clash detected, append disambiguating suffix
+                            string suffix = "Enum" + std::to_string(index);
+                            assert(short_name_max_length > 10);
+                            if (hn.length() + suffix.length() > short_name_max_length) {
+                                // replace trailing characters with suffix
+                                hn.replace(hn.length() - suffix.length(), suffix.length(), suffix);
+                            }
+                            else {
+                                // append suffix
+                                hn += suffix;
+                            }
                         }
-                        else {
-                            // append suffix
-                            hn += suffix;
-                        }
+                        ce->short_name = hn;
                     }
-                    ce->short_name = hn;
+                    names.insert(ce->short_name);
+                    ++index;
                 }
-                names.insert(ce->short_name);
-                ++index;
             }
         }
     }

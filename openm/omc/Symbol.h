@@ -1450,6 +1450,11 @@ public:
     static bool option_use_heuristic_short_names;
 
     /**
+     * true or false depending on enable_heuristic_names_for_enumerators in options statement.
+     */
+    static bool option_enable_heuristic_names_for_enumerators;
+
+    /**
      * true or false depending on convert_modgen_note_syntax in options statement.
      */
     static bool option_convert_modgen_note_syntax;
