@@ -404,5 +404,8 @@
     <ClCompile Include="common\xz_crc64.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="model\runControllerMicrodata.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

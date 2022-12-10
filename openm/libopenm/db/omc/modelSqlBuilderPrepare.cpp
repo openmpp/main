@@ -59,7 +59,7 @@ void ModelSqlBuilder::setTableDicRows(MetaModelHolder & io_metaRows) const
 }
 
 // set entity meta rows and calculate digests
-void ModelSqlBuilder::setEntityDicRows(MetaModelHolder& io_metaRows) const
+void ModelSqlBuilder::setEntityDicRows(MetaModelHolder & io_metaRows) const
 {
     // make entity digest
     for (EntityDicRow & entityRow : io_metaRows.entityDic) {

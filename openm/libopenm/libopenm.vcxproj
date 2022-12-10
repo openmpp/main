@@ -259,6 +259,7 @@
     <ClCompile Include="model\modelRunState.cpp" />
     <ClCompile Include="model\rootController.cpp" />
     <ClCompile Include="model\runController.cpp" />
+    <ClCompile Include="model\runControllerMicrodata.cpp" />
     <ClCompile Include="model\runControllerNewRun.cpp" />
     <ClCompile Include="model\runControllerParams.cpp" />
     <ClCompile Include="model\singleController.cpp" />

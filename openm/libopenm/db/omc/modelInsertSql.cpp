@@ -758,7 +758,7 @@ void ModelInsertSql::insertTableExprText(
 }
 
 // insert row into entity_dic and model_entity_dic tables.
-void ModelInsertSql::insertEntityDic(IDbExec* i_dbExec, EntityDicRow& io_row)
+void ModelInsertSql::insertEntityDic(IDbExec * i_dbExec, EntityDicRow & io_row)
 {
     // validate field values
     MessageEllipter me;
@@ -805,7 +805,7 @@ void ModelInsertSql::insertEntityDic(IDbExec* i_dbExec, EntityDicRow& io_row)
 
 // insert row into entity_dic_txt table.
 void ModelInsertSql::insertEntityText(
-    IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<string, int>& i_langMap, EntityDicTxtLangRow& io_row
+    IDbExec * i_dbExec, const EntityDicRow & i_entityRow, const map<string, int> & i_langMap, EntityDicTxtLangRow & io_row
 )
 {
     // validate field values
@@ -836,7 +836,7 @@ void ModelInsertSql::insertEntityText(
 
 // insert row into entity_attr table.
 void ModelInsertSql::insertEntityAttr(
-    IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<int, int>& i_typeIdMap, const EntityAttrRow& i_row
+    IDbExec* i_dbExec, const EntityDicRow & i_entityRow, const map<int, int> & i_typeIdMap, const EntityAttrRow & i_row
 )
 {
     // validate field values
@@ -865,7 +865,7 @@ void ModelInsertSql::insertEntityAttr(
 
 // insert row into entity_attr_txt table.
 void ModelInsertSql::insertEntityAttrText(
-    IDbExec* i_dbExec, const EntityDicRow& i_entityRow, const map<string, int>& i_langMap, EntityAttrTxtLangRow& io_row
+    IDbExec* i_dbExec, const EntityDicRow & i_entityRow, const map<string, int> & i_langMap, EntityAttrTxtLangRow & io_row
 )
 {
     // validate field values

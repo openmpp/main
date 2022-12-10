@@ -146,6 +146,7 @@ LIBOPENM_CPPLIST = \
   model/restartController.cpp \
   model/rootController.cpp \
   model/runController.cpp \
+  model/runControllerMicrodata.cpp \
   model/runControllerNewRun.cpp \
   model/runControllerParams.cpp \
   model/singleController.cpp \

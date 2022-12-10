@@ -8,118 +8,163 @@
 #include "dbValue.h"
 using namespace openm;
 
-namespace openm
+/** clear value with zeros */
+void DbValue::clear(void)
 {
-    /** clear value with zeros */
-    void DbValue::clear(void)
-    {
-        isVal = false;
-        fVal = 0.0;
-        dVal = 0.0;
-        dlVal = 0.0;
-        llVal = 0;
-        ullVal = 0;
-        szVal = nullptr;
+    isVal = false;
+    fVal = 0.0;
+    dVal = 0.0;
+    dlVal = 0.0;
+    llVal = 0;
+    ullVal = 0;
+    szVal = nullptr;
+}
+
+/** return double part of db value */
+template<> double DbValue::castDouble<double, double>(const DbValue & i_value)
+{
+    return i_value.dVal;
+}
+
+/** cast to double and return float part of db value */
+template<> double DbValue::castDouble<float, double>(const DbValue & i_value)
+{
+    double dVal = static_cast<double>(i_value.fVal);
+    return dVal;
+}
+
+/** cast to double and return long double part of db value */
+template<> double DbValue::castDouble<long double, double>(const DbValue & i_value)
+{
+    double dVal = static_cast<double>(i_value.dlVal);
+    return dVal;
+}
+
+/** convert bool value to string : return "true" or "false" */
+int openm::BoolFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+{
+    bool isVal = *static_cast<const bool *>(i_value);
+
+    strncpy(io_buffer, (isVal ? trueValueString : falseValueString), i_size);
+    io_buffer[i_size - 1] = '\0';
+    return (int)strnlen(io_buffer, i_size);
+}
+
+/** convert bool value to SQL constant: return "1" or "0" */
+int openm::BoolSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+{
+    bool isVal = *static_cast<const bool *>(i_value);
+
+    strncpy(io_buffer, (isVal ? "1" : "0"), i_size);
+    io_buffer[i_size - 1] = '\0';
+    return (int)strnlen(io_buffer, i_size);
+}
+
+/** convert varchar value to string: make a copy of source string */
+int openm::StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+{
+    strncpy(io_buffer, static_cast<const char *>(i_value), i_size);
+    io_buffer[i_size - 1] = '\0';
+    return (int)strnlen(io_buffer, i_size);
+}
+
+/** convert string value into SQL constant: return 'quoted source value' */
+int openm::StrSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
+{
+    strncpy(io_buffer, toQuoted(static_cast<const char *>(i_value)).c_str(), i_size);
+    io_buffer[i_size - 1] = '\0';
+    return (int)strnlen(io_buffer, i_size);
+}
+
+/** create DbValue setter.
+*
+* @param[in] i_type    value type, use std::string type for VARCHAR values
+*/
+DbValueSetter::DbValueSetter(const type_info & i_type) :
+    typeOf(i_type),
+    doSetValue(nullptr)
+{
+    if (i_type == typeid(char)) doSetValue = setValue<char>;
+    if (i_type == typeid(unsigned char)) doSetValue = setValue<unsigned char>;
+    if (i_type == typeid(short)) doSetValue = setValue<short>;
+    if (i_type == typeid(unsigned short)) doSetValue = setValue<unsigned short>;
+    if (i_type == typeid(int)) doSetValue = setValue<int>;
+    if (i_type == typeid(unsigned int)) doSetValue = setValue<unsigned int>;
+    if (i_type == typeid(long)) doSetValue = setValue<long>;
+    if (i_type == typeid(unsigned long)) doSetValue = setValue<unsigned long>;
+    if (i_type == typeid(long long)) doSetValue = setValue<long long>;
+    if (i_type == typeid(unsigned long long)) doSetValue = setValue<unsigned long long>;
+    if (i_type == typeid(int8_t)) doSetValue = setValue<int8_t>;
+    if (i_type == typeid(uint8_t)) doSetValue = setValue<uint8_t>;
+    if (i_type == typeid(int16_t)) doSetValue = setValue<int16_t>;
+    if (i_type == typeid(uint16_t)) doSetValue = setValue<uint16_t>;
+    if (i_type == typeid(int32_t)) doSetValue = setValue<int32_t>;
+    if (i_type == typeid(uint32_t)) doSetValue = setValue<uint32_t>;
+    if (i_type == typeid(int64_t)) doSetValue = setValue<int64_t>;
+    if (i_type == typeid(uint64_t)) doSetValue = setValue<uint64_t>;
+    if (i_type == typeid(bool)) doSetValue = setValue<bool>;
+    if (i_type == typeid(float)) doSetValue = setValue<float>;
+    if (i_type == typeid(double)) doSetValue = setValue<double>;
+    if (i_type == typeid(long double)) doSetValue = setValue<long double>;
+    if (i_type == typeid(char *)) doSetValue = setValue<char *>;
+
+    if (doSetValue == nullptr) throw DbException("invalid type to set database value"); // conversion to target type is not supported
+}
+
+/** set DbValue by casting a pointer */
+void DbValueSetter::set(const void * i_value, DbValue & o_dbVal)
+{
+    if (i_value == nullptr) throw DbException("invalid NULL pointer to database value");
+
+    doSetValue(i_value, o_dbVal);
+}
+
+
+/** create new array of values or array of string */
+ValueArray::ValueArray(const type_info & i_type, size_t i_size) : valueType(i_type), valueCount(i_size), valueArr(nullptr)
+{
+    if (i_size <= 0 || i_size >= INT_MAX) throw DbException("invalid value array size: %zd", i_size);
+
+    if (i_type == typeid(char)) valueArr = newValueArray<char>(i_size);
+    if (i_type == typeid(unsigned char)) valueArr = newValueArray<unsigned char>(i_size);
+    if (i_type == typeid(short)) valueArr = newValueArray<short>(i_size);
+    if (i_type == typeid(unsigned short)) valueArr = newValueArray<unsigned short>(i_size);
+    if (i_type == typeid(int)) valueArr = newValueArray<int>(i_size);
+    if (i_type == typeid(unsigned int)) valueArr = newValueArray<unsigned int>(i_size);
+    if (i_type == typeid(long)) valueArr = newValueArray<long>(i_size);
+    if (i_type == typeid(unsigned long)) valueArr = newValueArray<unsigned long>(i_size);
+    if (i_type == typeid(long long)) valueArr = newValueArray<long long>(i_size);
+    if (i_type == typeid(unsigned long long)) valueArr = newValueArray<unsigned long long>(i_size);
+    if (i_type == typeid(int8_t)) valueArr = newValueArray<int8_t>(i_size);
+    if (i_type == typeid(uint8_t)) valueArr = newValueArray<uint8_t>(i_size);
+    if (i_type == typeid(int16_t)) valueArr = newValueArray<int16_t>(i_size);
+    if (i_type == typeid(uint16_t)) valueArr = newValueArray<uint16_t>(i_size);
+    if (i_type == typeid(int32_t)) valueArr = newValueArray<int32_t>(i_size);
+    if (i_type == typeid(uint32_t)) valueArr = newValueArray<uint32_t>(i_size);
+    if (i_type == typeid(int64_t)) valueArr = newValueArray<int64_t>(i_size);
+    if (i_type == typeid(uint64_t)) valueArr = newValueArray<uint64_t>(i_size);
+    if (i_type == typeid(bool)) valueArr = newValueArray<bool>(i_size);
+    if (i_type == typeid(float)) valueArr = newValueArray<float>(i_size);
+    if (i_type == typeid(double)) valueArr = newValueArray<double>(i_size);
+    if (i_type == typeid(long double)) valueArr = newValueArray<long double>(i_size);
+    if (i_type == typeid(string)) valueArr = new string[i_size];
+
+    if (valueArr == nullptr) throw DbException("invalid value type: %s", i_type.name());   // target type is not supported
+}
+
+/** cleanup resources: free memory */
+void ValueArray::cleanup(void) noexcept {
+    try {
+        if (valueType != typeid(string)) {
+            delete[] valueArr;      // expected g++ warning: deleting void* is undefined
+        }
+        else {
+            string * strArr = static_cast<string *>(valueArr);
+            delete[] strArr;
+        }
+        valueArr = nullptr;
     }
-
-    /** return double part of db value */
-    template<> double DbValue::castDouble<double, double>(const DbValue & i_value)
-    {
-        return i_value.dVal;
-    }
-
-    /** cast to double and return float part of db value */
-    template<> double openm::DbValue::castDouble<float, double>(const DbValue & i_value)
-    {
-        double dVal = static_cast<double>(i_value.fVal);
-        return dVal;
-    }
-
-    /** cast to double and return long double part of db value */
-    template<> double openm::DbValue::castDouble<long double, double>(const DbValue & i_value)
-    {
-        double dVal = static_cast<double>(i_value.dlVal);
-        return dVal;
-    }
-
-    /** convert bool value to string : return "true" or "false" */
-    int BoolFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
-    {
-        bool isVal = *static_cast<const bool *>(i_value);
-
-        strncpy(io_buffer, (isVal ? trueValueString : falseValueString), i_size);
-        io_buffer[i_size - 1] = '\0';
-        return (int)strnlen(io_buffer, i_size);
-    }
-
-    /** convert bool value to SQL constant: return "1" or "0" */
-    int BoolSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
-    {
-        bool isVal = *static_cast<const bool *>(i_value);
-
-        strncpy(io_buffer, (isVal ? "1" : "0"), i_size);
-        io_buffer[i_size - 1] = '\0';
-        return (int)strnlen(io_buffer, i_size);
-    }
-
-    /** convert varchar value to string: make a copy of source string */
-    int StrFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
-    {
-        strncpy(io_buffer, static_cast<const char *>(i_value), i_size);
-        io_buffer[i_size - 1] = '\0';
-        return (int)strnlen(io_buffer, i_size);
-    }
-
-    /** convert string value into SQL constant: return 'quoted source value' */
-    int StrSqlFormatHandler(const void * i_value, size_t i_size, char * io_buffer)
-    {
-        strncpy(io_buffer, toQuoted(static_cast<const char *>(i_value)).c_str(), i_size);
-        io_buffer[i_size - 1] = '\0';
-        return (int)strnlen(io_buffer, i_size);
-    }
-
-    /** create DbValue setter.
-    *
-    * @param[in] i_type    value type, use std::string type for VARCHAR values
-    */
-    DbValueSetter::DbValueSetter(const type_info & i_type) :
-        typeOf(i_type),
-        doSetValue(nullptr)
-    {
-        if (i_type == typeid(char)) doSetValue = setValue<char>;
-        if (i_type == typeid(unsigned char)) doSetValue = setValue<unsigned char>;
-        if (i_type == typeid(short)) doSetValue = setValue<short>;
-        if (i_type == typeid(unsigned short)) doSetValue = setValue<unsigned short>;
-        if (i_type == typeid(int)) doSetValue = setValue<int>;
-        if (i_type == typeid(unsigned int)) doSetValue = setValue<unsigned int>;
-        if (i_type == typeid(long)) doSetValue = setValue<long>;
-        if (i_type == typeid(unsigned long)) doSetValue = setValue<unsigned long>;
-        if (i_type == typeid(long long)) doSetValue = setValue<long long>;
-        if (i_type == typeid(unsigned long long)) doSetValue = setValue<unsigned long long>;
-        if (i_type == typeid(int8_t)) doSetValue = setValue<int8_t>;
-        if (i_type == typeid(uint8_t)) doSetValue = setValue<uint8_t>;
-        if (i_type == typeid(int16_t)) doSetValue = setValue<int16_t>;
-        if (i_type == typeid(uint16_t)) doSetValue = setValue<uint16_t>;
-        if (i_type == typeid(int32_t)) doSetValue = setValue<int32_t>;
-        if (i_type == typeid(uint32_t)) doSetValue = setValue<uint32_t>;
-        if (i_type == typeid(int64_t)) doSetValue = setValue<int64_t>;
-        if (i_type == typeid(uint64_t)) doSetValue = setValue<uint64_t>;
-        if (i_type == typeid(bool)) doSetValue = setValue<bool>;
-        if (i_type == typeid(float)) doSetValue = setValue<float>;
-        if (i_type == typeid(double)) doSetValue = setValue<double>;
-        if (i_type == typeid(long double)) doSetValue = setValue<long double>;
-        if (i_type == typeid(char *)) doSetValue = setValue<char *>;
-
-        if (doSetValue == nullptr) throw DbException("invalid type to set database value"); // conversion to target type is not supported
-    }
-
-    /** set DbValue by casting a pointer */
-    void DbValueSetter::set(const void * i_value, DbValue & o_dbVal)
-    {
-        if (i_value == nullptr) throw DbException("invalid NULL pointer to database value");
-
-        doSetValue(i_value, o_dbVal);
-    }
+    catch (...) {}
 }
 
 /** create empty row of value table */
@@ -181,33 +226,30 @@ ValueRowAdapter::ValueRowAdapter(int i_idCount, const type_info & i_type) :
 }
 
 /** IRowAdapter interface implementation: set column value */
-void ValueRowAdapter::set(IRowBase * i_row, int i_column, const void * i_value) const 
+void ValueRowAdapter::set(IRowBase * i_row, int i_column, const void * i_value) const
 {
-    if (i_column >= 0 && i_column <= idCount) {
+    if (i_column < 0 || i_column >= 1 + idCount) throw DbException("db column number out of range: %d", i_column);
 
-        ValueRow * row = dynamic_cast<ValueRow *>(i_row);
+    ValueRow * row = dynamic_cast<ValueRow *>(i_row);
 
-        if (i_column != idCount) {
-            row->idArr[i_column] = (*(int32_t *)i_value);
-        }
-        else {
-            row->isNotNull = i_value != nullptr;
-            if (row->isNotNull && typeOf == typeid(float)) row->isNotNull = isfinite(*(float *)i_value);
-            if (row->isNotNull && typeOf == typeid(double)) row->isNotNull = isfinite(*(double *)i_value);
-            if (row->isNotNull && typeOf == typeid(long double)) row->isNotNull = isfinite(*(long double *)i_value);
+    if (i_column != idCount) {
+        row->idArr[i_column] = (*(int32_t *)i_value);
+    }
+    else {
+        row->isNotNull = i_value != nullptr;
+        if (row->isNotNull && typeOf == typeid(float)) row->isNotNull = isfinite(*(float *)i_value);
+        if (row->isNotNull && typeOf == typeid(double)) row->isNotNull = isfinite(*(double *)i_value);
+        if (row->isNotNull && typeOf == typeid(long double)) row->isNotNull = isfinite(*(long double *)i_value);
 
-            if (row->isNotNull) {
-                if (typeOf == typeid(string)) {
-                    row->strVal = (char *)i_value;
-                }
-                else {
-                    doSetValue(i_value, row->dbVal);
-                }
+        if (row->isNotNull) {
+            if (typeOf == typeid(string)) {
+                row->strVal = (char *)i_value;
+            }
+            else {
+                doSetValue(i_value, row->dbVal);
             }
         }
-        return;
     }
-    throw DbException("db column number out of range");
 }
 
 /** new row digester for value table row, use std::string type for VARCHAR input parameters */
@@ -246,51 +288,4 @@ void ValueRowDigester::processRow(IRowBaseUptr & i_row)
     }
 
     md5->add("\n", 1);   // row delimiter
-}
-
-/** create new array of values or array of string */
-ValueArray::ValueArray(const type_info & i_type, size_t i_size) : valueType(i_type), valueCount(i_size), valueArr(nullptr)
-{
-    if (i_size <= 0 || i_size >= INT_MAX) throw DbException("invalid value array size: %zd", i_size);
-
-    if (i_type == typeid(char)) valueArr = newValueArray<char>(i_size);
-    if (i_type == typeid(unsigned char)) valueArr = newValueArray<unsigned char>(i_size);
-    if (i_type == typeid(short)) valueArr = newValueArray<short>(i_size);
-    if (i_type == typeid(unsigned short)) valueArr = newValueArray<unsigned short>(i_size);
-    if (i_type == typeid(int)) valueArr = newValueArray<int>(i_size);
-    if (i_type == typeid(unsigned int)) valueArr = newValueArray<unsigned int>(i_size);
-    if (i_type == typeid(long)) valueArr = newValueArray<long>(i_size);
-    if (i_type == typeid(unsigned long)) valueArr = newValueArray<unsigned long>(i_size);
-    if (i_type == typeid(long long)) valueArr = newValueArray<long long>(i_size);
-    if (i_type == typeid(unsigned long long)) valueArr = newValueArray<unsigned long long>(i_size);
-    if (i_type == typeid(int8_t)) valueArr = newValueArray<int8_t>(i_size);
-    if (i_type == typeid(uint8_t)) valueArr = newValueArray<uint8_t>(i_size);
-    if (i_type == typeid(int16_t)) valueArr = newValueArray<int16_t>(i_size);
-    if (i_type == typeid(uint16_t)) valueArr = newValueArray<uint16_t>(i_size);
-    if (i_type == typeid(int32_t)) valueArr = newValueArray<int32_t>(i_size);
-    if (i_type == typeid(uint32_t)) valueArr = newValueArray<uint32_t>(i_size);
-    if (i_type == typeid(int64_t)) valueArr = newValueArray<int64_t>(i_size);
-    if (i_type == typeid(uint64_t)) valueArr = newValueArray<uint64_t>(i_size);
-    if (i_type == typeid(bool)) valueArr = newValueArray<bool>(i_size);
-    if (i_type == typeid(float)) valueArr = newValueArray<float>(i_size);
-    if (i_type == typeid(double)) valueArr = newValueArray<double>(i_size);
-    if (i_type == typeid(long double)) valueArr = newValueArray<long double>(i_size);
-    if (i_type == typeid(string)) valueArr = new string[i_size];
-
-    if (valueArr == nullptr) throw DbException("invalid value type: %s", i_type.name());   // target type is not supported
-}
-
-/** cleanup resources: free memory */
-void ValueArray::cleanup(void) noexcept {
-    try {
-        if (valueType != typeid(string)) {
-            delete[] valueArr;      // expected g++ warning: deleting void* is undefined
-        }
-        else {
-            string * strArr = static_cast<string *>(valueArr);
-            delete[] strArr;
-        }
-        valueArr = nullptr;
-    }
-    catch (...) {}
 }

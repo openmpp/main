@@ -168,16 +168,16 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     for (TableExprTxtLangRow & row : io_metaRows.tableExprTxt) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
-    for (EntityDicRow& row : io_metaRows.entityDic) {
+    for (EntityDicRow & row : io_metaRows.entityDic) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
-    for (EntityDicTxtLangRow& row : io_metaRows.entityTxt) {
+    for (EntityDicTxtLangRow & row : io_metaRows.entityTxt) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
-    for (EntityAttrRow& row : io_metaRows.entityAttr) {
+    for (EntityAttrRow & row : io_metaRows.entityAttr) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
-    for (EntityAttrTxtLangRow& row : io_metaRows.entityAttrTxt) {
+    for (EntityAttrTxtLangRow & row : io_metaRows.entityAttrTxt) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
     for (GroupLstRow & row : io_metaRows.groupLst) {
@@ -313,24 +313,24 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     }
 
     // model entity rows: entity_dic and model_entity_dic
-    for (EntityDicRow& row : io_metaRows.entityDic) {
+    for (EntityDicRow & row : io_metaRows.entityDic) {
         ModelInsertSql::insertEntityDic(i_dbExec, row);
     }
 
     // entity text rows: entity_dic_txt
-    for (EntityDicTxtLangRow& row : io_metaRows.entityTxt) {
+    for (EntityDicTxtLangRow & row : io_metaRows.entityTxt) {
         auto entityRowIt = EntityDicRow::byKey(row.modelId, row.entityId, io_metaRows.entityDic);
         ModelInsertSql::insertEntityText(i_dbExec, *entityRowIt, langMap, row);
     }
 
     // entity attribute rows: entity_attr
-    for (const EntityAttrRow& row : io_metaRows.entityAttr) {
+    for (const EntityAttrRow & row : io_metaRows.entityAttr) {
         auto entityRowIt = EntityDicRow::byKey(row.modelId, row.entityId, io_metaRows.entityDic);
         ModelInsertSql::insertEntityAttr(i_dbExec, *entityRowIt, typeIdMap, row);
     }
 
     // entity attribute text rows: entity_attr_txt
-    for (EntityAttrTxtLangRow& row : io_metaRows.entityAttrTxt) {
+    for (EntityAttrTxtLangRow & row : io_metaRows.entityAttrTxt) {
         auto entityRowIt = EntityDicRow::byKey(row.modelId, row.entityId, io_metaRows.entityDic);
         ModelInsertSql::insertEntityAttrText(i_dbExec, *entityRowIt, langMap, row);
     }

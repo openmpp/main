@@ -155,6 +155,8 @@ namespace openm
             int entityId;                       /** entity metadata id */
             vector<EntityAttrItem> attrs;       /** entity attributes */
             string genDigest;                   /** entity generation digest */
+            int genHid = 0;                     /** entity generation unique id, unique in that database */
+            string dbMicrodataTable;            /** db microdata table name */
             string csvHdr;                      /** microdata csv header line */
             size_t rowSize = 0;                 /** database row size */
             string sqlInsPrefix;                /** microdata sql statement prefix */
@@ -370,6 +372,9 @@ namespace openm
 
         /** write output tables aggregated values into database, skip suppressed tables */
         void writeOutputValues(int i_runId, IDbExec * i_dbExec) const;
+
+        /** calculate run value digest for all microdata entities */
+        void writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const;
 
         // check sub-value id's and count: sub id must be zero in range [0, sub count -1] and count must be equal to parameter size
         void checkParamSubCounts(int i_runId, int i_subCount, const ParamDicRow & i_paramRow, IDbExec * i_dbExec) const;
