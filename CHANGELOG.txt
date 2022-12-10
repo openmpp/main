@@ -1,6 +1,20 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2022-12-10:
+  entity microdata output from model into csv, into trace or database
+  c++ core: changes and enhancements were made to EventTrace
+  c++ core: attributes visibility in model code
+  c++ core: model notes syntax - modgen and markdown
+  c++ core: added experimental model Align1
+  c++ core: omc now generates doxygen brief descriptions for model symbols
+  c++ core: external names for classification enumerators
+  c++ core: workaround to MSVC compiler error C1001 for models with many attributes
+  BREAKING change in db schema: add microdata entity tables
+  Linux: create optional compatibility views
+  Go: initial version to handle both db schemas: old and new
+  UI: minor change: open new tab at leftmost position
+
 2022-09-23:
   oms: fix racing at model run jobs and servers start-stop
   oms: allow to read parameter values while run in progress
