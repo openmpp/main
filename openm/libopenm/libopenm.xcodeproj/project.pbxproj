@@ -116,6 +116,7 @@
 		D88DBF14234D677900EFFC85 /* restartController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88DBEA6234D677900EFFC85 /* restartController.cpp */; };
 		D88DBF15234D677900EFFC85 /* runController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88DBEA7234D677900EFFC85 /* runController.cpp */; };
 		D88DBF16234D677900EFFC85 /* modelBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88DBEA8234D677900EFFC85 /* modelBase.cpp */; };
+		D8B8F2FA29444C5400F608E1 /* runControllerMicrodata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8B8F2F929444C5400F608E1 /* runControllerMicrodata.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -228,6 +229,7 @@
 		D88DBEA6234D677900EFFC85 /* restartController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = restartController.cpp; sourceTree = "<group>"; };
 		D88DBEA7234D677900EFFC85 /* runController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runController.cpp; sourceTree = "<group>"; };
 		D88DBEA8234D677900EFFC85 /* modelBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = modelBase.cpp; sourceTree = "<group>"; };
+		D8B8F2F929444C5400F608E1 /* runControllerMicrodata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runControllerMicrodata.cpp; sourceTree = "<group>"; };
 		D8F9522A234D5D9C007B3809 /* liblibopenm.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblibopenm.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -367,6 +369,7 @@
 		D88DBE9D234D677900EFFC85 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				D8B8F2F929444C5400F608E1 /* runControllerMicrodata.cpp */,
 				D87BC48F2478532D00EDF729 /* runControllerParams.cpp */,
 				D87BC48D2478532200EDF729 /* runControllerNewRun.cpp */,
 				D87BC48B2478531800EDF729 /* metaHolder.cpp */,
@@ -537,6 +540,7 @@
 				D87BC4902478532E00EDF729 /* runControllerParams.cpp in Sources */,
 				D88DBED1234D677900EFFC85 /* tableDimsTxtTable.cpp in Sources */,
 				D88DBEAF234D677900EFFC85 /* msgCommon.cpp in Sources */,
+				D8B8F2FA29444C5400F608E1 /* runControllerMicrodata.cpp in Sources */,
 				D88DBEF0234D677900EFFC85 /* paramDimsTable.cpp in Sources */,
 				D88DBF14234D677900EFFC85 /* restartController.cpp in Sources */,
 				D88DBED3234D677900EFFC85 /* dbExec.cpp in Sources */,
