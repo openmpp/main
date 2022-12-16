@@ -37,12 +37,12 @@ INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) 
 INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (16, 6, 'FullTime',    104, 0);
 INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (16, 7, 'IsOldAge',      7, 0);
 INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (16, 8, 'Pension',      14, 0);
-INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (16, 9, 'crc',          12, 0);
+INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (16, 9, 'crc',          12, 1);
 
 INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (17, 20, 'Age',          4, 0);
 INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (17, 21, 'AgeGroup',   101, 0);
 INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (17, 22, 'Income',      14, 0);
-INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (17, 23, 'crc',         12, 0);
+INSERT INTO entity_attr (entity_hid, attr_id, attr_name, type_hid, is_internal) VALUES (17, 23, 'crc',         12, 1);
 
 INSERT INTO entity_attr_txt (entity_hid, attr_id, lang_id, descr, note) VALUES (16, 0, 0, 'Age of person', 'Person age notes in English');
 INSERT INTO entity_attr_txt (entity_hid, attr_id, lang_id, descr, note) VALUES (16, 0, 1, 'Âge de la personne', 'Notes d''âge de la personne en français');
