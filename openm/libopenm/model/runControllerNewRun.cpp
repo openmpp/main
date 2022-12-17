@@ -50,7 +50,6 @@ int RunController::createTaskRun(int i_taskId, IDbExec * i_dbExec)
     // completed: commit the changes
     i_dbExec->commit();
 
-    setArgOpt(RunOptionsKey::taskRunId, to_string(taskRunId));
     return taskRunId;
 }
 
@@ -61,35 +60,23 @@ int RunController::findTask(IDbExec * i_dbExec)
     int taskId = argOpts().intOption(RunOptionsKey::taskId, 0);
     string taskName = argOpts().strOption(RunOptionsKey::taskName);
 
+    if (taskId <= 0 && taskName.empty()) return taskId; // exit: no task found
+
     if (taskId > 0) {
         int cnt = i_dbExec->selectToInt(
             "SELECT COUNT(*) FROM task_lst WHERE task_id = " + to_string(taskId), 0
         );
         if (cnt <= 0) throw DbException("task id not found in database: %d", taskId);
     }
-    else {  // find task id by name, if taskName option specified 
+    if (taskId <= 0) {    // find task id by name
 
-        if (!taskName.empty()) {
-            taskId = i_dbExec->selectToInt(
-                "SELECT MIN(task_id) FROM task_lst WHERE model_id = " + to_string(modelId) +
-                " AND task_name = " + toQuoted(taskName),
-                0);
-            if (taskId <= 0)
-                throw DbException("model %s, id: %d does not contain task with name: %s", metaStore->modelRow->name.c_str(), modelId, taskName.c_str());
-        }
+        taskId = i_dbExec->selectToInt(
+            "SELECT MIN(task_id) FROM task_lst WHERE model_id = " + to_string(modelId) +
+            " AND task_name = " + toQuoted(taskName),
+            0);
     }
-
-    // if task found then add it to run options
-    if (taskId > 0) {
-
-        if (taskName.empty()) {
-            taskName = i_dbExec->selectToStr(
-                "SELECT task_name FROM task_lst WHERE task_id = " + to_string(taskId)
-            );
-        }
-        setArgOpt(RunOptionsKey::taskId, to_string(taskId));
-        setArgOpt(RunOptionsKey::taskName, taskName);
-    }
+    if (taskId <= 0)
+        throw DbException("model %s, id: %d does not contain task with name: %s", metaStore->modelRow->name.c_str(), modelId, taskName.c_str());
 
     return taskId;
 }
@@ -163,7 +150,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
 
         // model status (task run status): progress, wait, shutdown or exit
         mStatus = RunState::fromRunStatus(statCode);
-        if (mStatus <= ModelStatus::undefined) throw MsgException("invalid (undefined) model run status");
+        if (mStatus <= ModelStatus::undefined) throw ModelException("invalid (undefined) model run status");
 
         // no input sets exist: task completed or wait for additional input
         if (nSetId <= 0) {                          
@@ -183,7 +170,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     // find set id and make sure this set exist in database:
     // if this is a task then check is next set of modeling task exist in database
     // else (not a task) then set specified by model run options or it is model default set
-    auto[nId, isWsDefault, isReadonlyWsDefault] = findWorkset(nSetId, i_dbExec);
+    auto[nId, setName, isWsDefault, isReadonlyWsDefault] = findWorkset(nSetId, i_dbExec);
     nSetId = nId;
 
     // find base run id if base run options specified or if workset based on run
@@ -203,13 +190,8 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
                 rn += "_" + argOpts().strOption(RunOptionsKey::taskName);   // task run name prefix: modelName_taskName
             }
         }
-        rn += "_" + argOpts().strOption(RunOptionsKey::setName);
-
-        rn = cleanPathChars(rn, OM_NAME_DB_MAX);
+        rn = cleanPathChars(rn + "_" + setName, OM_NAME_DB_MAX);
     }
-    setArgOpt(RunOptionsKey::runId, to_string(nRunId));
-    setArgOpt(RunOptionsKey::runName, rn);
-    setArgOpt(RunOptionsKey::runCreated, runTs);
 
     // calculate run metadata digest and create new run entry
     RunLstRow rr(nRunId);
@@ -249,7 +231,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
     }
 
     // save run options in run_option table
-    createRunOptions(nRunId, i_dbExec);
+    createRunOptions(nRunId, nSetId, setName, nBaseRunId, i_taskRunId, i_dbExec);
 
     // copy input parameters from "base" run and working set into new run id
     createRunParameters(nRunId, nSetId, isWsDefault, isReadonlyWsDefault, nBaseRunId, i_dbExec);
@@ -273,7 +255,7 @@ tuple<int, int, ModelStatus> RunController::createNewRun(int i_taskRunId, bool i
 //   if set id specified as run option then use such set id
 //   if set name specified as run option then find set id by name
 //   else use min(set id) as default set of model parameters
-tuple<int, bool, bool> RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
+tuple<int, string, bool, bool> RunController::findWorkset(int i_setId, IDbExec * i_dbExec)
 {
     // find set id of parameters workset, default is first set id for that model
     int setId = (i_setId > 0) ? i_setId : argOpts().intOption(RunOptionsKey::setId, 0);
@@ -312,12 +294,13 @@ tuple<int, bool, bool> RunController::findWorkset(int i_setId, IDbExec * i_dbExe
     if (setId <= 0)
         throw DbException("model %s, id: %d must have at least one working set", metaStore->modelRow->name.c_str(), modelId);
 
-    // update run options: actual set id and set name can be different
-    setName = i_dbExec->selectToStr("SELECT set_name FROM workset_lst WHERE set_id = " + to_string(setId));
-    setArgOpt(RunOptionsKey::setId, to_string(setId));
-    setArgOpt(RunOptionsKey::setName, setName);
 
-    return { setId, isWsDefault, isReadonlyWsDefault };
+    // select actual workset name
+    setName = i_dbExec->selectToStr(
+        "SELECT set_name FROM workset_lst WHERE model_id = " + to_string(modelId) + " AND set_id = " + to_string(setId)
+    );
+
+    return { setId, setName, isWsDefault, isReadonlyWsDefault };
 }
 
 // find base run to get model parameters, it can be any existing run, including not completed run (in progress or failed).
@@ -358,17 +341,6 @@ int RunController::findBaseRun(IDbExec * i_dbExec)
         }
     }
 
-    // if base run found then add it to run options
-    if (baseId > 0) {
-        setArgOpt(RunOptionsKey::baseRunId, to_string(baseId));
-        if (dg.empty()) {
-            dg = i_dbExec->selectToStr(
-                "SELECT run_digest FROM run_lst WHERE run_id = " + to_string(baseId)
-            );
-        }
-        if (!dg.empty()) setArgOpt(RunOptionsKey::baseRunDigest, dg);
-    }
-
     return baseId;
 }
 
@@ -396,10 +368,11 @@ vector<pair<string, string>> RunController::allOptions(void) const noexcept
 }
 
 /** save run options by inserting into run_option table */
-void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
+void RunController::createRunOptions(int i_runId, int i_setId, const string & i_setName, int i_baseRunId, int i_taskRunId, IDbExec * i_dbExec) const
 {
     // save options in database
     string dbImportPrefix = string(RunOptionsKey::importDbPrefix) + ".";
+    string sRunId = to_string(i_runId);
 
     for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
@@ -409,7 +382,7 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
 
         i_dbExec->update(
             "INSERT INTO run_option (run_id, option_key, option_value) VALUES (" +
-            to_string(i_runId) + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second.substr(0, OM_OPTION_DB_MAX)) + ")"
+            sRunId + ", " + toQuoted(optIt->first) + ", " + toQuoted(optIt->second.substr(0, OM_OPTION_DB_MAX)) + ")"
         );
     }
 
@@ -418,7 +391,7 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
     if (!argOpts().isOptionExist(ArgKey::logFilePath) && !fp.empty()) {
         i_dbExec->update(
             "INSERT INTO run_option (run_id, option_key, option_value)" \
-            " VALUES (" + to_string(i_runId) + ", " + toQuoted(ArgKey::logFilePath) + ", " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
+            " VALUES (" + sRunId + ", " + toQuoted(ArgKey::logFilePath) + ", " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
         );
     }
 
@@ -427,7 +400,79 @@ void RunController::createRunOptions(int i_runId, IDbExec * i_dbExec) const
     if (!fp.empty()) {
         i_dbExec->update(
             "INSERT INTO run_option (run_id, option_key, option_value)" \
-            " VALUES (" + to_string(i_runId) + ", 'OpenM.LogStampedFilePath', " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
+            " VALUES (" + sRunId + ", 'OpenM.LogStampedFilePath', " + toQuoted(fp.substr(0, OM_OPTION_DB_MAX)) + ")"
+        );
+    }
+
+    // additional run options: run id, run name and create timestamp
+    i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::runId));
+    i_dbExec->update(
+        "INSERT INTO run_option (run_id, option_key, option_value)" \
+        " VALUES (" + sRunId + ", " + toQuoted(RunOptionsKey::runId) + ", '" + sRunId + "')"
+    );
+    i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::runName));
+    i_dbExec->update(
+        "INSERT INTO run_option (run_id, option_key, option_value)" \
+        " SELECT " + sRunId + ", " + toQuoted(RunOptionsKey::runName) + ", run_name FROM run_lst WHERE run_id = " + sRunId
+    );
+    i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::runCreated));
+    i_dbExec->update(
+        "INSERT INTO run_option (run_id, option_key, option_value)" \
+        " SELECT " + sRunId + ", " + toQuoted(RunOptionsKey::runCreated) + ", create_dt FROM run_lst WHERE run_id = " + sRunId
+    );
+
+    // additional run options: set id and set name
+    i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::setId));
+    i_dbExec->update(
+        "INSERT INTO run_option (run_id, option_key, option_value)" \
+        " VALUES (" + sRunId + ", " + toQuoted(RunOptionsKey::setId) + ", '" + to_string(i_setId) + "')"
+    );
+    i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::setName));
+    i_dbExec->update(
+        "INSERT INTO run_option (run_id, option_key, option_value)" \
+        " VALUES (" + sRunId + ", " + toQuoted(RunOptionsKey::setName) + ", " + toQuoted(i_setName) + ")"
+    );
+
+    // additional run options: base run id and base run digest
+    if (i_baseRunId > 0) {
+
+        i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::baseRunId));
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " VALUES (" + sRunId + ", " + toQuoted(RunOptionsKey::baseRunId) + ", '" + to_string(i_baseRunId) + "')"
+        );
+        i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::baseRunDigest));
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " SELECT " + sRunId + ", " + toQuoted(RunOptionsKey::baseRunDigest) + ", run_digest FROM run_lst WHERE run_id = " + to_string(i_baseRunId)
+        );
+    }
+
+    // additional run options: task run id, task run name, task id, task name
+    if (i_taskRunId > 0) {
+
+        i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::taskRunId));
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " VALUES (" + sRunId + ", " + toQuoted(RunOptionsKey::taskRunId) + ", '" + to_string(i_taskRunId) + "')"
+        );
+        i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::taskRunName));
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " SELECT " + sRunId + ", " + toQuoted(RunOptionsKey::taskRunName) + ", run_name FROM task_run_lst WHERE task_run_id = " + to_string(i_taskRunId)
+        );
+        int taskId = i_dbExec->selectToInt(
+            "SELECT task_id FROM task_run_lst WHERE task_run_id = " + to_string(i_taskRunId),
+            0);
+        i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::taskId));
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " VALUES (" + sRunId + ", " + toQuoted(RunOptionsKey::taskId) + ", '" + to_string(taskId) + "')"
+        );
+        i_dbExec->update("DELETE FROM run_option WHERE run_id = " + sRunId + " AND option_key = " + toQuoted(RunOptionsKey::taskName));
+        i_dbExec->update(
+            "INSERT INTO run_option (run_id, option_key, option_value)" \
+            " SELECT " + sRunId + ", " + toQuoted(RunOptionsKey::taskName) + ", task_name FROM task_lst WHERE task_id = " + to_string(taskId)
         );
     }
 }

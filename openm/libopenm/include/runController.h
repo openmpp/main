@@ -340,20 +340,20 @@ namespace openm
         size_t doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t>>> & i_entityMdRows);
 
         /** create microdata CSV files for new model run. */
-        void openCsvMicrodata(int i_runId);
+        void openCsvMicrodata(void);
 
     private:
         /** sub-value run states for all modeling threads */
         RunStateHolder runStateHolder;
 
         /** find source working set for input parameters */
-        tuple<int, bool, bool> findWorkset(int i_setId, IDbExec * i_dbExec);
+        tuple<int, string, bool, bool> findWorkset(int i_setId, IDbExec * i_dbExec);
 
         /** find base run to get model parameters, if base run option(s) specified */
         int findBaseRun(IDbExec * i_dbExec);
 
         /** save run options by inserting into run_option table */
-        void createRunOptions(int i_runId, IDbExec * i_dbExec) const;
+        void createRunOptions(int i_runId, int i_setId, const string & i_setName, int i_baseRunId, int i_taskRunId, IDbExec * i_dbExec) const;
 
         // copy input parameters from "base" run and working set into new run id
         void createRunParameters(int i_runId, int i_setId, bool i_isWsDefault, bool i_isReadonlyWsDefault, int i_baseRunId, IDbExec * i_dbExec) const;

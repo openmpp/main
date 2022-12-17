@@ -283,7 +283,7 @@ void RunController::writeOutputValues(int i_runId, IDbExec * i_dbExec) const
             i_dbExec,
             meta(),
             subValueCount,
-            argOpts().strOption(RunOptionsKey::doubleFormat).c_str()
+            strOption(RunOptionsKey::doubleFormat).c_str()
         ));
         writer->writeAllExpressions(i_dbExec);
 

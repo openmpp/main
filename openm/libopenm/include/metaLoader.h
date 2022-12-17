@@ -315,9 +315,6 @@ namespace openm
         /** merge command line and ini-file arguments with profile_option table values. */
         void mergeOptions(IDbExec * i_dbExec);
 
-        /** insert new or update existing argument option. */
-        void setArgOpt(const string & i_key, const string & i_value) { argStore.args[i_key] = i_value; }
-
         // enum to indicate what kind of sub id's selected: single, default, range or list
         enum class KindSubIds : int
         {
@@ -416,6 +413,9 @@ namespace openm
 
         /** parse microdata run options to get entity names and attributes */
         void parseEntityOptions(void);
+
+        /** parse model run option and return: is it microdata option flag, entity name and entity db row if it is entity name option */
+        tuple<bool, string, const EntityDicRow *> parseEntityNameOption(const string & i_key, const string & i_metadataPrefix) const;
 
     private:
         MetaLoader(const MetaLoader & i_metaLoader) = delete;

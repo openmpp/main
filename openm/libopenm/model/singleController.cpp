@@ -168,7 +168,7 @@ int SingleController::nextRun(void)
 
     isSubDone.reset();  // reset write status for sub-values
 
-    openCsvMicrodata(runId);  // create microdata CSV files for new model run
+    openCsvMicrodata();  // create microdata CSV files for new model run
     return runId;
 }
 

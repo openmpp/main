@@ -650,7 +650,7 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
 
     theLog->logFormatted("Digest microdata values, run: %d", i_runId);
 
-    string dblFmt = argOpts().strOption(RunOptionsKey::doubleFormat);
+    string dblFmt = strOption(RunOptionsKey::doubleFormat);
     string mdBuf;
     mdBuf.reserve(OM_STR_DB_MAX);
 
@@ -794,15 +794,15 @@ const string RunController::csvHeaderMicrodata(int i_entityKind) const
 }
 
 /** create microdata CSV files for new model run. */
-void RunController::openCsvMicrodata(int i_runId)
+void RunController::openCsvMicrodata(void)
 {
     if (!modelRunOptions().isCsvMicrodata) return;   // exit: microdata csv is not enabled
 
     // make file stamp for csv file names: ModelName.Person.2018_11_10_22_47_46_076.0012.microdata.csv
     string stamp;
 
-    if (metaStore->runOptionTable->isExist(i_runId, RunOptionsKey::taskRunId)) {
-        stamp = "." + metaStore->runOptionTable->strValue(i_runId, RunOptionsKey::runCreated);
+    if (isOptionExist(RunOptionsKey::taskRunId)) {
+        stamp = "." + strOption(RunOptionsKey::runCreated);
     }
     if (processCount > 1) {
         size_t n = to_string(processCount).length();
@@ -810,7 +810,7 @@ void RunController::openCsvMicrodata(int i_runId)
         stamp += (stamp.empty() ? "." : "-") + sr.substr(sr.length() - n);
     }
 
-    string dir = metaStore->runOptionTable->strValue(i_runId, RunOptionsKey::microdataCsvDir);
+    string dir = strOption(RunOptionsKey::microdataCsvDir);
     
     // for each entity create new microdata csv file and write csv header line
     entityCsvMap.clear();

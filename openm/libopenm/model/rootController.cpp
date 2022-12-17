@@ -337,7 +337,7 @@ int RootController::makeNextRun(RunGroup & i_runGroup)
     if (i_runGroup.groupOne == rootRunGroup().groupOne) metaStore->runOptionTable.swap(roTable);
 
     // create microdata CSV files for new model run
-    openCsvMicrodata(nRunId);
+    openCsvMicrodata();
     return nRunId;
 }
 

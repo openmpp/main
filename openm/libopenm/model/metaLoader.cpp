@@ -963,6 +963,13 @@ void MetaLoader::parseEntityOptions(void)
     if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);
     if (isDisabled && isToTrace) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToTrace);
 
+    // validate mcirodata options: it must be common options or entity name
+    string microdataPrefix = string(RunOptionsKey::microdataPrefix) + ".";
+
+    for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
+        parseEntityNameOption(optIt->first, microdataPrefix);
+    }
+
     // use any entity event: -Microdata.Events All or events from filter: -Microdata.Events Birth,Union
     const string evtNames = argOpts().strOption(RunOptionsKey::microdataEvents);
     if (!OM_USE_MICRODATA_EVENTS && !evtNames.empty())
@@ -1017,32 +1024,13 @@ void MetaLoader::parseEntityOptions(void)
     }
     else { // not all entities are included: get attributes for each entity
 
-        string microdataPrefix = string(RunOptionsKey::microdataPrefix) + ".";
-
         for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
-            // skip common microdata options, for example: -Microdata.ToCsv
-            if (equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToDb) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToCsv) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataToTrace) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataCsvDir) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataAll) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataInternal) ||
-                equalNoCase(optIt->first.c_str(), RunOptionsKey::microdataEvents)) {
-                continue;
-            }
+            auto [isMdOpt, entName, ent] = parseEntityNameOption(optIt->first, microdataPrefix);
 
-            // find Microdata.EntityName options
-            if (!equalNoCase(optIt->first.c_str(), microdataPrefix.c_str(), microdataPrefix.length())) continue;
-
-            const string entName = optIt->first.substr(microdataPrefix.length());
+            if (!isMdOpt || entName.empty()) continue;  // this is not microdata entity name option
 
             if (isDisabled) throw ModelException("Microdata output disabled, invalid model run option: %s", optIt->first.c_str());
-
-            const EntityDicRow * ent = metaStore->entityDic->findFirst(
-                [&entName](const EntityDicRow & i_row) -> bool { return i_row.entityName == entName; }
-            );
-            if (entName.empty() || ent == nullptr) throw ModelException("Microdata name not found: %s", entName.c_str());
 
             // check names of attributes
             list<string> aLst = splitCsv(optIt->second);
@@ -1108,4 +1096,32 @@ void MetaLoader::parseEntityOptions(void)
                 throw ModelException("Microdata attribute duplicate: %s %s", EntityNameSizeArr[cv[n]].entity, EntityNameSizeArr[cv[n]].attribute);
         }
     }
+}
+
+/** parse model run option and return: is it microdata option flag, entity name and entity db row if it is entity name option */
+tuple<bool, string, const EntityDicRow *> MetaLoader::parseEntityNameOption(const string & i_key, const string & i_metadataPrefix) const
+{
+    // skip if it is not a microdata option
+    if (!equalNoCase(i_key.c_str(), i_metadataPrefix.c_str(), i_metadataPrefix.length())) return { false, "", nullptr };
+
+    // skip common microdata options, for example: -Microdata.ToCsv
+    if (equalNoCase(i_key.c_str(), RunOptionsKey::microdataToDb) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataToCsv) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataToTrace) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataCsvDir) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataAll) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataInternal) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataEvents)) {
+        return { true, "", nullptr };
+    }
+
+    // find nicrodata entity name
+    const string entName = i_key.substr(i_metadataPrefix.length());
+
+    const EntityDicRow * ent = metaStore->entityDic->findFirst(
+        [&entName](const EntityDicRow & i_row) -> bool { return i_row.entityName == entName; }
+    );
+    if (entName.empty() || ent == nullptr) throw ModelException("Microdata name not found: %s", entName.c_str());
+
+    return { true, entName, ent };
 }

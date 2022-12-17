@@ -214,7 +214,7 @@ int ChildController::nextRun(void)
     theModelRunState->updateStatus(mStatus);     // update model status: progress, wait, shutdown, exit, done
     isFinalExchange = RunState::isFinal(mStatus);
 
-    if (!isFinalExchange && runId > 0) openCsvMicrodata(runId); // create microdata CSV files for new model run
+    if (!isFinalExchange && runId > 0) openCsvMicrodata(); // create microdata CSV files for new model run
 
     return runId;
 }
