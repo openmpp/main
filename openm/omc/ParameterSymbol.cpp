@@ -295,21 +295,21 @@ CodeBlock ParameterSymbol::cxx_declaration_global_scenario_release(void)
         // extern thread_local double * om_value_UnionDurationBaseline;
         // #define UnionDurationBaseline (*reinterpret_cast<const double(*)[2][6]>(om_value_UnionDurationBaseline))
         h += "extern thread_local " + cxx_type_of_parameter() + " * om_value_" + name + ";";
-        h += "";
         h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
         h += "#define " +
             name +
             " (*reinterpret_cast<const " + pp_datatype->name + "(*)" + cxx_dimensions() + ">" +
             "(om_value_" + name + ")" +
             ")";
+        h += "";
     }
     else {
         // extern thread_local int om_value_startSeed;
         // #define startSeed ((const int)om_value_startSeed)
         h += "extern thread_local " + cxx_type_of_parameter() + " om_value_" + name + ";";
-        h += "";
         h += doxygen_short("Parameter " + pp_datatype->name + ": " + label());
         h += "#define " + name + " ((const " + cxx_type_of_parameter() + ") om_value_" + name + ")";
+        h += "";
     }
     return h;
 }
