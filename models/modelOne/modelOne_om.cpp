@@ -349,7 +349,7 @@ namespace openm
     {
         {-1, "(no event)"},
         {BIRTH_EVENT_ID,  "Birth"},
-        {RETIRE_EVENT_ID,  "Retire"},
+        {RETIRE_EVENT_ID, "Retire"},
         {DEATH_EVENT_ID,  "Death"},
         {OM_SS_EVENT_ID,  "om_ss_event"}
     };

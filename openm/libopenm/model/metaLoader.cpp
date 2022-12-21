@@ -975,26 +975,22 @@ void MetaLoader::parseEntityOptions(void)
     if (!OM_USE_MICRODATA_EVENTS && !evtNames.empty())
         throw ModelException("Microdata events disabled, invalid model run option: %s %s", RunOptionsKey::microdataEvents, evtNames.c_str());
 
+    // enable only events where name is in filter
     bool isEvents = !evtNames.empty();
     if (isEvents) {
-        if (evtNames == RunOptionsKey::allValue) {
-            entityUseEvents.resize(EVENT_ID_NAME_ARR_LEN - 1, true);    // enable all events
-        }
-        else {  // enable only events where name is in filter
-            entityUseEvents.resize(EVENT_ID_NAME_ARR_LEN - 1, false);
+        entityUseEvents.resize(EVENT_ID_NAME_ARR_LEN - 1, false);
 
-            list<string> eLst = splitCsv(evtNames);
-            for (const string & name : eLst)
-            {
-                auto e = std::find_if(
-                    EventIdNameArr + 1,
-                    EventIdNameArr + EVENT_ID_NAME_ARR_LEN,
-                    [name](const EventIdNameItem & ein) -> bool { return ein.eventName == name; }
-                );
-                if (e == EventIdNameArr + EVENT_ID_NAME_ARR_LEN) throw ModelException("Invalid microdata event name: %s", name.c_str());
+        list<string> eLst = splitCsv(evtNames);
+        for (const string & name : eLst)
+        {
+            auto e = std::find_if(
+                EventIdNameArr + 1,
+                EventIdNameArr + EVENT_ID_NAME_ARR_LEN,
+                [name](const EventIdNameItem & ein) -> bool { return ein.eventName == name; }
+            );
+            if (e == EventIdNameArr + EVENT_ID_NAME_ARR_LEN) throw ModelException("Invalid microdata event name: %s", name.c_str());
 
-                entityUseEvents[e->eventId] = true;     // enable this event
-            }
+            entityUseEvents[e->eventId] = true;     // enable this event
         }
     }
 
@@ -1073,7 +1069,6 @@ void MetaLoader::parseEntityOptions(void)
         baseRunOpts.isDbMicrodata = isToDb;
         baseRunOpts.isCsvMicrodata = isToCsv;
         baseRunOpts.isTraceMicrodata = isToTrace;
-        baseRunOpts.isMicrodataEvents = isEvents;
 
         for (auto const & ea : entVec)
         {

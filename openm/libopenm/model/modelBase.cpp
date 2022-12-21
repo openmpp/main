@@ -160,6 +160,8 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
 * @param   i_entityKind     entity kind id: model metadata entity id in database.
 * @param   i_microdataKey   unique entity instance id.
 * @param   i_entityThis     entity class instance this pointer.
+* 
+* Pair of (i_entityKind, i_microdataKey) must provide a unique key of microdata record for this model run.
 */
 void ModelBase::writeDbMicrodata(int i_entityKind, uint64_t i_microdataKey, const void * i_entityThis)
 {

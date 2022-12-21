@@ -343,7 +343,7 @@ Person::Person(int i_subId, int i_personNumber)
 // Person enter simulation event
 void Person::enter_simulation(IModel * const i_model)
 {
-    i_model->writeCsvMicrodata(entityKind, entityId, OM_SS_EVENT_ID, true, this);
+    i_model->writeCsvMicrodata(entityKind, entityId, -1, true, this);
 }
 
 // Person birth event
@@ -418,7 +418,7 @@ Other::Other(int i_subId, int i_otherNumber)
 // Other enter simulation event
 void Other::enter_simulation(IModel * const i_model)
 {
-    i_model->writeCsvMicrodata(entityKind, entityId, OM_SS_EVENT_ID, true, this);
+    i_model->writeCsvMicrodata(entityKind, entityId, -1, true, this);
 }
 
 // Other birth event

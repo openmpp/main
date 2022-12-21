@@ -40,16 +40,13 @@ const char * EventIdNameItem::byId(int i_eventId)
     //    2, "DeathEvent"
     // }
 
-    if (EVENT_ID_NAME_ARR_LEN <= 0) return nullptr;
+    if (!checkId(i_eventId)) return nullptr;
 
     // check special case "no event" at the first element of EventIdNameArr
     if (EventIdNameArr[0].eventId == i_eventId) return EventIdNameArr[0].eventName;
 
-    // if event (id + 1) is an index of EventIdNameArr array then return event name by (id + 1) index
-    if (0 < i_eventId + 1 && i_eventId + 1 < (int)EVENT_ID_NAME_ARR_LEN) {
-        return (EventIdNameArr[i_eventId + 1].eventId == i_eventId) ? EventIdNameArr[i_eventId + 1].eventName : nullptr;
-    }
-    return nullptr; // not found
+    // checkId() guarantee: event (id + 1) is an index of EventIdNameArr array
+    return (EventIdNameArr[i_eventId + 1].eventId == i_eventId) ? EventIdNameArr[i_eventId + 1].eventName : nullptr;
 }
 
 // atomic bool vector to store sub-value done status

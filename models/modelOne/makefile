@@ -258,7 +258,7 @@ run:
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
 	$(OUT_BIN_DIR)/$(MODEL_EXE) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Microdata.All -Microdata.ToCsv -Microdata.CsvDir $(OUT_BIN_DIR) -Microdata.Events All \
+		-Microdata.All -Microdata.ToCsv -Microdata.CsvDir $(OUT_BIN_DIR) -Microdata.Events Birth,Retire,Death \
 		-OpenM.RunName "Microdata in CSV" \
 		-EN.RunDescription "Write microdata into CSV files" \
 		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"

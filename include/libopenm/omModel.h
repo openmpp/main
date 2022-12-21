@@ -45,9 +45,6 @@ namespace openm
         /** if true then model run is writing microdata into trace output */
         bool isTraceMicrodata;
 
-        /** if true then model run is using microdata events */
-        bool isMicrodataEvents;
-
         /** if positive then used for simulation progress reporting, ex: every 10% */
         int progressPercent;
 
@@ -63,7 +60,6 @@ namespace openm
             isDbMicrodata(false),
             isCsvMicrodata(false),
             isTraceMicrodata(false),
-            isMicrodataEvents(false),
             progressPercent(0),
             progressStep(0.0)
         { }
@@ -236,6 +232,14 @@ namespace openm
     /** list of entity attributes name, type, size and member offset */
     extern const EntityNameSizeItem EntityNameSizeArr[];
 
+    struct EventIdNameItem; // model events id, name
+
+    /** list of events id, name */
+    extern const EventIdNameItem EventIdNameArr[];
+
+    /** size of event list: all events in all entities */
+    extern const size_t EVENT_ID_NAME_ARR_LEN;
+
     /** model events id, name */
     struct EventIdNameItem
     {
@@ -247,15 +251,17 @@ namespace openm
 
         /** return event name by event id or NULL if id not found */
         static const char * byId(int i_eventId);
+
+        /** return true if event id valid */
+        static bool checkId(int i_eventId)
+        {
+            return EVENT_ID_NAME_ARR_LEN > 0 &&
+                (i_eventId == EventIdNameArr[0].eventId ||
+                    0 < i_eventId + 1 && i_eventId + 1 < (int)EVENT_ID_NAME_ARR_LEN);
+        }
     };
 
-    /** size of event list: all events in all entities */
-    extern const size_t EVENT_ID_NAME_ARR_LEN;
-
-    /** list of events id, name */
-    extern const EventIdNameItem EventIdNameArr[];
-
-    /** if true then write microdata events into database and/or CSV */
+    /** if true then write microdata events into CSV */
     #define OM_USE_MICRODATA_EVENTS (EVENT_ID_NAME_ARR_LEN > 1)
 
     /** default error message: "unknown model error" */

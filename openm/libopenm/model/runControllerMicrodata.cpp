@@ -31,7 +31,7 @@ void RunController::initMicrodata(void)
             eLast = entityMap.insert({ eId, EntityItem(eId) }).first;
             if (modelRunOptions().isTextMicrodata()) {
                 eLast->second.csvHdr = "key";
-                if (modelRunOptions().isMicrodataEvents) eLast->second.csvHdr += ",event";
+                if (OM_USE_MICRODATA_EVENTS) eLast->second.csvHdr += ",event";
             }
         }
 
@@ -763,7 +763,7 @@ void RunController::writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey,
     if (!modelRunOptions().isCsvMicrodata) return;
 
     // if event filter is enabled then check if event id is in the filter
-    if (modelRunOptions().isMicrodataEvents && !entityUseEvents[i_eventId]) return; // this event id is not in events filter
+    if (OM_USE_MICRODATA_EVENTS && !isEntityEventInFilter(i_entityKind, i_microdataKey, i_eventId)) return;
 
     // check if any microdata write required for this entity kind
     auto [isFound, entItem] = findEntityItem(i_entityKind);
@@ -861,12 +861,13 @@ void RunController::closeCsvMicrodata(void) noexcept
 /** make attributes csv line by converting attribute values into string */
 void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64_t i_microdataKey, int i_eventId, bool i_isSameEntity, const void * i_entityThis, string & io_line) const
 {
-    io_line.clear();
-    if (modelRunOptions().isMicrodataEvents && !entityUseEvents[i_eventId]) return; // this event id is not in events filter
+    // if event filter is enabled then check if event id is in the filter
+    if (OM_USE_MICRODATA_EVENTS && !isEntityEventInFilter(i_entityItem.entityId, i_microdataKey, i_eventId)) return;
 
+    io_line.clear();
     io_line += to_string(i_microdataKey);
 
-    if (modelRunOptions().isMicrodataEvents) {
+    if (OM_USE_MICRODATA_EVENTS) {
 
         const char * name = EventIdNameItem::byId(i_eventId);
         if (name == nullptr) throw ModelException("entity event name not found by event id: %d, entity kind: %d microdata key: %llu", i_eventId, i_entityItem.entityId, i_microdataKey);
@@ -900,3 +901,12 @@ void RunController::writeCsvLineMicrodata(EntityCsvItem & io_entityCsvItem, cons
     }
 }
 
+/** retrun true if entity event id is matching events filter or if there no filter and all events are allowed */
+bool RunController::isEntityEventInFilter(int i_entityKind, uint64_t i_microdataKey, int i_eventId) const
+{
+    if (!EventIdNameItem::checkId(i_eventId))
+        throw ModelException("invalid entity event id: %d, entity kind: %d microdata key: %llu", i_eventId, i_entityKind, i_microdataKey);
+
+    return entityUseEvents.size() <= 0 ||
+        i_eventId >= 0 && i_eventId < (int)entityUseEvents.size() && entityUseEvents[i_eventId];
+}

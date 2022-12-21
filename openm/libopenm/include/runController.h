@@ -194,6 +194,9 @@ namespace openm
         /** check if any microdata write required for this entity kind */
         tuple<bool, const RunController::EntityItem &> findEntityItem(int i_entityKind) const;
 
+        /** retrun true if entity event id is matching events filter or if there no filter and all events are allowed */
+        bool isEntityEventInFilter(int i_entityKind, uint64_t i_microdataKey, int i_eventId) const;
+
     protected:
         /** create run controller */
         RunController(const ArgReader & i_argStore) : MetaLoader(i_argStore),
