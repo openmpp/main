@@ -245,7 +245,6 @@ void EntitySymbol::create_auxiliary_symbols()
         *   i_model->runOptions()->isDbMicrodata     : write into database
         *   i_model->runOptions()->isCsvMicrodata    : write into EntityName.csv file(s)
         *   i_model->runOptions()->isTraceMicrodata  : write into the trace
-        *   i_model->runOptions()->isMicrodataEvents : write events into csv
         *
         * For example:
         *
