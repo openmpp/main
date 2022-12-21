@@ -795,7 +795,7 @@ bool RunController::importOutputTable(
         i_riOpts.runId, i_importRow->fromName.c_str(), dbEx, i_riOpts.meta.get(), exprName.c_str()
     ));
     size_t nSize = rd->sizeOf();
-    unique_ptr<double> vUptr(new double[nSize]);    // parameter type must be double
+    unique_ptr<double[]> vUptr(new double[nSize]);    // parameter type must be double
     rd->readTable(
         dbEx,
         false,      //  if row missing in source db table then use zero filling, which is default for output tables

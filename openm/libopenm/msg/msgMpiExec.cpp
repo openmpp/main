@@ -274,7 +274,7 @@ void MpiExec::bcastSend(int i_groupOne, const type_info & i_type, size_t i_size,
         // send it by async broadcast
         MPI_Request sizeRq = MPI_REQUEST_NULL;
         MPI_Request dataRq = MPI_REQUEST_NULL;
-        unique_ptr<char> packedData;
+        unique_ptr<uint8_t[]> packedData;
 
         if (i_type != typeid(string)) {     // if source is not a string array then send it without packing
 

@@ -130,7 +130,7 @@ namespace openm
         static size_t packedSize(const type_info & i_type, size_t i_size);
 
         /** return new allocated and packed copy of source array. */
-        static unique_ptr<uint8_t> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
+        static unique_ptr<uint8_t[]> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
     };
 
     /** public interface for message passing */

@@ -931,7 +931,7 @@ bool RootController::receiveMicrodata(long i_waitTime)
             int entId = 0;
             size_t rowCount = 0;
             size_t rowSize = 0;
-            unique_ptr<uint8_t> rowsUptr;
+            unique_ptr<uint8_t[]> rowsUptr;
 
             // find microdata in the queue where row count > 0
             // receive microdata rows and set row count = 0 to clear receive request

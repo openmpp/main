@@ -331,7 +331,7 @@ void ParameterWriter::writeParameter(
         i_dbExec->createStatement(insSql, (int)typeArr.size(), typeArr.data());
 
         // storage for sub value id index and dimension enum indexes
-        unique_ptr<int> cellArrUptr(new int[1 + dimCount]);
+        unique_ptr<int[]> cellArrUptr(new int[1 + dimCount]);
         int * cellArr = cellArrUptr.get();
 
         for (int k = 0; k < 1 + dimCount; k++) {
@@ -340,7 +340,7 @@ void ParameterWriter::writeParameter(
 
         // storage for sub value id, dimension items and db row values
         int rowSize = dimCount + 2;
-        unique_ptr<DbValue> valVecUptr(new DbValue[rowSize]);
+        unique_ptr<DbValue[]> valVecUptr(new DbValue[rowSize]);
         DbValue * valVec = valVecUptr.get();
 
         // loop through all dimensions and store cell values

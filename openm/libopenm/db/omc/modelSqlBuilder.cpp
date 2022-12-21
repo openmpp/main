@@ -674,7 +674,7 @@ void ModelSqlBuilder::addWorksetParameter(
     // INSERT INTO ageSex_w20120817 (set_id, sub_id, dim0, dim1, param_value) VALUES (1234, 0, 1, 2, 0.014)
     {
         // storage for dimension enums index
-        unique_ptr<int> cellArrUptr(new int[colCount]);
+        unique_ptr<int[]> cellArrUptr(new int[colCount]);
         int * cellArr = cellArrUptr.get();
 
         for (int k = 0; k < colCount; k++) {

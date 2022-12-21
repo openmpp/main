@@ -330,7 +330,7 @@ void RunController::pushDbMicrodata(int i_runId, int i_entityKind, uint64_t i_mi
 
     lock_guard<recursive_mutex> lck(eDb.theMutex); // lock the database buffer
 
-    unique_ptr<uint8_t> btArr(new uint8_t[entItem.rowSize]);
+    unique_ptr<uint8_t[]> btArr(new uint8_t[entItem.rowSize]);
     uint8_t * pVal = btArr.get();
 
     size_t nOff = 0;
@@ -354,9 +354,9 @@ void RunController::pushDbMicrodata(int i_runId, int i_entityKind, uint64_t i_mi
 *   if microdata row count is more than lower bound
 *   time since last save is moe than microdata save time interval
 */
-map<int, list<unique_ptr<uint8_t>>> RunController::pullDbMicrodata(bool i_isNow)
+map<int, list<unique_ptr<uint8_t[]>>> RunController::pullDbMicrodata(bool i_isNow)
 {
-    map<int, list<unique_ptr<uint8_t>>> entMdRows;
+    map<int, list<unique_ptr<uint8_t[]>>> entMdRows;
 
     if (!modelRunOptions().isDbMicrodata) return entMdRows;   // return empty values
 
@@ -386,7 +386,7 @@ map<int, list<unique_ptr<uint8_t>>> RunController::pullDbMicrodata(bool i_isNow)
         for (auto & ed : entityDbMap)
         {
             EntityDbItem & eDb = ed.second;
-            entMdRows.insert(pair<int, list<unique_ptr<uint8_t>>>({ ed.first, moveDbMicrodata(nowTime, eDb) }));
+            entMdRows.insert(pair<int, list<unique_ptr<uint8_t[]>>>({ed.first, moveDbMicrodata(nowTime, eDb)}));
         }
     }
 
@@ -408,7 +408,7 @@ tuple<bool, size_t> RunController::statusDbMicrodata(chrono::system_clock::time_
 }
 
 /** return microdata db rows and clear row list */
-list<unique_ptr<uint8_t>> && RunController::moveDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & io_entityDbItem)
+list<unique_ptr<uint8_t[]>> && RunController::moveDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & io_entityDbItem)
 {
     lock_guard<recursive_mutex> lck(io_entityDbItem.theMutex);  // lock the database buffer
 
@@ -440,7 +440,7 @@ size_t RunController::doDbMicrodata(IDbExec * i_dbExec, int i_entityId, IRowsFir
     insSql += ")";
 
     // storage for sub value id, dimension items and db row values
-    unique_ptr<DbValue> valVecUptr(new DbValue[2 + nAttrs]);        // run id, microdata key, attributes
+    unique_ptr<DbValue[]> valVecUptr(new DbValue[2 + nAttrs]);        // run id, microdata key, attributes
     DbValue * valVec = valVecUptr.get();
 
     // insert entity microdata rows in transaction scope
@@ -482,7 +482,7 @@ size_t RunController::doDbMicrodata(IDbExec * i_dbExec, int i_entityId, IRowsFir
 }
 
 /** write microdata into database using sql insert literal. */
-size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t>>> & i_entityMdRows)
+size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t[]>>> & i_entityMdRows)
 {
     size_t rowCount = 0;    // total rows inserted
     string sql;

@@ -258,7 +258,7 @@ namespace openm
         *   if microdata row count is more than lower bound
         *   time since last save is moe than microdata save time interval
         */
-        map<int, list<unique_ptr<uint8_t>>> pullDbMicrodata(bool i_isNow = false);
+        map<int, list<unique_ptr<uint8_t[]>>> pullDbMicrodata(bool i_isNow = false);
 
         /** interface to opaque list of bytes rows */
         struct IRowsFirstNext
@@ -274,7 +274,7 @@ namespace openm
         struct ListFirstNext : IRowsFirstNext
         {
             /** create interface to opaque list of bytes rows */
-            ListFirstNext(list<unique_ptr<uint8_t>>::const_iterator i_begin, list<unique_ptr<uint8_t>>::const_iterator i_end) {
+            ListFirstNext(list<unique_ptr<uint8_t[]>>::const_iterator i_begin, list<unique_ptr<uint8_t[]>>::const_iterator i_end) {
                 beginIt = i_begin;
                 endIt = i_end;
                 rowIt = i_begin;
@@ -296,9 +296,9 @@ namespace openm
                 return rowIt != endIt ? rowIt->get() : nullptr;
             }
         private:
-            list<unique_ptr<uint8_t>>::const_iterator beginIt;  // first row
-            list<unique_ptr<uint8_t>>::const_iterator endIt;    // after last row
-            list<unique_ptr<uint8_t>>::const_iterator rowIt;    // current row
+            list<unique_ptr<uint8_t[]>>::const_iterator beginIt;  // first row
+            list<unique_ptr<uint8_t[]>>::const_iterator endIt;    // after last row
+            list<unique_ptr<uint8_t[]>>::const_iterator rowIt;    // current row
         };
 
         /** array of bytes rows wrapped into IRowsFirstNext interface */
@@ -340,7 +340,7 @@ namespace openm
         size_t doDbMicrodata(IDbExec * i_dbExec, int i_entityId, IRowsFirstNext & i_entityMdRows);
 
         /** write microdata into database using sql insert literal and return inserted rows count */
-        size_t doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t>>> & i_entityMdRows);
+        size_t doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<unique_ptr<uint8_t[]>>> & i_entityMdRows);
 
         /** create microdata CSV files for new model run. */
         void openCsvMicrodata(void);
@@ -421,7 +421,7 @@ namespace openm
             int entityId;                           // entity metadata id
             //
             recursive_mutex theMutex;               // mutex to lock for db write operations
-            list<unique_ptr<uint8_t>> rowLst;       // microdata list of rows
+            list<unique_ptr<uint8_t[]>> rowLst;       // microdata list of rows
             chrono::system_clock::time_point lastSaveTime = chrono::system_clock::time_point::min();  // last time of save
         };
         map<int, EntityDbItem> entityDbMap;         // map entity id to database microdata buffer
@@ -433,7 +433,7 @@ namespace openm
         tuple<bool, size_t> statusDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & i_entityDbItem);
 
         /** return microdata db rows and clear row list */
-        list<unique_ptr<uint8_t>> && moveDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & io_entityDbItem);
+        list<unique_ptr<uint8_t[]>> && moveDbMicrodata(chrono::system_clock::time_point i_nowTime, EntityDbItem & io_entityDbItem);
 
         // microdata entity to write into csv
         struct EntityCsvItem

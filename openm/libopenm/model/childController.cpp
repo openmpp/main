@@ -359,7 +359,7 @@ size_t ChildController::sendMicrodata(bool i_isLast)
     size_t rowCount = 0;                        // total rows for all microdata entities
     {
         size_t nSize = entCount + 2;
-        unique_ptr<int> sizeUptr(new int[nSize]);
+        unique_ptr<int[]> sizeUptr(new int[nSize]);
         int * pSize = sizeUptr.get();
 
         for (size_t k = 0; k < entCount; k++)
@@ -395,7 +395,7 @@ size_t ChildController::sendMicrodata(bool i_isLast)
 
             size_t dbRowSize = emIt->second.rowSize;
             size_t dataSize = dbRowSize * mdRows.size();
-            unique_ptr<uint8_t> rowsUptr(new uint8_t[dataSize]);
+            unique_ptr<uint8_t[]> rowsUptr(new uint8_t[dataSize]);
             uint8_t * pRows = rowsUptr.get();
             ptrdiff_t nOff = 0;
 
