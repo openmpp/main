@@ -828,7 +828,7 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
         }
         wr.write("\n");
     }
-    catch(HelperException & ex) {
+    catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
         throw;
     }
