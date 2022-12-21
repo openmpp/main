@@ -230,7 +230,7 @@ void RootController::broadcastRunOptions(void)
             msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
         }
 
-        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isNoCsvEvent);
+        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isCsvEventColumn);
     }
 }
 

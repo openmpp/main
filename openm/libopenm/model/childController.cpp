@@ -164,7 +164,7 @@ void ChildController::broadcastRunOptions(void)
             }
         }
 
-        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isNoCsvEvent);
+        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isCsvEventColumn);
     }
 }
 

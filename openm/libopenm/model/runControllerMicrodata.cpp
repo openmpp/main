@@ -31,7 +31,7 @@ void RunController::initMicrodata(void)
             eLast = entityMap.insert({ eId, EntityItem(eId) }).first;
             if (modelRunOptions().isTextMicrodata()) {
                 eLast->second.csvHdr = "key";
-                if (OM_USE_MICRODATA_EVENTS && !isNoCsvEvent) eLast->second.csvHdr += ",event";
+                if (OM_USE_MICRODATA_EVENTS && isCsvEventColumn) eLast->second.csvHdr += ",event";
             }
         }
 
@@ -867,7 +867,7 @@ void RunController::makeCsvLineMicrodata(const EntityItem & i_entityItem, uint64
     io_line.clear();
     io_line += to_string(i_microdataKey);
 
-    if (OM_USE_MICRODATA_EVENTS && !isNoCsvEvent) {
+    if (OM_USE_MICRODATA_EVENTS && isCsvEventColumn) {
 
         const char * name = EventIdNameItem::byId(i_eventId);
         if (name == nullptr) throw ModelException("entity event name not found by event id: %d, entity kind: %d microdata key: %llu", i_eventId, i_entityItem.entityId, i_microdataKey);

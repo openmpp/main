@@ -34,7 +34,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::microdataAll,
     RunOptionsKey::microdataInternal,
     RunOptionsKey::microdataEvents,
-    RunOptionsKey::microdataNoEventCsv,
+    RunOptionsKey::microdataEventColumn,
     RunOptionsKey::profile,
     RunOptionsKey::importAll,
     RunOptionsKey::threadCount,
@@ -976,7 +976,7 @@ void MetaLoader::parseEntityOptions(void)
     if (!OM_USE_MICRODATA_EVENTS && !evtNames.empty())
         throw ModelException("Microdata events disabled, invalid model run option: %s %s", RunOptionsKey::microdataEvents, evtNames.c_str());
 
-    isNoCsvEvent = argOpts().boolOption(RunOptionsKey::microdataNoEventCsv);
+    isCsvEventColumn = argOpts().boolOption(RunOptionsKey::microdataEventColumn);
 
     // enable only events where name is in filter
     bool isEvents = !evtNames.empty();
@@ -1110,7 +1110,7 @@ tuple<bool, string, const EntityDicRow *> MetaLoader::parseEntityNameOption(cons
         equalNoCase(i_key.c_str(), RunOptionsKey::microdataAll) ||
         equalNoCase(i_key.c_str(), RunOptionsKey::microdataInternal) ||
         equalNoCase(i_key.c_str(), RunOptionsKey::microdataEvents) ||
-        equalNoCase(i_key.c_str(), RunOptionsKey::microdataNoEventCsv)) {
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataEventColumn)) {
         return { true, "", nullptr };
     }
 
