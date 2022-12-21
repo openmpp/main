@@ -134,37 +134,37 @@ void ChildController::broadcastRunOptions(void)
     setRunOptions(opts);    // update model run options
 
     // broadcast number of parameters with sub-values and parameters id
-    int n = (int)paramIdSubArr.size();
+    int n = 0;
     msgExec->bcastInt(ProcessGroupDef::all, &n);
-
     if (n > 0) {
         paramIdSubArr.resize(n);
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
     }
 
     // broadcast number of microdata attributes and attribute indices in entity array
-    n = (int)entityIdxArr.size();
     msgExec->bcastInt(ProcessGroupDef::all, &n);
-
     if (n > 0) {
         entityIdxArr.resize(n);
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, entityIdxArr.data());
     }
 
     // broadcast microdata entity events usage boolean array
-    n = (int)entityUseEvents.size();
-    msgExec->bcastInt(ProcessGroupDef::all, &n);
+    if (OM_USE_MICRODATA_EVENTS) {
 
-    if (n > 0) {
-        entityUseEvents.resize(n);
+        msgExec->bcastInt(ProcessGroupDef::all, &n);
+        if (n > 0) {
+            entityUseEvents.resize(n);
 
-        vector<int> evtUsage(n);
-        msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
+            vector<int> evtUsage(n);
+            msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
 
-        for (size_t k = 0; k < (size_t)n; k++)
-        {
-            entityUseEvents[k] = evtUsage[k] != 0;
+            for (size_t k = 0; k < (size_t)n; k++)
+            {
+                entityUseEvents[k] = evtUsage[k] != 0;
+            }
         }
+
+        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isNoCsvEvent);
     }
 }
 

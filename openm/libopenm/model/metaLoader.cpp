@@ -34,6 +34,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::microdataAll,
     RunOptionsKey::microdataInternal,
     RunOptionsKey::microdataEvents,
+    RunOptionsKey::microdataNoEventCsv,
     RunOptionsKey::profile,
     RunOptionsKey::importAll,
     RunOptionsKey::threadCount,
@@ -970,10 +971,12 @@ void MetaLoader::parseEntityOptions(void)
         parseEntityNameOption(optIt->first, microdataPrefix);
     }
 
-    // use any entity event: -Microdata.Events All or events from filter: -Microdata.Events Birth,Union
+    // apply entity event filter: -Microdata.Events Birth,Union
     const string evtNames = argOpts().strOption(RunOptionsKey::microdataEvents);
     if (!OM_USE_MICRODATA_EVENTS && !evtNames.empty())
         throw ModelException("Microdata events disabled, invalid model run option: %s %s", RunOptionsKey::microdataEvents, evtNames.c_str());
+
+    isNoCsvEvent = argOpts().boolOption(RunOptionsKey::microdataNoEventCsv);
 
     // enable only events where name is in filter
     bool isEvents = !evtNames.empty();
@@ -1106,7 +1109,8 @@ tuple<bool, string, const EntityDicRow *> MetaLoader::parseEntityNameOption(cons
         equalNoCase(i_key.c_str(), RunOptionsKey::microdataCsvDir) ||
         equalNoCase(i_key.c_str(), RunOptionsKey::microdataAll) ||
         equalNoCase(i_key.c_str(), RunOptionsKey::microdataInternal) ||
-        equalNoCase(i_key.c_str(), RunOptionsKey::microdataEvents)) {
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataEvents) ||
+        equalNoCase(i_key.c_str(), RunOptionsKey::microdataNoEventCsv)) {
         return { true, "", nullptr };
     }
 

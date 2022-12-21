@@ -216,16 +216,21 @@ void RootController::broadcastRunOptions(void)
     }
 
     // broadcast microdata entity events usage boolean array
-    n = (int)entityUseEvents.size();
-    msgExec->bcastInt(ProcessGroupDef::all, &n);
+    if (OM_USE_MICRODATA_EVENTS) {
 
-    if (n > 0) {
-        vector<int> evtUsage(n);
-        for (size_t k = 0; k < (size_t)n; k++)
-        {
-            evtUsage[k] = entityUseEvents[k] ? 1 : 0;
+        n = (int)entityUseEvents.size();
+        msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+        if (n > 0) {
+            vector<int> evtUsage(n);
+            for (size_t k = 0; k < (size_t)n; k++)
+            {
+                evtUsage[k] = entityUseEvents[k] ? 1 : 0;
+            }
+            msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
         }
-        msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
+
+        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isNoCsvEvent);
     }
 }
 

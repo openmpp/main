@@ -136,6 +136,9 @@ namespace openm
         /** filter entity events, ex: -Microdata.Events Birth,Union or -Microdata.Events All */
         static constexpr const char * microdataEvents = "Microdata.Events";
 
+        /** if true then do not write event names in CSV file, ex: -Microdata.NoEventColumn true */
+        static constexpr const char * microdataNoEventCsv = "Microdata.NoEventColumn";
+
         /** options started with "Microdata." used to specify which entity attributes to store, ex: -Microdata.Person age,region,income */
         static constexpr const char* microdataPrefix = "Microdata";
 
@@ -286,6 +289,7 @@ namespace openm
         vector<int> paramIdSubArr;          // ids of parameters where sub-values count same as model run sub-values count
         vector<int> tableIdSuppressArr;     // id's of tables to suppress from calculation and output
         vector<int> entityIdxArr;           // microdata attributes indices in EntityNameSizeArr
+        bool isNoCsvEvent;                  // if true then do not write even names into entity microdata CSV
         vector<bool> entityUseEvents;       // microdata event filter: if this array[event id] is true then use this event
 
         /** create metadata loader. */
@@ -293,6 +297,7 @@ namespace openm
             subValueCount(0),
             threadCount(1),
             modelId(0),
+            isNoCsvEvent(false),
             argStore(i_argStore)
         { }
 
