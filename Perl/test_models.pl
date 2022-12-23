@@ -8,7 +8,7 @@ use strict;
 use warnings;
 
 my $script_name = "test_models";
-my $script_version = '2.3.1';
+my $script_version = '2.3.2';
 
 use Getopt::Long::Descriptive;
 
@@ -396,7 +396,7 @@ if ($is_windows) {
 		my $full_path = "${om_root}/bin/${omc_exe}";
 		-e $full_path or die "Missing ${full_path}"; # shouldn't happen
 		my $sb = stat($full_path);
-		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->mtime;
+		my $exe_time_stamp = strftime "%Y-%m-%d %H:%M GMT",gmtime $sb->ctime;
         my $mpi_info = '';
         if ($use_mpi) {
             $mpi_info .= ($mpi_processes == 1) ?
