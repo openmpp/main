@@ -59,10 +59,10 @@ namespace openm
         static string unpackStr(int i_packedSize, void * i_packedData, int & io_packPos);
 
         /** return an MPI_Pack'ed copy of source array. */
-        static unique_ptr<uint8_t> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
+        static unique_ptr<uint8_t[]> packArray(const type_info & i_type, size_t i_size, void * i_valueArr);
 
         /** return an MPI_Pack'ed copy of source string array. */
-        static unique_ptr<char> packArray(size_t i_size, const string * i_valueArr);
+        static unique_ptr<uint8_t[]> packArray(size_t i_size, const string * i_valueArr);
 
         /** unpack MPI_Pack'ed string array from i_packedData into supplied io_valueArr. */
         static void unpackArray(int i_packedSize, void * i_packedData, size_t i_size, string * io_valueArr);

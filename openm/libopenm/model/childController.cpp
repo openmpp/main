@@ -134,37 +134,37 @@ void ChildController::broadcastRunOptions(void)
     setRunOptions(opts);    // update model run options
 
     // broadcast number of parameters with sub-values and parameters id
-    int n = (int)paramIdSubArr.size();
+    int n = 0;
     msgExec->bcastInt(ProcessGroupDef::all, &n);
-
     if (n > 0) {
         paramIdSubArr.resize(n);
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
     }
 
     // broadcast number of microdata attributes and attribute indices in entity array
-    n = (int)entityIdxArr.size();
     msgExec->bcastInt(ProcessGroupDef::all, &n);
-
     if (n > 0) {
         entityIdxArr.resize(n);
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, entityIdxArr.data());
     }
 
     // broadcast microdata entity events usage boolean array
-    n = (int)entityUseEvents.size();
-    msgExec->bcastInt(ProcessGroupDef::all, &n);
+    if (OM_USE_MICRODATA_EVENTS) {
 
-    if (n > 0) {
-        entityUseEvents.resize(n);
+        msgExec->bcastInt(ProcessGroupDef::all, &n);
+        if (n > 0) {
+            entityUseEvents.resize(n);
 
-        vector<int> evtUsage(n);
-        msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
+            vector<int> evtUsage(n);
+            msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, evtUsage.data());
 
-        for (size_t k = 0; k < (size_t)n; k++)
-        {
-            entityUseEvents[k] = evtUsage[k] != 0;
+            for (size_t k = 0; k < (size_t)n; k++)
+            {
+                entityUseEvents[k] = evtUsage[k] != 0;
+            }
         }
+
+        msgExec->bcastValue(ProcessGroupDef::all, typeid(bool), &isCsvEventColumn);
     }
 }
 
@@ -359,7 +359,7 @@ size_t ChildController::sendMicrodata(bool i_isLast)
     size_t rowCount = 0;                        // total rows for all microdata entities
     {
         size_t nSize = entCount + 2;
-        unique_ptr<int> sizeUptr(new int[nSize]);
+        unique_ptr<int[]> sizeUptr(new int[nSize]);
         int * pSize = sizeUptr.get();
 
         for (size_t k = 0; k < entCount; k++)
@@ -395,7 +395,7 @@ size_t ChildController::sendMicrodata(bool i_isLast)
 
             size_t dbRowSize = emIt->second.rowSize;
             size_t dataSize = dbRowSize * mdRows.size();
-            unique_ptr<uint8_t> rowsUptr(new uint8_t[dataSize]);
+            unique_ptr<uint8_t[]> rowsUptr(new uint8_t[dataSize]);
             uint8_t * pRows = rowsUptr.get();
             ptrdiff_t nOff = 0;
 

@@ -204,15 +204,15 @@ int main(int argc, char ** argv)
         theLog->logErr(ex, "Messaging error");
         return (int)ExitStatus::MSG_ERROR;
     }
-    catch(HelperException & ex) {
+    catch (HelperException & ex) {
         theLog->logErr(ex, "Helper error");
         return (int)ExitStatus::HELPER_ERROR;
     }
-    catch(exception & ex) {
+    catch (exception & ex) {
         theLog->logErr(ex);
         return (int)ExitStatus::FAIL;
     }
-    catch(...) {    // exit with failure on unhandled exception
+    catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
         return (int)ExitStatus::FAIL;
     }
