@@ -729,20 +729,45 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
         string sRunId = to_string(i_runId);
         string sHid = to_string(ent.genHid);
 
-        // build sql to select microdata values:
-        //
-        // SELECT run_id, entity_key, attr7, attr4 FROM Person_g87abcdef WHERE run_id = 11 ORDER BY 1, 2
-        //
-        string sql = "SELECT  run_id, entity_key";
-        string hdrLine = "run_id,entity_key";
+        // sort entity attributes by id
+        struct eat
+        {
+            int attrId;
+            const type_info * attrType;
+        };
+        vector<eat> eatLst;
 
         for (const EntityAttrItem & a : ent.attrs)
+        {
+            eatLst.push_back({ a.attrId, &EntityNameSizeArr[a.idxOf].typeOf });
+        }
+        sort(
+            eatLst.begin(),
+            eatLst.end(),
+            [](eat & i_left, eat & i_right) -> bool { return i_left.attrId < i_right.attrId; }
+        );
+
+        // column types sorted by attributes id
+        vector<const type_info *> eaTypes;
+        eaTypes.push_back(&typeid(int));            // run id
+        eaTypes.push_back(&typeid(uint64_t));       // microdata key
+
+        // build sql to select microdata values:
+        //
+        // SELECT run_id, entity_key, attr4, attr7 FROM Person_g87abcdef WHERE run_id = 11 ORDER BY 1, 2
+        //
+        string sql = "SELECT  run_id, entity_key";
+        string hdrLine = "entity_key";
+
+        for (const eat & a : eatLst)
         {
             const EntityAttrRow * aIt = metaStore->entityAttr->byKey(modelId, eId, a.attrId);
             if (aIt == nullptr) throw DbException("Microdata attribute not found, entity: %s attribute id: %d", eRow->entityName.c_str(), a.attrId);
 
             sql += ", " + aIt->columnName();
             hdrLine += "," + aIt->name;
+
+            eaTypes.push_back(a.attrType);
         }
         sql += " FROM " + ent.dbMicrodataTable + " WHERE run_id = " + sRunId + " ORDER BY 1, 2";
 
@@ -760,7 +785,7 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
         // append microdata values digest
         {
             mdBuf.clear();
-            MdValueRow mdRow(ent.rowTypes, dblFmt, &mdBuf);
+            MdValueRow mdRow(eaTypes, dblFmt, &mdBuf);
             MdRowAdapter adp(&mdRow);
             MdRowDigester md5Rd(mdRow.colCount, &md5);
 
