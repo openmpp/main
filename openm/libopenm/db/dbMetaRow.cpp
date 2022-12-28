@@ -567,14 +567,14 @@ bool TableExprTxtLangRow::uniqueLangKeyEqual(const TableExprTxtLangRow & i_left,
 
 
 // entity_dic join to model_entity_dic row less comparator by unique key: model id, model entity id.
-bool EntityDicRow::isKeyLess(const EntityDicRow& i_left, const EntityDicRow& i_right)
+bool EntityDicRow::isKeyLess(const EntityDicRow & i_left, const EntityDicRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) || (i_left.modelId == i_right.modelId && i_left.entityId < i_right.entityId);
 }
 
 // entity_dic join to model_entity_dic row equal comparator by unique key: model id, model entity id.
-bool EntityDicRow::isKeyEqual(const EntityDicRow& i_left, const EntityDicRow& i_right)
+bool EntityDicRow::isKeyEqual(const EntityDicRow & i_left, const EntityDicRow & i_right)
 {
     return i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId;
 }
@@ -585,12 +585,12 @@ vector<EntityDicRow>::const_iterator EntityDicRow::byKey(int i_modelId, int i_en
     return find_if(
         i_rowVec.cbegin(),
         i_rowVec.cend(),
-        [i_modelId, i_entityId](const EntityDicRow& i_row) -> bool { return i_row.modelId == i_modelId && i_row.entityId == i_entityId; }
+        [i_modelId, i_entityId](const EntityDicRow & i_row) -> bool { return i_row.modelId == i_modelId && i_row.entityId == i_entityId; }
     );
 }
 
 // entity_dic_txt join to model_entity_dic row less comparator by unique key: model id, model entity id, language id.
-bool EntityDicTxtRow::isKeyLess(const EntityDicTxtRow& i_left, const EntityDicTxtRow& i_right)
+bool EntityDicTxtRow::isKeyLess(const EntityDicTxtRow & i_left, const EntityDicTxtRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) ||
@@ -599,14 +599,14 @@ bool EntityDicTxtRow::isKeyLess(const EntityDicTxtRow& i_left, const EntityDicTx
 }
 
 // entity_dic_txt join to model_entity_dic row equal comparator by unique key: model id, model entity id, language id.
-bool EntityDicTxtRow::isKeyEqual(const EntityDicTxtRow& i_left, const EntityDicTxtRow& i_right)
+bool EntityDicTxtRow::isKeyEqual(const EntityDicTxtRow & i_left, const EntityDicTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.langId == i_right.langId;
 }
 
 // entity_dic_txt join to model_entity_dic row less comparator by unique key: model id, entity id, language code.
-bool EntityDicTxtLangRow::uniqueLangKeyLess(const EntityDicTxtLangRow& i_left, const EntityDicTxtLangRow& i_right)
+bool EntityDicTxtLangRow::uniqueLangKeyLess(const EntityDicTxtLangRow & i_left, const EntityDicTxtLangRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) ||
@@ -615,14 +615,14 @@ bool EntityDicTxtLangRow::uniqueLangKeyLess(const EntityDicTxtLangRow& i_left, c
 }
 
 // entity_dic_txt join to model_entity_dic row equal comparator by unique key: model id, entity id, language code.
-bool EntityDicTxtLangRow::uniqueLangKeyEqual(const EntityDicTxtLangRow& i_left, const EntityDicTxtLangRow& i_right)
+bool EntityDicTxtLangRow::uniqueLangKeyEqual(const EntityDicTxtLangRow & i_left, const EntityDicTxtLangRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.langCode == i_right.langCode;
 }
 
 // entity_attr join to model_entity_dic row less comparator by unique key: model id, model entity id, attribute id.
-bool EntityAttrRow::isKeyLess(const EntityAttrRow& i_left, const EntityAttrRow& i_right)
+bool EntityAttrRow::isKeyLess(const EntityAttrRow & i_left, const EntityAttrRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) ||
@@ -631,7 +631,7 @@ bool EntityAttrRow::isKeyLess(const EntityAttrRow& i_left, const EntityAttrRow& 
 }
 
 // entity_attr join to model_entity_dic row equal comparator by unique key: model id, model entity id, attribute id.
-bool EntityAttrRow::isKeyEqual(const EntityAttrRow& i_left, const EntityAttrRow& i_right)
+bool EntityAttrRow::isKeyEqual(const EntityAttrRow & i_left, const EntityAttrRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.attrId == i_right.attrId;
@@ -644,7 +644,7 @@ const string EntityAttrRow::columnName() const
 }
 
 // entity_attr_txt join to model_entity_dic row less comparator by unique key: model id, model entity id, attribute id, language id.
-bool EntityAttrTxtRow::isKeyLess(const EntityAttrTxtRow& i_left, const EntityAttrTxtRow& i_right)
+bool EntityAttrTxtRow::isKeyLess(const EntityAttrTxtRow & i_left, const EntityAttrTxtRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) ||
@@ -654,14 +654,14 @@ bool EntityAttrTxtRow::isKeyLess(const EntityAttrTxtRow& i_left, const EntityAtt
 }
 
 // entity_attr_txt join to model_entity_dic row equal comparator by unique key: model id, model entity id, attribute id, language id.
-bool EntityAttrTxtRow::isKeyEqual(const EntityAttrTxtRow& i_left, const EntityAttrTxtRow& i_right)
+bool EntityAttrTxtRow::isKeyEqual(const EntityAttrTxtRow & i_left, const EntityAttrTxtRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.attrId == i_right.attrId && i_left.langId == i_right.langId;
 }
 
 // entity_attr_txt join to model_entity_dic row less comparator by unique key : model id, entity id, attribute id, language code.
-bool EntityAttrTxtLangRow::uniqueLangKeyLess(const EntityAttrTxtLangRow& i_left, const EntityAttrTxtLangRow& i_right)
+bool EntityAttrTxtLangRow::uniqueLangKeyLess(const EntityAttrTxtLangRow & i_left, const EntityAttrTxtLangRow & i_right)
 {
     return
         (i_left.modelId < i_right.modelId) ||
@@ -671,7 +671,7 @@ bool EntityAttrTxtLangRow::uniqueLangKeyLess(const EntityAttrTxtLangRow& i_left,
 }
 
 // entity_attr_txt join to model_entity_dic row equal comparator by unique key : model id, entity id, attribute id, language code.
-bool EntityAttrTxtLangRow::uniqueLangKeyEqual(const EntityAttrTxtLangRow& i_left, const EntityAttrTxtLangRow& i_right)
+bool EntityAttrTxtLangRow::uniqueLangKeyEqual(const EntityAttrTxtLangRow & i_left, const EntityAttrTxtLangRow & i_right)
 {
     return
         i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.attrId == i_right.attrId && i_left.langCode == i_right.langCode;

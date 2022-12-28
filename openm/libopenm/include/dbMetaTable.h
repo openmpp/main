@@ -679,22 +679,22 @@ namespace openm
         *
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
-        static IEntityDicTable* create(IDbExec* i_dbExec, int i_modelId = 0);
+        static IEntityDicTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
         /** binary search row by unique key: model id, model entity id, return NULL if not found. */
-        virtual const EntityDicRow* byKey(int i_modelId, int i_entityId) const = 0;
+        virtual const EntityDicRow * byKey(int i_modelId, int i_entityId) const = 0;
 
         /** get list of rows by model id. */
         virtual vector<EntityDicRow> byModelId(int i_modelId) const = 0;
 
         /** get first row by model id and entity name or NULL if not found. */
-        virtual const EntityDicRow* byModelIdName(int i_modelId, const string& i_name) const = 0;
+        virtual const EntityDicRow * byModelIdName(int i_modelId, const string & i_name) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static IEntityDicTable* create(IRowBaseVec& io_rowVec);
+        static IEntityDicTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec& rowsRef(void) = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** entity_dic_txt table public interface. */
@@ -708,16 +708,16 @@ namespace openm
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static IEntityDicTxtTable* create(IDbExec* i_dbExec, int i_modelId = 0, int i_langId = -1);
+        static IEntityDicTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
         /** binary search row by unique key: model id, model entity id, language id; return NULL if not found. */
-        virtual const EntityDicTxtRow* byKey(int i_modelId, int i_entityId, int i_langId) const = 0;
+        virtual const EntityDicTxtRow * byKey(int i_modelId, int i_entityId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static IEntityDicTxtTable* create(IRowBaseVec& io_rowVec);
+        static IEntityDicTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec& rowsRef(void) = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** entity_attr table public interface. */
@@ -730,19 +730,19 @@ namespace openm
         *
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         */
-        static IEntityAttrTable* create(IDbExec* i_dbExec, int i_modelId = 0);
+        static IEntityAttrTable * create(IDbExec * i_dbExec, int i_modelId = 0);
 
         /** binary search row by unique key: model id, model entity id, attribute id; return NULL if not found. */
-        virtual const EntityAttrRow* byKey(int i_modelId, int i_entityId, int i_attrId) const = 0;
+        virtual const EntityAttrRow * byKey(int i_modelId, int i_entityId, int i_attrId) const = 0;
 
         /** get list of rows by model id and entity id. */
         virtual vector<EntityAttrRow> byModelIdEntityId(int i_modelId, int i_entityId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static IEntityAttrTable* create(IRowBaseVec& io_rowVec);
+        static IEntityAttrTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec& rowsRef(void) = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** entity_attr_txt table public interface. */
@@ -756,16 +756,16 @@ namespace openm
         * if i_modelId > 0 then select only rows where model_id = i_modelId
         * if i_langId >= 0 then select only rows where lang_id = i_langId
         */
-        static IEntityAttrTxtTable* create(IDbExec* i_dbExec, int i_modelId = 0, int i_langId = -1);
+        static IEntityAttrTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
 
         /** binary search row by unique key: model id, model entity id, attribute id, language id; return NULL if not found. */
-        virtual const EntityAttrTxtRow* byKey(int i_modelId, int i_entityId, int i_attrId, int i_langId) const = 0;
+        virtual const EntityAttrTxtRow * byKey(int i_modelId, int i_entityId, int i_attrId, int i_langId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
-        static IEntityAttrTxtTable* create(IRowBaseVec& io_rowVec);
+        static IEntityAttrTxtTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
-        virtual IRowBaseVec& rowsRef(void) = 0;
+        virtual IRowBaseVec & rowsRef(void) = 0;
     };
 
     /** group_lst table public interface. */
