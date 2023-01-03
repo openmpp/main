@@ -289,7 +289,7 @@ const string RunController::makeEntityGenDigest(const EntityDicRow * i_entRow, c
 {
     // make digest header as entity name
     MD5 md5Full;
-    md5Full.add("entity_digest\n", strlen("entity_digest,is_events\n"));
+    md5Full.add("entity_digest\n", strlen("entity_digest\n"));
     string sLine = i_entRow->digest + "\n";
     md5Full.add(sLine.c_str(), sLine.length());
 
