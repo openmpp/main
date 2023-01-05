@@ -431,11 +431,11 @@ size_t RunController::doDbMicrodata(IDbExec * i_dbExec, int i_entityId, IRowsFir
 
     // make insert sql statement:
     //
-    // INSERT Person_g87abcdef (run_id, entity_key, attr0, attr3) VALUES (?, ?, ?, ?)
+    // INSERT INTO Person_g87abcdef (run_id, entity_key, attr0, attr3) VALUES (?, ?, ?, ?)
     //
     int nAttrs = (int)ent.attrs.size();
 
-    string insSql = ent.sqlInsPrefix + "?, ?";  // INSERT Person_g87abcdef (....) VALUES (?, ?
+    string insSql = ent.sqlInsPrefix + "?, ?";  // INSERT INTO Person_g87abcdef (....) VALUES (?, ?
 
     for (int k = 0; k < nAttrs; k++)
     {
@@ -541,7 +541,7 @@ size_t RunController::doDbMicrodataSql(IDbExec * i_dbExec, const map<int, list<u
             {
                 // build sql insert
                 sql.clear();
-                sql += ent.sqlInsPrefix;   // INSERT Person_g87abcdef (....) VALUES (
+                sql += ent.sqlInsPrefix;   // INSERT INTO Person_g87abcdef (....) VALUES (
 
                 // add row key: run id and microdata key
                 pVal = md.get();
