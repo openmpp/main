@@ -1228,13 +1228,13 @@ namespace openm
         ~EntityDicRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model entity id. */
-        static bool isKeyLess(const EntityDicRow& i_left, const EntityDicRow& i_right);
+        static bool isKeyLess(const EntityDicRow & i_left, const EntityDicRow & i_right);
 
         /** equal comparator by primary key: model id, entity id. */
-        static bool isKeyEqual(const EntityDicRow& i_left, const EntityDicRow& i_right);
+        static bool isKeyEqual(const EntityDicRow & i_left, const EntityDicRow & i_right);
 
         /** find row by unique key: model id, model entity id. */
-        static vector<EntityDicRow>::const_iterator byKey(int i_modelId, int i_entityId, const vector<EntityDicRow>& i_rowVec);
+        static vector<EntityDicRow>::const_iterator byKey(int i_modelId, int i_entityId, const vector<EntityDicRow> & i_rowVec);
     };
 
     /** entity_dic_txt table row. */
@@ -1270,10 +1270,10 @@ namespace openm
         ~EntityDicTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model entity id, language id. */
-        static bool isKeyLess(const EntityDicTxtRow& i_left, const EntityDicTxtRow& i_right);
+        static bool isKeyLess(const EntityDicTxtRow & i_left, const EntityDicTxtRow & i_right);
 
         /** equal comparator by unique key: model id, model entity id, language id. */
-        static bool isKeyEqual(const EntityDicTxtRow& i_left, const EntityDicTxtRow& i_right);
+        static bool isKeyEqual(const EntityDicTxtRow & i_left, const EntityDicTxtRow & i_right);
     };
 
     /** entity_dic_txt table row and language code. */
@@ -1283,10 +1283,10 @@ namespace openm
         string langCode;
 
         /** less comparator by unique key: model id, entity id, language code. */
-        static bool uniqueLangKeyLess(const EntityDicTxtLangRow& i_left, const EntityDicTxtLangRow& i_right);
+        static bool uniqueLangKeyLess(const EntityDicTxtLangRow & i_left, const EntityDicTxtLangRow & i_right);
 
         /** equal comparator by unique key: model id, entity id, language code. */
-        static bool uniqueLangKeyEqual(const EntityDicTxtLangRow& i_left, const EntityDicTxtLangRow& i_right);
+        static bool uniqueLangKeyEqual(const EntityDicTxtLangRow & i_left, const EntityDicTxtLangRow & i_right);
     };
 
     /** entity_attr table row. */
@@ -1326,10 +1326,10 @@ namespace openm
         ~EntityAttrRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model entity id, attribute id. */
-        static bool isKeyLess(const EntityAttrRow& i_left, const EntityAttrRow& i_right);
+        static bool isKeyLess(const EntityAttrRow & i_left, const EntityAttrRow & i_right);
 
         /** equal comparator by unique key: model id, model entity id, attribute id. */
-        static bool isKeyEqual(const EntityAttrRow& i_left, const EntityAttrRow& i_right);
+        static bool isKeyEqual(const EntityAttrRow & i_left, const EntityAttrRow & i_right);
 
         /** return db column name based on attribute id, example: attr1 */
         const string columnName(void) const;
@@ -1372,10 +1372,10 @@ namespace openm
         ~EntityAttrTxtRow(void) noexcept { }
 
         /** less comparator by unique key: model id, model entity id, attribute id, language id. */
-        static bool isKeyLess(const EntityAttrTxtRow& i_left, const EntityAttrTxtRow& i_right);
+        static bool isKeyLess(const EntityAttrTxtRow & i_left, const EntityAttrTxtRow & i_right);
 
         /** equal comparator by unique key: model id, model entity id, attribute id, language id. */
-        static bool isKeyEqual(const EntityAttrTxtRow& i_left, const EntityAttrTxtRow& i_right);
+        static bool isKeyEqual(const EntityAttrTxtRow & i_left, const EntityAttrTxtRow & i_right);
     };
 
     /** entity_attr_txt table row and language code. */
@@ -1385,10 +1385,10 @@ namespace openm
         string langCode;
 
         /** less comparator by unique key: model id, entity id, attribute name, language code. */
-        static bool uniqueLangKeyLess(const EntityAttrTxtLangRow& i_left, const EntityAttrTxtLangRow& i_right);
+        static bool uniqueLangKeyLess(const EntityAttrTxtLangRow & i_left, const EntityAttrTxtLangRow & i_right);
 
         /** equal comparator by unique key: model id, entity id, attribute name, language code. */
-        static bool uniqueLangKeyEqual(const EntityAttrTxtLangRow& i_left, const EntityAttrTxtLangRow& i_right);
+        static bool uniqueLangKeyEqual(const EntityAttrTxtLangRow & i_left, const EntityAttrTxtLangRow & i_right);
     };
 
     /** group_lst table row. */

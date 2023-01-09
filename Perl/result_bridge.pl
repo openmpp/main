@@ -412,7 +412,7 @@ for my $parameter (@parameters) {
 my $members = $run_sub_count;
 
 # Single run assumed
-my $table_dir = glob("${temp_dir}/${model}/run.*/");
+my $table_dir = glob("${temp_dir}/${model}/run.*/output-tables/");
 
 print "Processing ".(1+$#tables)." tables...\n";
 for my $table (@tables) {
