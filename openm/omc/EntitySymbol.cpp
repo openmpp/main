@@ -234,7 +234,7 @@ void EntitySymbol::create_auxiliary_symbols()
         c += "uint64_t microdata_key = get_microdata_key();";
         c += "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
         c += "int event_id = BaseEvent::current_event_id;";
-        c += "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
+        c += "bool is_same_entity = (event_id == -1) || (BaseEvent::current_entity_id == entity_id);";
         c += "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
         c += "}";
         /*
