@@ -165,6 +165,10 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         // Initial global time for the case
         BaseEvent::set_global_time(-time_infinite);
 
+        // Initialize current entity and current event to -1 (none)
+        BaseEvent::current_entity_id = -1;
+        BaseEvent::current_event_id = -1;
+
         // record the encoded case seed (case_seed + simulation_member in high order bits)
         fmk::combined_seed = fmk::master_seed + fmk::simulation_member * ((long long)fmk::lcg_modulus + 1);
 
