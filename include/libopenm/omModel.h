@@ -257,7 +257,7 @@ namespace openm
         {
             return EVENT_ID_NAME_ARR_LEN > 0 &&
                 (i_eventId == EventIdNameArr[0].eventId ||
-                    0 < i_eventId + 1 && i_eventId + 1 < (int)EVENT_ID_NAME_ARR_LEN);
+                    (0 < i_eventId + 1 && i_eventId + 1 < (int)EVENT_ID_NAME_ARR_LEN));
         }
     };
 
