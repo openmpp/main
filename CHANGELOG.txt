@@ -1,6 +1,14 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-01-17:
+  c++ core: multiple bug fixes in microdata code
+  wiki: updated developer topic Microdata Output
+  add script and instructions how to upgrade production databases schema
+  Go: add microdata support into dbcopy and oms
+  dbcopy: store parameters, output tables and microdata in separate sub-folders
+  oms: additional filters to select microdata more precisely
+
 2022-12-10:
   entity microdata output from model into csv, into trace or database
   c++ core: changes and enhancements were made to EventTrace
