@@ -1025,7 +1025,8 @@ void MetaLoader::parseEntityOptions(void)
 
         for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
 
-            auto [isMdOpt, entName, ent] = parseEntityNameOption(optIt->first, microdataPrefix);
+            auto [isMdOpt, entName, e] = parseEntityNameOption(optIt->first, microdataPrefix);
+            const EntityDicRow * ent = e;
 
             if (!isMdOpt || entName.empty()) continue;  // this is not microdata entity name option
 
