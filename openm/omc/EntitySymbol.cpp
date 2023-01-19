@@ -582,6 +582,15 @@ void EntitySymbol::post_parse(int pass)
         build_body_finalize_links();
         build_body_finalize_multilinks();
         build_body_start_trace();
+
+        // determine all RNG streams used in the entity
+        // by interating rng streams used in entity member functions.
+        for (auto fn : pp_agent_funcs) {
+            for (int rng_stream : fn->rng_streams) {
+                pp_rng_streams.insert(rng_stream);
+            }
+        }
+
         break;
     }
     default:

@@ -158,7 +158,7 @@ table Person Movement //EN Movement
 table Person PopulationByCity //EN Population by city
 {
     {
-        duration() // PY's
+        duration() //EN PY's
     }
     * years_from_start
     * city

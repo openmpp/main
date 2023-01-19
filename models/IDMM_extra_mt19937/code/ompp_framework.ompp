@@ -19,14 +19,6 @@ use "time_based/time_based_common.ompp";
 use "time_based/time_based_scaling_none.ompp";
 #endif
 
-namespace fmk {
-
-    /**
-     * Maximum number of random streams in the model (increase if insufficient)
-     */
-    const int model_streams = 15;
-}
-
 // process development model run options from model ini-file
 void ProcessDevelopmentOptions(const IRunOptions * const i_options)
 {

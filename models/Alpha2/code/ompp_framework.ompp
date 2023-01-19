@@ -27,18 +27,10 @@ options censor_event_time = on;
 //options use_heuristic_short_names = on;
 //options short_name_max_length = 32;
 
-// THe following enables collection and reporting of resource use information for a run.
-options resource_use = on;
+// The following enables collection and reporting of resource use information for a run.
+//options resource_use = on;
 
 #endif
-
-namespace fmk {
-
-    /**
-     * Maximum number of random streams in the model (increase if insufficient)
-     */
-    const int model_streams = 100;
-}
 
 // process development model run options from model ini-file
 void ProcessDevelopmentOptions(const IRunOptions * const i_options)

@@ -23,14 +23,6 @@ use "time_based/time_based_modgen.ompp";        // Modgen API for time-based x-c
 
 #endif // Hide non-C++ syntactic island from IDE
 
-namespace fmk {
-
-    /**
-     * Maximum number of random streams in the model (increase if insufficient)
-     */
-    const int model_streams = 15;
-}
-
 // process development model run options from model ini-file
 void ProcessDevelopmentOptions(const IRunOptions * const i_options)
 {

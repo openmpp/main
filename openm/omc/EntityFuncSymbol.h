@@ -143,9 +143,14 @@ public:
     omc::location defn_loc;
 
     /**
-     * The identifiers in the function body (if developer-suppied)
+     * The identifiers in the function body (if developer-supplied)
      */
     set<string> body_identifiers;
+
+    /**
+     * The RNG streams used in the function body (if developer-supplied)
+     */
+    set<int> rng_streams;
 
     /**
      * The name of the EntityFuncSymbol which implements hooks to the function.

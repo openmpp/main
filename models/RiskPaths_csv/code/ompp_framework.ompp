@@ -23,15 +23,6 @@ options use_heuristic_names = off; // parameter csv files use Dim0, etc.
 
 #endif
 
-namespace fmk {
-
-    /**
-     * Maximum number of random streams in the model (increase if insufficient)
-     */
-    const int model_streams = 100;
-}
-
-
 // process development model run options from model ini-file
 void ProcessDevelopmentOptions(const IRunOptions * const i_options)
 {

@@ -112,6 +112,24 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
             assert(cxx_memfunc_name != "");
             Symbol::memfunc_bodyids.emplace(cxx_memfunc_name, tok_str);
         }
+        else if (tok == token::INTEGER_LITERAL && cxx_tokens.size() >= 3) {
+            // Detect RNG function call with integer constant argument in entity function body
+            // retrieve previous 2 tokens
+            auto it = cxx_tokens.cend();
+            --it;
+            --it;
+            auto tok_prev1 = *it;
+            --it;
+            auto tok_prev2 = *it;
+            if (tok_prev1.first == token::TK_LEFT_PAREN) {
+                if (Symbol::om_rng_functions.count(tok_prev2.second) > 0) {
+                    // is an RNG function call like RandUniform(INTEGER_LITERAL
+                    int rng_stream = std::stoi(tok_str);
+                    // Add stream # to map of all RNG streams in member function
+                    Symbol::memfunc_rngstreams.emplace(cxx_memfunc_name, rng_stream);
+                }
+            }
+        }
     }
 
     //

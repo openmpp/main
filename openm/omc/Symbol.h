@@ -1124,6 +1124,18 @@ public:
     static multimap<string, string> memfunc_bodyids;
 
     /**
+     * Map of member function qualified names to all rng streams used in the body of the function.
+     *
+     * An example entry might be "Person::MortalityEvent" ==> 12.
+     */
+    static multimap<string, int> memfunc_rngstreams;
+
+    /**
+     * Size of an array whose index is a random number stream in this model.
+     */
+    static int size_streams;
+
+    /**
      * Map of member function qualified names to the parameter list of each (as a vector of strings).
      * 
      * Examples:
@@ -1224,24 +1236,33 @@ public:
     static unordered_map<string, token_type> string_token;
 
     /**
-     * The list of om outer keywords.
+     * The set of om outer keywords.
      * 
-     * This is a fixed map independent of any model.  During parsing these keywords cause a
+     * This is a fixed set independent of any model.  During parsing these keywords cause a
      * transition from C++ code to om declarative code islands.  There is an exact one-to-one
-     * relationship between this list and the first block of entries in the list @a token_string.
+     * relationship between this set and the first block of entries in the list @a token_string.
      *
      * @return The om outer keywords.
      */
     static unordered_set<token_type, std::hash<int> > om_outer_keywords;
 
     /**
-     * The list of om developer functions.
+     * The set of om developer functions.
      * 
-     * This is a fixed map independent of any model.  These are C++ functions with fixed names which
-     * are supplied by the om developer in the model source code.  An example is the 'Simulation'
+     * This is a fixed set independent of any model.  These are C++ functions with fixed names
+     * supplied by the om developer in the model source code.  An example is the 'Simulation'
      * function.
      */
     static unordered_set<string> om_developer_functions;
+
+    /**
+     * The set of om random number functions.
+     *
+     * This is a fixed set independent of any model.  These are C++ functions with fixed names which
+     * can be called by the om developer in the model source code.  An example is the 'RandUniform'
+     * function.
+     */
+    static unordered_set<string> om_rng_functions;
 
     /**
      * PreSimulation functions in model code.

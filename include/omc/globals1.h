@@ -36,7 +36,7 @@ void report_simulation_progress_beat(int percent, double value = 0.0);
 void ProgressMessage(const char *msg);
 void TimeReport(double dTime);
 void initialize_model_streams();
-void handle_streams_exceeded(int strm, int model_streams);
+void handle_streams_exceeded(int strm, int max_model_stream);
 void process_trace_options(openm::IRunBase* const i_runBase);
 
 // if defined by model developer then it is called before each model run started

@@ -12,29 +12,31 @@
 *
 * Other content in this module should be considered to be 'private'.
 */
-// Copyright (c) 2013-2018 OpenM++ Contributors
+// Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
+
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
 
 namespace fmk {
 
-	// Stream generators in the simulation (const model_streams is declared in framework module of model)
-	thread_local std::ranlux48 * stream_generators[model_streams];
+	// Stream generators in the simulation
+	thread_local std::ranlux48 * stream_generators[size_streams];
 
 	// Transformation to [0,1)
-	thread_local std::uniform_real_distribution<double> * stream_uniforms[model_streams];
+	thread_local std::uniform_real_distribution<double> * stream_uniforms[size_streams];
 
 	// Is there a random normal in other_normal?
-	thread_local bool other_normal_valid[model_streams] = { false };
+	thread_local bool other_normal_valid[size_streams] = { false };
 
 	// The other normal draw
-	thread_local double other_normal[model_streams];
+	thread_local double other_normal[size_streams];
 
 } // fmk
 
 // Create objects for random streams
 void new_streams()
 {
-	for (int strm = 0; strm < fmk::model_streams; ++strm) {
+	for (int strm = 0; strm < fmk::size_streams; ++strm) {
 		assert(!fmk::stream_generators[strm]);
 		fmk::stream_generators[strm] = new std::ranlux48(0);
 
@@ -46,7 +48,7 @@ void new_streams()
 // Delete objects for random streams
 void delete_streams()
 {
-	for (int strm = 0; strm < fmk::model_streams; ++strm) {
+	for (int strm = 0; strm < fmk::size_streams; ++strm) {
 		assert(fmk::stream_generators[strm]);
 		delete fmk::stream_generators[strm];
 		fmk::stream_generators[strm] = nullptr;
@@ -85,11 +87,11 @@ void initialize_stream(int model_stream, int member, long seed)
 random_state serialize_random_state()
 {
     random_state rs;
-    rs.reserve(3 * fmk::model_streams);
+    rs.reserve(3 * fmk::size_streams);
     const size_t bufsize = 50;
     char wrk[bufsize];
     std::stringstream ss;
-    for (int j = 0; j < fmk::model_streams; ++j) {
+    for (int j = 0; j < fmk::size_streams; ++j) {
         ss.str("");
         ss << *fmk::stream_generators[j];
         rs.push_back(ss.str());
@@ -115,7 +117,7 @@ random_state serialize_random_state()
  */
 void deserialize_random_state(const random_state & rs)
 {
-    for (int j = 0, k = 0; j < fmk::model_streams; ++j) {
+    for (int j = 0, k = 0; j < fmk::size_streams; ++j) {
         std::stringstream ss;
         ss.str(rs[k++]);
         ss >> *fmk::stream_generators[j];
@@ -134,10 +136,10 @@ void deserialize_random_state(const random_state & rs)
 
 double RandUniform(int strm)
 {
-	assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
-    if (strm > fmk::model_streams) {
+	assert(strm < fmk::size_streams);
+    if (strm >= fmk::size_streams) {
         // The stream number exceeds the maximum number of streams.
-        handle_streams_exceeded(strm, fmk::model_streams);
+        handle_streams_exceeded(strm, fmk::size_streams - 1);
         // not reached
     }
 
@@ -150,10 +152,10 @@ double RandUniform(int strm)
 
 double RandNormal(int strm)
 {
-    assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
-    if (strm > fmk::model_streams) {
+    assert(strm < fmk::size_streams);
+    if (strm >= fmk::size_streams) {
         // The stream number exceeds the maximum number of streams.
-        handle_streams_exceeded(strm, fmk::model_streams);
+        handle_streams_exceeded(strm, fmk::size_streams - 1);
         // not reached
     }
 
@@ -170,7 +172,7 @@ double RandNormal(int strm)
             y = 2.0 * RandUniform(strm) - 1.0;
             r2 = x * x + y * y;
         }
-        double scale = sqrt(-2.0 * log(r2) / r2);
+        double scale = std::sqrt(-2.0 * std::log(r2) / r2);
         double n1 = scale * x;
         double n2 = scale * y;
         fmk::other_normal[strm] = n2;
@@ -181,15 +183,15 @@ double RandNormal(int strm)
 
 double RandLogistic(int strm)
 {
-    assert(strm < fmk::model_streams); // If assertion fails, increase model_streams in framework module of model.
-    if (strm > fmk::model_streams) {
+    assert(strm < fmk::size_streams);
+    if (strm >= fmk::size_streams) {
         // The stream number exceeds the maximum number of streams.
-        handle_streams_exceeded(strm, fmk::model_streams);
+        handle_streams_exceeded(strm, fmk::size_streams - 1);
         // not reached
     }
 
     double p = RandUniform(strm);
     double odds_ratio = p / (1.0 - p);
-    double x = log(odds_ratio);
+    double x = std::log(odds_ratio);
     return x;
 }

@@ -2,7 +2,7 @@
 * @file    EntitySymbol.h
 * Declares the EntitySymbol derived class of the Symbol class.
 */
-// Copyright (c) 2013-2015 OpenM++
+// Copyright (c) 2013-2022 OpenM++ contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -346,6 +346,16 @@ public:
      * The value of the multimap is the name of the 'from' function.
      */
     multimap<string,string> pp_hooks_with_order;
+
+    /**
+     * The RNG streams used in the entity
+     *
+     * Includes RNG streams used in the entity member functions,
+     * e.g. calls like RandUniform(12)
+     * as well as use of RNG streams in entity sets,
+     * e.g. 
+     */
+    set<int> pp_rng_streams;
 
     /**
      * Create event to support self-scheduling derived attributes.

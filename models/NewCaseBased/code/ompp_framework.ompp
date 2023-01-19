@@ -17,33 +17,29 @@
 
 use "common.ompp";                              // Required
 
-// Select exactly one of the following lines and comment the others
+// Select RNG (required)
 use "random/random_lcg41.ompp";                 // Stream RNGs use 41 linear congruential generators (Modgen-compatible)
 
-// Select exactly one of the following lines and comment the others
+// Select RNG for case seeds (required)
 use "case_based/case_based_lcg41.ompp";         // Case seed RNGs use 41 linear congruential generators (Modgen-compatible)
 
 use "case_based/case_based_core.ompp";          // Required for case-based models
 
-// Select exactly one of the following lines and comment the others
+// Select method to specify number of cases in a run (required)
 use "case_based/case_based_cases_per_run_exogenous.ompp"; // Specify number of cases as cases per run in parameter SimulationCases
 //use "case_based/case_based_cases_per_member_exogenous.ompp"; // Specify number of cases as cases per member in parameter CasesPerMember
  
-// Select exactly one of the following lines and comment the others
+// Select method for population scaling (required)
 use "case_based/case_based_scaling_none.ompp";  // No population scaling
+
+// Select method to compute entity table run-level results
+//options measures_method = average;  // Compute expression for each sub, then average over subs (recommended)
+options measures_method = aggregate; // Aggregate measures over subs, then compute expression (Modgen compatible)
 
 use "common_modgen.ompp";                       // Modgen API implementation for x-compatible models (optional)
 use "case_based/case_based_modgen.ompp";        // Modgen API implementation for x-compatible case-based models (optional)
 
 #endif // Hide non-C++ syntactic island from IDE
-
-namespace fmk {
-
-    /**
-     * Maximum number of random streams in the model (increase if insufficient)
-     */
-    const int model_streams = 100;
-}
 
 // process development model run options from model ini-file
 void ProcessDevelopmentOptions(const IRunOptions * const i_options)

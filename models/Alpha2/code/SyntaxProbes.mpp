@@ -472,3 +472,14 @@ table Person EyeColourToBrown
     self_scheduling_split(age, AGE_GROUP)+
     * { event(entrances(eye_colour, EC_BROWN)) }
 };
+
+
+actor Person {
+    int compute_stuff(int arg);
+    int stuff = compute_stuff(4);
+};
+
+int Person::compute_stuff(int arg)
+{
+    return arg;
+}

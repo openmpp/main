@@ -127,6 +127,10 @@ list<AggregationSymbol *> Symbol::pp_all_aggregations;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
+multimap<string, int> Symbol::memfunc_rngstreams;
+
+int Symbol::size_streams = 0;
+
 map<string, vector<string> > Symbol::memfunc_parmlist;
 
 map<string, omc::location> Symbol::memfunc_defn_loc;
@@ -531,7 +535,6 @@ unordered_map<string, token_type> Symbol::string_token =
     { "TIME_UNDEF", token::TK_time_undef },
 };
 
-
 unordered_set<string> Symbol::om_developer_functions =
 {
     "Simulation",
@@ -541,6 +544,13 @@ unordered_set<string> Symbol::om_developer_functions =
     "PreSimulation",
     "UserTables",
     "ProcessDevelopmentOptions",
+};
+
+unordered_set<string> Symbol::om_rng_functions =
+{
+    "RandUniform",
+    "RandNormal",
+    "RandLogistic",
 };
 
 comment_map_type Symbol::cxx_comments;

@@ -304,6 +304,27 @@ void CodeGen::do_preamble()
     }
     c += "";
 
+    {
+        // Declaration of the maximum random number stream in the model
+        int max_rng_stream = 0;
+        for (auto entity : Symbol::pp_all_agents) {
+            for (int rng_stream : entity->pp_rng_streams) {
+                if (rng_stream > max_rng_stream) {
+                    max_rng_stream = rng_stream;
+                }
+            }
+        }
+        Symbol::size_streams = max_rng_stream + 1;
+
+        theLog->logFormatted("Maximum random stream = %d", Symbol::size_streams - 1);
+
+        t0 += "namespace fmk {";
+        t0 +=     doxygen_short("Size of an array whose index is a random number stream in this model.");
+        t0 +=     "constexpr int size_streams = " + std::to_string(Symbol::size_streams) + ";";
+        t0 += "}";
+        t0 += "";
+    }
+
     // om_fixed_parms.cpp
 	z += "";
     z += "#include \"omc/cumrate.h\"";

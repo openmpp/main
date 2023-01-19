@@ -8,10 +8,16 @@
 // Copyright (c) 2013-2017 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 parameters {
     //EN Simulation starting seed
     long long SimulationSeed;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
 
 namespace fmk {
 
@@ -217,18 +223,16 @@ double get_global_time()
  */
 void initialize_model_streams()
 {
-    using namespace fmk;
-
     long stream_seed = fmk::master_seed;
-    for (int model_stream = 0; model_stream < model_streams; model_stream++) {
+    for (int model_stream = 0; model_stream < fmk::size_streams; model_stream++) {
         // initialize_stream is generator-specific - defined in random/random_YYY.ompp.
         // Note that streams vary by simulation_member as well as stream_seed.
-        initialize_stream(model_stream, simulation_member, stream_seed);
+        initialize_stream(model_stream, fmk::simulation_member, stream_seed);
 		// Use fixed integral-congruential generator (with multiplier model_stream_seed_generator)
 		// to create seeds for streams.
-        long long product = model_stream_seed_generator;
+        long long product = fmk::model_stream_seed_generator;
         product *= stream_seed;
-        stream_seed = product % lcg_modulus;
+        stream_seed = product % fmk::lcg_modulus;
     }
 }
 
@@ -443,17 +447,16 @@ void handle_bounds_error(
 }
 
 /**
- * Handles situation where the maximum number of random streams is exceeded.
+ * Handles situation where the maximum random stream is exceeded.
  */
 void handle_streams_exceeded(
     int strm, 
-    int model_streams)
+    int max_model_stream)
 {
     // The stream number exceeds the maximum number of streams.
     std::stringstream ss;
     ss  << LT("error : stream number ") << strm
-        << LT(" exceeds the maximum number of streams ") << model_streams << LT(".")
-        << LT(" Increase the number of streams in ompp_framework.ompp.")
+        << LT(" exceeds the maximum ") << max_model_stream << LT(".")
         ;
     ModelExit(ss.str().c_str());
 }
