@@ -559,6 +559,23 @@ void EntitySymbol::post_parse(int pass)
         // assign direct pointer to builtin member 'time' for use post-parse
         pp_time = dynamic_cast<BuiltinAttributeSymbol *>(get_symbol("time", this));
         assert(pp_time); // parser guarantee
+
+        {
+            // determine if local rng generators are requested for this entity kind
+            // (default is false)
+            // examine options multimap for entity_has_rng_streams = name of this entity
+            string key = "entity_has_rng_streams";
+            //auto iter = options.find(key);
+            auto range = options.equal_range(key);
+            for (auto it = range.first; it != range.second; ++it) {
+                if (name == it->second) {
+                    // found entity_has_rng_streams = name of this entity
+                    pp_entity_has_rng_streams = true;
+                    break;
+                }
+            }
+        }
+
         break;
     }
     case ePopulateCollections:

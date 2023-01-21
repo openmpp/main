@@ -65,6 +65,7 @@ public:
         , ss_event(nullptr)
         , next_ss_id(0)
         , pp_entity_id(-1)
+        , pp_entity_has_rng_streams(false)
     {
         create_auxiliary_symbols();
         // Place in earliest sorting group so that missing symbols. e.g. case_id
@@ -405,5 +406,10 @@ public:
      * Numeric identifier. Used for communicating with metadata API.
      */
     int pp_entity_id;
+
+    /**
+     * Indicates if RNG streams are maintained in each entity of this kind.
+     */
+    bool pp_entity_has_rng_streams;
 };
 

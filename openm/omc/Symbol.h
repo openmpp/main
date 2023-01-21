@@ -1368,7 +1368,7 @@ public:
     /**
      * All key-value pairs given in options statements in model code.
      */
-    static unordered_map<string, string> options;
+    static unordered_multimap<string, string> options;
 
     /**
      * true if event_trace capability is requested in options statement.

@@ -607,7 +607,7 @@ int Symbol::post_parse_errors = 0;
 
 int Symbol::post_parse_warnings = 0;
 
-unordered_map<string, string> Symbol::options;
+unordered_multimap<string, string> Symbol::options;
 
 bool Symbol::option_event_trace = false;
 
@@ -2216,6 +2216,16 @@ void Symbol::defaults_and_options()
             else if (value == "off") {
                 option_censor_event_time = false;
             }
+        }
+    }
+
+    {
+        string key = "entity_has_rng_streams";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            // Can't validate or process this option here
+            // because pp_all_agents has not bben created by post_parse_all
+            // Note: multiple entries allowed, unlike other options.
         }
     }
 

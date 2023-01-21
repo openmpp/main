@@ -727,13 +727,19 @@ option:
                             // check for possible clash in model source specifying same key
                             auto srch = Symbol::options.find(*$key);
                             if (srch != Symbol::options.end()) {
-                                // value for key already specified in model source
+                                // key already specified in model source with different value
                                 if (srch->second != *$value) {
-                                    error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (srch->second) + LT("'"));
+                                    if (*$key == "entity_has_rng_streams") {
+                                        // special case, allow multiple options statements
+                                    }
+                                    else {
+                                        error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (srch->second) + LT("'"));
+                                    }
                                 }
                             }
                             // place key-value pair in options collection
-                            Symbol::options[*$key] = *$value;
+                            //Symbol::options[*$key] = *$value;
+                            Symbol::options.insert(Symbol::options.begin(), pair<string,string>(*$key, *$value));
                             // prepare for another possible key-value pair
                             pc.next_word_is_string = true;
                         }
