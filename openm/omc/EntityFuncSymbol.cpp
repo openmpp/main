@@ -75,13 +75,26 @@ void EntityFuncSymbol::post_parse(int pass)
 
             {
                 // Construct the set of all RNG streams used in the function body.
-                auto rng = memfunc_rngstreams.equal_range(unique_name);
+                auto rng = memfunc_rng_streams.equal_range(unique_name);
                 for_each(
                     rng.first,
                     rng.second,
                     [&](unordered_multimap<string, int>::value_type& vt)
                     {
                         rng_streams.insert(vt.second);
+                    }
+                );
+            }
+
+            {
+                // Construct the set of all RNG Normal streams used in the function body.
+                auto rng = memfunc_rng_normal_streams.equal_range(unique_name);
+                for_each(
+                    rng.first,
+                    rng.second,
+                    [&](unordered_multimap<string, int>::value_type& vt)
+                    {
+                        rng_normal_streams.insert(vt.second);
                     }
                 );
             }

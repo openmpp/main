@@ -359,6 +359,14 @@ public:
     set<int> pp_rng_streams;
 
     /**
+     * The RNG Normal streams used in the entity
+     *
+     * Includes RNG Normal streams used in the entity member functions,
+     * e.g. calls like RandNormal(12)
+     */
+    set<int> pp_rng_normal_streams;
+
+    /**
      * Create event to support self-scheduling derived attributes.
      * 
      * If not already created, create an event symbol and associated event time and event implement

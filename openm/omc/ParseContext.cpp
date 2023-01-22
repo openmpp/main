@@ -123,10 +123,16 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
             auto tok_prev2 = *it;
             if (tok_prev1.first == token::TK_LEFT_PAREN) {
                 if (Symbol::om_rng_functions.count(tok_prev2.second) > 0) {
-                    // is an RNG function call like RandUniform(INTEGER_LITERAL
+                    // is an RNG function call like RandUniform(INTEGER_LITERAL)
                     int rng_stream = std::stoi(tok_str);
                     // Add stream # to map of all RNG streams in member function
-                    Symbol::memfunc_rngstreams.emplace(cxx_memfunc_name, rng_stream);
+                    Symbol::memfunc_rng_streams.emplace(cxx_memfunc_name, rng_stream);
+                }
+                if (tok_prev2.second == "RandNormal") {
+                    // is an RNG function call like RandNormal(INTEGER_LITERAL)
+                    int rng_stream = std::stoi(tok_str);
+                    // Add stream # to map of all RNG Normal streams in member function
+                    Symbol::memfunc_rng_normal_streams.emplace(cxx_memfunc_name, rng_stream);
                 }
             }
         }

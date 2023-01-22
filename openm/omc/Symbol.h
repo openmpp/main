@@ -1128,7 +1128,14 @@ public:
      *
      * An example entry might be "Person::MortalityEvent" ==> 12.
      */
-    static multimap<string, int> memfunc_rngstreams;
+    static multimap<string, int> memfunc_rng_streams;
+
+    /**
+     * Map of member function qualified names to all rng Normal streams used in the body of the function.
+     *
+     * An example entry might be "Person::MortalityEvent" ==> 12.
+     */
+    static multimap<string, int> memfunc_rng_normal_streams;
 
     /**
      * Size of an array whose index is a random number stream in this model.

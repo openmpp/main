@@ -127,7 +127,9 @@ list<AggregationSymbol *> Symbol::pp_all_aggregations;
 
 multimap<string, string> Symbol::memfunc_bodyids;
 
-multimap<string, int> Symbol::memfunc_rngstreams;
+multimap<string, int> Symbol::memfunc_rng_streams;
+
+multimap<string, int> Symbol::memfunc_rng_normal_streams;
 
 int Symbol::size_streams = 0;
 

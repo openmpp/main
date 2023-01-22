@@ -317,6 +317,11 @@ void CodeGen::do_preamble()
         Symbol::size_streams = max_rng_stream + 1;
 
         theLog->logFormatted("Maximum random stream = %d", Symbol::size_streams - 1);
+        for (auto ent : Symbol::pp_all_agents) {
+            if (ent->pp_entity_has_rng_streams) {
+                theLog->logFormatted("Entity '%s' has %d random streams", ent->name.c_str(), ent->pp_rng_streams.size());
+            }
+        }
 
         t0 += "namespace fmk {";
         t0 +=     doxygen_short("Size of an array whose index is a random number stream in this model.");
@@ -1166,7 +1171,7 @@ void CodeGen::do_entities()
 
         for ( auto func_member : entity->pp_agent_funcs ) {
             // MSVC in VS 2019/2022 crashes when optimization on with C1001 Internal compiler error
-            // ff the following functions are large.
+            // if the following functions are large.
             // Workaround is to disable optimization for these specific functions.
             bool msvc_workaround_needed =
                 (func_member->name == "om_initialize_data_members0")
@@ -1256,16 +1261,100 @@ void CodeGen::do_entities()
 	    h += "";
 	    c += "";
 
-        h += "// The declaration of the static member " + entity->name;
-        h += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
+        h += doxygen_short("The static member used to retrieve (zero) values when dereferencing nullptr link attributes.");
         h += "static thread_local " + entity->name + " " + "om_null_entity;";
+        h += "";
 
+        c += "thread_local " + entity->name + " " + entity->name + "::om_null_entity;";
+        c += "";
+
+        if (entity->pp_entity_has_rng_streams && entity->pp_rng_streams.size() > 0) {
+            // Entity has local RNG streams
+
+            // Note that Symbol::size_streams has the same value as fmk::size_streams in model generated code
+
+            const int& size_entity_streams = entity->pp_rng_streams.size();
+
+            h += doxygen_short("The static map from RNG stream number to index in RNG state array.");
+            h += "static const int om_rng_stream_to_storage[fmk::size_streams];";
+            h += "";
+            string init;
+            int j = 0; // index into local RNG state array
+            for (int i = 0; i < Symbol::size_streams; ++i) {
+                if (entity->pp_rng_streams.count(i)) {
+                    init += to_string(j) + ",";
+                    ++j;
+                }
+                else {
+                    init += "-1,"; // the RNG stream number is not used in this entity kind.
+                }
+            }
+            c += "const int " + entity->name + "::om_rng_stream_to_storage[fmk::size_streams] = {" + init + "};";
+            c += "";
+
+            h += doxygen_short("RNG state: Current value of the generator");
+            h += "std::array<long, " + to_string(entity->pp_rng_streams.size()) + "> om_stream_seeds{};";
+            h += "";
+
+            h += doxygen_short("The member function RandUniform which replaces the global RandUniform for this entity kind.");
+            h += "double RandUniform(int strm)";
+            h += "{";
+            h +=     "return 0.5; // Placeholder";
+            h += "}";
+            h += "";
+
+            h += doxygen_short("The member function RandLogistic which replaces the global RandLogistic for this entity kind.");
+            h += "double RandLogistic(int strm)";
+            h += "{";
+            h += "return 0.5; // Placeholder";
+            h += "}";
+            h += "";
+        }
+
+        // The following code block is a near-copy of the previous block.
+        // For storage efficiency, RNG Normal streams (RandNormal calls in code) have their own state arrays.
+        if (entity->pp_entity_has_rng_streams && entity->pp_rng_normal_streams.size() > 0) {
+            // Entity has local RNG Normal streams
+
+            // Note that Symbol::size_streams has the same value as fmk::size_streams in model generated code
+
+            const int& size_entity_streams = entity->pp_rng_normal_streams.size();
+
+            h += doxygen_short("The static map from RNG stream number to index in RNG Normal state arrays.");
+            h += "static const int om_rng_stream_to_normal_storage[fmk::size_streams];";
+            h += "";
+            string init;
+            int j = 0; // index into local RNG state array
+            for (int i = 0; i < Symbol::size_streams; ++i) {
+                if (entity->pp_rng_normal_streams.count(i)) {
+                    init += to_string(j) + ",";
+                    ++j;
+                }
+                else {
+                    init += "-1,"; // the RNG stream number is not used in RandNormal in this entity kind.
+                }
+            }
+            c += "const int " + entity->name + "::om_rng_stream_to_normal_storage[fmk::size_streams] = {" + init + "};";
+            c += "";
+
+            h += doxygen_short("RNG Normal state: Other Normal value");
+            h += "std::array<double, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal{};";
+            h += "";
+
+            h += doxygen_short("RNG Normal state: Other Normal value is valid");
+            h += "std::array<bool, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal_valid{};";
+            h += "";
+
+            h += doxygen_short("The member function RandNormal which replaces the global RandNormal for this entity kind.");
+            h += "double RandNormal(int strm)";
+            h += "{";
+            h += "return 0.5; // Placeholder";
+            h += "}";
+            h += "";
+        }
 	    h += "}; // class " + entity->name;
 	    h += "";
 
-        c += "// The definition of the static member " + entity->name;
-        c += "// used to retrieve (zero) values when dereferencing nullptr link attributes.";
-        c += "thread_local " + entity->name + " " + entity->name + "::om_null_entity;";
     }
 
     c += doxygen("Free all zombie agents");

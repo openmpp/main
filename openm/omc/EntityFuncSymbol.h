@@ -153,6 +153,11 @@ public:
     set<int> rng_streams;
 
     /**
+     * The RNG Normal streams used in the function body (if developer-supplied)
+     */
+    set<int> rng_normal_streams;
+
+    /**
      * The name of the EntityFuncSymbol which implements hooks to the function.
      *
      * @param to_name Function being hooked to
