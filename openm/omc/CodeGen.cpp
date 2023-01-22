@@ -1276,8 +1276,6 @@ void CodeGen::do_entities()
             const int& size_entity_streams = entity->pp_rng_streams.size();
 
             h += doxygen_short("The static map from RNG stream number to index in RNG state array.");
-            h += "static const int om_rng_stream_to_storage[fmk::size_streams];";
-            h += "";
             string init;
             int j = 0; // index into local RNG state array
             for (int i = 0; i < Symbol::size_streams; ++i) {
@@ -1289,24 +1287,42 @@ void CodeGen::do_entities()
                     init += "-1,"; // the RNG stream number is not used in this entity kind.
                 }
             }
-            c += "const int " + entity->name + "::om_rng_stream_to_storage[fmk::size_streams] = {" + init + "};";
-            c += "";
+            h += "static inline const int om_rng_stream_to_storage[fmk::size_streams] = {" + init + "};";
+            h += "";
 
-            h += doxygen_short("RNG state: Current value of the generator");
+            h += doxygen_short("RNG state: Current value of the RNG");
             h += "std::array<long, " + to_string(entity->pp_rng_streams.size()) + "> om_stream_seeds{};";
+            h += "";
+
+            h += doxygen_short("RNG stream modulus (equal to 2^31 - 1)");
+            h += "static const long om_lcg_modulus = 2147483647;";
+            h += "";
+
+            h += doxygen_short("RNG stream generator");
+            h += "static const long om_stream_generator = 1187848453;";
             h += "";
 
             h += doxygen_short("The member function RandUniform which replaces the global RandUniform for this entity kind.");
             h += "double RandUniform(int strm)";
             h += "{";
-            h +=     "return 0.5; // Placeholder";
+            h +=     "int rng_index = om_rng_stream_to_storage[strm];";
+            h +=     "assert(rng_index >= 0 && rng_index < om_stream_seeds.size());";
+            h +=     "long seed = om_stream_seeds[rng_index];";
+            h +=     "long long product = om_stream_generator;";
+            h +=     "product *= seed;";
+            h +=     "seed = product % om_lcg_modulus;";
+            h +=     "om_stream_seeds[rng_index] = seed;";
+            h +=     "return (double)seed / (double)om_lcg_modulus;";
             h += "}";
             h += "";
 
             h += doxygen_short("The member function RandLogistic which replaces the global RandLogistic for this entity kind.");
             h += "double RandLogistic(int strm)";
             h += "{";
-            h += "return 0.5; // Placeholder";
+            h +=     "double p = RandUniform(strm);";
+            h +=     "double odds_ratio = p / (1.0 - p);";
+            h +=     "double x = std::log(odds_ratio);";
+            h +=     "return x;";
             h += "}";
             h += "";
         }
@@ -1321,8 +1337,6 @@ void CodeGen::do_entities()
             const int& size_entity_streams = entity->pp_rng_normal_streams.size();
 
             h += doxygen_short("The static map from RNG stream number to index in RNG Normal state arrays.");
-            h += "static const int om_rng_stream_to_normal_storage[fmk::size_streams];";
-            h += "";
             string init;
             int j = 0; // index into local RNG state array
             for (int i = 0; i < Symbol::size_streams; ++i) {
@@ -1334,8 +1348,8 @@ void CodeGen::do_entities()
                     init += "-1,"; // the RNG stream number is not used in RandNormal in this entity kind.
                 }
             }
-            c += "const int " + entity->name + "::om_rng_stream_to_normal_storage[fmk::size_streams] = {" + init + "};";
-            c += "";
+            h += "static inline const int om_rng_stream_to_normal_storage[fmk::size_streams] = {" + init + "};";
+            h += "";
 
             h += doxygen_short("RNG Normal state: Other Normal value");
             h += "std::array<double, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal{};";
@@ -1348,7 +1362,28 @@ void CodeGen::do_entities()
             h += doxygen_short("The member function RandNormal which replaces the global RandNormal for this entity kind.");
             h += "double RandNormal(int strm)";
             h += "{";
-            h += "return 0.5; // Placeholder";
+            h +=     "int rng_normal_index = om_rng_stream_to_normal_storage[strm];";
+            h +=     "assert(rng_normal_index >= 0 && rng_normal_index < om_other_normal.size());";
+            h +=     "if (om_other_normal_valid[rng_normal_index]) {";
+            h +=         "om_other_normal_valid[rng_normal_index] = false;";
+            h +=         "return om_other_normal[rng_normal_index];";
+            h +=     "}";
+            h +=     "else {";
+            h +=         "double r2 = 1;";
+            h +=         "double x = 0;";
+            h +=         "double y = 0;";
+            h +=         "while (r2 >= 1) {";
+            h +=             "x = 2.0 * RandUniform(strm) - 1.0;";
+            h +=             "y = 2.0 * RandUniform(strm) - 1.0;";
+            h +=             "r2 = x * x + y * y;";
+            h +=         "}";
+            h +=         "double scale = std::sqrt(-2.0 * std::log(r2) / r2);";
+            h +=         "double n1 = scale * x;";
+            h +=         "double n2 = scale * y;";
+            h +=         "om_other_normal[rng_normal_index] = n2;";
+            h +=         "om_other_normal_valid[rng_normal_index] = true;";
+            h +=         "return n1;";
+            h +=     "}";
             h += "}";
             h += "";
         }
