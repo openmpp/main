@@ -51,6 +51,8 @@
 
 #include "omc/macros0.h"
 
+#include "omc/framework.h"
+
 #include "custom_early.h" // developer-supplied model-specific declarations and includes (early)
 
 // Make logical a synonym for bool in C++ model code.
