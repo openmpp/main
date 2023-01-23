@@ -551,6 +551,29 @@ void EntitySymbol::post_parse(int pass)
             }
         }
 
+        {
+            // determine if local rng generators are requested for this entity kind
+            // examine options multimap for entity_has_rng_streams = name of this entity
+            string key = "entity_has_rng_streams";
+            pp_local_rng_streams_requested = false;
+            auto range = options.equal_range(key);
+            for (auto it = range.first; it != range.second; ++it) {
+                if (name == it->second) {
+                    // found entity_has_rng_streams = name of this entity
+                    pp_local_rng_streams_requested = true;
+                    break;
+                }
+            }
+
+            if (pp_local_rng_streams_requested) {
+                string nm = "om_local_rng_streams_initialized";
+                auto sym = Symbol::get_symbol(nm, this);
+                BoolSymbol* typ = BoolSymbol::find();
+                auto mem = new EntityInternalSymbol(nm, this, typ, "false");
+                assert(mem);
+            }
+        }
+
         break;
     }
 
@@ -559,22 +582,6 @@ void EntitySymbol::post_parse(int pass)
         // assign direct pointer to builtin member 'time' for use post-parse
         pp_time = dynamic_cast<BuiltinAttributeSymbol *>(get_symbol("time", this));
         assert(pp_time); // parser guarantee
-
-        {
-            // determine if local rng generators are requested for this entity kind
-            // (default is false)
-            // examine options multimap for entity_has_rng_streams = name of this entity
-            string key = "entity_has_rng_streams";
-            //auto iter = options.find(key);
-            auto range = options.equal_range(key);
-            for (auto it = range.first; it != range.second; ++it) {
-                if (name == it->second) {
-                    // found entity_has_rng_streams = name of this entity
-                    pp_entity_has_rng_streams = true;
-                    break;
-                }
-            }
-        }
 
         break;
     }
@@ -586,6 +593,21 @@ void EntitySymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
+        // Determine all RNG streams used in the entity
+        // by interating rng streams used in entity member functions.
+        // Ditto for all RNG Normal streams.
+        for (auto fn : pp_agent_funcs) {
+            for (int rng_stream : fn->rng_streams) {
+                pp_rng_streams.insert(rng_stream);
+            }
+            for (int rng_normal_stream : fn->rng_normal_streams) {
+                pp_rng_normal_streams.insert(rng_normal_stream);
+            }
+        }
+
+        // Determine if local rng streams for this entity are both requested and in model code.
+        pp_local_rng_streams_present = pp_local_rng_streams_requested && pp_rng_streams.size() > 0;
+
         // construct function bodies.
         build_body_assign_member_offsets();
         build_body_initialize_data_members();
@@ -599,18 +621,6 @@ void EntitySymbol::post_parse(int pass)
         build_body_finalize_links();
         build_body_finalize_multilinks();
         build_body_start_trace();
-
-        // Determine all RNG streams used in the entity
-        // by interating rng streams used in entity member functions.
-        // Ditto for all RNG Normal streams.
-        for (auto fn : pp_agent_funcs) {
-            for (int rng_stream : fn->rng_streams) {
-                pp_rng_streams.insert(rng_stream);
-            }
-            for (int rng_normal_stream : fn->rng_normal_streams) {
-                pp_rng_normal_streams.insert(rng_normal_stream);
-            }
-        }
 
         break;
     }
@@ -671,6 +681,25 @@ void EntitySymbol::build_body_initialize_data_members()
         c += "";
         c += "// built-in attribute for a model with weights";
         c += "entity_weight.initialize(get_initial_weight());";
+    }
+    if (pp_local_rng_streams_present) {
+        c += "";
+        c += "// Entity has local RNG streams";
+        c += "// Initialize them to 1.";
+        c += "// Value will be replaced by a subsequent call to initialize_local_rng_streams()";
+        c += "for (auto& val : om_stream_seeds) {";
+        c +=     "val = 1;";
+        c += "}";
+        if (pp_rng_normal_streams.size() > 0) {
+            c += "// Entity has local RNG Normal streams.";
+            c += "// Initialize them to 'no available other N(0,1) value'";
+            c += "for (auto &val : om_other_normal_valid) {";
+            c +=     "val = false;";
+            c += "}";
+            c += "for (auto &val : om_other_normal) {";
+            c +=     "val = 0.0;";
+            c += "}";
+        }
     }
 }
 

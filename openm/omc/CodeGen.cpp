@@ -316,10 +316,16 @@ void CodeGen::do_preamble()
         }
         Symbol::size_streams = max_rng_stream + 1;
 
-        theLog->logFormatted("Maximum random stream = %d", Symbol::size_streams - 1);
+        theLog->logFormatted("Largest random stream in model is %d", Symbol::size_streams - 1);
+
         for (auto ent : Symbol::pp_all_agents) {
-            if (ent->pp_entity_has_rng_streams) {
-                theLog->logFormatted("Entity '%s' has %d random streams", ent->name.c_str(), ent->pp_rng_streams.size());
+            if (ent->pp_local_rng_streams_requested) {
+                theLog->logFormatted(
+                    "Entity '%s' has %d local random streams, of which %d are Normal",
+                    ent->name.c_str(),
+                    ent->pp_rng_streams.size(),
+                    ent->pp_rng_normal_streams.size()
+                );
             }
         }
 
@@ -1268,14 +1274,12 @@ void CodeGen::do_entities()
         c += "thread_local " + entity->name + " " + entity->name + "::om_null_entity;";
         c += "";
 
-        if (entity->pp_entity_has_rng_streams && entity->pp_rng_streams.size() > 0) {
+        if (entity->pp_local_rng_streams_present) {
             // Entity has local RNG streams
 
             // Note that Symbol::size_streams has the same value as fmk::size_streams in model generated code
 
-            const int& size_entity_streams = entity->pp_rng_streams.size();
-
-            h += doxygen_short("The static map from RNG stream number to index in RNG state array.");
+            h += doxygen_short("The static map from RNG stream number to index in RNG local state array.");
             string init;
             int j = 0; // index into local RNG state array
             for (int i = 0; i < Symbol::size_streams; ++i) {
@@ -1290,103 +1294,137 @@ void CodeGen::do_entities()
             h += "static inline const int om_rng_stream_to_storage[fmk::size_streams] = {" + init + "};";
             h += "";
 
-            h += doxygen_short("RNG state: Current value of the RNG");
+            h += doxygen_short("RNG local state array: Current value of the RNG");
             h += "std::array<long, " + to_string(entity->pp_rng_streams.size()) + "> om_stream_seeds{};";
             h += "";
 
-            h += doxygen_short("RNG stream modulus (equal to 2^31 - 1)");
-            h += "static const long om_lcg_modulus = 2147483647;";
-            h += "";
-
             h += doxygen_short("RNG stream generator");
-            h += "static const long om_stream_generator = 1187848453;";
+            h += "static const long om_stream_generator = 1187848453; // unused generator from $OM_ROOT/use/random/random_lcg200.ompp";
             h += "";
 
             h += doxygen_short("The member function RandUniform which replaces the global RandUniform for this entity kind.");
             h += "double RandUniform(int strm)";
             h += "{";
+            h +=     "if (!om_local_rng_streams_initialized) {";
+            h +=         "throw openm::SimulationException(LT(\"RandUniform called with uninitialized local RNG streams.\"));";
+            h +=     "}";
+            h +=     "// code adapted from $OM_ROOT/use/random/random_lcg200.ompp";
+            h +=     "";
             h +=     "int rng_index = om_rng_stream_to_storage[strm];";
             h +=     "assert(rng_index >= 0 && rng_index < om_stream_seeds.size());";
             h +=     "long seed = om_stream_seeds[rng_index];";
             h +=     "long long product = om_stream_generator;";
             h +=     "product *= seed;";
-            h +=     "seed = product % om_lcg_modulus;";
+            h +=     "seed = product % fmk::lcg_modulus;";
             h +=     "om_stream_seeds[rng_index] = seed;";
-            h +=     "return (double)seed / (double)om_lcg_modulus;";
+            h +=     "return (double)seed / (double)fmk::lcg_modulus;";
             h += "}";
             h += "";
 
             h += doxygen_short("The member function RandLogistic which replaces the global RandLogistic for this entity kind.");
             h += "double RandLogistic(int strm)";
             h += "{";
+            h +=     "// code adapted from $OM_ROOT/use/random/random_lcg200.ompp";
+            h +=     "";
             h +=     "double p = RandUniform(strm);";
             h +=     "double odds_ratio = p / (1.0 - p);";
             h +=     "double x = std::log(odds_ratio);";
             h +=     "return x;";
             h += "}";
             h += "";
-        }
 
-        // The following code block is a near-copy of the previous block.
-        // For storage efficiency, RNG Normal streams (RandNormal calls in code) have their own state arrays.
-        if (entity->pp_entity_has_rng_streams && entity->pp_rng_normal_streams.size() > 0) {
-            // Entity has local RNG Normal streams
+            // The following code block is a near-copy of code above.
+            // For storage efficiency, RNG Normal streams (RandNormal calls in code) have their own local state arrays.
+            if (entity->pp_rng_normal_streams.size() > 0) {
+                // Entity has local RNG Normal streams
 
-            // Note that Symbol::size_streams has the same value as fmk::size_streams in model generated code
+                // Note that Symbol::size_streams has the same value as fmk::size_streams in model generated code
 
-            const int& size_entity_streams = entity->pp_rng_normal_streams.size();
-
-            h += doxygen_short("The static map from RNG stream number to index in RNG Normal state arrays.");
-            string init;
-            int j = 0; // index into local RNG state array
-            for (int i = 0; i < Symbol::size_streams; ++i) {
-                if (entity->pp_rng_normal_streams.count(i)) {
-                    init += to_string(j) + ",";
-                    ++j;
+                h += doxygen_short("The static map from RNG stream number to index in RNG Normal local state arrays.");
+                string init;
+                int j = 0; // index into local RNG state array
+                for (int i = 0; i < Symbol::size_streams; ++i) {
+                    if (entity->pp_rng_normal_streams.count(i)) {
+                        init += to_string(j) + ",";
+                        ++j;
+                    }
+                    else {
+                        init += "-1,"; // the RNG stream number is not used in RandNormal in this entity kind.
+                    }
                 }
-                else {
-                    init += "-1,"; // the RNG stream number is not used in RandNormal in this entity kind.
-                }
-            }
-            h += "static inline const int om_rng_stream_to_normal_storage[fmk::size_streams] = {" + init + "};";
-            h += "";
+                h += "static inline const int om_rng_stream_to_normal_storage[fmk::size_streams] = {" + init + "};";
+                h += "";
 
-            h += doxygen_short("RNG Normal state: Other Normal value");
-            h += "std::array<double, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal{};";
-            h += "";
+                h += doxygen_short("RNG Normal state array: Other Normal value");
+                h += "std::array<double, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal{};";
+                h += "";
 
-            h += doxygen_short("RNG Normal state: Other Normal value is valid");
-            h += "std::array<bool, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal_valid{};";
-            h += "";
+                h += doxygen_short("RNG Normal state array: Other Normal value is valid");
+                h += "std::array<bool, " + to_string(entity->pp_rng_normal_streams.size()) + "> om_other_normal_valid{};";
+                h += "";
 
-            h += doxygen_short("The member function RandNormal which replaces the global RandNormal for this entity kind.");
-            h += "double RandNormal(int strm)";
+                h += doxygen_short("The member function RandNormal which replaces the global RandNormal for this entity kind.");
+                h += "double RandNormal(int strm)";
+                h += "{";
+                h +=     "// code adapted from $OM_ROOT/use/random/random_lcg200.ompp";
+                h +=     "";
+                h +=     "int rng_normal_index = om_rng_stream_to_normal_storage[strm];";
+                h +=     "assert(rng_normal_index >= 0 && rng_normal_index < om_other_normal.size());";
+                h +=     "if (om_other_normal_valid[rng_normal_index]) {";
+                h +=         "om_other_normal_valid[rng_normal_index] = false;";
+                h +=         "return om_other_normal[rng_normal_index];";
+                h +=     "}";
+                h +=     "else {";
+                h +=         "double r2 = 1;";
+                h +=         "double x = 0;";
+                h +=         "double y = 0;";
+                h +=         "while (r2 >= 1) {";
+                h +=             "x = 2.0 * RandUniform(strm) - 1.0;";
+                h +=             "y = 2.0 * RandUniform(strm) - 1.0;";
+                h +=             "r2 = x * x + y * y;";
+                h +=         "}";
+                h +=         "double scale = std::sqrt(-2.0 * std::log(r2) / r2);";
+                h +=         "double n1 = scale * x;";
+                h +=         "double n2 = scale * y;";
+                h +=         "om_other_normal[rng_normal_index] = n2;";
+                h +=         "om_other_normal_valid[rng_normal_index] = true;";
+                h +=         "return n1;";
+                h +=     "}";
+                h += "}";
+                h += "";
+            } // entity->pp_rng_normal_streams.size() > 0
+
+            h += doxygen_short("Initialize local RNG state arrays");
+            h += "void initialize_local_rng_streams(void)";
             h += "{";
-            h +=     "int rng_normal_index = om_rng_stream_to_normal_storage[strm];";
-            h +=     "assert(rng_normal_index >= 0 && rng_normal_index < om_other_normal.size());";
-            h +=     "if (om_other_normal_valid[rng_normal_index]) {";
-            h +=         "om_other_normal_valid[rng_normal_index] = false;";
-            h +=         "return om_other_normal[rng_normal_index];";
-            h +=     "}";
-            h +=     "else {";
-            h +=         "double r2 = 1;";
-            h +=         "double x = 0;";
-            h +=         "double y = 0;";
-            h +=         "while (r2 >= 1) {";
-            h +=             "x = 2.0 * RandUniform(strm) - 1.0;";
-            h +=             "y = 2.0 * RandUniform(strm) - 1.0;";
-            h +=             "r2 = x * x + y * y;";
+            h +=     "if (om_local_rng_streams_initialized) return;";
+            h +=     "{";
+            h +=         "// Code below is patterned after initialize_model_streams() in $OM_ROOT/use/common.ompp";
+            h +=         "// Combine the master seed with the entity_key";
+            h +=         "long stream_seed = fmk::master_seed;";
+            h +=         "stream_seed = (long) (stream_seed * get_entity_key()); // just for testing";
+            h +=         "stream_seed = std::clamp<long>(std::abs(stream_seed), 1, fmk::lcg_modulus - 1);";
+            h +=         "// Use fixed integral-congruential generator (with multiplier model_stream_seed_generator)";
+            h +=         "// to create seeds for each local RNG stream.";
+            h +=         "for (auto &val : om_stream_seeds) {";
+            h +=             "val = stream_seed;";
+            h +=             "long long product = fmk::model_stream_seed_generator;";
+            h +=             "product *= stream_seed;";
+            h +=             "stream_seed = product % fmk::lcg_modulus;";
             h +=         "}";
-            h +=         "double scale = std::sqrt(-2.0 * std::log(r2) / r2);";
-            h +=         "double n1 = scale * x;";
-            h +=         "double n2 = scale * y;";
-            h +=         "om_other_normal[rng_normal_index] = n2;";
-            h +=         "om_other_normal_valid[rng_normal_index] = true;";
-            h +=         "return n1;";
             h +=     "}";
+            h +=     "";
+            h +=     "om_local_rng_streams_initialized = true;";
             h += "}";
             h += "";
         }
+        else {
+            // Entity has no local RNG streams
+            h += doxygen_short("Initialize local RNG streams");
+            h += "void initialize_local_rng_streams(void) { }";
+            h += "";
+        }
+
 	    h += "}; // class " + entity->name;
 	    h += "";
 

@@ -65,7 +65,8 @@ public:
         , ss_event(nullptr)
         , next_ss_id(0)
         , pp_entity_id(-1)
-        , pp_entity_has_rng_streams(false)
+        , pp_local_rng_streams_requested(false)
+        , pp_local_rng_streams_present(false)
     {
         create_auxiliary_symbols();
         // Place in earliest sorting group so that missing symbols. e.g. case_id
@@ -416,8 +417,13 @@ public:
     int pp_entity_id;
 
     /**
-     * Indicates if RNG streams are maintained in each entity of this kind.
+     * Indicates if local RNG streams were requested for this entity kind.
      */
-    bool pp_entity_has_rng_streams;
+    bool pp_local_rng_streams_requested;
+
+    /**
+     * Indicates if local RNG streams are present in this entity kind.
+     */
+    bool pp_local_rng_streams_present;
 };
 
