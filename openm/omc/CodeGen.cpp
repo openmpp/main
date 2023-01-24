@@ -1279,23 +1279,34 @@ void CodeGen::do_entities()
 
             // Note that Symbol::size_streams has the same value as fmk::size_streams in model generated code
 
-            h += doxygen_short("The static map from RNG stream number to index in RNG local state array.");
-            string init;
+            string init1;
+            string init2;
             int j = 0; // index into local RNG state array
             for (int i = 0; i < Symbol::size_streams; ++i) {
                 if (entity->pp_rng_streams.count(i)) {
-                    init += to_string(j) + ",";
+                    // stream i is used in local rng index j of this entity
+                    init1 += to_string(j) + ",";
+                    init2 += to_string(i) + ",";
                     ++j;
                 }
                 else {
-                    init += "-1,"; // the RNG stream number is not used in this entity kind.
+                    init1 += "-1,"; // the RNG stream number is not used in this entity kind.
                 }
             }
-            h += "static inline const int om_rng_stream_to_storage[fmk::size_streams] = {" + init + "};";
+            h += doxygen_short("Size of the RNG local state array.");
+            h += "static inline const int om_rng_storage_size = " + to_string(entity->pp_rng_streams.size()) + ";";
+            h += "";
+
+            h += doxygen_short("The static map from RNG stream number to index in RNG local state array.");
+            h += "static inline const int om_rng_stream_to_storage[fmk::size_streams] = {" + init1 + "};";
+            h += "";
+
+            h += doxygen_short("The static map from index in RNG local state array to stream number.");
+            h += "static inline const int om_rng_storage_to_stream[om_rng_storage_size] = {" + init2 + "}; ";
             h += "";
 
             h += doxygen_short("RNG local state array: Current value of the RNG");
-            h += "std::array<long, " + to_string(entity->pp_rng_streams.size()) + "> om_stream_seeds{};";
+            h += "std::array<long, om_rng_storage_size> om_stream_seeds{};";
             h += "";
 
             h += doxygen_short("RNG stream generator");
@@ -1397,20 +1408,24 @@ void CodeGen::do_entities()
             h += doxygen_short("Initialize local RNG state arrays");
             h += "void initialize_local_rng_streams(void)";
             h += "{";
-            h +=     "if (om_local_rng_streams_initialized) return;";
+            h +=     "if (om_local_rng_streams_initialized) {";
+            h +=         "return;";
+            h +=     "}";
             h +=     "{";
-            h +=         "// Code below is patterned after initialize_model_streams() in $OM_ROOT/use/common.ompp";
-            h +=         "// Combine the master seed with the entity_key";
-            h +=         "long stream_seed = fmk::master_seed;";
-            h +=         "stream_seed = (long) (stream_seed * get_entity_key()); // just for testing";
-            h +=         "stream_seed = std::clamp<long>(std::abs(stream_seed), 1, fmk::lcg_modulus - 1);";
-            h +=         "// Use fixed integral-congruential generator (with multiplier model_stream_seed_generator)";
-            h +=         "// to create seeds for each local RNG stream.";
+            h +=         "// Hash together the entity_key, the master seed, and the simulation member.";
+            h +=         "//  fmk::master_seed is the run seed for time-based models";
+            h +=         "//  fmk::master_seed is the case seed for case-based models";
+            h +=         "uint64_t seed64 = get_entity_key(); // start seed64 with the entity key";
+            h +=         "seed64 = xz_crc64((uint8_t *)&fmk::master_seed, sizeof(fmk::master_seed), seed64); // hash in the master_seed";
+            h +=         "seed64 = xz_crc64((uint8_t *)&fmk::simulation_member, sizeof(fmk::simulation_member), seed64); // hash in the simulation_member";
+            h +=         "";
+            h +=         "int j = 0; // RNG storage index";
             h +=         "for (auto &val : om_stream_seeds) {";
+            h +=             "int stream_number = om_rng_storage_to_stream[j++];";
+            h +=             "uint64_t stream_seed64 = xz_crc64((uint8_t *)&stream_number, sizeof(stream_number), seed64); // hash in the stream number";
+            h +=             "long stream_seed = stream_seed64 % fmk::lcg_modulus; // a possible value of LCG seed/value (and maybe zero)";
+            h +=             "stream_seed = (stream_seed != 0) ? stream_seed : 1; // zero is not a valid LCG seed/value, so replace by 1";
             h +=             "val = stream_seed;";
-            h +=             "long long product = fmk::model_stream_seed_generator;";
-            h +=             "product *= stream_seed;";
-            h +=             "stream_seed = product % fmk::lcg_modulus;";
             h +=         "}";
             h +=     "}";
             h +=     "";

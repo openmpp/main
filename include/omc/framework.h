@@ -30,9 +30,8 @@ namespace fmk {
     thread_local inline long member_entity_counter = 0;
 
     /**
-     * The modulus used by linear congruential random number generators
-     * (possibly to seed a different RNG).
-     * Equal to 2^31 - 1
+     * The modulus used by this family of linear congruential random number generators
+     * It is the Mersenne prime 2^31 - 1
      */
     const long inline lcg_modulus = 2147483647;
 

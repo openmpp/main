@@ -17,6 +17,7 @@
 #include <forward_list> // for observation collections in tables
 #include "libopenm/omModel.h"
 #include "libopenm/common/omHelper.h" // for openm::SimulationException
+#include "libopenm/common/xz_crc64.h"
 #include "omc/helper.h"
 #include "omc/fixed_precision.h"
 

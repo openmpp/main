@@ -116,6 +116,9 @@ double get_global_time()
  */
 void initialize_model_streams()
 {
+    // Note:
+    //  fmk::master_seed is the run seed for time-based models
+    //  fmk::master_seed is the case seed for case-based models
     long stream_seed = fmk::master_seed;
     for (int model_stream = 0; model_stream < fmk::size_streams; model_stream++) {
         // initialize_stream is generator-specific - defined in random/random_YYY.ompp.
