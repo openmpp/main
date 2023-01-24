@@ -1305,12 +1305,12 @@ void CodeGen::do_entities()
             h += "static inline const int om_rng_storage_to_stream[om_rng_storage_size] = {" + init2 + "}; ";
             h += "";
 
-            h += doxygen_short("RNG local state array: Current value of the RNG");
-            h += "std::array<long, om_rng_storage_size> om_stream_seeds{};";
+            h += doxygen_short("RNG local state array: Current Xn value of the RNG");
+            h += "std::array<uint32_t, om_rng_storage_size> om_stream_X{};";
             h += "";
 
             h += doxygen_short("RNG stream generator");
-            h += "static const long om_stream_generator = 1187848453; // unused generator from $OM_ROOT/use/random/random_lcg200.ompp";
+            h += "static const uint32_t om_stream_generator = 1187848453; // unused generator from $OM_ROOT/use/random/random_lcg200.ompp";
             h += "";
 
             h += doxygen_short("The member function RandUniform which replaces the global RandUniform for this entity kind.");
@@ -1322,13 +1322,13 @@ void CodeGen::do_entities()
             h +=     "// code adapted from $OM_ROOT/use/random/random_lcg200.ompp";
             h +=     "";
             h +=     "int rng_index = om_rng_stream_to_storage[strm];";
-            h +=     "assert(rng_index >= 0 && rng_index < om_stream_seeds.size());";
-            h +=     "long seed = om_stream_seeds[rng_index];";
-            h +=     "long long product = om_stream_generator;";
-            h +=     "product *= seed;";
-            h +=     "seed = product % fmk::lcg_modulus;";
-            h +=     "om_stream_seeds[rng_index] = seed;";
-            h +=     "return (double)seed / (double)fmk::lcg_modulus;";
+            h +=     "assert(rng_index >= 0 && rng_index < om_stream_X.size());";
+            h +=     "uint32_t X = om_stream_X[rng_index];";
+            h +=     "uint64_t product = om_stream_generator;";
+            h +=     "product *= X;";
+            h +=     "X = product % fmk::lcg_modulus;";
+            h +=     "om_stream_X[rng_index] = X;";
+            h +=     "return (double)X / (double)fmk::lcg_modulus; // result is in (0,1)";
             h += "}";
             h += "";
 
@@ -1420,12 +1420,11 @@ void CodeGen::do_entities()
             h +=         "seed64 = xz_crc64((uint8_t *)&fmk::simulation_member, sizeof(fmk::simulation_member), seed64); // hash in the simulation_member";
             h +=         "";
             h +=         "int j = 0; // RNG storage index";
-            h +=         "for (auto &val : om_stream_seeds) {";
+            h +=         "for (auto &X : om_stream_X) {";
             h +=             "int stream_number = om_rng_storage_to_stream[j++];";
             h +=             "uint64_t stream_seed64 = xz_crc64((uint8_t *)&stream_number, sizeof(stream_number), seed64); // hash in the stream number";
-            h +=             "long stream_seed = stream_seed64 % fmk::lcg_modulus; // a possible value of LCG seed/value (and maybe zero)";
-            h +=             "stream_seed = (stream_seed != 0) ? stream_seed : 1; // zero is not a valid LCG seed/value, so replace by 1";
-            h +=             "val = stream_seed;";
+            h +=             "uint32_t stream_seed = 1 + stream_seed64 % (fmk::lcg_modulus - 1); // span all possible values of LCG Xn";
+            h +=             "X = stream_seed;";
             h +=         "}";
             h +=     "}";
             h +=     "";

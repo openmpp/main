@@ -685,10 +685,10 @@ void EntitySymbol::build_body_initialize_data_members()
     if (pp_local_rng_streams_present) {
         c += "";
         c += "// Entity has local RNG streams";
-        c += "// Initialize them to 1.";
-        c += "// Value will be replaced by a subsequent call to initialize_local_rng_streams()";
-        c += "for (auto& val : om_stream_seeds) {";
-        c +=     "val = 1;";
+        c += "// Seed them to 1.";
+        c += "// The seed will be replaced by a subsequent call to initialize_local_rng_streams()";
+        c += "for (auto& X : om_stream_X) {";
+        c +=     "X = 1;";
         c += "}";
         if (pp_rng_normal_streams.size() > 0) {
             c += "// Entity has local RNG Normal streams.";
