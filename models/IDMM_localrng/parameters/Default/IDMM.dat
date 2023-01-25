@@ -1,5 +1,5 @@
 parameters {
-	int	NumberOfHosts = 100; //EN Number of hosts //FR Nombre d'hôtes
+	int	NumberOfHosts = 5000; //EN Number of hosts //FR Nombre d'hôtes
 	int	ContactsOutPerHost = 4; //EN Number of outgoing contacts per host //FR Nombres de contacts partant de l'hôte
 	double	MeanContactInterval = 1.00; //EN Mean time between social interactions //FR Temps moyen entre les interactions sociales
 	double	MeanChangeContactsInterval = 5.00; //EN Mean time between changing social contact network //FR Temps moyen entre les changements de réseau social

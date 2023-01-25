@@ -23,7 +23,7 @@ classification TICKER_EVENT_TYPE	//EN Ticker Event Type
 };
 
 
-range REPORT_TIME {0, 20}; 		//EN Reporting intervals
+range REPORT_TIME {0, 100}; 		//EN Reporting intervals
 
 actor Ticker				 		//EN Actor for synchronising population-level activities
 {
@@ -107,6 +107,7 @@ void Ticker::TickEvent()
 	    {
 		    auto prHost = asAllHosts->Item( nJ );
 		    prHost->report_time = report_time;
+			prHost->write_microdata(); // take a snapshot of the Host population at each report_time
 	    }
     }
 

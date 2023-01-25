@@ -107,6 +107,15 @@ actor Host						//EN Host of an infectious disease
 	//EN Time of next disease progression event
 	TIME	disease_next_phase_time = { TIME_INFINITE };
 
+	//EN Host-specific draw from standard Normal
+	double z_score = { 0.0 };
+
+	//EN Host-specific draw from standard logistic
+	double l_score = { 0.0 };
+
+	//EN age at most recent infection
+	double age_infected = { -1.0 };
+
 	//EN Trigger infection of this host
 	void Infect();
 
@@ -128,6 +137,7 @@ link	Host.mlContactsOut[]		//EN Outgoing social contacts
 void Host::Infect()
 {
 	disease_next_phase = DP_LATENT;
+	age_infected = age;
 	disease_next_phase_time = 0 + time;
 }
 
@@ -141,6 +151,13 @@ void Host::Start()
 
 	time = 0;
 	age = 0;
+
+	// Need to explicitly initialise local random streams here
+	// because they are used before the entity enters the simulation.
+	initialize_local_random_streams();
+
+	z_score = RandNormal(11); // test to probe local random streams
+	l_score = RandLogistic(12); // test to probe local random streams
 
 	// Infect a few Hosts
 	if ( InitialDiseasePrevalence > RandUniform(5) ) 
@@ -353,4 +370,7 @@ void Host::ChangeContactsEvent()
 	next_change_contacts = WAIT(MeanChangeContactsInterval * 2.0 * RandUniform(9));
 }
 
-
+uint64_t Host::get_microdata_key()
+{
+	return 1000 * entity_id + report_time;
+}
