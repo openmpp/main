@@ -98,18 +98,27 @@ void Ticker::TickEvent()
 	event_type = TET_TICK;
 	event_count++;
 
-    // Don't increment report_time or synchronize hosts at the start of the simulation.
-    if ( age > 0 ) {
-	    report_time = COERCE(REPORT_TIME, report_time + 1);
-	    // Synchronize all hosts to the current time for reporting purposes
-	    int nHosts = asAllHosts->Count();
-	    for ( int nJ=0; nJ<nHosts; nJ++ ) 
-	    {
-		    auto prHost = asAllHosts->Item( nJ );
-		    prHost->report_time = report_time;
-			prHost->write_microdata(); // take a snapshot of the Host population at each report_time
-	    }
-    }
+	if (age > 0) {
+		// Increment report_time (except at the start of the simulation).
+		report_time = COERCE(REPORT_TIME, report_time + 1);
+	}
+
+	// Iterate all Hosts
+	int nHosts = asAllHosts->Count();
+	for ( int nJ=0; nJ<nHosts; nJ++ ) 
+	{
+		auto prHost = asAllHosts->Item( nJ );
+		if (report_time == 0) {
+			// Infect Hosts probabilistically at the start of the simulation.
+			if (InitialDiseasePrevalence > RandUniform(5))
+			{
+				prHost->Infect();
+			}
+		}
+		// Synchronize all hosts to the current time for reporting purposes
+		prHost->report_time = report_time;
+		prHost->write_microdata(); // take a snapshot of the Host population at each report_time
+	}
 
 	// Schedule the next tick.
 	// The next line spreads reporting times evenly over the simulation

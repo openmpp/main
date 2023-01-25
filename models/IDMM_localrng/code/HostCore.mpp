@@ -159,13 +159,6 @@ void Host::Start()
 	z_score = RandNormal(11); // test to probe local random streams
 	l_score = RandLogistic(12); // test to probe local random streams
 
-	// Infect a few Hosts
-	if ( InitialDiseasePrevalence > RandUniform(5) ) 
-	{
-		// Trigger the disease event right away.
-		Infect();
-	}
-
 	// Schedule the first social contact.
 	next_contact = WAIT(MeanContactInterval * 2.0 * RandUniform(1));
 	
