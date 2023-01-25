@@ -1406,7 +1406,7 @@ void CodeGen::do_entities()
             } // entity->pp_rng_normal_streams.size() > 0
 
             h += doxygen_short("Initialize local RNG state arrays");
-            h += "void initialize_local_rng_streams(void)";
+            h += "void initialize_local_random_streams(void)";
             h += "{";
             h +=     "if (om_local_rng_streams_initialized) {";
             h +=         "return;";
@@ -1435,7 +1435,7 @@ void CodeGen::do_entities()
         else {
             // Entity has no local RNG streams
             h += doxygen_short("Initialize local RNG streams");
-            h += "void initialize_local_rng_streams(void) { }";
+            h += "void initialize_local_random_streams(void) { }";
             h += "";
         }
 

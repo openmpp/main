@@ -2222,7 +2222,7 @@ void Symbol::defaults_and_options()
     }
 
     {
-        string key = "entity_has_rng_streams";
+        string key = "local_random_streams";
         auto iter = options.find(key);
         if (iter != options.end()) {
             // Can't validate or process this option here

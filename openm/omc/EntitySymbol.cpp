@@ -553,13 +553,13 @@ void EntitySymbol::post_parse(int pass)
 
         {
             // determine if local rng generators are requested for this entity kind
-            // examine options multimap for entity_has_rng_streams = name of this entity
-            string key = "entity_has_rng_streams";
+            // examine options multimap for local_random_streams = name of this entity
+            string key = "local_random_streams";
             pp_local_rng_streams_requested = false;
             auto range = options.equal_range(key);
             for (auto it = range.first; it != range.second; ++it) {
                 if (name == it->second) {
-                    // found entity_has_rng_streams = name of this entity
+                    // found local_random_streams = name of this entity
                     pp_local_rng_streams_requested = true;
                     break;
                 }
@@ -686,7 +686,7 @@ void EntitySymbol::build_body_initialize_data_members()
         c += "";
         c += "// Entity has local RNG streams";
         c += "// Seed them to 1.";
-        c += "// The seed will be replaced by a subsequent call to initialize_local_rng_streams()";
+        c += "// The seed will be replaced by a subsequent call to initialize_local_random_streams()";
         c += "for (auto& X : om_stream_X) {";
         c +=     "X = 1;";
         c += "}";

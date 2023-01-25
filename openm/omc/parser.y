@@ -729,7 +729,7 @@ option:
                             if (srch != Symbol::options.end()) {
                                 // key already specified in model source with different value
                                 if (srch->second != *$value) {
-                                    if (*$key == "entity_has_rng_streams") {
+                                    if (*$key == "local_random_streams") {
                                         // special case, allow multiple options statements
                                     }
                                     else {
