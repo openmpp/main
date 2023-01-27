@@ -365,5 +365,16 @@ void Host::ChangeContactsEvent()
 
 uint64_t Host::get_microdata_key()
 {
+	//uint64_t key64 = 0;
+	//key64 = xz_crc64((uint8_t*)&entity_id, sizeof(entity_id), key64);
+	//key64 = xz_crc64((uint8_t*)&report_time, sizeof(report_time), key64);
+	//return key64;
 	return 1000 * entity_id + report_time;
 }
+
+//uint64_t Host::get_entity_key()
+//{
+//	uint64_t key64 = 0;
+//	key64 = xz_crc64((uint8_t*)&entity_id, sizeof(entity_id), key64);
+//	return key64;
+//}

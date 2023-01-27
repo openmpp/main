@@ -69,30 +69,30 @@ void Simulation()
 	// Enter it into the the simulation.
 	paTicker->Start();
 
-	// Create the initial population.
-	for ( int nJ = 0; nJ < NumberOfHosts; nJ++ ) 
-	{
+	// Create the initial population of Hosts, and infect some probabilistically.
+	for ( int nJ = 0; nJ < NumberOfHosts; nJ++ ) {
 		auto prHost = new Host();
 		prHost->Start();
+		if (InitialDiseasePrevalence > RandUniform(5)) {
+			prHost->Infect();
+		}
 	}
 
-    // Construct the initial social network.
+	// Construct the initial social network.
 	int nHosts = asAllHosts->Count();
-	for ( int nJ = 0; nJ < nHosts; nJ++ ) 
-	{
+	for ( int nJ = 0; nJ < nHosts; nJ++ ) {
 		auto prHost = asAllHosts->Item( nJ );
-		for (int nK = 0; nK < ContactsOutPerHost; nK++ ) 
-		{
+		for (int nK = 0; nK < ContactsOutPerHost; nK++ ) {
 			// Choose a host randomly from all hosts
 			auto prContact = asAllHosts->GetRandom( RandUniform(3) );
 			// Add it to the outgoing contacts link.
 			// Note that if the contact happens to already be a contact, it will not be added.
 			// That's because Modgen links can contain no duplicates.
 			// Modgen links are like mathematical sets.
-            if (prContact != prHost) {
-                // do not link to self
-			    prHost->mlContactsOut->Add( prContact );
-            }
+			if (prContact != prHost) {
+				// do not link to self
+				prHost->mlContactsOut->Add( prContact );
+			}
 		}
 	}
 
