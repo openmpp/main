@@ -1317,7 +1317,7 @@ void CodeGen::do_entities()
             h += "double RandUniform(int strm)";
             h += "{";
             h +=     "if (!om_local_rng_streams_initialized) {";
-            h +=         "throw openm::SimulationException(LT(\"RandUniform called with uninitialized local RNG streams.\"));";
+            h +=         "throw openm::SimulationException(LT(\"RandUniform called with uninitialized local random streams.\"));";
             h +=     "}";
             h +=     "// code adapted from $OM_ROOT/use/random/random_lcg200.ompp";
             h +=     "";
