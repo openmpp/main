@@ -1006,6 +1006,8 @@ void CodeGen::do_ModelShutdown()
     c += "int simulation_member = i_model->subValueId();";
     c += "";
     c += "// extract accumulators, and scale them to population size";
+    c += "theLog->logFormatted(\"member=%d Compute entity tables\", simulation_member);";
+
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
 	    c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";

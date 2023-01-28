@@ -53,14 +53,14 @@ void LogSimulationStart()
 {
     // Initial global start time
     BaseEvent::set_global_time(-time_infinite);
-    theLog->logFormatted("Member=%d Create starting population", fmk::simulation_member);
+    theLog->logFormatted("member=%d Create starting population", fmk::simulation_member);
 }
 
 void SimulateEvents()
 {
     using namespace fmk;
 
-    theLog->logFormatted("Member=%d Simulate events", fmk::simulation_member);
+    theLog->logFormatted("member=%d Simulate events - start", fmk::simulation_member);
 
     // Note clock time at which event simulation started.
     // This allows separating simulation time into portion for creation
@@ -173,8 +173,13 @@ void SimulateEvents()
         report_simulation_progress(simulation_member, 100, simulation_end);
     }
 
+    theLog->logFormatted("member=%d Simulate events - end", fmk::simulation_member);
+
     // cleanup
+
+    theLog->logFormatted("member=%d Exit all entities from simulation - start", fmk::simulation_member);
     BaseEntity::exit_simulation_all();
+    theLog->logFormatted("member=%d Exit all entities from simulation - end", fmk::simulation_member);
     BaseEvent::clean_all();
     BaseEntity::free_all_zombies();
 }
