@@ -10,6 +10,12 @@
 
 #include "entity_ptr.h"
 
+
+namespace omr {
+    /// The multilink size warning threshold
+    constexpr size_t multilink_size_warning_threshold = 1000;
+}
+
 /**
  * Template for multilink entity member.
  * 
@@ -91,6 +97,12 @@ public:
 		    else {
                 // append the new element to the end of the array
 			    storage.push_back(lnk);
+                if (!multilink_size_warning_issued) {
+                    if (omr::multilink_size_warning_threshold < storage.size()) {
+                        theLog->logFormatted(LT("warning : A multilink has grown larger than %d - possible performance impact"), omr::multilink_size_warning_threshold);
+                        multilink_size_warning_issued = true;
+                    }
+                }
                 if constexpr (om_resource_use_on) {
                     ++slot_count;
                     if (storage.size() > slot_max) {
@@ -251,6 +263,11 @@ public:
     * An entity_id with the maximum number of slots.
     */
     static thread_local size_t slot_max_id;
+
+    /**
+    * The run-time warning for excessive link size has been issued for this multilink
+    */
+    static thread_local bool multilink_size_warning_issued;
 };
 
 /**
@@ -271,3 +288,7 @@ thread_local size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_re
 
 template<typename T, typename A, typename B, void (A::* side_effects)(), void (A::* insert_reciprocal)(T lnk), void (A::* erase_reciprocal)(T lnk) >
 thread_local size_t Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::slot_max_id = 0;
+
+template<typename T, typename A, typename B, void (A::* side_effects)(), void (A::* insert_reciprocal)(T lnk), void (A::* erase_reciprocal)(T lnk) >
+thread_local bool Multilink<T, A, B, side_effects, insert_reciprocal, erase_reciprocal>::multilink_size_warning_issued = false;
+
