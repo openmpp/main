@@ -2329,6 +2329,27 @@ void CodeGen::do_RunModel()
                     c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    " + dm->pretty_name() + "\", bytes);";
                     c += "}";
                 }
+                if (ent->pp_local_rng_streams_present) {
+                    c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Local random streams:\", \"\");";
+                    c += "{";
+                    c += "int bytes = (int)sizeof(" + ent->name + "::om_stream_X);";
+                    c += "bytes_total += bytes;";
+                    c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    om_stream_X\", bytes);";
+                    c += "}";
+                    if (ent->pp_rng_normal_streams.size() > 0) {
+                        c += "{";
+                        c += "int bytes = (int)sizeof(" + ent->name + "::om_other_normal);";
+                        c += "bytes_total += bytes;";
+                        c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    om_other_normal\", bytes);";
+                        c += "}";
+
+                        c += "{";
+                        c += "int bytes = (int)sizeof(" + ent->name + "::om_other_normal_valid);";
+                        c += "bytes_total += bytes;";
+                        c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"    om_other_normal_valid\", bytes);";
+                        c += "}";
+                    }
+                }
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
                 c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"Sum of member bytes\", bytes_total);";
                 c += "theLog->logFormatted(\"%s| %-*s | %5d |\", prefix2, col1width, \"Bytes per entity\", ent_bytes);";
