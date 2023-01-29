@@ -116,6 +116,9 @@ actor Host						//EN Host of an infectious disease
 	//EN age at most recent infection
 	double age_infected = { -1.0 };
 
+	//EN hash of infection history
+	ullong history_hash = { 0 };
+
 	//EN Trigger infection of this host
 	void Infect();
 
@@ -138,6 +141,7 @@ void Host::Infect()
 {
 	disease_next_phase = DP_LATENT;
 	age_infected = age;
+	history_hash = xz_crc64((uint8_t*)&age_infected, sizeof(age_infected), history_hash);
 	disease_next_phase_time = 0 + time;
 }
 
