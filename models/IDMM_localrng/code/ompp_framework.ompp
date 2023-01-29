@@ -33,7 +33,7 @@ options local_random_streams = Host;
 options microdata_output = on;
 
 // The following enables collection and reporting of resource use information for a run.
-//options resource_use = on;
+options resource_use = on;
 
 #endif // Hide non-C++ syntactic island from IDE
 
