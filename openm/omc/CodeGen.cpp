@@ -1980,6 +1980,15 @@ void CodeGen::do_RunModel()
             size_t foreign_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_foreign(); });
             size_t internal_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
             size_t multilink_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_multilink(); });
+            size_t random_state_arrays_count = 0;
+            if (ent->pp_local_rng_streams_present) {
+                // members supporting local random streams are not in the dml list
+                random_state_arrays_count += 1; // for std::array member om_stream_X
+                if (ent->pp_rng_normal_streams.size() > 0) {
+                    random_state_arrays_count += 2; // for std::array members om_other_normal, om_other_normal_valid
+                }
+                members_count += random_state_arrays_count;
+            }
             size_t array_size = 0;
 
             c += "{ // Begin resource use tables for " + ent->name;
@@ -2017,26 +2026,29 @@ void CodeGen::do_RunModel()
             {
                 c += "{ // entity members (summary)";
                 c += "auto table_title = \"    " + ent->name + " Members\";";
-                c += "auto row_sep =         \"+-------------------+-------+\";";
+                c += "auto row_sep =         \"+---------------------+-------+\";";
                 c += "int table_width = (int)strlen(row_sep);";
                 c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
                 c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-                c += "theLog->logFormatted(\"%s| Member            | Count |\", prefix2);";
+                c += "theLog->logFormatted(\"%s| Member              | Count |\", prefix2);";
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-                c += "theLog->logFormatted(\"%s| Attributes        | %5d |\", prefix2, " + std::to_string(attribute_count) + ");";
-                c += "theLog->logFormatted(\"%s|   Built-in        | %5d |\", prefix2, " + std::to_string(builtin_attribute_count) + ");";
-                c += "theLog->logFormatted(\"%s|   Simple          | %5d |\", prefix2, " + std::to_string(simple_attribute_count) + ");";
-                c += "theLog->logFormatted(\"%s|   Maintained      | %5d |\", prefix2, " + std::to_string(maintained_attribute_count) + ");";
-                c += "theLog->logFormatted(\"%s|   Link            | %5d |\", prefix2, " + std::to_string(link_attribute_count) + ");";
-                c += "theLog->logFormatted(\"%s| Events            | %5d |\", prefix2, " + std::to_string(event_count) + ");";
-                c += "theLog->logFormatted(\"%s| Increments        | %5d |\", prefix2, " + std::to_string(increment_count) + ");";
-                c += "theLog->logFormatted(\"%s| Multilink         | %5d |\", prefix2, " + std::to_string(multilink_count) + ");";
-                c += "theLog->logFormatted(\"%s| Internal          | %5d |\", prefix2, " + std::to_string(internal_count) + ");";
-                c += "theLog->logFormatted(\"%s| Array             | %5d |\", prefix2, " + std::to_string(array_count) + ");";
-                c += "theLog->logFormatted(\"%s| Foreign           | %5d |\", prefix2, " + std::to_string(foreign_count) + ");";
+                c += "theLog->logFormatted(\"%s| Attributes          | %5d |\", prefix2, " + std::to_string(attribute_count) + ");";
+                c += "theLog->logFormatted(\"%s|   Built-in          | %5d |\", prefix2, " + std::to_string(builtin_attribute_count) + ");";
+                c += "theLog->logFormatted(\"%s|   Simple            | %5d |\", prefix2, " + std::to_string(simple_attribute_count) + ");";
+                c += "theLog->logFormatted(\"%s|   Maintained        | %5d |\", prefix2, " + std::to_string(maintained_attribute_count) + ");";
+                c += "theLog->logFormatted(\"%s|   Link              | %5d |\", prefix2, " + std::to_string(link_attribute_count) + ");";
+                c += "theLog->logFormatted(\"%s| Events              | %5d |\", prefix2, " + std::to_string(event_count) + ");";
+                c += "theLog->logFormatted(\"%s| Increments          | %5d |\", prefix2, " + std::to_string(increment_count) + ");";
+                c += "theLog->logFormatted(\"%s| Multilink           | %5d |\", prefix2, " + std::to_string(multilink_count) + ");";
+                c += "theLog->logFormatted(\"%s| Internal            | %5d |\", prefix2, " + std::to_string(internal_count) + ");";
+                c += "theLog->logFormatted(\"%s| Array               | %5d |\", prefix2, " + std::to_string(array_count) + ");";
+                c += "theLog->logFormatted(\"%s| Foreign             | %5d |\", prefix2, " + std::to_string(foreign_count) + ");";
+                if (ent->pp_local_rng_streams_present) {
+                c += "theLog->logFormatted(\"%s| Random state arrays | %5d |\", prefix2, " + std::to_string(random_state_arrays_count) + ");";
+                }
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-                c += "theLog->logFormatted(\"%s| All               | %5d |\", prefix2, " + std::to_string(members_count) + ");";
+                c += "theLog->logFormatted(\"%s| All                 | %5d |\", prefix2, " + std::to_string(members_count) + ");";
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
                 c += "theLog->logFormatted(\"%s\", prefix0);";
                 c += "}";
@@ -2330,7 +2342,7 @@ void CodeGen::do_RunModel()
                     c += "}";
                 }
                 if (ent->pp_local_rng_streams_present) {
-                    c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Local random streams:\", \"\");";
+                    c += "theLog->logFormatted(\"%s| %-*s | %5s |\", prefix2, col1width, \"Random state arrays:\", \"\");";
                     c += "{";
                     c += "int bytes = (int)sizeof(" + ent->name + "::om_stream_X);";
                     c += "bytes_total += bytes;";
