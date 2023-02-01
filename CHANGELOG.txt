@@ -1,6 +1,17 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-02-01:
+  BREAKING change in db schema: add microdata row count column
+  c++ core: model_streams no longer required in model code
+  c++ core: Local Random Streams
+  c++ core: multilink size run-time warning
+  c++ core: fix microdata value digest calculation
+  oms: microdata must be enabled on the server (improve security)
+  oms API: add microdata to model run request
+  dbcopy: clean output folder by default, add new run option to keep it if required
+  UI: initial version of microdata UI
+
 2023-01-17:
   c++ core: multiple bug fixes in microdata code
   wiki: updated developer topic Microdata Output
