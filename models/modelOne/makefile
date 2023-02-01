@@ -42,6 +42,19 @@ ifndef MODEL_NAME
 endif
 
 #
+# model ini file to run the model
+#
+RUN_OPT_INI =
+ifdef MODEL_INI
+  RUN_OPT_INI = -ini $(MODEL_INI)
+endif
+
+# set model root, for example: OM_modelOne=/home/user/modelOne
+#
+model_root_name = OM_$(MODEL_NAME)
+model_root_value = $(CURDIR)
+
+#
 # build directories
 # if model build directory defined globally 
 #   then assume shared some/build/ location and use model name to avoid conflicts
@@ -185,83 +198,83 @@ copy_ini:
 #
 .PHONY : run
 run:
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
-		-OpenM.RunName Default \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
+		-OpenM.RunName Default
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-OpenM.Profile modelOne \
-		-OpenM.RunName Default-4 \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.RunName Default-4
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-Parameter.baseSalary Full \
-		-OpenM.RunName "Default and Full base salary" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-OpenM.RunName "Default and Full base salary"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.TaskName taskOne \
-		-OpenM.TaskRunName "First Task Run" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
-		-OpenM.SubValues 2 -SubFrom.salaryFull csv -OpenM.ParamDir ./csv \
+		-OpenM.TaskRunName "First Task Run"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
+		-OpenM.SubValues 2 -SubFrom.salaryFull csv -OpenM.ParamDir ../../csv \
 		-OpenM.RunName "Sub-values_2_from_csv" \
 		-EN.RunDescription "Parameter sub-values 2 from csv" \
 		-FR.RunDescription "(FR) Parameter sub-values 2 from csv" \
-		-EN.RunNotesPath ./run_notes-en.md \
-		-FR.RunNotesPath ./run_notes-fr.md \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunNotesPath ../../run_notes-en.md \
+		-FR.RunNotesPath ../../run_notes-fr.md
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-SubFrom.baseSalary db -SubFrom.salaryFull db -SubFrom.filePath db -SubFrom.isOldAge db \
 		-OpenM.RunName "Sub-values_4" \
-		-EN.RunDescription "Parameter sub-values 4" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunDescription "Parameter sub-values 4"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.SubValues 2 \
-		-SubFrom.AgeSexParameters csv -SubValues.AgeSexParameters 2,3 -OpenM.ParamDir ./csv -SubFrom.salaryFull db \
+		-SubFrom.AgeSexParameters csv -SubValues.AgeSexParameters 2,3 -OpenM.ParamDir ../../csv -SubFrom.salaryFull db \
 		-OpenM.RunName "Group_sub-values_2_from_csv" \
-		-EN.RunDescription "Parameter group sub-values 2 from csv" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunDescription "Parameter group sub-values 2 from csv"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-ImportRunName.modelOne Default \
 		-OpenM.RunName "Import_from_Default_run" \
-		-EN.RunDescription "Import parameters from Default run" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunDescription "Import parameters from Default run"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.BaseRunName "Sub-values_2_from_csv" \
 		-OpenM.SubValues 2 -SubFrom.salaryFull db \
 		-OpenM.RunName "Base_run_is_Sub-values_2_from_csv" \
-		-EN.RunDescription "Parameters from base run Sub-values_2_from_csv" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunDescription "Parameters from base run Sub-values_2_from_csv"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.BaseRunName "Sub-values_2_from_csv" \
 		-OpenM.SetName modelOne_partial \
 		-OpenM.RunName "Base_run_and_partial_input_set" \
-		-EN.RunDescription "Parameters from base run and from partial input set" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunDescription "Parameters from base run and from partial input set"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "Task Run with Suppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Tables.Suppress ageSexIncome,AdditionalTables \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-Tables.Suppress ageSexIncome,AdditionalTables
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "Task Run with NotSuppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Tables.Retain ageSexIncome,AdditionalTables \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-Tables.Retain ageSexIncome,AdditionalTables
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Microdata.All -Microdata.ToDb \
 		-OpenM.RunName "Microdata in database" \
-		-EN.RunDescription "Write microdata into database" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
-	$(OUT_BIN_DIR)/$(MODEL_EXE) \
+		-EN.RunDescription "Write microdata into database"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
+		$(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
-		-Microdata.All -Microdata.ToCsv -Microdata.CsvDir $(OUT_BIN_DIR) -Microdata.Events Birth,Retire,Death \
+		-Microdata.All -Microdata.ToCsv -Microdata.Events Birth,Retire,Death \
 		-OpenM.RunName "Microdata in CSV" \
-		-EN.RunDescription "Write microdata into CSV files" \
-		-OpenM.Database Database="$(MODEL_SQLITE);Timeout=86400;OpenMode=ReadWrite"
+		-EN.RunDescription "Write microdata into CSV files"
 
 .PHONY: clean
 clean:

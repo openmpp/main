@@ -142,7 +142,7 @@ MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)
 #
 RUN_OPT_INI =
 ifdef MODEL_INI
-  RUN_OPT_INI = -ini $(OUT_BIN_DIR)/$(MODEL_INI)
+  RUN_OPT_INI = -ini $(MODEL_INI)
 endif
 
 # set model root, for example: OM_NewCaseBased=/home/user/NewCaseBased

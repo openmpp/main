@@ -3,6 +3,7 @@ local_PLATFORM_UNAME := $(shell uname -s)
 
 local_BIN_DIR = bin
 local_SQL_DIR = sql
+local_LOG_DIR = log
 
 ifdef OUT_PREFIX
   model_OUT_PREFIX = OUT_PREFIX
@@ -80,11 +81,14 @@ publish-all : prepare publish
 	$(foreach d,$(OZ_PROJ_MODELS),cp -prf $(d)/microdata $(local_BIN_DIR)/$d/;)
 	cp -pf modelOne/*.sql $(local_SQL_DIR)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
+	$(foreach d,$(MODEL_DIRS),cp -pf $(d)/$(model_BIN_DIR)/$(d).*.log $(local_LOG_DIR);)
+	find $(local_BIN_DIR) -name "*.log" -delete
 
 .PHONY : prepare
 prepare:
 	@if [ ! -d $(local_BIN_DIR) ] ; then mkdir -p $(local_BIN_DIR) ; fi
 	@if [ ! -d $(local_SQL_DIR) ] ; then mkdir -p $(local_SQL_DIR) ; fi
+	@if [ ! -d $(local_LOG_DIR) ] ; then mkdir -p $(local_LOG_DIR) ; fi
 
 .PHONY : clean-all
 clean-all: clean
@@ -94,3 +98,4 @@ clean-all: clean
 clean:
 	rm -rf $(local_BIN_DIR)
 	@if [ -d $(local_SQL_DIR) ] ;  then rm -rf $(local_SQL_DIR) ; fi
+	@if [ -d $(local_LOG_DIR) ] ;  then rm -rf $(local_LOG_DIR) ; fi
