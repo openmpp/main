@@ -958,7 +958,8 @@ void MetaLoader::parseEntityOptions(void)
     bool isDisabled = ENTITY_NAME_SIZE_ARR_LEN == 0 ||
         (ENTITY_NAME_SIZE_ARR_LEN == 1 &&
             (EntityNameSizeArr[0].entity == nullptr || strnlen(EntityNameSizeArr[0].entity, OM_STRLEN_MAX) == 0 ||
-                (EntityNameSizeArr[0].attribute == nullptr || strnlen(EntityNameSizeArr[0].attribute, OM_STRLEN_MAX) == 0)));
+                (EntityNameSizeArr[0].attribute == nullptr || strnlen(EntityNameSizeArr[0].attribute, OM_STRLEN_MAX) == 0))) ||
+        metaStore->entityDic->rowCount() <= 0;
 
     if (isDisabled && isToDb) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToDb);
     if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);

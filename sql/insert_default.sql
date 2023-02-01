@@ -10,7 +10,7 @@
 -- id < 100 reserved for development and testing
 -- also for types id < 100 reserved for bult-in types
 --
-INSERT INTO id_lst (id_key, id_value) VALUES ('openmpp',       103);
+INSERT INTO id_lst (id_key, id_value) VALUES ('openmpp',       104);
 INSERT INTO id_lst (id_key, id_value) VALUES ('lang_id',       100);
 INSERT INTO id_lst (id_key, id_value) VALUES ('model_id',      100);
 INSERT INTO id_lst (id_key, id_value) VALUES ('type_hid',      100);
