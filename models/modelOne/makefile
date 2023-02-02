@@ -198,79 +198,65 @@ copy_ini:
 #
 .PHONY : run
 run:
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.RunName Default
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-OpenM.Profile modelOne \
 		-OpenM.RunName Default-4
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-Parameter.baseSalary Full \
 		-OpenM.RunName "Default and Full base salary"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "First Task Run"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SubValues 2 -SubFrom.salaryFull csv -OpenM.ParamDir ../../csv \
 		-OpenM.RunName "Sub-values_2_from_csv" \
 		-EN.RunDescription "Parameter sub-values 2 from csv" \
 		-FR.RunDescription "(FR) Parameter sub-values 2 from csv" \
 		-EN.RunNotesPath ../../run_notes-en.md \
 		-FR.RunNotesPath ../../run_notes-fr.md
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-SubFrom.baseSalary db -SubFrom.salaryFull db -SubFrom.filePath db -SubFrom.isOldAge db \
 		-OpenM.RunName "Sub-values_4" \
 		-EN.RunDescription "Parameter sub-values 4"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SubValues 2 \
 		-SubFrom.AgeSexParameters csv -SubValues.AgeSexParameters 2,3 -OpenM.ParamDir ../../csv -SubFrom.salaryFull db \
 		-OpenM.RunName "Group_sub-values_2_from_csv" \
 		-EN.RunDescription "Parameter group sub-values 2 from csv"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-ImportRunName.modelOne Default \
 		-OpenM.RunName "Import_from_Default_run" \
 		-EN.RunDescription "Import parameters from Default run"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.BaseRunName "Sub-values_2_from_csv" \
 		-OpenM.SubValues 2 -SubFrom.salaryFull db \
 		-OpenM.RunName "Base_run_is_Sub-values_2_from_csv" \
 		-EN.RunDescription "Parameters from base run Sub-values_2_from_csv"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.BaseRunName "Sub-values_2_from_csv" \
 		-OpenM.SetName modelOne_partial \
 		-OpenM.RunName "Base_run_and_partial_input_set" \
 		-EN.RunDescription "Parameters from base run and from partial input set"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "Task Run with Suppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Tables.Suppress ageSexIncome,AdditionalTables
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.TaskName taskOne \
 		-OpenM.TaskRunName "Task Run with NotSuppressed Tables" \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Tables.Retain ageSexIncome,AdditionalTables
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Microdata.All -Microdata.ToDb \
 		-OpenM.RunName "Microdata in database" \
 		-EN.RunDescription "Write microdata into database"
-	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) \
-		$(RUN_OPT_INI) \
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Microdata.All -Microdata.ToCsv -Microdata.Events Birth,Retire,Death \
 		-OpenM.RunName "Microdata in CSV" \

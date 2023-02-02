@@ -75,14 +75,13 @@ OZ_PROJ_MODELS = OzProj OzProjGen
 
 .PHONY : publish-all
 publish-all : prepare publish
+	$(foreach d,$(MODEL_DIRS),find $(d)/$(model_BIN_DIR) -name "*.log" -exec mv {} $(local_LOG_DIR) \;;)
 	$(foreach d,$(filter-out $(OZ_PROJ_MODELS),$(MODEL_DIRS)),cp -pf $(d)/$(model_BIN_DIR)/$(d)* $(local_BIN_DIR);)
-	$(foreach d,$(OZ_PROJ_MODELS),mkdir -p $(local_BIN_DIR)/$d/ompp/bin;)
-	$(foreach d,$(OZ_PROJ_MODELS),cp -pf $(d)/$(model_BIN_DIR)/$(d)* $(local_BIN_DIR)/$d/ompp/bin/;)
-	$(foreach d,$(OZ_PROJ_MODELS),cp -prf $(d)/microdata $(local_BIN_DIR)/$d/;)
-	cp -pf modelOne/*.sql $(local_SQL_DIR)
+	$(foreach d,$(filter $(OZ_PROJ_MODELS),$(MODEL_DIRS)),mkdir -p $(local_BIN_DIR)/$d/ompp/bin;)
+	$(foreach d,$(filter $(OZ_PROJ_MODELS),$(MODEL_DIRS)),cp -pf $(d)/$(model_BIN_DIR)/$(d)* $(local_BIN_DIR)/$d/ompp/bin/;)
+	$(foreach d,$(filter $(OZ_PROJ_MODELS),$(MODEL_DIRS)),cp -prf $(d)/microdata $(local_BIN_DIR)/$d/;)
+	$(foreach d,$(filter modelOne,$(MODEL_DIRS)),cp -pf modelOne/*.sql $(local_SQL_DIR);)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
-	$(foreach d,$(MODEL_DIRS),cp -pf $(d)/$(model_BIN_DIR)/$(d).*.log $(local_LOG_DIR);)
-	find $(local_BIN_DIR) -name "*.log" -delete
 
 .PHONY : prepare
 prepare:
