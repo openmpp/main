@@ -39,7 +39,7 @@ IF "%PUBLISH_DIR%" == "" (
 )
 @echo PUBLISH_DIR = %PUBLISH_DIR%
 
-if not exist %PUBLISH_DIR% (
+if not exist "%PUBLISH_DIR%" (
   @echo ERROR: missing model bin directory: %PUBLISH_DIR%
   pause
   EXIT 1
@@ -48,20 +48,20 @@ if not exist %PUBLISH_DIR% (
 set model_root_name=OM_%model_dir%
 
 set model_root_value=%~dp0
-if %model_root_value:~-1%==\ set model_root_value=%model_root_value:~0,-1%
+if "%model_root_value:~-1%"==\ set model_root_value="%model_root_value:~0,-1%"
 
-set %model_root_name%=%model_root_value%
+set %model_root_name%="%model_root_value%"
 
 @echo %model_root_name% = %model_root_value%
 
 REM check if model.exe exist and model.sqlite exist
 REM if only Debug modelD.exe exist then set model run template to run.Debug.template.txt
 
-if exist %PUBLISH_DIR%\%MODEL_NAME%.exe (
+if exist "%PUBLISH_DIR%\%MODEL_NAME%.exe" (
   set model_exe_name=%MODEL_NAME%.exe
 )
 if not defined model_exe_name (
-  if exist %PUBLISH_DIR%\%MODEL_NAME%D.exe (
+  if exist "%PUBLISH_DIR%\%MODEL_NAME%D.exe" (
 
     set model_exe_name=%MODEL_NAME%D.exe
 
@@ -76,7 +76,7 @@ if not defined model_exe_name (
   EXIT 1
 )
 
-if not exist %PUBLISH_DIR%\%MODEL_NAME%.sqlite (
+if not exist "%PUBLISH_DIR%\%MODEL_NAME%.sqlite" (
   @echo ERROR: model SQLite database not found: %PUBLISH_DIR%\%MODEL_NAME%.sqlite
   pause
   EXIT 1
@@ -88,30 +88,30 @@ IF "%OM_ROOT%" == "" (
   set OM_ROOT=%~dp0\..\..
 )
 
-cd /d %OM_ROOT%
+cd /d "%OM_ROOT%"
 set OM_ROOT=%CD%
 
 @echo OM_ROOT     = %OM_ROOT%
 
-if not exist %OM_ROOT%\html (
+if not exist "%OM_ROOT%\html" (
   @echo ERROR: missing UI html directory: %OM_ROOT%\html
   pause
   EXIT 1
 )
 
-if not exist %OM_ROOT%\bin\oms.exe (
+if not exist "%OM_ROOT%\bin\oms.exe" (
   @echo ERROR: missing openM++ web-service: %OM_ROOT%\bin\oms.exe
   pause
   EXIT 1
 )
 
-if not exist %OM_ROOT%\bin\dbcopy.exe (
+if not exist "%OM_ROOT%\bin\dbcopy.exe" (
   @echo ERROR: missing openM++ dbcopy utility: %OM_ROOT%\bin\dbcopy.exe
   pause
   EXIT 1
 )
 
-if not exist %OM_ROOT%\props\startOmppUI.ps1 (
+if not exist "%OM_ROOT%\props\startOmppUI.ps1" (
   @echo ERROR: missing openM++ UI start script: %OM_ROOT%\props\startOmppUI.ps1
   pause
   EXIT 1
@@ -122,5 +122,5 @@ REM start oms web-service and UI
 set OMS_URL_TICKLE=%PUBLISH_DIR%\%MODEL_NAME%.oms_url.tickle
 set START_OMPP_UI_LOG=%PUBLISH_DIR%\%MODEL_NAME%.start_ompp_ui.log
 
-PowerShell.exe -ExecutionPolicy Bypass -File %OM_ROOT%\props\startOmppUI.ps1
+PowerShell.exe -ExecutionPolicy Bypass -File "%OM_ROOT%\props\startOmppUI.ps1"
 
