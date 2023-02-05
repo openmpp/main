@@ -7,6 +7,12 @@
 // Otherwise, the destination is chosen randomly from all
 // other cities.
 
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 classification CITY { //EN City
     //EN Paris
     PARIS,
@@ -49,28 +55,6 @@ parameters {
     cumrate StartCityDistribution[CITY];
 };
 
-void PreSimulation()
-{
-    // Determine nearest region to each region
-    for (int i = 0; i < SIZE(CITY); ++i) {
-        int nearest_city = -1;
-        double nearest_distance = 1.0e10;
-        for (int j = 0; j < SIZE(CITY); ++j) {
-            if (i != j) {
-                double dX = RegionX[i] - RegionX[j];
-                double dY = RegionY[i] - RegionY[j];
-                double dist = sqrt(dX * dX + dY * dY);
-                if (dist < nearest_distance) {
-                    nearest_city = j;
-                    nearest_distance = dist;
-                }
-            }
-        }
-        assert(nearest_city >= 0 && nearest_city < SIZE(CITY));
-        NearestCity[i] = (CITY)nearest_city;
-    }
-}
-
 actor Person
 {
     //EN Integer time
@@ -94,6 +78,48 @@ actor Person
 
 	event timeMoveEvent, MoveEvent;
 };
+
+table Person Movement //EN Movement
+{
+    {
+        moves, //EN Moves
+        nearest_city_moves, //EN Moves to nearest city
+        nearest_city_moves / moves //EN Proportion moves to nearest city decimals=3
+    }
+};
+
+table Person PopulationByCity //EN Population by city
+{
+    {
+        duration() //EN PY's
+    }
+    *years_from_start
+    * city
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+void PreSimulation()
+{
+    // Determine nearest region to each region
+    for (int i = 0; i < SIZE(CITY); ++i) {
+        int nearest_city = -1;
+        double nearest_distance = 1.0e10;
+        for (int j = 0; j < SIZE(CITY); ++j) {
+            if (i != j) {
+                double dX = RegionX[i] - RegionX[j];
+                double dY = RegionY[i] - RegionY[j];
+                double dist = sqrt(dX * dX + dY * dY);
+                if (dist < nearest_distance) {
+                    nearest_city = j;
+                    nearest_distance = dist;
+                }
+            }
+        }
+        assert(nearest_city >= 0 && nearest_city < SIZE(CITY));
+        NearestCity[i] = (CITY)nearest_city;
+    }
+}
 
 void Person::StartCity()
 {
@@ -144,22 +170,4 @@ void Person::MoveEvent(int destination)
     }
 
     city = (CITY) destination;
-};
-
-table Person Movement //EN Movement
-{
-    {
-        moves, //EN Moves
-        nearest_city_moves, //EN Moves to nearest city
-        nearest_city_moves / moves //EN Proportion moves to nearest city decimals=3
-    }
-};
-
-table Person PopulationByCity //EN Population by city
-{
-    {
-        duration() //EN PY's
-    }
-    * years_from_start
-    * city
 };
