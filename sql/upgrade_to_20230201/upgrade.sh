@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# upgrade models SQLite database files to release 2022-10-12 a.k.a. v1.12.0
+# upgrade models SQLite database files to release 2023-02-01 a.k.a. v1.14.0
+# from version 2022-09-23 a.k.a. v1.11.1 or older
 #
 # IMPORTANT:
 # Make a backup copy of your model.sqlite database files before upgrade
@@ -8,9 +9,9 @@
 # How to run upgrade script:
 # For example,
 #   if new version of openM++ is in:
-# ~/openmpp_debian_20221210/
+# ~/openmpp_debian_20230201/
 #                        bin/
-#                        sql/upgrade_to_20221210/
+#                        sql/upgrade_to_20230201/
 #                                               upgrade_linux.sh
 #
 #   and previous version of openM++ is in:
@@ -21,13 +22,13 @@
 # then:
 #
 # option 1.
-#  cp -r ~/openmpp_debian_20221210/sql/upgrade_to_20221210/ ~/openmpp_debian_20220923/
+#  cp -r ~/openmpp_debian_20230201/sql/upgrade_to_20230201/ ~/openmpp_debian_20220923/
 #  cd ~/openmpp_debian_20220923
-#  ./upgrade_to_20221210/upgrade_linux.sh
+#  ./upgrade_to_20230201/upgrade_linux.sh
 #
 # option 2.
-#  cd ~/openmpp_debian_20221210/sql/upgrade_to_20221210/
-#  ./upgrade_to_20221210/upgrade_linux.sh ~/openmpp_debian_20220923
+#  cd ~/openmpp_debian_20230201/sql/upgrade_to_20230201/
+#  ./upgrade_to_20230201/upgrade_linux.sh ~/openmpp_debian_20220923
 #
 
 set -e
@@ -56,7 +57,7 @@ if [ ! -d $models_dir ]; then
 fi
 echo "Upgrade models at: $models_dir"
 
-upgrade_sql=$self_dir/upgrade_20221210.sql
+upgrade_sql=$self_dir/upgrade_20230201.sql
 
 if [ ! -f $upgrade_sql ]; then
   echo "ERROR: missing upgrade script: $upgrade_sql"
@@ -70,11 +71,11 @@ then
   exit 1
 fi
 
-# check: do not run upgrade script on the same openM++ 20221210 or older
+# check: do not run upgrade script on the same openM++ 20230201 or older
 
-if [ -e $dst_root/sql/upgrade_to_20221210/$self ]; then
+if [ -e $dst_root/sql/upgrade_to_20230201/$self ]; then
   echo "ERROR: it is look like destination folder is incorrect: $dst_root"
-  echo "ERROR: it must contain version older than 20221210 a.k.a. v1.12.0"
+  echo "ERROR: it must contain version older than 20230201 a.k.a. v1.14.0"
   exit 1
 fi
 

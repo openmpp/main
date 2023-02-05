@@ -1,3 +1,7 @@
+--
+-- upgrade model database to release 2023-02-01 a.k.a. v1.14.0
+-- from version 2022-09-23 or older
+--
 BEGIN EXCLUSIVE TRANSACTION;
 
 --
@@ -118,6 +122,7 @@ CREATE TABLE IF NOT EXISTS run_entity
   run_id         INT         NOT NULL, -- master key
   entity_gen_hid INT         NOT NULL, -- entity generation unique id
   base_run_id    INT         NOT NULL, -- source run id to select entity attribute values
+  row_count      INT         NOT NULL, -- if not zero then entity microdata row count
   value_digest   VARCHAR(32),          -- if not NULL then digest of attribute values for the run
   PRIMARY KEY (run_id, entity_gen_hid),
   CONSTRAINT run_entity_mk
@@ -142,6 +147,6 @@ AND IL.id_key =
   SELECT MIN(M.id_key) from id_lst M
 );
 
-UPDATE id_lst SET id_value = 103 WHERE id_key = 'openmpp';
+UPDATE id_lst SET id_value = 104 WHERE id_key = 'openmpp';
 
 COMMIT;

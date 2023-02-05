@@ -115,8 +115,10 @@
 
     <PropertyGroup>
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
+      <PUBLISH_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir), $(PUBLISH_DIR)))</PUBLISH_DIR_REL>
+      <OMC_OUT_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir), $(OMC_OUT_DIR)))</OMC_OUT_DIR_REL>
     </PropertyGroup>
-    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT) -Omc.SqliteDir $(PUBLISH_DIR)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR_REL) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT) -Omc.SqliteDir $(PUBLISH_DIR_REL)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />
@@ -137,12 +139,17 @@
   <!--
   StopOms
   -->
-
   <!-- Stop oms web-service if model.ompp_ui.tickle exist -->
   <!-- otherwise omc compile will fail because model.sqlite is opened by oms.exe -->
   <PropertyGroup>
+    <ABS_OM_ROOT Condition="'$(OM_ROOT)'!=''">$([System.IO.Path]::GetFullPath('$(OM_ROOT)'))</ABS_OM_ROOT>
+    <!-- bug: System.IO.Path::GetFullPath('../../..') return: C:\Program Files (x86)\Microsoft Visual Studio\2019 -->
+    <!-- bug: System.IO.Path::GetFullPath('../../..') return wrong value under VS 2022 -->
+    <ABS_OM_ROOT Condition="'$(OM_ROOT)'=='../../..'">$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\..'))</ABS_OM_ROOT>
+    <PUBLISH_DIR_REL_TO_OM_ROOT>$([MSBuild]::MakeRelative($(ABS_OM_ROOT), $(PUBLISH_DIR)))</PUBLISH_DIR_REL_TO_OM_ROOT>
     <OMS_URL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).oms_url.tickle</OMS_URL_TICKLE>
-    <STOP_OMS_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).stop_oms.log</STOP_OMS_LOG>
+    <OMS_URL_TICKLE_REL>$(PUBLISH_DIR_REL_TO_OM_ROOT)/$(MODEL_NAME).oms_url.tickle</OMS_URL_TICKLE_REL>
+    <STOP_OMS_LOG>$(PUBLISH_DIR_REL_TO_OM_ROOT)/$(MODEL_NAME).stop_oms.log</STOP_OMS_LOG>
   </PropertyGroup>
 
   <Target Name="StopOms"
@@ -152,12 +159,12 @@
 
     <Message Text="Using PowerShell to stop oms web-service:" />
     <Message
-      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/stopOms.ps1"
+      Text="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE_REL)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/stopOms.ps1"
       />
     <Exec
       WorkingDirectory="$(OM_ROOT)"
       ContinueOnError="true"
-      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/stopOms.ps1"
+      Command="(set OMS_URL_TICKLE=$(OMS_URL_TICKLE_REL)) &amp; (set STOP_OMS_LOG=$(STOP_OMS_LOG)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/stopOms.ps1"
       />
     <Delete Files="$(OMS_URL_TICKLE)" />
 
@@ -236,13 +243,15 @@
   <PropertyGroup>
     <!-- The following property prepares arguments to the model executable. -->
     <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
+    <PUBLISH_DIR_REL>$([MSBuild]::MakeRelative($(TargetDir),$(PUBLISH_DIR)))</PUBLISH_DIR_REL>
+    <MODEL_INI_PATH_REL>$([MSBuild]::MakeRelative($(TargetDir), $(MODEL_INI_PATH)))</MODEL_INI_PATH_REL>
     <FIRST_SCENARIO_NAME>$(SCENARIO_NAMES.Split(';')[0])</FIRST_SCENARIO_NAME>
     <MODEL_OPTS>$(MODEL_OPTS) -s $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
-    <MODEL_OPTS Condition="'$(MODEL_INI)' != ''">$(MODEL_OPTS) -ini $(MODEL_INI_PATH)</MODEL_OPTS>
+    <MODEL_OPTS Condition="'$(MODEL_INI)' != ''">$(MODEL_OPTS) -ini $(MODEL_INI_PATH_REL)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunStamp $(MODEL_RUN_STAMP)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogToFile true</MODEL_OPTS>
-    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
+    <MODEL_OPTS>$(MODEL_OPTS) -OpenM.LogFilePath $(PUBLISH_DIR_REL)/$(MODEL_NAME).$(MODEL_RUN_STAMP).log</MODEL_OPTS>
     <RUN_MODEL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME)_$(FIRST_SCENARIO_NAME).run.tickle</RUN_MODEL_TICKLE>
     <MPIEXEC_OPTS Condition="'$(PROCESSES)' != ''">-n $(PROCESSES)</MPIEXEC_OPTS>
   </PropertyGroup>
@@ -253,25 +262,26 @@
           AfterTargets="ModelPublish"
           >
     <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
-    <Message Text="$(TargetPath) $(MODEL_OPTS)" />
+    <Message Text="$(TargetName) $(MODEL_OPTS)" />
     <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT);$(MODEL_ROOT_ENV)"
           WorkingDirectory="$(TargetDir)"
-          Command="$(TargetPath) $(MODEL_OPTS)"
+          Command="$(TargetName) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
             AlwaysCreate="true"
             />
   </Target>
+
   <Target Name="RunModel_mpi"
           Condition="'$(RUN_SCENARIO)'=='true' And '$(GRID_COMPUTING)' == 'MPI'" 
           Outputs="$(RUN_MODEL_TICKLE)"
           AfterTargets="ModelPublish"
           >
     <Message Text="Running scenario $(FIRST_SCENARIO_NAME) using $(MODEL_NAME)..." />
-    <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)" />
+    <Message Text="mpiexec $(MPIEXEC_OPTS) $(TargetName) $(MODEL_OPTS)" />
     <Exec EnvironmentVariables="OM_ROOT=$(OM_ROOT);$(MODEL_ROOT_ENV)"
           WorkingDirectory="$(TargetDir)"
-          Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetPath) $(MODEL_OPTS)"
+          Command="$(COMPLETE_MPIEXEC_EXE) $(MPIEXEC_OPTS) $(TargetName) $(MODEL_OPTS)"
           />
     <Touch  Files="$(RUN_MODEL_TICKLE)"
             AlwaysCreate="true"
@@ -288,7 +298,7 @@
     <!-- bug: System.IO.Path::GetFullPath('../../..') return: C:\Program Files (x86)\Microsoft Visual Studio\2019 -->
     <ABS_OM_BIN_DIR Condition="'$(OM_ROOT)'=='../../..'">$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\..\bin'))</ABS_OM_BIN_DIR>
     <COMPLETE_DBCOPY_EXE>&quot;$(ABS_OM_BIN_DIR)\$(DBCOPY_EXE)&quot;</COMPLETE_DBCOPY_EXE>
-    <DBCOPY_CSV_OUTPUT_DIR>$(PUBLISH_DIR)/$(MODEL_NAME).last.run</DBCOPY_CSV_OUTPUT_DIR>
+    <DBCOPY_CSV_OUTPUT_DIR>$(MODEL_NAME).last.run</DBCOPY_CSV_OUTPUT_DIR>
   </PropertyGroup>
 
   <Target Name="DbcopyExportCsv"
@@ -332,7 +342,7 @@
   Template files are located in OM_ROOT/etc directory
   -->
   <PropertyGroup>
-    <START_OMPP_UI_LOG>$(PUBLISH_DIR)/$(MODEL_NAME).start_ompp_ui.log</START_OMPP_UI_LOG>
+    <START_OMPP_UI_LOG>$(PUBLISH_DIR_REL_TO_OM_ROOT)/$(MODEL_NAME).start_ompp_ui.log</START_OMPP_UI_LOG>
     <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">run.Debug.template.txt</RUN_TEMPLATE>
     <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">run.Debug.template.txt</RUN_TEMPLATE>
     <RUN_TEMPLATE Condition="'$(OM_CFG_DEFAULT_RUN_TMPL)'!=''">$(OM_CFG_DEFAULT_RUN_TMPL)</RUN_TEMPLATE>
@@ -347,11 +357,11 @@
           >
     <Message Text="Using PowerShell to start openM++ UI:" />
     <Message
-      Text="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; (set $(MODEL_ROOT_ENV)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
+      Text="(set PUBLISH_DIR=$(PUBLISH_DIR_REL_TO_OM_ROOT)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE_REL)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; (set $(MODEL_ROOT_ENV)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
       />
     <Exec
       WorkingDirectory="$(OM_ROOT)"
-      Command="(set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; (set $(MODEL_ROOT_ENV)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
+      Command="(set PUBLISH_DIR=$(PUBLISH_DIR_REL_TO_OM_ROOT)) &amp; (set OMS_URL_TICKLE=$(OMS_URL_TICKLE_REL)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; (set START_OMPP_UI_LOG=$(START_OMPP_UI_LOG)) &amp; (set $(MODEL_ROOT_ENV)) &amp; powershell -NonInteractive -ExecutionPolicy Bypass -File props/startOmppUI.ps1"
       />
   </Target>
 

@@ -275,11 +275,12 @@ void RunController::insertRunEntity(int i_runId, IDbExec * i_dbExec)
     for (const auto & e : entityMap)
     {
         i_dbExec->update(
-            "INSERT INTO run_entity (run_id, entity_gen_hid, base_run_id, value_digest)" \
+            "INSERT INTO run_entity (run_id, entity_gen_hid, base_run_id, row_count, value_digest)" \
             " VALUES (" +
             to_string(i_runId) + ", " +
             to_string(e.second.genHid) + ", " +
             to_string(i_runId) + ", " +
+            "0, " +
             "NULL)");
     }
 }
@@ -630,10 +631,11 @@ namespace
             for (; lastCol < i_column; lastCol++)
             {
                 mdLine->append(",");
+                if (lastCol < i_column - 1) mdLine->append(nullValueString);
             }
 
-            // append column value as string
-            if (i_value != nullptr) mdLine->append(fmtVec[i_column]->formatValue(i_value));
+            // append column value as string or "null" if value is NULL
+            mdLine->append(fmtVec[i_column]->formatValue(i_value));
         }
     };
 
@@ -668,22 +670,23 @@ namespace
     class MdRowDigester : public IRowProcessor
     {
     public:
-        MdRowDigester(int i_colCount, MD5 * io_md5) : colCount(i_colCount), md5(io_md5) {}
+        MdRowDigester(int i_colCount, MD5 * io_md5, int * io_rowCount) : colCount(i_colCount), md5(io_md5), rowCount(io_rowCount) {}
 
         /** IRowProcessor implementation: append row to digest */
         void processRow(IRowBaseUptr & i_row) override
         {
             MdValueRow * mdRow = dynamic_cast<MdValueRow *>(i_row.release());   // release to avoid delete
 
-            // if microdata line has nulls at the end then add , comma(s) for empty attribute values
+            // if microdata line has nulls at the end then add: ",null" for empty attribute values
             for (int k = mdRow->lastCol; k < colCount - 1; k++)
             {
-                mdRow->mdLine->append(",");
+                mdRow->mdLine->append(",").append(nullValueString);
             }
 
             // append current microdata line
             md5->add(mdRow->mdLine->c_str(), mdRow->mdLine->length());
-            md5->add("\n", 1);   // row delimiter
+            md5->add("\n", 1);      // row delimiter
+            (*rowCount)++;          // count rows
 
             // clear buffer for the next line
             mdRow->mdLine->clear();
@@ -691,8 +694,9 @@ namespace
         }
 
     private:
-        int colCount = 0;   // number of microdata table columns: run id, entity key plus attributes count
-        MD5 * md5;          // digest calculator
+        int colCount = 0;           // number of microdata table columns: run id, entity key plus attributes count
+        MD5 * md5;                  // digest calculator
+        int * rowCount = nullptr;   // microdata row count
 
     private:
         MdRowDigester(const MdRowDigester &) = delete;
@@ -757,7 +761,7 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
         // SELECT run_id, entity_key, attr4, attr7 FROM Person_g87abcdef WHERE run_id = 11 ORDER BY 1, 2
         //
         string sql = "SELECT  run_id, entity_key";
-        string hdrLine = "entity_key";
+        string hdrLine = "key";
 
         for (const eat & a : eatLst)
         {
@@ -778,16 +782,17 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
         string sLine = "entity_name,gen_digest\n" + eRow->entityName + "," + ent.genDigest + "\n";
         md5.add(sLine.c_str(), sLine.length());
 
-        // append values header: run_id,entity_key,age_group,income\n
+        // append values header: key,age_group,income\n
         hdrLine += "\n";
         md5.add(hdrLine.c_str(), hdrLine.length());
 
         // append microdata values digest
+        int mdRowCount = 0;
         {
             mdBuf.clear();
             MdValueRow mdRow(eaTypes, dblFmt, &mdBuf);
             MdRowAdapter adp(&mdRow);
-            MdRowDigester md5Rd(mdRow.colCount, &md5);
+            MdRowDigester md5Rd(mdRow.colCount, &md5, &mdRowCount);
 
             i_dbExec->selectToRowProcessor(sql, adp, md5Rd);
         }
@@ -796,7 +801,9 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
 
         // update digest and base run id
         //
-        // UPDATE run_entity SET value_digest = '22ee44cc' WHERE run_id = 11 entity_gen_hid = 456
+        // UPDATE run_entity
+        // SET value_digest = '22ee44cc', row_count = 87654
+        // WHERE run_id = 11 entity_gen_hid = 456
         //
         // UPDATE run_entity SET 
         //   base_run_id =
@@ -811,7 +818,9 @@ void RunController::writeMicrodataDigest(int i_runId, IDbExec * i_dbExec) const
             unique_lock<recursive_mutex> lck = i_dbExec->beginTransactionThreaded();
 
             i_dbExec->update(
-                "UPDATE run_entity SET value_digest = " + toQuoted(sDigest) +
+                "UPDATE run_entity" \
+                " SET value_digest = " + toQuoted(sDigest) + ", " +
+                " row_count = " + to_string(mdRowCount) +
                 " WHERE run_id = " + sRunId + " AND entity_gen_hid = " + sHid
             );
 

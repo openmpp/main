@@ -763,6 +763,7 @@ CREATE TABLE run_entity
   run_id         INT         NOT NULL, -- master key
   entity_gen_hid INT         NOT NULL, -- entity generation unique id
   base_run_id    INT         NOT NULL, -- source run id to select entity attribute values
+  row_count      INT         NOT NULL, -- if not zero then entity microdata row count
   value_digest   VARCHAR(32),          -- if not NULL then digest of attribute values for the run
   PRIMARY KEY (run_id, entity_gen_hid),
   CONSTRAINT run_entity_mk

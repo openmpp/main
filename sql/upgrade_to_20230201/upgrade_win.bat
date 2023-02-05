@@ -1,5 +1,6 @@
 @echo off
-REM upgrade models SQLite database files to release 2022-10-12 a.k.a. v1.12.0
+REM upgrade models SQLite database files to release 2023-02-01 a.k.a. v1.14.0
+REM from version 2022-09-23 a.k.a. v1.11.1 or older
 REM
 REM IMPORTANT:
 REM Make a backup copy of your model.sqlite database files before upgrade
@@ -7,9 +8,9 @@ REM
 REM How to run upgrade script:
 REM For example,
 REM   if new version of openM++ is in:
-REM C:\openmpp_win_20221210\
+REM C:\openmpp_win_20230201\
 REM                        bin\
-REM                        sql\upgrade_to_20221210\
+REM                        sql\upgrade_to_20230201\
 REM                                               upgrade_win.bat
 REM
 REM   and previous version of openM++ is in:
@@ -20,12 +21,12 @@ REM
 REM then:
 REM
 REM option 1. 
-REM   copy directory \upgrade_to_20221210\ into old openM++: C:\openmpp_win_20220923\
-REM   double click on C:\openmpp_win_20220923\upgrade_to_20221210\upgrade_win.bat
+REM   copy directory \upgrade_to_20230201\ into old openM++: C:\openmpp_win_20220923\
+REM   double click on C:\openmpp_win_20220923\upgrade_to_20230201\upgrade_win.bat
 REM
 REM option 2. 
 REM   open command prompt (not PowerShell) and type:
-REM     cd /D C:\openmpp_win_20221210\sql\upgrade_to_20221210
+REM     cd /D C:\openmpp_win_20230201\sql\upgrade_to_20230201
 REM     upgrade_win.bat C:\openmpp_win_20220923
 
 setlocal enabledelayedexpansion
@@ -53,7 +54,7 @@ if not exist %models_dir% (
 )
 @echo Upgrade models at: %models_dir%
 
-set upgrade_sql="%~dp0"upgrade_20221210.sql
+set upgrade_sql="%~dp0"upgrade_20230201.sql
 
 if not exist %upgrade_sql% (
   @echo ERROR: missing upgrade script: %upgrade_sql%
@@ -76,11 +77,11 @@ if not exist %sqlite3_exe% (
   )
 )
 
-REM check: do not run upgrade script on the same openM++ 20221210 or older
+REM check: do not run upgrade script on the same openM++ 20230201 or older
 
-if exist %dst_root%\sql\upgrade_to_20221210\upgrade_win.bat (
+if exist %dst_root%\sql\upgrade_to_20230201\upgrade_win.bat (
   @echo ERROR: it is look like destination folder is incorrect: %dst_root% 
-  @echo ERROR: it must contain version older than 20221210 a.k.a. v1.12.0
+  @echo ERROR: it must contain version older than 20230201 a.k.a. v1.14.0
   pause
   EXIT /B 1
 )
