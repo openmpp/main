@@ -442,7 +442,7 @@ public:
     /**
      * Storage for memory events.
      */
-    int memory;
+    uint16_t memory;
 
     /**
      * Event is in \a event_queue.
@@ -579,14 +579,20 @@ public:
      */
     static thread_local Time stashed_time;
 
+    /**
+     * Staging location for 'event memory'
+     */
+    static thread_local int memory_staging;
+
 private:
 
     /**
      * The global time.
      */
     static thread_local Time *global_time;
-
 };
+
+inline thread_local int BaseEvent::memory_staging;
 
 /**
  * An event, within a given kind of entity
@@ -849,7 +855,21 @@ public:
         if constexpr (om_resource_use_on) {
             ++calculation_count;
         }
-        return (entity()->*time_function)(&memory);
+        // use staging area memory_staging for model to communicate int 'event memory' value
+        Time t = (entity()->*time_function)(&memory_staging);
+        if (memory_staging < std::numeric_limits<uint16_t>::min() || memory_staging > std::numeric_limits<uint16_t>::max()) {
+            // The supplied 'event memory' value is not within the limits of uint16_s
+            std::stringstream ss;
+            ss  << LT("event memory value ") << memory_staging
+                << LT(" is not in [") << std::numeric_limits<uint16_t>::min()
+                << NO_LT(",") << std::numeric_limits<uint16_t>::max()
+                << NO_LT("]")
+                ;
+            throw openm::SimulationException(ss.str().c_str());
+        }
+        // record the 'event memory' value supplied by the model to BaseEvent::memory
+        memory = (uint16_t)memory_staging;
+        return(t);
     }
 
     void call_age_entity()
