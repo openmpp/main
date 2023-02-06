@@ -244,7 +244,7 @@
     <!-- The following property prepares arguments to the model executable. -->
     <MODEL_RUN_STAMP>$([System.DateTime]::Now.ToString(yyyy_MM_dd_HH_mm_ss_fff))</MODEL_RUN_STAMP>
     <PUBLISH_DIR_REL>$([MSBuild]::MakeRelative($(TargetDir),$(PUBLISH_DIR)))</PUBLISH_DIR_REL>
-    <MODEL_INI_PATH_REL>$([MSBuild]::MakeRelative($(TargetDir), $(MODEL_INI_PATH)))</MODEL_INI_PATH_REL>
+    <MODEL_INI_PATH_REL Condition="'$(MODEL_INI)' != ''">$([MSBuild]::MakeRelative($(TargetDir), $(MODEL_INI_PATH)))</MODEL_INI_PATH_REL>
     <FIRST_SCENARIO_NAME>$(SCENARIO_NAMES.Split(';')[0])</FIRST_SCENARIO_NAME>
     <MODEL_OPTS>$(MODEL_OPTS) -s $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
     <MODEL_OPTS>$(MODEL_OPTS) -OpenM.RunName $(FIRST_SCENARIO_NAME)</MODEL_OPTS>
