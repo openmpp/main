@@ -592,6 +592,17 @@ private:
     static thread_local Time *global_time;
 };
 
+// Definitions of static members of BaseEvent
+inline thread_local std::set<BaseEvent*, less_deref<BaseEvent*> >* BaseEvent::event_queue = nullptr;
+inline thread_local std::set<BaseEvent*, decltype(BaseEvent::dirty_cmp)* >* BaseEvent::dirty_events = nullptr;
+inline thread_local big_counter BaseEvent::global_event_counter;
+inline thread_local Time* BaseEvent::global_time = nullptr;
+inline thread_local std::list<BaseEntity*>* BaseEntity::entities = nullptr;
+inline thread_local int BaseEvent::current_event_id;
+inline thread_local int BaseEvent::current_entity_id;
+inline thread_local int BaseEvent::timefunc_event_id;
+inline thread_local int BaseEvent::timefunc_entity_id;
+inline thread_local Time BaseEvent::stashed_time = -time_infinite;
 inline thread_local int BaseEvent::memory_staging;
 
 /**
