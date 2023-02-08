@@ -39,12 +39,32 @@ CodeBlock EntityIncrementSymbol::cxx_declaration_agent()
     // Hook into the hierarchical calling chain
     CodeBlock h = super::cxx_declaration_agent();
 
+    // get maximum index used in flattened table (including margin cells)
+    auto max_index = table->cell_count() - 1;
+
+    // determine smallest unsigned integer type capable of holding
+    // the maximum index of this table
+    string increment_storage_type;
+    if (max_index <= std::numeric_limits<uint8_t>::max()) {
+        increment_storage_type = "uint8_t";
+    }
+    else if (max_index <= std::numeric_limits<uint16_t>::max()) {
+        increment_storage_type = "uint16_t";
+    }
+    else if (max_index <= std::numeric_limits<uint32_t>::max()) {
+        increment_storage_type = "uint32_t";
+    }
+    else {
+        increment_storage_type = "size_t";
+    }
+
     // Perform operations specific to this level in the Symbol hierarchy.
     h += "";
     h += "static const std::string om_name_" + name + ";";
     h += doxygen_short(pretty_name());
     h += "Increment<"
         + agent->name + ", "
+        + increment_storage_type + ", "
         + "&om_name_" + name + ", "
         + "&" + table->init_increment_fn->unique_name + ", "
         + "&" + table->push_increment_fn->unique_name

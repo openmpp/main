@@ -17,6 +17,7 @@
  */
 template<
     typename A,
+    typename IndexType,
     std::string const *NT_name,
     void(A::*NT_init_increment)(int, big_counter),
     void(A::*NT_push_increment)(size_t, int, big_counter)
@@ -117,7 +118,8 @@ public:
 
     void set_cell(size_t cl)
     {
-        cell = cl;
+        assert(cl <= std::numeric_limits<IndexType>::max());
+        cell = (IndexType)cl;
     }
 
     void set_filter(bool fltr)
@@ -141,12 +143,12 @@ public:
     /**
      * The current index of the table cell.
      */
-    size_t cell;
+    IndexType cell;
 
     /**
      * The index of the table cell at the start of the increment.
      */
-    size_t cell_in;
+    IndexType cell_in;
 
     /**
      * The current value of the table filter.
@@ -193,8 +195,9 @@ public:
  */
 template<
     typename A,
+    typename IndexType,
     std::string const *NT_name,
     void(A::*NT_init_increment)(int, big_counter),
     void(A::*NT_push_increment)(size_t, int, big_counter)
 >
-size_t Increment<A, NT_name, NT_init_increment, NT_push_increment>::offset_in_entity = 0;
+size_t Increment<A, IndexType, NT_name, NT_init_increment, NT_push_increment>::offset_in_entity = 0;
