@@ -31,7 +31,7 @@ namespace fmk {
  */
 void report_simulation_progress(int member, int percent, Time i_time)
 {
-    theLog->logFormatted("member=%d Simulation progress=%d%% time=%g", member, percent, i_time);
+    theLog->logFormatted("member=%d Simulation progress=%d%% time=%g", member, percent, (double)i_time);
     report_simulation_progress_beat(percent, (double)i_time);
 }
 
