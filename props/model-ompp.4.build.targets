@@ -395,11 +395,14 @@
   Visual Studio IDE integration
   -->
  
- 
-  <ItemGroup>
+   <ItemGroup>
     <PropertyPageSchema Include="$(OM_ROOT)/props/model-ompp.VS.xml">
       <Context>Project</Context>
     </PropertyPageSchema>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- for improved visualization of entity Attribute wrapped values in VS debugger -->
+    <Natvis Include="$(OM_ROOT)/props/model-ompp.natvis" />
   </ItemGroup>
 
 </Project>
