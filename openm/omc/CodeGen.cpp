@@ -34,6 +34,7 @@ void CodeGen::do_all()
     do_table_dependencies();
     do_entities();
 	do_entity_sets();
+    do_event_queue();
     do_event_and_attribute_names();
 
     h += "void StartSimulation(int id);";
@@ -1653,6 +1654,44 @@ void CodeGen::do_table_interface()
 
 	c += "";
 
+}
+
+void CodeGen::do_event_queue()
+{
+    c += "// Definitions of static members of BaseEvent (declaration in Event.h)";
+    c += "";
+    c += "// definition of event_queue (declaration in Event.h)";
+    c += "thread_local std::set<BaseEvent *, less_deref<BaseEvent *> > *BaseEvent::event_queue = nullptr;";
+    c += "";
+    c += "// definition of dirty_events (declaration in Event.h)";
+    c += "thread_local std::set<BaseEvent *, decltype(BaseEvent::dirty_cmp)* > *BaseEvent::dirty_events = nullptr;";
+    c += "";
+    c += "// definition of global_event_counter (declaration in Event.h)";
+    c += "thread_local big_counter BaseEvent::global_event_counter;";
+    c += "";
+    c += "// definition of global_time (declaration in Event.h)";
+    c += "thread_local Time *BaseEvent::global_time = nullptr;";
+    c += "";
+    c += "// definition of active entity list (declaration in Entity.h)";
+    c += "thread_local std::list<BaseEntity *> *BaseEntity::entities = nullptr;";
+    c += "";
+    c += "// definition of event_id of current event (declaration in Event.h)";
+    c += "thread_local int BaseEvent::current_event_id;";
+    c += "";
+    c += "// definition of entity_id of current event (declaration in Event.h)";
+    c += "thread_local int BaseEvent::current_entity_id;";
+    c += "";
+    c += "// definition of event_id of event time function being recomputed (declaration in Event.h)";
+    c += "thread_local int BaseEvent::timefunc_event_id;";
+    c += "";
+    c += "// definition of entity_id of event time function being recomputed (declaration in Event.h)";
+    c += "thread_local int BaseEvent::timefunc_entity_id;";
+    c += "";
+    c += "// definition of stashed time for event trace communication (declaration in Event.h)";
+    c += "thread_local Time BaseEvent::stashed_time = -time_infinite;";
+    c += "";
+    c += "// definition of staging location for event memory (declaration in Event.h)";
+    c += "thread_local int BaseEvent::memory_staging;";
 }
 
 void CodeGen::do_event_and_attribute_names()
