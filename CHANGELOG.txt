@@ -1,6 +1,18 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-03-10:
+  c++ core: reduced memory size in time-based models
+  Visual Studio: improved display of entity attributes in debugger
+  Visual Studio: fix path with spaces issues in model projects
+  Go: improve space handling in file path
+  Go: fix dbcopy fail bug if workset does not contain first model parameter
+  UI: replace output table viewer
+  UI: implement output table decimals support for table expressions
+  UI: paramter page: wait for filters set before read parameter data
+  UI: fix multiple minor bugs
+  Docker and MacOS build: include model run log files into the release
+
 2023-02-01:
   BREAKING change in db schema: add microdata row count column
   c++ core: model_streams no longer required in model code
