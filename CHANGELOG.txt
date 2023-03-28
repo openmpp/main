@@ -1,6 +1,10 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-03-28:
+  UI: fix output table decimals issues
+  UI: support all accumulators in output table viewer
+
 2023-03-10:
   c++ core: reduced memory size in time-based models
   Visual Studio: improved display of entity attributes in debugger
