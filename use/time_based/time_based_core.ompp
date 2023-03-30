@@ -194,6 +194,14 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 {
     using namespace fmk;
 
+    if (fmk::SimulationSeed_member_part != 0) {
+        // Special run with combined seed specifying specific sub, skip simulation if not the one specified.
+        if (fmk::simulation_member != fmk::SimulationSeed_member_part) {
+            theLog->logFormatted("member=%d Suppress simulation for single-member run specified in combined seed", fmk::simulation_member);
+            return;
+        }
+    }
+
     auto clock_time_start = std::chrono::system_clock::now();
 
     // note API object for subsequent use in modeling thread
