@@ -21,6 +21,28 @@ CodeBlock ModelTypeSymbol::cxx_definition_global()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
+    switch (value) {
+    case token::TK_case_based:
+    {
+        c += "namespace omr {";
+        c +=     "constexpr bool model_is_case_based = true;";
+        c +=     "constexpr bool model_is_time_based = false;";
+        c += "} // namespace omr";
+        break;
+    }
+    case token::TK_time_based:
+    {
+        c += "namespace omr {";
+        c +=     "constexpr bool model_is_case_based = false;";
+        c +=     "constexpr bool model_is_time_based = true;";
+        c += "} // namespace omr";
+        break;
+    }
+    default:
+        // NOT_REACHED
+        assert(false);
+    }
+
     if ( just_in_time ) {
         c += "const bool BaseEvent::just_in_time = true;" ;
     }

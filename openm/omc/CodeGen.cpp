@@ -1875,6 +1875,16 @@ void CodeGen::do_RunModel()
             c += "double MB_Events = 0.0;";
             c += "double MB_Sets = 0.0;";
             c += "double MB_Tables = 0.0;";
+            c += "double MB_Tables_Entity = 0.0;";
+            c += "double MB_Tables_Derived = 0.0;";
+            c += "double MB_Parameters = 0.0;";
+            c += "double MB_Parameters_Fixed = 0.0;";
+            c += "double MB_Parameters_Scenario = 0.0;";
+            c += "double MB_Parameters_Derived = 0.0;";
+            c += "double MB_Total = 0.0;";
+            c += "double MB_Constant_PerSub = 0.0;";
+            c += "double MB_Constant_PerExe = 0.0;";
+            c += "double MB_Variable = 0.0;";
             for (auto ent : Symbol::pp_all_agents) {
                 c += "{";
                 c += "auto ent_bytes = sizeof(" + ent->name + ");";
@@ -1917,7 +1927,7 @@ void CodeGen::do_RunModel()
                     c += "int accumulator_count = " + to_string(tbl->accumulator_count()) + ";";
                     c += "if (instantiated) {";
                     c += "double MB = (8 * cell_count * accumulator_count) / 1000000.0;";
-                    c += "MB_Tables += MB;";
+                    c += "MB_Tables_Entity += MB;";
                     c += "}";
                     c += "}";
                 }
@@ -1930,18 +1940,65 @@ void CodeGen::do_RunModel()
                 c += "int measure_count = " + to_string(tbl->measure_count()) + ";";
                 c += "if (instantiated) {";
                 c += "double MB = (cell_count * measure_count * sizeof(double)) / 1000000.0;";
-                c += "MB_Tables += MB;";
+                c += "MB_Tables_Derived += MB;";
                 c += "}";
                 c += "}";
             }
-            c += "double MB_All = MB_Entities + MB_Multilinks + MB_Events + MB_Sets + MB_Tables;";
+            {
+                c += "{ // parameters";
+                c += "unsigned long long bytes_fixed = 0;";
+                c += "unsigned long long bytes_scenario = 0;";
+                c += "unsigned long long bytes_derived = 0;";
+                for (auto param : Symbol::pp_all_parameters) {
+                    std::string bytes_which;
+                    switch (param->source) {
+                    case ParameterSymbol::fixed_parameter:
+                        bytes_which = "bytes_fixed";
+                        break;
+                    case ParameterSymbol::scenario_parameter:
+                        bytes_which = "bytes_scenario";
+                        break;
+                    case ParameterSymbol::derived_parameter:
+                        bytes_which = "bytes_derived";
+                        break;
+                    default:
+                        bytes_which = "bytes_scenario";
+                        break;
+                    }
+                    c += bytes_which + " += sizeof(" + param->name + ");";
+                    if (param->cumrate) {
+                        // Add storage for associated cumrate object
+                        c += bytes_which + " += sizeof(om_cumrate_" + param->name + "); // associated cumrate object";
+                    }
+                }
+                c += "";
+                c += "MB_Parameters_Fixed = bytes_fixed / 1000000.0;";
+                c += "MB_Parameters_Scenario = bytes_scenario / 1000000.0;";
+                c += "MB_Parameters_Derived = bytes_derived / 1000000.0;";
+                c += "} // parameters";
+            }
+
+            c += "MB_Tables = MB_Tables_Entity + MB_Tables_Derived;";
+            c += "MB_Parameters = MB_Parameters_Fixed + MB_Parameters_Scenario + MB_Parameters_Derived;";
+            c += "MB_Total = MB_Entities + MB_Multilinks + MB_Events + MB_Sets + MB_Tables + MB_Parameters;";
+            c += "if (omr::model_is_time_based) {";
+            c +=     "MB_Constant_PerSub = MB_Tables + MB_Parameters_Derived;";
+            c +=     "MB_Constant_PerExe = MB_Parameters_Fixed + MB_Parameters_Scenario;";
+            c +=     "MB_Variable = MB_Entities + MB_Multilinks + MB_Events + MB_Sets;";
+            c += "}";
+            c += "else { // model is case-based";
+            c +=     "MB_Constant_PerSub = MB_Tables + MB_Parameters_Derived + MB_Entities + MB_Multilinks + MB_Events + MB_Sets;";
+            c +=     "MB_Constant_PerExe = MB_Parameters_Fixed + MB_Parameters_Scenario;";
+            c +=     "MB_Variable = 0.0;";
+            c += "}";
             c += "auto section_title = \"*  Resource Use Summary  *\";";
             c += "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
             c += "theLog->logFormatted(\"%s%s\", prefix1, section_title);";
             c += "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
             c += "theLog->logFormatted(\"%s\", prefix1);";
 
-            c += "auto table_title = \"Resource Use Summary\";";
+            c += "{";
+            c += "auto table_title = \"Resource Use by Category\";";
             c += "auto row_sep =         \"+-------------------+-------+\";";
             c += "int table_width = (int)strlen(row_sep);";
             c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
@@ -1963,10 +2020,38 @@ void CodeGen::do_RunModel()
             c += "theLog->logFormatted(\"%s| Events            | %5d |\", prefix2, (int)MB_Events);";
             c += "theLog->logFormatted(\"%s| Sets              | %5d |\", prefix2, (int)MB_Sets);";
             c += "theLog->logFormatted(\"%s| Tables            | %5d |\", prefix2, (int)MB_Tables);";
+            c += "theLog->logFormatted(\"%s|   Entity          | %5d |\", prefix2, (int)MB_Tables_Entity);";
+            c += "theLog->logFormatted(\"%s|   Derived         | %5d |\", prefix2, (int)MB_Tables_Derived);";
+            c += "theLog->logFormatted(\"%s| Parameters        | %5d |\", prefix2, (int)MB_Parameters);";
+            c += "theLog->logFormatted(\"%s|   Fixed           | %5d |\", prefix2, (int)MB_Parameters_Fixed);";
+            c += "theLog->logFormatted(\"%s|   Scenario        | %5d |\", prefix2, (int)MB_Parameters_Scenario);";
+            c += "theLog->logFormatted(\"%s|   Derived         | %5d |\", prefix2, (int)MB_Parameters_Derived);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
-            c += "theLog->logFormatted(\"%s| All               | %5d |\", prefix2, (int)MB_All);";
+            c += "theLog->logFormatted(\"%s| Total             | %5d |\", prefix2, (int)MB_Total);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "}";
+
+            c += "theLog->logFormatted(\"%s\", prefix1);";
+
+            c += "{";
+            c += "auto table_title = \"Resource Use by Persistence\";";
+            c += "auto row_sep =         \"+------------------------+-------+\";";
+            c += "int table_width = (int)strlen(row_sep);";
+            c += "theLog->logFormatted(\"%s+%.*s+\", prefix2, table_width - 2, dashes);";
+            c += "theLog->logFormatted(\"%s| %-*s |\", prefix2, table_width - 4, table_title);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| Persistence            |    MB |\", prefix2);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+
+            c += "theLog->logFormatted(\"%s| Constant per instance  | %5d |\", prefix2, (int)MB_Constant_PerExe);";
+            c += "theLog->logFormatted(\"%s| Constant per sub       | %5d |\", prefix2, (int)MB_Constant_PerSub);";
+            c += "theLog->logFormatted(\"%s| Variable by pop. size  | %5d |\", prefix2, (int)MB_Variable);";
+            c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
+            c += "theLog->logFormatted(\"%s| Total                  | %5d |\", prefix2, (int)MB_Total);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
+            c += "}";
+
             c += "}";
         }
 
