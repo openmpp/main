@@ -707,9 +707,9 @@ option_rhs[result]:
                         {
                             $result = $value;
                         }
-         | INTEGER_LITERAL[value]
+         | numeric_literal[value]
                         {
-                            // create a new string from the IntegerLiteral
+                            // create a new string from the numeric_literal
                             $result = new string($value->value());
                             // finished with the StringLiteral
                             delete $value;

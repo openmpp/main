@@ -659,6 +659,8 @@ size_t Symbol::short_name_max_length = 32;
 
 bool Symbol::option_censor_event_time = false;
 
+string Symbol::option_memory_popsize_parameter;
+
 string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
@@ -2218,6 +2220,63 @@ void Symbol::defaults_and_options()
             else if (value == "off") {
                 option_censor_event_time = false;
             }
+        }
+    }
+
+    {
+        string key = "memory_popsize_parameter";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            option_memory_popsize_parameter = value;
+        }
+    }
+
+    {
+        string key = "memory_MB_constant_per_instance";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            // store in the unique ModelSymbol object
+            ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+            assert(model_symbol);
+            model_symbol->memory_MB_constant_per_instance = std::stoi(value);
+        }
+    }
+
+    {
+        string key = "memory_MB_constant_per_sub";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            // store in the unique ModelSymbol object
+            ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+            assert(model_symbol);
+            model_symbol->memory_MB_constant_per_sub = std::stoi(value);
+        }
+    }
+
+    {
+        string key = "memory_MB_popsize_coefficient";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            // store in the unique ModelSymbol object
+            ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+            assert(model_symbol);
+            model_symbol->memory_MB_popsize_coefficient = std::stod(value);
+        }
+    }
+
+    {
+        string key = "memory_safety_factor";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            // store in the unique ModelSymbol object
+            ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+            assert(model_symbol);
+            model_symbol->memory_safety_factor = std::stod(value);
         }
     }
 

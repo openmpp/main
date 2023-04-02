@@ -13,7 +13,6 @@
 using namespace std;
 using namespace openm;
 
-
 CodeBlock ModelTypeSymbol::cxx_definition_global()
 {
     // Hook into the hierarchical calling chain

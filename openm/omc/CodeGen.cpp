@@ -143,13 +143,14 @@ void CodeGen::do_preamble()
     c += "    #pragma clang diagnostic ignored \"-Wunused-variable\"";
     c += "    #pragma clang diagnostic ignored \"-Wunused-but-set-variable\"";
     c += "#endif";
-
-    // Get definition code associated with the model_type symbol
-    c += model_type_symbol->cxx_definition_global();
     c += "";
 
     // Get definition code associated with the model symbol (name, time stamp)
     c += model_symbol->cxx_definition_global();
+    c += "";
+
+    // Get definition code associated with the model_type symbol
+    c += model_type_symbol->cxx_definition_global();
     c += "";
 
 	c += "using namespace openm;";
@@ -833,6 +834,23 @@ void CodeGen::do_ModelStartup()
     c += "";
     c += "#endif // OM_DEBUG_PARAMETERS";
     c += "";
+
+    {
+        // code to predict memory use at runtime
+        ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+        assert(theModelSymbol);
+        c += "{ // predict memory requirements";
+        c += "double memory_shared = omr::memory_MB_constant_per_instance;";
+        c += "memory_shared *= omr::memory_safety_factor;";
+        c += "double memory_sub = omr::memory_MB_constant_per_sub;";
+        auto popsize_param = theModelSymbol->pp_memory_popsize_parameter;
+        if (popsize_param) {
+            c += "memory_sub += omr::memory_MB_popsize_coefficient * " + popsize_param->name + ";";
+        }
+        c += "memory_sub *= omr::memory_safety_factor;";
+        c += "theLog->logFormatted(LT(\"member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance\"), simulation_member, (int)memory_sub, (int)memory_shared);";
+        c += "}";
+    }
 
     // A second pass of scenario parameters is required to extend parameters
     // because index series parameter(s) must first be bound in first pass above.
@@ -2034,6 +2052,13 @@ void CodeGen::do_RunModel()
             c += "theLog->logFormatted(\"%s\", prefix1);";
 
             c += "{";
+
+            c += "auto section_title = \"*  Resource Use Prediction  *\";";
+            c += "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
+            c += "theLog->logFormatted(\"%s%s\", prefix1, section_title);";
+            c += "theLog->logFormatted(\"%s%.*s\", prefix1, strlen(section_title), stars);";
+            c += "theLog->logFormatted(\"%s\", prefix1);";
+
             c += "auto table_title = \"Resource Use by Persistence\";";
             c += "auto row_sep =         \"+------------------------+-------+\";";
             c += "int table_width = (int)strlen(row_sep);";
@@ -2045,12 +2070,38 @@ void CodeGen::do_RunModel()
 
             c += "theLog->logFormatted(\"%s| Constant per instance  | %5d |\", prefix2, (int)MB_Constant_PerExe);";
             c += "theLog->logFormatted(\"%s| Constant per sub       | %5d |\", prefix2, (int)MB_Constant_PerSub);";
-            c += "theLog->logFormatted(\"%s| Variable by pop. size  | %5d |\", prefix2, (int)MB_Variable);";
+            c += "theLog->logFormatted(\"%s| Variable by popsize    | %5d |\", prefix2, (int)MB_Variable);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s| Total                  | %5d |\", prefix2, (int)MB_Total);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s\", prefix0);";
             c += "}";
+
+            { // model code options for memory prediction
+                c += "{";
+                // Get the model symbol to access memory option information
+                ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+                assert(model_symbol);
+                auto popsize_param = model_symbol->pp_memory_popsize_parameter;
+                c += "std::string now = openm::toDateTimeString(theLog->timeStamp());";
+                c += "theLog->logFormatted(\"%s // The following memory prediction options statements\", prefix2);";
+                c += "theLog->logFormatted(\"%s //   for %s were generated on %s\", prefix2, omr::model_name, now.c_str());";
+                if (popsize_param) {
+                    c += "const char * popsize_param_name = \"" + popsize_param->name + "\";";
+                    c += "int popsize_param_value = (int)" + popsize_param->name + ";";
+                    c += "theLog->logFormatted(\"%s //   using as popsize the parameter %s = %d\", prefix2, popsize_param_name, popsize_param_value);";
+                    c += "theLog->logFormatted(\"%s options memory_popsize_parameter = %s;\", prefix2, popsize_param_name); ";
+                }
+                c += "theLog->logFormatted(\"%s options memory_MB_constant_per_instance = %d;        // was %d\", prefix2, (int)MB_Constant_PerExe, omr::memory_MB_constant_per_instance);";
+                c += "theLog->logFormatted(\"%s options memory_MB_constant_per_sub      = %d;        // was %d\", prefix2, (int)MB_Constant_PerSub, omr::memory_MB_constant_per_sub);";
+                if (popsize_param) {
+                    c += "double popsize_param_coefficient = (double)MB_Variable / popsize_param_value;";
+                    c += "theLog->logFormatted(\"%s options memory_MB_popsize_coefficient   = %.6f; // was %.6f\", prefix2, popsize_param_coefficient, omr::memory_MB_popsize_coefficient);";
+                }
+                c += "theLog->logFormatted(\"%s options memory_safety_factor            = %.2f;\", prefix2, omr::memory_safety_factor);";
+                c += "theLog->logFormatted(\"%s\", prefix0);";
+                c += "}";
+            }
 
             c += "}";
         }

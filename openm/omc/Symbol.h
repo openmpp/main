@@ -1498,6 +1498,11 @@ public:
     static bool option_censor_event_time;
 
     /**
+     * name of parameter containing population size.
+     */
+    static string option_memory_popsize_parameter;
+
+    /**
      * Code page to use for source file conversion
      */
     static string code_page;
