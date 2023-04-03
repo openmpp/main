@@ -349,6 +349,9 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     for (const GroupPcRow & row : io_metaRows.groupPc) {
         ModelInsertSql::insertGroupPc(i_dbExec, row);
     }
+
+    // if default model profile not empty then insert rows into profile_lst and profile_option tables
+    ModelInsertSql::insertModelProfile(i_dbExec, io_metaRows.profileName, io_metaRows.profileRows);
  
     // insert model metadata compeleted
     i_dbExec->commit();

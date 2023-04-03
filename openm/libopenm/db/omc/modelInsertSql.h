@@ -129,6 +129,9 @@ namespace openm
         /** insert row into group_pc table. */
         static void insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row);
 
+        /** insert default model profile rows into profile_lst and profile_option tables. */
+        static void insertModelProfile(IDbExec * i_dbExec, const string & i_profileName, const NoCaseMap & i_profileRows);
+
         /** create new workset: insert metadata and delete existing workset parameters, if required */
         static void createWorksetMeta(IDbExec * i_dbExec, const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet);
     };

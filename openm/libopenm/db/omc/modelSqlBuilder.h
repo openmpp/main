@@ -230,6 +230,9 @@ namespace openm
         /** set entity meta rows and calculate digests */
         void setEntityDicRows(MetaModelHolder& io_metaRows) const;
 
+        /** set default model profile rows */
+        void setModelProfileRows(MetaModelHolder & io_metaRows) const;
+
         /** trim string fields in model metadata rows */
         static void trimModelRows(MetaModelHolder & io_metaRows);
 

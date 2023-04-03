@@ -82,14 +82,26 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Perform operations specific to this level in the Symbol hierarchy.
     metaRows.modelDic.name = external_name;
 
-    // The following are placeholders for model publishing of memory prediction variables
-    auto v1 = pp_memory_popsize_parameter;
-    auto v2 = v1 ? v1->pp_parameter_id : -1;
-    auto v3 = memory_MB_constant_per_instance;
-    auto v4 = memory_MB_constant_per_sub;
-    auto v5 = memory_MB_popsize_coefficient;
-    auto v6 = memory_safety_factor;
+    // if memory prediction options defined then create default model profile memory options
+    if (pp_memory_popsize_parameter && memory_MB_popsize_coefficient > 0) {
+        metaRows.profileRows[MetaModelHolder::popSizeMemoryOption] = pp_memory_popsize_parameter->name;
+        metaRows.profileRows[MetaModelHolder::popCoeffMemoryOption] = to_string(memory_MB_popsize_coefficient);
+    }
+    if (memory_MB_constant_per_instance > 0) {
+        metaRows.profileRows[MetaModelHolder::constInstanceMemoryOption] = to_string(memory_MB_constant_per_instance);
+    }
+    if (memory_MB_constant_per_sub > 0) {
+        metaRows.profileRows[MetaModelHolder::constSubMemoryOption] = to_string(memory_MB_constant_per_sub);
+    }
+    if (memory_safety_factor > 1.0 &&
+        (pp_memory_popsize_parameter && memory_MB_popsize_coefficient > 0 ||
+            memory_MB_constant_per_instance > 0 ||
+            memory_MB_constant_per_sub > 0))
+        {
+            metaRows.profileRows[MetaModelHolder::safetyFactorMemoryOption] = to_string(memory_safety_factor);
+        }
 
+    // set language specific model description and notes
     for (auto lang : Symbol::pp_all_languages) {
         ModelDicTxtLangRow modelTxt;
         modelTxt.langCode = lang->name;

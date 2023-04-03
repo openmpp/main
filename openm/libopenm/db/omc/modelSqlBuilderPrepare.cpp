@@ -22,6 +22,7 @@ void ModelSqlBuilder::setModelMetaRows(MetaModelHolder & io_metaRows) const
     setParamDicRows(io_metaRows);
     setTableDicRows(io_metaRows);
     setEntityDicRows(io_metaRows);
+    setModelProfileRows(io_metaRows);
 
     // calculate model digest
     io_metaRows.modelDic.digest = makeModelDigest(io_metaRows);
@@ -64,6 +65,14 @@ void ModelSqlBuilder::setEntityDicRows(MetaModelHolder & io_metaRows) const
     // make entity digest
     for (EntityDicRow & entityRow : io_metaRows.entityDic) {
         entityRow.digest = makeEntityDigest(entityRow, io_metaRows);
+    }
+}
+
+/** set default model profile rows */
+void ModelSqlBuilder::setModelProfileRows(MetaModelHolder & io_metaRows) const
+{
+    if (io_metaRows.profileRows.size() > 0) {
+        io_metaRows.profileName = io_metaRows.modelDic.name + (!io_metaRows.modelDic.version.empty() ? "_" + io_metaRows.modelDic.version : "");
     }
 }
 

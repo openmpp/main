@@ -964,6 +964,38 @@ void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row)
         ")");
 }
 
+// if default model profile not empty then insert rows into profile_lst and profile_option tables
+void ModelInsertSql::insertModelProfile(IDbExec * i_dbExec, const string & i_profileName, const NoCaseMap & i_profileRows)
+{
+    if (i_profileName.empty()) return;  // model profile empty
+
+    // validate and insert profile_lst master row
+    string pName = toQuoted(i_profileName);
+    if (pName.length() > 2 + OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) model profile name: %s"), OM_NAME_DB_MAX, i_profileName.c_str());
+
+    i_dbExec->update("INSERT INTO profile_lst (profile_name) VALUES (" + pName + ")");
+
+    for (NoCaseMap::const_iterator it = i_profileRows.cbegin(); it != i_profileRows.cend(); it++) {
+
+        if (it->first.empty()) continue;    // skip empty option
+
+        string pKey = toQuoted(it->first);
+        if (pKey.length() > 2 + OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) model profile option name: %s"), OM_NAME_DB_MAX, it->first.c_str());
+
+        string pVal = toQuoted(it->second);
+        if (pVal.length() > 2 + OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) model profile value: %s"), OM_NAME_DB_MAX, it->second.c_str());
+
+        // INSERT INTO profile_option (profile_name, option_key, option_value)
+        // VALUES ('modelOne_v1.1.3', 'Memory.ScaleParameter', 'PopulationSize')
+        i_dbExec->update(
+            "INSERT INTO profile_option (profile_name, option_key, option_value) VALUES (" +
+            pName + ", " +
+            pKey + ", " +
+            pVal +
+            ")");
+    }
+}
+
 // create new workset: insert metadata and delete existing workset parameters, if required
 void ModelInsertSql::createWorksetMeta(
     IDbExec * i_dbExec, const MetaModelHolder & i_metaRows, MetaSetLangHolder & io_metaSet

@@ -98,6 +98,27 @@ namespace openm
 
         /** group_pc table rows */
         vector<GroupPcRow> groupPc;
+
+        /** default model profile name */
+        string profileName;
+
+        /** default model proflie option rows: key, value pairs */
+        NoCaseMap profileRows;
+
+        /** memory prediction model profile option: value of the option memory_MB_constant_per_instance */
+        static constexpr const char * constInstanceMemoryOption = "Memory.ProcessConstant";
+
+        /** memory prediction model profile option: value of the option memory_MB_constant_per_sub */
+        static constexpr const char * constSubMemoryOption = "Memory.SubValueConstant";
+
+        /** memory prediction model profile option: parameter name containing population size */
+        static constexpr const char * popSizeMemoryOption = "Memory.ScaleParameter";
+
+        /** memory prediction model profile option: value of the option memory_MB_popsize_coefficient */
+        static constexpr const char * popCoeffMemoryOption = "Memory.ScaleMultiplier";
+
+        /** memory prediction model profile option: value of the option memory_safety_factor */
+        static constexpr const char * safetyFactorMemoryOption = "Memory.SafetyMultiplier";
     };
 }
 
