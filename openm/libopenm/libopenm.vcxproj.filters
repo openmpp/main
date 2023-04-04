@@ -156,6 +156,9 @@
     <ClInclude Include="..\..\include\libopenm\common\xz_crc64.h">
       <Filter>Header Files\libopenm\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\common\omOS.h">
+      <Filter>Header Files\libopenm\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -406,6 +409,9 @@
     </ClCompile>
     <ClCompile Include="model\runControllerMicrodata.cpp">
       <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="common\os.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
