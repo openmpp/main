@@ -19,7 +19,7 @@ namespace openm
     * 
     * usage example: \n
     * @code
-    *      auto [nCurrentMem, nMaxMem] getProcessMemorySize();
+    *      auto [nCurrentMem, nMaxMem] = getProcessMemorySize();
     * 
     *      if (nCurrentMem > 0) theLog->logFormatted("Current process memory: %llu bytes", nCurrentMem);
     *      if (nMaxMem > 0) theLog->logFormatted("Maximum process memory: %llu bytes", nMaxMem);

@@ -7,25 +7,16 @@
 
 #include "libopenm/common/omOS.h"
 
+#if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
+    std::tuple<uint64_t, uint64_t> openm::getProcessMemorySize(void) { return { 0, 0 }; } // not implemented
+#endif
+
 #ifdef _WIN32
 
 #include <windows.h>
 #include <psapi.h>
 
-#endif // _WIN32
-
-#ifdef __linux__
-
-#include <fstream>
-
-#endif // __linux__
-
-#ifdef __APPLE__
-#endif // __APPLE__
-
 using namespace std;
-
-#ifdef _WIN32
 
 /**
  * return current process memory size and max peak memory size, in bytes.
@@ -46,8 +37,12 @@ tuple<uint64_t, uint64_t> openm::getProcessMemorySize(void)
 
 #ifdef __linux__
 
+#include <fstream>
+
+using namespace std;
+
 // parse /proc/self/status line and return memory value in bytes, for example: VmRSS: 568 kB
-tuple <bool, uint64_t> getProcStatusMemoryValue(const string & i_line, const char * i_key, size_t i_keyLen)
+tuple <bool, uint64_t> openm::getProcStatusMemoryValue(const string & i_line, const char * i_key, size_t i_keyLen)
 {
     // VmRSS: 1 kB
     if (i_line.length() < i_keyLen + 3 + strnlen("kB", OM_STRLEN_MAX)) return { false, 0 }; // line too short
@@ -105,4 +100,33 @@ tuple<uint64_t, uint64_t> openm::getProcessMemorySize(void)
     }
     return { nMem, nMax };
 }
+
 #endif // __linux__
+
+#ifdef __APPLE__
+
+#include <sys/resource.h>
+#include <mach/mach.h>
+
+using namespace std;
+
+tuple<uint64_t, uint64_t> openm::getProcessMemorySize(void)
+{
+    uint64_t nMem = 0;
+    uint64_t nMax = 0;
+
+    struct rusage ru;
+    if (!getrusage(RUSAGE_SELF, &ru)) {
+        nMax = ru.ru_maxrss;    // on MacOS this value is in bytes, not in Kbytes and it is the same as task_basic_info.resident_size
+    }
+
+    task_vm_info_data_t tvi;
+    mach_msg_type_number_t cnt = TASK_VM_INFO_COUNT;
+    if (task_info(mach_task_self(), TASK_VM_INFO, (task_info_t)&tvi, &cnt) == KERN_SUCCESS) {
+        nMem = tvi.phys_footprint;
+    }
+
+    return { nMem, nMax };
+}
+
+#endif // __APPLE__
