@@ -385,6 +385,10 @@ extern OM_EVENT_LOOP_HANDLER RunModelHandler;
 typedef void (*OM_SHUTDOWN_HANDLER)(openm::IModel * const i_model);
 extern OM_SHUTDOWN_HANDLER ModelShutdownHandler;
 
+/** process shutdown: last entry point from user code before process exit */
+typedef void(*OM_RUN_SHUTDOWN_HANDLER)(bool i_isError, openm::IRunBase * const i_runBase);
+extern OM_RUN_SHUTDOWN_HANDLER RunShutdownHandler;
+
 /** public interface of process-wide model run state: status, progress, update times */
 extern openm::IModelRunState * theModelRunState;
 

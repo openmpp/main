@@ -71,6 +71,7 @@ public:
     void do_ModelStartup();
     void do_RunModel();
     void do_ModelShutdown();
+    void do_RunShutdown();
     void do_API_entries();
     void do_ParameterNameSize(void);
     void do_EntityNameSize(void);

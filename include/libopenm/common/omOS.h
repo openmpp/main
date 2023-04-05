@@ -19,10 +19,10 @@ namespace openm
     * 
     * usage example: \n
     * @code
-    *      auto [nCurrentMem, nMaxMem] = getProcessMemorySize();
-    * 
-    *      if (nCurrentMem > 0) theLog->logFormatted("Current process memory: %llu bytes", nCurrentMem);
-    *      if (nMaxMem > 0) theLog->logFormatted("Maximum process memory: %llu bytes", nMaxMem);
+    * auto [nMem, nMax] = getProcessMemorySize();
+    *
+    * if (nMem > 0) theLog->logFormatted(LT("Current memory size: %f MB"), ((double)nMem / (1024.0 * 1024.0)));
+    * if (nMax > 0) theLog->logFormatted(LT("Maximum memory size: %f MB"), ((double)nMax / (1024.0 * 1024.0)));
     * @endcode
     */
     extern std::tuple<uint64_t, uint64_t> getProcessMemorySize(void);

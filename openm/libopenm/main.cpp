@@ -37,7 +37,6 @@
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/iniReader.h"
 #include "libopenm/common/argReader.h"
-#include "libopenm/common/omOS.h"
 #include "helper.h"
 #include "model.h"
 using namespace openm;
@@ -63,6 +62,9 @@ OM_EVENT_LOOP_HANDLER RunModelHandler;
 
 /** model shutdown method: save output results */
 OM_SHUTDOWN_HANDLER ModelShutdownHandler;
+
+/** process shutdown: last entry point from user code before process exit */
+OM_RUN_SHUTDOWN_HANDLER RunShutdownHandler;
 
 /** model thread function */
 static ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunController * i_runCtrl);
@@ -182,9 +184,13 @@ int main(int argc, char ** argv)
             // else shutdown process with error
             if (e == ExitStatus::OK && !theModelRunState->isError()) {
                 runCtrl->shutdownWaitAll();
+                if (RunShutdownHandler != NULL) RunShutdownHandler(false, runCtrl.get());
             }
             else {
                 runCtrl->shutdownOnExit(ModelStatus::error);
+                if (RunShutdownHandler != NULL) {
+                    RunShutdownHandler(true, runCtrl.get());
+                }
                 return (int)(e != ExitStatus::OK ? e : ExitStatus::FAIL);
             }
         }
@@ -216,13 +222,6 @@ int main(int argc, char ** argv)
     catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
         return (int)ExitStatus::FAIL;
-    }
-
-    {
-        auto [nProcMem, nMaxProcMem] = getProcessMemorySize();
-        if (nMaxProcMem > 0) {
-            theLog->logFormatted("Process Peak Memory Usage: %.1f MB", ((double)nMaxProcMem / (1024.0 * 1024.0)));
-        }
     }
 
     theLog->logMsg("Done.");

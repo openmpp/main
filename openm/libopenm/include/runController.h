@@ -421,7 +421,7 @@ namespace openm
             int entityId;                           // entity metadata id
             //
             recursive_mutex theMutex;               // mutex to lock for db write operations
-            list<unique_ptr<uint8_t[]>> rowLst;       // microdata list of rows
+            list<unique_ptr<uint8_t[]>> rowLst;     // microdata list of rows
             chrono::system_clock::time_point lastSaveTime = chrono::system_clock::time_point::min();  // last time of save
         };
         map<int, EntityDbItem> entityDbMap;         // map entity id to database microdata buffer
