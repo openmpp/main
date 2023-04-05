@@ -42,7 +42,7 @@ tuple<uint64_t, uint64_t> openm::getProcessMemorySize(void)
 using namespace std;
 
 // parse /proc/self/status line and return memory value in bytes, for example: VmRSS: 568 kB
-tuple <bool, uint64_t> openm::getProcStatusMemoryValue(const string & i_line, const char * i_key, size_t i_keyLen)
+static tuple <bool, uint64_t> getProcStatusMemoryValue(const string & i_line, const char * i_key, size_t i_keyLen)
 {
     // VmRSS: 1 kB
     if (i_line.length() < i_keyLen + 3 + strnlen("kB", OM_STRLEN_MAX)) return { false, 0 }; // line too short

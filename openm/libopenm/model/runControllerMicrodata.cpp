@@ -999,5 +999,5 @@ bool RunController::isEntityEventInFilter(int i_entityKind, uint64_t i_microdata
         throw ModelException("invalid entity event id: %d, entity kind: %d microdata key: %llu", i_eventId, i_entityKind, i_microdataKey);
 
     return entityUseEvents.size() <= 0 ||
-        i_eventId >= 0 && i_eventId < (int)entityUseEvents.size() && entityUseEvents[i_eventId];
+        (i_eventId >= 0 && i_eventId < (int)entityUseEvents.size() && entityUseEvents[i_eventId]);
 }
