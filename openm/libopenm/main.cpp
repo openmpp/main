@@ -37,6 +37,7 @@
 #include "libopenm/common/omFile.h"
 #include "libopenm/common/iniReader.h"
 #include "libopenm/common/argReader.h"
+#include "libopenm/common/omOS.h"
 #include "helper.h"
 #include "model.h"
 using namespace openm;
@@ -215,6 +216,13 @@ int main(int argc, char ** argv)
     catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
         return (int)ExitStatus::FAIL;
+    }
+
+    {
+        auto [nProcMem, nMaxProcMem] = getProcessMemorySize();
+        if (nMaxProcMem > 0) {
+            theLog->logFormatted("Process Peak Memory Usage: %.1f MB", ((double)nMaxProcMem / (1024.0 * 1024.0)));
+        }
     }
 
     theLog->logMsg("Done.");
