@@ -13,6 +13,12 @@
 
 namespace openm
 {
+    /** return number of milliseconds since epoch to measure intervals */
+    extern int64_t getMilliseconds(void);
+
+    /**  get user prefered locale name: en-CA en-CA or empty "" string on error */
+    extern const std::string getDefaultLocaleName(void);
+
     /** return current process memory size and max peak memory size, in bytes.
     *
     * if return value is zero then memory information not avaliable.

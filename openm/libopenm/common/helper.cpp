@@ -402,23 +402,6 @@ const string openm::toDateTimeString(const string & i_timestamp)
     return dtStr;
 }
 
-/** return number of milliseconds since epoch to measure intervals */
-int64_t openm::getMilliseconds(void)
-{
-#ifndef _WIN32
-    const int64_t NANO_PER_SECOND = 1000000000;
-    const int64_t MILLI_PER_NANO = 1000000;
-
-    struct timespec ts;
-    if (!timespec_get(&ts, TIME_UTC)) return 0;
-
-    return ((int64_t)ts.tv_sec * NANO_PER_SECOND + (int64_t)ts.tv_nsec) / MILLI_PER_NANO;
-#else
-
-    return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now().time_since_epoch()).count();
-#endif
-}
-
 /** format message into supplied buffer using vsnprintf() */
 void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args)
 {
@@ -480,42 +463,3 @@ const list<string> openm::splitLanguageName(const string & i_srcLanguage)
     }
     return langLst;
 }
-
-#ifndef _WIN32
-
-// get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
-const string openm::getDefaultLocaleName(void)
-{
-    return locale("").name();
-}
-
-#else   // _WIN32
-
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-// get user prefered locale name: en-CA en-CA or en_CA.UTF-8 or empty "" string on error
-const string openm::getDefaultLocaleName(void)
-{
-    // try user locale and on error system default locale
-    string name;
-    wchar_t wlcn[LOCALE_NAME_MAX_LENGTH + 1];
-
-    if (GetUserDefaultLocaleName(wlcn, LOCALE_NAME_MAX_LENGTH) <= 0) {
-        if (GetSystemDefaultLocaleName(wlcn, LOCALE_NAME_MAX_LENGTH) <= 0) return name; // empty value on error
-    }
-    wlcn[LOCALE_NAME_MAX_LENGTH] = '\0';
-
-    // convert from Windows wchar to normal string
-    char lcn[LOCALE_NAME_MAX_LENGTH + 1];
-
-    size_t nLcn = std::wcstombs(lcn, wlcn, LOCALE_NAME_MAX_LENGTH);
-    if (nLcn >= LOCALE_NAME_MAX_LENGTH || nLcn == static_cast<size_t>(-1)) return name; // empty value on error
-
-    lcn[LOCALE_NAME_MAX_LENGTH] = '\0';
-    
-    name = lcn;
-    return name;
-}
-#endif  // _WIN32
-

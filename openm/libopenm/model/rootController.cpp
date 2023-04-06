@@ -989,8 +989,9 @@ bool RootController::receiveMicrodata(long i_waitTime)
         lock_guard<recursive_mutex> lck(mdRcvMutex);
 
         entityMdRcvLst.remove_if([](EntityMdReceive recv) -> bool {
-            return !recv.isLast &&
-            all_of(recv.count.cbegin(), recv.count.cend(), [](size_t n) -> bool { return n <= 0; });
+            return
+                !recv.isLast &&
+                all_of(recv.count.cbegin(), recv.count.cend(), [](size_t n) -> bool { return n <= 0; });
             });
     }
     return isAnyReceived;

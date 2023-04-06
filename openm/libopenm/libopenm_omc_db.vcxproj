@@ -142,6 +142,7 @@
     <ClInclude Include="..\..\include\libopenm\common\iniReader.h" />
     <ClInclude Include="..\..\include\libopenm\common\omFile.h" />
     <ClInclude Include="..\..\include\libopenm\common\omHelper.h" />
+    <ClInclude Include="..\..\include\libopenm\common\omOS.h" />
     <ClInclude Include="..\..\include\libopenm\db\dbCommon.h" />
     <ClInclude Include="..\..\include\libopenm\db\dbMetaRow.h" />
     <ClInclude Include="..\..\include\libopenm\db\metaModelHolder.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="common\iniReader.cpp" />
     <ClCompile Include="common\log.cpp" />
     <ClCompile Include="common\md5.cpp" />
+    <ClCompile Include="common\os.cpp" />
     <ClCompile Include="common\splitCsv.cpp" />
     <ClCompile Include="common\utf8Convert.cpp" />
     <ClCompile Include="db\dbExec.cpp" />

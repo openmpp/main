@@ -6,6 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "model.h"
+#include "libopenm/common/omOS.h"
 
 using namespace std;
 using namespace openm;

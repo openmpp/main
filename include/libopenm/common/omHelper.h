@@ -161,9 +161,6 @@ namespace openm
     /** make date-time string from timestamp string, ie: 2012_08_17_16_04_59_148 => 2012-08-17 16:04:59.148 */
     extern const std::string toDateTimeString(const std::string & i_timestamp);
 
-    /** return number of milliseconds since epoch to measure intervals */
-    extern int64_t getMilliseconds(void);
-
     /** format message into supplied buffer using vsnprintf() */
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);
 
@@ -175,9 +172,6 @@ namespace openm
 
     /** normalize language name and split it into list of prefered languages: en_CA => [en-ca, en] */
     extern const std::list<std::string> splitLanguageName(const std::string & i_srcLanguage);
-
-    /**  get user prefered locale name: en-CA en-CA or empty "" string on error */
-    extern const std::string getDefaultLocaleName(void);
 
     /**
     * split and trim comma-separated list of values (other delimiters can be used too, ie: semicolon).

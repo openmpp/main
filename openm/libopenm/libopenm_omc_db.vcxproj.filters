@@ -96,6 +96,9 @@
     <ClInclude Include="db\omc\modelExpressionSql.h">
       <Filter>Source Files\db\omc</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\libopenm\common\omOS.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="common\file.cpp">
@@ -292,6 +295,9 @@
     </ClCompile>
     <ClCompile Include="db\entityDicTxtTable.cpp">
       <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="common\os.cpp">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

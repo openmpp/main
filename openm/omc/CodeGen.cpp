@@ -125,7 +125,6 @@ void CodeGen::do_preamble()
     c += "#include \"omc/omPch.h\"";
     c += "#include \"omc/omSimulation.h\"";
     c += "#include <typeinfo>";
-    c += "#include \"libopenm/common/omOS.h\"";
     c += "";
 
     // control warnings produced in generated code

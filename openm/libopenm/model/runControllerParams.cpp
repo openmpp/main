@@ -8,6 +8,7 @@
 #include "model.h"
 #include "modelHelper.h"
 #include "runControllerImpl.h"
+#include "libopenm/common/omOS.h"
 
 using namespace std;
 using namespace openm;

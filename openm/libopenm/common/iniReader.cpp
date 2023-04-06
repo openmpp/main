@@ -7,6 +7,7 @@
 
 #include "libopenm/omError.h"
 #include "libopenm/common/omFile.h"
+#include "libopenm/common/omOS.h"
 #include "libopenm/common/iniReader.h"
 #include "log.h"
 

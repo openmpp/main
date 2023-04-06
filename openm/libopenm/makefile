@@ -167,6 +167,7 @@ LIB_OMC_CPPLIST = \
   common/iniReader.cpp \
   common/log.cpp \
   common/md5.cpp \
+  common/os.cpp \
   common/splitCsv.cpp \
   common/utf8Convert.cpp \
   db/dbExec.cpp \
