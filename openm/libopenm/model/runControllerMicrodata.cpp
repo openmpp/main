@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include "model.h"
+#include "libopenm/common/omOS.h"
 
 using namespace std;
 using namespace openm;

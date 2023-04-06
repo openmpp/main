@@ -14,7 +14,7 @@
 
 using namespace std;
 
-static constexpr size_t MinSizeToSaveMicrodata = 512 * 1024;        /** lower bound microdata row count to save in database */
+static constexpr size_t MinSizeToSaveMicrodata = 128 * 1024;        /** lower bound microdata row count to save in database */
 static constexpr size_t MaxSizeToSaveMicrodata = 2 * 1024 * 1024;   /** upper bound microdata row count to save in database */
 
 namespace openm
