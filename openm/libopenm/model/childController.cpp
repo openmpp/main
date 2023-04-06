@@ -364,11 +364,11 @@ size_t ChildController::sendMicrodata(bool i_isLast)
 
         for (size_t k = 0; k < entCount; k++)
         {
-            int eId = entityIds[k];
-            auto mdIt = entityMdRows.find(eId);
-            if (mdIt == entityMdRows.end()) continue;   // no db rows for that entity
+            pSize[k] = 0;
 
-            pSize[k] = (int)mdIt->second.size();
+            auto mdIt = entityMdRows.find(entityIds[k]);
+            if (mdIt != entityMdRows.end()) pSize[k] = (int)mdIt->second.size();
+
             rowCount += pSize[k];
         }
         pSize[entCount] = i_isLast ? 1 : 0;     // last message flag: if true then it is run shutdown
@@ -401,7 +401,8 @@ size_t ChildController::sendMicrodata(bool i_isLast)
 
             for (auto & rIt : mdRows)
             {
-                nOff = memCopyTo(pRows, nOff, rIt.release(), dbRowSize);
+                nOff = memCopyTo(pRows, nOff, rIt.get(), dbRowSize);
+                rIt.reset();
             }
             msgExec->startSend(IMsgExec::rootRank, MsgTag::microdata, typeid(uint8_t), dataSize, rowsUptr.release());
         }

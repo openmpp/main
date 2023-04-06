@@ -388,7 +388,7 @@ map<int, list<unique_ptr<uint8_t[]>>> RunController::pullDbMicrodata(bool i_isNo
         for (auto & ed : entityDbMap)
         {
             EntityDbItem & eDb = ed.second;
-            entMdRows.insert(pair<int, list<unique_ptr<uint8_t[]>>>({ed.first, moveDbMicrodata(nowTime, eDb)}));
+            entMdRows.insert(pair<int, list<unique_ptr<uint8_t[]>>>({ ed.first, moveDbMicrodata(nowTime, eDb) }));
         }
     }
 
