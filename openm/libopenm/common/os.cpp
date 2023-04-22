@@ -7,8 +7,6 @@
 
 #include "libopenm/common/omOS.h"
 
-using namespace std;
-
 #if !defined(_WIN32) && !defined(__linux__) && !defined(__APPLE__)
     std::tuple<uint64_t, uint64_t> openm::getProcessMemorySize(void) { return { 0, 0 }; } // not implemented
 #endif
@@ -17,6 +15,12 @@ using namespace std;
 
 #include <windows.h>
 #include <psapi.h>
+
+#endif
+
+using namespace std;
+
+#ifdef _WIN32
 
 /** return number of milliseconds since epoch to measure intervals */
 int64_t openm::getMilliseconds(void)
