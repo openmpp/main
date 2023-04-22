@@ -86,6 +86,10 @@ if [ -z "${OM_X_TERMINAL}" ] && command -v konsole >/dev/null 2>&1 ;
 then
   OM_X_TERMINAL="konsole"
 fi
+if [ -z "${OM_X_TERMINAL}" ] && command -v qterminal >/dev/null 2>&1 ;
+then
+  OM_X_TERMINAL="qterminal"
+fi
 if [ -z "${OM_X_TERMINAL}" ] ;
 then
   echo "ERROR not found any of: x-terminal-emulator, gnome-terminal, konsole and OM_X_TERMINAL not set" | tee -a "$OMPP_UI_SH_LOG"
