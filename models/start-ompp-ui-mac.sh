@@ -6,12 +6,13 @@
 #   ../start_ompp_ui_mac.sh
 #
 # It does:
+#   start oms, listen on free port
+#   read actual oms URL "http://localhost:12345" from file
+#   open UI in browser:
+#
 #   cd $OM_ROOT
-#   # start oms, listen on free port:
 #   bin/oms -oms.Listen localhost:0 .... &
-#   # read actual oms URL "http://localhost:12345" from file:
 #   cat ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle
-#   # open UI in browser:
 #   open http://localhost:12345
 #
 # Environment:

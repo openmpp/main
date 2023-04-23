@@ -6,13 +6,14 @@
 #   ../start_ompp_ui_linux.sh
 #
 # It does:
+#   start oms, listen on free port
+#   read actual oms URL "http://localhost:12345" from file
+#   open UI in browser:
+#
 #   cd $OM_ROOT
 #   ulimit -S -s 65536
-#   # start oms, listen on free port:
 #   bin/oms -oms.Listen localhost:0 .... &
-#   # read actual oms URL "http://localhost:12345" from file:
 #   cat ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle
-#   # open UI in browser:
 #   xdg-open http://localhost:12345
 #
 # Environment:

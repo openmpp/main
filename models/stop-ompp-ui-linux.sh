@@ -6,12 +6,13 @@
 #   make
 #
 # It does:
+#   check if oms URL file exist
+#   read oms URL from file
+#   shutdown oms:
+#
 #   cd $OM_ROOT
-#   # check if oms URL file exist
 #   if [ ! f ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle ] ; then exit 0
-#   # read oms URL from file
 #   oms_url=`cat ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle`
-#   # shutdown oms:
 #   curl $oms_url/api/admin/shutdown
 #
 # Environment:

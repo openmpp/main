@@ -111,16 +111,34 @@ if not exist "%OM_ROOT%\bin\dbcopy.exe" (
   EXIT 1
 )
 
-if not exist "%OM_ROOT%\props\startOmppUI.ps1" (
-  @echo ERROR: missing openM++ UI start script: %OM_ROOT%\props\startOmppUI.ps1
-  pause
-  EXIT 1
-)
+REM create directories for download and upload from UI, errors are not critical and can be ignored
+
+mkdir "%PUBLISH_DIR%\io\download"
+mkdir "%PUBLISH_DIR%\io\upload"
+cd .
 
 REM start oms web-service and UI
 
 set OMS_URL_TICKLE=%PUBLISH_DIR%\%MODEL_NAME%.oms_url.tickle
-set START_OMPP_UI_LOG=%PUBLISH_DIR%\%MODEL_NAME%.start_ompp_ui.log
+rem set START_OMPP_UI_LOG=%PUBLISH_DIR%\%MODEL_NAME%.start_ompp_ui.log
 
-PowerShell.exe -ExecutionPolicy Bypass -File "%OM_ROOT%\props\startOmppUI.ps1"
+set OM_CFG_INI_ALLOW=true
+set OM_CFG_INI_ANY_KEY=true
+
+START "oms" /MIN "%OM_ROOT%"\bin\oms.exe -l localhost:0 -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HomeDir "%PUBLISH_DIR%" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
+if ERRORLEVEL 1 (
+  @echo FAILED to start %OM_ROOT%\bin\oms.exe
+  EXIT 1
+)
+
+timeout /T 2 /nobreak >nul
+
+REM read oms url from file and open browser
+
+for /F "usebackq tokens=* delims=" %%i in ("%OMS_URL_TICKLE%") do (
+  set OMS_URL=%%i
+)
+@echo Starting openM++ UI at: %OMS_URL%
+
+START %OMS_URL%
 
