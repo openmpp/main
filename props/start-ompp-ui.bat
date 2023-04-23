@@ -117,10 +117,26 @@ mkdir "%PUBLISH_DIR%\io\download"
 mkdir "%PUBLISH_DIR%\io\upload"
 cd .
 
-REM start oms web-service and UI
+REM delete oms URL file if exist
 
-set OMS_URL_TICKLE=%PUBLISH_DIR%\%MODEL_NAME%.oms_url.tickle
-rem set START_OMPP_UI_LOG=%PUBLISH_DIR%\%MODEL_NAME%.start_ompp_ui.log
+set OMS_URL_TICKLE=%MODEL_NAME%.oms_url.tickle
+
+REM @echo OMS_URL_TICKLE = %OMS_URL_TICKLE%
+
+if exist "%OMS_URL_TICKLE%" (
+
+  del /q %OMS_URL_TICKLE%
+  if ERRORLEVEL 1 (
+    @echo FAIL to delete: %OMS_URL_TICKLE%
+    EXIT 1
+  )
+)
+if exist "%OMS_URL_TICKLE%" (
+  @echo FAIL to delete: %OMS_URL_TICKLE%
+  EXIT 1
+)
+
+REM start oms web-service and UI
 
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
@@ -135,10 +151,14 @@ timeout /T 2 /nobreak >nul
 
 REM read oms url from file and open browser
 
-for /F "usebackq tokens=* delims=" %%i in ("%OMS_URL_TICKLE%") do (
+if not exist "%OMS_URL_TICKLE%" (
+  @echo ERROR: oms start failed, URL file not found: %OMS_URL_TICKLE%
+  EXIT 1
+)
+
+for /F "usebackq tokens=* delims=" %%i in (%OMS_URL_TICKLE%) do (
   set OMS_URL=%%i
 )
 @echo Starting openM++ UI at: %OMS_URL%
 
 START %OMS_URL%
-
