@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D83E374B29F4F10500A0ABEE /* os.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83E374A29F4F10500A0ABEE /* os.cpp */; };
 		D83F4E1B28FA85240026F89F /* entityAttrTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83F4E1A28FA85240026F89F /* entityAttrTable.cpp */; };
 		D83F4E1D28FA853E0026F89F /* entityAttrTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83F4E1C28FA853E0026F89F /* entityAttrTxtTable.cpp */; };
 		D83F4E1F28FA85500026F89F /* entityDicTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83F4E1E28FA85500026F89F /* entityDicTable.cpp */; };
@@ -120,6 +121,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D83E374A29F4F10500A0ABEE /* os.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = os.cpp; sourceTree = "<group>"; };
 		D83F4E1A28FA85240026F89F /* entityAttrTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = entityAttrTable.cpp; sourceTree = "<group>"; };
 		D83F4E1C28FA853E0026F89F /* entityAttrTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = entityAttrTxtTable.cpp; sourceTree = "<group>"; };
 		D83F4E1E28FA85500026F89F /* entityDicTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = entityDicTable.cpp; sourceTree = "<group>"; };
@@ -330,6 +332,7 @@
 		D88DBE83234D677800EFFC85 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				D83E374A29F4F10500A0ABEE /* os.cpp */,
 				D88C15B329412ECA00C0D24E /* crc32.cpp */,
 				D88C15B229412ECA00C0D24E /* xz_crc64.c */,
 				D88DBE84234D677800EFFC85 /* md5.cpp */,
@@ -560,6 +563,7 @@
 				D88DBF0E234D677900EFFC85 /* singleController.cpp in Sources */,
 				D88DBEDF234D677900EFFC85 /* tableAccTxtTable.cpp in Sources */,
 				D88DBEED234D677900EFFC85 /* profileOptionTable.cpp in Sources */,
+				D83E374B29F4F10500A0ABEE /* os.cpp in Sources */,
 				D88DBEAC234D677900EFFC85 /* msgMpiMetaPacked.cpp in Sources */,
 				D88DBEBD234D677900EFFC85 /* dbExecProvider.cpp in Sources */,
 				D88DBEC1234D677900EFFC85 /* typeDicTable.cpp in Sources */,
