@@ -195,5 +195,17 @@
   <PropertyGroup Condition="'$(OM_UCVT_USE)'=='ICONV'">
     <OM_UCVT_DEF>OM_UCVT_ICONV</OM_UCVT_DEF>
   </PropertyGroup>
+  
+  <!-- 
+  Use DISABLE_ITERATOR_DEBUG to control iterator debug level to improve time-based model Debug run time
+    false - use default  _ITERATOR_DEBUG_LEVEL (is 2)
+    true  - reduce _ITERATOR_DEBUG_LEVEL to 1
+    Passed from VS project properties (OpenM++).
+    See MS article https://learn.microsoft.com/en-us/cpp/standard-library/iterator-debug-level?view=msvc-170
+  -->
+  <PropertyGroup Condition="'$(DISABLE_ITERATOR_DEBUG)'=='true' And '$(Configuration)'=='Debug'">
+    <OM_DID_DEF>_ITERATOR_DEBUG_LEVEL=1</OM_DID_DEF>
+    <DID_SUFFIX>_disable_iterator_debug</DID_SUFFIX>
+  </PropertyGroup>
 
 </Project>

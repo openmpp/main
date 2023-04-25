@@ -83,6 +83,21 @@
   </PropertyGroup>
 
   <!-- 
+  Use this to control iterator debug level to improve time-based model Debug run time
+    false - use default  _ITERATOR_DEBUG_LEVEL (is 2)
+    true  - reduce _ITERATOR_DEBUG_LEVEL to 1 and build alternate libopenm libraries
+    See MS article https://learn.microsoft.com/en-us/cpp/standard-library/iterator-debug-level?view=msvc-170
+  -->
+  <PropertyGroup>
+    <DISABLE_ITERATOR_DEBUG>false</DISABLE_ITERATOR_DEBUG>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DISABLE_ITERATOR_DEBUG)'=='true' And '$(Configuration)'=='Debug'">
+    <OM_DID_DEF>_ITERATOR_DEBUG_LEVEL=1</OM_DID_DEF>
+    <DID_SUFFIX>_disable_iterator_debug</DID_SUFFIX>
+  </PropertyGroup>
+
+  <!-- 
   Override VS default properties
   -->
   <PropertyGroup Condition="'$(ProjectName)'=='libopenm'">

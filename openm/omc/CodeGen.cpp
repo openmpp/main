@@ -719,6 +719,12 @@ void CodeGen::do_RunInit()
     c += "// Model run initialization";
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
+    {
+        c += "#if defined(_MSC_VER) && defined(_DEBUG) && defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL < 2";
+        c += "    theLog->logFormatted(LT(\"Note : this Debug model was built with Microsoft iterator debug disabled\"));";
+        c += "#endif";
+        c += "";
+    }
     if (!Symbol::option_verify_attribute_modification) {
         c += "theLog->logFormatted(LT(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\"));";
         c += "";

@@ -384,6 +384,9 @@
     <Message Text="VisualStudioVersion=$(VisualStudioVersion)" />
     <Message Text="PLATFORM_TOOLSET=$(PLATFORM_TOOLSET)" />
     <Message Text="CHARACTER_SET=$(CHARACTER_SET)" />
+    <Message Text="DISABLE_ITERATOR_DEBUG=$(DISABLE_ITERATOR_DEBUG)" />
+    <Message Text="OM_DID_DEF=$(OM_DID_DEF)" />
+    <Message Text="DID_SUFFIX=$(DID_SUFFIX)" />
 
     <Message Text="OM_MSG_USE=$(OM_MSG_USE)" />
     <Message Text="OMC_INPUTS=@(OMC_INPUTS)" />

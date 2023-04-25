@@ -55,6 +55,11 @@
                 DisplayName="Disable #line directives"
                 Description="Use this option if the correspondence between model source code and execution in the Visual Studio debugger seems erroneous.  Please contact the OpenM++ team if this occurs."
                 />
+  <BoolProperty Category="BuildOptions"
+                Name="DISABLE_ITERATOR_DEBUG"
+                DisplayName="Disable Microsoft iterator debug functionality"
+                Description="For a normal Debug build, leave empty or set to No. Set to Yes if necessary to improve run speed in Debug mode, especially for time-based models which can appear to hang at simulation end in Debug mode or when iterating large collections.  This property has no effect for a Release build."
+                />
   
   <!-- Run Options -->
   <BoolProperty Category="RunOptions"
