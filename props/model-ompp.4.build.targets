@@ -298,18 +298,7 @@
   StartOmppUI
   -->
 
-  <!--
-  RUN_TEMPLATE is a name of pre-selected template file to run the model
-  RUN_TEMPLATE value is passed to UI model run page and automatically pre-selected
-  User can override this selection by choosing different template in UI
-  Template files are located in OM_ROOT/etc directory
-  -->
   <PropertyGroup>
-    <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='Win32'">run.Debug.template.txt</RUN_TEMPLATE>
-    <RUN_TEMPLATE Condition="'$(Configuration)'=='Debug' And '$(Platform)'=='x64'">run.Debug.template.txt</RUN_TEMPLATE>
-    <RUN_TEMPLATE Condition="'$(OM_CFG_DEFAULT_RUN_TMPL)'!=''">$(OM_CFG_DEFAULT_RUN_TMPL)</RUN_TEMPLATE>
-    <RUN_TEMPLATE Condition="'$(Configuration)'=='Release' And '$(Platform)'=='Win32'"></RUN_TEMPLATE>
-    <RUN_TEMPLATE Condition="'$(Configuration)'=='Release' And '$(Platform)'=='x64'"></RUN_TEMPLATE>
     <OMS_URL_TICKLE>$(PUBLISH_DIR)/$(MODEL_NAME).oms_url.tickle</OMS_URL_TICKLE>
     <ABS_OM_ROOT Condition="'$(OM_ROOT)'!=''">$([System.IO.Path]::GetFullPath('$(OM_ROOT)'))</ABS_OM_ROOT>
     <!-- bug: System.IO.Path::GetFullPath('../../..') return: C:\Program Files (x86)\Microsoft Visual Studio\2019 -->
@@ -325,11 +314,11 @@
           >
     <Message Text="Using batch file to start openM++ UI:" />
     <Message
-      Text="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; $(ABS_START_UI_BAT)"
+      Text="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; $(ABS_START_UI_BAT)"
       />
     <Exec
       WorkingDirectory="$(PUBLISH_DIR)"
-      Command="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; (set OM_CFG_DEFAULT_RUN_TMPL=$(RUN_TEMPLATE)) &amp; $(ABS_START_UI_BAT)"
+      Command="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; $(ABS_START_UI_BAT)"
       />
   </Target>
 
