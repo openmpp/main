@@ -58,6 +58,26 @@ if not defined model_exe_name (
   )
 )
 if not defined model_exe_name (
+  if exist "%MODEL_NAME%_mpi.exe" (
+
+    set model_exe_name=%MODEL_NAME%_mpi.exe
+
+    if not defined OM_CFG_DEFAULT_RUN_TMPL (
+      set OM_CFG_DEFAULT_RUN_TMPL=mpi.ModelRun.template.txt
+    )
+  )
+)
+if not defined model_exe_name (
+  if exist "%MODEL_NAME%D_mpi.exe" (
+
+    set model_exe_name=%MODEL_NAME%D_mpi.exe
+
+    if not defined OM_CFG_DEFAULT_RUN_TMPL (
+      set OM_CFG_DEFAULT_RUN_TMPL=mpi.ModelDebug.template.txt
+    )
+  )
+)
+if not defined model_exe_name (
   @echo ERROR: %MODEL_NAME% exe not found
   EXIT 1
 )
