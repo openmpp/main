@@ -272,25 +272,18 @@
     <Message Text="Exporting model run results into csv..." />
     <RemoveDir Directories="$(DBCOPY_CSV_OUTPUT_DIR)" />
 
-    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv -->
-    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv"/>
+    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.Utf8BomIntoCsv -dbcopy.IdCsv -->
+    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.Utf8BomIntoCsv -dbcopy.IdCsv"/>
     <Exec 
       WorkingDirectory="$(PUBLISH_DIR)"
-      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv"
+      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.Utf8BomIntoCsv -dbcopy.IdCsv"
       ContinueOnError="true"/>
 
-    <!-- move *.id.csv into separate directory -->
-    <ItemGroup> 
-      <DBCOPY_CSV_OUTPUT_SRC Include="$(DBCOPY_CSV_OUTPUT_DIR)/last.run/*.*" />
-    </ItemGroup>
-
-    <Move SourceFiles="@(DBCOPY_CSV_OUTPUT_SRC)"  DestinationFolder="$(DBCOPY_CSV_OUTPUT_DIR)/id.last.run" />
-
-    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.IdCsv -->
-    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false"/>
+    <!-- dbcopy -m RiskPaths -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.Utf8BomIntoCsv -dbcopy.KeepOutputDir -->
+    <Message Text="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.Utf8BomIntoCsv -dbcopy.KeepOutputDir"/>
     <Exec 
       WorkingDirectory="$(PUBLISH_DIR)"
-      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false"
+      Command="$(COMPLETE_DBCOPY_EXE) -m $(MODEL_NAME) -dbcopy.LastRun -dbcopy.IdOutputNames=false -dbcopy.Utf8BomIntoCsv -dbcopy.KeepOutputDir"
       ContinueOnError="true"/>
   </Target>
 

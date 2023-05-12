@@ -6,6 +6,7 @@ Please note:
   c++ core: Windows debug model disabling Microsoft iterator debug
   c++ core: simulate only one member in a time-based model if specified in combined seed
   c++ core: enhacement to allow predicting run-time memory requirements
+  c++ core: time-like attributes forbidden in entity set filter or dimension
   c++ core: get model memory usage from Windows, Linux and MacOS
   c++ core: new model run-time options to specify memory usage requiremnts
   Windows: remove Powershell scripts to start or stop UI
