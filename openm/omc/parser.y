@@ -51,6 +51,9 @@ extern char *yytext;
 // Helper function to process terminal in table expressions
 static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc);
 
+// Helper function to handle prohibited redeclaration
+static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, Driver &drv);
+
 }
 
 // The parsing context.
@@ -1705,32 +1708,40 @@ agent_member:
 decl_simple_attribute:
         decl_type_part[type_symbol] SYMBOL[attribute] ";"
                         {
-                            auto *sym = new SimpleAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, nullptr, @attribute );
-                            assert(sym);
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                auto* sym = new SimpleAttributeSymbol($attribute, pc.get_agent_context(), $type_symbol, nullptr, @attribute);
+                                assert(sym);
+                            }
                         }
       | decl_type_part[type_symbol] SYMBOL[attribute] "=" "{" signed_literal "}" ";"
                         {
-                            auto *sym = new SimpleAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, $signed_literal, @attribute );
-                            assert(sym);
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                auto* sym = new SimpleAttributeSymbol($attribute, pc.get_agent_context(), $type_symbol, $signed_literal, @attribute);
+                                assert(sym);
+                            }
                         }
       | decl_type_part[type_symbol] SYMBOL[attribute] "=" "{" SYMBOL[enumerator] "}" ";"
                         {
-                            auto *sym = new SimpleAttributeEnumSymbol( $attribute, pc.get_agent_context(), $type_symbol, $enumerator, @attribute );
-                            assert(sym);
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                auto *sym = new SimpleAttributeEnumSymbol( $attribute, pc.get_agent_context(), $type_symbol, $enumerator, @attribute );
+                                assert(sym);
+                            }
                         }
     ;
 
 decl_agent_array:
         decl_type_part[type_symbol] SYMBOL[attribute] array_decl_dimension_list ";"
                         {
-                            // Morph symbol to agent array member symbol
-                            auto aam = new EntityArrayMemberSymbol($attribute, pc.get_agent_context(), $type_symbol, @attribute);
-                            list<Symbol *> *pls = $array_decl_dimension_list;
-                            // Move dimension list to EntityArrayMemberSymbol (transform elements to stable **).
-                            for (auto sym : *pls) aam->dimension_list.push_back(sym->stable_pp());
-                            pls->clear();
-                            delete pls;
-                            $array_decl_dimension_list = nullptr;
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                // Morph symbol to agent array member symbol
+                                auto aam = new EntityArrayMemberSymbol($attribute, pc.get_agent_context(), $type_symbol, @attribute);
+                                list<Symbol *> *pls = $array_decl_dimension_list;
+                                // Move dimension list to EntityArrayMemberSymbol (transform elements to stable **).
+                                for (auto sym : *pls) aam->dimension_list.push_back(sym->stable_pp());
+                                pls->clear();
+                                delete pls;
+                                $array_decl_dimension_list = nullptr;
+                            }
                         }
     ;
 
@@ -1753,8 +1764,10 @@ array_decl_dimension_list: // A non-empty list of dimensions enclosed by []
 decl_identity_attribute:
         decl_type_part[type_symbol] SYMBOL[attribute] "=" expr_for_attribute ";"
                         {
-                            auto *sym = new IdentityAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, $expr_for_attribute, @attribute );
-                            assert(sym);
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                auto *sym = new IdentityAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, $expr_for_attribute, @attribute );
+                                assert(sym);
+                            }
                         }
     ;
 
@@ -3348,6 +3361,25 @@ ldouble_synonym:
     ;
 
 %%
+
+// Helper function to handle prohibited redeclaration
+static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, Driver &drv)
+{
+    if (sym->is_base_symbol()) {
+        return true;
+    }
+    else {
+        auto dl = sym->decl_loc; // previous declaration location of sym
+        std::string msg =
+            LT("error : redeclaration of '")
+            + sym->name
+            + LT("' - other declaration at ")
+            + dl.begin.filename->c_str()
+            + "(" + std::to_string(dl.begin.line) + ")";
+        drv.error(loc, msg);
+        return false;
+    }
+}
 
 // Helper function to process terminal in table expressions
 static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
