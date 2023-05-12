@@ -1498,6 +1498,11 @@ public:
     static bool option_censor_event_time;
 
     /**
+     * true or false depending on ascii_infinity in options statement.
+     */
+    static bool option_ascii_infinity;
+
+    /**
      * name of parameter containing population size.
      */
     static string option_memory_popsize_parameter;

@@ -659,6 +659,8 @@ size_t Symbol::short_name_max_length = 32;
 
 bool Symbol::option_censor_event_time = false;
 
+bool Symbol::option_ascii_infinity = false;
+
 string Symbol::option_memory_popsize_parameter;
 
 string Symbol::code_page;
@@ -2245,6 +2247,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_censor_event_time = false;
+            }
+        }
+    }
+
+    {
+        string key = "ascii_infinity";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_ascii_infinity = true;
+            }
+            else if (value == "off") {
+                option_ascii_infinity = false;
             }
         }
     }
