@@ -56,7 +56,7 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
         if (sqlite3_open_v2(dbName.c_str(), &theDb, openMode, NULL) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
 
         // register extension functions
-        if (sqlite3_extension_functions_init(theDb) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
+        // if (sqlite3_extension_functions_init(theDb) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
 
         // set table lock timeout, if specified
         if (sqlite3_busy_timeout(theDb, (int)(1000L * longConnProperty("Timeout", 0L)) ) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));

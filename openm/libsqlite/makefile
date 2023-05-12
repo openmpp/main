@@ -48,14 +48,13 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CFLAGS = -Wall -pthread -fPIC -D_REENTRANT -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_OMIT_LOAD_EXTENSION $(CC_ASAN_FLAGS) $(BD_CFLAGS)
+SQLITE_FLAGS = -DSQLITE_ENABLE_COLUMN_METADATA -DSQLITE_ENABLE_MATH_FUNCTIONS -DSQLITE_OMIT_LOAD_EXTENSION
+CFLAGS = -Wall -pthread -fPIC -D_REENTRANT $(SQLITE_FLAGS) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CFLAGS)
 
 LIBSQLITE_A = libsqlite$(BIN_POSTFIX).a
 
-LIBSQLITE_CLIST := \
-  sqlite3.c \
-  extension-functions.c
+LIBSQLITE_CLIST := sqlite3.c
 
 OBJS := $(foreach root,$(LIBSQLITE_CLIST:.c=.o),$(OBJ_DIR)/$(notdir $(root)))
 DEPS := $(foreach root,$(LIBSQLITE_CLIST:.c=.d),$(DEPS_DIR)/$(notdir $(root)))

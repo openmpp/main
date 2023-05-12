@@ -5,13 +5,10 @@
   <!-- SQLite source files -->
   <!--                     -->
   <ItemGroup>
-    <ClCompile Include="$(OM_ROOT)/openm/libsqlite/extension-functions.c" />
     <ClCompile Include="$(OM_ROOT)/openm/libsqlite/sqlite3.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/extension_functions.h" />
     <ClInclude Include="$(OM_ROOT)/openm/libsqlite/sqlite3.h" />
-    <ClInclude Include="$(OM_ROOT)/openm/libsqlite/sqlite3ext.h" />
   </ItemGroup>
 
 </Project>

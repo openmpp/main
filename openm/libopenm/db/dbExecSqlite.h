@@ -12,7 +12,6 @@
 #include "dbExecBase.h"
 
 #include "sqlite3.h"
-#include "extension_functions.h"
 
 namespace openm
 {
