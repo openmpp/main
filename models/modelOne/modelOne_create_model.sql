@@ -8,6 +8,8 @@
 --   model id = 1 is modelOne
 --
 
+UPDATE id_lst SET id_value = id_value + 100 WHERE id_key <> 'openmpp';
+
 --
 -- modelOne metadata
 -- digest values below are a test values and not a real digests, real digests are 32 digits hex
