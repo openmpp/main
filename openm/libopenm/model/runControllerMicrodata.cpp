@@ -351,10 +351,10 @@ void RunController::pushDbMicrodata(int i_runId, int i_entityKind, uint64_t i_mi
 /** pull microdata database rows from the buffer.
 * if i_isNow is true then return current microdata rows for all entities
 * else return non empty results only
-*   if microdata row count is more than upper bound
+*   if microdata row count > upper bound
 *   or
-*   if microdata row count is more than lower bound
-*   time since last save is moe than microdata save time interval
+*   if microdata row count > lower bound
+*      and time elapsed since last save > microdata save time interval
 */
 map<int, list<unique_ptr<uint8_t[]>>> RunController::pullDbMicrodata(bool i_isNow)
 {
@@ -863,7 +863,7 @@ void RunController::writeCsvMicrodata(int i_entityKind, uint64_t i_microdataKey,
 
     if (i_entityThis == nullptr) throw ModelException("invalid (NULL) entity this pointer, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
-    // find csv output tsream by entity id
+    // find csv output stream by entity id
     auto ecIt = entityCsvMap.find(i_entityKind);
     if (ecIt == entityCsvMap.end()) throw ModelException("microdata CSV not found, entity kind: %d microdata key: %llu", i_entityKind, i_microdataKey);
 
