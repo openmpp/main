@@ -117,7 +117,7 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         {
             TypeEnumLstRow typeEnum;
             typeEnum.typeId = type_id;
-            typeEnum.enumId = ordinal;
+            typeEnum.enumId = lower_bound + ordinal;
             typeEnum.name = enumerator_name;
             metaRows.typeEnum.push_back(typeEnum);
         }
@@ -125,13 +125,23 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         for (auto lang : Symbol::pp_all_languages) {
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
-            typeEnumTxt.enumId = ordinal;
+            typeEnumTxt.enumId = lower_bound + ordinal;
             typeEnumTxt.langCode = lang->name;
             typeEnumTxt.descr = to_string(lower_bound + ordinal);
             typeEnumTxt.note = "";
             metaRows.typeEnumTxt.push_back(typeEnumTxt);
         }
     }
+
+    // adjust total enum id for range: range enum id's are not zero based
+    vector<TypeDicRow>::iterator it = find_if(
+        metaRows.typeDic.begin(),
+        metaRows.typeDic.end(),
+        [this](TypeDicRow & i_row) -> bool { return i_row.typeId == type_id; });
+
+    if (it == metaRows.typeDic.cend()) throw DbException(LT("invalid type id: %d for range type: %s"), type_id, name.c_str());
+
+    it->totalEnumId = upper_bound + 1;
 }
 
 bool RangeSymbol::is_valid_constant(const Constant &k) const
@@ -166,6 +176,6 @@ string RangeSymbol::format_for_storage(const Constant &k) const
 {
     long value = stol(k.value());
 
-    string result = to_string(value - lower_bound); // store zero based enum id
+    string result = to_string(value); // range enum id's are not zero-based
     return result;
 }

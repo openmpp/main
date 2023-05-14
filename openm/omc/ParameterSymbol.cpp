@@ -908,16 +908,6 @@ CodeBlock ParameterSymbol::cxx_read_parameter(int i_paramNumber, int i_paramCoun
         c_adjust_code += "value = - log(1.0 - value);";
     }
 
-    if (pp_datatype->is_range()) {
-        auto rng = dynamic_cast<RangeSymbol *>(pp_datatype);
-        assert(rng);
-        if (rng->lower_bound != 0) {
-            adjust = true;
-            c_adjust_comment = "// Parameter '" + name + "' is declared range and requires transformation.";
-            c_adjust_code += "value += " + to_string(rng->lower_bound) + ";";
-        }
-    }
-
     // last_progress_ms = report_parameter_read_progress(10, 12345, "ageSex", last_progress_ms);
     c += "last_progress_ms = report_parameter_read_progress(" + to_string(i_paramNumber) + ", " + to_string(i_paramCount) + ", \"" + name + "\", last_progress_ms);";
 

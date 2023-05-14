@@ -144,8 +144,6 @@ int ModelInsertSql::insertTypeDic(IDbExec * i_dbExec, const TypeDicRow & i_row)
     if (i_row.digest.empty() || i_row.digest.length() > OM_CODE_DB_MAX) throw DbException(LT("invalid (empty or longer then %d) digest of type: %s"), OM_CODE_DB_MAX, i_row.name.c_str());
 
     if (i_row.dicId < 0) throw DbException(LT("invalid (negative) dictionary id: %d, type: %s"), i_row.dicId, i_row.name.c_str());
-    if (i_row.dicId != 0 && i_row.totalEnumId <= 0)
-        throw DbException(LT("invalid id of total item, it must be positive: %d, type: %s"), i_row.totalEnumId, i_row.name.c_str());
 
     // insert new type_dic row, if type not built-in
     // built-in types must already be inserted
@@ -235,8 +233,6 @@ void ModelInsertSql::insertTypeEnum(IDbExec * i_dbExec, int i_typeHid, const Typ
     if (i_row.name.empty()) throw DbException(LT("invalid (empty) enum name, type id: %d"), i_row.typeId);
     if (i_row.name.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) enum name: %s, type id: %d"), OM_NAME_DB_MAX, me.ellipt(i_row.name), i_row.typeId);
 
-    if (i_row.enumId < 0) throw DbException(LT("invalid (negative) enum %s id: %d, type id: %d"), i_row.name.c_str(), i_row.enumId, i_row.typeId);
-
     // built-in types must already be inserted
     if (isBuiltInType(i_row.typeId)) return; 
 
@@ -256,7 +252,6 @@ void ModelInsertSql::insertTypeEnumText(
 {
     // validate field values
     MessageEllipter me;
-    if (io_row.enumId < 0) throw DbException(LT("invalid (negative) enum id: %d, type id: %d"), io_row.enumId, io_row.typeId);
     if (io_row.langCode.empty()) throw DbException(LT("invalid (empty) language code, type id: %d, enum id: %d"), io_row.typeId, io_row.enumId);
     if (io_row.descr.empty()) throw DbException(LT("invalid (empty) description, type id: %d, enum id: %d"), io_row.typeId, io_row.enumId);
     if (io_row.descr.length() > OM_DESCR_DB_MAX) 
