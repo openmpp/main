@@ -25,8 +25,8 @@ entity Person
     SEX sex3 = (true) ? sex1 : sex2;
     SEX sex4;
 
-    SEX a1 = (sex == MALE) ? MALE : FEMALE;
-    SEX a2 = (true) ? MALE : FEMALE;
+    SEX c1 = (sex == MALE) ? MALE : FEMALE;
+    SEX c2 = (true) ? MALE : FEMALE;
 
     void TestCpp(void);
 };
