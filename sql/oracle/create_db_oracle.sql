@@ -714,7 +714,7 @@ CREATE TABLE run_progress
   run_id         INT         NOT NULL, -- master key
   sub_id         INT         NOT NULL, -- sub-value id (zero based index)
   create_dt      VARCHAR(32) NOT NULL, -- sub-value start date-time
-  status         VARCHAR(1)  NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
+  status         VARCHAR(1)  NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed) d=delete
   update_dt      VARCHAR(32) NOT NULL, -- last update date-time
   progress_count INT         NOT NULL, -- progress count: percent completed
   progress_value FLOAT       NOT NULL, -- progress value: number of cases (case based) or time (time based)
