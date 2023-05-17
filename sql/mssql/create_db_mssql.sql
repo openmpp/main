@@ -589,7 +589,7 @@ CREATE TABLE run_lst
   sub_completed INT          NOT NULL, -- number of sub-values completed
   sub_restart   INT          NOT NULL, -- sub-value to restart from
   create_dt     VARCHAR(32)  NOT NULL, -- run created date-time
-  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
+  status        VARCHAR(1)   NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed) d=delete
   update_dt     VARCHAR(32)  NOT NULL, -- last update date-time
   run_digest    VARCHAR(32)  NOT NULL, -- digest of the run metadata: model digest, run name, sub count, created date-time, run stamp
   value_digest  VARCHAR(32),           -- if not NULL then digest of the run values: all parameters and output tables
@@ -714,7 +714,7 @@ CREATE TABLE run_progress
   run_id         INT         NOT NULL, -- master key
   sub_id         INT         NOT NULL, -- sub-value id (zero based index)
   create_dt      VARCHAR(32) NOT NULL, -- sub-value start date-time
-  status         VARCHAR(1)  NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed) d=delete
+  status         VARCHAR(1)  NOT NULL, -- run status: i=init p=progress s=success x=exit e=error(failed)
   update_dt      VARCHAR(32) NOT NULL, -- last update date-time
   progress_count INT         NOT NULL, -- progress count: percent completed
   progress_value FLOAT       NOT NULL, -- progress value: number of cases (case based) or time (time based)
