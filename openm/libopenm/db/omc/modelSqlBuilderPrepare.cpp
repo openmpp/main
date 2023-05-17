@@ -1119,10 +1119,13 @@ void ModelSqlBuilder::setParamTableInfo(MetaModelHolder & io_metaRows)
         // collect dimension names
         tblInf.dimVec.clear();
         tblInf.colVec.clear();
+        tblInf.typeIdVec.clear();
+
         for (const ParamDimsRow & dimRow : io_metaRows.paramDims) {
             if (dimRow.paramId == tblInf.id) {
                 tblInf.dimVec.push_back(dimRow.name);
                 tblInf.colVec.push_back(dimRow.columnName());
+                tblInf.typeIdVec.push_back(dimRow.typeId);
             }
         }
 
@@ -1144,10 +1147,13 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         // collect dimension names
         tblInf.dimVec.clear();
         tblInf.colVec.clear();
+        tblInf.typeIdVec.clear();
+
         for (const TableDimsRow & dimRow : io_metaRows.tableDims) {
             if (dimRow.tableId == tblInf.id) {
                 tblInf.dimVec.push_back(dimRow.name);
                 tblInf.colVec.push_back(dimRow.columnName());
+                tblInf.typeIdVec.push_back(dimRow.typeId);
             }
         }
 
@@ -1155,6 +1161,7 @@ void ModelSqlBuilder::setOutTableInfo(MetaModelHolder & io_metaRows)
         tblInf.accIdVec.clear();
         tblInf.accNameVec.clear();
         tblInf.accColVec.clear();
+
         for (const TableAccRow & accRow : io_metaRows.tableAcc) {
             if (accRow.tableId == tblInf.id) {
                 tblInf.accIdVec.push_back(accRow.accId);

@@ -91,6 +91,9 @@ namespace openm
             /** dimension column names */
             vector<string> colVec;
 
+            /** dimension type id's */
+            vector<int> typeIdVec;
+
             DbTblInfo(void) : id(-1) { }
         };
 
@@ -196,6 +199,8 @@ namespace openm
             const string & i_viewName, 
             const string & i_srcTableName, 
             const vector<string> & i_colNames,
+            const vector<int> & i_dimsLowerBound,
+            int i_valueLowerBound,
             ModelSqlWriter & io_wr
         ) const;
 
@@ -206,6 +211,7 @@ namespace openm
             const string & i_viewName, 
             const string & i_srcTableName, 
             const vector<string> & i_colNames,
+            const vector<int> & i_dimsLowerBound,
             ModelSqlWriter & io_wr
         ) const;
 

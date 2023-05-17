@@ -741,11 +741,39 @@ void ModelSqlBuilder::addWorksetParameter(
     paramInfo->isAdded = true;  // done with parameter insert
 }
 
+// if type is a range type then return lower bound which should be the first enum id
+static int firstRangeEnumId(const MetaModelHolder & i_metaRows, int i_typeId, const char * dName, const char * tName = "")
+{
+    // find type
+    int mId = i_metaRows.modelDic.modelId;
+
+    TypeDicRow tRow(mId, i_typeId);
+    vector<TypeDicRow>::const_iterator typeIt = std::lower_bound(
+        i_metaRows.typeDic.cbegin(), i_metaRows.typeDic.cend(), tRow, TypeDicRow::isKeyLess
+    );
+    if (typeIt == i_metaRows.typeDic.cend()) throw DbException(LT("type not found: %s %s"), dName, tName);
+
+    // check if this is a range type
+    if (typeIt->dicId != 3) return 0;
+
+    vector<TypeEnumLstRow>::const_iterator eIt = find_if(
+        i_metaRows.typeEnum.cbegin(),
+        i_metaRows.typeEnum.cend(),
+        [mId, i_typeId](const TypeEnumLstRow & i_row) -> bool
+        { return i_row.modelId == mId && i_row.typeId == i_typeId; }
+    );
+    if (eIt == i_metaRows.typeEnum.cend()) throw DbException(LT("type enums not found: %s %s"), dName, tName);
+
+    return eIt->enumId;
+}
+
 // write sql script to create backward compatibility views
 void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows) const
 {
     try {
         // write sql script to create views for each provider
+        vector<int> lbVec;
+
         for (const string & providerName : dbProviderLst) {
 
             // put descriptive header
@@ -772,8 +800,21 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
                 "--\n"
             );
             for (size_t k = 0; k < i_metaRows.paramDic.size(); k++) {
+
+                // for each dimension type of range find range type lower bound
+                lbVec.clear();
+
+                for (size_t j = 0; j < paramInfoVec[k].typeIdVec.size(); j++) {
+                    lbVec.push_back(
+                        firstRangeEnumId(i_metaRows, paramInfoVec[k].typeIdVec[j], paramInfoVec[k].dimVec[j].c_str(), i_metaRows.paramDic[k].paramName.c_str())
+                    );
+                }
+
+                // lower bound for parameter value if parameter type of range
+                int lbVal = firstRangeEnumId(i_metaRows, paramInfoVec[k].valueTypeIt->typeId, paramInfoVec[k].valueTypeIt->name.c_str());
+
                 paramCompatibilityView(
-                    providerName, i_metaRows.modelDic, i_metaRows.paramDic[k].paramName, i_metaRows.paramDic[k].dbRunTable, paramInfoVec[k].colVec, wr
+                    providerName, i_metaRows.modelDic, i_metaRows.paramDic[k].paramName, i_metaRows.paramDic[k].dbRunTable, paramInfoVec[k].colVec, lbVec, lbVal, wr
                 );
             }
             wr.write("\n");
@@ -785,8 +826,18 @@ void ModelSqlBuilder::buildCompatibilityViews(const MetaModelHolder & i_metaRows
                 "--\n"
             );
             for (size_t k = 0; k < i_metaRows.tableDic.size(); k++) {
+
+                // for each dimension type of range find range type lower bound
+                lbVec.clear();
+
+                for (size_t j = 0; j < outInfoVec[k].typeIdVec.size(); j++) {
+                    lbVec.push_back(
+                        firstRangeEnumId(i_metaRows, outInfoVec[k].typeIdVec[j], outInfoVec[k].dimVec[j].c_str(), i_metaRows.tableDic[k].tableName.c_str())
+                    );
+                }
+
                 outputCompatibilityView(
-                    providerName, i_metaRows.modelDic, i_metaRows.tableDic[k].tableName, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k].colVec, wr
+                    providerName, i_metaRows.modelDic, i_metaRows.tableDic[k].tableName, i_metaRows.tableDic[k].dbExprTable, outInfoVec[k].colVec, lbVec, wr
                 );
             }
             wr.write("\n");
@@ -1066,15 +1117,20 @@ const void ModelSqlBuilder::paramCompatibilityView(
     const string & i_viewName, 
     const string & i_srcTableName, 
     const vector<string> & i_colNames,
+    const vector<int> & i_dimsLowerBound,
+    int i_valueLowerBound,
     ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "SELECT";
 
     for (size_t k = 0; k < i_colNames.size(); k++) {
-        sqlBody += " S." + i_colNames[k] + " AS \"Dim" + to_string(k) + "\",";
+        sqlBody +=
+            (i_dimsLowerBound[k] == 0 ? " S." + i_colNames[k] : " (S." + i_colNames[k] + " - " + to_string(i_dimsLowerBound[k]) + ")") +
+            " AS \"Dim" + to_string(k) + "\",";
     }
-    sqlBody += " S.param_value AS \"Value\"";
+    sqlBody += (i_valueLowerBound == 0 ? " S.param_value" : " (S.param_value - " + to_string(i_valueLowerBound) + ")") +
+        " AS \"Value\"" ;
 
     // from sub-value table where run id is first run of that model
     sqlBody +=
@@ -1110,13 +1166,16 @@ const void ModelSqlBuilder::outputCompatibilityView(
     const string & i_viewName, 
     const string & i_srcTableName, 
     const vector<string> & i_colNames, 
+    const vector<int> & i_dimsLowerBound,
     ModelSqlWriter & io_wr
     ) const
 {
     string sqlBody = "SELECT";
 
     for (size_t k = 0; k < i_colNames.size(); k++) {
-        sqlBody += " S." + i_colNames[k] + " AS \"Dim" + to_string(k) + "\",";
+        sqlBody +=
+            (i_dimsLowerBound[k] == 0 ? " S." + i_colNames[k] : " (S." + i_colNames[k] + " - " + to_string(i_dimsLowerBound[k]) + ")") +
+            " AS \"Dim" + to_string(k) + "\",";
     }
     sqlBody +=
         " S.expr_id AS \"Dim" + to_string(i_colNames.size()) + "\"," \
