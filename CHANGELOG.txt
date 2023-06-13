@@ -1,6 +1,19 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-06-14:
+  c++ core: new option ascii_infinity to improve utf-8 support
+  c++ core: in Windows model projects always use BOM in CSV files to improve utf-8 support
+  c++ core: emit build error on attribute redeclaration
+  c++ core: improve range type and fix microdata issues by using non-zero based enum id
+  database: update Modgen compatibilty views for range types
+  dbcopy: add model list option to display list of the models in database
+  UI and oms: allow to read single sub-value to improve UI performance
+  UI and oms: significant performance improvments, especially for model run delete
+  UI and oms: add page support for large microdata
+  UI: implement page support output tables, parameters and microdata viewer
+  UI: initial version of microdata viewer
+
 2023-05-02:
   c++ core: MPI microdata database writing: fix memory leak
   c++ core: Windows debug model disabling Microsoft iterator debug
