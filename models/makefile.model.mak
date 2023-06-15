@@ -14,7 +14,6 @@ else
 endif
 CPP = $(CC)
 AR = ar
-SQLITE_EXE = sqlite3
 
 ifndef OM_ROOT
   error $(error Environmemt variable OM_ROOT must be defined in order to build the model)
@@ -157,6 +156,11 @@ ifndef PUBLISH_DIR
   PUBLISH_DIR = $(OUT_BIN_DIR)
 endif
 MODEL_SQLITE = $(PUBLISH_DIR)/$(MODEL_NAME).sqlite
+
+SQLITE_EXE = sqlite3
+ifneq (,$(wildcard $(OM_BIN_DIR)/sqlite3))
+  SQLITE_EXE = $(OM_BIN_DIR)/sqlite3
+endif
 
 #
 # source files subdirectory: .ompp .mpp .odat .dat .cpp
