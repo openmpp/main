@@ -8,6 +8,7 @@
 #include <cassert>
 #include "TableGroupSymbol.h"
 #include "TableSymbol.h"
+#include "ParameterSymbol.h"
 #include "LanguageSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -26,7 +27,12 @@ void TableGroupSymbol::post_parse(int pass)
         for (auto sym : pp_symbol_list) {
             bool is_table = dynamic_cast<TableSymbol*>(sym);
             bool is_table_group = dynamic_cast<TableGroupSymbol*>(sym);
-            if (!(is_table || is_table_group)) {
+            auto ps = dynamic_cast<ParameterSymbol*>(sym);
+            bool is_derived_parameter = false;
+            if (ps && ps->source == ParameterSymbol::parameter_source::derived_parameter) {
+                is_derived_parameter = true;
+            }
+            if (!(is_table || is_table_group || is_derived_parameter)) {
                 pp_error(LT("error : invalid member '") + sym->name + LT("' of table group '") + name + LT("'"));
             }
         }
@@ -95,21 +101,29 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
             // else do not publish a table group which contains only non-published tables
         }
-        // else symbol must be a table
-        auto tbl = dynamic_cast<TableSymbol *>(sym);
+        // else symbol must be a table or a derived parameter marked publish_as_table
+        auto tbl = dynamic_cast<TableSymbol*>(sym);
+        auto param = dynamic_cast<ParameterSymbol *>(sym);
         if (tbl) {
             if (!tbl->is_internal && !tbl->is_suppressed) {
-
                 GroupPcRow groupPc;
                 groupPc.groupId = pp_group_id;
                 groupPc.childPos = childPos++;
                 groupPc.childGroupId = -1;      // negative value treated as db-NULL
                 groupPc.leafId = tbl->pp_table_id;
                 metaRows.groupPc.push_back(groupPc);
-
                 continue;   // done with this child table
             }
-            // else do not publish non-published table
+            // else do not publish this table
+        }
+        else if (param && param->publish_as_table)  {
+            GroupPcRow groupPc;
+            groupPc.groupId = pp_group_id;
+            groupPc.childPos = childPos++;
+            groupPc.childGroupId = -1;      // negative value treated as db-NULL
+            groupPc.leafId = param->pp_parameter_to_table_id;
+            metaRows.groupPc.push_back(groupPc);
+            continue;   // done with this child table
         }
         else {
             // invalid table group member

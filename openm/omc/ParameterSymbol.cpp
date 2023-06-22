@@ -757,6 +757,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         // The main differences apart from member names is that a parameter 
         // has no measure dimension, so a 'fake' measure dimension 
         // of rank 1 and size 1 is created on its place.
+        // Also, a single accumulator and a single expression are created.
 
          // The table
 
@@ -766,7 +767,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDic.tableName = name;
         tableDic.rank = rank();
         tableDic.isSparse = true;           // do not store zeroes
-        tableDic.exprPos = rank() - 1;      // after all classificatory dimensions
+        tableDic.exprPos = -1;              // before all classificatory dimensions
         tableDic.isHidden = false;          // perhaps ignored
         metaRows.tableDic.push_back(tableDic);
 
@@ -779,7 +780,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableTxt.langCode = lang->name;
             tableTxt.descr = label(*lang);
             tableTxt.note = note(*lang);
-            tableTxt.exprDescr = "";
+            tableTxt.exprDescr = "value";
             tableTxt.exprNote = "";
             metaRows.tableTxt.push_back(tableTxt);
         }
@@ -824,7 +825,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             tableAcc.tableId = pp_parameter_to_table_id;
             tableAcc.accId = 0;
-            tableAcc.accSrc = "";
+            tableAcc.accSrc = "value";
             tableAcc.isDerived = false;
             metaRows.tableAcc.push_back(tableAcc);
 
@@ -834,7 +835,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
                 tableAccTxt.tableId = pp_parameter_to_table_id;
                 tableAccTxt.accId = 0;
                 tableAccTxt.langCode = lang->name;
-                tableAccTxt.descr = "";
+                tableAccTxt.descr = "value";
                 tableAccTxt.note = "";
                 metaRows.tableAccTxt.push_back(tableAccTxt);
             }
@@ -846,7 +847,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
             tableExpr.tableId = pp_parameter_to_table_id;
             tableExpr.exprId = 0;
-            tableExpr.name = "";
+            tableExpr.name = "value";
             tableExpr.decimals = -1;
 
             // Construct the expression to compute the measure for a single simulation member.
@@ -866,7 +867,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
                 tableExprTxt.tableId = pp_parameter_to_table_id;
                 tableExprTxt.exprId = 0;
                 tableExprTxt.langCode = lang->name;
-                tableExprTxt.descr = "";
+                tableExprTxt.descr = "value";
                 tableExprTxt.note = "";
                 metaRows.tableExprTxt.push_back(tableExprTxt);
             }

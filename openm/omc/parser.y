@@ -1228,6 +1228,7 @@ anon_group_kw:
     | TK_parameters_retain
     | TK_tables_suppress
     | TK_tables_retain
+    | TK_parameters_to_tables
       ;
 
 

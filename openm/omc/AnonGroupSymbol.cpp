@@ -232,12 +232,14 @@ void AnonGroupSymbol::post_parse(int pass)
                     if (ps->source == ParameterSymbol::parameter_source::derived_parameter) {
                         ps->publish_as_table = true;
                     }
+                    else {
+                        pp_error(LT("error : '") + symbol_name + LT("' in parameters_to_tables is not a derived parameter"));
+                    }
                 }
                 else {
-                    pp_error(LT("error : '") + symbol_name + LT("' in parameters_to_tables statement is not a parameter"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in parameters_to_tables is not a parameter"));
                 }
             }
-            pp_warning(LT("warning : parameters_to_tables is not implemented"));
             break;
         }
         default:

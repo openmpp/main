@@ -418,13 +418,15 @@ void PreSimulation()
 
 
 // Tests of derived (aka model_generated) parameters
-parameters {
+parameters{
     model_generated YEAR mg_year1;
     model_generated YEAR mg_year2;
     model_generated YEAR mg_year_array[SEX];
+    model_generated SEX mg_sex_array[YEAR];
     model_generated int mg_int;
     model_generated double mg_double;
     model_generated int mg_int_array[SEX];
+    model_generated int mg_int_array2[SEX][YEAR];
     model_generated double mg_double_array[SEX];
 };
 
@@ -463,6 +465,19 @@ void PreSimulation()
     mg_double_array[MALE] = 9;
     assert(mg_double_array[FEMALE] == 7); // derived parameter value persists
     assert(mg_double_array[MALE] == 9); // derived parameter value persists
+
+    for (int k = 0; k < SIZE(YEAR); ++k) {
+        mg_sex_array[k] = (k % 2) ? MALE : FEMALE;
+    }
+
+
+
+    for (int j = 0; j < SIZE(SEX); ++j) {
+        for (int k = 0; k < SIZE(YEAR); ++k) {
+            mg_int_array2[j][k] = (j+1) * (k+1);
+        }
+    }
+
 
 }
 

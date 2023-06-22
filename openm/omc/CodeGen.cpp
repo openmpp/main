@@ -1109,6 +1109,38 @@ void CodeGen::do_ModelShutdown()
     c += "";
     c += "theLog->logFormatted(\"member=%d Write output tables - finish\", simulation_member);";
 
+    if (Symbol::any_parameters_to_tables) {
+        // process derived parameters published as tables
+        c += "";
+        c += "theLog->logFormatted(\"member=%d Write derived parameters - start\", simulation_member);";
+        for (auto param : Symbol::pp_all_parameters) {
+            if (param->publish_as_table) {
+                // Write this derived parameter as a table
+                c += "{ // " + param->name;
+                c +=     "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + param->name + "\", last_progress_ms);";
+                c +=     "const size_t cell_count = " + to_string(param->size()) + ";";
+                c +=     "std::forward_list<std::unique_ptr<double[]>> the_storage;";
+                c +=     "auto it = the_storage.before_begin();";
+                c +=     "it = the_storage.insert_after(it, std::unique_ptr<double[]>(new double[cell_count]));";
+                c +=     "auto to = it->get();";
+                std::string first_element_indices = "";
+                for (size_t j = 0; j < param->rank(); ++j) {
+                    first_element_indices += "[0]";
+                }
+                c +=     "auto from = &" + param->name + first_element_indices + ";";
+                c +=     "for (size_t j = 0; j < cell_count; ++j, ++to, ++from) {";
+                c +=         "*to = (double)*from;";
+                c +=     "}";
+                c +=     "i_model->writeOutputTable(\"" +
+                              param->name + "\", " +
+                              to_string(param->size()) +
+                              ", the_storage);";
+                c += "}";
+            }
+        }
+        c += "theLog->logFormatted(\"member=%d Write derived parameters - finish\", simulation_member);";
+    }
+
     c += "// Entity table destruction";
     for (auto table : Symbol::pp_all_entity_tables) {
         c += "if (" + table->cxx_instance + ") {";
