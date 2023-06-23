@@ -39,8 +39,14 @@ parameter_group PG_test42
     mg_year2
 };
 
+//hide TG_All_Derived_Parameters;
+//hide mg_int;
+
 table_group TG_Test //EN Test table group
 {
+    ut1, // hide(ut1) is elsewhere in code
+    ut2,
+    mg_int,
     EyeColourToBrown,
     TG_All_Derived_Parameters
 };

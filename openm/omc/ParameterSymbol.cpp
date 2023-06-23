@@ -764,11 +764,11 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         TableDicRow tableDic;
 
         tableDic.tableId = pp_parameter_to_table_id;
-        tableDic.tableName = name;
+        tableDic.tableName = name; // name of derived parameter is used for name of table
         tableDic.rank = rank();
         tableDic.isSparse = true;           // do not store zeroes
         tableDic.exprPos = -1;              // before all classificatory dimensions
-        tableDic.isHidden = false;          // perhaps ignored
+        tableDic.isHidden = is_hidden;
         metaRows.tableDic.push_back(tableDic);
 
         // Labels and notes for the table
