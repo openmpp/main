@@ -1278,11 +1278,26 @@ void Symbol::post_parse_all()
 {
     // Set defaults and set options specified in model code.
     // This is done before any other post-parse operations
-    // to allow options to affect post-parse processing as well as code generation.
+    // to allow options to affect post-parse processing (all passes)
+    // as well as code generation.
     defaults_and_options();
 
     if (LanguageSymbol::number_of_languages() == 0) {
         pp_error(omc::location(), LT("error : no languages specified"));
+    }
+
+    // convert Modgen NOTE syntax to markdown
+    if (Symbol::option_convert_modgen_note_syntax) {
+        // iterate collection of NOTES in model source code notes
+        for (const auto& [key, value] : Symbol::notes_source) {
+            auto new_note = Symbol::normalize_note(value);
+            Symbol::notes_source[key] = new_note;
+        }
+        // iterate collection of NOTES in parameter value notes
+        for (const auto& [key, value] : Symbol::notes_input) {
+            auto new_note = Symbol::normalize_note(value);
+            Symbol::notes_input[key] = new_note;
+        }
     }
 
     // Create pp_symbols now to easily find Symbols while debugging.
