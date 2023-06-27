@@ -139,7 +139,7 @@ namespace openm
         ModelBaseExpressionSql & operator=(const ModelBaseExpressionSql & i_other) = delete;
     };
 
-    /** class to produce accumulators sql subqueries for otput table */
+    /** class to produce accumulators sql subqueries for output table */
     class ModelAccumulatorSql : public ModelBaseExpressionSql
     {
     public:
