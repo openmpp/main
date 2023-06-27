@@ -1428,6 +1428,11 @@ public:
     static bool option_verify_timelike_attribute_access;
 
     /**
+     * true or false depending on verify_valid_table_increment value in options statement.
+     */
+    static bool option_verify_valid_table_increment;
+
+    /**
      * true or false depending on weighted_tabulation value in options statement.
      */
     static bool option_weighted_tabulation;

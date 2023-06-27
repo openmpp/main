@@ -631,6 +631,8 @@ bool Symbol::option_verify_attribute_modification = true;
 
 bool Symbol::option_verify_timelike_attribute_access = true;
 
+bool Symbol::option_verify_valid_table_increment = true;
+
 bool Symbol::option_weighted_tabulation = false;
 
 bool Symbol::option_resource_use = false;
@@ -2061,6 +2063,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_verify_timelike_attribute_access = false;
+            }
+        }
+    }
+
+    {
+        string key = "verify_valid_table_increment";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_verify_valid_table_increment = true;
+            }
+            else if (value == "off") {
+                option_verify_valid_table_increment = false;
             }
         }
     }

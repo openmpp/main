@@ -29,6 +29,9 @@ void handle_prohibited_attribute_assignment(const std::string name);
 void handle_prohibited_timelike_attribute_access(const std::string name);
 
 // defined in use/common.ompp
+void handle_invalid_table_increment(double incr_value, const std::string table_name, const std::string attr_name);
+
+// defined in use/common.ompp
 void handle_derived_table_API_invalid_rank(const char* name, size_t indices_rank, size_t indices_count);
 
 // defined in use/common.ompp

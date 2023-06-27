@@ -265,6 +265,39 @@ void handle_prohibited_timelike_attribute_access(
 }
 
 /**
+ * Handle invalid table increment
+ */
+void handle_invalid_table_increment(
+    double incr_value,
+    const std_string table_name,
+    const std_string attr_name
+)
+{
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+        << std::showpoint; // show decimal point
+    ss << LT("Invalid increment ");
+    ss << incr_value;
+    ss << LT(" in table '");
+    ss << table_name;
+    ss << LT("' using attribute '");
+    ss << attr_name;
+    if (BaseEvent::current_event_id >= 0) {
+        ss << LT("' on or after event '") << omr::event_id_to_name(BaseEvent::current_event_id) << "'";
+    }
+    else {
+        ss << LT(" before enter_simulation");
+    }
+    if (BaseEvent::current_entity_id >= 0) {
+        ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
+    }
+    ss << LT(" in simulation member ") << get_simulation_member();
+    ss << LT(" with combined seed ") << get_combined_seed();
+    ss << LT(" when current time is ") << get_global_time();
+    ModelExit(ss.str().c_str());
+}
+
+/**
  * Handles situation where model code specifes an invalid number of indices to derived table API
  */
 void handle_derived_table_API_invalid_rank(

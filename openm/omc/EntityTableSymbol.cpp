@@ -831,6 +831,25 @@ void EntityTableSymbol::build_body_push_increment()
             assert(false); // parser guarantee
         }
 
+        if (Symbol::option_verify_valid_table_increment && acc->accumulator != token::TK_unit) {
+            auto attr = acc->pp_attribute;
+            assert(attr);
+            c += "";
+            if (acc->accumulator == token::TK_sum || acc->accumulator == token::TK_gini) {
+                // runtime error if increment is Nan or inf
+                c += "// Check increment validity when accumulator is sum or gini";
+                c += "if (!std::isfinite(dIncrement)) {";
+            }
+            else {
+                // runtime error if increment is Nan
+                c += "// Check increment validity when accumulator is not sum or gini";
+                c += "if (std::isnan(dIncrement)) {";
+            }
+            // arg 1 is table name, arg 2 is name of underlying attribute
+            c +=     "handle_invalid_table_increment(dIncrement, \"" + name + "\",\"" + attr->pretty_name() + "\");";
+            c += "}";
+        }
+
         c += "";
         if (!has_margins) {
             c += "// Push increment to body cell";

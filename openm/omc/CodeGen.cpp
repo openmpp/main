@@ -306,6 +306,18 @@ void CodeGen::do_preamble()
     }
     c += "";
 
+    if (Symbol::option_verify_valid_table_increment) {
+        t0 += doxygen_short("Model was built with verification of numeric table increments.");
+        t0 += "constexpr bool om_verify_valid_table_increment = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was built without verification of numeric table increment.");
+        t0 += "constexpr bool om_verify_valid_table_increment = false;";
+        t0 += "";
+    }
+    c += "";
+
     {
         // Declaration of the maximum random number stream in the model
         int max_rng_stream = 0;
@@ -731,6 +743,10 @@ void CodeGen::do_RunInit()
     }
     if (!Symbol::option_verify_timelike_attribute_access) {
         c += "theLog->logFormatted(LT(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\"));";
+        c += "";
+    }
+    if (!Symbol::option_verify_valid_table_increment) {
+        c += "theLog->logFormatted(LT(\"Warning : invalid table increment is not detected with verify_valid_table_increment = off\"));";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_microdata_output_warning) {
