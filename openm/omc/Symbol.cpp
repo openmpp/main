@@ -2920,63 +2920,43 @@ std::string Symbol::normalize_note(const std::string& txt)
         line = openm::trim(line);
     }
 
-    bool in_code_block = false;
+    bool is_first_line = true;
     for (auto& line : lines) {
-        if (in_code_block) {
-            if (line.length() == 0) {
-                // empty line with no leading >
-                // leave code block mode
-                result += "```\n";
-                in_code_block = false;
-                // fall through to normal mode for current line
-            }
-            else if (line[0] == '>') {
-                // non-empty line with leading >
-                // append content to code block and
-                // continue in code block mode
-                result += line.substr(1) + '\n';
-                continue;
-            }
-            else {
-                // non-empty line without leading >
-                // leave code block mode
-                result += "```\n";
-                in_code_block = false;
-                // fall through to normal mode for current line
-            }
-        }
-        // normal mode (not code block)
         if (line.length() == 0) {
-            // empty line, echo it
-            result += '\n';
+            // empty line, end previous line with eol
+            if (!is_first_line) {
+                result += "\n";
+            }
         }
         else if (line[0] == '>') {
             // non-empty line with leading >
-            // enter code block mode
-            result += "```\n";
-            in_code_block = true;
-            // append content to code block and
-            // continue in code block mode
-            result += line.substr(1) + '\n';
-            continue;
-        }
-        else if (line.substr(0, 2) == "- ") {
-            // non-empty line with leading "- "
-            // echo, but change "- " to markdown notation for item in list
-            result += "* " + line.substr(2) + '\n';
+            // End previous line with a markdown line break (two trailing spaces) and eol
+            if (!is_first_line) {
+                result += "  \n";
+            }
+            line = line.substr(1); // remove leading >
+            // As a hack, global replace \t with 4 hard spaces to approximate Modgen indentation behaviour
+            // of > (preserves leading spaces and tabs)
+            line = std::regex_replace(line, std::regex("\\t"), "&nbsp;&nbsp;&nbsp;&nbsp;");
         }
         else {
-            // normal content, echo it
-            result += line + '\n';
+            // End previous line with eol
+            if (!is_first_line) {
+                result += "\n";
+            }
+            if (line.length() >= 2 && line.substr(0, 2) == "- ") {
+                // Modgen list entry
+                // non-empty line with leading "- "
+                // echo, but change "- " to markdown notation "* " for a list item
+                result += "* " + line.substr(2);
+            }
         }
+
+        // append this line (with no trailing \n)
+        result += line;
+        is_first_line = false;
     }
-    // all lines have been processed
-    // finish code block mode if active
-    if (in_code_block) {
-        // leave code block mode
-        result += "```\n";
-        in_code_block = false;
-    }
+    result += "\n"; // trailing \n of final line
 
     return result;
 }
