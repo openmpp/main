@@ -501,8 +501,9 @@ void EntitySymbol::post_parse(int pass)
                     // morph it
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
-                assert(biav);
-                // initialized to time_infinite by generated code in function om_initialize_data_members
+                // Is initialized to time_infinite by generated code in function om_initialize_data_members.
+                // Push the name into the post parse ignore hash for the current pass.
+                pp_symbols_ignore.insert(biav->unique_name);
             }
         }
 
@@ -547,8 +548,9 @@ void EntitySymbol::post_parse(int pass)
                     // morph it
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
-                assert(biav);
-                // initialized to 1.0 by generated code in function om_initialize_data_members
+                // Initialized to 1.0 by generated code in function om_initialize_data_members.
+                // Push the name into the post parse ignore hash for the current pass.
+                pp_symbols_ignore.insert(biav->unique_name);
             }
         }
 

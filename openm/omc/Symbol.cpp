@@ -1332,8 +1332,8 @@ void Symbol::post_parse_all()
 	pp_symbols_ignore.clear();
 	for (auto pr : pp_symbols) {
 		if (pp_symbols_ignore.count(pr.first) != 0) {
-			// This is a symbol morphed earlier in this pass, so ignore it.
-			// Note that pr.second is invalid for symbols morphed in this pass.
+			// This is a symbol created or morphed earlier in this pass, so ignore it.
+			// Note that pr.second is invalid for symbols created or morphed in this pass.
 			continue;
 		}
 		//theLog->logFormatted("pass #2 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
