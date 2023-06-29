@@ -33,7 +33,10 @@ void CaseSimulation(case_info &ci)
     //set_initial_weight(2.0);
 
     // For Modgen-compatible models, use the following instead
-    SetCaseWeight(2.0);
+    SetCaseWeight(5.0 * RandUniform(1));
+    //SetCaseWeight(2.0);
+    //static int counter = 0;
+    //SetCaseWeight(++counter);
 
     // Initialize the person entity
     auto prPerson = new Person();

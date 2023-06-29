@@ -44,6 +44,9 @@ actor Person            //EN Individual
         Since the numeric value of TRUE is 1 and FALSE is 0, this variable
         can also be used to count actors in tables.
     */
+
+    //EN Reciprocal of weight
+    double weight_reciprocal = 1.0 / actor_weight;
     
     event timeMortalityEvent, MortalityEvent;    //EN Mortality event
 
@@ -67,7 +70,7 @@ TIME Person::timeMortalityEvent()
 
     // Draw a random waiting time to death from an exponential distribution
     // based on the constant hazard MortalityHazard.
-    tEventTime = WAIT( - TIME( log( RandUniform(1) ) / MortalityHazard ) );
+    tEventTime = WAIT( - TIME( log( RandUniform(2) ) / MortalityHazard ) );
 
     return tEventTime;
 }
@@ -126,9 +129,17 @@ table Person DurationOfLife //EN Duration of Life
 {
     {
         value_in(alive),                //EN Population size
+        min_value_out(actor_weight),
+        max_value_out(actor_weight),
+        min_value_out(actor_id),
+        max_value_out(actor_id),
+        duration(),                     //EN Total PY's 
+        value_out(actor_id),
+        value_out(weight_reciprocal),
         min_value_out(duration()),      //EN Minimum duration of life decimals=4
         max_value_out(duration()),      //EN Maximum duration of life decimals=4
-        duration() / value_in(alive)    //EN Life expectancy decimals=4
+        duration() / value_in(alive),   //EN Life expectancy decimals=4
+        nz_delta(duration()) //EN nz test
 
     }    //EN Demographic characteristics
 };
