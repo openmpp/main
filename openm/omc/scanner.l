@@ -358,6 +358,9 @@ blank       [ \t]
                 /* special hack to silently interpret 'actor_id' as 'entity_id' */
                 if (word == "actor_id") word = "entity_id";
 
+                /* special hack to silently interpret 'actor_weight' as 'entity_weight' */
+                if (word == "actor_weight") word = "entity_weight";
+
                 /* suppress name resolution if requested by parser */
                 if (pc.next_word_is_string) {
                     yylval->pval_string = new string(word);
