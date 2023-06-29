@@ -57,8 +57,8 @@
                 />
   <BoolProperty Category="BuildOptions"
                 Name="DISABLE_ITERATOR_DEBUG"
-                DisplayName="Disable Microsoft iterator debug functionality"
-                Description="For a normal Debug build, leave empty or set to No. Set to Yes if necessary to improve run speed in Debug mode, especially for time-based models which can appear to hang at simulation end in Debug mode or when iterating large collections.  This property has no effect for a Release build."
+                DisplayName="Disable Microsoft iterator debug"
+                Description="For a normal Debug build, leave empty or set to No. Set to Yes if needed to improve run speed in Debug mode, especially for time-based models which can appear to hang at simulation end in Debug mode or when iterating large collections.  This property has no effect for a Release build."
                 />
   
   <!-- Run Options -->
