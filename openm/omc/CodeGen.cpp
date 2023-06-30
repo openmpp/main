@@ -584,7 +584,7 @@ void CodeGen::do_weight_support()
     c += "void reset_weight_api()";
     c += "{";
     c +=     "om_initial_weight = 1.0;";
-    c +=     "om_sum_weight += 0.0;";
+    c +=     "om_sum_weight = 0.0;";
     c += "}";
     c += "";
 }
