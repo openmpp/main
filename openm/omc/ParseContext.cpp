@@ -28,6 +28,7 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
     if (tok == token::TK_LEFT_BRACE && brace_level == 1 && parenthesis_level == 0) {
         // { at level 0 is the possible start of the body of a member function definition
         bool is_memfunc = false;
+        bool is_globalfunc = false;
         int pos = 0;
         int plev = 0;
         bool in_parmlist = false;
@@ -75,7 +76,10 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
                 continue;
             }
             else if (scope_coming) {
-                if (it->first != token::TK_SCOPE_RESOLUTION) break;
+                if (it->first != token::TK_SCOPE_RESOLUTION) {
+                    is_globalfunc = true;
+                    break;
+                }
                 scope_coming = false;
                 name1_coming = true;
                 continue;
@@ -89,9 +93,12 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
                 break;
             }
         }
-        if (is_memfunc) {
+        if (is_memfunc || is_globalfunc) {
             cxx_memfunc_gather = true;
-            cxx_memfunc_name = name1 + "::" + name2;
+            cxx_memfunc_name = name2;
+            if (is_memfunc) {
+                cxx_memfunc_name = name1 + "::" + cxx_memfunc_name;
+            }
             reverse(parmlist.begin(), parmlist.end());
             Symbol::memfunc_parmlist.emplace(cxx_memfunc_name, parmlist);
             Symbol::memfunc_defn_loc.emplace(cxx_memfunc_name, *loc);
@@ -139,7 +146,7 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
     }
 
     //
-    // Handle special global functions (PreSimulation, etc.)
+    // Handle special global functions (PreSimulation, etc.) which need a suffix to disambiguate
     // 
     if (tok == token::SYMBOL && brace_level == 0) {
         string word = tok_str;

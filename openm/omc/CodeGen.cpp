@@ -321,12 +321,8 @@ void CodeGen::do_preamble()
     {
         // Declaration of the maximum random number stream in the model
         int max_rng_stream = 0;
-        for (auto entity : Symbol::pp_all_agents) {
-            for (int rng_stream : entity->pp_rng_streams) {
-                if (rng_stream > max_rng_stream) {
-                    max_rng_stream = rng_stream;
-                }
-            }
+        for (const auto& x : Symbol::memfunc_rng_streams) {
+            max_rng_stream = std::max(max_rng_stream, x.second);
         }
         Symbol::size_streams = max_rng_stream + 1;
 
