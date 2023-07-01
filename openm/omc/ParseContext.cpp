@@ -7,12 +7,39 @@
 
 #include "ParseContext.h"
 
-string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc::location * loc)
+string ParseContext::cxx_process_token(token_type tok, const string yytext, omc::location * loc)
 {
+    string tok_str = yytext; // create modifiable copy of yytext argument (the token as a string)
+
+    //
+    // Handle special global functions (PreSimulation, etc.) which need a suffix to disambiguate
+    // Modify the token string tok_str to be the modified name with the suffix appended.
+    // 
+    if (tok == token::SYMBOL && brace_level == 0) {
+        string word = tok_str;
+        for (auto sg : { &Symbol::pre_simulation, &Symbol::post_simulation, &Symbol::derived_tables }) {
+            if (sg->prefix == word.substr(0, sg->prefix.length())) {
+                // Function name starts with one of the special prefixes
+                if (word == sg->prefix) {
+                    // No suffix, so substitute a disambiguated name based on order encountered in code.
+                    // The disambiguated name will have a prefix om_ as well as a generated suffix.
+                    word = sg->disambiguated_name(sg->ambiguous_count);
+                    ++sg->ambiguous_count;
+                }
+                else {
+                    // Has a suffix
+                    string suffix = word.substr(sg->prefix.length());
+                    sg->suffixes.push_back(suffix);
+                }
+            }
+        }
+        tok_str = word;
+    }
+
     // Maintain the ordered list of all tokens in C++ code
     cxx_tokens.push_back(make_pair(tok, tok_str));
 
-    // return value (possibly modified in code below)
+    // The return value (possibly modified in code below)
     string result = tok_str;
 
     //
@@ -23,12 +50,12 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
     }
 
     //
-    // Handle beginning of a member function definition.
+    // Identify and process the beginning of a function definition.
     // 
     if (tok == token::TK_LEFT_BRACE && brace_level == 1 && parenthesis_level == 0) {
-        // { at level 0 is the possible start of the body of a member function definition
-        bool is_memfunc = false;
-        bool is_globalfunc = false;
+        // { at level 0 is the possible start of the body of a function definition
+        bool is_memfunc = false;    // is a member function like name1::name2 (mutually exclusive with is_globalfunc)
+        bool is_globalfunc = false; // is a global function like name2 (mutually exclusive with is_memfunc)
         int pos = 0;
         int plev = 0;
         bool in_parmlist = false;
@@ -39,7 +66,7 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
         bool name1_coming = false;
         string name1;
         // Iterate backwards through the token list,
-        // looking for the pattern name1::name2(parmlist) {
+        // looking for the pattern "name1::name2(parmlist) {" or, if not, "name2(parmlist) {"
         for (auto it = cxx_tokens.rbegin(); it != cxx_tokens.rend(); ++it, ++pos) {
             // token 0 is {
             if (pos == 0) continue;
@@ -93,79 +120,104 @@ string ParseContext::cxx_process_token(token_type tok, const string tok_str, omc
                 break;
             }
         }
+        assert(!(is_memfunc && is_globalfunc)); // is_memfunc and is_globalfunc are mutually exclusive
         if (is_memfunc || is_globalfunc) {
-            cxx_memfunc_gather = true;
-            cxx_memfunc_name = name2;
+            cxx_function_gather = true;
+            cxx_function_name = name2;
             if (is_memfunc) {
-                cxx_memfunc_name = name1 + "::" + cxx_memfunc_name;
+                // if a member function, the name is the class-qualified name
+                cxx_function_name = name1 + "::" + cxx_function_name;
             }
             reverse(parmlist.begin(), parmlist.end());
-            Symbol::memfunc_parmlist.emplace(cxx_memfunc_name, parmlist);
-            Symbol::memfunc_defn_loc.emplace(cxx_memfunc_name, *loc);
+            Symbol::function_parmlist.emplace(cxx_function_name, parmlist);
+            Symbol::function_defn_loc.emplace(cxx_function_name, *loc);
         }
     }
 
     //
-    // Handle interior of member functions.
+    // Handle interior of functions.
     // 
-    if (cxx_memfunc_gather) {
+    if (cxx_function_gather) {
         if (tok == token::TK_RIGHT_BRACE && brace_level == 0) {
-            // end of member function
-            cxx_memfunc_gather = false;
-            cxx_memfunc_name = "";
+            // end of function
+            cxx_function_gather = false;
+            cxx_function_name = "";
         }
         else if (tok == token::SYMBOL) {
-            // Add identifier to map of all identifiers in member function
-            assert(cxx_memfunc_name != "");
-            Symbol::memfunc_bodyids.emplace(cxx_memfunc_name, tok_str);
+            // Add identifier to map of all identifiers by function name
+            assert(cxx_function_name != "");
+            Symbol::function_body_identifiers.emplace(cxx_function_name, tok_str);
         }
-        else if (tok == token::INTEGER_LITERAL && cxx_tokens.size() >= 3) {
-            // Detect RNG function call with integer constant argument in entity function body
-            // retrieve previous 2 tokens
+        else if (tok == token::TK_RIGHT_PAREN && cxx_tokens.size() >= 4) {
+            // Detect RNG function call with integer constant argument (or missing argument) in entity function body
+            // retrieve previous 3 tokens
             auto it = cxx_tokens.cend();
             --it;
-            --it;
+            auto tok_prev0 = *it; // current token (same as tok)
+            --it; 
             auto tok_prev1 = *it;
             --it;
             auto tok_prev2 = *it;
-            if (tok_prev1.first == token::TK_LEFT_PAREN) {
-                if (Symbol::om_rng_functions.count(tok_prev2.second) > 0) {
-                    // is an RNG function call like RandUniform(INTEGER_LITERAL)
-                    int rng_stream = std::stoi(tok_str);
-                    // Add stream # to map of all RNG streams in member function
-                    Symbol::memfunc_rng_streams.emplace(cxx_memfunc_name, rng_stream);
+            --it;
+            auto tok_prev3 = *it;
+            bool found_rng = false;
+            int random_stream = Symbol::random_stream_error::eInvalidStreamArgument;
+            string rng_func = "";
+            if (
+                   tok_prev1.first == token::INTEGER_LITERAL
+                && tok_prev2.first == token::TK_LEFT_PAREN
+                && tok_prev3.first == token::SYMBOL
+                && Symbol::om_rng_functions.count(tok_prev3.second) > 0
+                ) {
+                // example: RandUniform(23)
+                found_rng = true;
+                random_stream = std::stoi(tok_prev1.second);
+                if (!(random_stream > 0)) {
+                    // must be positive integer
+                    random_stream = Symbol::random_stream_error::eInvalidStreamArgument;
                 }
-                if (tok_prev2.second == "RandNormal") {
+                rng_func = tok_prev3.second;
+            }
+            else if (
+                   tok_prev1.first == token::TK_LEFT_PAREN
+                && tok_prev2.first == token::SYMBOL
+                && Symbol::om_rng_functions.count(tok_prev2.second) > 0
+                ) {
+                // example: RandUniform()
+                found_rng = true;
+                random_stream = Symbol::random_stream_error::eMissingStreamArgument;
+                rng_func = tok_prev2.second;
+            }
+            else if (
+                   tok_prev2.first == token::TK_LEFT_PAREN
+                && tok_prev3.first == token::SYMBOL
+                && Symbol::om_rng_functions.count(tok_prev3.second) > 0
+                ) {
+                // example: RandUniform(x)
+                found_rng = true;
+                random_stream = Symbol::random_stream_error::eInvalidStreamArgument;
+                rng_func = tok_prev3.second;
+                // Note that this identifies a limited set of invalid (non-literal) arguments
+                // but will identify a common error in model code - using a single variable as argument.
+                // If a variable argument is needed and valid, as in random_lcg41.ompp,
+                // unary plus can be used to evade detection, e.g.
+                // RandUniform(+x).
+            }
+            if (found_rng) {
+                // is an RNG function call like RandUniform(INTEGER_LITERAL)
+                // Add stream # to map of all RNG streams in functions (including RandNormal)
+                Symbol::function_rng_streams.emplace(cxx_function_name, random_stream);
+                // Add stream # to multimap to identify and report clashes
+                string loc_string = loc->begin.filename->c_str();
+                loc_string += "(" + to_string(loc->begin.line) + ")";
+                Symbol::rng_stream_calls.emplace(random_stream, loc_string);
+                if (rng_func == "RandNormal") {
                     // is an RNG function call like RandNormal(INTEGER_LITERAL)
-                    int rng_stream = std::stoi(tok_str);
-                    // Add stream # to map of all RNG Normal streams in member function
-                    Symbol::memfunc_rng_normal_streams.emplace(cxx_memfunc_name, rng_stream);
+                    // Add stream # to map of all RNG Normal streams in functions
+                    Symbol::function_rng_normal_streams.emplace(cxx_function_name, random_stream);
                 }
             }
         }
-    }
-
-    //
-    // Handle special global functions (PreSimulation, etc.) which need a suffix to disambiguate
-    // 
-    if (tok == token::SYMBOL && brace_level == 0) {
-        string word = tok_str;
-        for (auto sg : {&Symbol::pre_simulation, &Symbol::post_simulation, &Symbol::derived_tables}) {
-            if (sg->prefix == word.substr(0, sg->prefix.length())) {
-                /* starts with prefix */
-                if (word == sg->prefix) {
-                    /* No suffix, so substitute a disambiguated name based on order encountered in code */
-                    word = sg->disambiguated_name(sg->ambiguous_count);
-                    ++sg->ambiguous_count;
-                }
-                else {
-                    /* Has a suffix */
-                    string suffix = word.substr(sg->prefix.length());
-                    sg->suffixes.push_back(suffix);
-                }
-            }
-        }
-        result = word;
     }
 
     //

@@ -304,6 +304,19 @@ public:
     {
     }
 
+    /**
+     * Values that represent errors in the argument of RandUniform, etc.
+     */
+
+    enum random_stream_error {
+
+        ///< missing stream argument
+        eMissingStreamArgument = -1,
+
+        ///< missing stream argument
+        eInvalidStreamArgument = -2,
+    };
+
 
     /**
      * Values that represent a post-parse pass of all symbols
@@ -1121,21 +1134,21 @@ public:
      * 
      * An example entry might be "Person::MortalityEvent" ==> "alive".
      */
-    static multimap<string, string> memfunc_bodyids;
+    static multimap<string, string> function_body_identifiers;
 
     /**
      * Map of member function qualified names to all rng streams used in the body of the function.
      *
      * An example entry might be "Person::MortalityEvent" ==> 12.
      */
-    static multimap<string, int> memfunc_rng_streams;
+    static multimap<string, int> function_rng_streams;
 
     /**
      * Map of member function qualified names to all rng Normal streams used in the body of the function.
      *
      * An example entry might be "Person::MortalityEvent" ==> 12.
      */
-    static multimap<string, int> memfunc_rng_normal_streams;
+    static multimap<string, int> function_rng_normal_streams;
 
     /**
      * Size of an array whose index is a random number stream in this model.
@@ -1150,12 +1163,17 @@ public:
      * "Person::timeMortality" ==> <empty>
      * "Person::timeMoveEvent" ==> int * p_destination
      */
-    static map<string, vector<string> > memfunc_parmlist;
+    static map<string, vector<string> > function_parmlist;
 
     /**
-     * Map of member function qualified names to the definition location.
+     * Map of member function qualified names to the definition location in model code.
      */
-    static map<string, omc::location> memfunc_defn_loc;
+    static map<string, omc::location> function_defn_loc;
+
+    /**
+     * Multimap of rng stream to code location of call.
+     */
+    static multimap<int, string> rng_stream_calls;
 
     /**
      * A map of all the C++ style single line comments in the model source code, indexed by location

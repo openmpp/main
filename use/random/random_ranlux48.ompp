@@ -168,8 +168,9 @@ double RandNormal(int strm)
         double x = 0;
         double y = 0;
         while (r2 >= 1) {
-            x = 2.0 * RandUniform(strm) - 1.0;
-            y = 2.0 * RandUniform(strm) - 1.0;
+            // unary + used to evade omc error detection of invalid stream argument
+            x = 2.0 * RandUniform(+strm) - 1.0;
+            y = 2.0 * RandUniform(+strm) - 1.0;
             r2 = x * x + y * y;
         }
         double scale = std::sqrt(-2.0 * std::log(r2) / r2);
@@ -190,7 +191,8 @@ double RandLogistic(int strm)
         // not reached
     }
 
-    double p = RandUniform(strm);
+    // unary + used to evade omc error detection of invalid stream argument
+    double p = RandUniform(+strm);
     double odds_ratio = p / (1.0 - p);
     double x = std::log(odds_ratio);
     return x;

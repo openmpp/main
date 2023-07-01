@@ -21,8 +21,8 @@ void EntityFuncSymbol::post_parse(int pass)
     {
         // Allow model code to override generated member function body for specific member functions
         if (name == "get_entity_key" || name == "get_microdata_key") {
-            auto search = memfunc_defn_loc.find(unique_name);
-            if (search != memfunc_defn_loc.end()) {
+            auto search = function_defn_loc.find(unique_name);
+            if (search != function_defn_loc.end()) {
                 suppress_defn = true;
             }
         }
@@ -32,8 +32,8 @@ void EntityFuncSymbol::post_parse(int pass)
             // Is a developer-supplied entity member function.
 
             // Note the definition location
-            auto search = memfunc_defn_loc.find(unique_name);
-            if (search != memfunc_defn_loc.end()) {
+            auto search = function_defn_loc.find(unique_name);
+            if (search != function_defn_loc.end()) {
                 defn_loc = search->second;
             }
             else {
@@ -48,7 +48,7 @@ void EntityFuncSymbol::post_parse(int pass)
             {
                 // Determine if hook is called in function body.
                 // Also, construct the set of all identifiers used in the function body.
-                auto rng = memfunc_bodyids.equal_range(unique_name);
+                auto rng = function_body_identifiers.equal_range(unique_name);
                 for_each(
                     rng.first,
                     rng.second,
@@ -75,7 +75,7 @@ void EntityFuncSymbol::post_parse(int pass)
 
             {
                 // Construct the set of all RNG streams used in the function body.
-                auto rng = memfunc_rng_streams.equal_range(unique_name);
+                auto rng = function_rng_streams.equal_range(unique_name);
                 for_each(
                     rng.first,
                     rng.second,
@@ -88,7 +88,7 @@ void EntityFuncSymbol::post_parse(int pass)
 
             {
                 // Construct the set of all RNG Normal streams used in the function body.
-                auto rng = memfunc_rng_normal_streams.equal_range(unique_name);
+                auto rng = function_rng_normal_streams.equal_range(unique_name);
                 for_each(
                     rng.first,
                     rng.second,

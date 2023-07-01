@@ -1,0 +1,43 @@
+// Copyright (c) 2013-2023 OpenM++ Contributors
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(TestRandomStreams, EN) Test random stream clashes
+
+#if !defined(MODGEN)
+#include "omc/omSimulation.h" // For IDE to understand C++ code in this module
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+entity Person
+{
+    void test_random_streams(void);
+
+    hook test_random_streams, HappinessReversalEvent, 44;
+};
+
+#endif
+
+void Person::test_random_streams(void)
+{
+    double x = 1.0;
+
+    //// duplicate stream tests
+    //x = RandUniform(15);
+    //x = RandUniform(15);
+    //x = RandNormal(15);
+
+    //x = RandUniform(16);
+    //x = RandLogistic(16);
+
+    //// missing stream tests
+    //x = RandUniform();
+    //x = RandUniform();
+
+    //// invalid stream tests
+    //int j = 2;
+    //x = RandUniform(j);
+    //x = RandUniform(0);
+    //x = RandUniform(-1);
+}
+

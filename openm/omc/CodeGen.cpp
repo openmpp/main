@@ -321,7 +321,7 @@ void CodeGen::do_preamble()
     {
         // Declaration of the maximum random number stream in the model
         int max_rng_stream = 0;
-        for (const auto& x : Symbol::memfunc_rng_streams) {
+        for (const auto& x : Symbol::function_rng_streams) {
             max_rng_stream = std::max(max_rng_stream, x.second);
         }
         Symbol::size_streams = max_rng_stream + 1;

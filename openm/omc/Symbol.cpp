@@ -125,17 +125,19 @@ list<GlobalFuncSymbol *> Symbol::pp_all_global_funcs;
 
 list<AggregationSymbol *> Symbol::pp_all_aggregations;
 
-multimap<string, string> Symbol::memfunc_bodyids;
+multimap<string, string> Symbol::function_body_identifiers;
 
-multimap<string, int> Symbol::memfunc_rng_streams;
+multimap<string, int> Symbol::function_rng_streams;
 
-multimap<string, int> Symbol::memfunc_rng_normal_streams;
+multimap<string, int> Symbol::function_rng_normal_streams;
 
 int Symbol::size_streams = 0;
 
-map<string, vector<string> > Symbol::memfunc_parmlist;
+map<string, vector<string> > Symbol::function_parmlist;
 
-map<string, omc::location> Symbol::memfunc_defn_loc;
+map<string, omc::location> Symbol::function_defn_loc;
+
+multimap<int, string> Symbol::rng_stream_calls;
 
 /**
 * Map from a token to the preferred string representation of that token.
@@ -1709,6 +1711,85 @@ void Symbol::post_parse_all()
         }
     }
 
+    // check validity of arguments to RNG functions
+    {
+        std::unordered_set<int> used_streams;
+        int next_unused_stream = 1;
+        for (auto& [stream_number, code_location] : rng_stream_calls) {
+            // Note that this collection is ordered by stream number.
+            if (stream_number <= 0) {
+                // skip invalid stream numbers
+                continue;
+            }
+            used_streams.insert(stream_number);
+            // next_unused_stream will stick at first hole in sequence of used streams
+            if (next_unused_stream == stream_number) {
+                ++next_unused_stream;
+            }
+        }
+
+        int prev_stream_number = 0;
+        string prev_code_location = "";
+        bool first_dup_done = false;
+        // Iterate all RNG uses in model code
+        for (auto &[stream_number, code_location] : rng_stream_calls) {
+            bool update_next_unused_stream;
+            update_next_unused_stream = false;
+            if (stream_number == random_stream_error::eInvalidStreamArgument) {
+                string msg;
+                msg = code_location;
+                msg += LT(": error : random stream not a positive integer literal, an available stream is ");
+                msg += to_string(next_unused_stream);
+                theLog->logMsg(msg.c_str());
+                post_parse_errors++;
+                update_next_unused_stream = true;
+            }
+            else if (stream_number == random_stream_error::eMissingStreamArgument) {
+                string msg;
+                msg = code_location;
+                msg += LT(": error : missing random stream, an available stream is ");
+                msg += to_string(next_unused_stream);
+                theLog->logMsg(msg.c_str());
+                post_parse_errors++;
+                update_next_unused_stream = true;
+            }
+            else {
+                if (stream_number == prev_stream_number) {
+                    // found a duplicate use of stream
+                    if (!first_dup_done) {
+                        string msg;
+                        msg = prev_code_location;
+                        msg += LT(": warning : multiple uses of random stream ");
+                        msg += to_string(stream_number);
+                        msg += LT(", an available stream is ");
+                        msg += to_string(next_unused_stream);
+                        theLog->logMsg(msg.c_str());
+                        first_dup_done = true;
+                    }
+                    string msg;
+                    msg = code_location;
+                    msg += LT(": warning : multiple uses of random stream ");
+                    msg += to_string(stream_number);
+                    msg += LT(", an available stream is ");
+                    msg += to_string(next_unused_stream);
+                    theLog->logMsg(msg.c_str());
+                    update_next_unused_stream = true;
+                }
+                else {
+                    first_dup_done = false;
+                }
+                prev_stream_number = stream_number;
+                prev_code_location = code_location;
+            }
+            if (update_next_unused_stream) {
+                used_streams.insert(next_unused_stream);
+                // find next hole in sequence
+                while (used_streams.count(next_unused_stream) > 0) {
+                    ++next_unused_stream;
+                }
+            }
+        }
+    }
 
 #if defined(DEPENDENCY_TEST)
     // For each entity in the model, determine the code injection order

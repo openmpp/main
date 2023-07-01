@@ -57,8 +57,8 @@ void EntityEventSymbol::post_parse(int pass)
         bool time_func_memory = false;
         {
             assert(time_func); // logic guarantee
-            auto search = memfunc_parmlist.find(time_func->unique_name);
-            if (search == memfunc_parmlist.end()) {
+            auto search = function_parmlist.find(time_func->unique_name);
+            if (search == function_parmlist.end()) {
                 time_func_defined = false; // this is an error
             }
             else {
@@ -75,8 +75,8 @@ void EntityEventSymbol::post_parse(int pass)
         bool implement_func_memory = false;
         {
             assert(implement_func); // logic guarantee
-            auto search = memfunc_parmlist.find(implement_func->unique_name);
-            if (search == memfunc_parmlist.end()) {
+            auto search = function_parmlist.find(implement_func->unique_name);
+            if (search == function_parmlist.end()) {
                 implement_func_defined = false; // this is an error
             }
             else {

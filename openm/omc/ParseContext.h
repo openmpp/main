@@ -30,8 +30,8 @@ public:
         , counter2 (0)
         , counter3 (0)
         , counter4 (0)
-        , cxx_memfunc_gather (false)
-        , cxx_memfunc_name ("")
+        , cxx_function_gather (false)
+        , cxx_function_name ("")
         , parse_errors(0)
         , parse_warnings(0)
         , next_word_is_string(false)
@@ -194,8 +194,8 @@ public:
         comment_body = "";
         literal_length = 0;
         literal_specification = "";
-        cxx_memfunc_gather = false;
-        cxx_memfunc_name = "";
+        cxx_function_gather = false;
+        cxx_function_name = "";
         cxx_tokens.clear();
 
         InitializeForCxx();
@@ -241,7 +241,7 @@ public:
      *
      * Return possibly modified version of tok_str
      */
-    string cxx_process_token(token_type tok, const string tok_str, omc::location * loc);
+    string cxx_process_token(token_type tok, const string yytext, omc::location * loc);
 
     /**
      * Process a C++ single-line comment.
@@ -317,12 +317,12 @@ public:
     /**
      * true to gather identifiers from C++ member function body.
      */
-    bool cxx_memfunc_gather;
+    bool cxx_function_gather;
 
     /**
      * Qualified name of the C++ member function. Example: "Person::MortalityEvent".
      */
-    string cxx_memfunc_name;
+    string cxx_function_name;
 
     /**
      * A count of the number of omc parse errors in the model source files.
