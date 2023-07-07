@@ -478,6 +478,15 @@ public:
     void pp_warning(const string& msg);
 
     /**
+     * Process a semantic message during the post-parse phase.
+     *
+     * Source code location is that of Symbol
+     *
+     * @param msg The message.
+     */
+    void pp_message(const string& msg);
+
+    /**
      * Output a warning or error message to the log.
      * 
      * Source code location is that of Symbol

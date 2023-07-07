@@ -758,7 +758,7 @@ void Symbol::post_parse(int pass)
                 else {
                     // The source code contained an agent-qualified name token which was never declared,
                     // and no global with the same name exists.
-                    pp_warning(LT("note : '") + name + LT("' is foreign to omc"));
+                    pp_message(LT("message : '") + name + LT("' is foreign to omc"));
                     // OK to continue
                 }
             }
@@ -870,6 +870,11 @@ void Symbol::pp_fatal(const string& msg)
 void Symbol::pp_warning(const string& msg)
 {
     post_parse_warnings++;
+    pp_log_message(msg);
+}
+
+void Symbol::pp_message(const string& msg)
+{
     pp_log_message(msg);
 }
 
