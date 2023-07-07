@@ -60,7 +60,7 @@
     <ClCompile Include="src/om_fixed_parms.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(CUSTOM_CPP)" Condition="Exists('$(CUSTOM_CPP)')">
+    <ClCompile Include="../code/custom.cpp" Condition="Exists('../code/custom.cpp')">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
 
