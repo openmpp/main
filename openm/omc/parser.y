@@ -2857,6 +2857,7 @@ link_to_attribute_shadowed:
 any_attribute:
       SYMBOL
     | derived_attribute
+    | link_to_attribute_shadowed
         ;
 
 derived_attribute:
