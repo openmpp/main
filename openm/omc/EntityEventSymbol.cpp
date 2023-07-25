@@ -161,6 +161,8 @@ void EntityEventSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // Dependencies are generated directly if not developer-supplied.
+        // The only event which is not developer-supplied is the special omc-generated event
+        // which maintains self-scheduling attributes for the entity.
         if (!is_developer_supplied) break;
         // Iterate through list of identifiers in the body of the time function
         // whose name matches an attribute.
