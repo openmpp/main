@@ -30,6 +30,9 @@ options censor_event_time = on;
 // The following enables collection and reporting of resource use information for a run.
 //options resource_use = on;
 
+// The following enables event trace output
+options event_trace = on;
+
 #endif
 
 // process development model run options from model ini-file

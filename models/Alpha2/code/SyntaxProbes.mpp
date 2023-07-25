@@ -30,6 +30,7 @@ partition AGE_GROUP //EN Age group
     30
 };
 
+
 range YEAR //EN Year
 {
     -3,
@@ -303,11 +304,77 @@ table Toy AgentIdTest_Toy
 };
 
 
-//actor Person
-//{
-//    //EN Age
-//    AGE_GROUP age_group = self_scheduling_split(age, AGE_GROUP);
-//};
+partition P_AGE_GROUP5 //EN Five-year age group
+{
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+};
+
+classification C_AGE_GROUP5 // Five-year age group
+{
+    AG_0_5,   //EN 0-5
+    AG_5_10,  //EN 5-10
+    AG_10_15, //EN 10-15
+    AG_15_20, //EN 15-20
+    AG_20_25, //EN 20-25
+    AG_25_30, //EN 25-30
+    AG_30_99 //EN 30+
+};
+
+actor Person
+{
+    //EN Integer age
+    int curtate_age = self_scheduling_int(age);
+
+    // The following does not work in Modgen, because Modgen does not support attributes of type partition
+    //EN 5-year age group
+    //P_AGE_GROUP5 age_group5 = split(curtate_age, P_AGE_GROUP5);
+
+    //EN 5-year age group
+    C_AGE_GROUP5 age_group5 = C_AGE_GROUP5(split(curtate_age, P_AGE_GROUP5));
+
+    //EN count of birthdays
+    int birthdays = changes(curtate_age);
+};
+
+actor Thing
+{
+    int spawner_birthdays1 = spawner->birthdays;
+    int spawner_birthdays2 = changes(spawner->curtate_age);
+    int spawner_age = split(spawner->curtate_age, P_AGE_GROUP5);
+};
+
+table Thing derived_probe1 //EN Table probing derived attributes and linked attributes
+{
+    split(spawner->birthdays, P_AGE_GROUP5)
+    * {
+        spawner_birthdays1,
+        spawner_birthdays2,
+        spawner_age
+    }
+};
+
+table Person split_probe1 //EN Table using split as classification dimension
+{
+    split(curtate_age, P_AGE_GROUP5)
+    * { duration() }
+};
+
+table Thing link_probe2 //EN Table using linked attribute as classification dimension
+{
+    spawner->age_group5
+    * { duration() }
+};
+
+table Thing link_probe3 //EN Table using linked attribute as classification dimension
+{
+    split(spawner->curtate_age, P_AGE_GROUP5)
+    * { duration() }
+};
 
 table Person ut1_feeder //EN Feeder table for ut1
 {

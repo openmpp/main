@@ -9,16 +9,16 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-entity Person
+actor Person
 {
-    void test_random_streams(void);
+    void test_random_streams();
 
     hook test_random_streams, HappinessReversalEvent, 44;
 };
 
 #endif
 
-void Person::test_random_streams(void)
+void Person::test_random_streams()
 {
     double x = 1.0;
 
