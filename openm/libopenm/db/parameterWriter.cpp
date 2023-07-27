@@ -308,7 +308,7 @@ void ParameterWriter::writeParameter(
         "INSERT INTO " + paramRow->dbSetTable + " (set_id, sub_id";
 
     for (const ParamDimsRow & dim : paramDims) {
-        insSql += ", " + dim.name;
+        insSql += ", " + dim.columnName();
     }
 
     insSql += ", param_value) VALUES (" + to_string(i_dstId);
@@ -447,12 +447,15 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> 
     // INSERT INTO ageSex_p201208171604590148 (run_id, sub_id,dim0,dim1,param_value) VALUES (2,
     //
     string nameLst = "sub_id,";
+    string colNameLst = "sub_id,";
     for (const ParamDimsRow & dim : paramDims) {
         nameLst += dim.name + ",";
+        colNameLst += dim.columnName() + ",";
     }
     nameLst += "param_value";
+    colNameLst += "param_value";
 
-    string insPrefix = "INSERT INTO " + paramRunDbTable + " (run_id, " + nameLst + ") VALUES (" + to_string(runId) + ", ";
+    string insPrefix = "INSERT INTO " + paramRunDbTable + " (run_id, " + colNameLst + ") VALUES (" + to_string(runId) + ", ";
 
     // do insert values
     size_t nLine = 0;
@@ -461,7 +464,7 @@ void ParameterRunWriter::loadCsvParameter(IDbExec * i_dbExec, const vector<int> 
 
     for (const string & line : csvLines) {
 
-        // check header, expected: sub_id,dim0,dim1,param_value
+        // check header, expected: sub_id,Age,Dim1,param_value
         if (nLine++ == 0) {
             if (!startWithNoCase(line, nameLst.c_str()))
                 throw DbException("invalid parameter.csv file header, expected: %s for parameter: %d %s", nameLst.c_str(), paramId, paramRow->paramName.c_str());
