@@ -1,0 +1,99 @@
+// Copyright (c) 2013-2023 OpenM++ Contributors
+// This code is licensed under MIT license (see LICENSE.txt for details)
+
+//LABEL(TestEventDependency, EN) Test event dependency on linked attributes, etc.
+
+#include "omc/omSimulation.h" // For IDE to understand C++ code in this module
+
+
+/*
+  Test of event dependency using a one-to-many link
+*/
+
+#if 0 // Hide non-C++ syntactic island from IDE
+entity Thing
+{
+    //EN Count of celebratory birthday twirls performed
+    int twirls = { 0 };
+
+    //EN Do a twirl for the Person who spawned this Thing
+    event timeTwirlEvent, TwirlEvent;
+};
+entity Person
+{
+    //EN Celebratory birthday twirls from all things spawned by this Person
+    int twirls = { 0 };
+};
+table Person TwirlsForPerson
+{
+    {
+        twirls
+    }
+};
+table Thing TwirlsByThings
+{
+    {
+        twirls
+    }
+};
+#endif
+
+TIME Thing::timeTwirlEvent()
+{
+    TIME event_time = TIME_INFINITE;
+    if (spawner && (twirls < spawner->integer_age)) {
+        event_time = WAIT(0); // twirl now!
+    }
+    return event_time;
+}
+
+void Thing::TwirlEvent()
+{
+    twirls++;
+    spawner->twirls++;
+}
+
+/*
+  Test of event dependency using a one-to-one link
+*/
+
+#if 0 // Hide non-C++ syntactic island from IDE
+entity Thing
+{
+    int twirls_special = { 0 }; //EN Celebratory birthday twirls for the Thing's special Person (if exists)
+    event timeTwirlSpecialEvent, TwirlSpecialEvent; //EN Do twirls for special Person
+};
+entity Person
+{
+    int twirls_special = { 0 }; //EN Celebratory birthday twirls from this Person's special Thing
+};
+table Person SpecialTwirlsForPerson
+{
+    {
+        twirls_special
+    }
+};
+table Thing SpecialTwirlsByThings
+{
+    {
+        twirls_special
+    }
+};
+#endif
+
+
+TIME Thing::timeTwirlSpecialEvent()
+{
+    TIME event_time = TIME_INFINITE;
+    if (my_person1 && twirls_special < my_person1->integer_age) {
+        event_time = WAIT(0); // twirl now!
+    }
+    return event_time;
+}
+
+void Thing::TwirlSpecialEvent()
+{
+    twirls_special++;
+    my_person1->twirls_special++;
+}
+

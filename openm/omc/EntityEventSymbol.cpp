@@ -14,6 +14,8 @@
 #include "EntitySymbol.h"
 #include "AttributeSymbol.h"
 #include "BuiltinAttributeSymbol.h"
+#include "LinkAttributeSymbol.h"
+#include "EntityMultiLinkSymbol.h"
 #include "EntityFuncSymbol.h"
 #include "CodeBlock.h"
 
@@ -166,16 +168,90 @@ void EntityEventSymbol::post_parse(int pass)
         if (!is_developer_supplied) break;
         // Iterate through list of identifiers in the body of the time function
         // whose name matches an attribute.
-        for (auto identifier : time_func_original->body_identifiers) {
+        for (auto& identifier : time_func_original->body_identifiers) {
             if (exists(identifier, pp_agent)) {
+                // identifier is a member of this entity
                 auto sym = get_symbol(identifier, pp_agent);
                 auto av = dynamic_cast<AttributeSymbol *>(sym);
                 if (av) {
-                    // dependency of time function on av detected
+                    // Identifier is an attribute of this entity.
+                    // Dependency of time function on av detected.
+                    // Note it.
+                    pp_attribute_dependencies.insert(av);
+                    // Implement event dependency on change in attribute value.
                     CodeBlock& c = av->side_effects_fn->func_body;
                     c += injection_description();
                     c += "// Recalculate time to event " + event_name;
                     c += "if (om_active) " + name + ".make_dirty();";
+                }
+            }
+        }
+        // Iterate through list of pointers A->B in the body of the time function
+        // where A matches a link attribute and B matches an attribute in the other entity.
+        for (auto& item : time_func_original->body_pointers) {
+            auto& A = item.first;
+            auto& B = item.second;
+            if (exists(A, pp_agent)) {
+                // A is an attribute of this entity
+                auto sym = get_symbol(A, pp_agent);
+                auto A_lnk = dynamic_cast<LinkAttributeSymbol*>(sym);
+                if (A_lnk) {
+                    // A is a link attribute of this entity.
+                    // The reciprocal link is either a one-to-one link
+                    // or a one-to-many multilink.
+                    if (A_lnk->reciprocal_link) {
+                        // The reciprocal link is a one-to-one link.
+                        // Get the other entity.
+                        auto& B_entity = A_lnk->reciprocal_link->pp_agent;
+                        if (exists(B, B_entity)) {
+                            // B is a member of the other entity.
+                            auto sym = get_symbol(B, B_entity);
+                            auto B_attribute = dynamic_cast<AttributeSymbol*>(sym);
+                            if (B_attribute) {
+                                // B is an attribute of the other entity.
+                                // Dependency of time function on B detected.
+                                // Note it.
+                                pp_linked_attribute_dependencies.insert({ A_lnk, B_attribute });
+                                // Implement event dependency on change in B attribute value.
+                                CodeBlock& c = B_attribute->side_effects_fn->func_body;
+                                c += injection_description();
+                                c += "// Recalculate time to event " + event_name + " in linked entity " + pp_agent->name;
+                                c += "if (om_active) {";
+                                c +=   "if (" + A_lnk->reciprocal_link->name + ") {";
+                                c +=     A_lnk->reciprocal_link->name + "->" + name + ".make_dirty();";
+                                c +=   "}";
+                                c += "}";
+                            }
+                        }
+                    }
+                    else {
+                        // The reciprocal link is a one-to-many multilink
+                        assert(A_lnk->reciprocal_multilink);
+                        // Get the other entity
+                        auto& B_entity = A_lnk->reciprocal_multilink->pp_agent;
+                        if (exists(B, B_entity)) {
+                            // B is a member of the other entity.
+                            auto sym = get_symbol(B, B_entity);
+                            auto B_attribute = dynamic_cast<AttributeSymbol*>(sym);
+                            if (B_attribute) {
+                                // B is an attribute of the other entity.
+                                // Dependency of time function on B detected.
+                                // Note it.
+                                pp_linked_attribute_dependencies.insert({ A_lnk, B_attribute });
+                                // Implement event dependency on change in B attribute value.
+                                CodeBlock& c = B_attribute->side_effects_fn->func_body;
+                                c += injection_description();
+                                c += "// Recalculate time to event " + event_name + " in all linked " + pp_agent->name + "s";
+                                c += "if (om_active) {";
+                                c +=   "for (auto &item : " + A_lnk->reciprocal_multilink->name + ".storage) {";
+                                c +=     "if (item.get() != nullptr) {";
+                                c +=        "item->" + name + ".make_dirty();";
+                                c +=     "}";
+                                c +=   "}";
+                                c += "}";
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -9,6 +9,8 @@
 #include "EntityDataMemberSymbol.h"
 #include "EntityFuncSymbol.h"
 #include "NumericSymbol.h"
+#include "AttributeSymbol.h"
+#include "LinkAttributeSymbol.h"
 #include "omc/event_priorities.h" // for access to event priority constants by modules including this header
 
 class EntityFuncSymbol;
@@ -102,6 +104,16 @@ public:
      * This member contains the original function.
      */
     EntityFuncSymbol *implement_func_original;
+
+    /**
+     * The attributes in the entity whose changes require event recalculation.
+     */
+    std::set<AttributeSymbol*> pp_attribute_dependencies;
+
+    /**
+     * The linked attributes in other entities whose changes require event recalculation.
+     */
+    std::set<pair<LinkAttributeSymbol*,AttributeSymbol *>> pp_linked_attribute_dependencies;
 
     /**
      * The event priority.

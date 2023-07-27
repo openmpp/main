@@ -605,8 +605,32 @@ int main(int argc, char * argv[])
                 }
             }
             else {
-                // Model contains no generated names, so delete obsolete GeneratedNames.ompp.tmp if present
+                // Model contains no generated names, so delete obsolete GeneratedNames.ompp if present
                 remove(makeFilePath(inpDir.c_str(), GeneratedNames_ompp_name.c_str()).c_str());
+            }
+        }
+
+        // block for creation of file with generated event dependencies
+        {
+            CodeBlock generated_event_dependencies_code = Symbol::build_event_dependencies_code();
+            const string GeneratedEventDependencies_ompp_name = "GeneratedEventDependencies.ompp";
+            if (generated_event_dependencies_code.size() > 0) {
+                // There are one or more generated short names.
+                // open output stream for //NAME statements for generated names
+                ofstream GeneratedEventDependencies_ompp(makeFilePath(outDir.c_str(), GeneratedEventDependencies_ompp_name.c_str()), ios::out | ios::trunc | ios::binary);
+                exit_guard<ofstream> onExit_Missing_dat(&GeneratedEventDependencies_ompp, &ofstream::close);   // close on exit
+                if (GeneratedEventDependencies_ompp.fail()) {
+                    string msg = "omc : warning : Unable to open " + GeneratedEventDependencies_ompp_name + " for writing.";
+                    theLog->logMsg(msg.c_str());
+                }
+                else {
+                    GeneratedEventDependencies_ompp << generated_event_dependencies_code;
+                    GeneratedEventDependencies_ompp.close();
+                }
+            }
+            else {
+                // Model contains no generated names, so delete obsolete GeneratedNames.ompp if present
+                remove(makeFilePath(inpDir.c_str(), GeneratedEventDependencies_ompp_name.c_str()).c_str());
             }
         }
 

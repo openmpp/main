@@ -127,6 +127,8 @@ list<AggregationSymbol *> Symbol::pp_all_aggregations;
 
 multimap<string, string> Symbol::function_body_identifiers;
 
+multimap<string, pair<string, string>> Symbol::function_body_pointers;
+
 multimap<string, int> Symbol::function_rng_streams;
 
 multimap<string, int> Symbol::function_rng_normal_streams;
@@ -2962,6 +2964,57 @@ CodeBlock Symbol::build_NAME_code(void)
                 }
                 c += "//NAME " + table->name + "." + measure->short_name_default + " " + measure->short_name;
             }
+        }
+    }
+
+    return c;
+}
+
+//static
+CodeBlock Symbol::build_event_dependencies_code(void)
+{
+    CodeBlock c;
+
+    for (auto ent : pp_all_agents) {
+        if (ent->pp_agent_events.size() > 0) {
+            c += "entity " + ent->name + " {";
+            for (auto evt : ent->pp_agent_events) {
+                if (!evt->is_developer_supplied) {
+                    // skip the generated self-scheduling event
+                    continue;
+                }
+                if (evt->pp_attribute_dependencies.size() > 0) {
+                    // output dependencies on attributes in this entity
+                    std::string attrs;
+                    bool first = true;
+                    for (auto attr : evt->pp_attribute_dependencies) {
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            attrs += ", ";
+                        }
+                        attrs += attr->name;
+                    }
+                    c += "dependency(" + evt->event_name + ") = " + attrs + ";";
+                }
+                if (evt->pp_linked_attribute_dependencies.size() > 0) {
+                    // output dependencies on linked attributes in other entities
+                    std::string attrs;
+                    bool first = true;
+                    for (auto item : evt->pp_linked_attribute_dependencies) {
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            attrs += ", ";
+                        }
+                        attrs += item.first->name + "->" + item.second->name;
+                    }
+                    c += "dependency(" + evt->event_name + ") = " + attrs + ";";
+                }
+            }
+            c += "};";
         }
     }
 

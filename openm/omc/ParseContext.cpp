@@ -144,9 +144,28 @@ string ParseContext::cxx_process_token(token_type tok, const string yytext, omc:
             cxx_function_name = "";
         }
         else if (tok == token::SYMBOL) {
-            // Add identifier to map of all identifiers by function name
             assert(cxx_function_name != "");
+            // Add identifier to map of all identifiers by function name
             Symbol::function_body_identifiers.emplace(cxx_function_name, tok_str);
+            // Detect use of pointer operator in function body using lookback
+            if (cxx_tokens.size() >= 3) {
+                // retrieve previous 2 tokens
+                auto it = cxx_tokens.cend();
+                --it;
+                auto tok_prev0 = *it; // current token (same as tok)
+                --it;
+                auto tok_prev1 = *it;
+                --it;
+                auto tok_prev2 = *it;
+                if (
+                    tok_prev1.first == token::TK_MEMBER_OF_POINTER
+                    && tok_prev2.first == token::SYMBOL
+                    ) {
+                    // example: A -> B
+                    auto the_pair = make_pair(tok_prev2.second, tok_prev0.second);
+                    Symbol::function_body_pointers.emplace(cxx_function_name, the_pair);
+                }
+            }
         }
         else if (tok == token::TK_RIGHT_PAREN && cxx_tokens.size() >= 4) {
             // Detect RNG function call with integer constant argument (or missing argument) in entity function body

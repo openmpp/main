@@ -148,6 +148,11 @@ public:
     set<string> body_identifiers;
 
     /**
+     * The pointers A->B in the function body (if developer-supplied)
+     */
+    set<pair<string,string>> body_pointers;
+
+    /**
      * The RNG streams used in the function body (if developer-supplied)
      */
     set<int> rng_streams;

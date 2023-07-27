@@ -911,6 +911,13 @@ public:
     static CodeBlock build_NAME_code(void);
 
     /**
+     * Generate notional code which lists generated event dependencies
+     *
+     * @return a CodeBlock containing the generated code
+     */
+    static CodeBlock build_event_dependencies_code(void);
+
+    /**
      * Generate csv echoing model import statements
      *
      * @return a string
@@ -1144,6 +1151,13 @@ public:
      * An example entry might be "Person::MortalityEvent" ==> "alive".
      */
     static multimap<string, string> function_body_identifiers;
+
+    /**
+     * Map of member function qualified names to all member pointers used in the body of the function.
+     *
+     * An example entry might be "Person::MortalityEvent" ==> {"lParent","alive"}.
+     */
+    static multimap<string, pair<string, string>> function_body_pointers;
 
     /**
      * Map of member function qualified names to all rng streams used in the body of the function.

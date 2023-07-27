@@ -47,7 +47,6 @@ void EntityFuncSymbol::post_parse(int pass)
             bool hook_is_called = false;
             {
                 // Determine if hook is called in function body.
-                // Also, construct the set of all identifiers used in the function body.
                 auto rng = function_body_identifiers.equal_range(unique_name);
                 for_each(
                     rng.first,
@@ -57,7 +56,6 @@ void EntityFuncSymbol::post_parse(int pass)
                         if (vt.second == hook_fn_name) {
                             hook_is_called = true;
                         }
-                        body_identifiers.insert(vt.second);
                     }
                 );
             }
@@ -71,6 +69,32 @@ void EntityFuncSymbol::post_parse(int pass)
                     auto fn_sym = new EntityFuncSymbol(hook_fn_name, agent, "void", "");
                     fn_sym->doc_block = doxygen_short("Call the functions hooked to the function '" + name + "'");
                 }
+            }
+
+            {
+                // Construct the set of all identifiers used in the function body.
+                auto rng = function_body_identifiers.equal_range(unique_name);
+                for_each(
+                    rng.first,
+                    rng.second,
+                    [&](unordered_multimap<string, string>::value_type& vt)
+                    {
+                        body_identifiers.insert(vt.second);
+                    }
+                );
+            }
+
+            {
+                // construct the set of all pointers used in the function body.
+                auto rng = function_body_pointers.equal_range(unique_name);
+                for_each(
+                    rng.first,
+                    rng.second,
+                    [&](unordered_multimap<string, pair<string,string>>::value_type& vt)
+                    {
+                        body_pointers.insert(vt.second);
+                    }
+                );
             }
 
             {

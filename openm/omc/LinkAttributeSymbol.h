@@ -22,7 +22,7 @@ using namespace std;
 * just like C++ does with a pointer.
 * 
 * During parsing, a link which points to an attribute
-* is held in a LinkToAttributeSymbol object.
+* in an identity attribute expression is held in a LinkToAttributeSymbol object.
 * 
 */
 class LinkAttributeSymbol : public AttributeSymbol
