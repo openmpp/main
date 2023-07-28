@@ -76,7 +76,10 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
 
     // check if parameters csv directory specified and accessible
     string paramDir = argOpts().strOption(RunOptionsKey::paramDir);
-    bool isParamDir = !paramDir.empty() && isFileExists(paramDir.c_str());
+    bool isParamDir = !paramDir.empty();
+    if (isParamDir) {
+        if (!isFileExists(paramDir.c_str())) throw DbException("parameters csv directory not found: %s", paramDir.c_str());
+    }
 
     // is csv contains enum id's or enum codes
     bool isIdCsv = argOpts().boolOption(RunOptionsKey::useIdCsv);
