@@ -250,26 +250,26 @@ VALUES
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (101, 1, 'expr1', 4, 'OM_SUM(acc1)', 
+  (101, 1, 'expr1', 4, 'OM_SUM(acc1)',
   'SELECT M1.run_id, M1.dim0, M1.dim1, SUM(M1.acc_value) AS expr1 FROM salarySex_a_2012882 M1 WHERE M1.acc_id = 1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (101, 2, 'expr2', 0, 'OM_SUM(acc0 + acc1)', 
+  (101, 2, 'expr2', 0, 'OM_AVG(acc0 + acc1)',
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value + A1.acc1) AS expr2 FROM salarySex_a_2012882 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a_2012882 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (101, 3, 'expr3', 2, 'OM_AVG(acc0 * acc1)', 
+  (101, 3, 'expr3', 2, 'OM_AVG(acc0 * acc1)',
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value * A1.acc1) AS expr3 FROM salarySex_a_2012882 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a_2012882 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 0, 0, 'Average acc0', 'Average on acc0 notes');
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 0, 1, 'Moyenne acc0', 'Moyenne on acc0 notes');
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 1, 0, 'Sum acc1', NULL);
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 2, 0, 'Sum acc0 + acc1', NULL);
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 2, 0, 'Average acc0 + acc1', NULL);
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 3, 0, 'Average acc0 * acc1', NULL);
 
 --
@@ -373,11 +373,12 @@ INSERT INTO table_acc
 VALUES 
   (
   103, 2, 'expr2', 1, 'acc0 - acc1', 
-  '(acc0 - acc1)'
+  '(A.acc_value - A1.acc_value)'
   );
 
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (103, 0, 0, 'Income', 'Income notes');
 INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (103, 1, 0, 'Income adjusted', 'Income adjusted notes');
+INSERT INTO table_acc_txt (table_hid, acc_id, lang_id, descr, note) VALUES (103, 2, 0, 'Income difference', 'Difference between income and adjusted income');
 
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
@@ -388,19 +389,19 @@ VALUES
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (103, 1, 'expr1', 3, 'OM_AVG(acc1)', 
+  (103, 1, 'expr1', 3, 'OM_AVG(acc1)',
   'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value) AS expr1 FROM ageSexIncome_a_2012884 M1 WHERE M1.acc_id = 1 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 INSERT INTO table_expr 
   (table_hid, expr_id, expr_name, expr_decimals, expr_src, expr_sql) 
 VALUES 
-  (103, 2, 'expr2', -1, 'OM_SUM(acc0 - acc1)', 
-  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value + A1.acc1) AS expr2 FROM ageSexIncome_a_2012884 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a_2012882 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
+  (103, 2, 'expr2', -1, 'OM_AVG(acc0 - acc1)',
+  'SELECT M1.run_id, M1.dim0, M1.dim1, AVG(M1.acc_value - A1.acc1) AS expr2 FROM ageSexIncome_a_2012884 M1 INNER JOIN (SELECT run_id, dim0, dim1, sub_id, acc_value AS acc1 FROM salarySex_a_2012882 WHERE acc_id = 1) A1 ON (A1.run_id = M1.run_id AND A1.dim0 = M1.dim0 AND A1.dim1 = M1.dim1 AND A1.sub_id = M1.sub_id) WHERE M1.acc_id = 0 GROUP BY M1.run_id, M1.dim0, M1.dim1'
   );
 
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (103, 0, 0, 'Average acc0', 'Average on acc0 notes');
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (103, 1, 0, 'Average acc1', 'Average on acc1 notes');
-INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (103, 2, 0, 'Sum of acc0 - acc1', 'Notes on Sum of acc0 - acc1');
+INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (103, 2, 0, 'Average of acc0 - acc1', 'Notes on average of acc0 - acc1');
 
 --
 -- seedOldAge output table
