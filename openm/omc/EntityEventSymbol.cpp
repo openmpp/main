@@ -15,7 +15,7 @@
 #include "AttributeSymbol.h"
 #include "BuiltinAttributeSymbol.h"
 #include "LinkAttributeSymbol.h"
-#include "EntityMultiLinkSymbol.h"
+#include "EntityMultilinkSymbol.h"
 #include "EntityFuncSymbol.h"
 #include "CodeBlock.h"
 
