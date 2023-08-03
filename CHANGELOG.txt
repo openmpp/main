@@ -1,6 +1,19 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-08-03:
+  c++ core: transforming derived (model-generated) parameters to output tables
+  c++ core: raise runtime error on non-numeric table increment
+  c++ core: use Markdown rendering of symbol documentation in UI
+  c++ core: omc compiler warnings on re-used or missing random streams
+  c++ core: allow a linked attribute in a derived attribute
+  c++ core: support for linked attributes in event time functions
+  c++ core: fix model error reading CSV files with heuristic dimension names.
+  UI: first useful version of microdata viewer
+  go: add API to calculate and download ad-hoc table measures
+  go: add API to calculate aggregation measures: AVG SUM COUNT MIN MAX VAR SD SE CV
+  UI: to calculate and download add-hoc measures: AVG SUM COUNT MIN MAX VAR SD SE CV
+
 2023-06-14:
   c++ core: new option ascii_infinity to improve utf-8 support
   c++ core: in Windows model projects always use BOM in CSV files to improve utf-8 support
