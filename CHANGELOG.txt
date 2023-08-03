@@ -8,11 +8,9 @@ Please note:
   c++ core: omc compiler warnings on re-used or missing random streams
   c++ core: allow a linked attribute in a derived attribute
   c++ core: support for linked attributes in event time functions
-  c++ core: fix model error reading CSV files with heuristic dimension names.
+  c++ core: fix model error reading CSV files with heuristic dimension names
   UI: first useful version of microdata viewer
-  go: add API to calculate and download ad-hoc table measures
-  go: add API to calculate aggregation measures: AVG SUM COUNT MIN MAX VAR SD SE CV
-  UI: to calculate and download add-hoc measures: AVG SUM COUNT MIN MAX VAR SD SE CV
+  UI and go: calculate and download table with ad hoc measures: AVG SUM COUNT MIN MAX VAR SD SE CV
 
 2023-06-14:
   c++ core: new option ascii_infinity to improve utf-8 support
