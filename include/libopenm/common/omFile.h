@@ -15,6 +15,18 @@ namespace openm
     /** return true if file or directory exists */
     extern bool isFileExists(const char * i_filePath);
 
+    /** open input file stream
+    *
+    * Windows-specific: if file path is UTF-8 then convert it to UTF-16LE
+    */
+    extern void openInpStream(std::ifstream & io_inpSt, const char * i_filePath, std::ios_base::openmode i_mode);
+
+    /** open output file stream
+    *
+    * Windows-specific: if file path is UTF-8 then convert it to UTF-16LE
+    */
+    extern void openOutStream(std::ofstream & io_outSt, const char * i_filePath, std::ios_base::openmode i_mode);
+
     /** return base directory of the path or empty string if path is "." or ".." */
     extern const std::string baseDirOf(const std::string & i_path);
 
@@ -53,6 +65,15 @@ namespace openm
 
     /** read file, split by linefeed \n and return content as list of UTF-8 as strings */
     extern const std::list<std::string> fileToUtf8Lines(const char * i_filePath, const char * i_codePageName = nullptr);
+
+#ifdef _WIN32
+    /**
+    * Windows only: convert null-terminated bytes from UTF-8 string to UTF-16LE.
+    *
+    * @return UTF-16LE string or empty "" string on error.
+    */
+    extern const std::wstring fromUtf8(const char * i_byteArr);
+#endif // _WIN32
 }
 
 #endif  // OM_H_FILE_H

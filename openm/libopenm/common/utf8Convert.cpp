@@ -7,7 +7,7 @@
 
 
 #ifdef OM_UCVT_MSSTL
-    // c++17: significant portion of codevect deprecated
+    // c++17: significant portion of codecvt deprecated
     // and C++ Standard doesn't provide equivalent non-deprecated functionality:
     // suppresss compilation error until new solution implemented
     #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
@@ -567,7 +567,7 @@ const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * 
     ifstream inpSt;
     exit_guard<ifstream> onExit(&inpSt, &ifstream::close);  // close on exit
 
-    inpSt.open(i_filePath, ios_base::in | ios_base::binary);
+    openInpStream(inpSt, i_filePath, ios_base::in | ios_base::binary);
     if (inpSt.fail()) throw HelperException(LT("Error at file open: %s"), i_filePath);
 
     // detect encoding by checking BOM
@@ -688,6 +688,26 @@ const list<string> openm::fileToUtf8Lines(const char * i_filePath, const char * 
 
     return contentLst;
 }
+
+#ifdef _WIN32
+/**
+* Windows only: convert null-terminated bytes from UTF-8 string to UTF-16LE.
+*
+* @return UTF-16LE string or empty "" string on error.
+*/
+const wstring openm::fromUtf8(const char * i_byteArr)
+{
+    if (i_byteArr == nullptr || i_byteArr[0] == '\0') return L"";
+
+    // Windows only: wchar_t is char16_t
+    try {
+        return wstring_convert<codecvt_utf8_utf16<wchar_t>, wchar_t>{}.from_bytes(i_byteArr, i_byteArr + strnlen(i_byteArr, OM_STRLEN_MAX));
+    }
+    catch (...) {
+        return  L"";
+    }
+}
+#endif // _WIN32
 
 #undef OUT_CVT_SIZE
 #undef IN_CVT_SIZE

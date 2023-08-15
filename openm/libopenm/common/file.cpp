@@ -24,11 +24,58 @@ namespace fs = std::filesystem;
     #include <unistd.h>
 #endif  // _WIN32
 
-
 /** return true if file or directory exists  */
 bool openm::isFileExists(const char * i_filePath)
 {
+#ifndef _WIN32
     return i_filePath != NULL && i_filePath[0] != '\0' && !access(i_filePath, 0);
+#else
+    if (i_filePath == NULL || i_filePath[0] == '\0') return false;
+
+    if (!isUtf8(strnlen(i_filePath, OM_STRLEN_MAX), i_filePath)) {
+        return !access(i_filePath, 0);
+    }
+    // else convert UTF-8 file path to UTF-16LE
+    return !_waccess(fromUtf8(i_filePath).c_str(), 0);
+
+#endif  // _WIN32
+}
+
+/** open input file stream
+*
+* Windows-specific: if file path is UTF-8 then convert it to UTF-16LE
+*/
+void openm::openInpStream(ifstream & io_inpSt, const char * i_filePath, ios_base::openmode i_mode)
+{
+#ifndef _WIN32
+    io_inpSt.open(i_filePath, i_mode);
+#else  // _WIN32
+
+    if (!isUtf8(strnlen(i_filePath, OM_STRLEN_MAX), i_filePath)) {
+        io_inpSt.open(i_filePath, i_mode);
+    } else {
+        io_inpSt.open(fromUtf8(i_filePath), i_mode);
+    }
+#endif // _WIN32
+}
+
+/** open output file stream
+*
+* Windows-specific: if file path is UTF-8 then convert it to UTF-16LE
+*/
+void openm::openOutStream(ofstream & io_outSt, const char * i_filePath, ios_base::openmode i_mode)
+{
+#ifndef _WIN32
+    io_outSt.open(i_filePath, i_mode);
+#else  // _WIN32
+
+    if (!isUtf8(strnlen(i_filePath, OM_STRLEN_MAX), i_filePath)) {
+        io_outSt.open(i_filePath, i_mode);
+    }
+    else {
+        io_outSt.open(fromUtf8(i_filePath), i_mode);
+    }
+#endif // _WIN32
 }
 
 /**
@@ -38,17 +85,13 @@ bool openm::isFileExists(const char * i_filePath)
  */
 const string openm::baseDirOf(const string & i_path)
 {
-    return fs::path(i_path).parent_path().generic_string();
+    return baseDirOf(i_path.c_str());
 }
 
 /** return base directory of the path or empty string if path is "." or ".." */
 const string openm::baseDirOf(const char * i_path)
 {
-    if (i_path != nullptr) {
-        string sPath = i_path;
-        return baseDirOf(sPath);
-    }
-    return "";
+    return (i_path != nullptr) ? fs::path(i_path).parent_path().generic_string() : "";
 }
 
 /**

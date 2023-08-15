@@ -3,6 +3,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "libopenm/db/dbMetaRow.h"
+#include "libopenm/common/omFile.h"
 #include "modelSqlWriter.h"
 
 using namespace openm;
@@ -17,7 +18,7 @@ ModelSqlWriter::ModelSqlWriter(const string & i_filePath)
     // open file
     exit_guard<ofstream> onExit(&outFs, &ofstream::close);   // close on exit
 
-    outFs.open(outFilePath, ios::out | ios::trunc);
+    openOutStream(outFs, outFilePath.c_str(), ios::out | ios::trunc);
     if (outFs.fail()) throw HelperException(LT("Failed to create file: %s"), outFilePath.c_str());
 
     outFs.imbue(locale::classic());     // for double and float output

@@ -919,7 +919,7 @@ void RunController::openCsvMicrodata(void)
         entityCsvMap[eId].entityId = eId;
         entityCsvMap[eId].filePath = fp;
 
-        entityCsvMap[eId].csvSt.open(fp, ios::out | ios::trunc);
+        openOutStream(entityCsvMap[eId].csvSt, fp.c_str(), ios::out | ios::trunc);
         entityCsvMap[eId].isReady = !entityCsvMap[eId].csvSt.fail();
         if (!entityCsvMap[eId].isReady) 
             throw HelperException("microdata CSV file open error, entity: %s %s", eRow->entityName.c_str(), fp.c_str());
