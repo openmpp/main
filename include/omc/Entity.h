@@ -484,117 +484,122 @@ public:
     /**
      * The report style for event trace
      */
-    static enum et_report_style event_trace_report_style;
+    inline static enum et_report_style event_trace_report_style = BaseEntity::et_report_style::eModgen;
 
     /**
      * Whether to show normal events in the event trace
      */
-    static bool event_trace_show_events;
+    inline static bool event_trace_show_events = true;
 
     /**
      * Whether to show queued normal events in the event trace
      */
-    static bool event_trace_show_queued_events;
+    inline static bool event_trace_show_queued_events = true;
 
     /**
      * Whether to show queued self-scheduling events in the event trace
      */
-    static bool event_trace_show_queued_self_scheduling_events;
+    inline static bool event_trace_show_queued_self_scheduling_events = true;
 
     /**
      * Whether to show queued events with unchanged time-to-event in the event trace
      */
-    static bool event_trace_show_queued_unchanged;
+    inline static bool event_trace_show_queued_unchanged = false;
 
     /**
      * Whether to show enter simulation information in the event trace
      */
-    static bool event_trace_show_enter_simulation;
+    inline static bool event_trace_show_enter_simulation = true;
 
     /**
      * Whether to show exit simulation information in the event trace
      */
-    static bool event_trace_show_exit_simulation;
+    inline static bool event_trace_show_exit_simulation = true;
 
     /**
      * Whether to show self-scheduling events in the event trace
      */
-    static bool event_trace_show_self_scheduling_events;
+    inline static bool event_trace_show_self_scheduling_events = true;
 
     /**
      * Whether to show changes in attributes
      */
-    static bool event_trace_show_attributes;
+    inline static bool event_trace_show_attributes = false;
 
     /**
      * Filter event trace by time (lower bound)
      */
-    static double event_trace_minimum_time;
+    inline static double event_trace_minimum_time = -std::numeric_limits<double>::infinity();
 
     /**
      * Filter event trace by time (upper bound)
      */
-    static double event_trace_maximum_time;
+    inline static double event_trace_maximum_time = std::numeric_limits<double>::infinity();
 
     /**
      * Filter event trace by age (lower bound)
      */
-    static double event_trace_minimum_age;
+    inline static double event_trace_minimum_age = -std::numeric_limits<double>::infinity();
 
     /**
      * Filter event trace by age (upper bound)
      */
-    static double event_trace_maximum_age;
+    inline static double event_trace_maximum_age = std::numeric_limits<double>::infinity();
 
     /**
      * Filter event trace by case seeds
      */
-    static std::unordered_set<double> event_trace_selected_case_seeds;
+    inline static std::unordered_set<double> event_trace_selected_case_seeds;
+
+    /**
+     * Filter event trace by entity kinds
+     */
+    inline static std::unordered_set<std::string> event_trace_selected_entity_kinds;
 
     /**
      * Filter event trace by entities
      */
-    static std::unordered_set<int> event_trace_selected_entities;
+    inline static std::unordered_set<int> event_trace_selected_entities;
 
     /**
      * Whether to show linked entities
      */
-    static bool event_trace_select_linked_entities;
+    inline static bool event_trace_select_linked_entities = false;
 
     /**
      * Filter event trace by events
      */
-    static std::unordered_set<int> event_trace_selected_events;
+    inline static std::unordered_set<int> event_trace_selected_events;
 
     /**
      * Filter event trace by attributes
      */
-    static std::unordered_set<int> event_trace_selected_attributes;
+    inline static std::unordered_set<int> event_trace_selected_attributes;
 
     /**
      * Filter event trace by attribute value (lower bound)
      */
-    static double event_trace_minimum_attribute;
+    inline static double event_trace_minimum_attribute = -std::numeric_limits<double>::infinity();
 
     /**
      * Filter event trace by attribute value (upper bound)
      */
-    static double event_trace_maximum_attribute;
+    inline static double event_trace_maximum_attribute = std::numeric_limits<double>::infinity();
 
     /**
      * Used to set report column width for names
      */
-    static int event_trace_name_column_width;
+    inline static int event_trace_name_column_width = 40;
 
     /**
      * Used to control maximum number of output lines in event trace
      */
-    static int event_trace_maximum_lines;
+    inline static int event_trace_maximum_lines = 20000;
 
     /**
      * Counter for event trace line
      */
-    static int event_trace_line_counter;
+    inline static int event_trace_line_counter = 0;
 
     /**
      * @fn  static void BaseEntity::event_trace_msg( const char* entity_name, int entity_id, double entity_age, double case_seed, const char* cstr1, int other_id, const char* cstr2, double dbl1, double dbl2, double global_time, et_msg_type msg_type)
@@ -676,6 +681,10 @@ public:
         assert(isReadable || isCsv );
 
         // Apply event trace filter conditions
+        if (event_trace_selected_entity_kinds.size() > 0 && event_trace_selected_entity_kinds.count(entity_name) == 0) {
+            // Block message not in entity kind list (if non-empty).
+            return;
+        }
         if (msg_type == et_msg_type::eEnterSimulation && !event_trace_show_enter_simulation) {
             // Enter simulation messages are blocked.
             return;

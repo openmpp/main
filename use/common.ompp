@@ -757,6 +757,14 @@ void process_trace_options(IRunBase* const i_runBase)
 
         BaseEntity::event_trace_maximum_age = i_runBase->doubleOption("EventTrace.MaximumAge", std::numeric_limits<double>::infinity());
 
+        if (i_runBase->isOptionExist("EventTrace.SelectedEntityKinds")) {
+            std::list<std::string> entList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEntityKinds"));
+            for (auto str : entList) {
+                if (str.length() == 0) continue; // skip empty items in list
+                BaseEntity::event_trace_selected_entity_kinds.insert(str);
+            }
+        }
+
         if (i_runBase->isOptionExist("EventTrace.SelectedEntities")) {
             std::list<std::string> entList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedEntities"));
             for (auto str : entList) {
@@ -825,36 +833,6 @@ void process_trace_options(IRunBase* const i_runBase)
         // Ignore any EventTrace options.
     }
 }
-
-//
-// Definitions of static members for event trace control.
-// Default values below may be overridden by process_trace_options.
-// 
-
-enum BaseEntity::et_report_style BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eModgen;
-bool BaseEntity::event_trace_show_events = true;
-bool BaseEntity::event_trace_show_queued_events = true;
-bool BaseEntity::event_trace_show_queued_self_scheduling_events = true;
-bool BaseEntity::event_trace_show_queued_unchanged = false;
-bool BaseEntity::event_trace_show_enter_simulation = true;
-bool BaseEntity::event_trace_show_exit_simulation = true;
-bool BaseEntity::event_trace_show_self_scheduling_events = true;
-bool BaseEntity::event_trace_show_attributes = false;
-double BaseEntity::event_trace_minimum_time = -std::numeric_limits<double>::infinity();
-double BaseEntity::event_trace_maximum_time = std::numeric_limits<double>::infinity();
-double BaseEntity::event_trace_minimum_age = -std::numeric_limits<double>::infinity();
-double BaseEntity::event_trace_maximum_age = std::numeric_limits<double>::infinity();
-std::unordered_set<double> BaseEntity::event_trace_selected_case_seeds;
-std::unordered_set<int> BaseEntity::event_trace_selected_entities;
-bool BaseEntity::event_trace_select_linked_entities = false;
-std::unordered_set<int> BaseEntity::event_trace_selected_events;
-std::unordered_set<int> BaseEntity::event_trace_selected_attributes;
-double BaseEntity::event_trace_minimum_attribute = -std::numeric_limits<double>::infinity();
-double BaseEntity::event_trace_maximum_attribute = std::numeric_limits<double>::infinity();
-
-int BaseEntity::event_trace_name_column_width = 40;
-int BaseEntity::event_trace_maximum_lines = 20000;
-int BaseEntity::event_trace_line_counter = 0;
 
 /**
 * Helper code used internally by run-time
