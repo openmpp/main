@@ -20,7 +20,7 @@ use "random/random_lcg41.ompp";
 use "case_based/case_based_lcg41.ompp";
 use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
-//options resource_use = on;
+options resource_use = on;
 
 #endif // Hide non-C++ syntactic island from IDE
 

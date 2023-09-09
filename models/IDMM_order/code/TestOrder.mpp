@@ -1,4 +1,4 @@
-//LABEL (Experimental, EN) Experimental tests
+//LABEL (TestOrder, EN) Test entity set order clause
 
 #if !defined(MODGEN) // Hide from Modgen for x-compatible models
 #include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code

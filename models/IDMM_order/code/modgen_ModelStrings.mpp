@@ -1,0 +1,27 @@
+//LABEL(modgen_ModelStrings, EN)	Model-specific strings
+
+/*NOTE(modgen_ModelStrings, EN)
+	This module contains model-specific strings used in the progress dialog.
+*/
+
+
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+string S_MODEL_FINISH;		//EN Finish
+string S_MODEL_FINISH;		//FR Fin
+
+string S_MODEL_REPLICATE;	//EN Replicate
+string S_MODEL_REPLICATE;	//FR Réitération
+
+string S_MODEL_SIMULATION;	//EN Simulation
+string S_MODEL_SIMULATION;	//FR Simulation
+
+string S_MODEL_START;		//EN Start
+string S_MODEL_START;		//FR Départ
+
+
+#endif // Hide non-C++ syntactic island from ID

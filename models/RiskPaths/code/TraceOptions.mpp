@@ -11,7 +11,7 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-options event_trace = off;
+options event_trace = on;
 options case_checksum = off;
 
 #endif // Hide non-C++ syntactic island from IDE

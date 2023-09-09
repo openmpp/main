@@ -70,7 +70,7 @@ TIME Person::timeMortalityEvent()
 
     // Draw a random waiting time to death from an exponential distribution
     // based on the constant hazard MortalityHazard.
-    tEventTime = WAIT( - TIME( log( RandUniform(2) ) / MortalityHazard ) );
+    tEventTime = WAIT( - TIME( log( RandUniform(1) ) / MortalityHazard ) );
 
     return tEventTime;
 }
