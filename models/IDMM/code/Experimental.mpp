@@ -20,7 +20,14 @@ actor_set Host asOrderTest1
 order score;
 
 actor_set Host asOrderTest2
-//filter disease_phase == DP_INFECTIOUS
+filter disease_phase == DP_INFECTIOUS
+order score;
+
+actor_set Host asOrderTest3[disease_phase]
+order score;
+
+actor_set Host asOrderTest4[disease_phase]
+filter report_time > 5
 order score;
 
 
@@ -29,16 +36,51 @@ actor Ticker
     double middle_host_score = { -1.0 };
     double median_host_score1 = { -1.0 };
     double median_host_score2 = { -1.0 };
+    double median_host_score3 = { -1.0 };
+    double median_host_score4 = { -1.0 };
     void ProbeScores();
     hook ProbeScores, TickEvent, 30;
 };
 
-table Ticker X99_Median_Score
+table Ticker X99_OrderTest0
 {
     {
-        value_out(middle_host_score),
-        value_out(median_host_score1),
+        value_out(middle_host_score)
+    }
+    * report_time
+};
+
+table Ticker X99_OrderTest1 //EN Test of entity set with order clause
+{
+    {
+        value_out(median_host_score1)
+    }
+    * report_time
+};
+
+table Ticker X99_OrderTest2 //EN Test of entity set with order clause and filter
+{
+    {
+        //EN median score of infectious
         value_out(median_host_score2)
+    }
+    * report_time
+};
+
+table Ticker X99_OrderTest3 //EN Test of entity set with order clause and dimensions
+{
+    {
+        //EN median score of susceptibles
+        value_out(median_host_score3)
+    }
+    * report_time
+};
+
+table Ticker X99_OrderTest4 //EN Test of entity set with order clause, filter, and dimensions
+{
+    {
+        //EN median score of susceptibles
+        value_out(median_host_score3)
     }
     *report_time
 };
@@ -74,6 +116,22 @@ void Ticker::ProbeScores()
             int median_index = nHosts / 2;
             auto prHost = asOrderTest2->Item(median_index);
             median_host_score2 = prHost->score;
+        }
+    }
+    {
+        int nHosts = asOrderTest3[DP_SUSCEPTIBLE]->Count();
+        if (nHosts > 0) {
+            int median_index = nHosts / 2;
+            auto prHost = asOrderTest3[DP_SUSCEPTIBLE]->Item(median_index);
+            median_host_score3 = prHost->score;
+        }
+    }
+    {
+        int nHosts = asOrderTest4[DP_SUSCEPTIBLE]->Count();
+        if (nHosts > 0) {
+            int median_index = nHosts / 2;
+            auto prHost = asOrderTest4[DP_SUSCEPTIBLE]->Item(median_index);
+            median_host_score4 = prHost->score;
         }
     }
 }

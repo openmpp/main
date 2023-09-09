@@ -170,9 +170,17 @@ void EntitySetSymbol::post_parse(int pass)
             if (filter) {
                 c += "if (" + filter->name + ") {";
             }
+            if (pp_order_attribute) {
+                c += "// Set entity set context for entity operator<";
+                c += "om_entity_set_context = " + to_string(pp_entity_set_id) + "; // " + name;
+            }
             c += erase_fn->name + "();";
             c += update_cell_fn->name + "();";
             c += insert_fn->name + "();";
+            if (pp_order_attribute) {
+                c += "// Reset entity set context for entity operator<";
+                c += "om_entity_set_context = -1;";
+            }
             if (filter) {
                 c += "}";
             }
@@ -185,6 +193,10 @@ void EntitySetSymbol::post_parse(int pass)
             c += injection_description();
             c += "// filter change in " + name;
             c += "if (om_active) {";
+            if (pp_order_attribute) {
+                c += "// Set entity set context for entity operator<";
+                c += "om_entity_set_context = " + to_string(pp_entity_set_id) + "; // " + name;
+            }
             c += "if (om_new) {";
             c += "// filter changed from false to true";
             c += update_cell_fn->name + "();";
@@ -194,6 +206,10 @@ void EntitySetSymbol::post_parse(int pass)
             c += "// filter changed from true to false";
             c += erase_fn->name + "();";
             c += "}";
+            if (pp_order_attribute) {
+                c += "// Reset entity set context for entity operator<";
+                c += "om_entity_set_context = -1;";
+            }
             c += "}";
         }
         break;
