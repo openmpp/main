@@ -42,6 +42,9 @@ public:
         , insert_fn(nullptr)
         , erase_fn(nullptr)
         , filter(nullptr)
+        , order(nullptr)
+        , pp_order_attribute(nullptr)
+        , pp_entity_set_id(0)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -132,6 +135,26 @@ public:
      * The expression attribute of the entity set filter.
      */
     IdentityAttributeSymbol *filter;
+
+    /**
+    * The attribute used in the order clause of the entity set
+    *
+     * Stable to symbol morphing during parse phase.
+     * Is nullptr if entity_set has no order clause.
+    */
+    Symbol** order;
+
+    /**
+    * The attribute used in the order clause of the entity set
+    *
+    * Stored as a pointer, which is only valid after post-parse phase 1.
+    */
+    AttributeSymbol* pp_order_attribute;
+
+    /**
+    * Unique numeric id for the entity set
+    */
+    int pp_entity_set_id;
 
     /**
      * List of dimensions

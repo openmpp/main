@@ -1,0 +1,79 @@
+//LABEL (Experimental, EN) Experimental tests
+
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+actor Host
+{
+    double score;
+    void NewScore();
+
+    hook NewScore, Start, 30;
+    hook NewScore, DiseaseProgressionEvent, 30;
+};
+
+
+actor_set Host asOrderTest1
+order score;
+
+actor_set Host asOrderTest2
+//filter disease_phase == DP_INFECTIOUS
+order score;
+
+
+actor Ticker
+{
+    double middle_host_score = { -1.0 };
+    double median_host_score1 = { -1.0 };
+    double median_host_score2 = { -1.0 };
+    void ProbeScores();
+    hook ProbeScores, TickEvent, 30;
+};
+
+table Ticker X99_Median_Score
+{
+    {
+        value_out(middle_host_score),
+        value_out(median_host_score1),
+        value_out(median_host_score2)
+    }
+    *report_time
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+void Host::NewScore()
+{
+    score = RandUniform(11);
+}
+
+void Ticker::ProbeScores()
+{
+    {
+        int nHosts = asAllHosts->Count();
+        if (nHosts > 0) {
+            int median_index = nHosts / 2;
+            auto prHost = asAllHosts->Item(median_index);
+            middle_host_score = prHost->score;
+        }
+    }
+    {
+        int nHosts = asOrderTest1->Count();
+        if (nHosts > 0) {
+            int median_index = nHosts / 2;
+            auto prHost = asOrderTest1->Item(median_index);
+            median_host_score1 = prHost->score;
+        }
+    }
+    {
+        int nHosts = asOrderTest2->Count();
+        if (nHosts > 0) {
+            int median_index = nHosts / 2;
+            auto prHost = asOrderTest2->Item(median_index);
+            median_host_score2 = prHost->score;
+        }
+    }
+}

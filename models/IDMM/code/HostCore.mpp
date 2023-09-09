@@ -173,6 +173,9 @@ void Host::Start()
 	}
 #endif
 
+	IMPLEMENT_HOOK(); // for Modgen
+	hook_Start();// for ompp
+
 	// Have the entity enter the simulation (OpenM++).
     enter_simulation();
 }
@@ -300,6 +303,9 @@ void Host::DiseaseProgressionEvent()
 		default:
 			break;
 	}
+
+	IMPLEMENT_HOOK(); // for Modgen
+	hook_DiseaseProgressionEvent();// for ompp
 }
 
 

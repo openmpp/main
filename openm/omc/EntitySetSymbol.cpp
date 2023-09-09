@@ -88,6 +88,16 @@ void EntitySetSymbol::post_parse(int pass)
         pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
         assert(pp_agent); // parser guarantee
 
+        // assign direct pointer to order attribute for use post-parse
+        if (order) {
+            pp_order_attribute = dynamic_cast<AttributeSymbol*> (pp_symbol(order));
+            if (!pp_order_attribute) {
+                pp_error(LT("error : '") + (*order)->name + LT("' must be an attribute of entity '") + pp_agent->name + "'");
+            }
+            // Note that the containing entity has an entity set using an order clause
+            pp_agent->any_entity_set_has_order_clause = true;
+        }
+
         break;
     }
     case ePopulateCollections:
@@ -102,11 +112,53 @@ void EntitySetSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
-        // The following block of code is almost identical in EntitySetSymbol and EntityTableSymbol
+        // The following block of code is very similar in EntitySetSymbol and EntityTableSymbol
         // construct function bodies
         build_body_update_cell();
         build_body_insert();
         build_body_erase();
+
+        // Dependency on attribute in entity set order clause
+        if (pp_order_attribute) {
+            {
+                CodeBlock& c = pp_order_attribute->notify_fn->func_body;
+                c += injection_description();
+                c += "// upcoming entity order change in entity set " + name;
+                c += "if (om_active) {";
+                if (filter) {
+                    c += "if (" + filter->name + ") {";
+                }
+                c += "// Set entity set context for entity operator<";
+                c += "om_entity_set_context = " + to_string(pp_entity_set_id) + "; // " + name;
+                c += "// Erase from entity set, will be immediately reinserted in side_effects function after value changes";
+                c += erase_fn->name + "();";
+                c += "// Reset entity set context for entity operator<";
+                c += "om_entity_set_context = -1;";
+                if (filter) {
+                    c += "}";
+                }
+                c += "}";
+            }
+            {
+                CodeBlock& c = pp_order_attribute->side_effects_fn->func_body;
+                c += injection_description();
+                c += "// entity order change in entity set " + name;
+                c += "if (om_active) {";
+                if (filter) {
+                    c += "if (" + filter->name + ") {";
+                }
+                c += "// Set entity set context for entity operator<";
+                c += "om_entity_set_context = " + to_string(pp_entity_set_id) + "; // " + name;
+                c += "// Was previously erased from entity set in notify function before value changed.";
+                c += insert_fn->name + "();";
+                c += "// Reset entity set context for entity operator<";
+                c += "om_entity_set_context = -1;";
+                if (filter) {
+                    c += "}";
+                }
+                c += "}";
+            }
+        }
 
         // Dependency on change in index attributes
         for (auto dim : dimension_list) {

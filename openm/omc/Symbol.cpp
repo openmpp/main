@@ -1519,6 +1519,16 @@ void Symbol::post_parse_all()
         }
     }
 
+
+    {
+        int id = 0;
+        for (auto ent : pp_all_entity_sets) {
+            ent->pp_entity_set_id = id;
+            ++id;
+        }
+    }
+
+
     // Sort collection of enumerators in each enumeration in ordinal order
     for (auto enumeration : pp_all_enumerations_with_enumerators) {
         enumeration->pp_enumerators.sort([](EnumeratorSymbol *a, EnumeratorSymbol *b) { return a->ordinal < b->ordinal; });

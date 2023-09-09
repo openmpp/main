@@ -786,7 +786,16 @@ for (auto entity_set : pp_agent_entity_sets) {
         c += "if (" + entity_set->filter->name + ") {";
     }
     c += entity_set->update_cell_fn->name + "();";
+    // assign entity set context if order clause used
+    if (entity_set->pp_order_attribute) {
+        c += "// Set entity set context for entity operator<";
+        c += "om_entity_set_context = " + to_string(entity_set->pp_entity_set_id) + "; // " + entity_set->name;
+    }
     c += entity_set->insert_fn->name + "();";
+    if (entity_set->pp_order_attribute) {
+        c += "// Reset entity set context for entity operator<";
+        c += "om_entity_set_context = -1;";
+    }
     if (entity_set->filter) {
         c += "}";
     }
@@ -804,7 +813,16 @@ void EntitySymbol::build_body_finalize_entity_sets()
         if (entity_set->filter) {
             c += "if (" + entity_set->filter->name + ") {";
         }
+        // assign entity set context if order clause used
+        if (entity_set->pp_order_attribute) {
+            c += "// Set entity set context for entity operator<";
+            c += "om_entity_set_context = " + to_string(entity_set->pp_entity_set_id) + "; // " + entity_set->name;
+        }
         c += entity_set->erase_fn->name + "();";
+        if (entity_set->pp_order_attribute) {
+            c += "// Reset entity set context for entity operator<";
+            c += "om_entity_set_context = -1;";
+        }
         if (entity_set->filter) {
             c += "}";
         }

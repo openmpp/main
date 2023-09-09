@@ -1250,6 +1250,12 @@ void CodeGen::do_entities()
         h += "}";
         h += "";
 
+        if (entity->any_entity_set_has_order_clause) {
+            h += doxygen_short("Entity set context for operator<");
+            h += "inline static thread_local short om_entity_set_context = -1;";
+            h += "";
+        }
+
         h += "//";
 	    h += "// function members in " + entity->name + " entity";
 	    h += "//";
@@ -1258,7 +1264,30 @@ void CodeGen::do_entities()
 	    h += doxygen_short("operator overload for entity comparison based on entity_id");
         h += "bool operator< ( " + entity->name + " & rhs )";
         h += "{";
-        h +=     "return entity_id < rhs.entity_id;";
+        if (entity->any_entity_set_has_order_clause) {
+            h += "// This entity has one or more entity sets with an order clause";
+            h += "switch (om_entity_set_context) {";
+            for (auto es : entity->pp_agent_entity_sets) {
+                if (es->pp_order_attribute) {
+                    auto& attr_name = es->pp_order_attribute->name;
+                    h += "case " + to_string(es->pp_entity_set_id) + ": // " + es->name;
+                    h += "{";
+                    h += "if (" + attr_name + " < rhs." + attr_name + ") return true;";
+                    h += "if (" + attr_name + " > rhs." + attr_name + ") return false;";
+                    h += "return entity_id < rhs.entity_id;";
+                    h += "}";
+                    h += "break;";
+                }
+            }
+            h += "default:";
+            h += "{";
+            h += "return entity_id < rhs.entity_id;";
+            h += "}";
+            h += "}";
+        }
+        else {
+            h += "return entity_id < rhs.entity_id;";
+        }
         h += "}";
 	    h += "";
 

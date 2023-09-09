@@ -2290,7 +2290,7 @@ decl_entity_set: // Some code for decl_entity_set and decl_table is nearly ident
                             pc.set_entity_set_context( entity_set );
                             pc.reset_working_counters();
                         }
-            entity_set_dimension_list_opt entity_set_filter_opt ";"
+            entity_set_dimension_list_opt entity_set_filter_opt entity_set_order_opt ";"
                         {
                             // Leaving agent and entity_set context
                             pc.set_entity_set_context( nullptr );
@@ -2345,6 +2345,18 @@ entity_set_filter_opt:
     | /* nothing */
     ;
 
+
+entity_set_order_opt:
+    "order" SYMBOL[order]
+                        {
+                            Symbol* order = $order;
+                            assert(order);
+                            EntitySetSymbol *entity_set = pc.get_entity_set_context();
+                            // note order attribute in entity set
+                            entity_set->order = order->stable_pp();
+                        }
+    | /* nothing */
+    ;
 /*
  * table
  */

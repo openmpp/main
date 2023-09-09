@@ -67,6 +67,7 @@ public:
         , pp_entity_id(-1)
         , pp_local_rng_streams_requested(false)
         , pp_local_rng_streams_present(false)
+        , any_entity_set_has_order_clause(false)
     {
         create_auxiliary_symbols();
         // Place in earliest sorting group so that missing symbols. e.g. case_id
@@ -425,5 +426,10 @@ public:
      * Indicates if local RNG streams are present in this entity kind.
      */
     bool pp_local_rng_streams_present;
+
+    /**
+     * Indicates if any entity set of this entity kind has an order clause.
+     */
+    bool any_entity_set_has_order_clause;
 };
 
