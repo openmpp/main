@@ -9,12 +9,12 @@
 actor Host
 {
     double score;
+    double score_with_ties;
     void NewScore();
 
     hook NewScore, Start, 30;
     hook NewScore, DiseaseProgressionEvent, 30;
 };
-
 
 actor_set Host asOrderTest1
 order score;
@@ -30,6 +30,9 @@ actor_set Host asOrderTest4[disease_phase]
 filter report_time > 5
 order score;
 
+actor_set Host asOrderTest5[disease_phase]
+filter report_time > 5
+order score_with_ties;
 
 actor Ticker
 {
@@ -38,6 +41,7 @@ actor Ticker
     double median_host_score2 = { -1.0 };
     double median_host_score3 = { -1.0 };
     double median_host_score4 = { -1.0 };
+    double median_host_score5 = { -1.0 };
     void ProbeScores();
     hook ProbeScores, TickEvent, 30;
 };
@@ -80,9 +84,18 @@ table Ticker X99_OrderTest4 //EN Test of entity set with order clause, filter, a
 {
     {
         //EN median score of susceptibles
-        value_out(median_host_score3)
+        value_out(median_host_score4)
     }
-    *report_time
+    * report_time
+};
+
+table Ticker X99_OrderTest5 //EN Test of entity set with ties in order attribute
+{
+    {
+        //EN median score of susceptibles
+        value_out(median_host_score5)
+    }
+    * report_time
 };
 
 #endif // Hide non-C++ syntactic island from IDE
@@ -90,6 +103,13 @@ table Ticker X99_OrderTest4 //EN Test of entity set with order clause, filter, a
 void Host::NewScore()
 {
     score = RandUniform(11);
+    score_with_ties = score;
+    if (score_with_ties < 0.2) {
+        score_with_ties = 0.0;
+    }
+    else if (score_with_ties < 0.4) {
+        score_with_ties = 0.1;
+    }
 }
 
 void Ticker::ProbeScores()
@@ -132,6 +152,14 @@ void Ticker::ProbeScores()
             int median_index = nHosts / 2;
             auto prHost = asOrderTest4[DP_SUSCEPTIBLE]->Item(median_index);
             median_host_score4 = prHost->score;
+        }
+    }
+    {
+        int nHosts = asOrderTest5[DP_SUSCEPTIBLE]->Count();
+        if (nHosts > 0) {
+            int median_index = nHosts / 2;
+            auto prHost = asOrderTest5[DP_SUSCEPTIBLE]->Item(median_index);
+            median_host_score5 = prHost->score;
         }
     }
 }
