@@ -33,7 +33,7 @@ void CaseSimulation(case_info &ci)
     //set_initial_weight(2.0);
 
     // For Modgen-compatible models, use the following instead
-    SetCaseWeight(5.0 * RandUniform(2));
+    SetCaseWeight(5.0 * RandUniform(1));
     //SetCaseWeight(2.0);
     //static int counter = 0;
     //SetCaseWeight(++counter);
