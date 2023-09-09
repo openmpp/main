@@ -30,7 +30,7 @@ void Person::Start()
     time = 0;
 
     // Draw from a log-normal distribution 
-    x = exp(mu + sigma * RandNormal(0));
+    x = exp(mu + sigma * RandNormal(1));
 
     // Have the entity enter the simulation.
     enter_simulation();
