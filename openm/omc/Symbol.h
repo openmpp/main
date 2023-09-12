@@ -915,7 +915,7 @@ public:
      *
      * @return a CodeBlock containing the generated code
      */
-    static CodeBlock build_event_dependencies_code(void);
+    static std::list<std::string> build_event_dependencies_csv(void);
 
     /**
      * Generate csv echoing model import statements

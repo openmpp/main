@@ -612,25 +612,27 @@ int main(int argc, char * argv[])
 
         // block for creation of file with generated event dependencies
         {
-            CodeBlock generated_event_dependencies_code = Symbol::build_event_dependencies_code();
-            const string GeneratedEventDependencies_ompp_name = "GeneratedEventDependencies.ompp";
-            if (generated_event_dependencies_code.size() > 0) {
+            std::list<std::string> event_dependencies_csv_content = Symbol::build_event_dependencies_csv();
+            const string EventDependencies_csv_name = "EventDependencies.csv";
+            if (!event_dependencies_csv_content.empty()) {
                 // There are one or more generated short names.
                 // open output stream for //NAME statements for generated names
-                ofstream GeneratedEventDependencies_ompp(makeFilePath(outDir.c_str(), GeneratedEventDependencies_ompp_name.c_str()), ios::out | ios::trunc | ios::binary);
-                exit_guard<ofstream> onExit_Missing_dat(&GeneratedEventDependencies_ompp, &ofstream::close);   // close on exit
-                if (GeneratedEventDependencies_ompp.fail()) {
-                    string msg = "omc : warning : Unable to open " + GeneratedEventDependencies_ompp_name + " for writing.";
+                ofstream EventDependencies_csv(makeFilePath(outDir.c_str(), EventDependencies_csv_name.c_str()), ios::out | ios::trunc | ios::binary);
+                exit_guard<ofstream> onExit_Missing_dat(&EventDependencies_csv, &ofstream::close);   // close on exit
+                if (EventDependencies_csv.fail()) {
+                    string msg = "omc : warning : Unable to open " + EventDependencies_csv_name + " for writing.";
                     theLog->logMsg(msg.c_str());
                 }
                 else {
-                    GeneratedEventDependencies_ompp << generated_event_dependencies_code;
-                    GeneratedEventDependencies_ompp.close();
+                    for (auto& line : event_dependencies_csv_content) {
+                        EventDependencies_csv << line + "\n";
+                    }
+                    EventDependencies_csv.close();
                 }
             }
             else {
                 // Model contains no generated names, so delete obsolete GeneratedNames.ompp if present
-                remove(makeFilePath(inpDir.c_str(), GeneratedEventDependencies_ompp_name.c_str()).c_str());
+                remove(makeFilePath(inpDir.c_str(), EventDependencies_csv_name.c_str()).c_str());
             }
         }
 
