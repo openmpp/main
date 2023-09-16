@@ -685,9 +685,12 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
     // UPDATE run_parameter SET 
     //   base_run_id =
     //   (
-    //     SELECT MIN(E.run_id) FROM run_parameter E
+    //     SELECT MIN(E.run_id)
+    //     FROM run_parameter E
+    //     INNER JOIN run_lst RL ON (RL.run_id = E.run_id)
     //     WHERE E.parameter_hid = 456
     //     AND E.value_digest = '22ee44cc'
+    //     AND RL.status IN ('p', 's')
     //   )
     // WHERE run_id = 11 AND parameter_hid = 456
     //
@@ -699,9 +702,12 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
     i_dbExec->update(
         "UPDATE run_parameter SET base_run_id =" \
         " (" \
-        " SELECT MIN(E.run_id) FROM run_parameter E" \
+        " SELECT MIN(E.run_id)" \
+        " FROM run_parameter E" \
+        " INNER JOIN run_lst RL ON (RL.run_id = E.run_id)" \
         " WHERE E.parameter_hid = " + sHid +
         " AND E.value_digest = " + toQuoted(sDigest) +
+        " AND RL.status IN ('p', 's')" \
         " )" \
         " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
         );
@@ -715,4 +721,3 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
         i_dbExec->update("DELETE FROM " + paramRunDbTable + " WHERE run_id = " + sRunId);
     }
 }
-
