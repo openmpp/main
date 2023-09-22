@@ -113,7 +113,7 @@ TableDimsTable::TableDimsTable(IDbExec * i_dbExec, int i_modelId)
         " M.model_id, M.model_table_id, D.dim_id, D.dim_name, T.model_type_id, D.is_total, D.dim_size" \
         " FROM table_dims D" \
         " INNER JOIN model_table_dic M ON (M.table_hid = D.table_hid)" \
-        " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
+        " INNER JOIN model_type_dic T ON (T.model_id = M.model_id AND T.type_hid = D.type_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,

@@ -78,7 +78,7 @@ WorksetParamTable::~WorksetParamTable(void) noexcept { }
 // select table rows
 vector<WorksetParamRow> IWorksetParamTable::select(IDbExec * i_dbExec, int i_setId)
 {
-    string sWhere = (i_setId > 0) ? " WHERE WP.set_id = " + to_string(i_setId) : "";
+    string sWhere = (i_setId > 0) ? " WHERE W.set_id = " + to_string(i_setId) : "";
     return 
         WorksetParamTable::select(i_dbExec, sWhere);
 }
@@ -86,7 +86,7 @@ vector<WorksetParamRow> IWorksetParamTable::select(IDbExec * i_dbExec, int i_set
 // select table rows by set id and parameter id
 vector<WorksetParamRow> IWorksetParamTable::byKey(IDbExec * i_dbExec, int i_setId, int i_paramId)
 {
-    string sWhere = " WHERE WP.set_id = " + to_string(i_setId) + " AND M.model_parameter_id = " + to_string(i_paramId);
+    string sWhere = " WHERE W.set_id = " + to_string(i_setId) + " AND MP.model_parameter_id = " + to_string(i_paramId);
     return 
         WorksetParamTable::select(i_dbExec, sWhere);
 }
@@ -98,9 +98,10 @@ vector<WorksetParamRow> WorksetParamTable::select(IDbExec * i_dbExec, const stri
 
     const IRowAdapter & adp = WorksetParamRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowVector(
-        "SELECT WP.set_id, M.model_id, M.model_parameter_id, WP.sub_count, WP.default_sub_id" \
-        " FROM workset_parameter WP" \
-        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = WP.parameter_hid)" +
+        "SELECT W.set_id, MP.model_id, MP.model_parameter_id, WP.sub_count, WP.default_sub_id" \
+        " FROM workset_lst W" \
+        " INNER JOIN workset_parameter WP ON (WP.set_id = W.set_id)" \
+        " INNER JOIN model_parameter_dic MP ON (MP.model_id = W.model_id AND MP.parameter_hid = WP.parameter_hid)" +
         i_where + 
         " ORDER BY 1, 3", 
         adp
@@ -109,4 +110,3 @@ vector<WorksetParamRow> WorksetParamTable::select(IDbExec * i_dbExec, const stri
 
     return IMetaTable<WorksetParamRow>::rows(vec);
 }
-

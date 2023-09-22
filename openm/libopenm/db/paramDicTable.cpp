@@ -142,7 +142,7 @@ ParamDicTable::ParamDicTable(IDbExec * i_dbExec, int i_modelId)
         " M.is_hidden, D.num_cumulated, D.db_run_table, D.db_set_table, D.import_digest" \
         " FROM parameter_dic D" \
         " INNER JOIN model_parameter_dic M ON (M.parameter_hid = D.parameter_hid)" \
-        " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
+        " INNER JOIN model_type_dic T ON (T.model_id = M.model_id AND T.type_hid = D.type_hid)" +
         ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2", 
         i_dbExec,
