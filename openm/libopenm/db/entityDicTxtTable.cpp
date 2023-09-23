@@ -97,15 +97,15 @@ IEntityDicTxtTable * IEntityDicTxtTable::create(IRowBaseVec & io_rowVec)
 EntityDicTxtTable::EntityDicTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE ME.model_id = " + to_string(i_modelId);
     if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE T.lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND T.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE ME.model_id = " + to_string(i_modelId) + " AND T.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = EntityDicTxtRowAdapter();
     rowVec = load(
-        "SELECT M.model_id, M.model_entity_id, T.lang_id, T.descr, T.note" \
+        "SELECT ME.model_id, ME.model_entity_id, T.lang_id, T.descr, T.note" \
         " FROM entity_dic_txt T" \
-        " INNER JOIN model_entity_dic M ON (M.entity_hid = T.entity_hid)" +
+        " INNER JOIN model_entity_dic ME ON (ME.entity_hid = T.entity_hid)" +
         sWhere + 
         " ORDER BY 1, 2, 3", 
         i_dbExec,

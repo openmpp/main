@@ -101,15 +101,15 @@ IEntityAttrTxtTable * IEntityAttrTxtTable::create(IRowBaseVec & io_rowVec)
 EntityAttrTxtTable::EntityAttrTxtTable(IDbExec * i_dbExec, int i_modelId, int i_langId)   
 { 
     string sWhere = "";
-    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId);
+    if (i_modelId > 0 && i_langId < 0) sWhere = " WHERE ME.model_id = " + to_string(i_modelId);
     if (i_modelId <= 0 && i_langId >= 0) sWhere = " WHERE D.lang_id = " + to_string(i_langId);
-    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE M.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
+    if (i_modelId > 0 && i_langId >= 0) sWhere = " WHERE ME.model_id = " + to_string(i_modelId) + " AND D.lang_id = " + to_string(i_langId);
 
     const IRowAdapter & adp = EntityAttrTxtRowAdapter();
     rowVec = load(
-        "SELECT M.model_id, M.model_entity_id, D.attr_id, D.lang_id, D.descr, D.note" \
+        "SELECT ME.model_id, ME.model_entity_id, D.attr_id, D.lang_id, D.descr, D.note" \
         " FROM entity_attr_txt D" \
-        " INNER JOIN model_entity_dic M ON (M.entity_hid = D.entity_hid)" +
+        " INNER JOIN model_entity_dic ME ON (ME.entity_hid = D.entity_hid)" +
         sWhere + 
         " ORDER BY 1, 2, 3, 4", 
         i_dbExec,

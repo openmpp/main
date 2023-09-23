@@ -105,10 +105,10 @@ EntityDicTable::EntityDicTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = EntityDicRowAdapter();
     rowVec = load(
         "SELECT" \
-        " M.model_id, M.model_entity_id, D.entity_name, D.entity_hid, D.entity_digest" \
+        " ME.model_id, ME.model_entity_id, D.entity_name, D.entity_hid, D.entity_digest" \
         " FROM entity_dic D" \
-        " INNER JOIN model_entity_dic M ON (M.entity_hid = D.entity_hid)" +
-        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
+        " INNER JOIN model_entity_dic ME ON (ME.entity_hid = D.entity_hid)" +
+        ((i_modelId > 0) ? " WHERE ME.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2", 
         i_dbExec,
         adp

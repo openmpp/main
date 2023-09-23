@@ -79,7 +79,7 @@ WorksetParamTxtTable::~WorksetParamTxtTable(void) noexcept { }
 vector<WorksetParamTxtRow> IWorksetParamTxtTable::select(IDbExec * i_dbExec, int i_setId, int i_langId)
 {
     string sWhere = "";
-    if (i_setId > 0 && i_langId < 0) sWhere = " WHERE T.set_id = " + to_string(i_setId);
+    if (i_setId > 0 && i_langId < 0) sWhere = " WHERE W.set_id = " + to_string(i_setId);
     if (i_setId <= 0 && i_langId >= 0) sWhere = " WHERE T.lang_id = " + to_string(i_langId);
     if (i_setId > 0 && i_langId >= 0) sWhere = " WHERE T.set_id = " + to_string(i_setId) + " AND T.lang_id = " + to_string(i_langId);
 
@@ -91,7 +91,7 @@ vector<WorksetParamTxtRow> IWorksetParamTxtTable::select(IDbExec * i_dbExec, int
 vector<WorksetParamTxtRow> IWorksetParamTxtTable::byKey(IDbExec * i_dbExec, int i_setId, int i_paramId, int i_langId)
 {
     string sWhere = 
-        " WHERE T.set_id = " + to_string(i_setId) + " AND M.model_parameter_id = " + to_string(i_paramId) + " AND T.lang_id = " + to_string(i_langId);
+        " WHERE W.set_id = " + to_string(i_setId) + " AND MP.model_parameter_id = " + to_string(i_paramId) + " AND T.lang_id = " + to_string(i_langId);
     return 
         WorksetParamTxtTable::select(i_dbExec, sWhere);
 }
@@ -103,9 +103,10 @@ vector<WorksetParamTxtRow> WorksetParamTxtTable::select(IDbExec * i_dbExec, cons
 
     const IRowAdapter & adp = WorksetParamTxtRowAdapter();
     IRowBaseVec vec = i_dbExec->selectRowVector(
-        "SELECT T.set_id, M.model_id, M.model_parameter_id, T.lang_id, T.note" \
-        " FROM workset_parameter_txt T" \
-        " INNER JOIN model_parameter_dic M ON (M.parameter_hid = T.parameter_hid)" +
+        "SELECT W.set_id, MP.model_id, MP.model_parameter_id, T.lang_id, T.note" \
+        " FROM workset_lst W" \
+        " INNER JOIN workset_parameter_txt T ON (T.set_id = W.set_id)" \
+        " INNER JOIN model_parameter_dic MP ON (MP.model_id = W.model_id AND MP.parameter_hid = WP.parameter_hid)" +
         i_where + 
         " ORDER BY 1, 3, 4", 
         adp

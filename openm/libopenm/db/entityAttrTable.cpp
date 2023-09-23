@@ -106,11 +106,11 @@ EntityAttrTable::EntityAttrTable(IDbExec * i_dbExec, int i_modelId)
     const IRowAdapter & adp = EntityAttrRowAdapter();
     rowVec = load(
         "SELECT" \
-        " M.model_id, M.model_entity_id, D.attr_id, D.attr_name, T.model_type_id, D.is_internal" \
+        " ME.model_id, ME.model_entity_id, D.attr_id, D.attr_name, MT.model_type_id, D.is_internal" \
         " FROM entity_attr D" \
-        " INNER JOIN model_entity_dic M ON (M.entity_hid = D.entity_hid)" \
-        " INNER JOIN model_type_dic T ON (T.type_hid = D.type_hid)" +
-        ((i_modelId > 0) ? " WHERE M.model_id = " + to_string(i_modelId) : "") +
+        " INNER JOIN model_entity_dic ME ON (ME.entity_hid = D.entity_hid)" \
+        " INNER JOIN model_type_dic MT ON (MT.model_id = ME.model_id AND MT.type_hid = D.type_hid)" +
+        ((i_modelId > 0) ? " WHERE ME.model_id = " + to_string(i_modelId) : "") +
         " ORDER BY 1, 2, 3", 
         i_dbExec,
         adp
