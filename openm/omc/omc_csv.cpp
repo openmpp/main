@@ -69,7 +69,7 @@ extern void omc::readParameterCsvFiles(
 
         ParameterSymbol * param = paramIt->second;      // this is a parameter to initilize from csv
 
-        if (param->source == ParameterSymbol::derived_parameter) {
+        if (param->is_derived()) {
             theLog->logFormatted("warning : ignoring initializer for derived parameter %s", param->name.c_str());
             continue;   // skip derived parameters
         }

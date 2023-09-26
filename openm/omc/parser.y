@@ -1544,7 +1544,7 @@ parameter_initializer_expr:
                             // add first (and only) element to the initializer list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
-                            if (parm->source == ParameterSymbol::derived_parameter) {
+                            if (parm->is_derived()) {
                                 ostringstream msg;
                                 msg << LT("warning : ignoring initializer for derived parameter ") << parm->name;
                                 drv.warning(@eq, msg.str());
@@ -1570,7 +1570,7 @@ parameter_initializer_expr:
                             // splice the gathered initializer list into the parameter's list
                             auto parm = pc.get_parameter_context();
                             assert(parm); // grammar guarantee
-                            if (parm->source == ParameterSymbol::derived_parameter) {
+                            if (parm->is_derived()) {
                                 ostringstream msg;
                                 msg << LT("warning : ignoring initializer for derived parameter ") << parm->name;
                                 drv.warning(@eq, msg.str());

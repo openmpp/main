@@ -169,7 +169,7 @@ public:
     bool is_internal;
 
     /**
-     * True if the table is marked for suppression by tables_suppressed or tables_retain.
+     * True if the table is marked for suppression by tables_suppress or tables_retain.
      * 
      * A suppressed table is completely removed from the model, including all generated code,
      * eg injected code in call backs, any associated attributes, etc.

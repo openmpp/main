@@ -36,6 +36,7 @@ public:
         , is_declared(false)
         , is_extendable(false)
         , publish_as_table(false)
+        , is_suppressed(false)
         , pp_index_series(nullptr)
         , index_series_offset(0)
         , datatype2(nullptr)
@@ -126,6 +127,15 @@ public:
      * @return A string.
      */
     string cxx_dimensions(bool use_zero = false) const;
+
+    /**
+     * Query if this is a derived parameter
+     *
+     * @returns True if derived, false if not.
+     */
+    bool is_derived(void) const {
+        return (source == parameter_source::derived_parameter);
+    }
 
     /**
     * C++ code to read parameter from data store.
@@ -376,6 +386,14 @@ public:
      * Model code uses the parameters_to_tables statement to publish derived parameters as tables
      */
     bool publish_as_table;
+
+     /**
+     * True if a derived parameter marked publish_as_table is marked for suppression
+     *
+     * A derived parameter marked as publsih_as_table can be marked for suppression
+     * by tables_suppress or tables_retain.
+     */
+    bool is_suppressed;
 
     /**
      * The parameter containing an index series used to extend the parameter

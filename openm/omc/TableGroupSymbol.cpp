@@ -25,15 +25,13 @@ void TableGroupSymbol::post_parse(int pass)
     {
         // check that group members are allowed types
         for (auto sym : pp_symbol_list) {
+            auto symbol_name = sym->name;
             bool is_table = dynamic_cast<TableSymbol*>(sym);
             bool is_table_group = dynamic_cast<TableGroupSymbol*>(sym);
             auto ps = dynamic_cast<ParameterSymbol*>(sym);
-            bool is_derived_parameter = false;
-            if (ps && ps->source == ParameterSymbol::parameter_source::derived_parameter) {
-                is_derived_parameter = true;
-            }
+            bool is_derived_parameter = (ps && ps->is_derived());
             if (!(is_table || is_table_group || is_derived_parameter)) {
-                pp_error(LT("error : invalid member '") + sym->name + LT("' of table group '") + name + LT("'"));
+                pp_error(LT("error : invalid member '") + symbol_name + LT("' of table group '") + name + LT("'"));
             }
         }
         break;

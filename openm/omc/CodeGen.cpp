@@ -885,7 +885,7 @@ void CodeGen::do_ModelStartup()
     for (auto parameter : Symbol::pp_all_parameters) {
 
         // Process only derived parameters in this for loop
-        if (parameter->source != ParameterSymbol::derived_parameter) continue;
+        if (!parameter->is_derived()) continue;
 
         if (parameter->size() > 1) {
             // array
@@ -930,7 +930,7 @@ void CodeGen::do_ModelStartup()
 
     for (auto parameter : Symbol::pp_all_parameters) {
         // Process only derived parameters in this for loop
-        if (parameter->source != ParameterSymbol::derived_parameter) continue;
+        if (!parameter->is_derived()) continue;
         if (parameter->cumrate) {
             // prepare cumrate for derived parameter
             c += parameter->cxx_initialize_cumrate();
@@ -1126,7 +1126,7 @@ void CodeGen::do_ModelShutdown()
         c += "";
         c += "theLog->logFormatted(\"member=%d Write derived parameters - start\", simulation_member);";
         for (auto param : Symbol::pp_all_parameters) {
-            if (param->publish_as_table) {
+            if (param->publish_as_table && !param->is_suppressed) {
                 // Write this derived parameter as a table
                 c += "{ // " + param->name;
                 c +=     "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + param->name + "\", last_progress_ms);";

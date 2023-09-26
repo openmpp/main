@@ -104,11 +104,17 @@ void ParameterSymbol::post_parse(int pass)
     }
     case eResolveDataTypes:
     {
+        if (any_tables_retain) { // model contains a tables_retain statement
+            // Mark derived parameter as suppressed (if published as table)
+            // Those which are retained will be changed back in a subsequent pass.
+            if (is_derived()) {
+                is_suppressed = true;
+            }
+        }
         if (any_show) { // model contains a show statement
             // Mark all parameters as hidden
             // Those which are shown will be changed back in a subsequent pass.
             is_hidden = true;
-            
         }
         break;
     }
@@ -432,7 +438,7 @@ CodeBlock ParameterSymbol::cxx_definition_global(void)
     // Perform operations specific to this level in the Symbol hierarchy.
     assert(source == scenario_parameter || source == derived_parameter || source == fixed_parameter || source == missing_parameter);
 
-    if (source == derived_parameter) {
+    if (is_derived()) {
         if (rank() > 0) {
             // thread_local CITY NearestCity[N_CITY];
             c += "thread_local " + pp_datatype->name + " " + name + cxx_dimensions() + ";";
@@ -555,7 +561,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
 void ParameterSymbol::validate_initializer()
 {
     // Nothing to do for derived parameters
-    if (source == derived_parameter) return;
+    if (is_derived()) return;
 
     // warn about parameters with missing values
     if (source == missing_parameter) {
@@ -745,7 +751,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
         }
     }
-    else if (publish_as_table) {
+    else if (publish_as_table && !is_suppressed) {
         // This is a derived parameter which has been marked for export as a table
         // by a parameters_to_tables statement in model code.
 

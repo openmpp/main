@@ -55,7 +55,7 @@ void ExtendParameterSymbol::post_parse(int pass)
             pp_error(LT("error : target parameter '") + pp_target_parameter->name + LT("' must be floating point type"));
             break;
         }
-        if (pp_target_parameter->source == ParameterSymbol::parameter_source::derived_parameter) {
+        if (pp_target_parameter->is_derived()) {
             pp_error(LT("error : target parameter '") + pp_target_parameter->name + LT("' cannot be derived"));
             break;
         }
@@ -85,7 +85,7 @@ void ExtendParameterSymbol::post_parse(int pass)
                 pp_error(LT("error : index series parameter must be same source (fixed or scenario) as target parameter"));
                 break;
             }
-            if (pp_index_parameter->source == ParameterSymbol::parameter_source::derived_parameter) {
+            if (pp_index_parameter->is_derived()) {
                 pp_error(LT("error : index series parameter '") + pp_index_parameter->name + LT("' cannot be derived"));
                 break;
             }

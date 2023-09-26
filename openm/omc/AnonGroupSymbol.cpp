@@ -195,29 +195,39 @@ void AnonGroupSymbol::post_parse(int pass)
             for (auto sym : expanded_list()) {
                 auto symbol_name = sym->name;
                 auto ts = dynamic_cast<TableSymbol*>(sym);
-                if (ts) {
+                auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                if (ps && ps->is_derived()) {
+                    // indicate that this derived parameter is to be suppressed if marked for export as table
+                    ps->is_suppressed = true;
+                }
+                else if (ts) {
                     // indicate that this table is to be suppressed from the model
                     ts->is_suppressed = true;
                 }
                 else {
-                    pp_error(LT("error : '") + symbol_name + LT("' in tables_suppress statement is not a table"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in tables_suppress statement is not a table or derived parameter"));
                 }
             }
             break;
         }
         case eKind::tables_retain:
         {
-            // Before this pass, is_suppressed was set to true for all non-internal tables
+            // Before this pass, is_suppressed was set to true for all non-internal tables and derived parameters
             // in preparation for this step, which switches retained tables back to false.
             for (auto sym : expanded_list()) {
                 auto symbol_name = sym->name;
                 auto ts = dynamic_cast<TableSymbol*>(sym);
-                if (ts) {
+                auto ps = dynamic_cast<ParameterSymbol*>(sym);
+                if (ps && ps->is_derived()) {
+                    // indicate that this derived parameter is not to be suppressed if marked for export as table
+                    ps->is_suppressed = false;
+                }
+                else if (ts) {
                     // indicate that this table is not to be suppressed.
                     ts->is_suppressed = false;
                 }
                 else {
-                    pp_error(LT("error : '") + symbol_name + LT("' in tables_retain statement is not a table"));
+                    pp_error(LT("error : '") + symbol_name + LT("' in tables_retain statement is not a table or derived parameter"));
                 }
             }
             break;
@@ -229,7 +239,7 @@ void AnonGroupSymbol::post_parse(int pass)
                 auto ps = dynamic_cast<ParameterSymbol*>(sym);
                 if (ps) {
                     // indicate that this parameter, if derived, is also to be published as a table.
-                    if (ps->source == ParameterSymbol::parameter_source::derived_parameter) {
+                    if (ps->is_derived()) {
                         ps->publish_as_table = true;
                     }
                     else {
