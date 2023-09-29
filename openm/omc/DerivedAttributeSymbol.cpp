@@ -5,8 +5,6 @@
 // Copyright (c) 2013-2015 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-//#define DEPENDENCY_TEST 1
-
 #include <cassert>
 #include "libopenm/omError.h"
 #include "DerivedAttributeSymbol.h"
@@ -578,11 +576,11 @@ void DerivedAttributeSymbol::assign_sorting_group()
         break;
     }
     }
-#if defined(DEPENDENCY_TEST)
-    // Assign all derived attributes to sorting group 8
-    // so that code_order resolves dependencies among them.
-    sorting_group = 8;
-#endif
+    if (advanced_attribute_dependencies) {
+        // Assign all derived attributes to sorting group 8
+        // so that code_order resolves dependencies among them.
+        sorting_group = 8;
+    }
 }
 
 void DerivedAttributeSymbol::create_auxiliary_symbols()

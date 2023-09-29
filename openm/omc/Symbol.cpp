@@ -5,8 +5,6 @@
 // Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-//#define DEPENDENCY_TEST 1
-
 #include <cassert>
 #include <limits>
 #include <algorithm>
@@ -1808,118 +1806,119 @@ void Symbol::post_parse_all()
         }
     }
 
-#if defined(DEPENDENCY_TEST)
-    // For each entity in the model, determine the code injection order
-    // of its maintained attributes.
-    for (auto *ent : pp_all_agents) {
+    if (advanced_attribute_dependencies) {
+        // Set to true for testing and debugging and to false for omc release
+        constexpr bool detailed_log = true;
 
-        // Construct working multimap map 'dpnd' containing all dependencies
-        // of maintained attributes on other maintained attributes.
-        multimap<MaintainedAttributeSymbol *, MaintainedAttributeSymbol *> dpnd;
-        for (auto *attr1 : ent->pp_maintained_attributes) {
-            for (auto *attr2 : attr1->pp_dependent_attributes) {
-                if (attr2->is_maintained()) {
-                    MaintainedAttributeSymbol *attr2m = dynamic_cast<MaintainedAttributeSymbol *>(attr2);
-                    assert(attr2m);
-                    dpnd.emplace(attr1, attr2m);
-                }
-            }
-        }
+        // For each entity in the model, determine the code injection order
+        // of its maintained attributes.
+        for (auto* ent : pp_all_agents) {
 
-        {
-            // TODO SFG - for debugging, comment for production
-            ostringstream ss;
-            ss << "  processing code order of " << ent->pp_maintained_attributes.size() << " maintained attributes of entity '" << ent->name << "'";
-            theLog->logMsg(ss.str().c_str());
-        }
-
-        // Increment code order priority (higher comes first in dependency order)
-        // until convergence.  If there is no convergence, there is a circular dependency error
-        // among the maintained attributes.
-        static int max_iters = 100;
-        int iter = 0;
-        while (true) {
-            if (iter >= max_iters) {
-                string msg = LT("error : circularity detected in maintained attributes of entity '") + ent->name + LT("'");
-                post_parse_errors++;
-                theLog->logMsg(msg.c_str());
-                break;
-            }
-            ++iter;
-
-            int changes = 0;
-            for (auto &p : dpnd) {
-                if (p.second->code_order <= p.first->code_order) {
-                    // assign higher order to dependent maintained attribute
-                    // so that its code will be inserted first.
-                    p.second->code_order = p.first->code_order + 1;
-                    ++changes;
+            // Construct working multimap map 'dpnd' containing all dependencies
+            // of maintained attributes on other maintained attributes.
+            multimap<MaintainedAttributeSymbol*, MaintainedAttributeSymbol*> dpnd;
+            for (auto* attr1 : ent->pp_maintained_attributes) {
+                for (auto* attr2 : attr1->pp_dependent_attributes) {
+                    if (attr2->is_maintained()) {
+                        MaintainedAttributeSymbol* attr2m = dynamic_cast<MaintainedAttributeSymbol*>(attr2);
+                        assert(attr2m);
+                        dpnd.emplace(attr1, attr2m);
+                    }
                 }
             }
 
-            {
-                // TODO SFG - for debugging, comment for production
+            if (detailed_log) {
                 ostringstream ss;
-                ss << "    iteration " << iter << " changes " << changes;
+                ss << "  processing code order of " << ent->pp_maintained_attributes.size() << " maintained attributes of entity '" << ent->name << "'";
                 theLog->logMsg(ss.str().c_str());
             }
 
-            if (changes == 0) {
-                // convergence
-                break;
-            }
-        }
-
-        {
-            // TODO SFG - for debugging, comment for production
-            ostringstream ss;
-            ss << "    code injection order:";
-            theLog->logMsg(ss.str().c_str());
-
-            // working copy of maintained attributes
-            auto lst = ent->pp_maintained_attributes;
-            lst.sort(
-                [](MaintainedAttributeSymbol *a, MaintainedAttributeSymbol *b)
-                {
-                    // sorting_group (ascending)
-                    if (a->sorting_group < b->sorting_group) return true;
-                    if (a->sorting_group > b->sorting_group) return false;
-
-                    // code_order (descending)
-                    if (a->code_order > b->code_order) return true;
-                    if (a->code_order < b->code_order) return false;
-
-                    // unique_name (ascending)
-                    if (a->unique_name < b->unique_name) return true;
-                    if (a->unique_name > b->unique_name) return false;
-
-                    // is not < (but actually not reached)
-                    return false;
+            // Increment code order priority (higher comes first in dependency order)
+            // until convergence.  If there is no convergence, there is a circular dependency error
+            // among the maintained attributes.
+            static int max_iters = 100;
+            int iter = 0;
+            while (true) {
+                if (iter >= max_iters) {
+                    string msg = LT("error : circularity detected in maintained attributes of entity '") + ent->name + LT("'");
+                    post_parse_errors++;
+                    theLog->logMsg(msg.c_str());
+                    break;
                 }
-            );
+                ++iter;
 
-            for (auto *attr : lst) {
+                int changes = 0;
+                for (auto& p : dpnd) {
+                    if (p.second->code_order <= p.first->code_order) {
+                        // assign higher order to dependent maintained attribute
+                        // so that its code will be inserted first.
+                        p.second->code_order = p.first->code_order + 1;
+                        ++changes;
+                    }
+                }
+
+                if (detailed_log) {
+                    // TODO SFG - for debugging, comment for production
+                    ostringstream ss;
+                    ss << "    iteration " << iter << " changes " << changes;
+                    theLog->logMsg(ss.str().c_str());
+                }
+
+                if (changes == 0) {
+                    // convergence
+                    break;
+                }
+            }
+
+            if (detailed_log) {
                 ostringstream ss;
-                ss.str("");
-                ss  << "    " 
-                    << attr->sorting_group
-                    << " "
-                    << attr->code_order
-                    << " "
-                    << attr->name
-                    ;
-                if (auto *ia = dynamic_cast<IdentityAttributeSymbol *>(attr)) {
-                    ss  << " = "
-                        << IdentityAttributeSymbol::cxx_expression(ia->root);
-                }
-
+                ss << "    code injection order:";
                 theLog->logMsg(ss.str().c_str());
+
+                // working copy of maintained attributes
+                auto lst = ent->pp_maintained_attributes;
+                lst.sort(
+                    [](MaintainedAttributeSymbol* a, MaintainedAttributeSymbol* b)
+                    {
+                        // sorting_group (ascending)
+                        if (a->sorting_group < b->sorting_group) return true;
+                        if (a->sorting_group > b->sorting_group) return false;
+
+                        // code_order (descending)
+                        if (a->code_order > b->code_order) return true;
+                        if (a->code_order < b->code_order) return false;
+
+                        // unique_name (ascending)
+                        if (a->unique_name < b->unique_name) return true;
+                        if (a->unique_name > b->unique_name) return false;
+
+                        // is not < (but actually not reached)
+                        return false;
+                    }
+                );
+
+                for (auto* attr : lst) {
+                    ostringstream ss;
+                    ss.str("");
+                    ss << "    "
+                        << attr->sorting_group
+                        << " "
+                        << attr->code_order
+                        << " "
+                        << attr->name
+                        ;
+                    if (auto* ia = dynamic_cast<IdentityAttributeSymbol*>(attr)) {
+                        ss << " = "
+                            << IdentityAttributeSymbol::cxx_expression(ia->root);
+                    }
+
+                    theLog->logMsg(ss.str().c_str());
+                }
             }
         }
+        // Redo the symbol sort to account for code_order changes
+        default_sort_pp_symbols();
     }
-    // Sort taking account of code injection order before code injection pass
-    default_sort_pp_symbols();
-#endif
 
 
     //

@@ -2,10 +2,12 @@
  * @file    Symbol.h
  * Declarations for the Symbol class.
  */
-// Copyright (c) 2013-2022 OpenM++ Contributors
-// This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
+
+// set to true and maybe remove after validating 2023-09-28
+constexpr bool advanced_attribute_dependencies = false;
+
 #include <cassert>
 #include <string>
 #include <vector>
