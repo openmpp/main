@@ -1,0 +1,129 @@
+﻿//LABEL (StateOrderingTest, EN) Test State Ordering
+/*NOTE (StateOrderingTest, EN)
+	This module tests the current ordering of state updates in Modgen.
+	The logic is based on the name of states, when all other conditions are equal.
+	This causes an issue when certain dependencies are not updated in the correct order.
+
+	This module is an implementation of the same bug that occurred in CRMM 3.
+*/
+
+#if !defined(MODGEN) // Hide from Modgen for x-compatible models
+#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#endif
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+range REPORT_YEAR
+{
+	60, 62
+};
+
+parameters {
+	model_generated int AGE_LOWER;
+	model_generated int AGE_UPPER;
+	model_generated int YEAR_LOWER;
+	model_generated int YEAR_UPPER;
+};
+
+actor Person
+{
+	// Birthday event
+	TIME next_birthday;
+	event timeNextBirthdayEvent, NextBirthdayEvent;
+	int integer_age = { 0 };
+
+	// Year event
+	TIME next_year;
+	event timeNextYearEvent, NextYearEvent;
+	int year = { 0 };
+
+	// table dimension
+	REPORT_YEAR report_year = COERCE(REPORT_YEAR, year);
+
+	// Setup of module
+	void Start_StateOrderingTest();
+	hook Start_StateOrderingTest, Start;
+
+	// Two identical conditions with different names
+	logical aaa_in_window = (integer_age >= AGE_LOWER) && (integer_age <= AGE_UPPER) && (year >= YEAR_LOWER) && (year <= YEAR_UPPER);
+	logical zzz_in_window = (integer_age >= AGE_LOWER) && (integer_age <= AGE_UPPER) && (year >= YEAR_LOWER) && (year <= YEAR_UPPER);
+
+	// Two filters based on the two identical conditions, using trigger_changes
+	logical aaa_flash_filter = aaa_in_window && trigger_changes(integer_age);
+	logical zzz_flash_filter = zzz_in_window && trigger_changes(integer_age);
+
+	// Table filters using undergone_entrance of each of those filters
+	logical filter_Test_aaa = undergone_entrance(aaa_flash_filter, TRUE);
+	logical filter_Test_zzz = undergone_entrance(zzz_flash_filter, TRUE);
+};
+
+table Person Test_aaa
+[filter_Test_aaa]
+{
+	report_year
+	*
+	{
+		unit
+	}
+};
+
+table Person Test_zzz
+[filter_Test_zzz]
+{
+	report_year
+	*
+	{
+		unit
+	}
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+void PreSimulation()
+{
+
+	AGE_LOWER = MIN(REPORT_YEAR);
+	AGE_UPPER = AGE_LOWER;
+
+	// The year lower bound needs to be one more than the age lower bound to ensure that
+	// aaa_in_window starts off the year true, and becomes false when integer_age is incremented later that year.
+
+	YEAR_LOWER = AGE_LOWER + 1;
+	YEAR_UPPER = YEAR_LOWER;
+}
+
+void Person::Start_StateOrderingTest()
+{
+	// Start of year is integer portion of time
+	year = static_cast<int>(std::floor(time));
+	next_year = year + 1.0;
+
+	integer_age = 0;
+	TIME time_since_new_years_day = time - year;
+
+	// Birthday is some time next year
+	next_birthday = WAIT(1.0 - time_since_new_years_day + RandUniform(2));
+}
+
+TIME Person::timeNextBirthdayEvent()
+{
+	return next_birthday;
+}
+
+void Person::NextBirthdayEvent()
+{
+	integer_age++;
+	next_birthday = WAIT(1.0);
+}
+
+TIME Person::timeNextYearEvent()
+{
+	return next_year;
+}
+
+void Person::NextYearEvent()
+{
+	year++;
+	next_year = WAIT(1.0);
+}
+
