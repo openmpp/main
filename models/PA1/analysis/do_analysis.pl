@@ -40,6 +40,8 @@ my $dbcopy_exe = "${om_root}/bin/dbcopy.exe";
 
 # Locate model and database
 my $model = 'PA1';
+my $model_exe = "../ompp/bin/${model}.exe";
+my $model_sqlite = "../ompp/bin/${model}.sqlite";
 
 
 ####################
@@ -48,8 +50,6 @@ my $model = 'PA1';
 
 if ($do_initialise) {
 	# copy model executable and DB to current directory for analysis
-	my $model_exe = "../ompp/bin/${model}.exe";
-	my $model_sqlite = "../output/${model}.sqlite";
 	copy $model_exe, '.' or die "failed to copy ${model_exe}, stopped";
 	copy $model_sqlite, '.' or die "failed to copy ${model_sqlite}, stopped";
 }
@@ -164,7 +164,7 @@ if ($do_simulate_runs) {
 			'-Parameter.log_RR_sigma', ($PAonRR ? $log_RR_sigma : 0.000000),
 			# do PA for Alpha (use values from csv, or supply mean to disable PA for Alpha
 			($PAonAlpha
-			  ? ('-SubValue.Alpha', 'csv')      # get PA values for Alpha from csv file
+			  ? ('-SubFrom.Alpha', 'csv')      # get PA values for Alpha from csv file
 			  : ('-Parameter.Alpha', $Alpha_mu) # turn PA off by setting Alpha to the average value
 			),
 			# Intervention proportion
