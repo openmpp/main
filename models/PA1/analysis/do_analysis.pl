@@ -40,6 +40,8 @@ my $dbcopy_exe = "${om_root}/bin/dbcopy.exe";
 
 # Locate model and database
 my $model = 'PA1';
+my $model_exe = "../ompp/bin/${model}.exe";
+my $model_sqlite = "../ompp/bin/${model}.sqlite";
 
 
 ####################
@@ -48,8 +50,6 @@ my $model = 'PA1';
 
 if ($do_initialise) {
 	# copy model executable and DB to current directory for analysis
-	my $model_exe = "../ompp/bin/${model}.exe";
-	my $model_sqlite = "../output/${model}.sqlite";
 	copy $model_exe, '.' or die "failed to copy ${model_exe}, stopped";
 	copy $model_sqlite, '.' or die "failed to copy ${model_sqlite}, stopped";
 }
@@ -164,7 +164,7 @@ if ($do_simulate_runs) {
 			'-Parameter.log_RR_sigma', ($PAonRR ? $log_RR_sigma : 0.000000),
 			# do PA for Alpha (use values from csv, or supply mean to disable PA for Alpha
 			($PAonAlpha
-			  ? ('-SubValue.Alpha', 'csv')      # get PA values for Alpha from csv file
+			  ? ('-SubFrom.Alpha', 'csv')      # get PA values for Alpha from csv file
 			  : ('-Parameter.Alpha', $Alpha_mu) # turn PA off by setting Alpha to the average value
 			),
 			# Intervention proportion
@@ -250,9 +250,12 @@ if ($do_assemble_runs) {
 	for my $run (@{$run_lst_ra}) {
 		my $run_id = $run->{run_id};
 		my $run_name = $run->{run_name};
+        
+        # skip the Default run
+        next if $run_name eq 'Default';
 
 		# $data_dir is the folder containing the csv's for parameters and tables for the run
-		my $data_dir = "${model}/run.${run_id}.${run_name}";
+		my $data_dir = "${model}/run.${run_name}";
 		-d $data_dir or die "invalid data directory data_dir=${data_dir}, stopped";
 		
 		# Get classifier variables for the run
@@ -284,7 +287,7 @@ if ($do_assemble_runs) {
 			."\n" if 0;
 
 		# Get Results table, with all accumulators (trailing accumulators are computed measures)
-		my $Results_acc_all = get_table_rh("${data_dir}/Results.acc-all.csv");
+		my $Results_acc_all = get_table_rh("${data_dir}/output-tables/Results.acc-all.csv");
 		
 		# Initialize output record hash values for scenario properties, using values set from run properties (above).
 		# These values will be reused for each CSV record written in loop below.
@@ -303,10 +306,10 @@ if ($do_assemble_runs) {
 		for my $in_rec (@{$Results_acc_all}) {
 			my $member = $in_rec->{sub_id};
 			# Get measures
-			my $Persons =  $in_rec->{acc4};
-			my $AvgYearsLived = $in_rec->{acc5};
-			my $GiniYearsLived = $in_rec->{acc6};
-			my $AvgCost = $in_rec->{acc7};
+			my $Persons =  $in_rec->{Persons};
+			my $AvgYearsLived = $in_rec->{Lifetime};
+			my $GiniYearsLived = $in_rec->{Gini};
+			my $AvgCost = $in_rec->{Cost};
 			$out_rec->{member} = $member;
 			$out_rec->{AvgYearsLived} = $AvgYearsLived;
 			$out_rec->{GiniYearsLived} = $GiniYearsLived;
