@@ -665,6 +665,8 @@ bool Symbol::option_censor_event_time = false;
 
 bool Symbol::option_ascii_infinity = false;
 
+bool Symbol::option_alternate_attribute_dependency_implementation = false;
+
 string Symbol::option_memory_popsize_parameter;
 
 string Symbol::code_page;
@@ -1806,7 +1808,7 @@ void Symbol::post_parse_all()
         }
     }
 
-    if (advanced_attribute_dependencies) {
+    if (Symbol::option_alternate_attribute_dependency_implementation) {
         // Set to true for testing and debugging and to false for omc release
         constexpr bool detailed_log = true;
 
@@ -2389,6 +2391,20 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_ascii_infinity = false;
+            }
+        }
+    }
+
+    {
+        string key = "alternate_attribute_dependency_implementation";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_alternate_attribute_dependency_implementation = true;
+            }
+            else if (value == "off") {
+                option_alternate_attribute_dependency_implementation = false;
             }
         }
     }

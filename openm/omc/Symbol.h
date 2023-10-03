@@ -5,9 +5,6 @@
 
 #pragma once
 
-// set to true and maybe remove after validating 2023-09-28
-constexpr bool advanced_attribute_dependencies = false;
-
 #include <cassert>
 #include <string>
 #include <vector>
@@ -1549,6 +1546,11 @@ public:
      * true or false depending on ascii_infinity in options statement.
      */
     static bool option_ascii_infinity;
+
+    /**
+     * true or false depending on alternate_attribute_dependency_implementation in options statement.
+     */
+    static bool option_alternate_attribute_dependency_implementation;
 
     /**
      * name of parameter containing population size.

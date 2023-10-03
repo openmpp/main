@@ -576,7 +576,7 @@ void DerivedAttributeSymbol::assign_sorting_group()
         break;
     }
     }
-    if (advanced_attribute_dependencies) {
+    if (Symbol::option_alternate_attribute_dependency_implementation) {
         // Assign all derived attributes to sorting group 8
         // so that code_order resolves dependencies among them.
         sorting_group = 8;
