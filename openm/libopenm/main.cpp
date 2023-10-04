@@ -191,7 +191,26 @@ int main(int argc, char ** argv)
                 if (RunShutdownHandler != NULL) {
                     RunShutdownHandler(true, runCtrl.get());
                 }
-                return (int)(e != ExitStatus::OK ? e : ExitStatus::FAIL);
+                switch (e)
+                {
+                case ExitStatus::SIMULATION_ERROR:
+                    theLog->logMsg("FAILED: Simulation error");
+                    return (int)ExitStatus::SIMULATION_ERROR;
+                case ExitStatus::MODEL_ERROR:
+                    theLog->logMsg("FAILED: Model error");
+                    return (int)ExitStatus::MODEL_ERROR;
+                case ExitStatus::DB_ERROR:
+                    theLog->logMsg("FAILED: DB error");
+                    return (int)ExitStatus::DB_ERROR;
+                case ExitStatus::MSG_ERROR:
+                    theLog->logMsg("FAILED: Messaging error");
+                    return (int)ExitStatus::MSG_ERROR;
+                case ExitStatus::HELPER_ERROR:
+                    theLog->logMsg("FAILED: Helper error");
+                    return (int)ExitStatus::HELPER_ERROR;
+                }
+                theLog->logMsg("FAILED", OM_FILE_LINE);
+                return (int)ExitStatus::FAIL;
             }
         }
         catch (SimulationException & ex) {
