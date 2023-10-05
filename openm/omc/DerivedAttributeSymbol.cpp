@@ -53,7 +53,7 @@ string DerivedAttributeSymbol::member_name(token_type tok,
 }
 
 // static
-DerivedAttributeSymbol * DerivedAttributeSymbol::create_symbol(const Symbol* agent,
+DerivedAttributeSymbol * DerivedAttributeSymbol::create_symbol(const Symbol* ent,
                                               token_type tok,
                                               const Symbol *av1,
                                               const Symbol *av2,
@@ -65,14 +65,14 @@ DerivedAttributeSymbol * DerivedAttributeSymbol::create_symbol(const Symbol* age
 {
     DerivedAttributeSymbol *sym = nullptr;
     string mem_name = member_name(tok, av1, av2, prt, cls, k1, k2, k3);
-    string nm = Symbol::symbol_name(mem_name, agent);
+    string nm = Symbol::symbol_name(mem_name, ent);
     auto it = symbols.find(nm);
     if (it != symbols.end()) {
         sym = dynamic_cast<DerivedAttributeSymbol *>(it->second);
         assert(sym);
     }
     else {
-        sym = new DerivedAttributeSymbol(agent, tok, av1, av2, prt, cls, k1, k2, k3);
+        sym = new DerivedAttributeSymbol(ent, tok, av1, av2, prt, cls, k1, k2, k3);
         sym->is_generated = true;
     }
     return sym;
@@ -592,7 +592,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     {
         if (av1 && k1) {
             // is a conditioned duration
-            iav = IdentityAttributeSymbol::create_equality_identity_attribute(agent, *av1, k1, decl_loc);
+            iav = IdentityAttributeSymbol::create_equality_identity_attribute(entity, *av1, k1, decl_loc);
             assert(iav);
         }
         break;
@@ -604,7 +604,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     case token::TK_active_spell_delta:
     case token::TK_completed_spell_delta:
     {
-        iav = IdentityAttributeSymbol::create_equality_identity_attribute(agent, *av1, k1, decl_loc);
+        iav = IdentityAttributeSymbol::create_equality_identity_attribute(entity, *av1, k1, decl_loc);
         assert(iav);
         break;
     }
@@ -618,7 +618,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         assert(k1);
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_undergone_entrance, *av1, k1);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_undergone_entrance, *av1, k1);
         assert(dav);
         break;
     }
@@ -626,7 +626,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         assert(k1);
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_undergone_exit, *av1, k1);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_undergone_exit, *av1, k1);
         assert(dav);
         break;
     }
@@ -635,14 +635,14 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
         assert(av1);
         assert(k1);
         assert(k2);
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_undergone_transition, *av1, k1, k2);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_undergone_transition, *av1, k1, k2);
         assert(dav);
         break;
     }
     case token::TK_value_at_first_change:
     {
         assert(av1);
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_undergone_change, *av1);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_undergone_change, *av1);
         assert(dav);
         break;
     }
@@ -650,7 +650,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     {
         assert(av1);
         assert(k1);
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_active_spell_duration, *av1, k1);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_active_spell_duration, *av1, k1);
         assert(dav);
         break;
     }
@@ -659,7 +659,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
         assert(av1);
         assert(k1);
         assert(av2); // weight
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_active_spell_weighted_duration, *av1, k1, *av2);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_active_spell_weighted_duration, *av1, k1, *av2);
         assert(dav);
         break;
     }
@@ -668,7 +668,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
         assert(av1);
         assert(k1);
         assert(av2); // observed
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_active_spell_delta, *av1, k1, *av2);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_active_spell_delta, *av1, k1, *av2);
         assert(dav);
         break;
     }
@@ -685,7 +685,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
         assert(av2); // observed
         assert(iav);
         // create derived attribute to hold value of observed attribute at beginning of spell
-        dav = DerivedAttributeSymbol::create_symbol(agent, token::TK_value_at_latest_entrance, iav, true_cnst, *av2);
+        dav = DerivedAttributeSymbol::create_symbol(entity, token::TK_value_at_latest_entrance, iav, true_cnst, *av2);
         assert(dav);
         break;
     }
@@ -696,7 +696,7 @@ void DerivedAttributeSymbol::create_auxiliary_symbols()
     // Create the internal symbol for the event time of the self-scheduling derived attribute.
     if (is_self_scheduling()) {
         // create the internal symbol for the event time of the self-scheduling derived attribute
-        ait = new EntityInternalSymbol("om_ss_time_" + name, agent, NumericSymbol::find(token::TK_Time), "time_infinite");
+        ait = new EntityInternalSymbol("om_ss_time_" + name, entity, NumericSymbol::find(token::TK_Time), "time_infinite");
         ait->provenance = name + " (next time)";
     }
 }
@@ -870,7 +870,7 @@ void DerivedAttributeSymbol::record_dependencies()
     case token::TK_active_spell_weighted_duration:
     {
         // implicit dependency on time
-        auto *sym = pp_agent->pp_time;
+        auto *sym = pp_entity->pp_time;
         assert(sym);
         pp_dependent_attributes.emplace(sym);
         break;
@@ -1060,14 +1060,14 @@ void DerivedAttributeSymbol::assign_pp_members()
     if (av1) {
         pp_av1 = dynamic_cast<AttributeSymbol *> (pp_symbol(av1));
         if (!pp_av1) {
-            pp_error(LT("error : '") + (*av1)->name + LT("' is not an attribute of ") + agent->name);
+            pp_error(LT("error : '") + (*av1)->name + LT("' is not an attribute of ") + entity->name);
             throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
         }
     }
     if (av2) {
         pp_av2 = dynamic_cast<AttributeSymbol *> (pp_symbol(av2));
         if (!pp_av2) {
-            pp_error(LT("error : '") + (*av2)->name + LT("' is not an attribute of ") + agent->name);
+            pp_error(LT("error : '") + (*av2)->name + LT("' is not an attribute of ") + entity->name);
             throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
         }
     }
@@ -1096,8 +1096,8 @@ void DerivedAttributeSymbol::create_side_effects()
     // It is needed to handle situations where the initial value of a derived attribute is not zero.
     // For example, this can occur for aggregate() as well as for split().
 
-    assert(pp_agent->initialize_derived_attributes_fn);
-    CodeBlock& init_cxx = pp_agent->initialize_derived_attributes_fn->func_body;
+    assert(pp_entity->initialize_derived_attributes_fn);
+    CodeBlock& init_cxx = pp_entity->initialize_derived_attributes_fn->func_body;
 
     // The local variable reset_cxx is used to inject code into the function reset_derived_attributes().
     // That function is called before the entity enters the simulation (generally after developer code in Start),
@@ -1107,8 +1107,8 @@ void DerivedAttributeSymbol::create_side_effects()
     // before the entity enters the simulation.  So value of changes(attr) needs to be reset to 0 after 
     // developer code in Start(), but before the entity enters the simulation.
 
-    assert(pp_agent->reset_derived_attributes_fn);
-    CodeBlock& reset_cxx = pp_agent->reset_derived_attributes_fn->func_body;
+    assert(pp_entity->reset_derived_attributes_fn);
+    CodeBlock& reset_cxx = pp_entity->reset_derived_attributes_fn->func_body;
 
     switch (tok) {
     case token::TK_duration:
@@ -1116,7 +1116,7 @@ void DerivedAttributeSymbol::create_side_effects()
         if (!av1) {
             // duration()
             // add side-effect to time
-            auto *av = pp_agent->pp_time;
+            auto *av = pp_entity->pp_time;
             assert(av);
             CodeBlock& time_cxx = av->side_effects_fn->func_body;
             time_cxx += injection_description();
@@ -1129,7 +1129,7 @@ void DerivedAttributeSymbol::create_side_effects()
         else {
             // duration(av, value)
             // add side-effect to time
-            auto *av = pp_agent->pp_time;
+            auto *av = pp_entity->pp_time;
             assert(av);
             assert(iav);
             CodeBlock& time_cxx = av->side_effects_fn->func_body;
@@ -1148,7 +1148,7 @@ void DerivedAttributeSymbol::create_side_effects()
         if (!av1) {
             // weighted_duration()
             // add side-effect to time
-            auto *av = pp_agent->pp_time;
+            auto *av = pp_entity->pp_time;
             auto *wgt = pp_av2;
             assert(av);
             assert(wgt);
@@ -1160,7 +1160,7 @@ void DerivedAttributeSymbol::create_side_effects()
         else {
             // weighted_duration(av, value)
             // add side-effect to time
-            auto *av = pp_agent->pp_time;
+            auto *av = pp_entity->pp_time;
             auto *wgt = pp_av2;
             assert(av);
             assert(iav);
@@ -1200,7 +1200,7 @@ void DerivedAttributeSymbol::create_side_effects()
     case token::TK_active_spell_duration:
     {
         // add side-effect to time
-        auto *av = pp_agent->pp_time;
+        auto *av = pp_entity->pp_time;
         assert(av);
         assert(iav);
         CodeBlock& time_cxx = av->side_effects_fn->func_body;
@@ -1237,7 +1237,7 @@ void DerivedAttributeSymbol::create_side_effects()
     case token::TK_active_spell_weighted_duration:
     {
         // add side-effect to time
-        auto *av = pp_agent->pp_time;
+        auto *av = pp_entity->pp_time;
         auto *wgt = pp_av2;
         assert(av);
         assert(iav);
@@ -1791,7 +1791,7 @@ void DerivedAttributeSymbol::create_side_effects()
     {
         auto *av = pp_av1; // the triggering attribute
         assert(av);
-        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling attribute
+        assert(ait); // the previously-created entity internal symbol which holds the next time of occurrence of the self-scheduling attribute
 
         {
             // Code injection into the om_reset_derived_attributes function.
@@ -1864,12 +1864,12 @@ void DerivedAttributeSymbol::create_side_effects()
             // Code injection into the side-effect function of the triggering attribute
 
             CodeBlock& observed_cxx = av->side_effects_fn->func_body;
-            assert(pp_agent->ss_event);
+            assert(pp_entity->ss_event);
             observed_cxx += injection_description();
             observed_cxx += "if (om_active) {";
             observed_cxx += "auto & ss_attr = " + name + "; // the self-scheduling attribute being maintained";
             observed_cxx += "auto & ss_time = " + ait->name + "; // the scheduled time of maintenance of this self-scheduling attribute";
-            observed_cxx += "auto & ss_event = " + pp_agent->ss_event->name + "; // the single event in the entity which maintains all self-scheduling attributes";
+            observed_cxx += "auto & ss_event = " + pp_entity->ss_event->name + "; // the single event in the entity which maintains all self-scheduling attributes";
 
             // attribute-specific code (begin)
             switch (tok) {
@@ -1972,12 +1972,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
                 observed_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
@@ -1988,8 +1988,8 @@ void DerivedAttributeSymbol::create_side_effects()
         {
             // Code injection into the self-scheduling implement function for these 6 self-scheduling attributes
 
-            assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the agent
-            CodeBlock& ss_implement_cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+            assert(pp_entity->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the entity
+            CodeBlock& ss_implement_cxx = pp_entity->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
             ss_implement_cxx += injection_description();
             if (any_to_hooks) {
                 ss_implement_cxx += "bool " + flag_name() + " = false;";
@@ -2051,12 +2051,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
                     ;
@@ -2066,12 +2066,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
@@ -2083,8 +2083,8 @@ void DerivedAttributeSymbol::create_side_effects()
         {
             // Code injection into the time function of these 6 self-scheduling attributes
 
-            assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the agent
-            CodeBlock& ss_time_cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
+            assert(pp_entity->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the entity
+            CodeBlock& ss_time_cxx = pp_entity->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
             // The generated code minimizes the local working variable 'et' with the next time of this self-scheduling attribute
             // The required 'Time et = time_infinite;' statement at the start of the body of the event time function is generated elsewhere.
             // The required 'return et;' statement at the end of the body of the event time function is generated elsewhere.
@@ -2106,12 +2106,12 @@ void DerivedAttributeSymbol::create_side_effects()
         // Common variables and code for these 2 self-scheduling attributes
         auto *av = pp_av1;
         assert(av); // the attribute being integerized or split, e.g. "age", "time", etc.
-        assert(ait); // the previously-created agent internal symbol which holds the next time of occurrence of the self-scheduling attribute
-        assert(pp_agent->ss_event); // the event for self-scheduling attributes
-        assert(pp_agent->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the agent
-        assert(pp_agent->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the agent
-        CodeBlock& ss_time_cxx = pp_agent->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
-        CodeBlock& ss_implement_cxx = pp_agent->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
+        assert(ait); // the previously-created entity internal symbol which holds the next time of occurrence of the self-scheduling attribute
+        assert(pp_entity->ss_event); // the event for self-scheduling attributes
+        assert(pp_entity->ss_time_fn); // the time function of the event which manages all self-scheduling attributes in the entity
+        assert(pp_entity->ss_implement_fn); // the implement function of the event which manages all self-scheduling attributes in the entity
+        CodeBlock& ss_time_cxx = pp_entity->ss_time_fn->func_body; // body of the C++ event time function of the self-scheduling event
+        CodeBlock& ss_implement_cxx = pp_entity->ss_implement_fn->func_body; // body of the C++ event implement function of the self-scheduling event
 
         // The generated code minimizes the working variable 'et' with the next time of this self-scheduling attribute
         // The required 'return et;' statement in the body of the event time function is generated elsewhere
@@ -2185,7 +2185,7 @@ void DerivedAttributeSymbol::create_side_effects()
             // For self_scheduling_QQQ(age), inject the side-effect block into time as well.
             if (av->name == "age") {
                 // find the attribute for time
-                auto attr_time = av->pp_agent->pp_time;
+                auto attr_time = av->pp_entity->pp_time;
                 assert(attr_time);
                 // get the body of the C++ side-effect function for "time"
                 CodeBlock& time_cxx = attr_time->side_effects_fn->func_body; 
@@ -2236,12 +2236,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
                     ;
@@ -2251,12 +2251,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
@@ -2361,7 +2361,7 @@ void DerivedAttributeSymbol::create_side_effects()
                 identity_cxx += "if (om_active) {";
                 identity_cxx += "auto & ss_attr = " + name + ";";
                 identity_cxx += "auto & ss_time = " + ait->name + ";";
-                identity_cxx += "auto & ss_event = " + pp_agent->ss_event->name + ";";
+                identity_cxx += "auto & ss_event = " + pp_entity->ss_event->name + ";";
                 if (dav->tok == token::TK_duration) {
                     identity_cxx += "auto & ss_dur = " + dav->name + ";";
                 }
@@ -2449,12 +2449,12 @@ void DerivedAttributeSymbol::create_side_effects()
                     string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
                     identity_cxx += "if (event_trace_on) "
                         "event_trace_msg("
-                        "\"" + agent->name + "\", "
+                        "\"" + entity->name + "\", "
                         "(int)entity_id, "
                         "(double)age.direct_get(), "
                         "GetCaseSeed(), "
                         "\"" + pretty_name() + "\", "
-                        + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                        + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                         "\"" + evt_name + "\", "
                         " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                         ;
@@ -2505,12 +2505,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = "scheduled - " + to_string(numeric_id);
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eSelfSchedulingEventOccurrence);"
                     ;
@@ -2520,12 +2520,12 @@ void DerivedAttributeSymbol::create_side_effects()
                 string evt_name = ""; // was never supported for Modgen-style event trace, so leave empty
                 ss_implement_cxx += "if (event_trace_on) "
                     "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
                     "\"" + pretty_name() + "\", "
-                    + std::to_string(pp_agent->ss_event->pp_event_id) + ","
+                    + std::to_string(pp_entity->ss_event->pp_event_id) + ","
                     "\"" + evt_name + "\", "
                     " (double)ss_time, (double)age, (double)BaseEvent::get_global_time(), BaseEntity::et_msg_type::eQueuedSelfSchedulingEvent);"
                     ;
@@ -2730,7 +2730,7 @@ string DerivedAttributeSymbol::pp_modgen_name() const
     // names for self-scheduling attributes.  That ensures that the same numbering
     // for self-scheduling attributes is used in event trace outputs in Modgen and ompp.
 
-    string result = pp_agent->name + "::";
+    string result = pp_entity->name + "::";
     switch (tok) {
     case token::TK_trigger_entrances:
     {
@@ -2837,13 +2837,13 @@ void DerivedAttributeSymbol::post_parse(int pass)
     case eCreateMissingSymbols:
     {
         if (is_self_scheduling()) {
-            // create the event to support self-scheduling states in the containing agent
-            auto agnt = dynamic_cast<EntitySymbol *>(agent);
-            assert(agnt);
-            agnt->create_ss_event();
-            assert(agnt->ss_event);
+            // create the event to support self-scheduling states in the containing entity
+            auto ent = dynamic_cast<EntitySymbol *>(entity);
+            assert(ent);
+            ent->create_ss_event();
+            assert(ent->ss_event);
             // Push the name into the post parse ignore hash for the current pass.
-            pp_symbols_ignore.insert(agnt->ss_event->unique_name);
+            pp_symbols_ignore.insert(ent->ss_event->unique_name);
         }
         break;
     }
@@ -2876,17 +2876,17 @@ void DerivedAttributeSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock DerivedAttributeSymbol::cxx_declaration_agent()
+CodeBlock DerivedAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
     h += "Attribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
-        + pp_agent->name + ", "
+        + pp_entity->name + ", "
         + "&om_name_" + name + ", "
         + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "

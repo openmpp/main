@@ -20,9 +20,9 @@ void EntityMemberSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
         {
-            // assign direct pointer to agent for use post-parse
-            pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
-            assert(pp_agent); // parser guarantee
+            // assign direct pointer to entity for use post-parse
+            pp_entity = dynamic_cast<EntitySymbol *> (pp_symbol(entity));
+            assert(pp_entity); // parser guarantee
         }
         break;
     default:

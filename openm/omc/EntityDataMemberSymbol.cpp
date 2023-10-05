@@ -224,8 +224,8 @@ void EntityDataMemberSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this agent data symbol to the agent's list of all such symbols
-        pp_agent->pp_agent_data_members.push_back(this);
+        // Add this entity data symbol to the entity's list of all such symbols
+        pp_entity->pp_data_members.push_back(this);
         break;
     }
     default:
@@ -262,10 +262,10 @@ CodeBlock EntityDataMemberSymbol::cxx_initialization_expression(bool type_defaul
     return c;
 }
 
-CodeBlock EntityDataMemberSymbol::cxx_declaration_agent()
+CodeBlock EntityDataMemberSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // example:         /// time
@@ -274,10 +274,10 @@ CodeBlock EntityDataMemberSymbol::cxx_declaration_agent()
     return h;
 }
 
-CodeBlock EntityDataMemberSymbol::cxx_definition_agent()
+CodeBlock EntityDataMemberSymbol::cxx_definition_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
+    CodeBlock c = super::cxx_definition_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
  

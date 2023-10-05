@@ -97,7 +97,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
     FloatingPointLiteral *pval_FloatingPointLiteral;
     StringLiteral        *pval_StringLiteral;
 	Symbol               *pval_Symbol;
-	EntityMemberSymbol   *pval_AgentMemberSymbol;
+	EntityMemberSymbol   *pval_entityMemberSymbol;
 	ConstantSymbol       *pval_ConstantSymbol;
 	Constant             *pval_Constant;
     list<Constant *>     *pval_Constant_list;
@@ -518,7 +518,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %type  <pval_ConstantSymbol>  constant
 %type  <pval_Constant>  initializer_constant
 
-%type  <pval_AgentMemberSymbol> link_symbol
+%type  <pval_entityMemberSymbol> link_symbol
 
 %type  <pval_TableExpr> expr_for_table
 %type  <pval_TableExpr> table_expression_list
@@ -1259,10 +1259,10 @@ decl_dependency:
  */
 
 decl_track:
-	  "track" SYMBOL[agent] 
+	  "track" SYMBOL[entity] 
                         {
-                            // Set agent context for body of track declaration
-                            pc.set_agent_context( $agent );
+                            // Set entity context for body of track declaration
+                            pc.set_entity_context( $entity);
                         }
           track_filter_opt "{" symbol_list "}" ";"
                         {
@@ -1272,8 +1272,8 @@ decl_track:
                             pls->clear();
                             delete pls;
                             $symbol_list = nullptr;
-                            // Leaving agent context
-                            pc.set_agent_context( nullptr );
+                            // Leaving entity context
+                            pc.set_entity_context( nullptr );
                         }
 	| "track" error ";"
       ;
@@ -1665,41 +1665,41 @@ parameter_initializer_element:
  */
 
 decl_entity:
-      "entity" SYMBOL[agent]
+      "entity" SYMBOL[entity]
                         {
-                            if ($agent->is_base_symbol()) {
+                            if ($entity->is_base_symbol()) {
                                 // Morph Symbol to EntitySymbol
-                                $agent = new EntitySymbol( $agent, @agent );
+                                $entity = new EntitySymbol( $entity, @entity);
                             }
                             else {
                                 pc.redeclaration = true;
                             }
-                            // Set agent context for body of agent declaration
-                            pc.set_agent_context( $agent );
+                            // Set entity context for body of entity declaration
+                            pc.set_entity_context( $entity);
                         }
-            "{" agent_member_list "}" ";"
+            "{" entity_member_list "}" ";"
                         {
-                            // No valid agent context
-                            pc.set_agent_context( nullptr );
+                            // No valid entity context
+                            pc.set_entity_context( nullptr );
                         }
-            | "agent" "{" error "}" ";"
+            | "entity" "{" error "}" ";"
             ;
 
-agent_member_list:
-	  agent_member
-	| agent_member_list agent_member
+entity_member_list:
+	  entity_member
+	| entity_member_list entity_member
 	;
 
-agent_member:
+entity_member:
 	  decl_simple_attribute
-	| decl_agent_array
+	| decl_entity_array
 	| decl_identity_attribute
-	| decl_agent_function
-	| decl_agent_event
+	| decl_entity_function
+	| decl_entity_event
 	| decl_hook
     | error ";"
                         {
-                            // Error recovery: Prepare to parse another member in an agent declarative island
+                            // Error recovery: Prepare to parse another member in an entity declarative island
                             pc.brace_level = 1;
                             pc.parenthesis_level = 0;
                             pc.bracket_level = 0;
@@ -1710,32 +1710,32 @@ decl_simple_attribute:
         decl_type_part[type_symbol] SYMBOL[attribute] ";"
                         {
                             if (check_undeclared($attribute, @attribute, drv)) {
-                                auto* sym = new SimpleAttributeSymbol($attribute, pc.get_agent_context(), $type_symbol, nullptr, @attribute);
+                                auto* sym = new SimpleAttributeSymbol($attribute, pc.get_entity_context(), $type_symbol, nullptr, @attribute);
                                 assert(sym);
                             }
                         }
       | decl_type_part[type_symbol] SYMBOL[attribute] "=" "{" signed_literal "}" ";"
                         {
                             if (check_undeclared($attribute, @attribute, drv)) {
-                                auto* sym = new SimpleAttributeSymbol($attribute, pc.get_agent_context(), $type_symbol, $signed_literal, @attribute);
+                                auto* sym = new SimpleAttributeSymbol($attribute, pc.get_entity_context(), $type_symbol, $signed_literal, @attribute);
                                 assert(sym);
                             }
                         }
       | decl_type_part[type_symbol] SYMBOL[attribute] "=" "{" SYMBOL[enumerator] "}" ";"
                         {
                             if (check_undeclared($attribute, @attribute, drv)) {
-                                auto *sym = new SimpleAttributeEnumSymbol( $attribute, pc.get_agent_context(), $type_symbol, $enumerator, @attribute );
+                                auto *sym = new SimpleAttributeEnumSymbol( $attribute, pc.get_entity_context(), $type_symbol, $enumerator, @attribute );
                                 assert(sym);
                             }
                         }
     ;
 
-decl_agent_array:
+decl_entity_array:
         decl_type_part[type_symbol] SYMBOL[attribute] array_decl_dimension_list ";"
                         {
                             if (check_undeclared($attribute, @attribute, drv)) {
-                                // Morph symbol to agent array member symbol
-                                auto aam = new EntityArrayMemberSymbol($attribute, pc.get_agent_context(), $type_symbol, @attribute);
+                                // Morph symbol to entity array member symbol
+                                auto aam = new EntityArrayMemberSymbol($attribute, pc.get_entity_context(), $type_symbol, @attribute);
                                 list<Symbol *> *pls = $array_decl_dimension_list;
                                 // Move dimension list to EntityArrayMemberSymbol (transform elements to stable **).
                                 for (auto sym : *pls) aam->dimension_list.push_back(sym->stable_pp());
@@ -1766,13 +1766,13 @@ decl_identity_attribute:
         decl_type_part[type_symbol] SYMBOL[attribute] "=" expr_for_attribute ";"
                         {
                             if (check_undeclared($attribute, @attribute, drv)) {
-                                auto *sym = new IdentityAttributeSymbol( $attribute, pc.get_agent_context(), $type_symbol, $expr_for_attribute, @attribute );
+                                auto *sym = new IdentityAttributeSymbol( $attribute, pc.get_entity_context(), $type_symbol, $expr_for_attribute, @attribute );
                                 assert(sym);
                             }
                         }
     ;
 
-decl_agent_function:
+decl_entity_function:
       decl_type_part[type] SYMBOL "(" decl_func_arg_string[args] ")" ";"
                         {
                             if ($SYMBOL->is_base_symbol()) {
@@ -1797,7 +1797,7 @@ decl_agent_function:
                                 }
 
                                 // argument 5 below (suppress_defn=true) tells omc that the function definition is developer-supplied
-                                auto sym = new EntityFuncSymbol( $SYMBOL, pc.get_agent_context(), return_type, arg_list, true, @SYMBOL );
+                                auto sym = new EntityFuncSymbol( $SYMBOL, pc.get_entity_context(), return_type, arg_list, true, @SYMBOL );
                                 assert(sym);
                             }
                             else {
@@ -1883,16 +1883,16 @@ decl_func_arg_token:
     | "string"
     ;
 
-decl_agent_event:
+decl_entity_event:
       "event" SYMBOL[time_func] "," SYMBOL[implement_func] event_priority_opt[priority] ";"
                         {
                             int event_priority = stoi($priority->value());
                             delete $priority;
                             $priority = nullptr;
-                            auto *agent = pc.get_agent_context();
-                            // Create agent event symbol
+                            auto *ent = pc.get_entity_context();
+                            // Create entity event symbol
                             string event_name = "om_" + $implement_func->name + "_om_event";
-                            auto *sym = new EntityEventSymbol(event_name, agent, $time_func, $implement_func, true, event_priority, @decl_agent_event);
+                            auto *sym = new EntityEventSymbol(event_name, ent, $time_func, $implement_func, true, event_priority, @decl_entity_event);
                             assert(sym);
                         }
     ;
@@ -1917,13 +1917,13 @@ event_priority_opt:
 decl_hook:
       "hook"[kw] SYMBOL[from] "," hook_to_symbol[to] hook_order_opt[order_lit] ";"
                         {
-                            auto *agent = pc.get_agent_context();
+                            auto * ent = pc.get_entity_context();
                             int order = stoi($order_lit->value());
                             free($order_lit);
 
-                            if (!EntityHookSymbol::exists(agent, $from, $to)) {
-                                // Create the agent hook symbol
-                                auto *sym = new EntityHookSymbol(agent, $from, $to, order, @kw);
+                            if (!EntityHookSymbol::exists(ent, $from, $to)) {
+                                // Create the entity hook symbol
+                                auto *sym = new EntityHookSymbol(ent, $from, $to, order, @kw);
                                 assert(sym);
                                 // Use high-level sorting order to control calling order in generated code.
                                 // But, add 100 to make all sort after other symbols, so that hooks to ss attributes
@@ -1934,7 +1934,7 @@ decl_hook:
                             else {
                                 // redeclaration
                                 string name = EntityHookSymbol::symbol_name( $from , $to);
-                                auto hook_sym = dynamic_cast<EntityHookSymbol *>(Symbol::get_symbol(name, agent));
+                                auto hook_sym = dynamic_cast<EntityHookSymbol *>(Symbol::get_symbol(name, ent));
                                 assert(hook_sym);
                                 if (hook_sym->order == order) {
                                     // redeclaration is benign if hook order is identical in the two declarations
@@ -2135,7 +2135,7 @@ expr_for_attribute[result]:
 
 
 /*
- * the 'type' part of a parameter, attribute or agent function declaration
+ * the 'type' part of a parameter, attribute or entity function declaration
  */
 
 decl_type_part:
@@ -2166,28 +2166,28 @@ decl_link:
                         {
                             // reciprocal one-to-one link
 
-                            // The containing agent of the link
-                            auto agent = $link->agent;
+                            // The containing entity of the link
+                            auto ent = $link->entity;
                             // get the type of the link
-                            auto type = TypeOfLinkSymbol::get_single($link->agent);
+                            auto type = TypeOfLinkSymbol::get_single($link->entity);
                             // morph EntityMemberSymbol $link to a LinkAttributeSymbol
-                            auto lavs = new LinkAttributeSymbol($link, agent, type, $link->decl_loc);
+                            auto lavs = new LinkAttributeSymbol($link, ent, type, $link->decl_loc);
                             lavs->reciprocal_link = lavs; // special case
                         }
         | "link" link_symbol[link1] link_symbol[link2] ";"
                         {
-                            // one-to-one link (different agents and/or different link attributes)
+                            // one-to-one link (different entities and/or different link attributes)
 
-                            // The containing agent of each link
-                            auto agent1 = $link1->agent;
-                            auto agent2 = $link2->agent;
-                            // The type of each link, e.g. the type of link1 will point to agent2, like <link agent2>
-                            auto type1 = TypeOfLinkSymbol::get_single(agent2);
-                            auto type2 = TypeOfLinkSymbol::get_single(agent1);
+                            // The containing entity of each link
+                            auto entity1 = $link1->entity;
+                            auto entity2 = $link2->entity;
+                            // The type of each link, e.g. the type of link1 will point to entity2, like <link entity2>
+                            auto type1 = TypeOfLinkSymbol::get_single(entity2);
+                            auto type2 = TypeOfLinkSymbol::get_single(entity1);
 
                             // morph EntityMemberSymbol's to LinkAttributeSymbol's
-                            auto lavs1 = new LinkAttributeSymbol($link1, agent1, type1, $link1->decl_loc);
-                            auto lavs2 = new LinkAttributeSymbol($link2, agent2, type2, $link2->decl_loc);
+                            auto lavs1 = new LinkAttributeSymbol($link1, entity1, type1, $link1->decl_loc);
+                            auto lavs2 = new LinkAttributeSymbol($link2, entity2, type2, $link2->decl_loc);
 
                             lavs1->reciprocal_link = lavs2;
                             lavs2->reciprocal_link = lavs1;
@@ -2195,16 +2195,16 @@ decl_link:
         | "link" link_symbol[link_single] link_symbol[link_multi] "[" "]" ";"
                         {
                             // one-to-many link
-                            // The containing agent of each link
-                            auto agent_single = $link_single->agent;
-                            auto agent_multi = $link_multi->agent;
+                            // The containing entity of each link
+                            auto entity_single = $link_single->entity;
+                            auto entity_multi = $link_multi->entity;
                             // The type of each link
-                            auto type_single = TypeOfLinkSymbol::get_single(agent_multi);
-                            auto type_multi = TypeOfLinkSymbol::get_single(agent_single);
+                            auto type_single = TypeOfLinkSymbol::get_single(entity_multi);
+                            auto type_multi = TypeOfLinkSymbol::get_single(entity_single);
 
                             // morph EntityMemberSymbol's to appropriate link types
-                            auto single = new LinkAttributeSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
-                            auto multi = new EntityMultilinkSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
+                            auto single = new LinkAttributeSymbol($link_single, entity_single, type_single, $link_single->decl_loc);
+                            auto multi = new EntityMultilinkSymbol($link_multi, entity_multi, type_multi, $link_multi->decl_loc);
 
                             // match them up
                             single->reciprocal_multilink = multi;
@@ -2213,16 +2213,16 @@ decl_link:
         | "link" link_symbol[link_multi] "[" "]" link_symbol[link_single] ";"
                         {
                             // many-to-one link (identical code to previous rule).
-                            // The containing agent of each link
-                            auto agent_single = $link_single->agent;
-                            auto agent_multi = $link_multi->agent;
+                            // The containing entity of each link
+                            auto entity_single = $link_single->entity;
+                            auto entity_multi = $link_multi->entity;
                             // The type of each link
-                            auto type_single = TypeOfLinkSymbol::get_single(agent_multi);
-                            auto type_multi = TypeOfLinkSymbol::get_single(agent_single);
+                            auto type_single = TypeOfLinkSymbol::get_single(entity_multi);
+                            auto type_multi = TypeOfLinkSymbol::get_single(entity_single);
 
                             // morph EntityMemberSymbol's to appropriate link types
-                            auto single = new LinkAttributeSymbol($link_single, agent_single, type_single, $link_single->decl_loc);
-                            auto multi = new EntityMultilinkSymbol($link_multi, agent_multi, type_multi, $link_multi->decl_loc);
+                            auto single = new LinkAttributeSymbol($link_single, entity_single, type_single, $link_single->decl_loc);
+                            auto multi = new EntityMultilinkSymbol($link_multi, entity_multi, type_multi, $link_multi->decl_loc);
 
                             // match them up
                             single->reciprocal_multilink = multi;
@@ -2231,16 +2231,16 @@ decl_link:
         | "link" link_symbol[link_multi1] "[" "]" link_symbol[link_multi2] "[" "]" ";"
                         {
                             // many-to-many link
-                            // The containing agent of each link
-                            auto agent_multi1 = $link_multi1->agent;
-                            auto agent_multi2 = $link_multi2->agent;
+                            // The containing entity of each link
+                            auto entity_multi1 = $link_multi1->entity;
+                            auto entity_multi2 = $link_multi2->entity;
                             // The type of each link
-                            auto type_multi1 = TypeOfLinkSymbol::get_single(agent_multi2);
-                            auto type_multi2 = TypeOfLinkSymbol::get_single(agent_multi1);
+                            auto type_multi1 = TypeOfLinkSymbol::get_single(entity_multi2);
+                            auto type_multi2 = TypeOfLinkSymbol::get_single(entity_multi1);
 
                             // morph EntityMemberSymbol's to appropriate link types
-                            auto multi1 = new EntityMultilinkSymbol($link_multi1, agent_multi1, type_multi1, $link_multi1->decl_loc);
-                            auto multi2 = new EntityMultilinkSymbol($link_multi2, agent_multi2, type_multi2, $link_multi2->decl_loc);
+                            auto multi1 = new EntityMultilinkSymbol($link_multi1, entity_multi1, type_multi1, $link_multi1->decl_loc);
+                            auto multi2 = new EntityMultilinkSymbol($link_multi2, entity_multi2, type_multi2, $link_multi2->decl_loc);
 
                             // match them up
                             multi1->reciprocal_multilink = multi2;
@@ -2250,15 +2250,15 @@ decl_link:
         ;
 
 link_symbol:
-            SYMBOL[agent] "."
+            SYMBOL[entity] "."
                         {
-                            // Set agent context for scanner creation of the immediately following link attribute
-                            pc.set_agent_context( $agent );
+                            // Set entity context for scanner creation of the immediately following link attribute
+                            pc.set_entity_context( $entity );
                         }
             SYMBOL[link]
                         {
                             // Morph Symbol to an EntityMemberSymbol, which will be morphed subsequently to a link symbol
-                            auto ams = new EntityMemberSymbol( $link, $agent, @link);
+                            auto ams = new EntityMemberSymbol( $link, $entity, @link);
                             $link_symbol = ams;
                         }
         ;
@@ -2268,13 +2268,13 @@ link_symbol:
  */
 
 decl_entity_set: // Some code for decl_entity_set and decl_table is nearly identical
-      "entity_set" SYMBOL[agent] SYMBOL[entity_set]
+      "entity_set" SYMBOL[entity] SYMBOL[entity_set]
                         {
                             EntitySetSymbol *entity_set = nullptr;
 
                             if ($entity_set->is_base_symbol()) {
                                 // Morph Symbol to EntitySetSymbol
-                                entity_set = new EntitySetSymbol( $entity_set, $agent, @entity_set );
+                                entity_set = new EntitySetSymbol( $entity_set, $entity, @entity_set );
                                 assert(entity_set);
                                 $entity_set = entity_set;
                             }
@@ -2285,23 +2285,23 @@ decl_entity_set: // Some code for decl_entity_set and decl_table is nearly ident
                                 assert(entity_set); // grammar/logic guarantee
                                 // TODO Raise error?
                             }
-                            // Set agent context and entity set context for body of entity set declaration
-                            pc.set_agent_context( $agent );
+                            // Set entity context and entity set context for body of entity set declaration
+                            pc.set_entity_context( $entity);
                             pc.set_entity_set_context( entity_set );
                             pc.reset_working_counters();
                         }
             entity_set_dimension_list_opt entity_set_filter_opt entity_set_order_opt ";"
                         {
-                            // Leaving agent and entity_set context
+                            // Leaving entity and entity_set context
                             pc.set_entity_set_context( nullptr );
-                            pc.set_agent_context( nullptr );
+                            pc.set_entity_context( nullptr );
                             pc.reset_working_counters();
                         }
     | "entity_set" error ";"
                         {
-                            // Leaving agent and entity_set context
+                            // Leaving entity and entity_set context
                             pc.set_entity_set_context(nullptr);
-                            pc.set_agent_context(nullptr);
+                            pc.set_entity_context(nullptr);
                             pc.reset_working_counters();
                         }
     ;
@@ -2337,7 +2337,7 @@ entity_set_filter_opt:
                         {
                             EntitySetSymbol *entity_set = pc.get_entity_set_context();
                             // create an identity attribute for the filter
-                            auto eav = new IdentityAttributeSymbol("om_" + entity_set->name + "_filter", entity_set->agent, BoolSymbol::find(), $root, @root);
+                            auto eav = new IdentityAttributeSymbol("om_" + entity_set->name + "_filter", entity_set->entity, BoolSymbol::find(), $root, @root);
                             assert(eav); // out of memory check
                             // note identity attribute in entity set
                             entity_set->filter = eav;
@@ -2362,13 +2362,13 @@ entity_set_order_opt:
  */
 
 decl_table: // Some code for decl_entity_set and decl_table is nearly identical
-      "table" SYMBOL[agent] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
+      "table" SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
                         {
                             EntityTableSymbol *table = nullptr;
 
                             if ($table->is_base_symbol()) {
                                 // Morph Symbol to EntityTableSymbol
-                                table = new EntityTableSymbol( $table, $agent, @table );
+                                table = new EntityTableSymbol( $table, $entity, @table );
                                 assert(table);
                                 $table = table;
                             }
@@ -2380,8 +2380,8 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 // redeclaration not allowed
                                 error(@table, LT("error: a table named '") + $table->name + LT("' already exists"));
                             }
-                            // Set agent context and table context for body of table declaration
-                            pc.set_agent_context( $agent );
+                            // Set entity context and table context for body of table declaration
+                            pc.set_entity_context( $entity);
                             pc.set_table_context( table );
                             pc.reset_working_counters();
                             // working counter1 used for table expressions
@@ -2392,16 +2392,16 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
             table_filter_opt
             "{" table_dimension_list "}" ";"
                         {
-                            // Leaving table and agent context
+                            // Leaving table and entity context
                             pc.set_table_context( nullptr );
-                            pc.set_agent_context( nullptr );
+                            pc.set_entity_context( nullptr );
                             pc.reset_working_counters();
                         }
     | "table" error ";"
                         {
-                            // Leaving table and agent context
+                            // Leaving table and entity context
                             pc.set_table_context(nullptr);
-                            pc.set_agent_context(nullptr);
+                            pc.set_entity_context(nullptr);
                             pc.reset_working_counters();
                         }
     ;
@@ -2411,7 +2411,7 @@ table_filter_opt:
                         {
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an anonymous identity attribute for the filter
-                            auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(table->agent, BoolSymbol::find(), $root, @root);
+                            auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(table->entity, BoolSymbol::find(), $root, @root);
                             aia->is_generated = true;
                             assert(aia);
                             // note identity attribute in table
@@ -2797,8 +2797,8 @@ symbol_in_expr:
 link_to_attribute:
       SYMBOL[link] "->"
                         {
-                            // Tell the scanner not to apply agent scope resolution to the following 'word'
-                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // Tell the scanner not to apply entity scope resolution to the following 'word'
+                            // in the input stream, but just return a STRING instead.  That's because the entity context
                             // depends on the nature of the symbol on the left of "->", whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
@@ -2806,7 +2806,7 @@ link_to_attribute:
                         {
                             // Create LinkToAttributeSymbol.  Store the r.h.s of pointer operator as a string for
                             // subsequent post-parse resolution.
-                            $link_to_attribute = LinkToAttributeSymbol::create_symbol(pc.get_agent_context(), $link, *$attribute);
+                            $link_to_attribute = LinkToAttributeSymbol::create_symbol(pc.get_entity_context(), $link, *$attribute);
                             delete $attribute; // delete the string created using new in scanner
                             $attribute = nullptr;
                         }
@@ -2829,8 +2829,8 @@ symbol_in_table:
 link_to_attribute_shadowed:
       SYMBOL[link] "->"
                         {
-                            // Tell the scanner not to apply agent scope resolution to the following 'word'
-                            // in the input stream, but just return a STRING instead.  That's because the agent context
+                            // Tell the scanner not to apply entity scope resolution to the following 'word'
+                            // in the input stream, but just return a STRING instead.  That's because the entity context
                             // depends on the nature of the symbol on the left of "->", whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
@@ -2839,7 +2839,7 @@ link_to_attribute_shadowed:
                             // Create an anonymous identity attribute to shadow the linked attribute.
                             // The type of the anonymous identity attribute is set to "unknown type",
                             // which will be resolved subsequently during post-parse processing.
-                            auto entity = pc.get_agent_context();
+                            auto entity = pc.get_entity_context();
 
                             // create the link to attribute symbol, which will become the expression of the anonymous identity attribute
                             auto link_to_attribute = LinkToAttributeSymbol::create_symbol(entity, $link, *$attribute);
@@ -2884,23 +2884,23 @@ derived_attribute_self_scheduling:
      */
       TK_duration_counter[kw] "(" any_attribute[observed] "," constant[constnt] "," constant[interval] ")"
                         {
-                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $interval);
+                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constnt, $interval);
                         }
     | TK_duration_counter[kw] "(" any_attribute[observed] "," constant[constnt] "," constant[interval]  "," constant[maxcount] ")"
                         {
-                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $interval, $maxcount);
+                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constnt, $interval, $maxcount);
                         }
     | TK_duration_trigger[kw] "(" any_attribute[observed] "," constant[constnt] "," constant[delay] ")"
                         {
-                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constnt, $delay);
+                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constnt, $delay);
                         }
     | TK_self_scheduling_int[kw] "(" any_attribute[observed] ")"
                         {
-                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed);
+                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed);
                         }
     | TK_self_scheduling_split[kw] "(" any_attribute[observed] "," SYMBOL[partition] ")"
                         {
-                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition);
+                            $derived_attribute_self_scheduling = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition);
                         }
         ;
 
@@ -2910,19 +2910,19 @@ derived_attribute_trigger:
      */
       TK_trigger_entrances[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_trigger_exits[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_trigger_transitions[kw] "(" any_attribute[observed] "," constant[from] "," constant[to] ")"
                         {
-                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $from, $to);
+                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $from, $to);
                         }
     | TK_trigger_changes[kw] "(" any_attribute[observed] ")"
                         {
-                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed);
+                            $derived_attribute_trigger = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed);
                         }
         ;
 
@@ -2932,23 +2932,23 @@ derived_attribute_other:
      */
       TK_duration[kw] "(" ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw);
                         }
     | TK_duration[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_weighted_duration[kw] "(" any_attribute[weight] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, static_cast<Symbol *>(nullptr), static_cast<ConstantSymbol *>(nullptr), $weight);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, static_cast<Symbol *>(nullptr), static_cast<ConstantSymbol *>(nullptr), $weight);
                         }
     | TK_weighted_duration[kw] "(" any_attribute[observed] "," constant "," any_attribute[weight] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $weight);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $weight);
                         }
     | TK_weighted_cumulation[kw] "(" any_attribute[observed] "," any_attribute[weight] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $weight);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $weight);
                         }
 
     /*
@@ -2956,27 +2956,27 @@ derived_attribute_other:
      */
     | TK_active_spell_duration[kw] "(" any_attribute[spell] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $spell, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $spell, $constant);
                         }
     | TK_completed_spell_duration[kw] "(" any_attribute[spell] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $spell, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $spell, $constant);
                         }
     | TK_active_spell_weighted_duration[kw] "(" any_attribute[spell] "," constant "," any_attribute[weight]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $spell, $constant, $weight);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $spell, $constant, $weight);
                         }
     | TK_completed_spell_weighted_duration[kw] "(" any_attribute[spell] "," constant "," any_attribute[weight]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $spell, $constant, $weight);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $spell, $constant, $weight);
                         }
     | TK_active_spell_delta[kw] "(" any_attribute[spell] "," constant "," any_attribute[delta]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $spell, $constant, $delta);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $spell, $constant, $delta);
                         }
     | TK_completed_spell_delta[kw] "(" any_attribute[spell] "," constant "," any_attribute[delta]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $spell, $constant, $delta);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $spell, $constant, $delta);
                         }
 
     /*
@@ -2984,19 +2984,19 @@ derived_attribute_other:
      */
     | TK_undergone_entrance[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_undergone_exit[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_undergone_transition[kw] "(" any_attribute[observed] "," constant[from] "," constant[to] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $from, $to);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $from, $to);
                         }
     | TK_undergone_change[kw] "(" any_attribute[observed] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed);
                         }
 
     /*
@@ -3004,19 +3004,19 @@ derived_attribute_other:
      */
     | TK_entrances[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_exits[kw] "(" any_attribute[observed] "," constant ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant);
                         }
     | TK_transitions[kw] "(" any_attribute[observed] "," constant[from] "," constant[to] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $from, $to);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $from, $to);
                         }
     | TK_changes[kw] "(" any_attribute[observed] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed);
                         }
 
     /*
@@ -3024,35 +3024,35 @@ derived_attribute_other:
      */
     | TK_value_at_first_entrance[kw] "(" any_attribute[observed] "," constant "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $value);
                         }
     | TK_value_at_latest_entrance[kw] "(" any_attribute[observed] "," constant "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $value);
                         }
     | TK_value_at_first_exit[kw] "(" any_attribute[observed] "," constant "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $value);
                         }
     | TK_value_at_latest_exit[kw] "(" any_attribute[observed] "," constant "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $value);
                         }
     | TK_value_at_first_transition[kw] "(" any_attribute[observed] "," constant[from] "," constant[to] "," any_attribute[value]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $from, $to, $value);
                         }
     | TK_value_at_latest_transition[kw] "(" any_attribute[observed] "," constant[from] "," constant[to] "," any_attribute[value]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $from, $to, $value);
                         }
     | TK_value_at_first_change[kw] "(" any_attribute[observed] "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $value);
                         }
     | TK_value_at_latest_change[kw] "(" any_attribute[observed] "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $value);
                         }
 
     /*
@@ -3060,19 +3060,19 @@ derived_attribute_other:
      */
     | TK_value_at_entrances[kw] "(" any_attribute[observed] "," constant "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $value);
                         }
     | TK_value_at_exits[kw] "(" any_attribute[observed] "," constant "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $constant, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $constant, $value);
                         }
     | TK_value_at_transitions[kw] "(" any_attribute[observed] "," constant[from] "," constant[to] "," any_attribute[value]  ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $from, $to, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $from, $to, $value);
                         }
     | TK_value_at_changes[kw] "(" any_attribute[observed] "," any_attribute[value] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, $value);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, $value);
                         }
 
     /*
@@ -3080,11 +3080,11 @@ derived_attribute_other:
      */
     | TK_split[kw] "(" any_attribute[observed] "," SYMBOL[partition] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), $partition);
                         }
     | TK_aggregate[kw] "(" any_attribute[observed] "," SYMBOL[classification] ")"
                         {
-                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_agent_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), static_cast<Symbol *>(nullptr), $classification);
+                            $derived_attribute_other = DerivedAttributeSymbol::create_symbol(pc.get_entity_context(), (token_type)$kw, $observed, static_cast<Symbol *>(nullptr), static_cast<Symbol *>(nullptr), $classification);
                         }
 
     /*
@@ -3092,18 +3092,18 @@ derived_attribute_other:
      */
     | TK_count[function] "(" SYMBOL[multilink] ")"
                         {
-                            $derived_attribute_other = MultilinkAttributeSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, "" );
+                            $derived_attribute_other = MultilinkAttributeSymbol::create_symbol( pc.get_entity_context(), (token_type)$function, $multilink, "" );
                         }
     | aggregate_multilink_function[function] "(" SYMBOL[multilink] ","
                         {
-                            // Tell the scanner not to apply agent scope resolution to the following 'word'
+                            // Tell the scanner not to apply entity scope resolution to the following 'word'
                             // in the input stream, but just return a STRING instead.  That's because the entity context
                             // depends on the nature of the preceding multilink symbol, whose declaration may not yet have been encountered.
                             pc.next_word_is_string = true;
                         }
         STRING[attribute] ")"
                         {
-                            $derived_attribute_other = MultilinkAttributeSymbol::create_symbol( pc.get_agent_context(), (token_type)$function, $multilink, *$attribute );
+                            $derived_attribute_other = MultilinkAttributeSymbol::create_symbol( pc.get_entity_context(), (token_type)$function, $multilink, *$attribute );
                             delete $attribute; // delete the string created using new in scanner
                             $attribute = nullptr;
                         }

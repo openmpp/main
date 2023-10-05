@@ -20,10 +20,10 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    explicit EntityHookSymbol(const Symbol *agent, const Symbol *from, const Symbol *to, int order = 0, omc::location decl_loc = omc::location())
-        : Symbol(symbol_name(from, to), agent, decl_loc)
-        , agent(agent->stable_rp())
-        , pp_agent(nullptr)
+    explicit EntityHookSymbol(const Symbol * ent, const Symbol *from, const Symbol *to, int order = 0, omc::location decl_loc = omc::location())
+        : Symbol(symbol_name(from, to), ent, decl_loc)
+        , entity(ent->stable_rp())
+        , pp_entity(nullptr)
         , from(from->stable_rp())
         , pp_from(nullptr)
         , to(to->stable_rp())
@@ -56,7 +56,7 @@ public:
      *
      * @return true if exists, else false.
      */
-    static bool exists(const Symbol* agent, const Symbol* from, const Symbol* to);
+    static bool exists(const Symbol* ent, const Symbol* from, const Symbol* to);
 
     /**
      * Create auxiliary symbols associated with this symbol
@@ -66,18 +66,18 @@ public:
     void post_parse(int pass);
 
     /**
-     * Reference to pointer to agent.
+     * Reference to pointer to entity.
      * 
      * Stable to symbol morhing during parse phase.
      */
-    Symbol*& agent;
+    Symbol*& entity;
 
     /**
-     * Direct pointer to agent.
+     * Direct pointer to entity.
      * 
      * Set post-parse for convenience.
      */
-    EntitySymbol *pp_agent;
+    EntitySymbol *pp_entity;
 
     /**
      * The 'from' function for the hook (stable to morphing)

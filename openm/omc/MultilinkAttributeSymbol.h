@@ -31,7 +31,7 @@ public:
     /**
      * Constructor.
      *
-     * @param agent     The agent.
+     * @param ent       The entity.
      * @param func      The function, e.g. TK_min_over
      * @param multilink The multilink, e.g. things
      * @param attribute  (Optional) the attribute.
@@ -39,9 +39,9 @@ public:
      *  The 'data_type' argument to the AttributeSymbol constructor is interim and
      *  may be changed once the data type of attribute is known.
      */
-    MultilinkAttributeSymbol(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute)
+    MultilinkAttributeSymbol(const Symbol * ent, token_type func, const Symbol *multilink, const string attribute)
         : MaintainedAttributeSymbol(MultilinkAttributeSymbol::member_name(func, multilink, attribute),
-                        agent,
+                        ent,
                         UnknownTypeSymbol::find() )
         , func(func)
         , multilink(multilink->stable_rp())
@@ -59,19 +59,19 @@ public:
 
     static string member_name(token_type func, const Symbol *multilink, const string attribute);
 
-    static string symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute);
+    static string symbol_name(const Symbol * ent, token_type func, const Symbol *multilink, const string attribute);
 
     /**
      * Create a symbol for a multilink attribute.
      *
-     * @param agent     The containing agent.
+     * @param ent       The containing entity.
      * @param func      The function, e.g. TK_sum_over
      * @param multilink The multilink, e.g. things
      * @param attribute  (Optional) the attribute.
      *
      * @return The symbol.
      */
-    static Symbol * create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute);
+    static Symbol * create_symbol(const Symbol * ent, token_type func, const Symbol *multilink, const string attribute);
 
     /**
      * Create auxiliary symbols associated with this symbol.
@@ -80,7 +80,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     /** The function which computes the current value of the attribute from the multilink */
     EntityFuncSymbol *evaluate_fn;

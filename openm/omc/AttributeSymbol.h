@@ -25,12 +25,12 @@ public:
      * Morphing constructor
      *
      * @param [in,out] sym If non-null, the symbol.
-     * @param agent        The agent.
+     * @param ent          The entity.
      * @param type         The type.
      * @param decl_loc     (Optional) the declaration location.
      */
-    AttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : EntityDataMemberSymbol(sym, agent, type, decl_loc)
+    AttributeSymbol(Symbol *sym, const Symbol *ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : EntityDataMemberSymbol(sym, ent, type, decl_loc)
         , lagged(nullptr)
         , lagged_event_counter(nullptr)
         , side_effects_fn(nullptr)
@@ -45,12 +45,12 @@ public:
      * Constructor by name
      *
      * @param member_name Name of the member.
-     * @param agent       The agent.
+     * @param ent         The entity.
      * @param type        The type.
      * @param decl_loc    (Optional) the declaration location.
      */
-    AttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : EntityDataMemberSymbol(member_name, agent, type, decl_loc)
+    AttributeSymbol(const string member_name, const Symbol *ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : EntityDataMemberSymbol(member_name, ent, type, decl_loc)
         , lagged(nullptr)
         , lagged_event_counter(nullptr)
         , side_effects_fn(nullptr)
@@ -66,9 +66,9 @@ public:
      */
     void create_auxiliary_symbols();
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
-    CodeBlock cxx_definition_agent();
+    CodeBlock cxx_definition_entity();
 
     /**
      * Change the data type in the post-parse phase.

@@ -38,10 +38,10 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableSymbol(Symbol *sym, const Symbol *agent, omc::location decl_loc = omc::location())
+    EntityTableSymbol(Symbol *sym, const Symbol * ent, omc::location decl_loc = omc::location())
         : TableSymbol(sym, decl_loc)
-        , agent(agent->stable_rp())
-        , pp_agent(nullptr)
+        , entity(ent->stable_rp())
+        , pp_entity(nullptr)
         , increment(nullptr)
         , current_cell_fn(nullptr)
         , init_increment_fn(nullptr)
@@ -98,18 +98,18 @@ public:
     }
 
     /**
-     * Reference to pointer to agent.
+     * Reference to pointer to entity.
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol*& agent;
+    Symbol*& entity;
 
     /**
-     * Direct pointer to agent.
+     * Direct pointer to entity.
      * 
      * For use post-parse.
      */
-    EntitySymbol *pp_agent;
+    EntitySymbol *pp_entity;
 
     /**
      * The increment symbol for the table

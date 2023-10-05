@@ -29,25 +29,25 @@ void AttributeSymbol::create_auxiliary_symbols()
 {
     assert(!side_effects_fn); // logic guarantee
     side_effects_fn = new EntityFuncSymbol("om_side_effects_" + name,
-                                          agent,
+                                          entity,
                                           "void",
                                           data_type->name + " om_old, " + data_type->name + " om_new");
     assert(side_effects_fn); // out of memory check
-    side_effects_fn->doc_block = doxygen_short("Implement side effects of changing " + name + " in entity " + agent->name + ".");
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of changing " + name + " in entity " + entity->name + ".");
 
     assert(!notify_fn); // logic guarantee
     notify_fn = new EntityFuncSymbol("om_notify_" + name,
-                                          agent,
+                                          entity,
                                           "void",
                                           "");
     assert(notify_fn); // out of memory check
-    notify_fn->doc_block = doxygen_short("Implement notification before changing " + name + " in entity " + agent->name + ".");
+    notify_fn->doc_block = doxygen_short("Implement notification before changing " + name + " in entity " + entity->name + ".");
 }
 
-CodeBlock AttributeSymbol::cxx_declaration_agent()
+CodeBlock AttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += "static const std::string om_name_" + name + ";";
@@ -55,13 +55,13 @@ CodeBlock AttributeSymbol::cxx_declaration_agent()
     return h;
 }
 
-CodeBlock AttributeSymbol::cxx_definition_agent()
+CodeBlock AttributeSymbol::cxx_definition_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
+    CodeBlock c = super::cxx_definition_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += "const std::string " + pp_agent->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
+    c += "const std::string " + pp_entity->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
 
     return c;
 }
@@ -100,7 +100,7 @@ void AttributeSymbol::create_lagged()
     }
 
     // lagged stores in same type as this attribute
-    lagged = new EntityInternalSymbol(lagged_name, agent, data_type);
+    lagged = new EntityInternalSymbol(lagged_name, entity, data_type);
     lagged->provenance = name + " (lagged)";
     // note parent attribute for post-parse type resolution in case data_type is unknown
     lagged->parent = this->stable_pp();
@@ -108,7 +108,7 @@ void AttributeSymbol::create_lagged()
     // lagged event counter stores in same type as global event counter (big_counter)
     auto *typ = NumericSymbol::find(token::TK_big_counter);
     assert(typ); // initialization guarantee
-    lagged_event_counter = new EntityInternalSymbol(lagged_counter_name, agent, typ);
+    lagged_event_counter = new EntityInternalSymbol(lagged_counter_name, entity, typ);
     lagged_event_counter->provenance = name + " (counter at lagged)";
 
     // Add side-effect code to maintain lagged value
@@ -192,8 +192,8 @@ void AttributeSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // Add this attribute to the agent's list of all callback members
-        pp_agent->pp_callback_members.push_back(this);
+        // Add this attribute to the entity's list of all callback members
+        pp_entity->pp_callback_members.push_back(this);
         break;
     }
     case ePopulateDependencies:
@@ -208,7 +208,7 @@ void AttributeSymbol::post_parse(int pass)
                 c += "double old_value = (double)om_old;";
                 c += "double new_value = (double)om_new;";
                 c += "event_trace_msg("
-                    "\"" + agent->name + "\", "
+                    "\"" + entity->name + "\", "
                     "(int)entity_id, "
                     "(double)age.direct_get(), "
                     "GetCaseSeed(), "
@@ -228,7 +228,7 @@ void AttributeSymbol::post_parse(int pass)
                 c += "auto new_ptr = om_new.get();";
                 c += "double new_value = new_ptr ? (double)new_ptr->entity_id : -1.0;";
                 c += "event_trace_msg("
-                        "\"" + agent->name + "\", "
+                        "\"" + entity->name + "\", "
                         "(int)entity_id, "
                         "(double)age.direct_get(), "
                         "GetCaseSeed(), "
@@ -244,7 +244,7 @@ void AttributeSymbol::post_parse(int pass)
                 c += "if (new_ptr && BaseEntity::event_trace_select_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(new_ptr->entity_id) == 0) {";
                 c +=      "BaseEntity::event_trace_selected_entities.insert(new_ptr->entity_id);";
                 c +=      "event_trace_msg("
-                            "\"" + agent->name + "\", "
+                            "\"" + entity->name + "\", "
                             "(int)entity_id, "
                             "(double)age.direct_get(), "
                             "GetCaseSeed(), "

@@ -23,23 +23,23 @@ string LinkToAttributeSymbol::member_name(const Symbol* link, const string attri
 }
 
 // static
-string LinkToAttributeSymbol::symbol_name(const Symbol* agent_context, const Symbol* link, const string attribute)
+string LinkToAttributeSymbol::symbol_name(const Symbol* ent_cntxt, const Symbol* link, const string attribute)
 {
     string member = LinkToAttributeSymbol::member_name(link, attribute);
-    string result = Symbol::symbol_name(member, agent_context);
+    string result = Symbol::symbol_name(member, ent_cntxt);
     return result;
 }
 
 // static
-Symbol *LinkToAttributeSymbol::create_symbol(const Symbol* agent_context, const Symbol* link, const string attribute)
+Symbol *LinkToAttributeSymbol::create_symbol(const Symbol* ent_cntxt, const Symbol* link, const string attribute)
 {
     Symbol *sym = nullptr;
-    string nm = LinkToAttributeSymbol::symbol_name(agent_context, link, attribute);
+    string nm = LinkToAttributeSymbol::symbol_name(ent_cntxt, link, attribute);
     auto it = symbols.find(nm);
     if (it != symbols.end())
         sym = it->second;
     else
-        sym = new LinkToAttributeSymbol(agent_context, link, attribute);
+        sym = new LinkToAttributeSymbol(ent_cntxt, link, attribute);
 
     return sym;
 }
@@ -53,30 +53,30 @@ void LinkToAttributeSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to agent for use post-parse
-        pp_agent_context = dynamic_cast<EntitySymbol *> (pp_symbol(agent_context));
-        assert(pp_agent_context); // parser guarantee
+        // assign direct pointer to entity for use post-parse
+        pp_entity_context = dynamic_cast<EntitySymbol *> (pp_symbol(entity_context));
+        assert(pp_entity_context); // parser guarantee
 
         // assign direct pointer to link for use post-parse
         pp_link = dynamic_cast<LinkAttributeSymbol *> (pp_symbol(link));
         assert(pp_link); // parser guarantee (link statement)
 
         // assign direct pointer to attribute in entity at other end of link
-        Symbol *agent = nullptr;
+        Symbol * ent = nullptr;
         if (pp_link->reciprocal_link) {
             // is a one-to-one link
             auto reciprocal = pp_link->reciprocal_link;
-            agent = reciprocal->agent;
-            assert(agent); // grammar guarantee (link statement)
+            ent = reciprocal->entity;
+            assert(ent); // grammar guarantee (link statement)
         }
         else {
             // is a one-to-many link
             assert(pp_link->reciprocal_multilink); // grammar guarantee (must be either link or multilink)
             auto reciprocal = pp_link->reciprocal_multilink;
-            agent = reciprocal->agent;
-            assert(agent); // grammar guarantee (link statement)
+            ent = reciprocal->entity;
+            assert(ent); // grammar guarantee (link statement)
         }
-        auto sym = Symbol::get_symbol(attribute, agent);
+        auto sym = Symbol::get_symbol(attribute, ent);
         auto av = dynamic_cast<AttributeSymbol *> (sym);
         if (!av) {
             pp_error(LT("error : invalid member '") + attribute + LT("' of link '") + pp_link->name + LT("'"));

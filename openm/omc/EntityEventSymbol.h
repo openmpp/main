@@ -19,8 +19,8 @@ using namespace std;
 
 /**
 * Event time member symbol for an event.
-* Abstracts a member of an agent class which stores the event time
-* of an agent event.
+* Abstracts a member of an entity class which stores the event time
+* of an entity event.
 */
 
 class EntityEventSymbol : public EntityDataMemberSymbol
@@ -31,8 +31,8 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityEventSymbol(const string evt_name, const Symbol *agent, Symbol *tfs, Symbol *ifs, bool is_developer_supplied, int event_priority, omc::location decl_loc = omc::location())
-        : EntityDataMemberSymbol(evt_name, agent, NumericSymbol::find(token::TK_Time), decl_loc)
+    EntityEventSymbol(const string evt_name, const Symbol * ent, Symbol *tfs, Symbol *ifs, bool is_developer_supplied, int event_priority, omc::location decl_loc = omc::location())
+        : EntityDataMemberSymbol(evt_name, ent, NumericSymbol::find(token::TK_Time), decl_loc)
         , event_name(ifs->name)
         , event_priority(event_priority)
         , event_memory(false)
@@ -44,7 +44,7 @@ public:
     }
 
     /**
-     * Create auxiliary symbols associated with this agent event.
+     * Create auxiliary symbols associated with this entity event.
      *
      * @param tfs The time function symbol.
      * @param ifs The implement function symbol.
@@ -62,7 +62,7 @@ public:
      * Name of the event.
      * 
      * event_name is actually the same as the name of the event implement function.  The name of the
-     * EntityEventSymbol is different - it has a om_time_ prefix.  That's also the name of the agent
+     * EntityEventSymbol is different - it has a om_time_ prefix.  That's also the name of the entity
      * member which holds the time of the event.
      */
     string event_name;
@@ -81,7 +81,7 @@ public:
         return token_to_string(token::TK_time_infinite);
     }
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     /** The time function of the event.*/
     EntityFuncSymbol *time_func;
@@ -137,7 +137,7 @@ public:
 
     /**
      * Numeric identifier for the event. The numeric identifier is the ordinal of the event name
-     * among all events in the model.  If two agents have an event with the same name, \a
+     * among all events in the model.  If two entities have an event with the same name, \a
      * pp_event_id will be identical for those two events.  The event id participates in
      * resolution of tied events, after event time and event priority.
      */

@@ -13,7 +13,7 @@ using namespace std;
 
 /**
 * Internal data symbol.
-* Abstracts a member of an agent class which stores information
+* Abstracts a member of an entity class which stores information
 * used internally by om.  These members are not accessible to
 * developer code, and have no side-effects.
 */
@@ -26,8 +26,8 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityInternalSymbol(const string member_name, const Symbol *agent, const Symbol *type, const string initializer = "")
-        : EntityDataMemberSymbol(member_name, agent, type)
+    EntityInternalSymbol(const string member_name, const Symbol * ent, const Symbol *type, const string initializer = "")
+        : EntityDataMemberSymbol(member_name, ent, type)
         , initializer(initializer)
     {
         provenance = member_name;
@@ -37,7 +37,7 @@ public:
 
     CodeBlock cxx_initialization_expression(bool type_default) const;
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     string pretty_name() const
     {

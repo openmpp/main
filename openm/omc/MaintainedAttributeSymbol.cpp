@@ -12,20 +12,20 @@
 
 using namespace std;
 
-CodeBlock MaintainedAttributeSymbol::cxx_declaration_agent()
+CodeBlock MaintainedAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
     return h;
 }
 
-CodeBlock MaintainedAttributeSymbol::cxx_definition_agent()
+CodeBlock MaintainedAttributeSymbol::cxx_definition_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
+    CodeBlock c = super::cxx_definition_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
@@ -42,7 +42,7 @@ void MaintainedAttributeSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Add this attribute to the entity's list of all maintained aattributes
-        pp_agent->pp_maintained_attributes.push_back(this);
+        pp_entity->pp_maintained_attributes.push_back(this);
         break;
     }
     default:

@@ -19,10 +19,10 @@ CodeBlock EntityForeignMemberSymbol::cxx_initialization_expression(bool type_def
     return c;
 }
 
-CodeBlock EntityForeignMemberSymbol::cxx_declaration_agent()
+CodeBlock EntityForeignMemberSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += pp_data_type->name + " " + name + ";";

@@ -38,8 +38,8 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    LinkAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : AttributeSymbol(sym, agent, type, decl_loc)
+    LinkAttributeSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : AttributeSymbol(sym, ent, type, decl_loc)
         , reciprocal_link(nullptr)
         , reciprocal_multilink(nullptr)
     {
@@ -47,7 +47,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     /**
      * The reciprocal link if one-to-one

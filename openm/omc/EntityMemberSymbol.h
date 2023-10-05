@@ -18,17 +18,17 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityMemberSymbol(Symbol *sym, const Symbol *agent, omc::location decl_loc = omc::location())
+    EntityMemberSymbol(Symbol *sym, const Symbol * entity, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
-        , agent(agent->stable_rp())
-        , pp_agent(nullptr)
+        , entity(entity->stable_rp())
+        , pp_entity(nullptr)
     {
     }
 
-    EntityMemberSymbol(const string name, const Symbol *agent, omc::location decl_loc = omc::location())
-        : Symbol(name, agent, decl_loc)
-        , agent(agent->stable_rp())
-        , pp_agent(nullptr)
+    EntityMemberSymbol(const string name, const Symbol * entity, omc::location decl_loc = omc::location())
+        : Symbol(name, entity, decl_loc)
+        , entity(entity->stable_rp())
+        , pp_entity(nullptr)
     {
     }
 
@@ -36,20 +36,20 @@ public:
     void post_parse(int pass);
 
     /**
-    * Reference to pointer to agent.
+    * Reference to pointer to entity.
     *
-    * Stable to symbol morhing during parse phase.
+    * Stable to symbol morphing during parse phase.
     */
 
-    Symbol*& agent;
+    Symbol*& entity;
 
     /**
-    * Direct pointer to agent.
+    * Direct pointer to entity.
     *
     * Set post-parse for convenience.
     */
 
-    EntitySymbol *pp_agent;
+    EntitySymbol *pp_entity;
 };
 
 

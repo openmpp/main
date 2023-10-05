@@ -27,7 +27,7 @@ unordered_map<string, string> IdentityAttributeSymbol::anonymous_key_to_name;
 void IdentityAttributeSymbol::create_auxiliary_symbols()
 {
     // Create an EntityFuncSymbol for the expression function
-    expression_fn = new EntityFuncSymbol(name + "_update_identity", agent);
+    expression_fn = new EntityFuncSymbol(name + "_update_identity", entity);
     assert(expression_fn); // out of memory check
     expression_fn->doc_block = doxygen_short("Evaluate and assign expression for " + name + ".");
     expression_fn->has_line_directive = true; // the body will contain a #line directive
@@ -75,7 +75,7 @@ void IdentityAttributeSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Add this identity attribute symbol to the entity's list of all such symbols
-        pp_agent->pp_identity_attributes.push_back(this);
+        pp_entity->pp_identity_attributes.push_back(this);
         
         // Perform post-parse operations to each element in the expression tree
         post_parse_traverse2(root);
@@ -145,13 +145,13 @@ void IdentityAttributeSymbol::post_parse(int pass)
         for (auto lav : pp_links_used) {
             CodeBlock& c = lav->side_effects_fn->func_body;
             c += injection_description();
-            c += "// Maintain identity for '" + unique_name + "' when link changed to different agent";
+            c += "// Maintain identity for '" + unique_name + "' when link changed to different entity";
             c += expression_fn->name + "();";
         }
 
         // Initialization before entity enters simulation
         {
-            auto fn = pp_agent->initialize_identity_attributes_fn;
+            auto fn = pp_entity->initialize_identity_attributes_fn;
             assert(fn);
             CodeBlock& c = fn->func_body;
             c += injection_description();
@@ -387,10 +387,10 @@ void IdentityAttributeSymbol::build_body_expression()
 }
 
 
-CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
+CodeBlock IdentityAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
@@ -398,7 +398,7 @@ CodeBlock IdentityAttributeSymbol::cxx_declaration_agent()
     h += "typedef Attribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
-        + agent->name + ", "
+        + entity->name + ", "
         + "&om_name_" + name + ", "
         + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "

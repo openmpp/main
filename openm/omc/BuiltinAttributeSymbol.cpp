@@ -24,7 +24,7 @@ void BuiltinAttributeSymbol::post_parse(int pass)
         {
             if (name == "age") {
                 // add side-effect to attribute 'time'
-                AttributeSymbol *av = pp_agent->pp_time;
+                AttributeSymbol *av = pp_entity->pp_time;
                 assert(av);
                 CodeBlock& time_cxx = av->side_effects_fn->func_body;
                 time_cxx += injection_description();
@@ -40,10 +40,10 @@ void BuiltinAttributeSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock BuiltinAttributeSymbol::cxx_declaration_agent()
+CodeBlock BuiltinAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
@@ -52,7 +52,7 @@ CodeBlock BuiltinAttributeSymbol::cxx_declaration_agent()
     h += "typedef AssignableAttribute<"
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
-        + agent->name + ", "
+        + entity->name + ", "
         + "&om_name_" + name + ", "
         + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "

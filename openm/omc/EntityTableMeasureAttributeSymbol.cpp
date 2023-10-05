@@ -47,7 +47,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
                 throw HelperException(LT("error : %s is not an attribute in table %s"), attribute->name.c_str(), table->name.c_str());
             }
             string member_name = in_member_name();
-            auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
+            auto sym = new EntityInternalSymbol(member_name, av->entity, av->data_type);
             sym->provenance = table->name + " (in) " + attribute->name;
             // note parent attribute for post-parse type resolution in case data_type is unknown
             sym->parent = av->stable_pp();
@@ -61,7 +61,7 @@ void EntityTableMeasureAttributeSymbol::post_parse(int pass)
                 throw HelperException(LT("error : %s is not an attribute in table %s"), attribute->name.c_str(), table->name.c_str());
             }
             string member_name = in_event_member_name();
-            auto sym = new EntityInternalSymbol(member_name, av->agent, av->data_type);
+            auto sym = new EntityInternalSymbol(member_name, av->entity, av->data_type);
             sym->provenance = table->name + " (inevent) " + attribute->name;
             // note parent attribute for post-parse type resolution in case data_type is unknown
             sym->parent = av->stable_pp();

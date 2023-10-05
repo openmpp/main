@@ -93,7 +93,7 @@ list<LanguageSymbol *> Symbol::pp_all_languages;
 
 list<StringSymbol *> Symbol::pp_all_strings;
 
-list<EntitySymbol *> Symbol::pp_all_agents;
+list<EntitySymbol *> Symbol::pp_all_entities;
 
 list<EntitySetSymbol *> Symbol::pp_all_entity_sets;
 
@@ -737,13 +737,13 @@ void Symbol::post_parse(int pass)
         }
 
         // Integrity check (debugging omc only)
-        // A name can be mis-identified as agent context when it should be global.
+        // A name can be mis-identified as entity context when it should be global.
         // This situation is an intrinsic consequence of the 'distributed declaration' feature of the language.
         if (is_base_symbol()) {
             // This Symbol was never declared.
             if (name != unique_name) {
                 // Example: name is "SEX" and unique_name is "Person::SEX".
-                // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
+                // The lexer provisionally assigned a unique name with entity context to this symbol (e.g. "Person::SEX")
                 // because no global symbol with that name existed in the symbol table at the time.
                 // As it turned out, the source code contained no declared symbol with this name in entity context.
  
@@ -758,7 +758,7 @@ void Symbol::post_parse(int pass)
                     // This is the symbol returned by pp_symbol()
                 }
                 else {
-                    // The source code contained an agent-qualified name token which was never declared,
+                    // The source code contained an entity-qualified name token which was never declared,
                     // and no global with the same name exists.
                     pp_message(LT("message : '") + name + LT("' is foreign to omc"));
                     // OK to continue
@@ -810,13 +810,13 @@ void Symbol::post_parse(int pass)
     }
 }
 
-CodeBlock Symbol::cxx_declaration_agent()
+CodeBlock Symbol::cxx_declaration_entity()
 {
     // An empty CodeBlock to start with
     return CodeBlock();
 }
 
-CodeBlock Symbol::cxx_definition_agent()
+CodeBlock Symbol::cxx_definition_entity()
 {
     // An empty CodeBlock to start with
     return CodeBlock();
@@ -1071,15 +1071,15 @@ bool Symbol::exists( const string& unm )
     return symbols.count( unm ) == 0 ? false : true;
 }
 
-bool Symbol::exists( const string& nm, const Symbol *agent )
+bool Symbol::exists( const string& nm, const Symbol * ent)
 {
-    string unm = symbol_name( nm, agent );
+    string unm = symbol_name( nm, ent);
     return exists( unm );
 }
 
-string Symbol::symbol_name( const string& member, const Symbol *agent )
+string Symbol::symbol_name( const string& member, const Symbol * ent)
 {
-    return agent->name + "::" + member;
+    return ent->name + "::" + member;
 }
 
 
@@ -1092,9 +1092,9 @@ Symbol *Symbol::get_symbol(const string& unm)
     return sym;
 }
 
-Symbol *Symbol::get_symbol( const string& member, const Symbol *agent )
+Symbol *Symbol::get_symbol( const string& member, const Symbol * ent)
 {
-    string unm = Symbol::symbol_name( member, agent );
+    string unm = Symbol::symbol_name( member, ent);
     return Symbol::get_symbol(unm);
 }
 
@@ -1105,10 +1105,10 @@ Symbol *Symbol::create_symbol(const string& unm)
     return sym;
 }
 
-Symbol *Symbol::create_symbol( const string& member, const Symbol *agent )
+Symbol *Symbol::create_symbol( const string& member, const Symbol * ent)
 {
-    Symbol *sym = Symbol::get_symbol(member, agent);
-    if (!sym) sym = new Symbol(member, agent);
+    Symbol *sym = Symbol::get_symbol(member, ent);
+    if (!sym) sym = new Symbol(member, ent);
     return sym;
 }
 
@@ -1140,13 +1140,13 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
     Symbol *sym = *pp_sym;
     assert(sym);
 
-    // Identify problem  cases where a name was mis-identified as agent context rather than global context.
+    // Identify problem  cases where a name was mis-identified as entity context rather than global context.
     // This situation can arise as an instrinsic consequence of the 'distributed declaration' feature of the language.
     if (sym->is_base_symbol()) {
         // This Symbol was never declared, so there's an issue.
         if (sym->name != sym->unique_name) {
             // Example: name is "SEX" and unique_name is "Person::SEX".
-            // The lexer provisionally assigned a unique name with agent context to this symbol (e.g. "Person::SEX")
+            // The lexer provisionally assigned a unique name with entity context to this symbol (e.g. "Person::SEX")
             // because no global symbol with that name existed in the symbol table at the time.
             // As it turned out, the source code contained no declared symbol with this name in entity context.
 
@@ -1159,7 +1159,7 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
                 assert(sym); // logic guarantee
             }
             else {
-                // The source code contained an agent-qualified name token which was never declared,
+                // The source code contained an entity-qualified name token which was never declared,
                 // and no global with the same name exists.
                 sym->pp_warning(LT("warning : '") + sym->name + LT("' was never declared"));
                 // OK to continue
@@ -1422,10 +1422,10 @@ void Symbol::post_parse_all()
                 auto& ccf = et->current_cell_fn;
                 auto& iif = et->init_increment_fn;
                 auto& pif = et->push_increment_fn;
-                auto ent = et->pp_agent;
-                ent->pp_agent_funcs.remove_if([ccf, iif, pif](EntityFuncSymbol* x) { return x == ccf || x == iif || x == pif; });
+                auto ent = et->pp_entity;
+                ent->pp_functions.remove_if([ccf, iif, pif](EntityFuncSymbol* x) { return x == ccf || x == iif || x == pif; });
                 // Remove this table from the entity's list of tables.
-                ent->pp_entity_tables.remove_if([et](EntityTableSymbol* x) { return x == et; });
+                ent->pp_tables.remove_if([et](EntityTableSymbol* x) { return x == et; });
                 // Remove the table's increment from the entity's list of callback members (used to generate offsets)
                 auto& incr = et->increment;
                 auto incr_as_ems = dynamic_cast<EntityMemberSymbol*>(incr);
@@ -1434,7 +1434,7 @@ void Symbol::post_parse_all()
                 // Remove the table's increment from the entity's list of data members (used to declare/define members)
                 auto incr_as_dms = dynamic_cast<EntityDataMemberSymbol*>(incr);
                 assert(incr_as_dms); // is upcast in hirrarchy to a more base type
-                ent->pp_agent_data_members.remove_if([incr_as_dms](EntityDataMemberSymbol* x) { return x == incr_as_dms; });
+                ent->pp_data_members.remove_if([incr_as_dms](EntityDataMemberSymbol* x) { return x == incr_as_dms; });
             }
         }
         // remove all suppressed entity tables from the master list of entity tables
@@ -1450,7 +1450,7 @@ void Symbol::post_parse_all()
     pp_all_strings.sort([](StringSymbol *a, StringSymbol *b) { return a->name < b->name; });
     pp_all_types0.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_types1.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
-    pp_all_agents.sort([](EntitySymbol *a, EntitySymbol *b) { return a->name < b->name; });
+    pp_all_entities.sort([](EntitySymbol *a, EntitySymbol *b) { return a->name < b->name; });
     pp_all_parameters.sort( [] (ParameterSymbol *a, ParameterSymbol *b) { return a->name < b->name ; } );
     pp_all_entity_sets.sort( [] (EntitySetSymbol *a, EntitySetSymbol *b) { return a->name < b->name ; } );
     pp_all_tables.sort( [] (TableSymbol *a, TableSymbol *b) { return a->name < b->name ; } );
@@ -1513,7 +1513,7 @@ void Symbol::post_parse_all()
 
     {
         int id = 0;
-        for (auto ent : pp_all_agents) {
+        for (auto ent : pp_all_entities) {
             ent->pp_entity_id = id;
             ++id;
         }
@@ -1535,16 +1535,16 @@ void Symbol::post_parse_all()
     }
 
     // Sort collections in entities in lexicographic order
-    for ( auto agent : pp_all_agents ) {
-        agent->pp_agent_data_members.sort( [] (EntityDataMemberSymbol *a, EntityDataMemberSymbol *b) { return a->name < b->name ; } );
-        agent->pp_callback_members.sort( [] (EntityMemberSymbol *a, EntityMemberSymbol *b) { return a->name < b->name ; } );
-        agent->pp_maintained_attributes.sort( [] (MaintainedAttributeSymbol *a, MaintainedAttributeSymbol *b) { return a->name < b->name ; } );
-        agent->pp_identity_attributes.sort( [] (IdentityAttributeSymbol *a, IdentityAttributeSymbol *b) { return a->name < b->name ; } );
-        agent->pp_agent_events.sort( [] (EntityEventSymbol *a, EntityEventSymbol *b) { return a->event_name < b->event_name ; } );
-        agent->pp_agent_funcs.sort( [] (EntityFuncSymbol *a, EntityFuncSymbol *b) { return a->name < b->name ; } );
-        agent->pp_entity_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
-        agent->pp_link_attributes.sort( [] (LinkAttributeSymbol *a, LinkAttributeSymbol *b) { return a->name < b->name ; } );
-        agent->pp_multilink_members.sort( [] (EntityMultilinkSymbol *a, EntityMultilinkSymbol *b) { return a->name < b->name ; } );
+    for ( auto ent : pp_all_entities ) {
+        ent->pp_data_members.sort( [] (EntityDataMemberSymbol *a, EntityDataMemberSymbol *b) { return a->name < b->name ; } );
+        ent->pp_callback_members.sort( [] (EntityMemberSymbol *a, EntityMemberSymbol *b) { return a->name < b->name ; } );
+        ent->pp_maintained_attributes.sort( [] (MaintainedAttributeSymbol *a, MaintainedAttributeSymbol *b) { return a->name < b->name ; } );
+        ent->pp_identity_attributes.sort( [] (IdentityAttributeSymbol *a, IdentityAttributeSymbol *b) { return a->name < b->name ; } );
+        ent->pp_events.sort( [] (EntityEventSymbol *a, EntityEventSymbol *b) { return a->event_name < b->event_name ; } );
+        ent->pp_functions.sort( [] (EntityFuncSymbol *a, EntityFuncSymbol *b) { return a->name < b->name ; } );
+        ent->pp_tables.sort( [] (EntityTableSymbol *a, EntityTableSymbol *b) { return a->name < b->name ; } );
+        ent->pp_link_attributes.sort( [] (LinkAttributeSymbol *a, LinkAttributeSymbol *b) { return a->name < b->name ; } );
+        ent->pp_multilink_members.sort( [] (EntityMultilinkSymbol *a, EntityMultilinkSymbol *b) { return a->name < b->name ; } );
     }
 
     // Sort collections in tables
@@ -1562,17 +1562,17 @@ void Symbol::post_parse_all()
     }
 
     {
-        // Create the amalgamated set of event names, in all agents, sorted lexicographically.
-        for (auto *agent : pp_all_agents) {
-            for (auto *event : agent->pp_agent_events) {
+        // Create the amalgamated set of event names, in all entities, sorted lexicographically.
+        for (auto * ent : pp_all_entities) {
+            for (auto *event : ent->pp_events) {
                 string str = event->event_name;
                 pp_all_event_names.insert(str);
             }
         }
 
         // For each event in the model, find the index in the sorted set, and assign it as event_id
-        for (auto *agent : pp_all_agents) {
-            for (auto *event : agent->pp_agent_events) {
+        for (auto * ent : pp_all_entities) {
+            for (auto *event : ent->pp_events) {
                 string str = event->event_name;
                 auto iter = pp_all_event_names.find(str);
                 event->pp_event_id = distance(pp_all_event_names.begin(), iter);
@@ -1582,8 +1582,8 @@ void Symbol::post_parse_all()
 
     {
         // Create the amalgamated set of visible member names, in all entities, sorted lexicographically.
-        for (auto* entity : pp_all_agents) {
-            for (auto* dm : entity->pp_agent_data_members) {
+        for (auto* entity : pp_all_entities) {
+            for (auto* dm : entity->pp_data_members) {
                 if (dm->is_visible_attribute() || dm->is_multilink()) {
                     pp_visible_member_names.insert(dm->name);
                 }
@@ -1591,8 +1591,8 @@ void Symbol::post_parse_all()
         }
 
         // For each visible member in the model, find the index in the (sorted) set, and assign it as member_id
-        for (auto* entity : pp_all_agents) {
-            for (auto* dm : entity->pp_agent_data_members) {
+        for (auto* entity : pp_all_entities) {
+            for (auto* dm : entity->pp_data_members) {
                 if (dm->is_visible_attribute() || dm->is_multilink()) {
                     auto iter = pp_visible_member_names.find(dm->name);
                     dm->pp_member_id = distance(pp_visible_member_names.begin(), iter);
@@ -1605,26 +1605,26 @@ void Symbol::post_parse_all()
     // Modgen event numbers are numbered sequentially starting at 0 within each actor
     // by Modgen event name in lexicographic order.
     // The event which implements self-scheduling events is assigned the last number
-    for (auto *agent : pp_all_agents) {
-        set<string> agent_event_names;
-        for ( auto *event : agent->pp_agent_events ) {
-            if (event == agent->ss_event) {
+    for (auto * ent : pp_all_entities) {
+        set<string> entity_event_names;
+        for ( auto *event : ent->pp_events ) {
+            if (event == ent->ss_event) {
                 // do not insert self-scheduling event into the set of event names
                 continue;
             }
             string str = event->pp_modgen_name();
-            agent_event_names.insert( str );
+            entity_event_names.insert( str );
         }
-        for (auto *event : agent->pp_agent_events) {
-            if (event == agent->ss_event) {
+        for (auto *event : ent->pp_events) {
+            if (event == ent->ss_event) {
                 // special case for self-scheduling event: assign 1 greater
                 // than the highest numbered event
-                event->pp_modgen_event_num = agent_event_names.size();
+                event->pp_modgen_event_num = entity_event_names.size();
                 continue;
             }
             string str = event->pp_modgen_name();
-            auto iter = agent_event_names.find(str);
-            event->pp_modgen_event_num = distance(agent_event_names.begin(), iter);
+            auto iter = entity_event_names.find(str);
+            event->pp_modgen_event_num = distance(entity_event_names.begin(), iter);
         }
     }
 
@@ -1641,8 +1641,8 @@ void Symbol::post_parse_all()
         auto sym = pr.second;
         if (auto dav = dynamic_cast<DerivedAttributeSymbol *>(sym)) {
             if (dav->is_self_scheduling()) {
-                dav->numeric_id = dav->pp_agent->next_ss_id;
-                ++(dav->pp_agent->next_ss_id);
+                dav->numeric_id = dav->pp_entity->next_ss_id;
+                ++(dav->pp_entity->next_ss_id);
             }
         }
     }
@@ -1660,7 +1660,7 @@ void Symbol::post_parse_all()
         int conversions = 0;
         do {
             conversions = 0;
-            for (auto* ent : pp_all_agents) { // entities
+            for (auto* ent : pp_all_entities) { // entities
                 for (auto* ma : ent->pp_maintained_attributes) { // maintained attributes
                     for (auto* pa : ma->pp_dependent_attributes_timelike_propagating) { // attributes which propagate time-like property to this maintaied attribute
                         if (pa->is_time_like) {
@@ -1814,7 +1814,7 @@ void Symbol::post_parse_all()
 
         // For each entity in the model, determine the code injection order
         // of its maintained attributes.
-        for (auto* ent : pp_all_agents) {
+        for (auto* ent : pp_all_entities) {
 
             // Construct working multimap map 'dpnd' containing all dependencies
             // of maintained attributes on other maintained attributes.
@@ -1947,13 +1947,13 @@ void Symbol::post_parse_all()
     }
 
     // Terminate the event time function body for the self-scheduling event (if present)
-    for (auto *agent : pp_all_agents) {
-        agent->finish_ss_event();
+    for (auto * ent : pp_all_entities) {
+        ent->finish_ss_event();
     }
 
     // Determine enumeration metadata required by published entity attributes
-    for (auto * agent : pp_all_agents) {
-        agent->post_parse_mark_enumerations();
+    for (auto * ent : pp_all_entities) {
+        ent->post_parse_mark_enumerations();
     }
 
     // Process PreSimulation, PostSimulation, UserTables
@@ -2471,7 +2471,7 @@ void Symbol::defaults_and_options()
         auto iter = options.find(key);
         if (iter != options.end()) {
             // Can't validate or process this option here
-            // because pp_all_agents has not bben created by post_parse_all
+            // because pp_all_entities has not bben created by post_parse_all
             // Note: multiple entries allowed, unlike other options.
         }
     }
@@ -3002,9 +3002,9 @@ std::list<std::string> Symbol::build_event_dependencies_csv(void)
 
     csv.push_back("entity,event,attribute");
 
-    for (auto ent : pp_all_agents) {
-        if (ent->pp_agent_events.size() > 0) {
-            for (auto& evt : ent->pp_agent_events) {
+    for (auto ent : pp_all_entities) {
+        if (ent->pp_events.size() > 0) {
+            for (auto& evt : ent->pp_events) {
                 if (!evt->is_developer_supplied) {
                     // skip the generated self-scheduling event
                     continue;

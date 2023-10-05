@@ -35,26 +35,26 @@ void EntityTableSymbol::create_auxiliary_symbols()
 {
     {
         assert(!increment); // initialization guarantee
-        increment = new EntityIncrementSymbol("om_" + name + "_incr", agent, this);
+        increment = new EntityIncrementSymbol("om_" + name + "_incr", entity, this);
     }
 
     {
         assert(!current_cell_fn); // initialization guarantee
-        current_cell_fn = new EntityFuncSymbol("om_" + name + "_current_cell", agent, "size_t", "");
+        current_cell_fn = new EntityFuncSymbol("om_" + name + "_current_cell", entity, "size_t", "");
         assert(current_cell_fn); // out of memory check
-        current_cell_fn->doc_block = doxygen_short("Compute the current cell index of table " + name + " using attributes in the " + agent->name + " entity.");
+        current_cell_fn->doc_block = doxygen_short("Compute the current cell index of table " + name + " using attributes in the " + entity->name + " entity.");
     }
 
     {
         assert(!init_increment_fn); // initialization guarantee
-        init_increment_fn = new EntityFuncSymbol("om_" + name + "_init_increment", agent, "void", "int pending, big_counter pending_event_counter");
+        init_increment_fn = new EntityFuncSymbol("om_" + name + "_init_increment", entity, "void", "int pending, big_counter pending_event_counter");
         assert(init_increment_fn); // out of memory check
         init_increment_fn->doc_block = doxygen_short("Initialize the increment for the active table cell in " + name + ".");
     }
 
     {
         assert(!push_increment_fn); // initialization guarantee
-        push_increment_fn = new EntityFuncSymbol("om_" + name + "_push_increment", agent, "void", "size_t cell_in, int pending, big_counter pending_event_counter");
+        push_increment_fn = new EntityFuncSymbol("om_" + name + "_push_increment", entity, "void", "size_t cell_in, int pending, big_counter pending_event_counter");
         assert(push_increment_fn); // out of memory check
         push_increment_fn->doc_block = doxygen_short("Finalize the increment and push it to the accumulators in " + name + ".");
     }
@@ -88,9 +88,9 @@ void EntityTableSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
-        assert(pp_agent); // parser guarantee
+        // assign direct pointer to entity for use post-parse
+        pp_entity = dynamic_cast<EntitySymbol *> (pp_symbol(entity));
+        assert(pp_entity); // parser guarantee
 
         break;
     }
@@ -99,11 +99,11 @@ void EntityTableSymbol::post_parse(int pass)
         // add this table to the complete list of entity tables
         pp_all_entity_tables.push_back(this);
 
-        // Add this table to the agent's list of entity tables
-        pp_agent->pp_entity_tables.push_back(this);
+        // Add this table to the entity's list of entity tables
+        pp_entity->pp_tables.push_back(this);
 
-        // Add the increment for this table to the agent's list of all callback members
-        pp_agent->pp_callback_members.push_back(increment);
+        // Add the increment for this table to the entity's list of all callback members
+        pp_entity->pp_callback_members.push_back(increment);
 
         break;
     }

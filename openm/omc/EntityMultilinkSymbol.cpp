@@ -18,24 +18,24 @@ void EntityMultilinkSymbol::create_auxiliary_symbols()
 {
     assert(!side_effects_fn); // logic guarantee
     side_effects_fn = new EntityFuncSymbol("om_" + name + "_side_effects",
-                                          agent,
+                                          entity,
                                           "void",
                                           "");
-    side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in entity " + agent->name + ".");
+    side_effects_fn->doc_block = doxygen_short("Implement side effects of changes in multilink " + name + " in entity " + entity->name + ".");
 
     assert(!insert_fn); // logic guarantee
     insert_fn = new EntityFuncSymbol("om_" + name + "_insert",
-                                          agent,
+                                          entity,
                                           "void",
                                           data_type->name + " lnk");
-    insert_fn->doc_block = doxygen_short("Maintain reciprocal link on insert in multilink " + name + " in entity " + agent->name + ".");
+    insert_fn->doc_block = doxygen_short("Maintain reciprocal link on insert in multilink " + name + " in entity " + entity->name + ".");
 
     assert(!erase_fn); // logic guarantee
     erase_fn = new EntityFuncSymbol("om_" + name + "_erase",
-                                          agent,
+                                          entity,
                                           "void",
                                           data_type->name + " lnk" );
-    erase_fn->doc_block = doxygen_short("Maintain reciprocal link on erase in multilink " + name + " in entity " + agent->name + ".");
+    erase_fn->doc_block = doxygen_short("Maintain reciprocal link on erase in multilink " + name + " in entity " + entity->name + ".");
 }
 
 void EntityMultilinkSymbol::post_parse(int pass)
@@ -47,11 +47,11 @@ void EntityMultilinkSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // Add this multilink member symbol to the agent's list of all such symbols
-        pp_agent->pp_multilink_members.push_back(this);
+        // Add this multilink member symbol to the entity's list of all such symbols
+        pp_entity->pp_multilink_members.push_back(this);
 
-        // Add this multilink member symbol to the agent's list of all callback members
-        pp_agent->pp_callback_members.push_back(this);
+        // Add this multilink member symbol to the entity's list of all callback members
+        pp_entity->pp_callback_members.push_back(this);
         break;
     }
     case ePopulateDependencies:
@@ -66,7 +66,7 @@ void EntityMultilinkSymbol::post_parse(int pass)
             c_insert +=     "auto ent_ptr = lnk.get();";
             c_insert +=     "auto lst = " + name + ".contents();";
             c_insert +=     "event_trace_msg("
-                                "\"" + agent->name + "\", "
+                                "\"" + entity->name + "\", "
                                 "(int)entity_id, "
                                 "(double)age.direct_get(), "
                                 "GetCaseSeed(), "
@@ -82,7 +82,7 @@ void EntityMultilinkSymbol::post_parse(int pass)
             c_insert +=     "if (BaseEntity::event_trace_select_linked_entities && BaseEntity::event_trace_selected_entities.count(entity_id) > 0 && BaseEntity::event_trace_selected_entities.count(ent_ptr->entity_id) == 0) {";
             c_insert +=         "BaseEntity::event_trace_selected_entities.insert(ent_ptr->entity_id);";
             c_insert +=         "event_trace_msg("
-                                    "\"" + agent->name + "\", "
+                                    "\"" + entity->name + "\", "
                                     "(int)entity_id, "
                                     "(double)age.direct_get(), "
                                     "GetCaseSeed(), "
@@ -104,7 +104,7 @@ void EntityMultilinkSymbol::post_parse(int pass)
             c_erase +=     "auto ent_ptr = lnk.get();";
             c_erase +=     "auto lst = " + name + ".contents();";
             c_erase +=     "event_trace_msg("
-                "\"" + agent->name + "\", "
+                "\"" + entity->name + "\", "
                 "(int)entity_id, "
                 "(double)age.direct_get(), "
                 "GetCaseSeed(), "
@@ -149,26 +149,26 @@ void EntityMultilinkSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock EntityMultilinkSymbol::cxx_declaration_agent()
+CodeBlock EntityMultilinkSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    EntitySymbol *reciprocal_agent = nullptr;
+    EntitySymbol *reciprocal_entity = nullptr;
     if (reciprocal_link) {
-        reciprocal_agent = reciprocal_link->pp_agent;
+        reciprocal_entity = reciprocal_link->pp_entity;
     }
     else {
         assert(reciprocal_multilink); // grammar guarantee
-        reciprocal_agent = reciprocal_multilink->pp_agent;
+        reciprocal_entity = reciprocal_multilink->pp_entity;
     }
 
     h += "Multilink<"
         + data_type->name + ", "
-        + agent->name + ", "
-        + reciprocal_agent->name + ", "
+        + entity->name + ", "
+        + reciprocal_entity->name + ", "
         + "&" + side_effects_fn->unique_name + ", "
         + "&" + insert_fn->unique_name + ", "
         + "&" + erase_fn->unique_name

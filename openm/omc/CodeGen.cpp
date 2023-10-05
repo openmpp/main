@@ -328,7 +328,7 @@ void CodeGen::do_preamble()
 
         theLog->logFormatted("Largest random stream in model is %d", Symbol::size_streams - 1);
 
-        for (auto ent : Symbol::pp_all_agents) {
+        for (auto ent : Symbol::pp_all_entities) {
             if (ent->pp_local_rng_streams_requested) {
                 theLog->logFormatted(
                     "Entity '%s' has %d local random streams, of which %d are Normal",
@@ -940,7 +940,7 @@ void CodeGen::do_ModelStartup()
     c += "theLog->logFormatted(\"member=%d Prepare for simulation\", simulation_member);";
 
     c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
-    for (auto entity : Symbol::pp_all_agents) {
+    for (auto entity : Symbol::pp_all_entities) {
         c += "// Entity - " + entity->name;
         c += entity->name + "::om_null_entity.om_assign_member_offsets();";
         c += entity->name + "::om_null_entity.om_initialize_data_members0();";
@@ -948,7 +948,7 @@ void CodeGen::do_ModelStartup()
     }
 
     c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
-    for (auto entity : Symbol::pp_all_agents) {
+    for (auto entity : Symbol::pp_all_entities) {
         c += "// Entity - " + entity->name;
         c += entity->name + "::om_null_entity.om_initialize_identity_attributes();";
         c += entity->name + "::om_null_entity.om_initialize_derived_attributes();";
@@ -1016,14 +1016,14 @@ void CodeGen::do_ModelStartup()
         c += "{";
         if (es->dimension_count() == 0) {
             c += "assert(!" + es->name + ");";
-            c += es->name + " = new EntitySet<" + es->pp_agent->name + ">;";
+            c += es->name + " = new EntitySet<" + es->pp_entity->name + ">;";
         }
         else {
-            c += "EntitySet<" + es->pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_agent->name + "> **>(" + es->name + ");";
+            c += "EntitySet<" + es->pp_entity->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_entity->name + "> **>(" + es->name + ");";
             c += "const size_t cells = " + to_string(es->cell_count()) + ";";
             c += "for (size_t cell = 0; cell < cells; ++cell) {";
             c += "assert(!flattened_array[cell]);";
-            c += "flattened_array[cell] = new EntitySet<" + es->pp_agent->name + ">;";
+            c += "flattened_array[cell] = new EntitySet<" + es->pp_entity->name + ">;";
             c += "}";
         }
         c += "}";
@@ -1180,7 +1180,7 @@ void CodeGen::do_ModelShutdown()
 			c += es->name + " = nullptr;";
 		}
         else {
-            c += "EntitySet<" + es->pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_agent->name + "> **>(" + es->name + ");";
+            c += "EntitySet<" + es->pp_entity->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_entity->name + "> **>(" + es->name + ");";
             c += "const size_t cells = " + to_string(es->cell_count()) + ";";
             c += "for (size_t cell = 0; cell < cells; ++cell) {";
             c += "assert(flattened_array[cell]);";
@@ -1216,17 +1216,17 @@ void CodeGen::do_entities()
 {
     // early forward declarations of entity classes and pointers
     t1 += "// early forward declarations of entity classes and pointers\n";
-    for (auto entity : Symbol::pp_all_agents) {
+    for (auto entity : Symbol::pp_all_entities) {
         t1 += "class " + entity->name + ";";
         t1 += "typedef entity_ptr<" + entity->name + "> " + entity->name + "_ptr;";
     }
 
 	h += "// forward declarations of model entity classes (for links)";
-    for (auto entity : Symbol::pp_all_agents) {
+    for (auto entity : Symbol::pp_all_entities) {
         h += "class " + entity->name + ";";
     }
     h += "";
-    for ( auto entity : Symbol::pp_all_agents ) {
+    for ( auto entity : Symbol::pp_all_entities ) {
 
         h += "// model entity classes";
         // e.g. class Person : public Entity<Person>
@@ -1250,7 +1250,7 @@ void CodeGen::do_entities()
         h += "}";
         h += "";
 
-        if (entity->any_entity_set_has_order_clause) {
+        if (entity->any_set_has_order_clause) {
             h += doxygen_short("Entity set context for operator<");
             h += "inline static thread_local short om_entity_set_context = -1;";
             h += "";
@@ -1264,10 +1264,10 @@ void CodeGen::do_entities()
 	    h += doxygen_short("operator overload for entity comparison based on entity_id");
         h += "bool operator< ( " + entity->name + " & rhs )";
         h += "{";
-        if (entity->any_entity_set_has_order_clause) {
+        if (entity->any_set_has_order_clause) {
             h += "// This entity has one or more entity sets with an order clause";
             h += "switch (om_entity_set_context) {";
-            for (auto es : entity->pp_agent_entity_sets) {
+            for (auto es : entity->pp_sets) {
                 if (es->pp_order_attribute) {
                     auto& attr_name = es->pp_order_attribute->name;
                     h += "case " + to_string(es->pp_entity_set_id) + ": // " + es->name;
@@ -1291,21 +1291,21 @@ void CodeGen::do_entities()
         h += "}";
 	    h += "";
 
-        for ( auto func_member : entity->pp_agent_funcs ) {
+        for ( auto func_member : entity->pp_functions ) {
             // MSVC in VS 2019/2022 crashes when optimization on with C1001 Internal compiler error
             // if the following functions are large.
             // Workaround is to disable optimization for these specific functions.
             bool msvc_workaround_needed =
                 (func_member->name == "om_initialize_data_members0")
                 || (func_member->name == "om_initialize_data_members");
-            h += func_member->cxx_declaration_agent();
+            h += func_member->cxx_declaration_entity();
             if (msvc_workaround_needed) {
                 c += "#if defined (_MSC_VER)";
                 c += "\t// Workaround to MSVC internal compiler error C1001 (BEGIN)";
                 c += "\t#pragma optimize( \"\", off )";
                 c += "#endif";
             }
-            c += func_member->cxx_definition_agent();
+            c += func_member->cxx_definition_entity();
             if (msvc_workaround_needed) {
                 c += "#if defined (_MSC_VER)";
                 c += "\t// Workaround to MSVC internal compiler error C1001 (END)";
@@ -1329,7 +1329,7 @@ void CodeGen::do_entities()
 	    h += "";
         if (Symbol::option_entity_member_packing) {
             // create a temporary copy of the list of data members in the entity
-            auto lst = entity->pp_agent_data_members;
+            auto lst = entity->pp_data_members;
             // sort it in descending order of alignment_size
             // but sort lexicographically within alignment_size groups
             lst.sort([](EntityDataMemberSymbol* a, EntityDataMemberSymbol* b) 
@@ -1350,13 +1350,13 @@ void CodeGen::do_entities()
                     h += "//////////////////////////////////////////////";
                     h += "";
                 }
-                h += data_member->cxx_declaration_agent();
-                c += data_member->cxx_definition_agent();
+                h += data_member->cxx_declaration_entity();
+                c += data_member->cxx_definition_entity();
             }
         }
         else {
             // create a temporary copy of the list of data members in the entity
-            auto lst = entity->pp_agent_data_members;
+            auto lst = entity->pp_data_members;
             // sort it in ascending order of layout group
             // but sort lexicographically within layout groups
             lst.sort([](EntityDataMemberSymbol* a, EntityDataMemberSymbol* b)
@@ -1376,8 +1376,8 @@ void CodeGen::do_entities()
                     h += "//////////////////////////////////////////////";
                     h += "";
                 }
-                h += data_member->cxx_declaration_agent();
-                c += data_member->cxx_definition_agent();
+                h += data_member->cxx_declaration_entity();
+                c += data_member->cxx_definition_entity();
             }
         }
 	    h += "";
@@ -1560,10 +1560,10 @@ void CodeGen::do_entities()
 
     }
 
-    c += doxygen("Free all zombie agents");
+    c += doxygen("Free all zombie entities");
     c += "void BaseEntity::free_all_zombies()";
     c += "{";
-    for ( auto entity : Symbol::pp_all_agents ) {
+    for ( auto entity : Symbol::pp_all_entities ) {
         // e.g. Person::free_zombies();
         c += entity->name + "::free_zombies();";
     }
@@ -1573,7 +1573,7 @@ void CodeGen::do_entities()
     c += "void BaseEntity::initialize_simulation_runtime()";
     c += "{";
     c += "entities = new std::list<BaseEntity *>;";
-    for ( auto ent : Symbol::pp_all_agents ) {
+    for ( auto ent : Symbol::pp_all_entities ) {
         // e.g. Person::zombies = new forward_list<Person *>;";
         c += ent->name + "::zombies = new std::forward_list<" + ent->name + " *>;";
         c += ent->name + "::available = new std::forward_list<" + ent->name + " *>;";
@@ -1582,7 +1582,7 @@ void CodeGen::do_entities()
         c += ent->name + "::resource_use_reset();";
         c += "";
         c += "// reset resource use information for events in " + ent->name;
-        for (auto evt : ent->pp_agent_events) {
+        for (auto evt : ent->pp_events) {
             c += ent->name + "::om_null_entity." + evt->name + ".resource_use_reset();";
         }
         c += "// reset resource use information for multilinks in " + ent->name;
@@ -1601,7 +1601,7 @@ void CodeGen::do_entities()
     c +=     "delete entities;";
     c +=     "entities = nullptr;";
     c +=     "";
-    for (auto entity : Symbol::pp_all_agents) {
+    for (auto entity : Symbol::pp_all_entities) {
         c += "assert(" + entity->name + "::zombies->empty());";
         c += "delete " + entity->name + "::zombies;";
         c += entity->name + "::zombies = nullptr;";
@@ -1621,7 +1621,7 @@ void CodeGen::do_entities()
 
 
     // populate meta-data for entities and attributes
-    for (auto entity : Symbol::pp_all_agents) {
+    for (auto entity : Symbol::pp_all_entities) {
         entity->populate_metadata(metaRows);
     }
 }
@@ -1999,7 +1999,7 @@ void CodeGen::do_RunModel()
             c += "double MB_Constant_PerSub = 0.0;";
             c += "double MB_Constant_PerExe = 0.0;";
             c += "double MB_Variable = 0.0;";
-            for (auto ent : Symbol::pp_all_agents) {
+            for (auto ent : Symbol::pp_all_entities) {
                 c += "{";
                 c += "auto ent_bytes = sizeof(" + ent->name + ");";
                 c += "auto ent_result = " + ent->name + "::resource_use();";
@@ -2014,7 +2014,7 @@ void CodeGen::do_RunModel()
                     c += "MB_Multilinks += MB;";
                     c += "}";
                 }
-                for (auto evt : ent->pp_agent_events) {
+                for (auto evt : ent->pp_events) {
                     c += "{";
                     c += "auto evt_result = " + ent->name + "::om_null_entity." + evt->name + ".resource_use();";
                     c += "int max_in_queue = (int)evt_result.max_in_queue;";
@@ -2022,7 +2022,7 @@ void CodeGen::do_RunModel()
                     c += "MB_Events += MB;";
                     c += "}";
                 }
-                for (auto entset : ent->pp_agent_entity_sets) {
+                for (auto entset : ent->pp_sets) {
                     c += "{";
                     c += "int dimension_count = " + to_string(entset->dimension_count()) + ";";
                     c += "int cell_count = " + to_string(entset->cell_count()) + ";";
@@ -2034,7 +2034,7 @@ void CodeGen::do_RunModel()
                     c += "MB_Sets += MB;";
                     c += "}";
                 }
-                for (auto tbl : ent->pp_entity_tables) {
+                for (auto tbl : ent->pp_tables) {
                     c += "{";
                     c += "bool instantiated = " + tbl->cxx_instance + "; // is nullptr if suppressed at runtime";
                     c += "int cell_count = " + to_string(tbl->cell_count()) + ";";
@@ -2121,7 +2121,7 @@ void CodeGen::do_RunModel()
             c += "theLog->logFormatted(\"%s| Category          |    MB |\", prefix2);";
             c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
             c += "theLog->logFormatted(\"%s| Entities          | %5d |\", prefix2, (int)MB_Entities);";
-            for (auto ent : Symbol::pp_all_agents) {
+            for (auto ent : Symbol::pp_all_entities) {
                 c += "{";
                 c += "auto ent_name = \"" + ent->name + "\";";
                 c += "auto ent_bytes = sizeof(" + ent->name + ");";
@@ -2202,8 +2202,8 @@ void CodeGen::do_RunModel()
             c += "}";
         }
 
-        for (auto ent : Symbol::pp_all_agents) {
-            auto dml = ent->pp_agent_data_members;
+        for (auto ent : Symbol::pp_all_entities) {
+            auto dml = ent->pp_data_members;
             size_t members_count = dml.size();
             size_t ent_internal = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_internal(); });
             size_t attribute_count = std::count_if(dml.begin(), dml.end(), [](EntityDataMemberSymbol* edms) {return edms->is_attribute(); });
@@ -2330,12 +2330,12 @@ void CodeGen::do_RunModel()
                 c += "} // multilinks";
                 c += "";
             }
-            if (ent->pp_agent_events.size()) {
+            if (ent->pp_events.size()) {
                 c += "{ // events";
                 c += "auto table_title = \"    " + ent->name + " Events\";";
                 std::string col1header = "event";
                 int col1width = col1header.length();
-                for (auto evt : ent->pp_agent_events) { col1width = std::max<int>(col1width, evt->event_name.length()); };
+                for (auto evt : ent->pp_events) { col1width = std::max<int>(col1width, evt->event_name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2348,7 +2348,7 @@ void CodeGen::do_RunModel()
                 c += "theLog->logFormatted(\"%s| %-*s |   time calcs |     censored |  occurrences |   per entity | max in queue |    MB |\", prefix2, col1width, col1header);";
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
                 c += "double MB_total = 0;";
-                for (auto evt : ent->pp_agent_events) {
+                for (auto evt : ent->pp_events) {
                     // Get resource use information for each event in the entity
                     // The static thread_local om_null_entity is used to access the static thread_local function and counters
                     c += "{";
@@ -2370,12 +2370,12 @@ void CodeGen::do_RunModel()
                 c += "} // events";
                 c += "";
             }
-            if (ent->pp_agent_entity_sets.size()) {
+            if (ent->pp_sets.size()) {
                 c += "{ // sets";
                 c += "auto table_title = \"    " + ent->name + " Sets\";";
                 std::string col1header = "set";
                 int col1width = col1header.length();
-                for (auto entset : ent->pp_agent_entity_sets) { col1width = std::max<int>(col1width, entset->name.length()); };
+                for (auto entset : ent->pp_sets) { col1width = std::max<int>(col1width, entset->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2388,7 +2388,7 @@ void CodeGen::do_RunModel()
                 c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells |  inserts |   per entity |  max pop |    MB |\", prefix2, col1width, col1header);";
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
                 c += "double MB_total = 0;";
-                for (auto entset : ent->pp_agent_entity_sets) {
+                for (auto entset : ent->pp_sets) {
                     // Get resource use information for each entity set in the entity
                     // The static thread_local om_null_entity is used to access the static thread_local function and counters
                     c += "{";
@@ -2414,12 +2414,12 @@ void CodeGen::do_RunModel()
                 c += "} // sets";
                 c += "";
             }
-            if (ent->pp_entity_tables.size()) {
+            if (ent->pp_tables.size()) {
                 c += "{ // tables";
                 c += "auto table_title = \"    " + ent->name + " Tables\";";
                 std::string col1header = "table";
                 int col1width = col1header.length();
-                for (auto tbl : ent->pp_entity_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+                for (auto tbl : ent->pp_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "int suppressed_count = 0; // number of tables suppressed at runtime";
                 c += "const char * col1header = \"" + col1header + "\";";
@@ -2433,7 +2433,7 @@ void CodeGen::do_RunModel()
                 c += "theLog->logFormatted(\"%s| %-*s |  rank |    cells | accum | measr | colls | incrmnts |   per entity |    MB |\", prefix2, col1width, col1header);";
                 c += "theLog->logFormatted(\"%s%s\", prefix2, row_sep);";
                 c += "double MB_total = 0;";
-                for (auto tbl : ent->pp_entity_tables) {
+                for (auto tbl : ent->pp_tables) {
                     // Get resource use information for each entity table in the entity
                     // The static thread_local om_null_entity is used to access the static thread_local function and counters
                     c += "{ // table " + tbl->name;
@@ -2725,8 +2725,8 @@ static string entityNullInstanceThis(const string & i_entityName)
 void CodeGen::do_EntityNameSize(void)
 {
     size_t nAttr = 0;
-    for (const auto entity : Symbol::pp_all_agents) {
-        for (const auto dm : entity->pp_agent_data_members) {
+    for (const auto entity : Symbol::pp_all_entities) {
+        for (const auto dm : entity->pp_data_members) {
             if (dm->is_eligible_microdata()) nAttr++;
         }
     }
@@ -2754,8 +2754,8 @@ void CodeGen::do_EntityNameSize(void)
     c += "{";
 
     // for each entity with data members declare a pointer to the "null" instance to calculate members offset
-    for (const auto entity : Symbol::pp_all_agents) {
-        for (const auto dm : entity->pp_agent_data_members) {
+    for (const auto entity : Symbol::pp_all_entities) {
+        for (const auto dm : entity->pp_data_members) {
             if (dm->is_eligible_microdata()) {
 
                 // #define om_PersonEntityNull (Person::om_null_entity)
@@ -2777,9 +2777,9 @@ void CodeGen::do_EntityNameSize(void)
     c += "{";
     size_t na = nAttr;
 
-    for (const auto entity : Symbol::pp_all_agents) {
+    for (const auto entity : Symbol::pp_all_entities) {
 
-        for (const auto dm : entity->pp_agent_data_members) {
+        for (const auto dm : entity->pp_data_members) {
             if (dm->is_eligible_microdata()) {
 
                 // { 0, "Person", 7, "age", typeid(int), sizeof(int), reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age)) - om_PersonEntityNullThis }

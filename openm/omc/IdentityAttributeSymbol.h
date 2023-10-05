@@ -32,13 +32,13 @@ public:
      * Morphing constructor
      *
      * @param [in,out] sym  If non-null, the symbol.
-     * @param agent         The agent.
+     * @param ent           The entity.
      * @param type          The type.
      * @param [in,out] root If non-null, the root.
      * @param decl_loc      (Optional) the declaration location.
      */
-    IdentityAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
-        : MaintainedAttributeSymbol(sym, agent, type, decl_loc)
+    IdentityAttributeSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
+        : MaintainedAttributeSymbol(sym, ent, type, decl_loc)
         , root(root)
     {
         create_auxiliary_symbols();
@@ -55,13 +55,13 @@ public:
      * Constructor from name
      *
      * @param member_name   Name of the member.
-     * @param agent         The agent.
+     * @param ent           The entity.
      * @param type          The type.
      * @param [in,out] root If non-null, the root.
      * @param decl_loc      (Optional) the declaration location.
      */
-    IdentityAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
-        : MaintainedAttributeSymbol(member_name, agent, type, decl_loc)
+    IdentityAttributeSymbol(const string member_name, const Symbol * ent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
+        : MaintainedAttributeSymbol(member_name, ent, type, decl_loc)
         , root(root)
     {
         create_auxiliary_symbols();
@@ -81,7 +81,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     void post_parse_traverse1(ExprForAttribute *node);
 
@@ -119,7 +119,7 @@ public:
      *
      * @return The new identity attribute.
      */
-    static IdentityAttributeSymbol * create_equality_identity_attribute(Symbol *agent, Symbol * av, const ConstantSymbol *k, omc::location decl_loc);
+    static IdentityAttributeSymbol * create_equality_identity_attribute(Symbol * ent, Symbol * av, const ConstantSymbol *k, omc::location decl_loc);
 
     /**
      * Root of the expression tree.

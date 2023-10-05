@@ -50,8 +50,8 @@ using namespace std;
 /**
  * Defines an alias used to reference bison-generated token values.
  * 
- * For example token::TK_agent is the value of the bison-generated token associated with the
- * openM++ keyword 'agent'.
+ * For example token::TK_table is the value of the bison-generated token associated with the
+ * openM++ keyword 'table'.
  */
 typedef yy::parser::token token;
 
@@ -153,7 +153,7 @@ public:
      * entry is created with this unique name.
      * 
      * This constructor sets the name equal to the unique name, and is used for symbols outside
-     * agent scope, e.g. classifications.
+     * entity scope, e.g. classifications.
      * 
      * If the symbol table does contain an entry with unique name @a unm the existing symbol is
      * morphed to a new base class Symbol. This is useful for replacing a default symbol by a symbol
@@ -196,7 +196,7 @@ public:
      * Name-based constructor in entity context.
      * 
      * This constructor creates a Symbol with unique name based on
-     * @a nm in the context of @a agent, e.g. "Person::time"
+     * @a nm in the context of @a entity, e.g. "Person::time"
      * 
      * If the symbol table does not contain a corresponding entry a new symbol table entry is
      * created with this unique name.
@@ -205,11 +205,11 @@ public:
      * new base class Symbol.
      *
      * @param nm       The name.
-     * @param agent    The agent qualifying the name.
+     * @param ent      The entity qualifying the name.
      * @param decl_loc (Optional) the declaration location.
      */
-    explicit Symbol(const string nm, const Symbol *agent, omc::location decl_loc = omc::location())
-        : unique_name(symbol_name(nm, agent))
+    explicit Symbol(const string nm, const Symbol * ent, omc::location decl_loc = omc::location())
+        : unique_name(symbol_name(nm, ent))
         , name ( nm )
         , decl_loc(decl_loc)
         , redecl_loc(omc::location())
@@ -352,7 +352,7 @@ public:
      * Post-parse operations create derived information based on information obtained during the
      * parse phase. This information is stored in members of the Symbol class hierarchy which by
      * convention have a 'pp_' prefix in their name. For example, the \ref pp_callback_members
-     * collection of the \ref EntitySymbol class contains a list of all attributes of the agent after
+     * collection of the \ref EntitySymbol class contains a list of all attributes of the entity after
      * post-parse processing.  These pp_ members are used subsequently in the code-generation phase.
      * 
      * When post_parse is called on an object in the \ref Symbol hierarchy, the call is first passed
@@ -370,7 +370,7 @@ public:
     /**
      * Get the c++ declaration code (in entity scope) associated with the symbol.
      * 
-     * The code fragment is valid within an agent class declaration.
+     * The code fragment is valid within an entity class declaration.
      * 
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all
@@ -378,12 +378,12 @@ public:
      *
      * @return A CodeBlock.
      */
-    virtual CodeBlock cxx_declaration_agent();
+    virtual CodeBlock cxx_declaration_entity();
 
     /**
-     * Get the c++ definition code (for agent members) associated with the symbol.
+     * Get the c++ definition code (for entity members) associated with the symbol.
      * 
-     * The code fragment is qualified by the agent class.
+     * The code fragment is qualified by the entity class.
      * 
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all
@@ -391,7 +391,7 @@ public:
      *
      * @return A CodeBlock.
      */
-    virtual CodeBlock cxx_definition_agent();
+    virtual CodeBlock cxx_definition_entity();
 
     /**
      * Get the c++ declaration code associated with the symbol.
@@ -409,7 +409,7 @@ public:
     /**
      * Get the c++ definition code associated with the symbol.
      * 
-     * The code fragment is not qualified by any agent class.
+     * The code fragment is not qualified by any entity class.
      * 
      * When this function is called on an object in the \ref Symbol hierarchy, the call is first
      * passed upwards through the inheritance hierarchy so that operations are performed at all
@@ -537,7 +537,7 @@ public:
      * The unique identifier for the symbol
      * 
      * To create unique names for all attributes, member names in the model source code are prefixed
-     * with the agent context to create a unique name for symbol table lookup,
+     * with the entity context to create a unique name for symbol table lookup,
      * e.g. 'time' becomes 'Person::time'.
      */
     string unique_name;
@@ -645,21 +645,21 @@ public:
      * Check for existence of symbol with this member name in entity.
      *
      * @param nm    The member name.
-     * @param agent The agent.
+     * @param ent   The entity.
      *
      * @return true if found, else false.
      */
-    static bool exists(const string& nm, const Symbol *agent);
+    static bool exists(const string& nm, const Symbol * ent);
 
     /**
      * Agent member unique name.
      *
      * @param nm    The member name, e.g. "time".
-     * @param agent The agent qualifying the member name.
+     * @param ent   The entity qualifying the member name.
      *
      * @return The unique name, e.g. "Person::time".
      */
-    static string symbol_name(const string& nm, const Symbol *agent);
+    static string symbol_name(const string& nm, const Symbol * ent);
 
     /**
      * Gets a symbol for a unique name.
@@ -671,14 +671,14 @@ public:
     static Symbol *get_symbol(const string& unm);
 
     /**
-     * Gets a symbol for a member name in an agent.
+     * Gets a symbol for a member name in an entity.
      * 
      * @param nm    The member name.
-     * @param agent The agent.
+     * @param ent   The entity.
      *
      * @return The symbol, or nullptr if it doesn't exist.
      */
-    static Symbol *get_symbol(const string& nm, const Symbol *agent);
+    static Symbol *get_symbol(const string& nm, const Symbol * ent);
 
     /**
      * Creates (or gets if exists) a symbol for a unique name.
@@ -690,14 +690,14 @@ public:
     static Symbol *create_symbol(const string& unm);
 
     /**
-     * Creates (or gets if exists) a symbol for a member name in an agent.
+     * Creates (or gets if exists) a symbol for a member name in an entity.
      *
      * @param nm    The member name.
-     * @param agent The agent.
+     * @param ent   The entity.
      *
      * @return The symbol.
      */
-    static Symbol *create_symbol(const string& nm, const Symbol *agent);
+    static Symbol *create_symbol(const string& nm, const Symbol * ent);
 
     /**
      * Searches for the first symbol of the given class.
@@ -727,18 +727,18 @@ public:
     /**
      * Get the string corresponding to a token.
      *
-     * @param e The token value, e.g. TK_agent.
+     * @param e The token value, e.g. TK_entity.
      *
-     * @return The string representation of the token, e.g. "agent".
+     * @return The string representation of the token, e.g. "entity".
      */
     static const string token_to_string(const token_type& e);
 
     /**
      * Get the token corresponding to a string.
      *
-     * @param s A string with an associated token, e.g. "agent".
+     * @param s A string with an associated token, e.g. "entity".
      *
-     * @return The token associated with the string, e.g. token::TK:agent. If the string is not a
+     * @return The token associated with the string, e.g. token::TK:entity. If the string is not a
      *         token, the special value token::TK_error is returned.
      */
     static const token_type string_to_token(const char * s);
@@ -877,7 +877,7 @@ public:
     /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
      * 
-     * For example the tokens for 'agent' and 'table' are outer level keywords, but the token for
+     * For example the tokens for 'entity' and 'table' are outer level keywords, but the token for
      * 'int' is not.
      *
      * @param tok The token.
@@ -1038,11 +1038,11 @@ public:
     static list<EnumerationWithEnumeratorsSymbol *> pp_all_enumerations_with_enumerators;
 
     /**
-     * The agents in the model
+     * The entities in the model
      * 
      * Populated after parsing is complete.
      */
-    static list<EntitySymbol *> pp_all_agents;
+    static list<EntitySymbol *> pp_all_entities;
 
     /**
      * The entity sets in the model

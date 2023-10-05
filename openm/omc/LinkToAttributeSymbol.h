@@ -30,10 +30,10 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    LinkToAttributeSymbol(const Symbol *agent_context, const Symbol *link, const string attribute)
-        : Symbol(LinkToAttributeSymbol::member_name(link, attribute), agent_context)
-        , agent_context(agent_context->stable_rp())
-        , pp_agent_context(nullptr)
+    LinkToAttributeSymbol(const Symbol *ent_cntxt, const Symbol *link, const string attribute)
+        : Symbol(LinkToAttributeSymbol::member_name(link, attribute), ent_cntxt)
+        , entity_context(ent_cntxt->stable_rp())
+        , pp_entity_context(nullptr)
         , link(link->stable_rp())
         , pp_link(nullptr)
         , attribute(attribute)
@@ -43,20 +43,20 @@ public:
 
     static string member_name(const Symbol* link, const string attribute);
 
-    static string symbol_name(const Symbol* agent_context, const Symbol* link, const string attribute);
+    static string symbol_name(const Symbol* ent_cntxt, const Symbol* link, const string attribute);
 
-    static Symbol *create_symbol(const Symbol* agent_context, const Symbol* link, const string attribute);
+    static Symbol *create_symbol(const Symbol* ent_cntxt, const Symbol* link, const string attribute);
 
     void post_parse(int pass);
 
     /**
-     * The agent context in code using the link (lhs of link).
+     * The entity context in code using the link (lhs of link).
      */
-    Symbol*& agent_context;
-    EntitySymbol *pp_agent_context;
+    Symbol*& entity_context;
+    EntitySymbol *pp_entity_context;
 
     /**
-     * The link being used (a link agent var in agent_context)
+     * The link being used (a link entity var in entity_context)
      */
     Symbol*& link;
     LinkAttributeSymbol *pp_link;

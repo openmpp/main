@@ -67,7 +67,7 @@ public:
         , pp_entity_id(-1)
         , pp_local_rng_streams_requested(false)
         , pp_local_rng_streams_present(false)
-        , any_entity_set_has_order_clause(false)
+        , any_set_has_order_clause(false)
     {
         create_auxiliary_symbols();
         // Place in earliest sorting group so that missing symbols. e.g. case_id
@@ -76,7 +76,7 @@ public:
     }
 
     /**
-     * Create auxiliary symbols associated with this agent.
+     * Create auxiliary symbols associated with this entity.
      */
     void create_auxiliary_symbols();
 
@@ -148,7 +148,7 @@ public:
     void build_body_start_trace();
 
     /**
-     * The built-in attribute for time in the agent.
+     * The built-in attribute for time in the entity.
      */
     BuiltinAttributeSymbol *pp_time;
 
@@ -161,80 +161,80 @@ public:
     EntityFuncSymbol *assign_member_offsets_fn;
 
     /**
-     * The agent function which initializes the values of all data members in the agent.
+     * The entity function which initializes the values of all data members in the entity.
      * 
      * This function has the fixed name om_initialize_data_members().  It is called in the run-time
-     * support class BaseEntity before the agent enters the simulation.
+     * support class BaseEntity before the entity enters the simulation.
      */
     EntityFuncSymbol *initialize_data_members_fn;
 
     /**
-     * The agent function which initializes the values of all data members in the agent to type
+     * The entity function which initializes the values of all data members in the entity to type
      * default values.
      * 
      * This function has the fixed name om_initialize_data_members().  It is called in the run-time
-     * support class BaseEntity before the agent enters the simulation.
+     * support class BaseEntity before the entity enters the simulation.
      */
     EntityFuncSymbol *initialize_data_members0_fn;
 
     /**
-     * The agent function which initializes all events in the agent.
+     * The entity function which initializes all events in the entity.
      * 
      * This function has the fixed name om_initialize_events().  It is used in the run-time support
-     * class BaseEntity before the agent enters the simulation.
+     * class BaseEntity before the entity enters the simulation.
      */
     EntityFuncSymbol *initialize_events_fn;
 
     /**
-     * The agent function which finalizes all events in the agent.
+     * The entity function which finalizes all events in the entity.
      * 
      * This function has the fixed name om_events_tables(). It is used in the run-time support class
-     * BaseEntity before the agent leaves the simulation.
+     * BaseEntity before the entity leaves the simulation.
      */
     EntityFuncSymbol *finalize_events_fn;
 
     /**
-     * The agent function which initializes all entity sets in the agent.
+     * The entity function which initializes all entity sets in the entity.
      * 
      * This function has the fixed name om_initialize_entity_sets().  It is used in the run-time support
-     * class BaseEntity before the agent enters the simulation.
+     * class BaseEntity before the entity enters the simulation.
      */
     EntityFuncSymbol *initialize_entity_sets_fn;
 
     /**
-     * The agent function which finalizes all entity sets in the agent.
+     * The entity function which finalizes all entity sets in the entity.
      * 
      * This function has the fixed name om_finalize_entity_sets(). It is used in the run-time support
-     * class BaseEntity before the agent leaves the simulation.
+     * class BaseEntity before the entity leaves the simulation.
      */
     EntityFuncSymbol *finalize_entity_sets_fn;
 
     /**
-     * The agent function which initializes all tables in the agent.
+     * The entity function which initializes all tables in the entity.
      * 
      * This function has the fixed name om_initialize_tables().  It is used in the run-time support
-     * class BaseEntity before the agent enters the simulation.
+     * class BaseEntity before the entity enters the simulation.
      */
     EntityFuncSymbol *initialize_tables_fn;
 
     /**
-     * The agent function which finalizes all tables in the agent.
+     * The entity function which finalizes all tables in the entity.
      * 
      * This function has the fixed name om_finalize_tables(). It is used in the run-time support
-     * class BaseEntity before the agent leaves the simulation.
+     * class BaseEntity before the entity leaves the simulation.
      */
     EntityFuncSymbol *finalize_tables_fn;
 
     /**
-     * The agent function which initializes all identity attributes in the agent.
+     * The entity function which initializes all identity attributes in the entity.
      * 
      * This function has the fixed name om_initialize_identity_attributes().  It is used in the run-
-     * time support class BaseEntity before the agent enters the simulation.
+     * time support class BaseEntity before the entity enters the simulation.
      */
     EntityFuncSymbol *initialize_identity_attributes_fn;
 
     /**
-     * The agent function which initializes derived attributes in the agent.
+     * The entity function which initializes derived attributes in the entity.
      * 
      * This function has the fixed name om_initialize_derived_attributes().  It is used in the run-
      * time support class BaseEntity to initialize values as part of the entity lifecycle.
@@ -242,7 +242,7 @@ public:
     EntityFuncSymbol *initialize_derived_attributes_fn;
 
     /**
-     * The agent function which resets derived attributes in the agent.
+     * The entity function which resets derived attributes in the entity.
      * 
      * This function has the fixed name om_reset_derived_attributes().  It is used in the run-
      * time support class BaseEntity as part of the entity lifecycle.
@@ -250,12 +250,12 @@ public:
     EntityFuncSymbol *reset_derived_attributes_fn;
 
     /**
-     * The agent function which sets all links to nullptr when the agent finishes.
+     * The entity function which sets all links to nullptr when the entity finishes.
      */
     EntityFuncSymbol *finalize_links_fn;
 
     /**
-     * The agent function which empties all multilinks when the agent finishes.
+     * The entity function which empties all multilinks when the entity finishes.
      */
     EntityFuncSymbol *finalize_multilinks_fn;
 
@@ -265,77 +265,77 @@ public:
     EntityFuncSymbol* start_trace_fn;
 
     /**
-     * The data members of this agent
+     * The data members of this entity
      * 
      *  Populated after parsing is complete.
      */
-    list<EntityDataMemberSymbol *> pp_agent_data_members;
+    list<EntityDataMemberSymbol *> pp_data_members;
 
     /**
-     * The data members of this agent which use callbacks to implement side-effects.
+     * The data members of this entity which use callbacks to implement side-effects.
      * 
      *  Populated after parsing is complete.
      */
     list<EntityMemberSymbol *> pp_callback_members;
 
     /**
-     * The maintained attributes of this agent.
+     * The maintained attributes of this entity.
      * 
      *  Populated after parsing is complete.
      */
     list<MaintainedAttributeSymbol *> pp_maintained_attributes;
 
     /**
-     * The expression attributes of this agent.
+     * The expression attributes of this entity.
      * 
      * Populated after parsing is complete.
      */
     list<IdentityAttributeSymbol *> pp_identity_attributes;
 
     /**
-     * The agent events of this agent
+     * The events of this entity
      * 
      *  Populated after parsing is complete.
      */
-    list<EntityEventSymbol *> pp_agent_events;
+    list<EntityEventSymbol *> pp_events;
 
     /**
-     * The agent funcs of this agent
+     * The functions of this entity
      * 
      *  Populated after parsing is complete.
      */
-    list<EntityFuncSymbol *> pp_agent_funcs;
+    list<EntityFuncSymbol *> pp_functions;
 
     /**
-     * The enity sets of this agent
+     * The sets of this entity
      * 
      *  Populated after parsing is complete.
      */
-    list<EntitySetSymbol *> pp_agent_entity_sets;
+    list<EntitySetSymbol *> pp_sets;
 
     /**
      * The tables of this entity
      * 
      *  Populated after parsing is complete.
      */
-    list<EntityTableSymbol *> pp_entity_tables;
+    list<EntityTableSymbol *> pp_tables;
 
     /**
-     * The link attributes of this agent
+     * The link attributes of this entity
      * 
      *  Populated after parsing is complete.
      */
     list<LinkAttributeSymbol *> pp_link_attributes;
 
     /**
-     * The multilink members of this agent
+     * The multilink members of this entity
      * 
      *  Populated after parsing is complete.
      */
     list<EntityMultilinkSymbol *> pp_multilink_members;
 
     /**
-     * The hooks in the agent.
+     * The hooks in the entity.
      * 
      * The key of the multimap is the name of the 'to' function of the hook.  The value of the multimap is the
      * name of the 'from' function.
@@ -343,7 +343,7 @@ public:
     multimap<string,string> pp_hooks;
 
     /**
-     * The hooks in the agent, indexed by name and order
+     * The hooks in the entity, indexed by name and order
      * 
      * The key of the multimap is the name of the 'to' function of the hook, followed by the order.
      * The value of the multimap is the name of the 'from' function.
@@ -428,8 +428,8 @@ public:
     bool pp_local_rng_streams_present;
 
     /**
-     * Indicates if any entity set of this entity kind has an order clause.
+     * Indicates if any set of this entity kind has an order clause.
      */
-    bool any_entity_set_has_order_clause;
+    bool any_set_has_order_clause;
 };
 

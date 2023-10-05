@@ -21,10 +21,10 @@ CodeBlock EntityArrayMemberSymbol::cxx_initialization_expression(bool type_defau
     return c;
 }
 
-CodeBlock EntityArrayMemberSymbol::cxx_declaration_agent()
+CodeBlock EntityArrayMemberSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     string dims;

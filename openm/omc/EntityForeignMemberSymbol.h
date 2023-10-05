@@ -32,11 +32,11 @@ public:
      * Morphing constructor.
      *
      * @param [in,out] sym If non-null, the symbol.
-     * @param agent        The agent.
+     * @param ent          The entity.
      * @param type         The type.
      */
-    EntityForeignMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : EntityDataMemberSymbol(sym, agent, type, decl_loc)
+    EntityForeignMemberSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : EntityDataMemberSymbol(sym, ent, type, decl_loc)
     {
     }
 
@@ -44,7 +44,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
 };
 

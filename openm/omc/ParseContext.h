@@ -38,7 +38,7 @@ public:
         , redeclaration(false)
         , is_fixed_parameter_value(false)
         , is_scenario_parameter_value(false)
-        , agent_context (nullptr)
+        , entity_context (nullptr)
         , table_context (nullptr)
         , derived_table_context (nullptr)
         , entity_set_context (nullptr)
@@ -57,20 +57,20 @@ public:
         counter4 = 0;
     }
 
-    void set_agent_context( Symbol *agent )
+    void set_entity_context( Symbol * ent)
     {
-        if ( agent != nullptr ) {
-            agent_context = &agent->stable_rp();
+        if (ent != nullptr ) {
+            entity_context = &ent->stable_rp();
         }
         else {
-            agent_context = nullptr;
+            entity_context = nullptr;
         }
     }
 
-    Symbol * get_agent_context( )
+    Symbol * get_entity_context( )
     {
-        if ( agent_context != nullptr ) {
-            return *agent_context;
+        if (entity_context != nullptr ) {
+            return *entity_context;
         }
         else {
             return nullptr;
@@ -175,7 +175,7 @@ public:
         counter4 = 0;
         redeclaration = false;
         next_word_is_string = false;
-        agent_context = nullptr;
+        entity_context = nullptr;
         table_context = nullptr;
         derived_table_context = nullptr;
         entity_set_context = nullptr;
@@ -349,7 +349,7 @@ public:
     /**
      * Indicates if context is a redeclaration of an enclosing symbol.
      * 
-     * The om langauge permits redeclaration isncertain contexts, in particular agents can be freely
+     * The ompp language permits redeclaration isncertain contexts, in particular entities can be freely
      * redeclared, and the attribute specifications are gathered together.  Parameters can be
      * redeclared, once to give their properties and (optionally) a second time to provide values.
      */
@@ -368,11 +368,11 @@ public:
 private:
 
     /**
-     * agent context for contained symbols
+     * entity context for contained symbols
      * 
      * Note that this cannot be Symbol &amp;*, since the value can be nullptr.
      */
-	Symbol **agent_context;
+	Symbol **entity_context;
 
     /**
      * table context for symbols in table declaration

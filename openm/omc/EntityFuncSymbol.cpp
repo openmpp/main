@@ -61,12 +61,12 @@ void EntityFuncSymbol::post_parse(int pass)
             }
 
             if (hook_is_called) {
-                auto sym = get_symbol(hook_fn_name, agent);
+                auto sym = get_symbol(hook_fn_name, entity);
                 if (!sym) {
                     // The hook function for this function is called in model code,
                     // and the associated EntityFuncSymbol does not exist.
                     // Create it so that it will be declared and defined in generated source.
-                    auto fn_sym = new EntityFuncSymbol(hook_fn_name, agent, "void", "");
+                    auto fn_sym = new EntityFuncSymbol(hook_fn_name, entity, "void", "");
                     fn_sym->doc_block = doxygen_short("Call the functions hooked to the function '" + name + "'");
                 }
             }
@@ -127,8 +127,8 @@ void EntityFuncSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this agentfunc to the agent's list of agentfuncs
-        pp_agent->pp_agent_funcs.push_back(this);
+        // Add this entity function to the entity's list of entity functions
+        pp_entity->pp_functions.push_back(this);
         break;
     }
     default:
@@ -136,10 +136,10 @@ void EntityFuncSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock EntityFuncSymbol::cxx_declaration_agent()
+CodeBlock EntityFuncSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
@@ -162,10 +162,10 @@ CodeBlock EntityFuncSymbol::cxx_declaration_agent()
     return h;
 }
 
-CodeBlock EntityFuncSymbol::cxx_definition_agent()
+CodeBlock EntityFuncSymbol::cxx_definition_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
+    CodeBlock c = super::cxx_definition_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 

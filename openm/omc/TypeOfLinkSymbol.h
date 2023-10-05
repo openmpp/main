@@ -23,10 +23,10 @@ public:
     /**
      * Constructor.
      *
-     * @param agent The agent.
+     * @param ent The entity.
      */
-    TypeOfLinkSymbol(const Symbol *agent, bool single)
-        : TypeSymbol((single ? "entity_ptr<" : "multi_link<") + agent->name + ">")
+    TypeOfLinkSymbol(const Symbol * ent, bool single)
+        : TypeSymbol((single ? "entity_ptr<" : "multi_link<") + ent->name + ">")
         , single(single)
     {
     }
@@ -46,26 +46,26 @@ public:
     bool single;
 
     /**
-     * Gets the TypeOfLinkSymbol object for the type which points to a single given kind of agent.
+     * Gets the TypeOfLinkSymbol object for the type which points to a single given kind of entity.
      * 
      * Created if it doesn't already exist.
      *
-     * @param agent The agent pointed to by the link type.
+     * @param ent The entity pointed to by the link type.
      *
      * @return Pointer to the TypeOfLinkSymbol object requested.
      */
-    static TypeOfLinkSymbol *get_single(const Symbol *agent);
+    static TypeOfLinkSymbol *get_single(const Symbol * ent);
 
     /**
-     * Gets the TypeOfLinkSymbol object for the type which holds a set of pointers to a given kind of agent.
+     * Gets the TypeOfLinkSymbol object for the type which holds a set of pointers to a given kind of entity.
      * 
      * Created if it doesn't already exist.
      *
-     * @param agent The agent pointed to by the link type.
+     * @param ent The entity pointed to by the link type.
      *
      * @return Pointer to the TypeOfLinkSymbol object requested.
      */
-    static TypeOfLinkSymbol *get_multi(const Symbol *agent);
+    static TypeOfLinkSymbol *get_multi(const Symbol * ent);
 
 
 };

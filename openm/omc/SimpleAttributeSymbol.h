@@ -26,8 +26,8 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    SimpleAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, Literal *initializer, omc::location decl_loc = omc::location())
-        : AttributeSymbol(sym, agent, type, decl_loc)
+    SimpleAttributeSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, Literal *initializer, omc::location decl_loc = omc::location())
+        : AttributeSymbol(sym, ent, type, decl_loc)
         , initializer(initializer)
     {
     }
@@ -47,7 +47,7 @@ public:
 
 	void post_parse(int pass);
 
-	CodeBlock cxx_declaration_agent();
+	CodeBlock cxx_declaration_entity();
 
     // members
 
@@ -55,7 +55,7 @@ public:
     /**
      * The initializer.
      *
-     *  C++ literal to initialize simple attribute at agent creation.
+     *  C++ literal to initialize simple attribute at entity creation.
      */
 
     Literal *initializer;

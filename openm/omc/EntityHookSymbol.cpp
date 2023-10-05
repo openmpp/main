@@ -21,9 +21,9 @@ string EntityHookSymbol::symbol_name(const Symbol* from, const Symbol* to)
 }
 
 //static
-bool EntityHookSymbol::exists(const Symbol* agent, const Symbol* from, const Symbol* to)
+bool EntityHookSymbol::exists(const Symbol* ent, const Symbol* from, const Symbol* to)
 {
-    return Symbol::exists(symbol_name(from, to), agent);
+    return Symbol::exists(symbol_name(from, to), ent);
 }
 
 
@@ -45,7 +45,7 @@ void EntityHookSymbol::create_auxiliary_symbols()
             to_is_self_scheduling = false;
             to_name = to->name; // name of the function being hooked to
             string fn_name = EntityFuncSymbol::hook_implement_name(to->name);
-            auto sym = Symbol::get_symbol(fn_name, agent);
+            auto sym = Symbol::get_symbol(fn_name, entity);
 
             EntityFuncSymbol *fn_sym = nullptr;
             if (sym) {
@@ -58,7 +58,7 @@ void EntityHookSymbol::create_auxiliary_symbols()
             }
             else {
                 // create it
-                fn_sym = new EntityFuncSymbol(fn_name, agent, "void", "");
+                fn_sym = new EntityFuncSymbol(fn_name, entity, "void", "");
                 fn_sym->doc_block = doxygen_short("Call the functions hooked to the function '" + to->name + "'");
             }
             // store it
@@ -76,39 +76,39 @@ void EntityHookSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
-        assert(pp_agent); // parser guarantee
+        // assign direct pointer to entity for use post-parse
+        pp_entity = dynamic_cast<EntitySymbol *> (pp_symbol(entity));
+        assert(pp_entity); // parser guarantee
         // assign direct pointer to the 'from' entity function symbol for use post-parse
         pp_from = dynamic_cast<EntityFuncSymbol *> (pp_symbol(from));
         if (!pp_from) {
-            pp_error(LT("error : '") + from->name + LT("' must be a function member of entity '") + pp_agent->name + LT("'"));
+            pp_error(LT("error : '") + from->name + LT("' must be a function member of entity '") + pp_entity->name + LT("'"));
             break;
         }
         if (!to_is_self_scheduling) {
             pp_to_fn = dynamic_cast<EntityFuncSymbol *> (pp_symbol(to));
             if (!pp_to_fn) {
-                pp_error(LT("error : '") + to->name + LT("' must be a function member of entity '") + pp_agent->name + LT("'"));
+                pp_error(LT("error : '") + to->name + LT("' must be a function member of entity '") + pp_entity->name + LT("'"));
                 break;
             }
         }
 
         if (to_is_self_scheduling) {
             // hook function is the implement function of the self-scheduling event of the entity
-            hook_fn = pp_agent->ss_implement_fn;
+            hook_fn = pp_entity->ss_implement_fn;
             assert(hook_fn);
         }
 
         // Create entry in entity multimap of all hooks.
         // The key is the name of the 'to' function
         // (or a placeholder string if the hook is to a self-scheduling attribute).
-        pp_agent->pp_hooks.emplace(to_name, pp_from->name);
+        pp_entity->pp_hooks.emplace(to_name, pp_from->name);
 
         // Create entry in entity multimap of all hooks (additionally distinguished by order).
         // The key is constructed using two parts to allow subsequent testing for 
         // ties in hook order.
         string key = to->name + " order=" + to_string(order);
-        pp_agent->pp_hooks_with_order.emplace(key, pp_from->name);
+        pp_entity->pp_hooks_with_order.emplace(key, pp_from->name);
         break;
     }
     case ePopulateDependencies:
@@ -129,7 +129,7 @@ void EntityHookSymbol::post_parse(int pass)
         // Test for ambiguous hook order and emit warning if found.
         {
             string key = to->name + " order=" + to_string(order); // NB copied from line above
-            if (pp_agent->pp_hooks_with_order.count(key) > 1) {
+            if (pp_entity->pp_hooks_with_order.count(key) > 1) {
                 pp_warning(LT("warning : one or more functions hooking to '") + to->pretty_name() + LT("' are ordered ambiguously with respect to '") + pp_from->name + LT("'."));
             }
         }

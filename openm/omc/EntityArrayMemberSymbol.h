@@ -14,7 +14,7 @@ using namespace std;
 
 /**
 * Internal data symbol.
-* Abstracts a member of an agent class which stores information
+* Abstracts a member of an entity class which stores information
 * used internally by om.  These members are not accessible to
 * developer code, and have no side-effects.
 */
@@ -31,11 +31,11 @@ public:
      * Morphing constructor.
      *
      * @param [in,out] sym If non-null, the symbol.
-     * @param agent        The agent.
+     * @param ent          The entity.
      * @param type         The type.
      */
-    EntityArrayMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : EntityDataMemberSymbol(sym, agent, type, decl_loc)
+    EntityArrayMemberSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : EntityDataMemberSymbol(sym, ent, type, decl_loc)
     {
     }
 
@@ -43,7 +43,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     /**
      * The number of dimensions in the array (rank).

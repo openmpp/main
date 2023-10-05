@@ -28,27 +28,27 @@ void EntitySetSymbol::create_auxiliary_symbols()
         // Set storage type to int. Can be changed in a subsequent pass to optimize storage based on array size.
         auto *typ = NumericSymbol::find(token::TK_int);
         assert(typ); // initialization guarantee
-        cell = new EntityInternalSymbol("om_" + name + "_cell", agent, typ);
+        cell = new EntityInternalSymbol("om_" + name + "_cell", entity, typ);
         cell->provenance = name + " (current cell)";
     }
 
     {
         assert(!update_cell_fn); // initialization guarantee
-        update_cell_fn = new EntityFuncSymbol("om_" + name + "_update_cell", agent);
+        update_cell_fn = new EntityFuncSymbol("om_" + name + "_update_cell", entity);
         assert(update_cell_fn); // out of memory check
-        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using attributes in the " + agent->name + " entity.");
+        update_cell_fn->doc_block = doxygen_short("Update the active cell index of table " + name + " using attributes in the " + entity->name + " entity.");
     }
 
     {
         assert(!insert_fn); // initialization guarantee
-        insert_fn = new EntityFuncSymbol("om_" + name + "_insert", agent);
+        insert_fn = new EntityFuncSymbol("om_" + name + "_insert", entity);
         assert(insert_fn); // out of memory check
         insert_fn->doc_block = doxygen_short("Insert the entity into the active cell in " + name + ".");
     }
 
     {
         assert(!erase_fn); // initialization guarantee
-        erase_fn = new EntityFuncSymbol("om_" + name + "_erase", agent);
+        erase_fn = new EntityFuncSymbol("om_" + name + "_erase", entity);
         assert(erase_fn); // out of memory check
         erase_fn->doc_block = doxygen_short("Erase the entity from the active cell in " + name + ".");
     }
@@ -84,18 +84,18 @@ void EntitySetSymbol::post_parse(int pass)
     switch (pass) {
     case eAssignMembers:
     {
-        // assign direct pointer to agent for use post-parse
-        pp_agent = dynamic_cast<EntitySymbol *> (pp_symbol(agent));
-        assert(pp_agent); // parser guarantee
+        // assign direct pointer to entity for use post-parse
+        pp_entity = dynamic_cast<EntitySymbol *> (pp_symbol(entity));
+        assert(pp_entity); // parser guarantee
 
         // assign direct pointer to order attribute for use post-parse
         if (order) {
             pp_order_attribute = dynamic_cast<AttributeSymbol*> (pp_symbol(order));
             if (!pp_order_attribute) {
-                pp_error(LT("error : '") + (*order)->name + LT("' must be an attribute of entity '") + pp_agent->name + "'");
+                pp_error(LT("error : '") + (*order)->name + LT("' must be an attribute of entity '") + pp_entity->name + "'");
             }
             // Note that the containing entity has an entity set using an order clause
-            pp_agent->any_entity_set_has_order_clause = true;
+            pp_entity->any_set_has_order_clause = true;
         }
 
         break;
@@ -105,8 +105,8 @@ void EntitySetSymbol::post_parse(int pass)
         // add this entity set to the complete list of entity sets
         pp_all_entity_sets.push_back(this);
 
-        // Add this entity set to the agent's list of entity sets
-        pp_agent->pp_agent_entity_sets.push_back(this);
+        // Add this entity set to the entity's list of entity sets
+        pp_entity->pp_sets.push_back(this);
 
         break;
     }
@@ -233,7 +233,7 @@ CodeBlock EntitySetSymbol::cxx_declaration_global()
     }
     h += "";
     h += doxygen_short("entity_set: " + label());
-    h += "extern thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
+    h += "extern thread_local EntitySet<" + pp_entity->name + "> * "+ name + dims + ";";
     h += "";
 
     h += "/// Count of entities in set " + name;
@@ -261,7 +261,7 @@ CodeBlock EntitySetSymbol::cxx_definition_global()
         assert(es); // integrity check guarantee
         dims += "[" + to_string(es->pp_size()) + "]";
     }
-    c += "thread_local EntitySet<" + pp_agent->name + "> * "+ name + dims + ";";
+    c += "thread_local EntitySet<" + pp_entity->name + "> * "+ name + dims + ";";
 
     c += "thread_local size_t " + count_gvn + " = 0;";
     c += "thread_local size_t " + max_gvn + " = 0;";
@@ -333,7 +333,7 @@ void EntitySetSymbol::build_body_insert()
     }
     else {
         c += "int cell = " + cell->name + ";" ;
-        c += "EntitySet<" + pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + pp_agent->name + "> **>(" + name + ");";
+        c += "EntitySet<" + pp_entity->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + pp_entity->name + "> **>(" + name + ");";
         c += "assert(flattened_array[cell]);";
         c += "flattened_array[cell]->insert(this);";
     }
@@ -352,7 +352,7 @@ void EntitySetSymbol::build_body_erase()
     }
     else {
         c += "int cell = " + cell->name + ";";
-        c += "EntitySet<" + pp_agent->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + pp_agent->name + "> **>(" + name + ");";
+        c += "EntitySet<" + pp_entity->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + pp_entity->name + "> **>(" + name + ");";
         c += "assert(flattened_array[cell]);";
         c += "flattened_array[cell]->erase(this);";
     }

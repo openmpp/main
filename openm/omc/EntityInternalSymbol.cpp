@@ -33,10 +33,10 @@ string EntityInternalSymbol::initialization_value(bool type_default) const
     return result;
 }
 
-CodeBlock EntityInternalSymbol::cxx_declaration_agent()
+CodeBlock EntityInternalSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += pp_data_type->name + " " + name + ";";

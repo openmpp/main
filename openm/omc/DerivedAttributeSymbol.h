@@ -35,9 +35,9 @@ public:
     /**
      * Constructor with all arguments.
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      */
-    explicit DerivedAttributeSymbol(const Symbol *agent,
+    explicit DerivedAttributeSymbol(const Symbol *ent,
                           token_type tok,
                           const Symbol *av1,
                           const Symbol *av2,
@@ -47,7 +47,7 @@ public:
                           const ConstantSymbol *k2,
                           const ConstantSymbol *k3)
         : MaintainedAttributeSymbol(DerivedAttributeSymbol::member_name(tok, av1, av2, prt, cls, k1, k2, k3),
-                        agent,
+                        ent,
                         UnknownTypeSymbol::find() // will be changed later
         )
         , tok(tok)
@@ -100,7 +100,7 @@ public:
     /**
      * Creates the given symbol, or returns it if it already exists.
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      * @param av1      The first av.
      * @param av2      The second av.
@@ -112,7 +112,7 @@ public:
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
@@ -125,76 +125,76 @@ public:
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok)
     {
         // signature conditions:
-        assert(agent);
-        return create_symbol(agent, tok, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+        assert(ent);
+        return create_symbol(ent, tok, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      * @param av1      The attribute.
      * @param k1       The constant.
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(k1);
-        return create_symbol(agent, tok, av1, nullptr, nullptr, nullptr, k1, nullptr, nullptr);
+        return create_symbol(ent, tok, av1, nullptr, nullptr, nullptr, k1, nullptr, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      * @param av1      The attribute.
      * @param k1       The constant.
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
                                   const ConstantSymbol *k2)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(k1);
         assert(k2);
-        return create_symbol(agent, tok, av1, nullptr, nullptr, nullptr, k1, k2, nullptr);
+        return create_symbol(ent, tok, av1, nullptr, nullptr, nullptr, k1, k2, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      * @param av1      The attribute.
      * @param k1       The constant.
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -202,18 +202,18 @@ public:
                                   const ConstantSymbol *k3)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(k1);
         assert(k2);
         assert(k3);
-        return create_symbol(agent, tok, av1, nullptr, nullptr, nullptr, k1, k2, k3);
+        return create_symbol(ent, tok, av1, nullptr, nullptr, nullptr, k1, k2, k3);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      * @param av1      The attribute #1
      * @param k1       The constant #1
@@ -222,7 +222,7 @@ public:
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -230,18 +230,18 @@ public:
                                   const Symbol *av2)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(k1);
         assert(k2);
         assert(av2);
-        return create_symbol(agent, tok, av1, av2, nullptr, nullptr, k1, k2, nullptr);
+        return create_symbol(ent, tok, av1, av2, nullptr, nullptr, k1, k2, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param tok      The token.
      * @param av1      The attribute #1
      * @param k1       The constant.
@@ -249,7 +249,7 @@ public:
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const ConstantSymbol *k1,
@@ -259,87 +259,87 @@ public:
         if (tok == token::TK_weighted_duration) {
             // special exception to store weight in av2 if av1 is nullptr
             // (for subsequent code coherence for the two cases for weighted_duration)
-            assert(agent);
+            assert(ent);
             assert(av1 || !av1); // observed (optional)
             assert(av1 ? (k1 != nullptr) : true); // constant (required for observed)
             assert(av2);
         }
         else {
-            assert(agent);
+            assert(ent);
             assert(av1);
             assert(k1);
             assert(av2);
         }
-        return create_symbol(agent, tok, av1, av2, nullptr, nullptr, k1, nullptr, nullptr);
+        return create_symbol(ent, tok, av1, av2, nullptr, nullptr, k1, nullptr, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param av1      The attribute.
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
-        return create_symbol(agent, tok, av1, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+        return create_symbol(ent, tok, av1, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param av1      The attribute (#1)
      * @param av2      The attribute (#2)
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(av2);
-        return create_symbol(agent, tok, av1, av2, nullptr, nullptr, nullptr, nullptr, nullptr);
+        return create_symbol(ent, tok, av1, av2, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param av1      The attribute
      * @param av2      always nullptr
      * @param prt      The partition
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
                                   const Symbol *prt)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(!av2); // placeholder only
         assert(prt);
-        return create_symbol(agent, tok, av1, av2, prt, nullptr, nullptr, nullptr, nullptr);
+        return create_symbol(ent, tok, av1, av2, prt, nullptr, nullptr, nullptr, nullptr);
     }
 
     /**
      * Creates the given symbol, or returns it if it already exists
      *
-     * @param agent    The agent.
+     * @param ent      The entity.
      * @param av1      The attribute.
      * @param av2      always nullptr
      * @param prt      always nullptr
@@ -347,7 +347,7 @@ public:
      *
      * @return The symbol.
      */
-    static DerivedAttributeSymbol * create_symbol(const Symbol* agent,
+    static DerivedAttributeSymbol * create_symbol(const Symbol* ent,
                                   token_type tok,
                                   const Symbol *av1,
                                   const Symbol *av2,
@@ -355,12 +355,12 @@ public:
                                   const Symbol *cls)
     {
         // signature conditions:
-        assert(agent);
+        assert(ent);
         assert(av1);
         assert(!av2); // placeholder only
         assert(!prt); // placeholder only
         assert(cls);
-        return create_symbol(agent, tok, av1, av2, prt, cls, nullptr, nullptr, nullptr);
+        return create_symbol(ent, tok, av1, av2, prt, cls, nullptr, nullptr, nullptr);
     }
 
     /**
@@ -454,7 +454,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     /**
      * The token for the derived attribute
@@ -550,7 +550,7 @@ public:
     DerivedAttributeSymbol *dav;
 
     /**
-     * The agent internal member for time
+     * The entity internal member for time
      * 
      * Used to record the internal symbol created to hold the nect time of occurrence of the self-
      * scheduling derived attribute.

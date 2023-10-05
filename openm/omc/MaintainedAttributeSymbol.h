@@ -28,12 +28,12 @@ public:
      * Morphing constructor
      *
      * @param [in,out] sym If non-null, the symbol.
-     * @param agent        The agent.
+     * @param ent          The entity.
      * @param type         The type.
      * @param decl_loc     (Optional) the declaration location.
      */
-    MaintainedAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : AttributeSymbol(sym, agent, type, decl_loc)
+    MaintainedAttributeSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : AttributeSymbol(sym, ent, type, decl_loc)
     {
     }
 
@@ -41,18 +41,18 @@ public:
      * Constructor by name
      *
      * @param member_name Name of the member.
-     * @param agent       The agent.
+     * @param ent         The entity.
      * @param type        The type.
      * @param decl_loc    (Optional) the declaration location.
      */
-    MaintainedAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : AttributeSymbol(member_name, agent, type, decl_loc)
+    MaintainedAttributeSymbol(const string member_name, const Symbol * ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : AttributeSymbol(member_name, ent, type, decl_loc)
     {
     }
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
-    CodeBlock cxx_definition_agent();
+    CodeBlock cxx_definition_entity();
 
     void post_parse(int pass);
 

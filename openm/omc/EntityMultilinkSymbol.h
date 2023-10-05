@@ -14,7 +14,7 @@ class EntityFuncSymbol;
 using namespace std;
 
 /**
-* Symbol for a multilink member of an agent.
+* Symbol for a multilink member of an entity.
 */
 class EntityMultilinkSymbol : public EntityDataMemberSymbol
 {
@@ -28,12 +28,12 @@ public:
      * Constructor.
      *
      * @param [in,out] sym Symbol to be morphed.
-     * @param agent        The containing agent.
+     * @param ent          The containing entity.
      * @param type         The type of the link in the set, e.g. entity_ptr<Thing>
      * @param decl_loc     (Optional) the declaration location.
      */
-    EntityMultilinkSymbol(Symbol *sym, const Symbol *agent, const Symbol *type, omc::location decl_loc = omc::location())
-        : EntityDataMemberSymbol(sym, agent, type, decl_loc)
+    EntityMultilinkSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, omc::location decl_loc = omc::location())
+        : EntityDataMemberSymbol(sym, ent, type, decl_loc)
         , reciprocal_link(nullptr)
         , reciprocal_multilink(nullptr)
         , side_effects_fn(nullptr)
@@ -50,7 +50,7 @@ public:
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
     /**
      * The reciprocal link if many-to-one

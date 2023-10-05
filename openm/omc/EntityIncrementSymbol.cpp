@@ -34,10 +34,10 @@ void EntityIncrementSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock EntityIncrementSymbol::cxx_declaration_agent()
+CodeBlock EntityIncrementSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // get maximum index used in flattened table (including margin cells)
     auto max_index = table->cell_count() - 1;
@@ -63,7 +63,7 @@ CodeBlock EntityIncrementSymbol::cxx_declaration_agent()
     h += "static const std::string om_name_" + name + ";";
     h += doxygen_short(pretty_name());
     h += "Increment<"
-        + agent->name + ", "
+        + entity->name + ", "
         + increment_storage_type + ", "
         + "&om_name_" + name + ", "
         + "&" + table->init_increment_fn->unique_name + ", "
@@ -80,13 +80,13 @@ CodeBlock EntityIncrementSymbol::cxx_initialization_expression(bool type_default
     return c;
 }
 
-CodeBlock EntityIncrementSymbol::cxx_definition_agent()
+CodeBlock EntityIncrementSymbol::cxx_definition_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock c = super::cxx_definition_agent();
+    CodeBlock c = super::cxx_definition_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    c += "const std::string " + pp_agent->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
+    c += "const std::string " + pp_entity->name + "::om_name_" + name + " = \"" + pretty_name() + "\";";
  
     return c;
 }

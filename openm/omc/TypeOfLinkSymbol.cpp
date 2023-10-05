@@ -9,24 +9,24 @@
 
 using namespace std;
 
-TypeOfLinkSymbol *TypeOfLinkSymbol::get_single(const Symbol *agent)
+TypeOfLinkSymbol *TypeOfLinkSymbol::get_single(const Symbol * ent)
 {
     TypeOfLinkSymbol *ls = nullptr;
-    string type_name = "entity_ptr<" + agent->name + ">";
+    string type_name = "entity_ptr<" + ent->name + ">";
     Symbol *sym = get_symbol(type_name);
     if (sym) ls = dynamic_cast<TypeOfLinkSymbol *>(sym);
-    else ls = new TypeOfLinkSymbol(agent, true);
+    else ls = new TypeOfLinkSymbol(ent, true);
     assert(ls); // logic guarantee
     return ls;
 }
 
-TypeOfLinkSymbol *TypeOfLinkSymbol::get_multi(const Symbol *agent)
+TypeOfLinkSymbol *TypeOfLinkSymbol::get_multi(const Symbol * ent)
 {
     TypeOfLinkSymbol *ls = nullptr;
-    string type_name = "multi_link<" + agent->name + ">";
+    string type_name = "multi_link<" + ent->name + ">";
     Symbol *sym = get_symbol(type_name);
     if (sym) ls = dynamic_cast<TypeOfLinkSymbol *>(sym);
-    else ls = new TypeOfLinkSymbol(agent, false);
+    else ls = new TypeOfLinkSymbol(ent, false);
     assert(ls); // logic guarantee
     return ls;
 }

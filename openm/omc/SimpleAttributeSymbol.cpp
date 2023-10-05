@@ -28,10 +28,10 @@ string SimpleAttributeSymbol::initialization_value(bool type_default) const
     return result;
 }
 
-CodeBlock SimpleAttributeSymbol::cxx_declaration_agent()
+CodeBlock SimpleAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     // add declaration code specific to simple attributes
@@ -41,7 +41,7 @@ CodeBlock SimpleAttributeSymbol::cxx_declaration_agent()
 	h += "typedef AssignableAttribute<"
 		+ pp_data_type->name + ", "
 		+ pp_data_type->exposed_type() + ", "
-		+ agent->name + ", "
+		+ entity->name + ", "
 		+ "&om_name_" + name + ", "
 		+ (is_time_like ? "true" : "false") + ", "
 		+ "&" + side_effects_fn->unique_name + ", "
@@ -95,7 +95,7 @@ void SimpleAttributeSymbol::post_parse(int pass)
 
 			// Morph this SimpleAttributeSymbol to an EntityForeignMemberSymbol.
 			// Morphing changes (in the symbol table) the symbol associated with this name.
-			auto sym = new EntityForeignMemberSymbol(this, agent, data_type, decl_loc);
+			auto sym = new EntityForeignMemberSymbol(this, entity, data_type, decl_loc);
 			// Push the name into the post parse ignore hash for the current pass.
 			pp_symbols_ignore.insert(sym->unique_name);
 

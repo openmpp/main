@@ -25,12 +25,12 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
 {
     if (is_developer_supplied) {
         // Create an EntityFuncSymbol for the time function ('true' means the definition is developer-supplied, so suppress definition)
-        time_func = new EntityFuncSymbol(tfs, agent, "Time", "", true, decl_loc);
-        time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + agent->name + " agent (model code).");
+        time_func = new EntityFuncSymbol(tfs, entity, "Time", "", true, decl_loc);
+        time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + entity->name + " entity (model code).");
 
         // Create an EntityFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
-        implement_func = new EntityFuncSymbol(ifs, agent, "void", "", true, decl_loc);
-        implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + agent->name + " entity (model code).");
+        implement_func = new EntityFuncSymbol(ifs, entity, "void", "", true, decl_loc);
+        implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + entity->name + " entity (model code).");
     }
     else {
         // The functions are created internally (for the internally-generated self-scheduling event)
@@ -121,12 +121,12 @@ void EntityEventSymbol::post_parse(int pass)
             string cover_time_func_name = "om_cover_" + time_func->name;
             auto cover_time_func = new EntityFuncSymbol(
                 cover_time_func_name,
-                agent,
+                entity,
                 "Time",
                 event_memory ? "int * p_event_mem" : "",
                 false
             );
-            cover_time_func->doc_block = doxygen_short("Logging cover function: Return the time to the event " + event_name + " in the " + agent->name + " agent.");
+            cover_time_func->doc_block = doxygen_short("Logging cover function: Return the time to the event " + event_name + " in the " + entity->name + " entity.");
             // Note that the body of the cover time function is supplied in a subsequent pass below
             // Plug in the cover time function to replace the original function
             time_func = cover_time_func;
@@ -135,12 +135,12 @@ void EntityEventSymbol::post_parse(int pass)
             string cover_implement_func_name = "om_cover_" + implement_func->name;
             auto cover_implement_func = new EntityFuncSymbol(
                 cover_implement_func_name,
-                agent,
+                entity,
                 "void",
                 event_memory ? "int event_mem" : "",
                 false
             );
-            cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + agent->name + " entity.");
+            cover_implement_func->doc_block = doxygen_short("Logging cover function: Implement the event " + event_name + " when it occurs in the " + entity->name + " entity.");
             // Note that the body of the cover implement function is supplied in a subsequent pass below
             // Plug in the cover implement function to replace the original function
             implement_func = cover_implement_func;
@@ -153,11 +153,11 @@ void EntityEventSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Add this agent event time symbol to the agent's list of all such symbols
-        pp_agent->pp_agent_events.push_back(this);
+        // Add this entity event time symbol to the entity's list of all such symbols
+        pp_entity->pp_events.push_back(this);
 
-        // Add this agent event time symbol to the agent's list of all callback members
-        pp_agent->pp_callback_members.push_back(this);
+        // Add this entity event time symbol to the entity's list of all callback members
+        pp_entity->pp_callback_members.push_back(this);
         break;
     }
     case ePopulateDependencies:
@@ -169,9 +169,9 @@ void EntityEventSymbol::post_parse(int pass)
         // Iterate through list of identifiers in the body of the time function
         // whose name matches an attribute.
         for (auto& identifier : time_func_original->body_identifiers) {
-            if (exists(identifier, pp_agent)) {
+            if (exists(identifier, pp_entity)) {
                 // identifier is a member of this entity
-                auto sym = get_symbol(identifier, pp_agent);
+                auto sym = get_symbol(identifier, pp_entity);
                 auto av = dynamic_cast<AttributeSymbol *>(sym);
                 if (av) {
                     // Identifier is an attribute of this entity.
@@ -191,9 +191,9 @@ void EntityEventSymbol::post_parse(int pass)
         for (auto& item : time_func_original->body_pointers) {
             auto& A = item.first;
             auto& B = item.second;
-            if (exists(A, pp_agent)) {
+            if (exists(A, pp_entity)) {
                 // A is an attribute of this entity
-                auto sym = get_symbol(A, pp_agent);
+                auto sym = get_symbol(A, pp_entity);
                 auto A_lnk = dynamic_cast<LinkAttributeSymbol*>(sym);
                 if (A_lnk) {
                     // A is a link attribute of this entity.
@@ -202,7 +202,7 @@ void EntityEventSymbol::post_parse(int pass)
                     if (A_lnk->reciprocal_link) {
                         // The reciprocal link is a one-to-one link.
                         // Get the other entity.
-                        auto& B_entity = A_lnk->reciprocal_link->pp_agent;
+                        auto& B_entity = A_lnk->reciprocal_link->pp_entity;
                         if (exists(B, B_entity)) {
                             // B is a member of the other entity.
                             auto sym = get_symbol(B, B_entity);
@@ -215,7 +215,7 @@ void EntityEventSymbol::post_parse(int pass)
                                 // Implement event dependency on change in B attribute value.
                                 CodeBlock& c = B_attribute->side_effects_fn->func_body;
                                 c += injection_description();
-                                c += "// Recalculate time to event " + event_name + " in linked entity " + pp_agent->name;
+                                c += "// Recalculate time to event " + event_name + " in linked entity " + pp_entity->name;
                                 c += "if (om_active) {";
                                 c +=   "if (" + A_lnk->reciprocal_link->name + ") {";
                                 c +=     A_lnk->reciprocal_link->name + "->" + name + ".make_dirty();";
@@ -228,7 +228,7 @@ void EntityEventSymbol::post_parse(int pass)
                         // The reciprocal link is a one-to-many multilink
                         assert(A_lnk->reciprocal_multilink);
                         // Get the other entity
-                        auto& B_entity = A_lnk->reciprocal_multilink->pp_agent;
+                        auto& B_entity = A_lnk->reciprocal_multilink->pp_entity;
                         if (exists(B, B_entity)) {
                             // B is a member of the other entity.
                             auto sym = get_symbol(B, B_entity);
@@ -241,7 +241,7 @@ void EntityEventSymbol::post_parse(int pass)
                                 // Implement event dependency on change in B attribute value.
                                 CodeBlock& c = B_attribute->side_effects_fn->func_body;
                                 c += injection_description();
-                                c += "// Recalculate time to event " + event_name + " in all linked " + pp_agent->name + "s";
+                                c += "// Recalculate time to event " + event_name + " in all linked " + pp_entity->name + "s";
                                 c += "if (om_active) {";
                                 c +=   "for (auto &item : " + A_lnk->reciprocal_multilink->name + ".storage) {";
                                 c +=     "if (item.get() != nullptr) {";
@@ -264,7 +264,7 @@ void EntityEventSymbol::post_parse(int pass)
             ct += "Time event_time = " + time_func_original->name + (event_memory ? "(p_event_mem);" : "();");
             ct += "if (event_trace_on) "
                 "event_trace_msg("
-                "\"" + agent->name + "\", "
+                "\"" + entity->name + "\", "
                 "(int)entity_id, "
                 "(double)age.direct_get(), "
                 "GetCaseSeed(), "
@@ -281,13 +281,13 @@ void EntityEventSymbol::post_parse(int pass)
             CodeBlock& ci = implement_func->func_body;
             ci += "if (event_trace_on) "
                 "event_trace_msg("
-                "\"" + agent->name + "\", "
+                "\"" + entity->name + "\", "
                 "(int)entity_id, "
                 "(double)age.direct_get(), "
                 "GetCaseSeed(), "
                 "\"" + event_name + "\", "
                 + std::to_string(pp_event_id) + ","
-                "\"" + agent->name + "." + event_name + "\", "
+                "\"" + entity->name + "." + event_name + "\", "
                 "(double)time, " // current_time
                 "(double)age, "  // current_age
                 "(double)BaseEvent::get_global_time(), "
@@ -302,17 +302,17 @@ void EntityEventSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock EntityEventSymbol::cxx_declaration_agent()
+CodeBlock EntityEventSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
     int event_id = pp_event_id;
     int modgen_event_num = pp_modgen_event_num;
     h += (event_memory ? "MemoryEvent<" : "Event<")
-        + agent->name + ", "
+        + entity->name + ", "
         + to_string(event_id) + ", "
         + to_string(event_priority) + ", "
         + to_string(modgen_event_num) + ", "

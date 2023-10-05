@@ -33,10 +33,10 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    EntitySetSymbol(Symbol *sym, const Symbol *agent, omc::location decl_loc = omc::location())
+    EntitySetSymbol(Symbol *sym, const Symbol * ent, omc::location decl_loc = omc::location())
         : Symbol(sym, decl_loc)
-        , agent(agent->stable_rp())
-        , pp_agent(nullptr)
+        , entity(ent->stable_rp())
+        , pp_entity(nullptr)
         , cell(nullptr)
         , update_cell_fn(nullptr)
         , insert_fn(nullptr)
@@ -90,26 +90,26 @@ public:
         return dimension_list.size();
     }
     /**
-     * The total number of cells in the agent set
+     * The total number of cells in the entity set
      *
      * @return An int.
      */
     size_t cell_count() const;
 
     /**
-     * Reference to pointer to agent.
+     * Reference to pointer to entity.
      * 
      * Stable to symbol morphing during parse phase.
      */
-    Symbol*& agent;
+    Symbol*& entity;
 
     /**
-     * Direct pointer to agent.
+     * Direct pointer to entity.
      * 
      * For use post-parse.
      */
 
-    EntitySymbol *pp_agent;
+    EntitySymbol *pp_entity;
 
     /**
      * The attribute which will hold the active index into the entity set.
@@ -117,17 +117,17 @@ public:
     EntityInternalSymbol *cell;
 
     /**
-     * The agent function which updates the active cell index using attributes.
+     * The entity function which updates the active cell index using attributes.
      */
     EntityFuncSymbol *update_cell_fn;
 
     /**
-     * The agent function which inserts the agent into the entity set.
+     * The entity function which inserts the entity into the entity set.
      */
     EntityFuncSymbol *insert_fn;
 
     /**
-     * The agent function which removes the agent from the entity set.
+     * The entity function which removes the entity from the entity set.
      */
     EntityFuncSymbol *erase_fn;
 

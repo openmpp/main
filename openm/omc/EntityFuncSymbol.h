@@ -16,9 +16,9 @@
 using namespace std;
 
 /**
-* Symbol for a function member of an agent.
+* Symbol for a function member of an entity.
 *
-* The symbol table contains an EntityFuncSymbol for each agent function,
+* The symbol table contains an EntityFuncSymbol for each entity function,
 * apart from event implement functions, which are represented by EntityEventSymbol's.
 */
 class EntityFuncSymbol : public EntityMemberSymbol
@@ -35,8 +35,8 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    EntityFuncSymbol(Symbol *sym, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, omc::location decl_loc = omc::location())
-        : EntityMemberSymbol(sym, agent, decl_loc)
+    EntityFuncSymbol(Symbol *sym, const Symbol * ent, string return_decl, string arg_list_decl, bool suppress_defn = false, omc::location decl_loc = omc::location())
+        : EntityMemberSymbol(sym, ent, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
@@ -49,14 +49,14 @@ public:
      * Constructor by name.
      *
      * @param name          The name.
-     * @param agent         The agent.
+     * @param ent           The entity.
      * @param return_decl   The return declaration.
      * @param arg_list_decl The argument list declaration.
      * @param suppress_defn (Optional) Suppress definition.
      * @param decl_loc      (Optional) the declaration location.
      */
-    EntityFuncSymbol(const string name, const Symbol *agent, string return_decl, string arg_list_decl, bool suppress_defn = false, omc::location decl_loc = omc::location())
-        : EntityMemberSymbol(name, agent, decl_loc)
+    EntityFuncSymbol(const string name, const Symbol * ent, string return_decl, string arg_list_decl, bool suppress_defn = false, omc::location decl_loc = omc::location())
+        : EntityMemberSymbol(name, ent, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
@@ -69,18 +69,18 @@ public:
      * Constructor by name, with defaults.
      *
      * @param name  The name.
-     * @param agent The agent.
+     * @param ent   The entity.
      */
-    EntityFuncSymbol(const string name, const Symbol *agent)
-        : EntityFuncSymbol(name, agent, "void", "", false)
+    EntityFuncSymbol(const string name, const Symbol * ent)
+        : EntityFuncSymbol(name, ent, "void", "", false)
     {
     }
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
-    CodeBlock cxx_definition_agent();
+    CodeBlock cxx_definition_entity();
 
     /**
      * Checks whether the function body is empty.

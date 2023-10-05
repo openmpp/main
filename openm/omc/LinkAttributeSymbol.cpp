@@ -23,8 +23,8 @@ void LinkAttributeSymbol::post_parse(int pass)
     switch (pass) {
     case ePopulateCollections:
     {
-        // Add this link attribute symbol to the agent's list of all such symbols
-        pp_agent->pp_link_attributes.push_back(this);
+        // Add this link attribute symbol to the entity's list of all such symbols
+        pp_entity->pp_link_attributes.push_back(this);
         break;
     }
     case ePopulateDependencies:
@@ -34,7 +34,7 @@ void LinkAttributeSymbol::post_parse(int pass)
         if (reciprocal_link) {
             // reciprocal link is single
             auto reciprocal = reciprocal_link;
-            c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->agent->name;
+            c += "// Maintain reciprocal single link: " + reciprocal->name + " in " + reciprocal->entity->name;
             c += "if (om_old.get() != nullptr && om_old->" + reciprocal->name + ".get().get() == this) {";
             c += "om_old->" + reciprocal->name + " = nullptr;";
             c += "}";
@@ -47,7 +47,7 @@ void LinkAttributeSymbol::post_parse(int pass)
             // reciprocal link is multi
             assert(reciprocal_multilink); // logic guarantee
             auto reciprocal = reciprocal_multilink;
-            c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->agent->name;
+            c += "// Maintain reciprocal multi-link: " + reciprocal->name + " in " + reciprocal->entity->name;
             c += "if (om_old.get() != nullptr) {";
             c += "om_old->" + reciprocal->name + ".erase(this);";
             c += "}";
@@ -63,28 +63,28 @@ void LinkAttributeSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock LinkAttributeSymbol::cxx_declaration_agent()
+CodeBlock LinkAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    EntitySymbol *reciprocal_agent = nullptr;
+    EntitySymbol *reciprocal_entity = nullptr;
     if (reciprocal_link) {
-        reciprocal_agent = reciprocal_link->pp_agent;
+        reciprocal_entity = reciprocal_link->pp_entity;
     }
     else {
         assert(reciprocal_multilink); // grammar guarantee
-        reciprocal_agent = reciprocal_multilink->pp_agent;
+        reciprocal_entity = reciprocal_multilink->pp_entity;
     }
 
     std::string member_type_name = name + "_om_type";
     h += "typedef LinkAttribute<"
         + pp_data_type->name + ", "
         + "bool, " // allow access to bool cast in wrapped link
-        + agent->name + ", "
-        + reciprocal_agent->name + ", "
+        + entity->name + ", "
+        + reciprocal_entity->name + ", "
         + "&om_name_" + name + ", "
         + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "

@@ -26,13 +26,13 @@ public:
      * Constructor.  Morph a generic symbol to a specialized symbol of this kind.
      *
      * @param [in,out] sym If non-null, the symbol.
-     * @param agent        The agent.
+     * @param ent          The entity.
      * @param data_type    The type.
      * @param decl_loc     (Optional) the declaration location.
      */
 
-    EntityDataMemberSymbol(Symbol *sym, const Symbol *agent, const Symbol *data_type, omc::location decl_loc = omc::location())
-        : EntityMemberSymbol(sym, agent, decl_loc)
+    EntityDataMemberSymbol(Symbol *sym, const Symbol * ent, const Symbol *data_type, omc::location decl_loc = omc::location())
+        : EntityMemberSymbol(sym, ent, decl_loc)
         , data_type(data_type->stable_rp())
         , pp_data_type(nullptr)
         , parent(nullptr)
@@ -46,13 +46,13 @@ public:
      * Constructor.  Create a specialized symbol of this kind with a given name.
      *
      * @param member_name Name of the member.
-     * @param agent       The agent.
+     * @param ent         The entity.
      * @param data_type   The type.
      * @param decl_loc    (Optional) the declaration location.
      */
 
-    EntityDataMemberSymbol(const string member_name, const Symbol *agent, const Symbol *data_type, omc::location decl_loc = omc::location())
-        : EntityMemberSymbol(member_name, agent, decl_loc)
+    EntityDataMemberSymbol(const string member_name, const Symbol * ent, const Symbol *data_type, omc::location decl_loc = omc::location())
+        : EntityMemberSymbol(member_name, ent, decl_loc)
         , data_type(data_type->stable_rp())
         , pp_data_type(nullptr)
         , parent(nullptr)
@@ -189,9 +189,9 @@ public:
     virtual CodeBlock cxx_initialization_expression(bool type_default) const;
 
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
-    CodeBlock cxx_definition_agent();
+    CodeBlock cxx_definition_entity();
 
     /** return C++ type name, raise an exception if type is a string type. */
     const string cxx_type_of(void) const;
@@ -206,12 +206,12 @@ public:
     void post_parse(int pass);
 
     /**
-     * The datatype of the agent member (pointer to pointer)
+     * The datatype of the entity member (pointer to pointer)
      */
     Symbol*& data_type;
 
     /**
-     * The datatype of the agent member (pointer)
+     * The datatype of the entity member (pointer)
      */
     TypeSymbol *pp_data_type;
 

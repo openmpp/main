@@ -25,11 +25,11 @@ public:
      * Constructor by name.
      *
      * @param member_name Name of the member.
-     * @param agent       The agent.
+     * @param ent         The entity.
      * @param type        The type.
      */
-    BuiltinAttributeSymbol(const string member_name, const Symbol *agent, const Symbol *type)
-        : AttributeSymbol(member_name, agent, type)
+    BuiltinAttributeSymbol(const string member_name, const Symbol *ent, const Symbol *type)
+        : AttributeSymbol(member_name, ent, type)
     {
     }
 
@@ -37,17 +37,17 @@ public:
      * Morphing constructor.
      *
      * @param [in,out] sym If non-null, the symbol.
-     * @param agent        The agent.
+     * @param ent          The entity.
      * @param type         The type.
      */
-    BuiltinAttributeSymbol(Symbol *sym, const Symbol *agent, const Symbol *type)
-    : AttributeSymbol(sym, agent, type)
+    BuiltinAttributeSymbol(Symbol *sym, const Symbol * ent, const Symbol *type)
+    : AttributeSymbol(sym, ent, type)
     {
     }
 
     void post_parse(int pass);
 
-    CodeBlock cxx_declaration_agent();
+    CodeBlock cxx_declaration_entity();
 
 };
 

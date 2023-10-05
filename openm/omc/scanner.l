@@ -381,8 +381,8 @@ blank       [ \t]
 
 				/* find existing symbol or create a new one */
                 Symbol *sym = nullptr;
-                Symbol *agent = pc.get_agent_context();
-                if (agent == nullptr) {
+                Symbol * ent = pc.get_entity_context();
+                if (ent == nullptr) {
                     /* Currently in global context */
                     sym = Symbol::get_symbol(word);
                     if (!sym) sym = new Symbol(word, *yylloc);
@@ -393,8 +393,8 @@ blank       [ \t]
                     sym = Symbol::get_symbol(word);
                     if (!sym) {
                         /* Resolve name in entity context */
-                        sym = Symbol::get_symbol(word, agent);
-                        if (!sym) sym = new Symbol(word, agent, *yylloc);
+                        sym = Symbol::get_symbol(word, ent);
+                        if (!sym) sym = new Symbol(word, ent, *yylloc);
                         /* Possibly this was a global name not yet encountered in the source code. */
                         /* This case is handled by fix-up in first pass of Symbol::post_parse() */
                     }

@@ -16,7 +16,7 @@ using namespace std;
 void MultilinkAttributeSymbol::create_auxiliary_symbols()
 {
     // Create an EntityFuncSymbol for the evaluation function
-    evaluate_fn = new EntityFuncSymbol(name + "_evaluate", agent);
+    evaluate_fn = new EntityFuncSymbol(name + "_evaluate", entity);
     evaluate_fn->doc_block = doxygen_short("Evaluate the multilink attribute " + name + ".");
 }
 
@@ -90,11 +90,11 @@ void MultilinkAttributeSymbol::post_parse(int pass)
             assert(func == token::TK_sum_over || func == token::TK_min_over || func == token::TK_max_over);
             Symbol *as = nullptr;
             if (pp_multilink->reciprocal_link) {
-                as = pp_multilink->reciprocal_link->agent;
+                as = pp_multilink->reciprocal_link->entity;
             }
             else {
                 assert(pp_multilink->reciprocal_multilink); // logic guarantee
-                as = pp_multilink->reciprocal_multilink->agent;
+                as = pp_multilink->reciprocal_multilink->entity;
             }
             assert(as); // logic guarantee
             auto sym = Symbol::get_symbol(attribute, as);
@@ -202,7 +202,7 @@ void MultilinkAttributeSymbol::post_parse(int pass)
                 string rlink = pp_multilink->reciprocal_multilink->name;
                 CodeBlock& c = pp_attribute->side_effects_fn->func_body;
                 c += injection_description();
-                c += "// Incremental update of multilink attribute " + name + " for each agent of multilink";
+                c += "// Incremental update of multilink attribute " + name + " for each entity of multilink";
                 c += "for (auto &lnk : " + rlink + ".storage) {";
                 c += "if (lnk.get() != nullptr) {";
                 string typ = pp_data_type->name; // C++ type of the multilink attribute, e.g. 'int', 'double'
@@ -235,16 +235,16 @@ void MultilinkAttributeSymbol::post_parse(int pass)
     }
 }
 
-CodeBlock MultilinkAttributeSymbol::cxx_declaration_agent()
+CodeBlock MultilinkAttributeSymbol::cxx_declaration_entity()
 {
     // Hook into the hierarchical calling chain
-    CodeBlock h = super::cxx_declaration_agent();
+    CodeBlock h = super::cxx_declaration_entity();
 
     // Perform operations specific to this level in the Symbol hierarchy.
     h += "Attribute<" 
         + pp_data_type->name + ", "
         + pp_data_type->exposed_type() + ", "
-        + agent->name + ", "
+        + entity->name + ", "
         + "&om_name_" + name + ", "
         + (is_time_like ? "true" : "false") + ", "
         + "&" + side_effects_fn->unique_name + ", "
@@ -270,24 +270,24 @@ string MultilinkAttributeSymbol::member_name(token_type func, const Symbol *mult
 }
 
 // static
-string MultilinkAttributeSymbol::symbol_name(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute)
+string MultilinkAttributeSymbol::symbol_name(const Symbol * ent, token_type func, const Symbol *multilink, const string attribute)
 {
     string member = MultilinkAttributeSymbol::member_name(func, multilink, attribute);
-    string result = Symbol::symbol_name(member, agent);
+    string result = Symbol::symbol_name(member, ent);
     return result;
 }
 
 //static
-Symbol * MultilinkAttributeSymbol::create_symbol(const Symbol *agent, token_type func, const Symbol *multilink, const string attribute)
+Symbol * MultilinkAttributeSymbol::create_symbol(const Symbol * ent, token_type func, const Symbol *multilink, const string attribute)
 {
     Symbol *sym = nullptr;
-    string unm = MultilinkAttributeSymbol::symbol_name(agent, func, multilink, attribute);
+    string unm = MultilinkAttributeSymbol::symbol_name(ent, func, multilink, attribute);
     auto it = symbols.find(unm);
     if (it != symbols.end())
         sym = it->second;
     else {
         string nm = MultilinkAttributeSymbol::member_name(func, multilink, attribute);
-        auto the_sym = new MultilinkAttributeSymbol(agent, func, multilink, attribute);
+        auto the_sym = new MultilinkAttributeSymbol(ent, func, multilink, attribute);
         the_sym->is_generated = true;
         sym = the_sym;
     }
