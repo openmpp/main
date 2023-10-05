@@ -208,6 +208,8 @@ int main(int argc, char ** argv)
                 case ExitStatus::HELPER_ERROR:
                     theLog->logMsg("FAILED: Helper error");
                     return (int)ExitStatus::HELPER_ERROR;
+                default:
+                    break;  // only to suppress compiler warning: enumerarion value not handled in switch
                 }
                 theLog->logMsg("FAILED", OM_FILE_LINE);
                 return (int)ExitStatus::FAIL;
