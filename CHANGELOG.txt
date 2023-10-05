@@ -1,6 +1,25 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-10-05:
+  c++ core: implement suppress/retain of derived parameters exported as tables
+  c++ core: new EventTrace filter SelectedEntityKinds
+  c++ core: implement order by attribute in entity sets
+  c++ core: revised event dependency report
+  c++ core: experimental option for alternate attribute dependency implementation
+  c++ core: fix model run error if database contain multiple models (error introduced in May 2023)
+  c++ core: use only completed or in progress runs as base run
+  go: delete run: increase transaction scope to avoid integrity errors
+  go oms API: allow to calculate arbitrary comaprison or ad-hoc measure
+  UI and go: output table run comparison
+  UI and go: do not use failed runs as base run
+  UI: automatically lock-unlock workset on parameter edit and note edit
+  UI: automatically lock-unlock workset on parameter upload
+  UI: do not allow to open note editor and edit parameter values at the same time
+  UI: fix page size bug: invisible switch to page size = 100 rows
+  UI: microdata: use boolean attributes as diemnsions
+  Docker: use git version tag to build release
+
 2023-08-03:
   c++ core: transforming derived (model-generated) parameters to output tables
   c++ core: raise runtime error on non-numeric table increment
