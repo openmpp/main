@@ -51,6 +51,7 @@
 #include "Symbol.h"
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
+#include "TableSymbol.h"
 #include "ScenarioSymbol.h"
 #include "AnonGroupSymbol.h"
 #include "EntitySymbol.h"
@@ -765,6 +766,12 @@ int main(int argc, char * argv[])
             {
                 // block for report title
                 rpt << LT("OpenM++ Compilation Report for ") + model_name << '\n';
+                std::time_t time = std::time({});
+                const size_t buf_size = 100;
+                char timeString[buf_size];
+                std::strftime(timeString, buf_size,
+                    "%F %T %Z", std::localtime(&time));
+                rpt << LT("Produced ") << timeString << '\n';
             }
 
             {
@@ -801,18 +808,19 @@ int main(int argc, char * argv[])
                 int all_source_files_lines = mpp_source_files_lines + use_source_files_lines;
 
                 rpt << "\n";
-                rpt << LT("+--------------------------------+\n");
-                rpt << LT("| INPUT (model source code)      |\n");
-                rpt << LT("+--------------+-------+---------+\n");
-                rpt << LT("| Source       | Files |  Lines  |\n");
-                rpt << LT("+--------------+-------+---------+\n");
-                rpt << LT("| Model mpp    | ") << setw(5) << mpp_source_files_count << " | " << setw(7) << mpp_source_files_lines << " |\n";
-                rpt << LT("|   Islands    | ") << setw(5) << " " << " | " << setw(7) << mpp_source_files_island_lines << " |\n";
-                rpt << LT("|   C++        | ") << setw(5) << " " << " | " << setw(7) << mpp_source_files_cpp_lines << " |\n";
-                rpt << LT("| Use mpp      | ") << setw(5) << use_source_files_count << " | " << setw(7) << use_source_files_lines << " |\n";
-                rpt << LT("+--------------+-------+---------+\n");
-                rpt << LT("| Total        | ") << setw(5) << all_source_files_count << " | " << setw(7) << all_source_files_lines << " |\n";
-                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("+---------------------------------+\n");
+                rpt << LT("| CODE INPUT (model source code)  |\n");
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("| Source        | Files |   Lines |\n");
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("| Model modules | ") << setw(5) << mpp_source_files_count << " | " << setw(7) << mpp_source_files_lines << " |\n";
+                rpt << LT("|   Islands     | ") << setw(5) << " " << " | " << setw(7) << mpp_source_files_island_lines << " |\n";
+                rpt << LT("|   C++         | ") << setw(5) << " " << " | " << setw(7) << mpp_source_files_cpp_lines << " |\n";
+                rpt << LT("| Use modules   | ") << setw(5) << use_source_files_count << " | " << setw(7) << use_source_files_lines << " |\n";
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("| Total         | ") << setw(5) << all_source_files_count << " | " << setw(7) << all_source_files_lines << " |\n";
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("Note: Does not include parameter data.\n");
             }
 
             {
@@ -823,17 +831,127 @@ int main(int argc, char * argv[])
                 int total_cpp_lines = type_cpp_lines + decl_cpp_lines + defn_cpp_lines;
 
                 rpt << "\n";
-                rpt << LT("+--------------------------------+\n");
-                rpt << LT("| OUTPUT (generated C++ code)    |\n");
-                rpt << LT("+--------------+-------+---------+\n");
-                rpt << LT("| C++          | Files |  Lines  |\n");
-                rpt << LT("+--------------+-------+---------+\n");
-                rpt << LT("| Types        | ") << setw(5) << 2 << " | " << setw(7) << type_cpp_lines << " |\n";
-                rpt << LT("| Declarations | ") << setw(5) << 1 << " | " << setw(7) << decl_cpp_lines << " |\n";
-                rpt << LT("| Definitions  | ") << setw(5) << 1 << " | " << setw(7) << defn_cpp_lines << " |\n";
-                rpt << LT("+--------------+-------+---------+\n");
-                rpt << LT("| Total        | ") << setw(5) << 4 << " | " << setw(7) << total_cpp_lines << " |\n";
-                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("+---------------------------------+\n");
+                rpt << LT("| CODE OUTPUT (generated C++)     |\n");
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("| C++           | Files |   Lines |\n");
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("| Types         | ") << setw(5) << 2 << " | " << setw(7) << type_cpp_lines << " |\n";
+                rpt << LT("| Declarations  | ") << setw(5) << 1 << " | " << setw(7) << decl_cpp_lines << " |\n";
+                rpt << LT("| Definitions   | ") << setw(5) << 1 << " | " << setw(7) << defn_cpp_lines << " |\n";
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("| Total         | ") << setw(5) << 4 << " | " << setw(7) << total_cpp_lines << " |\n";
+                rpt << LT("+---------------+-------+---------+\n");
+                rpt << LT("Note: Does not include C++ initializers for fixed parameter data.\n");
+            }
+
+            {
+                // block for parameters
+
+                int fixed_count = 0;
+                int fixed_cells = 0;
+                int visible_count = 0;
+                int visible_cells = 0;
+                int hidden_count = 0;
+                int hidden_cells = 0;
+                int derived_count = 0;
+                int derived_cells = 0;
+                for (auto& p : Symbol::pp_all_parameters) {
+                    if (p->source == ParameterSymbol::parameter_source::scenario_parameter) {
+                        if (p->is_hidden) {
+                            ++hidden_count;
+                            hidden_cells += p->size();
+
+                        }
+                        else {
+                            ++visible_count;
+                            visible_cells += p->size();
+
+                        }
+                    }
+                    else if (p->is_derived()) {
+                        ++derived_count;
+                        derived_cells += p->size();
+                    }
+                    else {
+                        ++fixed_count;
+                        fixed_cells += p->size();
+                    }
+                }
+                int all_count = visible_count + hidden_count + derived_count + fixed_count;
+                int all_cells = visible_cells + hidden_cells + derived_cells + fixed_cells;
+
+                rpt << "\n";
+                rpt << LT("+----------------------------------+\n");
+                rpt << LT("| MODEL INPUT (parameters)         |\n");
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("| Kind          | Count |    Cells |\n");
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("| Visible       | ") << setw(5) << visible_count << " | " << setw(8) << visible_cells << " |\n";
+                rpt << LT("| Hidden        | ") << setw(5) << hidden_count << " | " << setw(8) << hidden_cells << " |\n";
+                rpt << LT("| Fixed         | ") << setw(5) << fixed_count << " | " << setw(8) << fixed_cells << " |\n";
+                rpt << LT("| Derived       | ") << setw(5) << derived_count << " | " << setw(8) << derived_cells << " |\n";
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("| Total         | ") << setw(5) << all_count << " | " << setw(8) << all_cells << " |\n";
+                rpt << LT("+---------------+-------+----------+\n");
+            }
+
+            {
+                // block for tables
+
+                int entity_visible_count = 0;
+                int entity_visible_cells = 0;
+                int entity_hidden_count = 0;
+                int entity_hidden_cells = 0;
+                int derived_visible_count = 0;
+                int derived_visible_cells = 0;
+                int derived_hidden_count = 0;
+                int derived_hidden_cells = 0;
+                for (auto& t : Symbol::pp_all_tables) {
+                    if (t->is_entity_table()) {
+                        if (t->is_hidden) {
+                            ++entity_hidden_count;
+                            entity_hidden_cells += t->cell_count() * t->measure_count();
+
+                        }
+                        else {
+                            ++entity_visible_count;
+                            entity_visible_cells += t->cell_count() * t->measure_count();
+                        }
+                    }
+                    else { // is a derived table
+                        if (t->is_hidden) {
+                            ++derived_hidden_count;
+                            derived_hidden_cells += t->cell_count() * t->measure_count();
+
+                        }
+                        else {
+                            ++derived_visible_count;
+                            derived_visible_cells += t->cell_count() * t->measure_count();
+                        }
+                    }
+                }
+                int all_count =  entity_hidden_count + entity_visible_count
+                    + derived_hidden_count + derived_visible_count;
+                int all_cells = entity_hidden_cells + entity_visible_cells
+                    + derived_hidden_cells + derived_visible_cells;
+
+                rpt << "\n";
+                rpt << LT("+----------------------------------+\n");
+                rpt << LT("| MODEL OUTPUT (tables)            |\n");
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("| Kind          | Count |    Cells |\n");
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("| Entity        | ") << setw(5) << "" << " | " << setw(8) << "" << " |\n";
+                rpt << LT("|   Visible     | ") << setw(5) << entity_visible_count << " | " << setw(8) << entity_visible_cells << " |\n";
+                rpt << LT("|   Hidden      | ") << setw(5) << entity_hidden_count << " | " << setw(8) << entity_hidden_cells << " |\n";
+                rpt << LT("| Derived       | ") << setw(5) << "" << " | " << setw(8) << "" << " |\n";
+                rpt << LT("|   Visible     | ") << setw(5) << derived_visible_count << " | " << setw(8) << derived_visible_cells << " |\n";
+                rpt << LT("|   Hidden      | ") << setw(5) << derived_hidden_count << " | " << setw(8) << derived_hidden_cells << " |\n";
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("| Total         | ") << setw(5) << all_count << " | " << setw(8) << all_cells << " |\n";
+                rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("Note: Cells includes margins and expressions.\n");
             }
 
             {
@@ -855,13 +973,18 @@ int main(int argc, char * argv[])
                 }
                 int enumerations_count = classifications_count + ranges_count + partitions_count;
 
-
                 rpt << "\n";
-                rpt << LT("  Enumerations:\n");
-                rpt << LT("    Classification ") << setw(4) << classifications_count << '\n';
-                rpt << LT("    Range          ") << setw(4) << ranges_count << '\n';
-                rpt << LT("    Partition      ") << setw(4) << partitions_count << '\n';
-                rpt << LT("    Total          ") << setw(4) << enumerations_count << '\n';
+                rpt << LT("+------------------------+\n");
+                rpt << LT("| Enumerations           |\n");
+                rpt << LT("+----------------+-------+\n");
+                rpt << LT("| Kind           | Count |\n");
+                rpt << LT("+----------------+-------+\n");
+                rpt << LT("| Classification | ") << setw(5) << classifications_count << " |\n";
+                rpt << LT("| Range          | ") << setw(5) << ranges_count << " |\n";
+                rpt << LT("| Partition      | ") << setw(5) << partitions_count << " |\n";
+                rpt << LT("+----------------+-------+\n");
+                rpt << LT("| Total          | ") << setw(5) << enumerations_count << " |\n";
+                rpt << LT("+----------------+-------+\n");
             }
 
             {

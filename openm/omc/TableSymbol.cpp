@@ -9,11 +9,17 @@
 #include "TableSymbol.h"
 #include "LanguageSymbol.h"
 #include "EnumerationSymbol.h"
+#include "EntityTableSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
 using namespace openm;
+
+bool TableSymbol::is_entity_table(void)
+{
+    return dynamic_cast<EntityTableSymbol*>(this);
+}
 
 void TableSymbol::post_parse(int pass)
 {

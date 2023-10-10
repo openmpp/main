@@ -134,6 +134,11 @@ public:
     virtual string cxx_initializer() const = 0;
 
     /**
+     * True if this is an entity table, otherwise is a derived table
+     */
+    bool is_entity_table(void);
+
+    /**
      * The dimensions in the table
      */
     list<DimensionSymbol *> dimension_list;
