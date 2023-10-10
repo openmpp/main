@@ -801,13 +801,18 @@ int main(int argc, char * argv[])
                 int all_source_files_lines = mpp_source_files_lines + use_source_files_lines;
 
                 rpt << "\n";
-                rpt << LT("  Model Code (input):\n");
-                rpt << LT("             Files  Lines\n");
-                rpt << LT("    mpp       ") << setw(4) << mpp_source_files_count << setw(7) << mpp_source_files_lines << '\n';
-                rpt << LT("      islands ") << setw(4) << " " << setw(7) << mpp_source_files_island_lines << '\n';
-                rpt << LT("      c++     ") << setw(4) << " " << setw(7) << mpp_source_files_cpp_lines << '\n';
-                rpt << LT("    use       ") << setw(4) << use_source_files_count << setw(7) << use_source_files_lines << '\n';
-                rpt << LT("    Total     ") << setw(4) << all_source_files_count << setw(7) << all_source_files_lines << '\n';
+                rpt << LT("+--------------------------------+\n");
+                rpt << LT("| INPUT (model source code)      |\n");
+                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("| Source       | Files |  Lines  |\n");
+                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("| Model mpp    | ") << setw(5) << mpp_source_files_count << " | " << setw(7) << mpp_source_files_lines << " |\n";
+                rpt << LT("|   Islands    | ") << setw(5) << " " << " | " << setw(7) << mpp_source_files_island_lines << " |\n";
+                rpt << LT("|   C++        | ") << setw(5) << " " << " | " << setw(7) << mpp_source_files_cpp_lines << " |\n";
+                rpt << LT("| Use mpp      | ") << setw(5) << use_source_files_count << " | " << setw(7) << use_source_files_lines << " |\n";
+                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("| Total        | ") << setw(5) << all_source_files_count << " | " << setw(7) << all_source_files_lines << " |\n";
+                rpt << LT("+--------------+-------+---------+\n");
             }
 
             {
@@ -818,12 +823,17 @@ int main(int argc, char * argv[])
                 int total_cpp_lines = type_cpp_lines + decl_cpp_lines + defn_cpp_lines;
 
                 rpt << "\n";
-                rpt << LT("  Generated C++ Code (output):\n");
-                rpt << LT("         Files  Lines\n");
-                rpt << LT("    type  ") << setw(4) << 2 << setw(7) << type_cpp_lines << '\n';
-                rpt << LT("    decl  ") << setw(4) << 1 << setw(7) << decl_cpp_lines << '\n';
-                rpt << LT("    defn  ") << setw(4) << 1 << setw(7) << defn_cpp_lines << '\n';
-                rpt << LT("    Total ") << setw(4) << 5 << setw(7) << total_cpp_lines << '\n';
+                rpt << LT("+--------------------------------+\n");
+                rpt << LT("| OUTPUT (generated C++ code)    |\n");
+                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("| C++          | Files |  Lines  |\n");
+                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("| Types        | ") << setw(5) << 2 << " | " << setw(7) << type_cpp_lines << " |\n";
+                rpt << LT("| Declarations | ") << setw(5) << 1 << " | " << setw(7) << decl_cpp_lines << " |\n";
+                rpt << LT("| Definitions  | ") << setw(5) << 1 << " | " << setw(7) << defn_cpp_lines << " |\n";
+                rpt << LT("+--------------+-------+---------+\n");
+                rpt << LT("| Total        | ") << setw(5) << 4 << " | " << setw(7) << total_cpp_lines << " |\n";
+                rpt << LT("+--------------+-------+---------+\n");
             }
 
             {
@@ -928,9 +938,9 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
             drv.parse(&*it, file_name, file_stem, markup_stream);
             // record the line count of the parsed file
-            Symbol::source_files_line_count.insert({ full_name, pc.current_location.end.line });
+            Symbol::source_files_line_count.insert({ full_name, pc.all_line_count });
             // record the syntactic island line count of the parsed file
-            Symbol::source_files_island_line_count.insert({ full_name, pc.syntactic_islands_lines });
+            Symbol::source_files_island_line_count.insert({ full_name, pc.island_line_count });
         }
         catch(exception & ex) {
             theLog->logErr(ex);

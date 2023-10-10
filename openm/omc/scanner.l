@@ -12,8 +12,8 @@
 #include "ParseContext.h"
 #include "ast.h"
 
-/* Copyright (c) 2013-2016 OpenM++
-* This code is licensed under MIT license (see LICENSE.txt for details)
+/* Copyright (c) 2013-2023 OpenM++ Contributors (see AUTHORS.txt)
+* This code is licensed under MIT license (see LICENSE.txt)
 */
 
 /* Work around an incompatibility in flex (at least versions
@@ -54,9 +54,6 @@ blank       [ \t]
 %{
     /* on each invocation to scanner, advance location to just after previously matched token */
     yylloc->step();
-
-    /* note current location */
-    pc.current_location = *yylloc;
 %}
 
 			{
@@ -93,7 +90,8 @@ blank       [ \t]
 			}
 
 <om_code,cxx_code>\" {
-                /* starting quote of string literal */
+                /* start of string literal */
+
 				yylloc->step();
 
                 /* build literal specification (includes quote delimiters) */
@@ -105,7 +103,8 @@ blank       [ \t]
             }
 
 <om_code,cxx_code>\' {
-                /* starting quote of character literal */
+                /* start of character literal */
+
 				yylloc->step();
 
                 /* build literal specification (includes quote delimiters) */
@@ -461,13 +460,54 @@ blank       [ \t]
 "{"|"}"|"("|")"|"["|"]" { /* brace, parenthesis, bracket level maintenance */
                 yylloc->step();
                 switch ( *yytext ) {
-                    case '{': pc.brace_level++; break;
-                    case '}': pc.brace_level--; break;
-                    case '(': pc.parenthesis_level++; break;
-                    case ')': pc.parenthesis_level--; break;
-                    case '[': pc.bracket_level++; break;
-                    case ']': pc.bracket_level--; break;
-                    default: assert(false);
+                case '{': {
+                    pc.brace_level++;
+                    pc.innermost_opening_brace_location = *yylloc;
+                    break;
+                }
+                case '}': {
+                    pc.brace_level--;
+                    if (pc.brace_level == -1) {
+                        pc.error(*yylloc, LT("error: '}' without opening '{'."));
+                        pc.note(pc.innermost_opening_brace_location, LT("note: Location of previous '{'."));
+                        /* reset brace level to avoid error detection cascade */
+                        pc.brace_level = 0;
+                    }
+                    break;
+                }
+                case '(': {
+                    pc.parenthesis_level++;
+                    pc.innermost_opening_parenthesis_location = *yylloc;
+                    break;
+                }
+                case ')': {
+                    pc.parenthesis_level--;
+                    if (pc.parenthesis_level == -1) {
+                        pc.error(*yylloc, LT("error: ')' without opening '('."));
+                        pc.note(pc.innermost_opening_parenthesis_location, LT("note: Location of previous '('."));
+                        /* reset parenthesis level to avoid error detection cascade */
+                        pc.parenthesis_level = 0;
+                    }
+                    break;
+                }
+                case '[': {
+                    pc.bracket_level++;
+                    pc.innermost_opening_bracket_location = *yylloc;
+                    break;
+                }
+                case ']': {
+                    pc.bracket_level--;
+                    if (pc.bracket_level == -1) {
+                        pc.error(*yylloc, LT("error: ']' without opening '['."));
+                        pc.note(pc.innermost_opening_bracket_location, LT("note: Location of previous '['."));
+                        /* reset bracket level to avoid error detection cascade */
+                        pc.bracket_level = 0;
+                    }
+                    break;
+                }
+                default: {
+                    assert(false);
+                }
                 }
 				token_type tok = Symbol::string_to_token(yytext);
                 if (YY_START == om_code) {
@@ -517,7 +557,7 @@ blank       [ \t]
 					    /* transition to C++ code */
 					    BEGIN(cxx_code);
                         /* update total syntactic island lines by the size of this completed island */
-                        pc.syntactic_islands_lines += 1 + yylloc->end.line - pc.syntactic_island_location.begin.line;
+                        pc.island_line_count += 1 + yylloc->end.line - pc.syntactic_island_location.begin.line;
 				    }
                     yylval->val_token = tok;
                     return tok;
@@ -569,6 +609,28 @@ blank       [ \t]
 			}
 
 } /* <om_code,cxx_code> elements of C++ syntax common to ompp and C++ */
+
+<<EOF>>     {
+                if (YY_START == comment) {
+                    pc.error(pc.comment_location, LT("error: unexpected EOF due to unmatched /* */."));
+                }
+                else if (YY_START == om_code) {
+                    pc.error(pc.syntactic_island_location, LT("error: unexpected EOF due to incomplete syntactic island."));
+                }
+                else if (pc.brace_level != 0) {
+                    pc.error(pc.innermost_opening_brace_location, LT("error: unexpected EOF due to unmatched {}."));
+                }
+                else if (pc.parenthesis_level != 0) {
+                    pc.error(pc.innermost_opening_parenthesis_location, LT("error: unexpected EOF due to unmatched ()."));
+                }
+                else if (pc.bracket_level != 0) {
+                    pc.error(pc.innermost_opening_bracket_location, LT("error: unexpected EOF due to unmatched []."));
+                }
+                /* record line count of input file */
+                pc.all_line_count = yylloc->end.line;
+                yyterminate();
+                return (yy::parser::token_type) 0;
+            }
 
 .           {
                 assert(false);  /* not reached */

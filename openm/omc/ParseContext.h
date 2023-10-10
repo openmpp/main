@@ -26,7 +26,8 @@ public:
         , brace_level (0)
         , parenthesis_level (0)
         , bracket_level (0)
-        , syntactic_islands_lines(0)
+        , all_line_count(0)
+        , island_line_count(0)
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
@@ -190,13 +191,18 @@ public:
      */
     void InitializeForModule()
     {
-        current_location.begin.initialize();
-        current_location.end.initialize();
         comment_location.begin.initialize();
         comment_location.end.initialize();
         syntactic_island_location.begin.initialize();
         syntactic_island_location.end.initialize();
-        syntactic_islands_lines = 0;
+        innermost_opening_brace_location.begin.initialize();
+        innermost_opening_brace_location.end.initialize();
+        innermost_opening_parenthesis_location.begin.initialize();
+        innermost_opening_parenthesis_location.end.initialize();
+        innermost_opening_bracket_location.begin.initialize();
+        innermost_opening_bracket_location.end.initialize();
+        all_line_count = 0;
+        island_line_count = 0;
         comment_body = "";
         literal_length = 0;
         literal_specification = "";
@@ -208,7 +214,7 @@ public:
     }
 
     /**
-     * Handle parse error.
+     * Handle parse error with no code location
      *
      * @param m The error message
      */
@@ -219,7 +225,7 @@ public:
     }
 
     /**
-     * Handle parse error at code location.
+     * Handle parse error with code location.
      *
      * @param l The location
      * @param m The error message
@@ -231,14 +237,25 @@ public:
     }
 
     /**
-     * Handle parse warning at code location.
+     * Handle parse warning with code location.
      *
      * @param l The location
-     * @param m The error message
+     * @param m The warning message
      */
     void warning(const omc::location & l, const string & m)
     {
         parse_warnings++;
+        theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
+    }
+
+    /**
+     * Handle parse note with code location.
+     *
+     * @param l The location
+     * @param m The note message
+     */
+    void note(const omc::location& l, const string& m)
+    {
         theLog->logFormatted("%s(%d) : %s", l.begin.filename->c_str(), l.begin.line, m.c_str());
     }
 
@@ -266,11 +283,6 @@ public:
     void process_c_comment(const string& cmt, const omc::location& loc);
 
     /**
-     * current location.
-     */
-    omc::location current_location;
-
-    /**
      * comment location.
      */
     omc::location comment_location;
@@ -279,6 +291,27 @@ public:
      * syntactic island start location.
      */
     omc::location syntactic_island_location;
+
+    /**
+     * innermost opening brace location.
+     *
+     * For error reporting.
+     */
+    omc::location innermost_opening_brace_location;
+
+    /**
+     * innermost opening parenthesis location.
+     *
+     * For error reporting.
+     */
+    omc::location innermost_opening_parenthesis_location;
+
+    /**
+     * innermost opening bracket location.
+     *
+     * For error reporting.
+     */
+    omc::location innermost_opening_bracket_location;
 
     /**
      * comment body.
@@ -311,9 +344,14 @@ public:
 	int bracket_level;
 
     /**
+     * Line count of all input.
+     */
+    int all_line_count;
+
+    /**
      * Line count of syntactic islands.
      */
-    int syntactic_islands_lines;
+    int island_line_count;
 
     /**
      * working counter #1 for parsing.
