@@ -53,6 +53,7 @@
 #include "ParameterSymbol.h"
 #include "ScenarioSymbol.h"
 #include "AnonGroupSymbol.h"
+#include "EntitySymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -376,6 +377,7 @@ int main(int argc, char * argv[])
         //Symbol::all_source_files.swap(source_files);
         // deep copy required because file names must be maintained (code locations use pointer to file name)
         Symbol::all_source_files = source_files;
+        Symbol::mpp_source_files = source_files;
         list<string>::iterator start_it = Symbol::all_source_files.begin();
         parseFiles(Symbol::all_source_files, start_it, pc, &om_developer_cpp);
 
@@ -397,6 +399,7 @@ int main(int argc, char * argv[])
                 theLog->logMsg("No parameter files found, nothing to compile at current directory");
             }
             else {
+                Symbol::dat_source_files = param_files;
                 size_t count_prev = Symbol::all_source_files.size();
                 Symbol::all_source_files.splice(Symbol::all_source_files.end(), param_files);
                 auto start_it = Symbol::all_source_files.begin();
@@ -420,6 +423,7 @@ int main(int argc, char * argv[])
                 theLog->logMsg("No parameter files found at current directory");
             }
             else {
+                Symbol::dat_source_files.insert(Symbol::dat_source_files.end(), parm_files.begin(), parm_files.end());
                 size_t count_prev = Symbol::all_source_files.size();
                 Symbol::all_source_files.splice(Symbol::all_source_files.end(), parm_files);
                 auto start_it = Symbol::all_source_files.begin();
@@ -610,13 +614,13 @@ int main(int argc, char * argv[])
             }
         }
 
-        // block for creation of file with generated event dependencies
+        // block to create file containing generated event dependencies
         {
             std::list<std::string> event_dependencies_csv_content = Symbol::build_event_dependencies_csv();
             const string EventDependencies_csv_name = "EventDependencies.csv";
             if (!event_dependencies_csv_content.empty()) {
-                // There are one or more generated short names.
-                // open output stream for //NAME statements for generated names
+                // There are one or more event dependencies.
+                // Open output stream for csv
                 ofstream EventDependencies_csv(makeFilePath(outDir.c_str(), EventDependencies_csv_name.c_str()), ios::out | ios::trunc | ios::binary);
                 exit_guard<ofstream> onExit_Missing_dat(&EventDependencies_csv, &ofstream::close);   // close on exit
                 if (EventDependencies_csv.fail()) {
@@ -631,7 +635,7 @@ int main(int argc, char * argv[])
                 }
             }
             else {
-                // Model contains no generated names, so delete obsolete GeneratedNames.ompp if present
+                // Model contains no generated names, so delete obsolete EventDependencies.csv if present
                 remove(makeFilePath(inpDir.c_str(), EventDependencies_csv_name.c_str()).c_str());
             }
         }
@@ -712,7 +716,7 @@ int main(int argc, char * argv[])
             }
         }
 
-        // insert model workset int SQLite database
+        // insert model workset into SQLite database
         if (!builder->isSqliteDb()) {
             theLog->logMsg("warning : model SQLite database not created");
         }
@@ -747,6 +751,119 @@ int main(int argc, char * argv[])
 
                 processExtraParamDir(*pdIt, scName, metaRows, builder.get());
             }
+        }
+
+        // block to create file containing omc summary report
+        {
+            const string OmppCompilationReport_txt_name = "OmppCompilationReport.txt";
+            ofstream rpt(makeFilePath(outDir.c_str(), OmppCompilationReport_txt_name.c_str()), ios::out | ios::trunc | ios::binary);
+            if (rpt.fail()) {
+                string msg = "omc : warning : Unable to open " + OmppCompilationReport_txt_name + " for writing.";
+                theLog->logMsg(msg.c_str());
+            }
+
+            {
+                // block for report title
+                rpt << LT("OpenM++ Compilation Report for ") + model_name << '\n';
+            }
+
+            {
+                // block for model code
+                int mpp_source_files_count = Symbol::mpp_source_files.size();
+                int mpp_source_files_lines = 0;
+                int mpp_source_files_island_lines = 0;
+                for (auto& s : Symbol::mpp_source_files) {
+                    {
+                        auto it = Symbol::source_files_line_count.find(s);
+                        if (it != Symbol::source_files_line_count.end()) {
+                            mpp_source_files_lines += it->second;
+                        }
+                    }
+                    {
+                        auto it = Symbol::source_files_island_line_count.find(s);
+                        if (it != Symbol::source_files_island_line_count.end()) {
+                            mpp_source_files_island_lines += it->second;
+                        }
+                    }
+                }
+                int mpp_source_files_cpp_lines = mpp_source_files_lines - mpp_source_files_island_lines;
+
+                int use_source_files_count = Symbol::use_source_files.size();
+                int use_source_files_lines = 0;
+                for (auto& s : Symbol::use_source_files) {
+                    auto it = Symbol::source_files_line_count.find(s);
+                    if (it != Symbol::source_files_line_count.end()) {
+                        use_source_files_lines += it->second;
+                    }
+                }
+
+                int all_source_files_count = mpp_source_files_count + use_source_files_count;
+                int all_source_files_lines = mpp_source_files_lines + use_source_files_lines;
+
+                rpt << "\n";
+                rpt << LT("  Model Code (input):\n");
+                rpt << LT("             Files  Lines\n");
+                rpt << LT("    mpp       ") << setw(4) << mpp_source_files_count << setw(7) << mpp_source_files_lines << '\n';
+                rpt << LT("      islands ") << setw(4) << " " << setw(7) << mpp_source_files_island_lines << '\n';
+                rpt << LT("      c++     ") << setw(4) << " " << setw(7) << mpp_source_files_cpp_lines << '\n';
+                rpt << LT("    use       ") << setw(4) << use_source_files_count << setw(7) << use_source_files_lines << '\n';
+                rpt << LT("    Total     ") << setw(4) << all_source_files_count << setw(7) << all_source_files_lines << '\n';
+            }
+
+            {
+                // block for output code
+                int type_cpp_lines = cg.t0.size() + cg.t1.size();
+                int decl_cpp_lines = cg.h.size();
+                int defn_cpp_lines = cg.c.size();
+                int total_cpp_lines = type_cpp_lines + decl_cpp_lines + defn_cpp_lines;
+
+                rpt << "\n";
+                rpt << LT("  Generated C++ Code (output):\n");
+                rpt << LT("         Files  Lines\n");
+                rpt << LT("    type  ") << setw(4) << 2 << setw(7) << type_cpp_lines << '\n';
+                rpt << LT("    decl  ") << setw(4) << 1 << setw(7) << decl_cpp_lines << '\n';
+                rpt << LT("    defn  ") << setw(4) << 1 << setw(7) << defn_cpp_lines << '\n';
+                rpt << LT("    Total ") << setw(4) << 5 << setw(7) << total_cpp_lines << '\n';
+            }
+
+            {
+                // block for enumerations
+                int classifications_count = 0;
+                int ranges_count = 0;
+                int partitions_count = 0;
+
+                for (auto& e : Symbol::pp_all_enumerations) {
+                    if (e->is_classification()) {
+                        ++classifications_count;
+                    }
+                    if (e->is_range()) {
+                        ++ranges_count;
+                    }
+                    if (e->is_partition()) {
+                        ++partitions_count;
+                    }
+                }
+                int enumerations_count = classifications_count + ranges_count + partitions_count;
+
+
+                rpt << "\n";
+                rpt << LT("  Enumerations:\n");
+                rpt << LT("    Classification ") << setw(4) << classifications_count << '\n';
+                rpt << LT("    Range          ") << setw(4) << ranges_count << '\n';
+                rpt << LT("    Partition      ") << setw(4) << partitions_count << '\n';
+                rpt << LT("    Total          ") << setw(4) << enumerations_count << '\n';
+            }
+
+            {
+                rpt << "\n";
+                rpt << LT("  Entities: ") << setw(4) << Symbol::pp_all_entities.size() << '\n';
+                for (auto& ent : Symbol::pp_all_entities) {
+                    rpt << "    " << ent->name << '\n';
+                }
+            }
+
+            rpt << "\n";
+            rpt.close();
         }
     }
     catch(DbException & ex) {
@@ -810,6 +927,10 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             drv.trace_parsing = Symbol::trace_parsing;
             // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
             drv.parse(&*it, file_name, file_stem, markup_stream);
+            // record the line count of the parsed file
+            Symbol::source_files_line_count.insert({ full_name, pc.current_location.end.line });
+            // record the syntactic island line count of the parsed file
+            Symbol::source_files_island_line_count.insert({ full_name, pc.syntactic_islands_lines });
         }
         catch(exception & ex) {
             theLog->logErr(ex);

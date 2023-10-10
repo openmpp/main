@@ -6,8 +6,8 @@
  * context-dependent information during parsing.  This instance
  * is accessible to the parser, the scanner, and the driver.
  */
-// Copyright (c) 2013-2015 OpenM++
-// This code is licensed under the MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2023 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
 
 #pragma once
 #include "libopenm/omLog.h"
@@ -26,6 +26,7 @@ public:
         , brace_level (0)
         , parenthesis_level (0)
         , bracket_level (0)
+        , syntactic_islands_lines(0)
         , counter1 (0)
         , counter2 (0)
         , counter3 (0)
@@ -46,7 +47,7 @@ public:
         , partition_context(nullptr)
         , parameter_context(nullptr)
     {
-        // The default location constructor for comment_location is fine.
+        // The default location constructor for *_location members is fine.
     }
 
     void reset_working_counters()
@@ -189,8 +190,13 @@ public:
      */
     void InitializeForModule()
     {
+        current_location.begin.initialize();
+        current_location.end.initialize();
         comment_location.begin.initialize();
         comment_location.end.initialize();
+        syntactic_island_location.begin.initialize();
+        syntactic_island_location.end.initialize();
+        syntactic_islands_lines = 0;
         comment_body = "";
         literal_length = 0;
         literal_specification = "";
@@ -260,9 +266,19 @@ public:
     void process_c_comment(const string& cmt, const omc::location& loc);
 
     /**
+     * current location.
+     */
+    omc::location current_location;
+
+    /**
      * comment location.
      */
     omc::location comment_location;
+
+    /**
+     * syntactic island start location.
+     */
+    omc::location syntactic_island_location;
 
     /**
      * comment body.
@@ -293,6 +309,11 @@ public:
      * bracket nesting level.
      */
 	int bracket_level;
+
+    /**
+     * Line count of syntactic islands.
+     */
+    int syntactic_islands_lines;
 
     /**
      * working counter #1 for parsing.

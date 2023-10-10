@@ -71,7 +71,15 @@ vector<string> Symbol::use_folders;
 
 list<string> Symbol::all_source_files;
 
+list<string> Symbol::mpp_source_files;
+
 list<string> Symbol::use_source_files;
+
+list<string> Symbol::dat_source_files;
+
+map<string, int> Symbol::source_files_line_count;
+
+map<string, int> Symbol::source_files_island_line_count;
 
 symbol_map_type Symbol::symbols;
 

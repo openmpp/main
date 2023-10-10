@@ -54,6 +54,9 @@ blank       [ \t]
 %{
     /* on each invocation to scanner, advance location to just after previously matched token */
     yylloc->step();
+
+    /* note current location */
+    pc.current_location = *yylloc;
 %}
 
 			{
@@ -415,6 +418,8 @@ blank       [ \t]
                     if (pc.brace_level == 0 && pc.parenthesis_level == 0) {
                         /* transition to openM++ declarative island */
     				    BEGIN(om_code);
+                        /* note location of start of ompp declarative island */
+                        pc.syntactic_island_location = *yylloc;
                         yylval->val_token = tok;
                         /* special case to force a string look-ahead token following 'options' to be STRING */
                         if (tok == token::TK_options) {
@@ -511,6 +516,8 @@ blank       [ \t]
 				    if ((tok == token::TK_SEMICOLON) && (pc.brace_level == 0)) {
 					    /* transition to C++ code */
 					    BEGIN(cxx_code);
+                        /* update total syntactic island lines by the size of this completed island */
+                        pc.syntactic_islands_lines += 1 + yylloc->end.line - pc.syntactic_island_location.begin.line;
 				    }
                     yylval->val_token = tok;
                     return tok;

@@ -949,6 +949,15 @@ public:
      */
     static list<string> all_source_files;
 
+    /**
+     * 'mpp' source files for the model.
+     *
+     * A subset of all_source_files, consisting just of those which
+     * were found in the model code directory.
+     * It includes both mpp and ompp files.
+     */
+    static list<string> mpp_source_files;
+
 	/**
      * 'use' source files for the model.
      * 
@@ -956,6 +965,29 @@ public:
      * were included in compilation through a 'use' statement.
      */
     static list<string> use_source_files;
+
+    /**
+     * 'dat' source files for the model.
+     *
+     * A subset of all_source_files, consisting just of those which
+     * specified were found in the model code directory.
+     * It includes both mpp and ompp files.
+     */
+    static list<string> dat_source_files;
+
+    /**
+     * line counts of parsed files.
+     * 
+     * key is full name with path
+     */
+    static map<string, int> source_files_line_count;
+
+    /**
+     * Syntactic island line counts of parsed files.
+     *
+     * key is full name with path
+     */
+    static map<string, int> source_files_island_line_count;
 
     /**
      * The symbol table.
