@@ -354,9 +354,7 @@ public:
      * The RNG streams used in the entity
      *
      * Includes RNG streams used in the entity member functions,
-     * e.g. calls like RandUniform(12)
-     * as well as use of RNG streams in entity sets,
-     * e.g. 
+     * e.g. calls like RandUniform(12), RandNormal(13), RandLogistic(14)
      */
     set<int> pp_rng_streams;
 

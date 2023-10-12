@@ -8,9 +8,27 @@
 #include <cassert>
 #include "MaintainedAttributeSymbol.h"
 #include "EntitySymbol.h"
+#include "IdentityAttributeSymbol.h"
+#include "DerivedAttributeSymbol.h"
+#include "MultilinkAttributeSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
+
+bool MaintainedAttributeSymbol::is_identity(void)
+{
+    return dynamic_cast<IdentityAttributeSymbol *>(this);
+}
+
+bool MaintainedAttributeSymbol::is_derived(void)
+{
+    return dynamic_cast<DerivedAttributeSymbol*>(this);
+}
+
+bool MaintainedAttributeSymbol::is_multilink_aggregate(void)
+{
+    return dynamic_cast<MultilinkAttributeSymbol*>(this);
+}
 
 CodeBlock MaintainedAttributeSymbol::cxx_declaration_entity()
 {

@@ -50,6 +50,21 @@ public:
     {
     }
 
+    /**
+     * True if is an identity attribute
+     */
+    bool is_identity(void);
+
+    /**
+     * True if is a derived attribute
+     */
+    bool is_derived(void);
+
+    /**
+     * True if is a multilink aggregate
+     */
+    bool is_multilink_aggregate(void);
+
     CodeBlock cxx_declaration_entity();
 
     CodeBlock cxx_definition_entity();

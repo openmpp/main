@@ -55,6 +55,11 @@
 #include "ScenarioSymbol.h"
 #include "AnonGroupSymbol.h"
 #include "EntitySymbol.h"
+#include "EntityDataMemberSymbol.h"
+#include "MaintainedAttributeSymbol.h"
+#include "EntitySetSymbol.h"
+#include "EntityTableSymbol.h"
+#include "EntityEventSymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -842,7 +847,7 @@ int main(int argc, char * argv[])
                 rpt << LT("+---------------+-------+---------+\n");
                 rpt << LT("| Total         | ") << setw(5) << 4 << " | " << setw(7) << total_cpp_lines << " |\n";
                 rpt << LT("+---------------+-------+---------+\n");
-                rpt << LT("Note: Does not include C++ initializers for fixed parameter data.\n");
+                rpt << LT("Note: Does not include C++ initializers for burned-in parameter data.\n");
             }
 
             {
@@ -889,11 +894,12 @@ int main(int argc, char * argv[])
                 rpt << LT("+---------------+-------+----------+\n");
                 rpt << LT("| Visible       | ") << setw(5) << visible_count << " | " << setw(8) << visible_cells << " |\n";
                 rpt << LT("| Hidden        | ") << setw(5) << hidden_count << " | " << setw(8) << hidden_cells << " |\n";
-                rpt << LT("| Fixed         | ") << setw(5) << fixed_count << " | " << setw(8) << fixed_cells << " |\n";
+                rpt << LT("| Burned-in     | ") << setw(5) << fixed_count << " | " << setw(8) << fixed_cells << " |\n";
                 rpt << LT("| Derived       | ") << setw(5) << derived_count << " | " << setw(8) << derived_cells << " |\n";
                 rpt << LT("+---------------+-------+----------+\n");
                 rpt << LT("| Total         | ") << setw(5) << all_count << " | " << setw(8) << all_cells << " |\n";
                 rpt << LT("+---------------+-------+----------+\n");
+                rpt << LT("Note: Burned-in includes fixed and suppressed parameters.\n");
             }
 
             {
@@ -931,7 +937,7 @@ int main(int argc, char * argv[])
                         }
                     }
                 }
-                int all_count =  entity_hidden_count + entity_visible_count
+                int all_count = entity_hidden_count + entity_visible_count
                     + derived_hidden_count + derived_visible_count;
                 int all_cells = entity_hidden_cells + entity_visible_cells
                     + derived_hidden_cells + derived_visible_cells;
@@ -955,47 +961,157 @@ int main(int argc, char * argv[])
             }
 
             {
-                // block for enumerations
-                int classifications_count = 0;
-                int ranges_count = 0;
-                int partitions_count = 0;
+                // block for selected objects
+                int language_count = Symbol::pp_all_languages.size();
+                int type_count = Symbol::pp_all_types0.size() + Symbol::pp_all_types1.size();
 
+                int classification_count = 0;
+                int range_count = 0;
+                int partition_count = 0;
+
+                int enumeration_count = Symbol::pp_all_enumerations.size();
                 for (auto& e : Symbol::pp_all_enumerations) {
                     if (e->is_classification()) {
-                        ++classifications_count;
+                        ++classification_count;
                     }
                     if (e->is_range()) {
-                        ++ranges_count;
+                        ++range_count;
                     }
                     if (e->is_partition()) {
-                        ++partitions_count;
+                        ++partition_count;
                     }
                 }
-                int enumerations_count = classifications_count + ranges_count + partitions_count;
+                int aggregation_count = Symbol::pp_all_aggregations.size();
+
+                int table_count = Symbol::pp_all_tables.size();
+                int parameter_count = Symbol::pp_all_parameters.size();
+                int parameter_group_count = Symbol::pp_all_parameter_groups.size();
+                int table_group_count = Symbol::pp_all_table_groups.size();
+                int group_count = parameter_group_count + table_group_count;
+
+                int entity_count = 0;
+                int entity_set_count = 0;
+                int entity_event_count = 0;
+                int entity_function_count = 0;
+                int entity_rng_count = 0;
+                int entity_data_member_count = 0;
+                int entity_link_count = 0;
+                int entity_attribute_count = 0;
+                int entity_data_member_other_count = 0;
+
+                for (auto& e : Symbol::pp_all_entities) {
+                    ++entity_count;
+                    entity_set_count += e->pp_sets.size();
+                    entity_event_count += e->pp_events.size();
+                    entity_function_count += e->pp_functions.size();
+                    entity_rng_count += e->pp_rng_streams.size();
+                    entity_link_count += e->pp_link_attributes.size() + e->pp_multilink_members.size();
+                    for (auto& m : e->pp_data_members) {
+                        ++entity_data_member_count;
+                        if (m->is_link_attribute() || m->is_multilink()) {
+                            ++entity_link_count;
+                        }
+                        else if (m->is_attribute()) {
+                            ++entity_attribute_count;
+                        }
+                        else {
+                            ++entity_data_member_other_count;
+                        }
+                    }
+                }
 
                 rpt << "\n";
-                rpt << LT("+------------------------+\n");
-                rpt << LT("| Enumerations           |\n");
-                rpt << LT("+----------------+-------+\n");
-                rpt << LT("| Kind           | Count |\n");
-                rpt << LT("+----------------+-------+\n");
-                rpt << LT("| Classification | ") << setw(5) << classifications_count << " |\n";
-                rpt << LT("| Range          | ") << setw(5) << ranges_count << " |\n";
-                rpt << LT("| Partition      | ") << setw(5) << partitions_count << " |\n";
-                rpt << LT("+----------------+-------+\n");
-                rpt << LT("| Total          | ") << setw(5) << enumerations_count << " |\n";
-                rpt << LT("+----------------+-------+\n");
+                rpt << LT("+--------------------------+\n");
+                rpt << LT("| OBJECTS (selected)       |\n");
+                rpt << LT("+------------------+-------+\n");
+                rpt << LT("| Description      | Count |\n");
+                rpt << LT("+------------------+-------+\n");
+                rpt << LT("| Language (human) | ") << setw(5) << language_count << " |\n";
+                rpt << LT("| Enumeration      | ") << setw(5) << "" << " |\n";
+                rpt << LT("|   Classification | ") << setw(5) << classification_count << " |\n";
+                rpt << LT("|   Range          | ") << setw(5) << range_count << " |\n";
+                rpt << LT("|   Partition      | ") << setw(5) << partition_count << " |\n";
+                rpt << LT("|   Aggregation    | ") << setw(5) << entity_count << " |\n";
+                rpt << LT("| Input/Output     | ") << setw(5) << "" << " |\n";
+                rpt << LT("|   Parameter      | ") << setw(5) << parameter_count << " |\n";
+                rpt << LT("|   Table          | ") << setw(5) << table_count << " |\n";
+                rpt << LT("|   Group          | ") << setw(5) << group_count << " |\n";
+                rpt << LT("| Entity           | ") << setw(5) << "" << " |\n";
+                rpt << LT("|   # of kinds     | ") << setw(5) << entity_count << " |\n";
+                rpt << LT("|   Set            | ") << setw(5) << entity_set_count << " |\n";
+                rpt << LT("|   Link           | ") << setw(5) << entity_link_count << " |\n";
+                rpt << LT("|   Attribute      | ") << setw(5) << entity_attribute_count << " |\n";
+                rpt << LT("|   RNG            | ") << setw(5) << entity_rng_count << " |\n";
+                rpt << LT("+------------------+-------+\n");
             }
 
             {
-                rpt << "\n";
-                rpt << LT("  Entities: ") << setw(4) << Symbol::pp_all_entities.size() << '\n';
-                for (auto& ent : Symbol::pp_all_entities) {
-                    rpt << "    " << ent->name << '\n';
-                }
-            }
+                // block for maintained dependencies
+                int link_dependency_count = 0;
+                int attribute_dependency_count = 0;
+                int identity_attribute_dependency_count = 0;
+                int derived_attribute_dependency_count = 0;
+                int multilink_aggregate_dependency_count = 0;
+                int table_dependency_count = 0;
+                int set_dependency_count = 0;
+                int event_dependency_count = 0;
+                int all_dependency_count = 0;
 
-            rpt << "\n";
+                for (auto& e : Symbol::pp_all_entities) {
+                    for (auto& m : e->pp_data_members) {
+                        if (m->is_link_attribute() || m->is_multilink()) {
+                            ++link_dependency_count; // each link has a maintained reciprocal link
+                        }
+                        else if (m->is_maintained_attribute()) {
+                            auto ma = dynamic_cast<MaintainedAttributeSymbol*>(m);
+                            assert(ma); // logic guarantee
+                            auto deps = ma->pp_dependent_attributes.size();
+                            attribute_dependency_count += deps;
+                            if (ma->is_identity()) {
+                                identity_attribute_dependency_count += deps;
+                            }
+                            else if (ma->is_derived()) {
+                                derived_attribute_dependency_count += deps;
+                            }
+                            else if (ma->is_multilink_aggregate()) {
+                                multilink_aggregate_dependency_count += deps;
+                            }
+                            else {
+                                assert(false); // not reached
+                            }
+                        }
+                    }
+                    for (auto& t : e->pp_tables) {
+                        table_dependency_count += t->dimension_count() + (t->filter != nullptr);
+                    }
+                    for (auto& s : e->pp_sets) {
+                        set_dependency_count += s->dimension_count() + (s->filter != nullptr) + (s->pp_order_attribute != nullptr);
+                    }
+                    for (auto& evt : e->pp_events) {
+                        event_dependency_count += evt->pp_attribute_dependencies.size() + evt->pp_linked_attribute_dependencies.size();
+                    }
+                }
+                all_dependency_count = link_dependency_count + attribute_dependency_count + table_dependency_count + set_dependency_count + event_dependency_count;
+
+                rpt << "\n";
+                rpt << LT("+---------------------------------+\n");
+                rpt << LT("| MAINTAINED DEPENDENCIES         |\n");
+                rpt << LT("| (in generated C++ runtime code) |\n");
+                rpt << LT("+-------------------------+-------+\n");
+                rpt << LT("| Dependency              | Count |\n");
+                rpt << LT("+-------------------------+-------+\n");
+                rpt << LT("| Reciprocal link         | ") << setw(5) << link_dependency_count << " |\n";
+                rpt << LT("| Attribute maintenance   | ") << setw(5) << "" << " |\n";
+                rpt << LT("|   Identity              | ") << setw(5) << identity_attribute_dependency_count << " |\n";
+                rpt << LT("|   Derived               | ") << setw(5) << derived_attribute_dependency_count << " |\n";
+                rpt << LT("|   Multilink aggregate   | ") << setw(5) << multilink_aggregate_dependency_count << " |\n";
+                rpt << LT("| Table dimension/filter  | ") << setw(5) << table_dependency_count << " |\n";
+                rpt << LT("| Set dimension/filter    | ") << setw(5) << set_dependency_count << " |\n";
+                rpt << LT("| Event maintenance       | ") << setw(5) << event_dependency_count << " |\n";
+                rpt << LT("+-------------------------+-------+\n");
+                rpt << LT("| Total                   | ") << setw(5) << all_dependency_count << " |\n";
+                rpt << LT("+-------------------------+-------+\n");
+            }
             rpt.close();
         }
     }
