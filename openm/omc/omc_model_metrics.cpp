@@ -17,6 +17,7 @@
 #include "EntitySymbol.h"
 #include "EntityDataMemberSymbol.h"
 #include "EnumerationSymbol.h"
+#include "AggregationSymbol.h"
 #include "MaintainedAttributeSymbol.h"
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
@@ -56,7 +57,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
     }
 
     {
-        // block for model code
+        // block for CODE INPUT table
         int mpp_source_files_count = Symbol::mpp_source_files.size();
         int mpp_source_files_lines = 0;
         int mpp_source_files_island_lines = 0;
@@ -123,7 +124,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
     }
 
     {
-        // block for output code
+        // block for CODE OUTPUT table
         int decl_cpp_lines = cg.h.size() + cg.t0.size() + cg.t1.size();;
         int defn_cpp_lines = cg.c.size();
         int total_cpp_lines = decl_cpp_lines + defn_cpp_lines;
@@ -161,8 +162,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
     }
 
     {
-        // block for parameters
-
+        // block for MODEL INPUT table
         int fixed_count = 0;
         int fixed_cells = 0;
         int visible_count = 0;
@@ -213,8 +213,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
     }
 
     {
-        // block for tables
-
+        // block for MODEL OUTPUT table
         int entity_visible_count = 0;
         int entity_visible_cells = 0;
         int entity_hidden_count = 0;
@@ -279,6 +278,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
     }
 
     {
+        // block for MODEL SYMBOLS table
         int language_count = 0;
         int language_labels = 0;
         int language_notes = 0;
@@ -315,7 +315,14 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             }
         }
 
-        int aggregation_count = Symbol::pp_all_aggregations.size();
+        int aggregation_count = 0;
+        int aggregation_labels = 0;
+        int aggregation_notes = 0;
+        for (auto& s : Symbol::pp_all_aggregations) {
+            ++aggregation_count;
+            aggregation_labels += s->is_label_supplied();
+            aggregation_notes += s->is_note_supplied();
+        }
 
         int parameter_count = 0;
         int parameter_labels = 0;
@@ -405,16 +412,16 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
 
         rpt << "\n";
         rpt << LT("+-------------------------------------------+\n");
-        rpt << LT("| OBJECTS (selected)                        |\n");
+        rpt << LT("| MODEL SYMBOLS                             |\n");
         rpt << LT("+-------------------+-------+-------+-------+\n");
-        rpt << LT("| Description       | Count | Label | Note  |\n");
+        rpt << LT("| Description       | Count | Label |  Note |\n");
         rpt << LT("+-------------------+-------+-------+-------+\n");
         rpt << LT("| Language (human)  | ") << setw(5) << language_count << " | " << setw(5) << language_labels << " | " << setw(5) << language_notes << " |\n";
         rpt << LT("| Enumeration       | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Classification  | ") << setw(5) << classification_count << " | " << setw(5) << classification_labels << " | " << setw(5) << classification_notes << " |\n";
         rpt << LT("|   Range           | ") << setw(5) << range_count << " | " << setw(5) << range_labels << " | " << setw(5) << range_notes << " |\n";
         rpt << LT("|   Partition       | ") << setw(5) << partition_count << " | " << setw(5) << partition_labels << " | " << setw(5) << partition_notes << " |\n";
-        rpt << LT("|   Aggregation     | ") << setw(5) << entity_count << " |\n";
+        rpt << LT("|   Aggregation     | ") << setw(5) << aggregation_count << " | " << setw(5) << aggregation_labels << " | " << setw(5) << aggregation_notes << " |\n";
         rpt << LT("| Input/Output      | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Parameter       | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
         rpt << LT("|   Table           | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
@@ -423,12 +430,120 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("|   Set             | ") << setw(5) << entity_set_count << " | " << setw(5) << entity_set_labels << " | " << setw(5) << entity_set_notes << " |\n";
         rpt << LT("|   Link            | ") << setw(5) << entity_link_count << " | " << setw(5) << entity_link_labels << " | " << setw(5) << entity_link_notes << " |\n";
         rpt << LT("|   Attribute       | ") << setw(5) << entity_attribute_count << " | " << setw(5) << entity_attribute_labels << " | " << setw(5) << entity_attribute_notes << " |\n";
-        rpt << LT("|   RNG             | ") << setw(5) << entity_rng_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Random streams  | ") << setw(5) << entity_rng_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("+-------------------+-------+-------+-------+\n");
     }
 
     {
-        // block for maintained dependencies
+        // block for PUBLISHED SYMBOLS table
+        int language_count = 0;
+        int language_labels = 0;
+        int language_notes = 0;
+        for (auto& s : Symbol::pp_all_languages) {
+            ++language_count;
+            language_labels += s->is_label_supplied();
+            language_notes += s->is_note_supplied();
+        }
+
+        int classification_count = 0;
+        int classification_labels = 0;
+        int classification_notes = 0;
+        int range_count = 0;
+        int range_labels = 0;
+        int range_notes = 0;
+        int partition_count = 0;
+        int partition_labels = 0;
+        int partition_notes = 0;
+        for (auto& s : Symbol::pp_all_enumerations) {
+            if (!s->metadata_needed) {
+                // skip enumerations which are not published
+                continue;
+            }
+            if (s->is_classification()) {
+                ++classification_count;
+                classification_labels += s->is_label_supplied();
+                classification_notes += s->is_note_supplied();
+            }
+            if (s->is_range()) {
+                ++range_count;
+                range_labels += s->is_label_supplied();
+                range_notes += s->is_note_supplied();
+            }
+            if (s->is_partition()) {
+                ++partition_count;
+                partition_labels += s->is_label_supplied();
+                partition_notes += s->is_note_supplied();
+            }
+        }
+
+        int parameter_count = 0;
+        int parameter_labels = 0;
+        int parameter_notes = 0;
+        for (auto& s : Symbol::pp_all_parameters) {
+            if (s->source != ParameterSymbol::parameter_source::scenario_parameter && !s->publish_as_table) {
+                // skip parameters which are not published
+                continue;
+            }
+            ++parameter_count;
+            parameter_labels += s->is_label_supplied();
+            parameter_notes += s->is_note_supplied();
+        }
+
+        int table_count = 0;
+        int table_labels = 0;
+        int table_notes = 0;
+        for (auto& s : Symbol::pp_all_tables) {
+            if (s->is_internal) {
+                // skip tables which are not published
+                continue;
+            }
+            ++table_count;
+            table_labels += s->is_label_supplied();
+            table_notes += s->is_note_supplied();
+        }
+
+        int group_count = 0;
+        int group_labels = 0;
+        int group_notes = 0;
+        for (auto& s : Symbol::pp_all_parameter_groups) {
+            if (!s->contains_scenario_parameter()) {
+                // skip parameter groups which are not published
+                continue;
+            }
+            ++group_count;
+            group_labels += s->is_label_supplied();
+            group_notes += s->is_note_supplied();
+        }
+        for (auto& s : Symbol::pp_all_table_groups) {
+            if (!s->contains_published_table()) {
+                // skip table groups which are not published
+                continue;
+            }
+            ++group_count;
+            group_labels += s->is_label_supplied();
+            group_notes += s->is_note_supplied();
+        }
+
+        rpt << "\n";
+        rpt << LT("+-------------------------------------------+\n");
+        rpt << LT("| PUBLISHED SYMBOLS                         |\n");
+        rpt << LT("+-------------------+-------+-------+-------+\n");
+        rpt << LT("| Description       | Count | Label |  Note |\n");
+        rpt << LT("+-------------------+-------+-------+-------+\n");
+        rpt << LT("| Language (human)  | ") << setw(5) << language_count << " | " << setw(5) << language_labels << " | " << setw(5) << language_notes << " |\n";
+        rpt << LT("| Enumeration       | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Classification  | ") << setw(5) << classification_count << " | " << setw(5) << classification_labels << " | " << setw(5) << classification_notes << " |\n";
+        rpt << LT("|   Range           | ") << setw(5) << range_count << " | " << setw(5) << range_labels << " | " << setw(5) << range_notes << " |\n";
+        rpt << LT("|   Partition       | ") << setw(5) << partition_count << " | " << setw(5) << partition_labels << " | " << setw(5) << partition_notes << " |\n";
+        rpt << LT("| Input/Output      | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Parameter       | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
+        rpt << LT("|   Table           | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
+        rpt << LT("|   Group           | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
+        rpt << LT("+-------------------+-------+-------+-------+\n");
+    }
+
+    {
+        // block for MAINTAINED DEPENDENCIES table
         int link_dependency_count = 0;
         int attribute_dependency_count = 0;
         int identity_attribute_dependency_count = 0;

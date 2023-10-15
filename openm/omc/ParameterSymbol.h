@@ -390,7 +390,7 @@ public:
      /**
      * True if a derived parameter marked publish_as_table is marked for suppression
      *
-     * A derived parameter marked as publsih_as_table can be marked for suppression
+     * A derived parameter marked as publish_as_table can be marked for suppression
      * by tables_suppress or tables_retain.
      */
     bool is_suppressed;
