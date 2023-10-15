@@ -560,6 +560,15 @@ public:
     vector<bool> pp_labels_explicit;
 
     /**
+     * True if symbol label was provided explicitly in model source for the default language
+     */
+    bool is_label_supplied(void) const
+    {
+        // 0 is the default language
+        return (pp_labels_explicit.size() == 0) ? false : pp_labels_explicit[0];
+    }
+
+    /**
      * Search for and process a comment label at a source line.
      *
      * @param pos The position.
@@ -572,6 +581,15 @@ public:
      * The symbol notes for each language.
      */
     vector<string> pp_notes;
+
+    /**
+     * True if symbol note was provided explicitly in model source for the default language
+     */
+    bool is_note_supplied(void) const
+    {
+        // 0 is the default language
+        return (pp_notes.size() == 0) ? false : (pp_notes[0].size() > 0);
+    }
 
     /**
      * Unique name lexicographically-compatible with Modgen order for code generation compatibility

@@ -93,6 +93,26 @@ public:
     }
 
     /**
+     * Determines if the function is a side-effects function.
+     *
+     * @return true if a side-effect function, false otherwise.
+     */
+    bool is_side_effects() const
+    {
+        return (0 == name.find("om_side_effects_"));
+    }
+
+    /**
+     * Determines if the function is a notify function.
+     *
+     * @return true if a notify function, false otherwise.
+     */
+    bool is_notify() const
+    {
+        return (0 == name.find("om_notify_"));
+    }
+
+    /**
      * The comment block which immediately preceeds the function declaration.
      */
     CodeBlock doc_block;
