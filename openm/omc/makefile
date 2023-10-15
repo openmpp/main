@@ -137,6 +137,7 @@ NumericSymbol.cpp \
 omc.cpp \
 omc_csv.cpp \
 omc_file.cpp \
+omc_model_code_metrics.cpp \
 ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
 ParseContext.cpp \
