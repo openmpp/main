@@ -681,6 +681,8 @@ string Symbol::code_page;
 
 bool Symbol::no_line_directives = false;
 
+bool Symbol::no_metadata = true;
+
 bool Symbol::trace_parsing = false;
 
 bool Symbol::trace_scanning = false;

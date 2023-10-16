@@ -1618,6 +1618,11 @@ public:
     static bool no_line_directives;
 
     /**
+     * True to suppress the metadata publishing phase of model build
+     */
+    static bool no_metadata;
+
+    /**
      * True to enable detailed output from parser
      */
     static bool trace_parsing;

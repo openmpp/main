@@ -118,7 +118,7 @@
       <PUBLISH_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir), $(PUBLISH_DIR)))</PUBLISH_DIR_REL>
       <OMC_OUT_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir), $(OMC_OUT_DIR)))</OMC_OUT_DIR_REL>
     </PropertyGroup>
-    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR_REL) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT) -Omc.SqliteDir $(PUBLISH_DIR_REL)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -o $(OMC_OUT_DIR_REL) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_NO_METADATA_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT) -Omc.SqliteDir $(PUBLISH_DIR_REL)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />

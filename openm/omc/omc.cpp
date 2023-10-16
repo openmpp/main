@@ -99,6 +99,9 @@ namespace openm
         /** omc suppress #line directives in generated cpp files */
         static constexpr const char * noLineDirectives = "Omc.NoLineDirectives";
 
+        /** omc suppress metadata publishing (model cannot be run) */
+        static constexpr const char* noMetadata = "Omc.NoMetadata";
+
         /** omc generate detailed output from parser */
         static constexpr const char * traceParsing = "Omc.TraceParsing";
 
@@ -160,6 +163,7 @@ namespace openm
         OmcArgKey::fixedDir,
         OmcArgKey::codePage,
         OmcArgKey::noLineDirectives,
+        OmcArgKey::noMetadata,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
@@ -318,6 +322,9 @@ int main(int argc, char * argv[])
 
         // Obtain information on generation of #line directives, default: false
         Symbol::no_line_directives = parseBoolOption(OmcArgKey::noLineDirectives, argStore);
+
+        // Obtain information on disabling metadata publishing, default: false
+        Symbol::no_metadata = parseBoolOption(OmcArgKey::noMetadata, argStore);
 
         // Obtain information on detailed parsing option, default: false
         Symbol::trace_parsing = parseBoolOption(OmcArgKey::traceParsing, argStore);
@@ -668,8 +675,14 @@ int main(int argc, char * argv[])
         theLog->logMsg("Meta-data processing");
         buildMessageIni(metaRows, inpDir, outDir, Symbol::code_page.c_str(), Symbol::tran_strings);
 
-        // build model creation sql script and model.sqlite database
-        builder->build(metaRows);
+        if (Symbol::no_metadata) {
+            theLog->logMsg("warning : Meta-data publishing is disabled with Omc.NoMetadata");
+        }
+
+        if (!Symbol::no_metadata) {
+            // build model creation sql script and model.sqlite database
+            builder->build(metaRows);
+        }
         
         // Create working set for published scenario
         theLog->logFormatted("Scenario processing: %s", scenario_name.c_str());
@@ -721,12 +734,15 @@ int main(int argc, char * argv[])
             theLog->logMsg("warning : model SQLite database not created");
         }
         else {
-            // create new workset in model database from scenario parameters
-            createWorkset(metaRows, metaSet, builder.get());
+            if (!Symbol::no_metadata) {
+                // create new workset in model database from scenario parameters
+                createWorkset(metaRows, metaSet, builder.get());
+            }
         }
-
-        // build Modgen compatibilty views sql script
-        builder->buildCompatibilityViews(metaRows);
+        if (!Symbol::no_metadata) {
+            // build Modgen compatibilty views sql script
+            builder->buildCompatibilityViews(metaRows);
+        }
 
         // cleanup literals created from csv files
         for (auto & cp : cpLst) {
@@ -749,10 +765,13 @@ int main(int argc, char * argv[])
                 string scName = "";
                 if (snIt != scNameLst.cend()) scName = *snIt++;
 
-                processExtraParamDir(*pdIt, scName, metaRows, builder.get());
+                if (!Symbol::no_metadata) {
+                    processExtraParamDir(*pdIt, scName, metaRows, builder.get());
+                }
             }
         }
 
+        // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
         
     }

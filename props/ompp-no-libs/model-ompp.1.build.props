@@ -110,6 +110,8 @@
   <PropertyGroup>
     <!-- omc -f option to supply fixed parameter -->
     <OMC_IN_FIXED_OPT Condition="'$(ENABLE_FIXED_PARAMETERS)'=='true'">-f $(FIXED_PARAMETERS_FOLDER)</OMC_IN_FIXED_OPT>
+    <!-- omc -noMetadata option -->
+    <OMC_NO_METADATA_OPT Condition="'$(NO_METADATA)'=='true'">-Omc.noMetadata 1</OMC_NO_METADATA_OPT>
     <!-- omc -noLineDirectives option -->
     <OMC_NO_LINE_DIRECTIVES_OPT Condition="'$(NO_LINE_DIRECTIVES)'=='true'">-Omc.noLineDirectives 1</OMC_NO_LINE_DIRECTIVES_OPT>
   </PropertyGroup>

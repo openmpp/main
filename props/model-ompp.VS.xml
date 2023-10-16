@@ -46,9 +46,14 @@
                Description="Select MPI to incorporate multi-processing capability. A trailing _mpi will be added to the executable name."/>
   </EnumProperty>
   <BoolProperty Category="BuildOptions"
-                Name="USE_PCH"
-                DisplayName="Enable pre-compiled headers"
-                Description="Enable the PCH mechanism in C++ to improve compilation speed."
+                Name="NO_METADATA"
+                DisplayName="Disable metadata publishing (!)"
+                Description="Can be useful in large models to quickly identify model coding errors, but breaks model build."
+                />
+  <BoolProperty Category="BuildOptions"
+                Name="NO_CPP_BUILD"
+                DisplayName="Disable C++ build step (!)"
+                Description="Can be useful in large models to quickly identify model coding errors, but breaks model build."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="NO_LINE_DIRECTIVES"
