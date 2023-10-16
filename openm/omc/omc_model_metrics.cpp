@@ -371,6 +371,13 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 table_dimension_labels += d->is_label_supplied();
                 table_dimension_notes += d->is_note_supplied();
             }
+            {
+                // count the single measure dimension, which is always present
+                ++table_dimension_count;
+                auto& d = s->measure_dimension;
+                table_dimension_labels += d->is_label_supplied();
+                table_dimension_notes += d->is_note_supplied();
+            }
             for (auto& e : s->pp_measures) {
                 ++table_expression_count;
                 table_expression_labels += e->is_label_supplied();
@@ -659,7 +666,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("|   Kind                  | ") << setw(5) << entity_kind_count << " | " << setw(5) << entity_kind_labels << " | " << setw(5) << entity_kind_notes << " |\n";
         rpt << LT("|   Event                 | ") << setw(5) << entity_event_count << " | " << setw(5) << entity_event_labels << " | " << setw(5) << entity_event_notes << " |\n";
         rpt << LT("|   Attribute             | ") << setw(5) << attribute_count << " | " << setw(5) << attribute_labels << " | " << setw(5) << attribute_notes << " |\n";
-        rpt << LT("|     Builtin             | ") << setw(5) << builtin_attribute_count << " | " << setw(5) << builtin_attribute_labels << " | " << setw(5) << builtin_attribute_notes << " |\n";
+        rpt << LT("|     Built-in            | ") << setw(5) << builtin_attribute_count << " | " << setw(5) << builtin_attribute_labels << " | " << setw(5) << builtin_attribute_notes << " |\n";
         rpt << LT("|     Simple              | ") << setw(5) << simple_attribute_count << " | " << setw(5) << simple_attribute_labels << " | " << setw(5) << simple_attribute_notes << " |\n";
         rpt << LT("|     Identity            | ") << setw(5) << identity_attribute_count << " | " << setw(5) << identity_attribute_labels << " | " << setw(5) << identity_attribute_notes << " |\n";
         rpt << LT("|     Derived             | ") << setw(5) << derived_attribute_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
@@ -678,8 +685,10 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("|   Random streams        | ") << setw(5) << entity_rng_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Eligible microdata    | ") << setw(5) << entity_eligible_microdata_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("+-------------------------+-------+-------+-------+\n");
-        rpt << LT("Note: The row Parameter includes derived parameters.\n");
-        rpt << LT("Note: The row Entity > Function does not include time and implement functions of events.\n");
+        rpt << LT("Notes: Parameter includes derived parameters.\n");
+        rpt << LT("       Table > Dimension includes the expression dimension.\n");
+        rpt << LT("       Entity > Attribute > Identity includes those generated from filters.\n");
+        rpt << LT("       Entity > Function does not include event time and implement functions.\n");
     }
 
     {
@@ -777,6 +786,13 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 table_dimension_labels += d->is_label_supplied();
                 table_dimension_notes += d->is_note_supplied();
             }
+            {
+                // count the single measure dimension, which is always present
+                ++table_dimension_count;
+                auto& d = s->measure_dimension;
+                table_dimension_labels += d->is_label_supplied();
+                table_dimension_notes += d->is_note_supplied();
+            }
             for (auto& e : s->pp_measures) {
                 ++table_expression_count;
                 table_expression_labels += e->is_label_supplied();
@@ -815,6 +831,49 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             import_notes += s->is_note_supplied();
         }
 
+        int total_count =
+            language_count
+            + classification_count
+            + classification_level_count
+            + range_count
+            + partition_count
+            + parameter_count
+            + parameter_dimension_count
+            + table_count
+            + table_dimension_count
+            + table_expression_count
+            + group_count
+            + import_count
+            ;
+        int total_labels =
+            language_labels
+            + classification_labels
+            + classification_level_labels
+            + range_labels
+            + partition_labels
+            + parameter_labels
+            + parameter_dimension_labels
+            + table_labels
+            + table_dimension_labels
+            + table_expression_labels
+            + group_labels
+            + import_labels
+            ;
+        int total_notes =
+            language_notes
+            + classification_notes
+            + classification_level_notes
+            + range_notes
+            + partition_notes
+            + parameter_notes
+            + parameter_dimension_notes
+            + table_notes
+            + table_dimension_notes
+            + table_expression_notes
+            + group_notes
+            + import_notes
+            ;
+
         rpt << "\n";
         rpt << LT("+-------------------------------------------+\n");
         rpt << LT("| PUBLISHED SYMBOLS                         |\n");
@@ -836,6 +895,9 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("|   Group           | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
         rpt << LT("|   Import          | ") << setw(5) << import_count << " | " << setw(5) << import_labels << " | " << setw(5) << import_notes << " |\n";
         rpt << LT("+-------------------+-------+-------+-------+\n");
+        rpt << LT("| Total             | ") << setw(5) << total_count << " | " << setw(5) << total_labels << " | " << setw(5) << total_notes << " |\n";
+        rpt << LT("+-------------------+-------+-------+-------+\n");
+        rpt << LT("Note: Table > Dimension includes the expression dimension.\n");
     }
 
     {
@@ -887,23 +949,23 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         all_dependency_count = link_dependency_count + attribute_dependency_count + table_dependency_count + set_dependency_count + event_dependency_count;
 
         rpt << "\n";
-        rpt << LT("+---------------------------------+\n");
-        rpt << LT("| MAINTAINED DEPENDENCIES         |\n");
-        rpt << LT("| (in generated C++ runtime code) |\n");
-        rpt << LT("+-------------------------+-------+\n");
-        rpt << LT("| Dependency              | Count |\n");
-        rpt << LT("+-------------------------+-------+\n");
-        rpt << LT("| Reciprocal link         | ") << setw(5) << link_dependency_count << " |\n";
-        rpt << LT("| Attribute maintenance   | ") << setw(5) << "" << " |\n";
-        rpt << LT("|   Identity              | ") << setw(5) << identity_attribute_dependency_count << " |\n";
-        rpt << LT("|   Derived               | ") << setw(5) << derived_attribute_dependency_count << " |\n";
-        rpt << LT("|   Multilink aggregate   | ") << setw(5) << multilink_aggregate_dependency_count << " |\n";
-        rpt << LT("| Table dimension/filter  | ") << setw(5) << table_dependency_count << " |\n";
-        rpt << LT("| Set dimension/filter    | ") << setw(5) << set_dependency_count << " |\n";
-        rpt << LT("| Event maintenance       | ") << setw(5) << event_dependency_count << " |\n";
-        rpt << LT("+-------------------------+-------+\n");
-        rpt << LT("| Total                   | ") << setw(5) << all_dependency_count << " |\n";
-        rpt << LT("+-------------------------+-------+\n");
+        rpt << LT("+----------------------------+-------+\n");
+        rpt << LT("| MAINTAINED DEPENDENCIES            |\n");
+        rpt << LT("| (in generated C++ runtime code)    |\n");
+        rpt << LT("+----------------------------+-------+\n");
+        rpt << LT("| Dependency                 | Count |\n");
+        rpt << LT("+----------------------------+-------+\n");
+        rpt << LT("| Reciprocal link            | ") << setw(5) << link_dependency_count << " |\n";
+        rpt << LT("| Attribute maintenance      | ") << setw(5) << "" << " |\n";
+        rpt << LT("|   Identity                 | ") << setw(5) << identity_attribute_dependency_count << " |\n";
+        rpt << LT("|   Derived                  | ") << setw(5) << derived_attribute_dependency_count << " |\n";
+        rpt << LT("|   Multilink aggregate      | ") << setw(5) << multilink_aggregate_dependency_count << " |\n";
+        rpt << LT("| Table dimension/filter     | ") << setw(5) << table_dependency_count << " |\n";
+        rpt << LT("| Set dimension/filter/order | ") << setw(5) << set_dependency_count << " |\n";
+        rpt << LT("| Event maintenance          | ") << setw(5) << event_dependency_count << " |\n";
+        rpt << LT("+----------------------------+-------+\n");
+        rpt << LT("| Total                      | ") << setw(5) << all_dependency_count << " |\n";
+        rpt << LT("+----------------------------+-------+\n");
     }
     rpt.close();
 }

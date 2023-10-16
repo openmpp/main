@@ -152,7 +152,7 @@ public:
      * The display position of measures relative to dimensions
      * 
      * The value is the zero-based ordinal of the dimension after which the measures will be
-     * displayed. If the mesaures are displayed before the first dimension, the value is -1.
+     * displayed. If the measures are displayed before the first dimension, the value is -1.
      */
     int measures_position;
 
