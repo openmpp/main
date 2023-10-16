@@ -122,6 +122,11 @@
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />
+    <!-- The following stops subsequent build steps, while trying to avoid raising an error condition. -->
+    <Error Condition="'$(NO_CPP_BUILD)'=='true'"
+           Text="Suppressing subsequent build steps because NO_CPP_BUILD is true."
+           Code="0"
+    />
     <WriteLinesToFile 
         Condition="'$(USE_PCH)'=='true' And !Exists('$(PCH_CXX)')"
         File="$(PCH_CXX)"
