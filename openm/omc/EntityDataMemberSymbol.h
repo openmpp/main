@@ -105,11 +105,32 @@ public:
     bool is_maintained_attribute(void) const;
 
     /**
+     * Determines if this is a IdentityAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_identity_attribute(void) const;
+
+    /**
+     * Determines if this is a DerivedAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_derived_attribute(void) const;
+
+    /**
      * Determines if this is a SimpleAttributeSymbol
      *
      * @return true or false.
      */
     bool is_simple_attribute(void) const;
+
+    /**
+     * Determines if this is a MultilinkAttributeSymbol
+     *
+     * @return true or false.
+     */
+    bool is_multilink_aggregate_attribute(void) const;
 
     /**
      * Determines if this is a EntityArrayMemberSymbol

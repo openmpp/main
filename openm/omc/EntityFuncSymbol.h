@@ -59,6 +59,7 @@ public:
         : EntityMemberSymbol(name, ent, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
+        , is_developer_supplied(false)
         , suppress_defn(suppress_defn)
         , suppress_code_if_empty(false)
         , has_line_directive(false)
@@ -126,6 +127,11 @@ public:
      * The return value part of the function declaration.
      */
     string return_decl;
+
+    /**
+     * True if declared in model code.
+     */
+    bool is_developer_supplied;
 
     /**
      * Flag to suppress generation of function definition.

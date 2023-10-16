@@ -1799,6 +1799,7 @@ decl_entity_function:
                                 // argument 5 below (suppress_defn=true) tells omc that the function definition is developer-supplied
                                 auto sym = new EntityFuncSymbol( $SYMBOL, pc.get_entity_context(), return_type, arg_list, true, @SYMBOL );
                                 assert(sym);
+                                sym->is_developer_supplied = true;
                             }
                             else {
                                 // redeclaration

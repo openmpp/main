@@ -19,7 +19,10 @@
 #include "BuiltinAttributeSymbol.h"
 #include "LinkAttributeSymbol.h"
 #include "MaintainedAttributeSymbol.h"
+#include "IdentityAttributeSymbol.h"
+#include "DerivedAttributeSymbol.h"
 #include "SimpleAttributeSymbol.h"
+#include "MultilinkAttributeSymbol.h"
 #include "EntityArrayMemberSymbol.h"
 #include "EntityEventSymbol.h"
 #include "EntityIncrementSymbol.h"
@@ -83,9 +86,24 @@ bool EntityDataMemberSymbol::is_maintained_attribute(void) const
     return (bool) dynamic_cast<const MaintainedAttributeSymbol*>(this);
 }
 
+bool EntityDataMemberSymbol::is_identity_attribute(void) const
+{
+    return (bool) dynamic_cast<const IdentityAttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_derived_attribute(void) const
+{
+    return (bool) dynamic_cast<const DerivedAttributeSymbol*>(this);
+}
+
 bool EntityDataMemberSymbol::is_simple_attribute(void) const
 {
     return (bool) dynamic_cast<const SimpleAttributeSymbol*>(this);
+}
+
+bool EntityDataMemberSymbol::is_multilink_aggregate_attribute(void) const
+{
+    return (bool) dynamic_cast<const MultilinkAttributeSymbol*>(this);
 }
 
 bool EntityDataMemberSymbol::is_array(void) const

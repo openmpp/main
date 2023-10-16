@@ -14,16 +14,18 @@
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
 #include "TableSymbol.h"
+#include "ParameterGroupSymbol.h"
+#include "TableGroupSymbol.h"
+#include "ImportSymbol.h"
 #include "EntitySymbol.h"
 #include "EntityDataMemberSymbol.h"
 #include "EnumerationSymbol.h"
+#include "ClassificationSymbol.h"
 #include "AggregationSymbol.h"
 #include "MaintainedAttributeSymbol.h"
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
 #include "EntityEventSymbol.h"
-#include "ParameterGroupSymbol.h"
-#include "TableGroupSymbol.h"
 #include "ParseContext.h"
 #include "omc_file.h"
 #include "omc_model_metrics.h"
@@ -291,6 +293,9 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int classification_count = 0;
         int classification_labels = 0;
         int classification_notes = 0;
+        int classification_level_count = 0;
+        int classification_level_labels = 0;
+        int classification_level_notes = 0;
         int range_count = 0;
         int range_labels = 0;
         int range_notes = 0;
@@ -302,6 +307,13 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 ++classification_count;
                 classification_labels += s->is_label_supplied();
                 classification_notes += s->is_note_supplied();
+                auto c = dynamic_cast<ClassificationSymbol*>(s);
+                assert(c); // logic guarantee
+                for (auto l : c->pp_enumerators) {
+                    ++classification_level_count;
+                    classification_level_labels += l->is_label_supplied();
+                    classification_level_notes += l->is_note_supplied();
+                }
             }
             if (s->is_range()) {
                 ++range_count;
@@ -327,19 +339,43 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int parameter_count = 0;
         int parameter_labels = 0;
         int parameter_notes = 0;
+        int parameter_dimension_count = 0;
+        int parameter_dimension_labels = 0;
+        int parameter_dimension_notes = 0;
         for (auto& s : Symbol::pp_all_parameters) {
             ++parameter_count;
             parameter_labels += s->is_label_supplied();
             parameter_notes += s->is_note_supplied();
+            for (auto& d : s->pp_enumeration_list) {
+                ++parameter_dimension_count;
+                parameter_dimension_labels += d->is_label_supplied();
+                parameter_dimension_notes += d->is_note_supplied();
+            }
         }
 
         int table_count = 0;
         int table_labels = 0;
         int table_notes = 0;
+        int table_dimension_count = 0;
+        int table_dimension_labels = 0;
+        int table_dimension_notes = 0;
+        int table_expression_count = 0;
+        int table_expression_labels = 0;
+        int table_expression_notes = 0;
         for (auto& s : Symbol::pp_all_tables) {
             ++table_count;
             table_labels += s->is_label_supplied();
             table_notes += s->is_note_supplied();
+            for (auto& d : s->dimension_list) {
+                ++table_dimension_count;
+                table_dimension_labels += d->is_label_supplied();
+                table_dimension_notes += d->is_note_supplied();
+            }
+            for (auto& e : s->pp_measures) {
+                ++table_expression_count;
+                table_expression_labels += e->is_label_supplied();
+                table_expression_notes += e->is_note_supplied();
+            }
         }
 
         int group_count = 0;
@@ -356,82 +392,294 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             group_notes += s->is_note_supplied();
         }
 
+        int import_count = 0;
+        int import_labels = 0;
+        int import_notes = 0;
+        for (auto& s : Symbol::pp_all_imports) {
+            ++import_count;
+            import_labels += s->is_label_supplied();
+            import_notes += s->is_note_supplied();
+        }
+
         int entity_set_count = 0;
         int entity_set_labels = 0;
         int entity_set_notes = 0;
+        int entity_set_dimension_count = 0;
+        int entity_set_dimension_labels = 0;
+        int entity_set_dimension_notes = 0;
         for (auto& s : Symbol::pp_all_entity_sets) {
             ++entity_set_count;
             entity_set_labels += s->is_label_supplied();
             entity_set_notes += s->is_note_supplied();
+            for (auto& d : s->dimension_list) {
+                ++entity_set_dimension_count;
+                entity_set_dimension_labels += d->is_label_supplied();
+                entity_set_dimension_notes += d->is_note_supplied();
+            }
         }
 
-        int entity_count = 0;
+        int entity_kind_count = 0;
+        int entity_kind_labels = 0;
+        int entity_kind_notes = 0;
+
         int entity_event_count = 0;
+        int entity_event_labels = 0;
+        int entity_event_notes = 0;
+
         int entity_function_count = 0;
+        int entity_function_labels = 0;
+        int entity_function_notes = 0;
+
         int entity_rng_count = 0;
+        int entity_eligible_microdata_count = 0;
         int entity_data_member_count = 0;
 
-        int entity_link_count = 0;
-        int entity_link_labels = 0;
-        int entity_link_notes = 0;
+        int entity_multilink_count = 0;
+        int entity_multilink_labels = 0;
+        int entity_multilink_notes = 0;
 
-        int entity_attribute_count = 0;
-        int entity_attribute_labels = 0;
-        int entity_attribute_notes = 0;
+        int entity_array_count = 0;
+        int entity_array_labels = 0;
+        int entity_array_notes = 0;
+
+        int entity_foreign_count = 0;
+        int entity_foreign_labels = 0;
+        int entity_foreign_notes = 0;
+
+        int attribute_count = 0;
+        int attribute_labels = 0;
+        int attribute_notes = 0;
+
+        int builtin_attribute_count = 0;
+        int builtin_attribute_labels = 0;
+        int builtin_attribute_notes = 0;
+
+        int simple_attribute_count = 0;
+        int simple_attribute_labels = 0;
+        int simple_attribute_notes = 0;
+
+        int identity_attribute_count = 0;
+        int identity_attribute_labels = 0;
+        int identity_attribute_notes = 0;
+
+        int derived_attribute_count = 0;
+
+        int link_attribute_count = 0;
+        int link_attribute_labels = 0;
+        int link_attribute_notes = 0;
+
+        int multilink_aggregate_attribute_count = 0;
 
         int entity_data_member_other_count = 0;
 
         for (auto& e : Symbol::pp_all_entities) {
-            ++entity_count;
-            entity_event_count += e->pp_events.size();
-            entity_function_count += e->pp_functions.size();
+            ++entity_kind_count;
+            entity_kind_labels += e->is_label_supplied();
+            entity_kind_notes += e->is_note_supplied();
+
+            for (auto& evt : e->pp_events) {
+                if (!evt->is_developer_supplied) {
+                    // skip self-scheduling event (if present)
+                    continue;
+                }
+                ++entity_event_count;
+                entity_event_labels += evt->is_label_supplied();
+                entity_event_notes += evt->is_note_supplied();
+            }
+
+            for (auto& f : e->pp_functions) {
+                if (!f->is_developer_supplied) {
+                    // only count entity functions declared in model code.
+                    continue;
+                }
+                ++entity_function_count;
+                entity_function_labels += f->is_label_supplied();
+                entity_function_notes += f->is_note_supplied();
+            }
+
             entity_rng_count += e->pp_rng_streams.size();
-            entity_link_count += e->pp_link_attributes.size() + e->pp_multilink_members.size();
+
             for (auto& s : e->pp_data_members) {
                 ++entity_data_member_count;
-                if (s->is_link_attribute() /* || s->is_multilink()*/) {
-                    ++entity_link_count;
-                    entity_link_labels += s->is_label_supplied();
-                    entity_link_notes += s->is_note_supplied();
+                if (s->is_multilink()) {
+                    ++entity_multilink_count;
+                    entity_multilink_labels += s->is_label_supplied();
+                    entity_multilink_notes += s->is_note_supplied();
+                }
+                else if (s->is_array()) {
+                    ++entity_array_count;
+                    entity_array_labels += s->is_label_supplied();
+                    entity_array_notes += s->is_note_supplied();
+                }
+                else if (s->is_foreign()) {
+                    ++entity_foreign_count;
+                    entity_foreign_labels += s->is_label_supplied();
+                    entity_foreign_notes += s->is_note_supplied();
                 }
                 else if (s->is_attribute()) {
-                    ++entity_attribute_count;
-                    entity_attribute_labels += s->is_label_supplied();
-                    entity_attribute_notes += s->is_note_supplied();
+                    ++attribute_count;
+                    attribute_labels += s->is_label_supplied();
+                    attribute_notes += s->is_note_supplied();
+                    if (s->is_builtin_attribute()) {
+                        ++builtin_attribute_count;
+                        builtin_attribute_labels += s->is_label_supplied();
+                        builtin_attribute_notes += s->is_note_supplied();
+                    }
+                    else if (s->is_simple_attribute()) {
+                        ++simple_attribute_count;
+                        simple_attribute_labels += s->is_label_supplied();
+                        simple_attribute_notes += s->is_note_supplied();
+                    }
+                    else if (s->is_identity_attribute()) {
+                        ++identity_attribute_count;
+                        identity_attribute_labels += s->is_label_supplied();
+                        identity_attribute_notes += s->is_note_supplied();
+                    }
+                    else if (s->is_link_attribute()) {
+                        ++link_attribute_count;
+                        link_attribute_labels += s->is_label_supplied();
+                        link_attribute_notes += s->is_note_supplied();
+                    }
+                    else if (s->is_derived_attribute()) {
+                        ++derived_attribute_count;
+                    }
+                    else if (s->is_multilink_aggregate_attribute()) {
+                        ++multilink_aggregate_attribute_count;
+                    }
                 }
                 else {
                     ++entity_data_member_other_count;
                 }
+                if (s->is_eligible_microdata()) {
+                    ++entity_eligible_microdata_count;
+                }
             }
         }
 
-        string entity_kinds_string;
-        if (entity_count > 1) {
-            entity_kinds_string = "(" + to_string(entity_count) + LT(" kinds") + ")";
+        int total_count =
+              language_count
+            + classification_count
+            + classification_level_count
+            + range_count
+            + partition_count
+            + aggregation_count
+            + parameter_count
+            + parameter_dimension_count
+            + table_count
+            + table_dimension_count
+            + table_expression_count
+            + group_count
+            + import_count
+            + entity_kind_count
+            + entity_event_count
+            + attribute_count
+            + entity_function_count
+            + entity_multilink_count
+            + entity_array_count
+            + entity_foreign_count
+            + entity_set_count
+            + entity_set_dimension_count
+            ;
+        int total_labels = 
+              language_labels
+            + classification_labels
+            + classification_level_labels
+            + range_labels
+            + partition_labels
+            + aggregation_labels
+            + parameter_labels
+            + parameter_dimension_labels
+            + table_labels
+            + table_dimension_labels
+            + table_expression_labels
+            + group_labels
+            + import_labels
+            + entity_kind_labels
+            + entity_event_labels
+            + attribute_labels
+            + entity_function_labels
+            + entity_multilink_labels
+            + entity_array_labels
+            + entity_foreign_labels
+            + entity_set_labels
+            + entity_set_dimension_labels
+            ;
+        int total_notes = 
+              language_notes
+            + classification_notes
+            + classification_level_notes
+            + range_notes
+            + partition_notes
+            + aggregation_notes
+            + parameter_notes
+            + parameter_dimension_notes
+            + table_notes
+            + table_dimension_notes
+            + table_expression_notes
+            + group_notes
+            + import_notes
+            + entity_kind_notes
+            + entity_event_notes
+            + attribute_notes
+            + entity_function_notes
+            + entity_multilink_notes
+            + entity_array_notes
+            + entity_foreign_notes
+            + entity_set_notes
+            + entity_set_dimension_notes
+            ;
+
+        string entity_kinds_string; // for row title
+        if (entity_kind_count > 1) {
+            entity_kinds_string = "(" + to_string(entity_kind_count) + LT(" kinds") + ")";
         }
 
         rpt << "\n";
-        rpt << LT("+-------------------------------------------+\n");
-        rpt << LT("| MODEL SYMBOLS                             |\n");
-        rpt << LT("+-------------------+-------+-------+-------+\n");
-        rpt << LT("| Description       | Count | Label |  Note |\n");
-        rpt << LT("+-------------------+-------+-------+-------+\n");
-        rpt << LT("| Language (human)  | ") << setw(5) << language_count << " | " << setw(5) << language_labels << " | " << setw(5) << language_notes << " |\n";
-        rpt << LT("| Enumeration       | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
-        rpt << LT("|   Classification  | ") << setw(5) << classification_count << " | " << setw(5) << classification_labels << " | " << setw(5) << classification_notes << " |\n";
-        rpt << LT("|   Range           | ") << setw(5) << range_count << " | " << setw(5) << range_labels << " | " << setw(5) << range_notes << " |\n";
-        rpt << LT("|   Partition       | ") << setw(5) << partition_count << " | " << setw(5) << partition_labels << " | " << setw(5) << partition_notes << " |\n";
-        rpt << LT("|   Aggregation     | ") << setw(5) << aggregation_count << " | " << setw(5) << aggregation_labels << " | " << setw(5) << aggregation_notes << " |\n";
-        rpt << LT("| Input/Output      | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
-        rpt << LT("|   Parameter       | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
-        rpt << LT("|   Table           | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
-        rpt << LT("|   Group           | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
-        rpt << LT("| Entity ") << setw(10) << std::left << entity_kinds_string << std::right << " | " << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
-        rpt << LT("|   Set             | ") << setw(5) << entity_set_count << " | " << setw(5) << entity_set_labels << " | " << setw(5) << entity_set_notes << " |\n";
-        rpt << LT("|   Link            | ") << setw(5) << entity_link_count << " | " << setw(5) << entity_link_labels << " | " << setw(5) << entity_link_notes << " |\n";
-        rpt << LT("|   Attribute       | ") << setw(5) << entity_attribute_count << " | " << setw(5) << entity_attribute_labels << " | " << setw(5) << entity_attribute_notes << " |\n";
-        rpt << LT("|   Random streams  | ") << setw(5) << entity_rng_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
-        rpt << LT("+-------------------+-------+-------+-------+\n");
+        rpt << LT("+-------------------------------------------------+\n");
+        rpt << LT("| MODEL SYMBOLS                                   |\n");
+        rpt << LT("+-------------------------+-------+-------+-------+\n");
+        rpt << LT("| Description             | Count | Label |  Note |\n");
+        rpt << LT("+-------------------------+-------+-------+-------+\n");
+        rpt << LT("| Language (human)        | ") << setw(5) << language_count << " | " << setw(5) << language_labels << " | " << setw(5) << language_notes << " |\n";
+        rpt << LT("| Enumeration             | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Classification        | ") << setw(5) << classification_count << " | " << setw(5) << classification_labels << " | " << setw(5) << classification_notes << " |\n";
+        rpt << LT("|     Level               | ") << setw(5) << classification_level_count << " | " << setw(5) << classification_level_labels << " | " << setw(5) << classification_level_notes << " |\n";
+        rpt << LT("|   Range                 | ") << setw(5) << range_count << " | " << setw(5) << range_labels << " | " << setw(5) << range_notes << " |\n";
+        rpt << LT("|   Partition             | ") << setw(5) << partition_count << " | " << setw(5) << partition_labels << " | " << setw(5) << partition_notes << " |\n";
+        rpt << LT("|   Aggregation           | ") << setw(5) << aggregation_count << " | " << setw(5) << aggregation_labels << " | " << setw(5) << aggregation_notes << " |\n";
+        rpt << LT("| Input/Output            | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Parameter             | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
+        rpt << LT("|     Dimension           | ") << setw(5) << parameter_dimension_count << " | " << setw(5) << parameter_dimension_labels << " | " << setw(5) << parameter_dimension_notes << " |\n";
+        rpt << LT("|   Table                 | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
+        rpt << LT("|     Dimension           | ") << setw(5) << table_dimension_count << " | " << setw(5) << table_dimension_labels << " | " << setw(5) << table_dimension_notes << " |\n";
+        rpt << LT("|     Expression          | ") << setw(5) << table_expression_count << " | " << setw(5) << table_expression_labels << " | " << setw(5) << table_expression_notes << " |\n";
+        rpt << LT("|   Group                 | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
+        rpt << LT("|   Import                | ") << setw(5) << import_count << " | " << setw(5) << import_labels << " | " << setw(5) << import_notes << " |\n";
+        rpt << LT("| Entity ") << setw(16) << std::left << entity_kinds_string << std::right << " | " << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Kind                  | ") << setw(5) << entity_kind_count << " | " << setw(5) << entity_kind_labels << " | " << setw(5) << entity_kind_notes << " |\n";
+        rpt << LT("|   Event                 | ") << setw(5) << entity_event_count << " | " << setw(5) << entity_event_labels << " | " << setw(5) << entity_event_notes << " |\n";
+        rpt << LT("|   Attribute             | ") << setw(5) << attribute_count << " | " << setw(5) << attribute_labels << " | " << setw(5) << attribute_notes << " |\n";
+        rpt << LT("|     Builtin             | ") << setw(5) << builtin_attribute_count << " | " << setw(5) << builtin_attribute_labels << " | " << setw(5) << builtin_attribute_notes << " |\n";
+        rpt << LT("|     Simple              | ") << setw(5) << simple_attribute_count << " | " << setw(5) << simple_attribute_labels << " | " << setw(5) << simple_attribute_notes << " |\n";
+        rpt << LT("|     Identity            | ") << setw(5) << identity_attribute_count << " | " << setw(5) << identity_attribute_labels << " | " << setw(5) << identity_attribute_notes << " |\n";
+        rpt << LT("|     Derived             | ") << setw(5) << derived_attribute_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|     Link                | ") << setw(5) << link_attribute_count << " | " << setw(5) << link_attribute_labels << " | " << setw(5) << link_attribute_notes << " |\n";
+        rpt << LT("|     Multilink aggregate | ") << setw(5) << multilink_aggregate_attribute_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Function              | ") << setw(5) << entity_function_count << " | " << setw(5) << entity_function_labels << " | " << setw(5) << entity_function_notes << " |\n";
+        rpt << LT("|   Multilink             | ") << setw(5) << entity_multilink_count << " | " << setw(5) << entity_multilink_labels << " | " << setw(5) << entity_multilink_notes << " |\n";
+        rpt << LT("|   Array                 | ") << setw(5) << entity_array_count << " | " << setw(5) << entity_array_labels << " | " << setw(5) << entity_array_notes << " |\n";
+        rpt << LT("|   Foreign               | ") << setw(5) << entity_foreign_count << " | " << setw(5) << entity_foreign_labels << " | " << setw(5) << entity_foreign_notes << " |\n";
+        rpt << LT("| Entity set              | ") << setw(5) << entity_set_count << " | " << setw(5) << entity_set_labels << " | " << setw(5) << entity_set_notes << " |\n";
+        rpt << LT("|   Dimension             | ") << setw(5) << entity_set_dimension_count << " | " << setw(5) << entity_set_dimension_labels << " | " << setw(5) << entity_set_dimension_notes << " |\n";
+        rpt << LT("+-------------------------+-------+-------+-------+\n");
+        rpt << LT("| Total                   | ") << setw(5) << total_count << " | " << setw(5) << total_labels << " | " << setw(5) << total_notes << " |\n";
+        rpt << LT("+-------------------------+-------+-------+-------+\n");
+        rpt << LT("| Supplementary Info      | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Random streams        | ") << setw(5) << entity_rng_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("|   Eligible microdata    | ") << setw(5) << entity_eligible_microdata_count << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
+        rpt << LT("+-------------------------+-------+-------+-------+\n");
+        rpt << LT("Note: The row Parameter includes derived parameters.\n");
+        rpt << LT("Note: The row Entity > Function does not include time and implement functions of events.\n");
     }
 
     {
@@ -448,6 +696,9 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int classification_count = 0;
         int classification_labels = 0;
         int classification_notes = 0;
+        int classification_level_count = 0;
+        int classification_level_labels = 0;
+        int classification_level_notes = 0;
         int range_count = 0;
         int range_labels = 0;
         int range_notes = 0;
@@ -463,6 +714,13 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 ++classification_count;
                 classification_labels += s->is_label_supplied();
                 classification_notes += s->is_note_supplied();
+                auto c = dynamic_cast<ClassificationSymbol*>(s);
+                assert(c); // logic guarantee
+                for (auto l : c->pp_enumerators) {
+                    ++classification_level_count;
+                    classification_level_labels += l->is_label_supplied();
+                    classification_level_notes += l->is_note_supplied();
+                }
             }
             if (s->is_range()) {
                 ++range_count;
@@ -479,6 +737,9 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int parameter_count = 0;
         int parameter_labels = 0;
         int parameter_notes = 0;
+        int parameter_dimension_count = 0;
+        int parameter_dimension_labels = 0;
+        int parameter_dimension_notes = 0;
         for (auto& s : Symbol::pp_all_parameters) {
             if (s->source != ParameterSymbol::parameter_source::scenario_parameter && !s->publish_as_table) {
                 // skip parameters which are not published
@@ -487,11 +748,22 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             ++parameter_count;
             parameter_labels += s->is_label_supplied();
             parameter_notes += s->is_note_supplied();
+            for (auto& d : s->pp_enumeration_list) {
+                ++parameter_dimension_count;
+                parameter_dimension_labels += d->is_label_supplied();
+                parameter_dimension_notes += d->is_note_supplied();
+            }
         }
 
         int table_count = 0;
         int table_labels = 0;
         int table_notes = 0;
+        int table_dimension_count = 0;
+        int table_dimension_labels = 0;
+        int table_dimension_notes = 0;
+        int table_expression_count = 0;
+        int table_expression_labels = 0;
+        int table_expression_notes = 0;
         for (auto& s : Symbol::pp_all_tables) {
             if (s->is_internal) {
                 // skip tables which are not published
@@ -500,6 +772,16 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             ++table_count;
             table_labels += s->is_label_supplied();
             table_notes += s->is_note_supplied();
+            for (auto& d : s->dimension_list) {
+                ++table_dimension_count;
+                table_dimension_labels += d->is_label_supplied();
+                table_dimension_notes += d->is_note_supplied();
+            }
+            for (auto& e : s->pp_measures) {
+                ++table_expression_count;
+                table_expression_labels += e->is_label_supplied();
+                table_expression_notes += e->is_note_supplied();
+            }
         }
 
         int group_count = 0;
@@ -524,6 +806,15 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             group_notes += s->is_note_supplied();
         }
 
+        int import_count = 0;
+        int import_labels = 0;
+        int import_notes = 0;
+        for (auto& s : Symbol::pp_all_imports) {
+            ++import_count;
+            import_labels += s->is_label_supplied();
+            import_notes += s->is_note_supplied();
+        }
+
         rpt << "\n";
         rpt << LT("+-------------------------------------------+\n");
         rpt << LT("| PUBLISHED SYMBOLS                         |\n");
@@ -533,12 +824,17 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("| Language (human)  | ") << setw(5) << language_count << " | " << setw(5) << language_labels << " | " << setw(5) << language_notes << " |\n";
         rpt << LT("| Enumeration       | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Classification  | ") << setw(5) << classification_count << " | " << setw(5) << classification_labels << " | " << setw(5) << classification_notes << " |\n";
+        rpt << LT("|     Level         | ") << setw(5) << classification_level_count << " | " << setw(5) << classification_level_labels << " | " << setw(5) << classification_level_notes << " |\n";
         rpt << LT("|   Range           | ") << setw(5) << range_count << " | " << setw(5) << range_labels << " | " << setw(5) << range_notes << " |\n";
         rpt << LT("|   Partition       | ") << setw(5) << partition_count << " | " << setw(5) << partition_labels << " | " << setw(5) << partition_notes << " |\n";
         rpt << LT("| Input/Output      | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Parameter       | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
+        rpt << LT("|     Dimension     | ") << setw(5) << parameter_dimension_count << " | " << setw(5) << parameter_dimension_labels << " | " << setw(5) << parameter_dimension_notes << " |\n";
         rpt << LT("|   Table           | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
+        rpt << LT("|     Dimension     | ") << setw(5) << table_dimension_count << " | " << setw(5) << table_dimension_labels << " | " << setw(5) << table_dimension_notes << " |\n";
+        rpt << LT("|     Expression    | ") << setw(5) << table_expression_count << " | " << setw(5) << table_expression_labels << " | " << setw(5) << table_expression_notes << " |\n";
         rpt << LT("|   Group           | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
+        rpt << LT("|   Import          | ") << setw(5) << import_count << " | " << setw(5) << import_labels << " | " << setw(5) << import_notes << " |\n";
         rpt << LT("+-------------------+-------+-------+-------+\n");
     }
 
