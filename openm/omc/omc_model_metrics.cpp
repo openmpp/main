@@ -385,18 +385,22 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             }
         }
 
-        int group_count = 0;
-        int group_labels = 0;
-        int group_notes = 0;
+        int parameter_group_count = 0;
+        int parameter_group_labels = 0;
+        int parameter_group_notes = 0;
         for (auto& s : Symbol::pp_all_parameter_groups) {
-            ++group_count;
-            group_labels += s->is_label_supplied();
-            group_notes += s->is_note_supplied();
+            ++parameter_group_count;
+            parameter_group_labels += s->is_label_supplied();
+            parameter_group_notes += s->is_note_supplied();
         }
+
+        int table_group_count = 0;
+        int table_group_labels = 0;
+        int table_group_notes = 0;
         for (auto& s : Symbol::pp_all_table_groups) {
-            ++group_count;
-            group_labels += s->is_label_supplied();
-            group_notes += s->is_note_supplied();
+            ++table_group_count;
+            table_group_labels += s->is_label_supplied();
+            table_group_notes += s->is_note_supplied();
         }
 
         int import_count = 0;
@@ -575,7 +579,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             + table_count
             + table_dimension_count
             + table_expression_count
-            + group_count
+            + parameter_group_count
+            + table_group_count
             + import_count
             + entity_kind_count
             + entity_event_count
@@ -599,7 +604,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             + table_labels
             + table_dimension_labels
             + table_expression_labels
-            + group_labels
+            + parameter_group_labels
+            + table_group_labels
             + import_labels
             + entity_kind_labels
             + entity_event_labels
@@ -623,7 +629,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             + table_notes
             + table_dimension_notes
             + table_expression_notes
-            + group_notes
+            + parameter_group_notes
+            + table_group_notes
             + import_notes
             + entity_kind_notes
             + entity_event_notes
@@ -657,10 +664,11 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("| Input/Output            | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Parameter             | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
         rpt << LT("|     Dimension           | ") << setw(5) << parameter_dimension_count << " | " << setw(5) << parameter_dimension_labels << " | " << setw(5) << parameter_dimension_notes << " |\n";
+        rpt << LT("|     Group               | ") << setw(5) << parameter_group_count << " | " << setw(5) << parameter_group_labels << " | " << setw(5) << parameter_group_notes << " |\n";
         rpt << LT("|   Table                 | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
         rpt << LT("|     Dimension           | ") << setw(5) << table_dimension_count << " | " << setw(5) << table_dimension_labels << " | " << setw(5) << table_dimension_notes << " |\n";
         rpt << LT("|     Expression          | ") << setw(5) << table_expression_count << " | " << setw(5) << table_expression_labels << " | " << setw(5) << table_expression_notes << " |\n";
-        rpt << LT("|   Group                 | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
+        rpt << LT("|     Group               | ") << setw(5) << table_group_count << " | " << setw(5) << table_group_labels << " | " << setw(5) << table_group_notes << " |\n";
         rpt << LT("|   Import                | ") << setw(5) << import_count << " | " << setw(5) << import_labels << " | " << setw(5) << import_notes << " |\n";
         rpt << LT("| Entity ") << setw(16) << std::left << entity_kinds_string << std::right << " | " << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Kind                  | ") << setw(5) << entity_kind_count << " | " << setw(5) << entity_kind_labels << " | " << setw(5) << entity_kind_notes << " |\n";
@@ -800,26 +808,30 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             }
         }
 
-        int group_count = 0;
-        int group_labels = 0;
-        int group_notes = 0;
+        int parameter_group_count = 0;
+        int parameter_group_labels = 0;
+        int parameter_group_notes = 0;
         for (auto& s : Symbol::pp_all_parameter_groups) {
             if (!s->contains_scenario_parameter()) {
                 // skip parameter groups which are not published
                 continue;
             }
-            ++group_count;
-            group_labels += s->is_label_supplied();
-            group_notes += s->is_note_supplied();
+            ++parameter_group_count;
+            parameter_group_labels += s->is_label_supplied();
+            parameter_group_notes += s->is_note_supplied();
         }
+
+        int table_group_count = 0;
+        int table_group_labels = 0;
+        int table_group_notes = 0;
         for (auto& s : Symbol::pp_all_table_groups) {
             if (!s->contains_published_table()) {
                 // skip table groups which are not published
                 continue;
             }
-            ++group_count;
-            group_labels += s->is_label_supplied();
-            group_notes += s->is_note_supplied();
+            ++table_group_count;
+            table_group_labels += s->is_label_supplied();
+            table_group_notes += s->is_note_supplied();
         }
 
         int import_count = 0;
@@ -842,7 +854,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             + table_count
             + table_dimension_count
             + table_expression_count
-            + group_count
+            + parameter_group_count
+            + table_group_count
             + import_count
             ;
         int total_labels =
@@ -856,7 +869,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             + table_labels
             + table_dimension_labels
             + table_expression_labels
-            + group_labels
+            + parameter_group_labels
+            + table_group_labels
             + import_labels
             ;
         int total_notes =
@@ -870,7 +884,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             + table_notes
             + table_dimension_notes
             + table_expression_notes
-            + group_notes
+            + parameter_group_notes
+            + table_group_notes
             + import_notes
             ;
 
@@ -889,10 +904,11 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         rpt << LT("| Input/Output      | ") << setw(5) << "" << " | " << setw(5) << "" << " | " << setw(5) << "" << " |\n";
         rpt << LT("|   Parameter       | ") << setw(5) << parameter_count << " | " << setw(5) << parameter_labels << " | " << setw(5) << parameter_notes << " |\n";
         rpt << LT("|     Dimension     | ") << setw(5) << parameter_dimension_count << " | " << setw(5) << parameter_dimension_labels << " | " << setw(5) << parameter_dimension_notes << " |\n";
+        rpt << LT("|     Group         | ") << setw(5) << parameter_group_count << " | " << setw(5) << parameter_group_labels << " | " << setw(5) << parameter_group_notes << " |\n";
         rpt << LT("|   Table           | ") << setw(5) << table_count << " | " << setw(5) << table_labels << " | " << setw(5) << table_notes << " |\n";
         rpt << LT("|     Dimension     | ") << setw(5) << table_dimension_count << " | " << setw(5) << table_dimension_labels << " | " << setw(5) << table_dimension_notes << " |\n";
         rpt << LT("|     Expression    | ") << setw(5) << table_expression_count << " | " << setw(5) << table_expression_labels << " | " << setw(5) << table_expression_notes << " |\n";
-        rpt << LT("|   Group           | ") << setw(5) << group_count << " | " << setw(5) << group_labels << " | " << setw(5) << group_notes << " |\n";
+        rpt << LT("|     Group         | ") << setw(5) << table_group_count << " | " << setw(5) << table_group_labels << " | " << setw(5) << table_group_notes << " |\n";
         rpt << LT("|   Import          | ") << setw(5) << import_count << " | " << setw(5) << import_labels << " | " << setw(5) << import_notes << " |\n";
         rpt << LT("+-------------------+-------+-------+-------+\n");
         rpt << LT("| Total             | ") << setw(5) << total_count << " | " << setw(5) << total_labels << " | " << setw(5) << total_notes << " |\n";
