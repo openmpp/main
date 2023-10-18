@@ -52,7 +52,7 @@
                 />
   <BoolProperty Category="BuildOptions"
                 Name="NO_CPP_BUILD"
-                DisplayName="Disable C++ build step (!)"
+                DisplayName="Disable C++ build(!)"
                 Description="Can be useful in large models to quickly identify model coding errors, but breaks model build."
                 />
   <BoolProperty Category="BuildOptions"
