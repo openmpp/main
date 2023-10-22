@@ -15,7 +15,7 @@ using namespace openm;
 string MeasureDimensionSymbol::symbol_name(const TableSymbol* table)
 {
     assert(table);
-    return table->name + ".measures";
+    return table->name + "::measures";
 }
 
 string MeasureDimensionSymbol::default_label(const LanguageSymbol& lang) const
