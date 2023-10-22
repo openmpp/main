@@ -130,7 +130,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     }
 }
 
-const bool TableGroupSymbol::contains_published_table()
+bool TableGroupSymbol::contains_published_table() const
 {
     for (auto sym : pp_symbol_list) {
         auto tgs = dynamic_cast<TableGroupSymbol*>(sym);

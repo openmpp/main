@@ -463,7 +463,7 @@ void CodeGen::do_model_strings()
     }
     c += "};";
     c += "";
-    c += "// get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)";
+    c += "// get list of user preferred languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)";
     c += "static std::list<std::string> langLst = theLog->getLanguages();";
     c += "";
     c += "for (const std::string & lang : langLst) {";

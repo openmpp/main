@@ -72,6 +72,16 @@ public:
     virtual int pp_size() const = 0;
 
     /**
+     * True if enumeration is published.
+     *
+     * @return a bool.
+     */
+    bool is_published(void) const
+    {
+        return metadata_needed;
+    }
+
+    /**
      * Type used to store enumerators of this enumeration.
      */
     token_type storage_type;

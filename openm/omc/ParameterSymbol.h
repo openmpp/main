@@ -138,6 +138,14 @@ public:
     }
 
     /**
+     * True if parameter is published.
+     */
+    bool is_published(void) const
+    {
+        return (source == ParameterSymbol::parameter_source::scenario_parameter) || publish_as_table;
+    }
+
+    /**
     * C++ code to read parameter from data store.
     *
     * @param i_paramNumber parameter number to report reading progress.

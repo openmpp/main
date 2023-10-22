@@ -39,5 +39,13 @@ public:
      *
      * @return true if group contains a scenario parameter, otherwise false
      */
-    const bool contains_scenario_parameter();
+    bool contains_scenario_parameter(void) const;
+
+    /**
+     * True if parameter group is published.
+     */
+    bool is_published(void) const
+    {
+        return contains_scenario_parameter();
+    }
 };

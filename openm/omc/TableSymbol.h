@@ -139,6 +139,14 @@ public:
     bool is_entity_table(void);
 
     /**
+     * True if table is published.
+     */
+    bool is_published(void) const
+    {
+        return !is_internal;
+    }
+
+    /**
      * The dimensions in the table
      */
     list<DimensionSymbol *> dimension_list;

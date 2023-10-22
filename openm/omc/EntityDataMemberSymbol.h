@@ -84,6 +84,16 @@ public:
     bool is_eligible_microdata(void) const;
 
     /**
+     * Determines if this is published
+     *
+     * @return true or false.
+     */
+    bool is_published(void) const
+    {
+        return is_eligible_microdata();
+    }
+
+    /**
      * Determines if this is a BuiltinAttributeSymbol
      *
      * @return true or false.

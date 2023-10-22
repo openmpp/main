@@ -120,7 +120,7 @@ void ParameterGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
     }
 }
 
-const bool ParameterGroupSymbol::contains_scenario_parameter()
+bool ParameterGroupSymbol::contains_scenario_parameter() const
 {
     for (auto sym : pp_symbol_list) {
         auto pgs = dynamic_cast<ParameterGroupSymbol*>(sym);
