@@ -151,6 +151,7 @@ SimpleAttributeSymbol.cpp \
 StringSymbol.cpp \
 StringTypeSymbol.cpp \
 Symbol.cpp \
+Symbol_options.cpp \
 TableGroupSymbol.cpp \
 TableMeasureSymbol.cpp \
 TableSymbol.cpp \

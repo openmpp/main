@@ -338,6 +338,7 @@
     <ClCompile Include="StringSymbol.cpp" />
     <ClCompile Include="StringTypeSymbol.cpp" />
     <ClCompile Include="Symbol.cpp" />
+    <ClCompile Include="Symbol_options.cpp" />
     <ClCompile Include="TableGroupSymbol.cpp" />
     <ClCompile Include="TableMeasureSymbol.cpp" />
     <ClCompile Include="TableSymbol.cpp" />

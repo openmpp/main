@@ -900,7 +900,7 @@ public:
      * code parsing for subsequent processing by this function. Unrecognized options are ignored, as
      * are unrecognized values for recognized options.
      */
-    static void defaults_and_options();
+    static void do_options();
 
     /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
