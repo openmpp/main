@@ -773,6 +773,9 @@ int main(int argc, char * argv[])
 
         // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
+
+        // issue missing label warnings
+        do_missing_label_warnings();
         
     }
     catch(DbException & ex) {
