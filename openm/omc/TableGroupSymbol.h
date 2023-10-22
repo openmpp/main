@@ -39,6 +39,15 @@ public:
      *
      * @return true if group contains a published table, otherwise false
      */
-    const bool contains_published_table();
+    bool contains_published_table() const;
+
+    /**
+     * True if parameter group is published.
+     */
+    bool is_published(void) const
+    {
+        return contains_published_table();
+    }
+
 
 };
