@@ -655,7 +655,7 @@ void Symbol::post_parse(int pass)
             // This symbol has a declaration location in model code which can have an associated source code label
             // Check all lines of the declaration for a valid comment label
             int line_count = decl_loc.end.line - decl_loc.begin.line + 1;
-            if (line_count >= 1) {
+            if (line_count >= 1) { // always true, but here for clarity
                 // Construct key of first line for lookup in map of all // comments
                 omc::position pos(decl_loc.begin.filename, decl_loc.begin.line, 0);
                 process_symbol_label(pos);

@@ -143,6 +143,11 @@ void do_missing_documentation(void)
             for (auto& the_pair : Symbol::pp_symbols) {
                 // iterate all symbols
                 auto s = the_pair.second;
+                if (s->is_base_symbol()) {
+                    // skip 'space junk' symbols in symbol table
+                    // which were never morphed to a 'real' kind of Symbol in the Symbol hierarchy.
+                    continue;
+                }
                 if (Symbol::option_missing_translated_label_warning_published_any) {
                     if (s->is_label_supplied()) {
                         // label was supplied in the model's default language
