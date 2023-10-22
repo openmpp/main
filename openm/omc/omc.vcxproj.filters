@@ -279,6 +279,9 @@
     <ClInclude Include="omc_model_metrics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="omc_missing_documentation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -501,6 +504,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="omc_model_metrics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="omc_missing_documentation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

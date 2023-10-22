@@ -62,6 +62,7 @@
 #include "omc_file.h"
 #include "omc_csv.h"
 #include "omc_model_metrics.h"
+#include "omc_missing_documentation.h"
 
 using namespace std;
 using namespace openm;
@@ -774,8 +775,8 @@ int main(int argc, char * argv[])
         // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
 
-        // issue missing label warnings
-        do_missing_label_warnings();
+        // issue wanrings for missing labels,notes,translations
+        do_missing_documentation();
         
     }
     catch(DbException & ex) {
