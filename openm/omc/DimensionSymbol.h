@@ -42,17 +42,25 @@ public:
     {
         // exactly one of either attribute or enumeration is specified
         assert((attribute && !enumeration) || (enumeration && !attribute)); // grammar guarantee
+
+        // override to use dimension naming for LABEL and NOTE
+        label_unique_name = label_symbol_name(symbol_with_dimensions, index, after_analysis_dim);
     }
 
     /**
      * Construct symbol name for the dimension symbol. Example: BasicDemography::Dim0.
      *
      * @param symbol_with_dimensions The table or entity set containing the this dimension.
-     * @param index          0-based index of the enumeration dimension among all enumeration dimensions in teh table.
+     * @param index          0-based index of the enumeration dimension among all enumeration dimensions in the table.
      *
      * @return A string.
      */
-    static string symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim);
+    static string symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim);
+
+    /**
+     * Construct symbol name for the dimension symbol following name scheme of LABEL and NOTE
+     */
+    static string label_symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim);
 
     /**
      * Make dimension name suitable for database column name: it must be unique column name consist of 255 alphanumeric characters.

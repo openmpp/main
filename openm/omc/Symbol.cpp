@@ -673,6 +673,32 @@ bool Symbol::option_censor_event_time = false;
 
 bool Symbol::option_ascii_infinity = false;
 
+bool Symbol::option_missing_label_warning_enumeration = false;
+
+bool Symbol::option_missing_label_warning_parameter = false;
+
+bool Symbol::option_missing_label_warning_table = false;
+
+bool Symbol::option_missing_label_warning_attribute = false;
+
+bool Symbol::option_missing_label_warning_published_enumeration = false;
+
+bool Symbol::option_missing_label_warning_published_parameter = false;
+
+bool Symbol::option_missing_label_warning_published_table = false;
+
+bool Symbol::option_missing_label_warning_published_attribute = false;
+
+bool Symbol::option_missing_note_warning_published_parameter = false;
+
+bool Symbol::option_missing_note_warning_published_table = false;
+
+bool Symbol::option_missing_note_warning_published_attribute = false;
+
+bool Symbol::option_missing_translated_label_warning_published_any = false;
+
+bool Symbol::option_missing_translated_note_warning_published_any = false;
+
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 
 string Symbol::option_memory_popsize_parameter;
@@ -728,7 +754,7 @@ void Symbol::post_parse(int pass)
         // Check for an explicit label specified using //LABEL, for each language
         for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
             auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = unique_name + "," + lang_sym->name;
+            string key = label_unique_name + "," + lang_sym->name;
             auto search = explicit_labels.find(key);
             if (search != explicit_labels.end()) {
                 pp_labels[j] = trim(search->second);
@@ -739,7 +765,7 @@ void Symbol::post_parse(int pass)
         // Check for a note specified using NOTE comment, for each language
         for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
             auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = unique_name + "," + lang_sym->name;
+            string key = label_unique_name + "," + lang_sym->name;
             auto search = notes_source.find(key);
             if (search != notes_source.end()) {
                 pp_notes[j] = search->second;
@@ -809,7 +835,7 @@ void Symbol::post_parse(int pass)
                     auto lang_sym = LanguageSymbol::id_to_sym[j];
                     string lbl = pp_labels[0] + " (" + lang_sym->name + ")";
                     pp_labels[j] = lbl;
-                    pp_labels_explicit[j] = true;
+                    // note that pp_labels_explicit[j] is left at false
                 }
             }
         }
@@ -2401,6 +2427,149 @@ void Symbol::defaults_and_options()
             }
             else if (value == "off") {
                 option_ascii_infinity = false;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_enumeration";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_enumeration = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_parameter";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_parameter = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_table";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_table = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_attribute";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_attribute = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_published_enumeration";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_published_enumeration = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_published_parameter";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_published_parameter = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_published_table";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_published_table = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_label_warning_published_attribute";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_label_warning_published_attribute = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_note_warning_published_parameter";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_note_warning_published_parameter = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_note_warning_published_table";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_note_warning_published_table = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_note_warning_published_attribute";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_note_warning_published_attribute = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_translated_label_warning_published_any";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_translated_label_warning_published_any = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_translated_note_warning_published_any";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_translated_note_warning_published_any = true;
             }
         }
     }

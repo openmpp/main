@@ -175,6 +175,7 @@ public:
         , code_order(0)
         , code_label_allowed(true)
     {
+        label_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
             // add to symbol table
@@ -218,6 +219,7 @@ public:
         , code_order(0)
         , code_label_allowed(true)
     {
+        label_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
             // add to symbol table
@@ -255,6 +257,7 @@ public:
         , code_order(0)
         , code_label_allowed(true)
     {
+        label_unique_name = unique_name;  // is overridden if necessary
         // find symbol table entry for the existing symbol
         auto it = symbols.find( unique_name );
         // preserve reference count
@@ -548,6 +551,13 @@ public:
      * E.g. 'time'.
      */
 	string name;
+
+    /**
+     * A unique identifier for the symbol used in LABEL and NOTE comments.
+     * 
+     * Differs from unique_name for table dimensions, for historical reasons.
+     */
+    string label_unique_name;
 
     /**
      * The symbol label for each language.
@@ -1596,6 +1606,71 @@ public:
      * true or false depending on ascii_infinity in options statement.
      */
     static bool option_ascii_infinity;
+
+    /**
+     * true to issue warning if enumeration has no label.
+     */
+    static bool option_missing_label_warning_enumeration;
+
+    /**
+     * true to issue warning if parameter has no label.
+     */
+    static bool option_missing_label_warning_parameter;
+
+    /**
+     * true to issue warning if table or table expression has no label.
+     */
+    static bool option_missing_label_warning_table;
+
+    /**
+     * true to issue warning if attribute has no label.
+     */
+    static bool option_missing_label_warning_attribute;
+
+    /**
+     * true to issue warning if published enumeration has no label.
+     */
+    static bool option_missing_label_warning_published_enumeration;
+
+    /**
+     * true to issue warning if published parameter has no label.
+     */
+    static bool option_missing_label_warning_published_parameter;
+
+    /**
+     * true to issue warning if published table or table expression has no label.
+     */
+    static bool option_missing_label_warning_published_table;
+
+    /**
+     * true to issue warning if published attribute has no label.
+     */
+    static bool option_missing_label_warning_published_attribute;
+
+    /**
+     * true to issue warning if published parameter has no note.
+     */
+    static bool option_missing_note_warning_published_parameter;
+
+    /**
+     * true to issue warning if published table has no note.
+     */
+    static bool option_missing_note_warning_published_table;
+
+    /**
+     * true to issue warning if published attribute has no note.
+     */
+    static bool option_missing_note_warning_published_attribute;
+
+    /**
+     * true to issue warning if published symbol has untranslated label.
+     */
+    static bool option_missing_translated_label_warning_published_any;
+
+    /**
+     * true to issue warning if published symbol has untranslated note.
+     */
+    static bool option_missing_translated_note_warning_published_any;
 
     /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
