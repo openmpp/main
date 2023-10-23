@@ -15,19 +15,19 @@ using namespace openm;
 string MeasureDimensionSymbol::symbol_name(const TableSymbol* table)
 {
     assert(table);
-    return table->name + "::measures";
+    return table->name + "::expression_dimension";
 }
 
 string MeasureDimensionSymbol::default_label(const LanguageSymbol& lang) const
 {
     if (lang.name == "EN") {
-        return "Measure";
+        return "Quantity";
     }
     else if (lang.name == "FR") {
-        return "Mesure";
+        return "Quantité";
     }
     else {
-        return "Measure";
+        return "Quantity (" + lang.name + ")";
     }
 }
 
