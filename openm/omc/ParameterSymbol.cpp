@@ -69,7 +69,9 @@ void ParameterSymbol::post_parse(int pass)
             string key = unique_name + "," + lang_sym->name;
             auto search = notes_input.find(key);
             if (search != notes_input.end()) {
-                pp_value_notes[j] = search->second;
+                auto text = (search->second).first;
+                auto loc = (search->second).second;
+                pp_value_notes[j] = text;
             }
         }
         break;

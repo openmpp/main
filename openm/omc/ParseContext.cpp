@@ -322,7 +322,7 @@ void ParseContext::process_cxx_comment(const string& cmt, const omc::location& l
         string lab = cmt.substr(p);
         
         // Insert label into map of all explicit //LABEL comments
-        Symbol::explicit_labels.emplace(key, lab);
+        Symbol::explicit_labels.emplace(key, make_pair(lab,loc));
 
         // Don't place //LABEL comments into list of all cxx_comments,
         // which is used for //EN, etc.
@@ -364,7 +364,7 @@ void ParseContext::process_cxx_comment(const string& cmt, const omc::location& l
 //        string nam = cmt.substr(p);
 
         // Insert short name into map of all explicit //NAME comments
-        Symbol::explicit_names.emplace(sym_name, shrt_nam);
+        Symbol::explicit_names.emplace(sym_name, make_pair(shrt_nam, loc));
 
         // Don't place //NAME comments into list of all cxx_comments,
         // which is used for //EN, etc.
@@ -432,10 +432,10 @@ void ParseContext::process_c_comment(const string& cmt, const omc::location& loc
 
         // Insert note into appropriate map of NOTE comments
         if (is_scenario_parameter_value || is_fixed_parameter_value) {
-            Symbol::notes_input.emplace(key, note);
+            Symbol::notes_input.emplace(key, make_pair(note, loc));
         }
         else {
-            Symbol::notes_source.emplace(key, note);
+            Symbol::notes_source.emplace(key, make_pair(note, loc));
         }
     }
 

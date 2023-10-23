@@ -569,13 +569,13 @@ comment_map_type Symbol::cxx_comments;
 
 comment_map_type Symbol::c_comments;
 
-unordered_map<string, string> Symbol::explicit_labels;
+unordered_map<string, pair<string, omc::location>> Symbol::explicit_labels;
 
-unordered_map<string, string> Symbol::explicit_names;
+unordered_map<string, pair<string, omc::location>> Symbol::explicit_names;
 
-unordered_map<string, string> Symbol::notes_source;
+unordered_map<string, pair<string, omc::location>> Symbol::notes_source;
 
-unordered_map<string, string> Symbol::notes_input;
+unordered_map<string, pair<string, omc::location>> Symbol::notes_input;
 
 unordered_set<string> Symbol::tran_funcs;
 
@@ -673,7 +673,9 @@ void Symbol::post_parse(int pass)
             string key = label_unique_name + "," + lang_sym->name;
             auto search = explicit_labels.find(key);
             if (search != explicit_labels.end()) {
-                pp_labels[j] = trim(search->second);
+                auto text = (search->second).first;
+                auto loc = (search->second).second;
+                pp_labels[j] = trim(text);
                 pp_labels_explicit[j] = true;
             }
         }
@@ -684,7 +686,9 @@ void Symbol::post_parse(int pass)
             string key = label_unique_name + "," + lang_sym->name;
             auto search = notes_source.find(key);
             if (search != notes_source.end()) {
-                pp_notes[j] = search->second;
+                auto text = (search->second).first;
+                auto loc = (search->second).second;
+                pp_notes[j] = text;
             }
         }
 
@@ -1253,13 +1257,17 @@ void Symbol::post_parse_all()
     if (Symbol::option_convert_modgen_note_syntax) {
         // iterate collection of NOTES in model source code notes
         for (const auto& [key, value] : Symbol::notes_source) {
-            auto new_note = Symbol::normalize_note(value);
-            Symbol::notes_source[key] = new_note;
+            auto text = value.first;
+            auto loc = value.second;
+            auto new_note = Symbol::normalize_note(text);
+            Symbol::notes_source[key] = make_pair(new_note,loc);
         }
         // iterate collection of NOTES in parameter value notes
         for (const auto& [key, value] : Symbol::notes_input) {
-            auto new_note = Symbol::normalize_note(value);
-            Symbol::notes_input[key] = new_note;
+            auto text = value.first;
+            auto loc = value.second;
+            auto new_note = Symbol::normalize_note(text);
+            Symbol::notes_input[key] = make_pair(new_note, loc);
         }
     }
 

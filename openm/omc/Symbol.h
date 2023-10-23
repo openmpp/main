@@ -1281,36 +1281,36 @@ public:
     /**
      * Map of LABEL from symbol name to label.
      * 
-     * This maps "symbol,language" as a key to the associated label specified
+     * This maps "symbol,language" as a key to the associated {label,location} specified
      * explicitly by a //LABEL statement in the model source code.
      */
-    static unordered_map<string, string> explicit_labels;
+    static unordered_map<string, pair<string, omc::location>> explicit_labels;
 
     /**
      * Map of NAME from symbol name to short name.
      *
-     * This maps "symbol" as a key to the associated short name specified
+     * This maps "symbol" as a key to the associated short {name,location} specified
      * explicitly by a //NAME statement in the model source code, eg.
      *   //NAME MyParam.Dim0 Region
      *   //NAME MyTable.Expr2 avg_income
      */
-    static unordered_map<string, string> explicit_names;
+    static unordered_map<string, pair<string, omc::location>> explicit_names;
 
     /**
      * Map of NOTE from symbol name to note (model source)
      * 
-     * This maps "symbol,language" as a key to the associated note specified
+     * This maps "symbol,language" as a key to the associated {note,location} specified
      * explicitly by a NOTE statement in the model source code.
      */
-    static unordered_map<string, string> notes_source;
+    static unordered_map<string, pair<string, omc::location>> notes_source;
 
     /**
      * Map of NOTE from symbol name to note (parameter input values)
      * 
-     * This maps "symbol,language" as a key to the associated note specified
+     * This maps "symbol,language" as a key to the associated {note,location} specified
      * explicitly by a NOTE statement in the model source code.
      */
-    static unordered_map<string, string> notes_input;
+    static unordered_map<string, pair<string, omc::location>> notes_input;
 
     /**
      * Set of functions to scan for human language string literal as first argument

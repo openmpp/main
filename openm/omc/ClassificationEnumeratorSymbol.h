@@ -108,7 +108,9 @@ public:
             // If an explicit short name was given by //NAME, use it
             auto search = explicit_names.find(unique_name);
             if (search != explicit_names.end()) {
-                short_name_explicit = search->second;
+                auto text = (search->second).first;
+                auto loc = (search->second).second;
+                short_name_explicit = text;
                 short_name = short_name_explicit;
             }
             break;
