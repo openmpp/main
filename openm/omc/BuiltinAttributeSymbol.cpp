@@ -9,9 +9,31 @@
 #include "EntitySymbol.h"
 #include "EntityFuncSymbol.h"
 #include "TypeSymbol.h"
+#include "EntitySymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
+
+string BuiltinAttributeSymbol::default_label(const LanguageSymbol& lang) const
+{
+    // Retrieve label from the std::map the_default_labels for the built-in attribute.
+    // The map was initialized in EntitySymbol::create_auxiliary_symbols()
+    // using hard-coded values specific to the built-in symbol.
+    auto it = the_default_labels.find(lang.name);
+    if (it != the_default_labels.end()) {
+        return it->second;
+    }
+    else {
+        auto it_EN = the_default_labels.find("EN");
+        if (it_EN != the_default_labels.end()) {
+            return it_EN->second + " (" + lang.name + ")";
+        }
+        else {
+            return name + " (" + lang.name + ")";
+        }
+    }
+}
 
 void BuiltinAttributeSymbol::post_parse(int pass)
 {

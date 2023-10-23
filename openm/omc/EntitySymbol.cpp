@@ -57,6 +57,13 @@ void EntitySymbol::create_auxiliary_symbols()
             // The local variable om_delta can be used by any code injected into 'time'.
             c += "// Amount of time increment";
             c += "Time om_delta = om_new - om_old;";
+
+            // Provide the default labels for selected language codes.
+            biav->the_default_labels =
+            {
+                {"EN", "Time"},
+                {"FR", "Temps"}
+            };
         }
     }
 
