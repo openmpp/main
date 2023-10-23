@@ -443,6 +443,13 @@ public:
     virtual string pretty_name() const;
 
     /**
+     * True if this object is published to the database.
+     *
+     * This virtual function is overridden as appropriate by specializations of Symbol.
+     */
+    virtual bool is_published() const { return false; }
+
+    /**
      * Description of code injection into side-effect function.
      * 
      * Used to insert a comment in generated code.

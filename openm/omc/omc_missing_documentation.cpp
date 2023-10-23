@@ -148,7 +148,7 @@ void do_missing_documentation(void)
                     // which were never morphed to a 'real' kind of Symbol in the Symbol hierarchy.
                     continue;
                 }
-                if (Symbol::option_missing_translated_label_warning_published_any) {
+                if (Symbol::option_missing_translated_label_warning_published_any && s->is_published()) {
                     if (s->is_label_supplied()) {
                         // label was supplied in the model's default language
                         for (int j = 1; j < nlang; ++j) {
@@ -161,7 +161,7 @@ void do_missing_documentation(void)
                         }
                     }
                 }
-                if (Symbol::option_missing_translated_note_warning_published_any) {
+                if (Symbol::option_missing_translated_note_warning_published_any && s->is_published()) {
                     if (s->is_note_supplied()) {
                         // note was supplied in the model's default language
                         for (int j = 1; j < nlang; ++j) {
