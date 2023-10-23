@@ -10,6 +10,7 @@ parameters {
     //EN Number of cases in run (over all members)
     long long SimulationCases;
 };
+//LABEL(SimulationCases,FR) Nombre de cas (dans tous les membres de l'execution)
 
 /**
 * Called by before_presimulation.

@@ -15,6 +15,8 @@ parameters {
     double StartingPopulationRealSize;
 
 };
+//LABEL(StartingPopulationSize,FR) Taille de l'échantillon de la population au début
+//LABEL(StartingPopulationRealSize,FR) Taille au complet de la population au début
 
 /**
  * The population scaling factor to use for this member of the simulation.

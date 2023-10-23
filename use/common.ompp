@@ -16,6 +16,7 @@ parameters {
     //EN Simulation starting seed
     long long SimulationSeed;
 };
+//LABEL(SimulationSeed,FR) Graine de nombre aléatoire de la simulation
 
 #endif // Hide non-C++ syntactic island from IDE
 

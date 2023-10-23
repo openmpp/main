@@ -3,8 +3,8 @@
 * Implementation of population scaling
 *
 */
-// Copyright (c) 2013 OpenM++
-// This code is licensed under the MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2023 OpenM++ COntributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
 
 // forward declarations of fmk variables
 namespace fmk {
@@ -12,9 +12,10 @@ namespace fmk {
 }
 
 parameters {
-    //EN Population
+    //EN Real population size
     double SimulatedPopulation;
 };
+//LABEL(SimulatedPopulation,FR) Vraie taille de la population
 
 /**
  * The population scaling factor to use for this member of the run.

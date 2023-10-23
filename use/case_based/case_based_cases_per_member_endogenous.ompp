@@ -10,6 +10,7 @@ parameters {
     //EN Number of cases in each member
     derived long long CasesPerMember;
 };
+//LABEL(CasesPerMember,FR) Nombre de cas dans chaque membre
 
 /**
 * Called by before_presimulation.

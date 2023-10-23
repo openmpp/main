@@ -3,13 +3,14 @@
 * Implementation of framework for time-based models
 * 
 */
-// Copyright (c) 2013-2016 OpenM++ Contributors
-// This code is licensed under the MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2023 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
 
 parameters {
     //EN Simulation end time
     Time SimulationEnd;
 };
+//LABEL(SimulationEnd,FR) Temps de fin de la simulation
 
 namespace fmk {
 
