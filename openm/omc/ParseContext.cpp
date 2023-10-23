@@ -347,6 +347,12 @@ void ParseContext::process_cxx_comment(const string& cmt, const omc::location& l
             return;
         }
         string sym_name = cmt.substr(p, q - p);
+        // Change . to :: to align with Symbol unique_name
+        // e.g. Person.age to Person::age
+        auto r = sym_name.find(".");
+        if (r != string::npos) {
+            sym_name.replace(r, 1, "::");
+        }
 
         // Skip white space between symbol name and export name
         p = cmt.find_first_not_of(" \t", q);
