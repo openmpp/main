@@ -98,30 +98,30 @@ void EntitySymbol::create_auxiliary_symbols()
         }
     }
 
-    {
-        string nm = "events";
-        auto sym = Symbol::get_symbol(nm, this);
-        if (!sym || sym->is_base_symbol()) {
-            NumericSymbol *typ = NumericSymbol::find(token::TK_counter);
-            BuiltinAttributeSymbol *biav = nullptr;
-            if (!sym) {
-                // create it
-                biav = new BuiltinAttributeSymbol(nm, this, typ);
-            }
-            else {
-                // morph it
-                biav = new BuiltinAttributeSymbol(sym, this, typ);
-            }
-            assert(biav);
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Events"},
-                {"FR", "Évenements"}
-            };
-            // initialize it
-        }
-    }
+    //{
+    //    string nm = "events";
+    //    auto sym = Symbol::get_symbol(nm, this);
+    //    if (!sym || sym->is_base_symbol()) {
+    //        NumericSymbol *typ = NumericSymbol::find(token::TK_counter);
+    //        BuiltinAttributeSymbol *biav = nullptr;
+    //        if (!sym) {
+    //            // create it
+    //            biav = new BuiltinAttributeSymbol(nm, this, typ);
+    //        }
+    //        else {
+    //            // morph it
+    //            biav = new BuiltinAttributeSymbol(sym, this, typ);
+    //        }
+    //        assert(biav);
+    //        // Provide the default labels for selected language codes.
+    //        biav->the_default_labels =
+    //        {
+    //            {"EN", "Events"},
+    //            {"FR", "Évenements"}
+    //        };
+    //        // initialize it
+    //    }
+    //}
 
     {
         string nm = "entity_id";
