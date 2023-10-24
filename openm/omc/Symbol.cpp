@@ -653,8 +653,9 @@ void Symbol::post_parse(int pass)
         }
 
         // Check for presence of a comment label on the first line and and last line of the symbol declaration.
-        if (decl_loc != omc::location() && code_label_allowed) {
+        if (decl_loc != omc::location() && code_label_allowed && !is_base_symbol()) {
             // This symbol has a declaration location in model code which can have an associated source code label
+            // and is not a 'space junk' Symbol which was never specialized.
             // Check all lines of the declaration for a valid comment label
             int line_count = decl_loc.end.line - decl_loc.begin.line + 1;
             if (line_count >= 1) { // always true, but here for clarity
@@ -739,9 +740,10 @@ void Symbol::post_parse(int pass)
         // Check for presence of a comment label on the *previous* line of the symbol declaration.
         // This is a second pass for associating language labels which are not already associated
         // with a symbol declared on the same line as the label.
-        if (decl_loc != omc::location() && decl_loc.begin.line > 0) {
-            // This symbol has a declaration location.
-            // Construct key for lookup in map of all // comments
+        if (decl_loc != omc::location() && decl_loc.begin.line > 0 && code_label_allowed && !is_base_symbol()) {
+            // This symbol has a declaration location in model code which can have an associated source code label
+            // and is not a 'space junk' Symbol which was never specialized.
+            // Construct key for lookup in map of all // comments, using *previous* line
             omc::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
             process_symbol_label(pos);
         }
