@@ -148,29 +148,35 @@ void do_missing_documentation(void)
                     // which were never morphed to a 'real' kind of Symbol in the Symbol hierarchy.
                     continue;
                 }
-                if (Symbol::option_missing_translated_label_warning_published_any && s->is_published()) {
-                    if (s->is_label_supplied()) {
-                        // label was supplied in the model's default language
-                        for (int j = 1; j < nlang; ++j) {
-                            // iterate secondary languages
-                            auto lang_sym = LanguageSymbol::id_to_sym[j];
-                            auto lang_code = lang_sym->name;
-                            auto lang0_pos = s->pp_labels_pos[0]; // code position of label in default language
-                            if (!s->pp_labels_explicit[j]) {
+                if (s->is_label_supplied()) {
+                    // label was supplied in the model's default language
+                    for (int j = 1; j < nlang; ++j) {
+                        // iterate secondary languages
+                        auto lang_sym = LanguageSymbol::id_to_sym[j];
+                        auto lang_code = lang_sym->name;
+                        auto lang0_pos = s->pp_labels_pos[0]; // code position of label in default language
+                        if (!s->pp_labels_explicit[j]) {
+                            if (Symbol::option_missing_translated_label_warning_any) {
+                                s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated label for symbol '") + s->name + "'", lang0_pos);
+                            }
+                            if (Symbol::option_missing_translated_label_warning_published_any && s->is_published()) {
                                 s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated label for published symbol '") + s->name + "'", lang0_pos);
                             }
                         }
                     }
                 }
-                if (Symbol::option_missing_translated_note_warning_published_any && s->is_published()) {
-                    if (s->is_note_supplied()) {
-                        // note was supplied in the model's default language
-                        for (int j = 1; j < nlang; ++j) {
-                            // iterate secondary languages
-                            auto lang_sym = LanguageSymbol::id_to_sym[j];
-                            auto lang_code = lang_sym->name;
-                            auto lang0_pos = s->pp_notes_pos[0]; // code position of note in default language
-                            if (s->pp_notes[j].length() == 0) {
+                if (s->is_note_supplied()) {
+                    // note was supplied in the model's default language
+                    for (int j = 1; j < nlang; ++j) {
+                        // iterate secondary languages
+                        auto lang_sym = LanguageSymbol::id_to_sym[j];
+                        auto lang_code = lang_sym->name;
+                        auto lang0_pos = s->pp_notes_pos[0]; // code position of note in default language
+                        if (s->pp_notes[j].length() == 0) {
+                            if (Symbol::option_missing_translated_note_warning_any) {
+                                s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated note for symbol '") + s->name + "'", lang0_pos);
+                            }
+                            if (Symbol::option_missing_translated_note_warning_published_any && s->is_published()) {
                                 s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated note for published symbol '") + s->name + "'", lang0_pos);
                             }
                         }

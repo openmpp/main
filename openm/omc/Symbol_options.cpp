@@ -59,6 +59,8 @@ bool Symbol::option_missing_label_warning_published_attribute = false;
 bool Symbol::option_missing_note_warning_published_parameter = false;
 bool Symbol::option_missing_note_warning_published_table = false;
 bool Symbol::option_missing_note_warning_published_attribute = false;
+bool Symbol::option_missing_translated_label_warning_any = false;
+bool Symbol::option_missing_translated_note_warning_any = false;
 bool Symbol::option_missing_translated_label_warning_published_any = false;
 bool Symbol::option_missing_translated_note_warning_published_any = false;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
@@ -560,6 +562,28 @@ void Symbol::do_options()
             string value = iter->second;
             if (value == "on") {
                 option_missing_note_warning_published_attribute = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_translated_label_warning_any";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_translated_label_warning_any = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_translated_note_warning_any";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_translated_note_warning_any = true;
             }
         }
     }

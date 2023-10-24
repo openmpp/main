@@ -1703,6 +1703,16 @@ public:
     static bool option_missing_note_warning_published_attribute;
 
     /**
+     * true to issue warning if symbol has untranslated label.
+     */
+    static bool option_missing_translated_label_warning_any;
+
+    /**
+     * true to issue warning if symbol has untranslated note.
+     */
+    static bool option_missing_translated_note_warning_any;
+
+    /**
      * true to issue warning if published symbol has untranslated label.
      */
     static bool option_missing_translated_label_warning_published_any;
