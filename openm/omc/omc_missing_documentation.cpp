@@ -123,7 +123,7 @@ void do_missing_documentation(void)
 
     for (auto& e : Symbol::pp_all_entities) {
         for (auto& s : e->pp_data_members) {
-            if (s->is_builtin_attribute() || s->is_simple_attribute() || s->is_identity_attribute()) {
+            if (s->is_simple_attribute() || s->is_identity_attribute() || s->is_link_attribute() || s->is_multilink()) {
                 if (!s->is_label_supplied()) {
                     if (Symbol::option_missing_label_warning_attribute) {
                         s->pp_warning(LT("warning : missing label for attribute '") + s->name + LT("' in entity '") + e->name + "'.");
