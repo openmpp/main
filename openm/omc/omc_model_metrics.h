@@ -15,4 +15,3 @@
 using namespace std;
 
 extern void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg);
-extern void do_missing_label_warnings();

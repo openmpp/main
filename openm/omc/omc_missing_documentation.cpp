@@ -22,6 +22,7 @@
 #include "EnumeratorSymbol.h"
 #include "ClassificationSymbol.h"
 #include "EntityTableSymbol.h"
+#include "BoolSymbol.h"
 #include "omc_missing_documentation.h"
 
 using namespace std;
@@ -29,6 +30,10 @@ using namespace std;
 void do_missing_documentation(void)
 {
     for (auto& s : Symbol::pp_all_enumerations) {
+        if (dynamic_cast<BoolSymbol*>(s)) {
+            // ignore the built-in bool classification and its enumerators
+            continue;
+        }
         if (!s->is_label_supplied()) {
             if (Symbol::option_missing_label_warning_enumeration) {
                 s->pp_warning(LT("warning : missing label for enumeration '") + s->name + "'");
