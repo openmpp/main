@@ -647,7 +647,9 @@ void Symbol::post_parse(int pass)
             assert(def_lab.length() > 0);
             pp_labels.push_back(def_lab);
             pp_labels_explicit.push_back(false);
+            pp_labels_pos.push_back(omc::position());
             pp_notes.push_back("");
+            pp_notes_pos.push_back(omc::position());
         }
 
         // Check for presence of a comment label on the first line and and last line of the symbol declaration.
@@ -677,6 +679,7 @@ void Symbol::post_parse(int pass)
                 auto loc = (search->second).second;
                 pp_labels[j] = trim(text);
                 pp_labels_explicit[j] = true;
+                pp_labels_pos[j] = loc.begin;
             }
         }
 
@@ -684,11 +687,13 @@ void Symbol::post_parse(int pass)
         for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
             auto lang_sym = LanguageSymbol::id_to_sym[j];
             string key = label_unique_name + "," + lang_sym->name;
+            // search in model source (ignore parameter value NOTEs)
             auto search = notes_source.find(key);
             if (search != notes_source.end()) {
                 auto text = (search->second).first;
                 auto loc = (search->second).second;
                 pp_notes[j] = text;
+                pp_notes_pos[j] = loc.begin;
             }
         }
 
@@ -831,6 +836,12 @@ void Symbol::pp_warning(const string& msg)
     pp_log_message(msg);
 }
 
+void Symbol::pp_warning(const string& msg, omc::position& pos)
+{
+    post_parse_warnings++;
+    pp_log_message(msg, pos);
+}
+
 void Symbol::pp_message(const string& msg)
 {
     pp_log_message(msg);
@@ -838,10 +849,14 @@ void Symbol::pp_message(const string& msg)
 
 void Symbol::pp_log_message(const string& msg)
 {
-    omc::location l = decl_loc;
-    if (l.begin.filename) {
-        // The symbol has a declaration location
-        theLog->logFormatted("%s(%d): %s", l.begin.filename->c_str(), l.begin.line, msg.c_str());
+    pp_log_message(msg, decl_loc.begin);
+}
+
+void Symbol::pp_log_message(const string& msg, omc::position& pos)
+{
+    if (pos.filename) {
+        // The symbol has a declaration position
+        theLog->logFormatted("%s(%d): %s", pos.filename->c_str(), pos.line, msg.c_str());
     }
     else {
         // This Symbol has no declaration location, so show symbol name
@@ -871,8 +886,10 @@ bool Symbol::process_symbol_label(const omc::position& pos)
                 cxx_comments.erase(cmt_search);
                 string lbl = trim(cmt.substr(lang_code.size() + 1));
                 if (lbl.length() > 0) {
-                    pp_labels[lang_search->second] = lbl;
-                    pp_labels_explicit[lang_search->second] = true;
+                    int lang_index = lang_search->second;
+                    pp_labels[lang_index] = lbl;
+                    pp_labels_explicit[lang_index] = true;
+                    pp_labels_pos[lang_index] = pos;
                 }
                 else {
                     // ignore empty label

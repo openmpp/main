@@ -487,6 +487,15 @@ public:
     void pp_warning(const string& msg);
 
     /**
+     * Process a semantic warning encountered during the post-parse phase.
+     *
+     * Source code position is second argument
+     *
+     * @param msg The message.
+     */
+    void pp_warning(const string& msg, omc::position& pos);
+
+    /**
      * Process a semantic message during the post-parse phase.
      *
      * Source code location is that of Symbol
@@ -503,6 +512,15 @@ public:
      * @param msg The message.
      */
     void pp_log_message(const string& msg);
+
+    /**
+     * Output a warning or error message to the log.
+     *
+     * Source code location is second argument.
+     *
+     * @param msg The message.
+     */
+    void pp_log_message(const string& msg, omc::position &pos);
 
     /**
      * Get the symbol label in the given language.
@@ -568,13 +586,21 @@ public:
 
     /**
      * The symbol label for each language.
+     * (indexed by language)
      */
     vector<string> pp_labels;
 
     /**
      * True if symbol label was provided explicitly in model source
+     * (indexed by language)
      */
     vector<bool> pp_labels_explicit;
+
+    /**
+     * Code position of symbol label
+     * (indexed by language)
+     */
+    vector<omc::position> pp_labels_pos;
 
     /**
      * True if symbol label was provided explicitly in model source for the default language
@@ -596,8 +622,15 @@ public:
 
     /**
      * The symbol notes for each language.
+     * (indexed by language)
      */
     vector<string> pp_notes;
+
+    /**
+     * Code position of symbol note
+     * (indexed by language)
+     */
+    vector<omc::position> pp_notes_pos;
 
     /**
      * True if symbol note was provided explicitly in model source for the default language
