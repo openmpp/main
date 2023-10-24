@@ -155,8 +155,9 @@ void do_missing_documentation(void)
                             // iterate secondary languages
                             auto lang_sym = LanguageSymbol::id_to_sym[j];
                             auto lang_code = lang_sym->name;
+                            auto lang0_pos = s->pp_labels_pos[0]; // code position of label in default language
                             if (!s->pp_labels_explicit[j]) {
-                                s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated label for published symbol '") + s->name + "'");
+                                s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated label for published symbol '") + s->name + "'", lang0_pos);
                             }
                         }
                     }
@@ -168,8 +169,9 @@ void do_missing_documentation(void)
                             // iterate secondary languages
                             auto lang_sym = LanguageSymbol::id_to_sym[j];
                             auto lang_code = lang_sym->name;
+                            auto lang0_pos = s->pp_notes_pos[0]; // code position of note in default language
                             if (s->pp_notes[j].length() == 0) {
-                                s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated label for published symbol '") + s->name + "'");
+                                s->pp_warning(LT("warning : missing '") + lang_code + LT("' translated note for published symbol '") + s->name + "'", lang0_pos);
                             }
                         }
                     }
