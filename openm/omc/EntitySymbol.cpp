@@ -48,15 +48,6 @@ void EntitySymbol::create_auxiliary_symbols()
                 biav = new BuiltinAttributeSymbol(sym, this, typ);
             }
             assert(biav);
-            // initialize it
-            biav->is_time_like = true; // can change between events
-            // declare the om_delta local variable for use in subsequently added code
-            auto fn = biav->side_effects_fn;
-            assert(fn);
-            CodeBlock& c = fn->func_body;
-            // The local variable om_delta can be used by any code injected into 'time'.
-            c += "// Amount of time increment";
-            c += "Time om_delta = om_new - om_old;";
 
             // Provide the default labels for selected language codes.
             biav->the_default_labels =
@@ -64,6 +55,17 @@ void EntitySymbol::create_auxiliary_symbols()
                 {"EN", "Time"},
                 {"FR", "Temps"}
             };
+
+            // initialize it
+            biav->is_time_like = true; // can change between events
+
+            // declare the om_delta local variable for use in subsequently added code
+            auto fn = biav->side_effects_fn;
+            assert(fn);
+            CodeBlock& c = fn->func_body;
+            // The local variable om_delta can be used by any code injected into 'time'.
+            c += "// Amount of time increment";
+            c += "Time om_delta = om_new - om_old;";
         }
     }
 
@@ -82,6 +84,14 @@ void EntitySymbol::create_auxiliary_symbols()
                 biav = new BuiltinAttributeSymbol(sym, this, typ);
             }
             assert(biav);
+
+            // Provide the default labels for selected language codes.
+            biav->the_default_labels =
+            {
+                {"EN", "Age"},
+                {"FR", "Âge"}
+            };
+
             // initialize it
             biav->is_time_like = true; // can change between events, like time
             biav->sorting_group = 2; // age is continuously-updated
@@ -103,6 +113,12 @@ void EntitySymbol::create_auxiliary_symbols()
                 biav = new BuiltinAttributeSymbol(sym, this, typ);
             }
             assert(biav);
+            // Provide the default labels for selected language codes.
+            biav->the_default_labels =
+            {
+                {"EN", "Events"},
+                {"FR", "Évenements"}
+            };
             // initialize it
         }
     }
@@ -122,6 +138,14 @@ void EntitySymbol::create_auxiliary_symbols()
                 biav = new BuiltinAttributeSymbol(sym, this, typ);
             }
             assert(biav);
+
+            // Provide the default labels for selected language codes.
+            biav->the_default_labels =
+            {
+                {"EN", "Entity identifier"},
+                {"FR", "Identifiant d'entité"}
+            };
+
             // initialize it
         }
     }
@@ -141,6 +165,14 @@ void EntitySymbol::create_auxiliary_symbols()
                 biav = new BuiltinAttributeSymbol(sym, this, typ);
             }
             assert(biav);
+
+            // Provide the default labels for selected language codes.
+            biav->the_default_labels =
+            {
+                {"EN", "Case seed for random number generators"},
+                {"FR", "Graine de cas de nombres aléatoires"}
+            };
+
             // initialize it
         }
     }
