@@ -16,17 +16,20 @@
 using namespace openm;
 
 // static
-string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim)
+string DimensionSymbol::symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim)
 {
     assert(symbol_with_dimensions);
     return symbol_with_dimensions->name + "::Dim" + to_string(index);
 }
 
 // static
-string DimensionSymbol::label_symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_analysis_dim)
+string DimensionSymbol::modgen_symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim)
 {
     assert(symbol_with_dimensions);
-    return symbol_with_dimensions->name + "::Dim" + to_string(index + after_analysis_dim);
+    // Modgen counts the the expression dimension in the "Dim" suffix,
+    // so 1 must be added to dimension index for dimensions which follow the expression dimension
+    // to contruct the Modgen symbol name.
+    return symbol_with_dimensions->name + "::Dim" + to_string(index + after_expression_dim);
 }
 
 // Update dimension name to be suitable as database column name: it must be unique, alphanumeric and not longer than 255 chars

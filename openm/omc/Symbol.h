@@ -175,7 +175,7 @@ public:
         , code_order(0)
         , code_label_allowed(true)
     {
-        label_unique_name = unique_name;  // is overridden if necessary
+        modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
             // add to symbol table
@@ -219,7 +219,7 @@ public:
         , code_order(0)
         , code_label_allowed(true)
     {
-        label_unique_name = unique_name;  // is overridden if necessary
+        modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
         if (it == symbols.end() ) {
             // add to symbol table
@@ -257,7 +257,7 @@ public:
         , code_order(0)
         , code_label_allowed(true)
     {
-        label_unique_name = unique_name;  // is overridden if necessary
+        modgen_unique_name = unique_name;  // is overridden if necessary
         // find symbol table entry for the existing symbol
         auto it = symbols.find( unique_name );
         // preserve reference count
@@ -591,8 +591,10 @@ public:
      * A unique identifier for the symbol used in LABEL and NOTE comments.
      * 
      * Differs from unique_name for table dimensions, for historical reasons.
+     * Modgen numbered dimensions Dim0,Dim1,... including the expression dimension
+     * Ompp numbers dimensions Dim0,Dim1,... excluding the expression dimension
      */
-    string label_unique_name;
+    string modgen_unique_name;
 
     /**
      * The symbol label for each language.

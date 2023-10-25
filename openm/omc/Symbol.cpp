@@ -672,9 +672,9 @@ void Symbol::post_parse(int pass)
 
         // Check for an explicit label specified using //LABEL, for each language.
         // Check for a note specified using NOTE comment, for each language.
-        // label_unique_name follows Modgen-style conventions for dimension numbering in tables,
+        // modgen_unique_name follows Modgen-style conventions for dimension numbering in tables,
         // i.e. Dim0, Dim1, etc. where the expression dimension counts in the numbering.
-        associate_explicit_label_or_note(label_unique_name);
+        associate_explicit_label_or_note(modgen_unique_name);
 
         // Integrity check (debugging omc only)
         // A name can be mis-identified as entity context when it should be global.

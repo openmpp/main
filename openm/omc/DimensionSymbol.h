@@ -44,7 +44,7 @@ public:
         assert((attribute && !enumeration) || (enumeration && !attribute)); // grammar guarantee
 
         // override to use dimension naming for LABEL and NOTE
-        label_unique_name = label_symbol_name(symbol_with_dimensions, index, after_analysis_dim);
+        modgen_unique_name = modgen_symbol_name(symbol_with_dimensions, index, after_analysis_dim);
     }
 
     /**
@@ -58,9 +58,9 @@ public:
     static string symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim);
 
     /**
-     * Construct symbol name for the dimension symbol following name scheme of LABEL and NOTE
+     * Construct symbol name for the dimension symbol following modgen naming scheme of LABEL and NOTE
      */
-    static string label_symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim);
+    static string modgen_symbol_name(const Symbol* symbol_with_dimensions, int index, bool after_expression_dim);
 
     /**
      * Make dimension name suitable for database column name: it must be unique column name consist of 255 alphanumeric characters.
