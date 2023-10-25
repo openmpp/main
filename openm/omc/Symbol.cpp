@@ -670,33 +670,11 @@ void Symbol::post_parse(int pass)
             }
         }
 
-        // Check for an explicit label specified using //LABEL, for each language
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = label_unique_name + "," + lang_sym->name;
-            auto search = explicit_labels.find(key);
-            if (search != explicit_labels.end()) {
-                auto text = (search->second).first;
-                auto loc = (search->second).second;
-                pp_labels[j] = trim(text);
-                pp_labels_explicit[j] = true;
-                pp_labels_pos[j] = loc.begin;
-            }
-        }
-
-        // Check for a note specified using NOTE comment, for each language
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = label_unique_name + "," + lang_sym->name;
-            // search in model source (ignore parameter value NOTEs)
-            auto search = notes_source.find(key);
-            if (search != notes_source.end()) {
-                auto text = (search->second).first;
-                auto loc = (search->second).second;
-                pp_notes[j] = text;
-                pp_notes_pos[j] = loc.begin;
-            }
-        }
+        // Check for an explicit label specified using //LABEL, for each language.
+        // Check for a note specified using NOTE comment, for each language.
+        // label_unique_name follows Modgen-style conventions for dimension numbering in tables,
+        // i.e. Dim0, Dim1, etc. where the expression dimension counts in the numbering.
+        associate_explicit_label_or_note(label_unique_name);
 
         // Integrity check (debugging omc only)
         // A name can be mis-identified as entity context when it should be global.
@@ -921,9 +899,38 @@ string Symbol::label() const
 
 string Symbol::note(const LanguageSymbol & language) const
 {
-    // placeholder implementation
-    //return name + " note (" + language.name + ")";
     return pp_notes[language.language_id];
+}
+
+void Symbol::associate_explicit_label_or_note(string key)
+{
+    // Check for an explicit label specified using //LABEL, for each language
+    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+        auto lang_sym = LanguageSymbol::id_to_sym[j];
+        string key_and_lang = key + "," + lang_sym->name;
+        auto search = explicit_labels.find(key_and_lang);
+        if (search != explicit_labels.end()) {
+            auto text = (search->second).first;
+            auto loc = (search->second).second;
+            pp_labels[j] = trim(text);
+            pp_labels_explicit[j] = true;
+            pp_labels_pos[j] = loc.begin;
+        }
+    }
+
+    // Check for a note specified using NOTE comment, for each language
+    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+        auto lang_sym = LanguageSymbol::id_to_sym[j];
+        string key_and_lang = key + "," + lang_sym->name;
+        // search in model source (ignore parameter value NOTEs)
+        auto search = notes_source.find(key_and_lang);
+        if (search != notes_source.end()) {
+            auto text = (search->second).first;
+            auto loc = (search->second).second;
+            pp_notes[j] = text;
+            pp_notes_pos[j] = loc.begin;
+        }
+    }
 }
 
 void Symbol::populate_default_symbols(const string &model_name, const string &scenario_name)

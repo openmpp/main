@@ -562,6 +562,16 @@ public:
     virtual string note(const LanguageSymbol & language) const;
 
     /**
+     * Associate explicit label or note with symbol.
+     *
+     * An explicit label is a C++ one-line comment like LABEL(key,EN) text
+     * A note is a C-style comment like NOTE(key,EN) text
+     * 
+     * @param key The key used to search comments, e.g. MyTable::Dim0
+     */
+    void associate_explicit_label_or_note(string key);
+
+    /**
      * The unique identifier for the symbol
      * 
      * To create unique names for all attributes, member names in the model source code are prefixed
