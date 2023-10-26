@@ -89,7 +89,7 @@ void EntitySymbol::create_auxiliary_symbols()
             biav->the_default_labels =
             {
                 {"EN", "Age"},
-                {"FR", "Âge"}
+                {"FR", u8"Âge"}
             };
 
             // initialize it
@@ -143,7 +143,7 @@ void EntitySymbol::create_auxiliary_symbols()
             biav->the_default_labels =
             {
                 {"EN", "Entity identifier"},
-                {"FR", "Identifiant d'entité"}
+                {"FR", u8"Identifiant d'entité"}
             };
 
             // initialize it
@@ -170,7 +170,7 @@ void EntitySymbol::create_auxiliary_symbols()
             biav->the_default_labels =
             {
                 {"EN", "Case seed for random number generators"},
-                {"FR", "Graine de cas de nombres aléatoires"}
+                {"FR", u8"Graine de cas de nombres aléatoires"}
             };
 
             // initialize it
