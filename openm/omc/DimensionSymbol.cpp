@@ -78,10 +78,18 @@ void DimensionSymbol::post_parse(int pass)
             short_name_explicit = text;
             short_name = short_name_explicit;
         }
+        // If an explicit short name was provided, use it to look for and process if found
+        // a LABEL or NOTE which uses it as key, e.g. //LABEL(MyTable.Prov,FR)
+        if (short_name_explicit != "") {
+            // note that pp_containing_symbol is not yet available in this pass
+            string key = (**containing_symbol).name + "::" + short_name;
+            associate_explicit_label_or_note(key);
+        }
         break;
     }
     case eAssignMembers:
     {
+        pp_containing_symbol = pp_symbol(containing_symbol);
         if (attribute) {
             // Attribute was assigned during parsing.
             // The dimension symbol is in an entity table or entity set.

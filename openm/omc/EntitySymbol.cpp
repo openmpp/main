@@ -117,7 +117,7 @@ void EntitySymbol::create_auxiliary_symbols()
     //        biav->the_default_labels =
     //        {
     //            {"EN", "Events"},
-    //            {"FR", "Évenements"}
+    //            {"FR", u8"Évenements"}
     //        };
     //        // initialize it
     //    }

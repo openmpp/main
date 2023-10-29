@@ -113,6 +113,13 @@ public:
                 short_name_explicit = text;
                 short_name = short_name_explicit;
             }
+            // If an explicit short name was provided, use it to look for and process if found
+            // a LABEL or NOTE which uses it as key, e.g. //LABEL(MyTable.Prov,FR)
+            if (short_name_explicit != "") {
+                // note that pp_enumeration is not yet available in this pass
+                string key = (*enumeration).name + "::" + short_name;
+                associate_explicit_label_or_note(key);
+            }
             break;
         }
         default:

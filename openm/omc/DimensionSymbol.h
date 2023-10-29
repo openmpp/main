@@ -39,11 +39,13 @@ public:
         , pp_attribute(nullptr)
         , enumeration(enumeration ? enumeration->stable_pp() : nullptr)
         , pp_enumeration(nullptr)
+        , containing_symbol(symbol_with_dimensions->stable_pp())
+        , pp_containing_symbol(nullptr)
     {
         // exactly one of either attribute or enumeration is specified
         assert((attribute && !enumeration) || (enumeration && !attribute)); // grammar guarantee
 
-        // override to use dimension naming for LABEL and NOTE
+        // override current (default) value to use dimension naming scheme for LABEL and NOTE
         modgen_unique_name = modgen_symbol_name(symbol_with_dimensions, index, after_analysis_dim);
     }
 
@@ -96,7 +98,7 @@ public:
     /**
      * Zero-based index of the dimension in the table.
      * 
-     * Note that index in DimensionSymbol does not count the special analysis dimension.
+     * Note that index in DimensionSymbol does not count the special expression dimension.
      */
     int index;
 
@@ -113,21 +115,22 @@ public:
     bool has_margin;
 
     /**
-     * The attribute for the dimension (reference to pointer)
+     * The attribute for the dimension (pointer to pointer)
      * 
-     * Stable to symbol morphing during parse phase. Is nullptr for derived tables.
+     * Stable to symbol morphing during parse phase.
+     * Is nullptr for derived tables.
      */
     Symbol** attribute;
 
     /**
      * The attribute for the dimension
      * 
-     * Only valid after post-parse.
+     * Only valid post-parse, and only for entity tables.
      */
     AttributeSymbol* pp_attribute;
 
     /**
-     * The enumeration for the dimension (reference to pointer)
+     * The enumeration for the dimension (pointer to pointer)
      * 
      * Stable to symbol morphing during parse phase. Is nullptr except for derived tables, for which
      * the enumeration is specified explicitly in model code.
@@ -137,8 +140,22 @@ public:
     /**
      * The enumeration for the dimension
      * 
-     * Only valid after post-parse.
+     * Only valid post-parse.
      */
     EnumerationSymbol* pp_enumeration;
+
+    /**
+     * The symbol containing the dimension (reference to pointer)
+     *
+     * Stable to symbol morphing during parse phase.
+     */
+    Symbol** containing_symbol;
+
+    /**
+     * The symbol containing the dimension
+     *
+     * Only valid post-parse.
+     */
+    Symbol* pp_containing_symbol;
 };
 
