@@ -63,6 +63,12 @@ bool Symbol::option_missing_translated_label_warning_any = false;
 bool Symbol::option_missing_translated_note_warning_any = false;
 bool Symbol::option_missing_translated_label_warning_published_any = false;
 bool Symbol::option_missing_translated_note_warning_published_any = false;
+bool Symbol::option_missing_name_warning_classification = false;
+bool Symbol::option_missing_name_warning_parameter = false;
+bool Symbol::option_missing_name_warning_table = false;
+bool Symbol::option_missing_name_warning_published_classification = false;
+bool Symbol::option_missing_name_warning_published_parameter = false;
+bool Symbol::option_missing_name_warning_published_table = false;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
 
@@ -606,6 +612,72 @@ void Symbol::do_options()
             string value = iter->second;
             if (value == "on") {
                 option_missing_translated_note_warning_published_any = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_name_warning_classification";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_name_warning_classification = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_name_warning_parameter";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_name_warning_parameter = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_name_warning_table";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_name_warning_table = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_name_warning_published_classification";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_name_warning_published_classification = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_name_warning_published_parameter";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_name_warning_published_parameter = true;
+            }
+        }
+    }
+
+    {
+        string key = "missing_name_warning_published_table";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            string value = iter->second;
+            if (value == "on") {
+                option_missing_name_warning_published_table = true;
             }
         }
     }

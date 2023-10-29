@@ -21,6 +21,7 @@
 #include "EnumerationSymbol.h"
 #include "EnumeratorSymbol.h"
 #include "ClassificationSymbol.h"
+#include "ClassificationEnumeratorSymbol.h"
 #include "EntityTableSymbol.h"
 #include "BoolSymbol.h"
 #include "omc_missing_documentation.h"
@@ -186,6 +187,73 @@ void do_missing_documentation(void)
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+    {
+        // block to handle missing explicit names
+        for (auto& s : Symbol::pp_all_enumerations) {
+            if (s->is_classification()) {
+                auto c = dynamic_cast<ClassificationSymbol*>(s);
+                assert(c); // logic guarantee
+                for (auto& e : c->pp_enumerators) {
+                    auto l = dynamic_cast<ClassificationEnumeratorSymbol*>(e);
+                    assert(l); // logic guarantee
+                    if (l->short_name_explicit == "") {
+                        if (Symbol::option_missing_name_warning_classification) {
+                            l->pp_warning(LT("warning : missing explicit name for classification enumerator '") + l->name + "' in classification '" + s->name + "'");
+                        }
+                        if (Symbol::option_missing_name_warning_published_classification && s->is_published()) {
+                            l->pp_warning(LT("warning : missing explicit name for published classification enumerator '") + l->name + "' in classification '" + s->name + "'");
+                        }
+                    }
+                }
+            }
+        }
+        for (auto& s : Symbol::pp_all_parameters) {
+            int pos = 0;
+            for (auto& d : s->dimension_list) {
+                if (d->short_name_explicit == "") {
+                    if (Symbol::option_missing_name_warning_parameter) {
+                        d->pp_warning(LT("warning : missing explicit name for dimension ") + to_string(pos) + LT(" of parameter '") + s->name + "'");
+                    }
+                    if (Symbol::option_missing_name_warning_published_parameter && s->is_published()) {
+                        d->pp_warning(LT("warning : missing explicit name for dimension ") + to_string(pos) + LT(" of published parameter '") + s->name + "'");
+                    }
+                }
+                ++pos;
+            }
+        }
+        for (auto& s : Symbol::pp_all_tables) {
+            {
+                // dimensions
+                int pos = 0;
+                for (auto& d : s->dimension_list) {
+                    if (d->short_name_explicit == "") {
+                        if (Symbol::option_missing_name_warning_table) {
+                            d->pp_warning(LT("warning : missing explicit name for dimension ") + to_string(pos) + LT(" of table '") + s->name + "'");
+                        }
+                        if (Symbol::option_missing_name_warning_published_table && s->is_published()) {
+                            d->pp_warning(LT("warning : missing explicit name for dimension ") + to_string(pos) + LT(" of published table '") + s->name + "'");
+                        }
+                    }
+                    ++pos;
+                }
+            }
+            {
+                // expressions
+                int pos = 0;
+                for (auto& expr : s->pp_measures) {
+                    if (expr->short_name_explicit == "") {
+                        if (Symbol::option_missing_name_warning_table) {
+                            expr->pp_warning(LT("warning : missing explicit name for expression ") + to_string(pos) + LT(" of table '") + s->name + "'");
+                        }
+                        if (Symbol::option_missing_name_warning_published_table && s->is_published()) {
+                            expr->pp_warning(LT("warning : missing explicit name for expression ") + to_string(pos) + LT(" of published table '") + s->name + "'");
+                        }
+                    }
+                    ++pos;
                 }
             }
         }

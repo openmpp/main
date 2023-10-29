@@ -1735,6 +1735,36 @@ public:
     static bool option_missing_translated_note_warning_published_any;
 
     /**
+     * true to issue warning if classification level has no explicit short name.
+     */
+    static bool option_missing_name_warning_classification;
+
+    /**
+     * true to issue warning if parameter dimension has no explicit short name.
+     */
+    static bool option_missing_name_warning_parameter;
+
+    /**
+     * true to issue warning if table dimension or expression has no explicit short name.
+     */
+    static bool option_missing_name_warning_table;
+
+    /**
+     * true to issue warning if published classification level has no explicit short name.
+     */
+    static bool option_missing_name_warning_published_classification;
+
+    /**
+     * true to issue warning if published parameter dimension has no explicit short name.
+     */
+    static bool option_missing_name_warning_published_parameter;
+
+    /**
+     * true to issue warning if published table dimension or expression has no explicit short name.
+     */
+    static bool option_missing_name_warning_published_table;
+
+    /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
      */
     static bool option_alternate_attribute_dependency_implementation;
