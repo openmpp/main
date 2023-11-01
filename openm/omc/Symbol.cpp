@@ -1338,6 +1338,14 @@ void Symbol::post_parse_all()
 	// Recreate pp_symbols because symbols may have changed or been added.
 	populate_pp_symbols();
 	default_sort_pp_symbols();
+    {
+        // assign arbitrary unique id to each symbol in symbol table
+        int j = 0;
+        for (auto& iter : pp_symbols) {
+            (iter.second)->pp_symbol_id = j;
+            ++j;
+        }
+    }
 
 	//
     // pass 3: assign label using default or from comment on same lines as symbol declaration

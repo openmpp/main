@@ -3,8 +3,8 @@
  * Declares templates and classes associated with tables.
  *         
  */
-// Copyright (c) 2013-2015 OpenM++
-// This code is licensed under the MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2023 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
 
 #pragma once
 #include <vector>
@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <numeric>
 #include <memory>
+#include <string>
 
 /**
  * A table.
@@ -73,6 +74,27 @@ public:
         }
         assert(cell < n_cells);
         return cell;
+    }
+
+    /**
+     * Convert a flattened index into a formatted string of indices.
+     *
+     * @return The formatted indices of the cell.
+     */
+    std::string cell_formatted(size_t cell) const
+    {
+        assert(cell < n_cells);
+        std::string s;
+        const size_t rank = n_dimensions;
+        if (rank == 0) return s; // empty string for scalar table
+
+        // Decode dimension coordinates of the cell
+        for (size_t j = rank - 1, w = cell; ; --j) {
+            s = "[" + std::to_string(w % shape[j]) + "]" + s;
+            if (j == 0) break;
+            w /= shape[j];
+        }
+        return s;
     }
 
     /**

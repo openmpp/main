@@ -916,6 +916,30 @@ void EntityTableSymbol::build_body_push_increment()
         default:
             assert(0); // parser guarantee
         }
+        if (Symbol::option_event_trace) {
+            // inject event trace code into push increment function
+            c += "";
+            c += "// Code Injection: event trace";
+            c += "if (event_trace_on) {";
+            c += "double dVal1 = (double)dIncrement;";
+            c += "double dVal2 = (double)dAccumulator;";
+            c += "std::string cell_pretty = table->cell_formatted(cell);";
+            c += "event_trace_msg("
+                "\"" + entity->name + "\", "
+                "(int)entity_id, "
+                "(double)age.direct_get(), "
+                "GetCaseSeed(), "
+                "cell_pretty.c_str(), " // cstr1 formatted cell coordinates
+                + to_string(pp_symbol_id) + ", " // other_id pp_symbol_id of table
+                "\"" + name + ".acc" + to_string(acc->index) + "\", " // cstr2 other_name (table name and accumulator)
+                "dVal1, " // dbl1 dIncrement
+                "dVal2, " // dbl2 dAccumulator
+                "(double)BaseEvent::get_global_time(), "
+                "BaseEntity::et_msg_type::eTableIncrement);"
+                ;
+            c += "}";
+            c += "";
+        }
         c += "}"; // block for cells to increment
         c += "}"; // block for accumulator
     }

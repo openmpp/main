@@ -64,7 +64,9 @@ public:
     void do_name_digest(void);
     void do_table_interface();
     void do_event_queue();
-    void do_event_and_attribute_names();
+    void do_event_names();
+    void do_attribute_names();
+    void do_table_names();
     void do_table_dependencies();
     void do_RunOnce();
     void do_RunInit();

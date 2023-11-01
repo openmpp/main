@@ -35,7 +35,9 @@ void CodeGen::do_all()
     do_entities();
 	do_entity_sets();
     do_event_queue();
-    do_event_and_attribute_names();
+    do_event_names();
+    do_attribute_names();
+    do_table_names();
 
     h += "void StartSimulation(int id);";
     h += "void EndSimulation();";
@@ -1806,9 +1808,10 @@ void CodeGen::do_event_queue()
     c += "";
     c += "// definition of staging location for event memory (declaration in Event.h)";
     c += "thread_local int BaseEvent::memory_staging;";
+    c += "";
 }
 
-void CodeGen::do_event_and_attribute_names()
+void CodeGen::do_event_names()
 {
     {
         c += "/// get event name given event id";
@@ -1847,6 +1850,10 @@ void CodeGen::do_event_and_attribute_names()
         c += "}";
     }
     c += "";
+}
+
+void CodeGen::do_attribute_names()
+{
     {
         c += "/// get attribute id given attribute name";
         c += "const int omr::member_name_to_id(const std::string member_name) {";
@@ -1858,6 +1865,23 @@ void CodeGen::do_event_and_attribute_names()
         }
         c += "};";
         c += "auto srch = name_to_id.find(member_name);";
+        c += "return (srch != name_to_id.end()) ? srch->second : -1;";
+        c += "}";
+    }
+    c += "";
+}
+
+void CodeGen::do_table_names()
+{
+    {
+        c += "/// get table id given table name";
+        c += "const int omr::table_name_to_id(const std::string name) {";
+        c += "static const std::unordered_map<std::string, int> name_to_id = {";
+        for (auto& t : Symbol::pp_all_entity_tables) {
+            c += "{\"" + t->name + "\", " + std::to_string(t->pp_symbol_id) + "},";
+        }
+        c += "};";
+        c += "auto srch = name_to_id.find(name);";
         c += "return (srch != name_to_id.end()) ? srch->second : -1;";
         c += "}";
     }

@@ -750,6 +750,11 @@ void process_trace_options(IRunBase* const i_runBase)
             BaseEntity::event_trace_show_attributes = i_runBase->boolOption("EventTrace.ShowAttributes");
         }
 
+        BaseEntity::event_trace_show_table_increments = false;
+        if (i_runBase->isOptionExist("EventTrace.ShowTableIncrements")) {
+            BaseEntity::event_trace_show_table_increments = i_runBase->boolOption("EventTrace.ShowTableIncrements");
+        }
+
         BaseEntity::event_trace_minimum_time = i_runBase->doubleOption("EventTrace.MinimumTime", -std::numeric_limits<double>::infinity());
 
         BaseEntity::event_trace_maximum_time = i_runBase->doubleOption("EventTrace.MaximumTime", std::numeric_limits<double>::infinity());
@@ -824,6 +829,20 @@ void process_trace_options(IRunBase* const i_runBase)
         BaseEntity::event_trace_minimum_attribute = i_runBase->doubleOption("EventTrace.MinimumAttribute", -std::numeric_limits<double>::infinity());
 
         BaseEntity::event_trace_maximum_attribute = i_runBase->doubleOption("EventTrace.MaximumAttribute", std::numeric_limits<double>::infinity());
+
+        if (i_runBase->isOptionExist("EventTrace.SelectedTables")) {
+            std::list<std::string> attrList = openm::splitCsv(i_runBase->strOption("EventTrace.SelectedTables"));
+            for (auto str : attrList) {
+                if (str.length() == 0) continue; // skip empty items in list
+                int id = omr::table_name_to_id(str);
+                if (id >= 0) {
+                    BaseEntity::event_trace_selected_tables.insert(id);
+                }
+                else {
+                    theLog->logFormatted(LT("Warning : unrecognized table EventTrace.SelectedTables=%s"), str.c_str());
+                }
+            }
+        }
 
         BaseEntity::event_trace_name_column_width = i_runBase->intOption("EventTrace.NameColumnWidth", 40);
 

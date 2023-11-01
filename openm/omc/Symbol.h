@@ -708,6 +708,11 @@ public:
     int code_order;
 
     /**
+     * Unique arbitary identifier
+     */
+    int pp_symbol_id;
+
+    /**
      * Indicates if a label from model source code is allowed for this symbol
      */
     bool code_label_allowed;

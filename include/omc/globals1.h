@@ -112,4 +112,5 @@ namespace omr {
     extern const int event_name_to_id(const std::string event_name);
     extern const char* event_id_to_name(int event_id);
     extern const int member_name_to_id(const std::string member_name);
+    extern const int table_name_to_id(const std::string name);
 }

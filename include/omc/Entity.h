@@ -464,6 +464,9 @@ public:
 
         // entity added to selected entities because linked
         eSnowball,
+
+        // entity table increment
+        eTableIncrement,
     };
 
     /**
@@ -527,6 +530,11 @@ public:
     inline static bool event_trace_show_attributes = false;
 
     /**
+     * Whether to show table increments in the event trace
+     */
+    inline static bool event_trace_show_table_increments = false;
+
+    /**
      * Filter event trace by time (lower bound)
      */
     inline static double event_trace_minimum_time = -std::numeric_limits<double>::infinity();
@@ -587,6 +595,11 @@ public:
     inline static double event_trace_maximum_attribute = std::numeric_limits<double>::infinity();
 
     /**
+     * Filter event trace by tables
+     */
+    inline static std::unordered_set<int> event_trace_selected_tables;
+
+    /**
      * Used to set report column width for names
      */
     inline static int event_trace_name_column_width = 40;
@@ -612,11 +625,11 @@ public:
      * @param   entity_id   Identifier for the entity.
      * @param   entity_age  The entity age.
      * @param   case_seed   The case seed.
-     * @param   cstr1       If non-null, name of the event.
-     * @param   other_id    The time.
-     * @param   cstr2       The second cstr.
-     * @param   dbl1        The 1.
-     * @param   dbl2        The 2.
+     * @param   cstr1       The cstr #1.
+     * @param   other_id    An integer (maybe an id).
+     * @param   cstr2       The cstr #2.
+     * @param   dbl1        The double #1.
+     * @param   dbl2        The double #2.
      * @param   global_time The global time.
      * @param   msg_type    Type of the message.
      */
@@ -714,6 +727,16 @@ public:
             || msg_type == et_msg_type::eQueuedEvent
             ) && (event_trace_selected_events.size() > 0 && event_trace_selected_events.count(other_id) == 0)) {
             // Block event message not in event list (if non-empty).
+            return;
+        }
+        if (msg_type == et_msg_type::eTableIncrement && !event_trace_show_table_increments) {
+            // Table increment messages are blocked.
+            return;
+        }
+        if ((
+            msg_type == et_msg_type::eTableIncrement
+            ) && (event_trace_selected_tables.size() > 0 && event_trace_selected_tables.count(other_id) == 0)) {
+            // Block table increment message not in table list (if non-empty).
             return;
         }
         if ((
@@ -1390,6 +1413,50 @@ public:
                     what_trimmed,
                     other_id,
                     name
+                );
+            }
+            else {
+                // NOT_REACHED
+                assert(false);
+            }
+        }
+        break;
+        case et_msg_type::eTableIncrement:
+        {
+            auto what = "  INCREMENT";
+            auto what_trimmed = "INCREMENT";
+            auto& table_id = other_id;
+            auto& increment = dbl1;
+            auto& accumulator = dbl2;
+            auto& table_name = cstr2;
+            auto& cell_formatted = cstr1;
+            std::stringstream remarks;
+            remarks << "cell=" << cell_formatted << " accumulator=" << std::setprecision(6) << accumulator;
+            if (isReadable) {
+                theTrace->logFormatted("%13.6f %8.8s %10.6f %8d %-*s %13.6g   %-*s   %s",
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_width,
+                    what,
+                    increment,
+                    name_colwidth,
+                    table_name,
+                    remarks.str().c_str()
+                );
+            }
+            else if (isCsv) {
+                theTrace->logFormatted("%d,%.13g,\"%s\",%.13g,%d,\"%s\",%.13g,\"%s\",\"%s\"",
+                    event_trace_line_counter,
+                    noted_time,
+                    entity_name,
+                    entity_age,
+                    entity_id,
+                    what_trimmed,
+                    increment,
+                    table_name,
+                    remarks.str().c_str()
                 );
             }
             else {
