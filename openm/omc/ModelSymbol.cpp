@@ -94,7 +94,7 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.profileRows[MetaModelHolder::constSubMemoryOption] = to_string(memory_MB_constant_per_sub);
     }
     if (memory_safety_factor > 1.0 &&
-        (pp_memory_popsize_parameter && memory_MB_popsize_coefficient > 0 ||
+        ((pp_memory_popsize_parameter && memory_MB_popsize_coefficient > 0) ||
             memory_MB_constant_per_instance > 0 ||
             memory_MB_constant_per_sub > 0))
         {

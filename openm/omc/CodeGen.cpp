@@ -2847,7 +2847,7 @@ void CodeGen::do_EventIdName(void)
 
     if (Symbol::option_microdata_write_on_event) {
         int id = 0;
-        for (const auto nm : Symbol::pp_all_event_names) {
+        for (const string & nm : Symbol::pp_all_event_names) {
             c += "{" + std::to_string(id) + ", \"" + nm + "\"},";
             ++id;
         }

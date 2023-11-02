@@ -96,7 +96,7 @@ public:
         return hn;
     }
 
-    void post_parse(int pass)
+    void post_parse(int pass) override
     {
         // Hook into the post_parse hierarchical calling chain
         super::post_parse(pass);

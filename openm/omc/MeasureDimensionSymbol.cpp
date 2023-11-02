@@ -24,7 +24,7 @@ string MeasureDimensionSymbol::default_label(const LanguageSymbol& lang) const
         return "Quantity";
     }
     else if (lang.name == "FR") {
-        return u8"Quantité";
+        return u8"QuantitÃ©";
     }
     else {
         return "Quantity (" + lang.name + ")";

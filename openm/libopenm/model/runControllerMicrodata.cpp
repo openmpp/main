@@ -345,7 +345,7 @@ void RunController::pushDbMicrodata(int i_runId, int i_entityKind, uint64_t i_mi
         nOff = memCopyTo(pVal, nOff, (reinterpret_cast<const uint8_t *>(i_entityThis) + EntityNameSizeArr[attr.idxOf].offset), EntityNameSizeArr[attr.idxOf].size);
     }
 
-    eDb.rowLst.push_back(move(btArr));  // append to database microdata row buffer
+    eDb.rowLst.push_back(std::move(btArr));  // append to database microdata row buffer
 }
 
 /** pull microdata database rows from the buffer.
@@ -415,7 +415,7 @@ list<unique_ptr<uint8_t[]>> && RunController::moveDbMicrodata(chrono::system_clo
     lock_guard<recursive_mutex> lck(io_entityDbItem.theMutex);  // lock the database buffer
 
     io_entityDbItem.lastSaveTime = i_nowTime;
-    return move(io_entityDbItem.rowLst);
+    return std::move(io_entityDbItem.rowLst);
 }
 
 /** write entity microdata rows into database. */
@@ -606,7 +606,7 @@ namespace
             for (const auto & ti : i_typeVec)
             {
                 unique_ptr<ShortFormatter> f(new ShortFormatter(*ti, i_doubleFmt.c_str()));
-                fmtVec.push_back(move(f));
+                fmtVec.push_back(std::move(f));
             }
         }
 

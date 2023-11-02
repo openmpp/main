@@ -76,7 +76,7 @@ public:
      *
      * @return a bool.
      */
-    bool is_published(void) const
+    bool is_published(void) const override
     {
         return metadata_needed;
     }

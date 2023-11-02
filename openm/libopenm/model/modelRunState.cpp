@@ -210,7 +210,7 @@ const map<pair<int, int>, RunState> RunStateHolder::saveUpdated(bool i_isNow)
 
     // if no delay requested then return updates now
     if (i_isNow) {
-        return map<pair<int, int>, RunState>(move(updateStateMap)); // move updates out: return updated run states and clear it
+        return map<pair<int, int>, RunState>(std::move(updateStateMap)); // move updates out: return updated run states and clear it
     }
 
     // exit if no updates since last save
@@ -224,7 +224,7 @@ const map<pair<int, int>, RunState> RunStateHolder::saveUpdated(bool i_isNow)
     }
     lastSaveTime = nowTime;
 
-    return map<pair<int, int>, RunState>(move(updateStateMap)); // move updates out: return updated run states and clear it
+    return map<pair<int, int>, RunState>(std::move(updateStateMap)); // move updates out: return updated run states and clear it
 }
 
 /** copy updated run states into output vector of (run id, sub-value id, run state), last element is process run state */
