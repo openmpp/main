@@ -204,8 +204,8 @@ public:
                     // This is an error in model logic.
                     // Write log message and throw run-time exception.
                     handle_backwards_time(
-                        t,
                         entity->om_get_time(),
+                        t,
                         originating_event_id,
                         originating_entity_id
                     );
