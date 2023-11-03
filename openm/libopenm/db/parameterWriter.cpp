@@ -707,9 +707,19 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
         " INNER JOIN run_lst RL ON (RL.run_id = E.run_id)" \
         " WHERE E.parameter_hid = " + sHid +
         " AND E.value_digest = " + toQuoted(sDigest) +
-        " AND RL.status IN ('p', 's')" \
+        " AND RL.status = 's'" \
         " )" \
-        " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
+        " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid +
+        " AND EXISTS"
+        " ("
+        " SELECT * " \
+        " FROM run_parameter E" \
+        " INNER JOIN run_lst RL ON(RL.run_id = E.run_id)" \
+        " WHERE E.parameter_hid = " + sHid +
+        " AND E.value_digest = " + toQuoted(sDigest) +
+        " AND RL.status = 's'" \
+        " AND E.run_id <>" + sHid +
+        " )"
         );
 
     // if same digest already exists then delete current run value rows
