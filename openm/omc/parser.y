@@ -730,19 +730,25 @@ option:
                             // check for possible clash in model source specifying same key
                             auto srch = Symbol::options.find(*$key);
                             if (srch != Symbol::options.end()) {
-                                // key already specified in model source with different value
-                                if (srch->second != *$value) {
+                                auto& opt_pair = srch->second; // opt_pair is option value, option location
+                                if (opt_pair.first != *$value) {
+                                    // key already specified in model source with different value
                                     if (*$key == "local_random_streams") {
                                         // special case, allow multiple options statements
                                     }
                                     else {
-                                        error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (srch->second) + LT("'"));
+                                        error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (opt_pair.first) + LT("'"));
                                     }
                                 }
                             }
                             // place key-value pair in options collection
                             //Symbol::options[*$key] = *$value;
-                            Symbol::options.insert(Symbol::options.begin(), pair<string,string>(*$key, *$value));
+                            string opt_val = *$value;
+                            omc::location opt_loc = @key;
+                            auto opt_both = make_pair(opt_val, opt_loc);
+                            string opt_key = *$key;
+                            auto opt_thing = make_pair(opt_key, opt_both);
+                            Symbol::options.insert(Symbol::options.begin(), opt_thing);
                             // prepare for another possible key-value pair
                             pc.next_word_is_string = true;
                         }

@@ -600,12 +600,15 @@ void EntitySymbol::post_parse(int pass)
             pp_local_rng_streams_requested = false;
             auto range = options.equal_range(key);
             for (auto it = range.first; it != range.second; ++it) {
-                if (name == it->second) {
+                auto& opt_pair = it->second; // opt_pair is option value, option location
+                if (name == opt_pair.first) {
                     // found local_random_streams = name of this entity
                     pp_local_rng_streams_requested = true;
                     break;
                 }
             }
+            // remove processed options
+            options.erase(range.first, range.second);
 
             if (pp_local_rng_streams_requested) {
                 string nm = "om_local_rng_streams_initialized";

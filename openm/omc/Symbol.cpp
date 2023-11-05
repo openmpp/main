@@ -2008,6 +2008,11 @@ void Symbol::post_parse_all()
             }
         }
     }
+
+    // Any unprocessed options at this point are errors,
+    // probably a mistyped option in model code.
+    // Identify any such and raise error.
+    do_unrecognized_options();
 }
 
 bool Symbol::is_om_outer_keyword(const token_type& tok)

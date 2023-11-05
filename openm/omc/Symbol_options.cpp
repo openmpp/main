@@ -21,7 +21,7 @@ using namespace std;
 using namespace openm;
 
 // option-related static member definitions
-unordered_multimap<string, string> Symbol::options;
+unordered_multimap<string, pair<string, omc::location>> Symbol::options;
 bool Symbol::option_event_trace = false;
 bool Symbol::option_event_trace_warning = true;
 bool Symbol::option_bounds_errors = true;
@@ -78,13 +78,16 @@ void Symbol::do_options()
         string key = "event_trace";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_event_trace = true;
             }
             else if (value == "off") {
                 option_event_trace = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -92,13 +95,16 @@ void Symbol::do_options()
         string key = "event_trace_warning";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_event_trace_warning = true;
             }
             else if (value == "off") {
                 option_event_trace_warning = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -106,13 +112,16 @@ void Symbol::do_options()
         string key = "bounds_errors";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_bounds_errors = true;
             }
             else if (value == "off") {
                 option_bounds_errors = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -120,13 +129,16 @@ void Symbol::do_options()
         string key = "case_checksum";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_case_checksum = true;
             }
             else if (value == "off") {
                 option_case_checksum = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -134,7 +146,8 @@ void Symbol::do_options()
         string key = "allow_time_travel";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_allow_time_travel = true;
                 // This option should be off to detect model logic errors
@@ -145,6 +158,8 @@ void Symbol::do_options()
             else if (value == "off") {
                 option_allow_time_travel = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -152,7 +167,8 @@ void Symbol::do_options()
         string key = "allow_clairvoyance";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_allow_clairvoyance = true;
                 // This option should be off to detect model logic errors
@@ -163,6 +179,8 @@ void Symbol::do_options()
             else if (value == "off") {
                 option_allow_clairvoyance = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -170,13 +188,16 @@ void Symbol::do_options()
         string key = "time_infinite_is_32767";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_time_infinite_is_32767 = true;
             }
             else if (value == "off") {
                 option_time_infinite_is_32767 = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -184,13 +205,16 @@ void Symbol::do_options()
         string key = "time_undef_is_minus_one";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_time_undef_is_minus_one = true;
             }
             else if (value == "off") {
                 option_time_undef_is_minus_one = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -198,13 +222,16 @@ void Symbol::do_options()
         string key = "verify_attribute_modification";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_verify_attribute_modification = true;
             }
             else if (value == "off") {
                 option_verify_attribute_modification = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -212,13 +239,16 @@ void Symbol::do_options()
         string key = "verify_timelike_attribute_access";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_verify_timelike_attribute_access = true;
             }
             else if (value == "off") {
                 option_verify_timelike_attribute_access = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -226,13 +256,16 @@ void Symbol::do_options()
         string key = "verify_valid_table_increment";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_verify_valid_table_increment = true;
             }
             else if (value == "off") {
                 option_verify_valid_table_increment = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -240,13 +273,16 @@ void Symbol::do_options()
         string key = "weighted_tabulation";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_weighted_tabulation = true;
             }
             else if (value == "off") {
                 option_weighted_tabulation = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
         // Find the one and only ModelTypeSymbol
         auto mts = ModelTypeSymbol::find();
@@ -261,13 +297,16 @@ void Symbol::do_options()
         string key = "entity_member_packing";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_entity_member_packing = true;
             }
             else if (value == "off") {
                 option_entity_member_packing = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -275,13 +314,16 @@ void Symbol::do_options()
         string key = "all_attributes_visible";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_all_attributes_visible = true;
             }
             else if (value == "off") {
                 option_all_attributes_visible = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -289,13 +331,16 @@ void Symbol::do_options()
         string key = "microdata_output";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_microdata_output = true;
             }
             else if (value == "off") {
                 option_microdata_output = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -303,13 +348,16 @@ void Symbol::do_options()
         string key = "microdata_output_warning";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_microdata_output_warning = true;
             }
             else if (value == "off") {
                 option_microdata_output_warning = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -317,13 +365,16 @@ void Symbol::do_options()
         string key = "microdata_write_on_enter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_microdata_write_on_enter = true;
             }
             else if (value == "off") {
                 option_microdata_write_on_enter = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -331,13 +382,16 @@ void Symbol::do_options()
         string key = "microdata_write_on_exit";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_microdata_write_on_exit = true;
             }
             else if (value == "off") {
                 option_microdata_write_on_exit = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -345,13 +399,16 @@ void Symbol::do_options()
         string key = "microdata_write_on_event";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_microdata_write_on_event = true;
             }
             else if (value == "off") {
                 option_microdata_write_on_event = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -359,13 +416,16 @@ void Symbol::do_options()
         string key = "resource_use";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_resource_use = true;
             }
             else if (value == "off") {
                 option_resource_use = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -373,13 +433,16 @@ void Symbol::do_options()
         string key = "use_heuristic_short_names";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_use_heuristic_short_names = true;
             }
             else if (value == "off") {
                 option_use_heuristic_short_names = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -387,13 +450,16 @@ void Symbol::do_options()
         string key = "enable_heuristic_names_for_enumerators";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_enable_heuristic_names_for_enumerators = true;
             }
             else if (value == "off") {
                 option_enable_heuristic_names_for_enumerators = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -401,13 +467,16 @@ void Symbol::do_options()
         string key = "convert_modgen_note_syntax";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_convert_modgen_note_syntax = true;
             }
             else if (value == "off") {
                 option_convert_modgen_note_syntax = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -415,11 +484,14 @@ void Symbol::do_options()
         string key = "short_name_max_length";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             short_name_max_length = std::stoi(value);
             if (short_name_max_length < 8 || short_name_max_length > OM_NAME_DB_MAX) {
                 pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be between 8 and 255"));
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -427,13 +499,16 @@ void Symbol::do_options()
         string key = "censor_event_time";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_censor_event_time = true;
             }
             else if (value == "off") {
                 option_censor_event_time = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -441,13 +516,16 @@ void Symbol::do_options()
         string key = "ascii_infinity";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_ascii_infinity = true;
             }
             else if (value == "off") {
                 option_ascii_infinity = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -455,10 +533,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_enumeration";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_enumeration = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -466,10 +547,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_parameter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_parameter = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -477,10 +561,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_table";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_table = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -488,10 +575,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_attribute";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_attribute = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -499,10 +589,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_published_enumeration";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_published_enumeration = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -510,10 +603,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_published_parameter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_published_parameter = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -521,10 +617,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_published_table";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_published_table = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -532,10 +631,13 @@ void Symbol::do_options()
         string key = "missing_label_warning_published_attribute";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_label_warning_published_attribute = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -543,10 +645,13 @@ void Symbol::do_options()
         string key = "missing_note_warning_published_parameter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_note_warning_published_parameter = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -554,10 +659,13 @@ void Symbol::do_options()
         string key = "missing_note_warning_published_table";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_note_warning_published_table = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -565,10 +673,13 @@ void Symbol::do_options()
         string key = "missing_note_warning_published_attribute";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_note_warning_published_attribute = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -576,10 +687,13 @@ void Symbol::do_options()
         string key = "missing_translated_label_warning_any";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_translated_label_warning_any = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -587,10 +701,13 @@ void Symbol::do_options()
         string key = "missing_translated_note_warning_any";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_translated_note_warning_any = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -598,10 +715,13 @@ void Symbol::do_options()
         string key = "missing_translated_label_warning_published_any";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_translated_label_warning_published_any = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -609,10 +729,13 @@ void Symbol::do_options()
         string key = "missing_translated_note_warning_published_any";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_translated_note_warning_published_any = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -620,10 +743,13 @@ void Symbol::do_options()
         string key = "missing_name_warning_classification";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_name_warning_classification = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -631,10 +757,13 @@ void Symbol::do_options()
         string key = "missing_name_warning_parameter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_name_warning_parameter = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -642,10 +771,13 @@ void Symbol::do_options()
         string key = "missing_name_warning_table";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_name_warning_table = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -653,10 +785,13 @@ void Symbol::do_options()
         string key = "missing_name_warning_published_classification";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_name_warning_published_classification = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -664,10 +799,13 @@ void Symbol::do_options()
         string key = "missing_name_warning_published_parameter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_name_warning_published_parameter = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -675,10 +813,13 @@ void Symbol::do_options()
         string key = "missing_name_warning_published_table";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_missing_name_warning_published_table = true;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -686,13 +827,16 @@ void Symbol::do_options()
         string key = "alternate_attribute_dependency_implementation";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             if (value == "on") {
                 option_alternate_attribute_dependency_implementation = true;
             }
             else if (value == "off") {
                 option_alternate_attribute_dependency_implementation = false;
             }
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -700,8 +844,11 @@ void Symbol::do_options()
         string key = "memory_popsize_parameter";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             option_memory_popsize_parameter = value;
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -709,11 +856,14 @@ void Symbol::do_options()
         string key = "memory_MB_constant_per_instance";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             // store in the unique ModelSymbol object
             ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
             assert(model_symbol);
             model_symbol->memory_MB_constant_per_instance = std::stoi(value);
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -721,11 +871,14 @@ void Symbol::do_options()
         string key = "memory_MB_constant_per_sub";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             // store in the unique ModelSymbol object
             ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
             assert(model_symbol);
             model_symbol->memory_MB_constant_per_sub = std::stoi(value);
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -733,11 +886,14 @@ void Symbol::do_options()
         string key = "memory_MB_popsize_coefficient";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             // store in the unique ModelSymbol object
             ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
             assert(model_symbol);
             model_symbol->memory_MB_popsize_coefficient = std::stod(value);
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -745,11 +901,59 @@ void Symbol::do_options()
         string key = "memory_safety_factor";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
             // store in the unique ModelSymbol object
             ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
             assert(model_symbol);
             model_symbol->memory_safety_factor = std::stod(value);
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "packing_level";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_name = iter->first;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& opt_value = opt_pair.first;
+            auto& opt_loc = opt_pair.second;
+            // Ignore this Modgen option.
+            pp_logmsg(opt_loc, LT("note : ignoring Modgen option '") + key + "'");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "index_errors";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_name = iter->first;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& opt_value = opt_pair.first;
+            auto& opt_loc = opt_pair.second;
+            // Ignore this Modgen option.
+            pp_logmsg(opt_loc, LT("note : ignoring Modgen option '") + key + "'");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "fp_consistency";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_name = iter->first;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& opt_value = opt_pair.first;
+            auto& opt_loc = opt_pair.second;
+            // Ignore this Modgen option.
+            pp_logmsg(opt_loc, LT("note : ignoring Modgen option '") + key + "'");
+            // remove processed option
+            options.erase(iter);
         }
     }
 
@@ -758,8 +962,9 @@ void Symbol::do_options()
         auto iter = options.find(key);
         if (iter != options.end()) {
             // Can't validate or process this option here
-            // because pp_all_entities has not bben created by post_parse_all
+            // because pp_all_entities has not been created by post_parse_all
             // Note: multiple entries allowed, unlike other options.
+            // See EntitySymbol::post_parse()
         }
     }
 
@@ -785,7 +990,9 @@ void Symbol::do_options()
         string key = "measures_method";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            string value = iter->second;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            auto& loc = opt_pair.second;
             if (value == "aggregate") {
                 measures_are_aggregated = true;
             }
@@ -793,8 +1000,26 @@ void Symbol::do_options()
                 measures_are_aggregated = false;
             }
             else {
-                pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
+                pp_error(loc, LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
             }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+}
+
+void Symbol::do_unrecognized_options()
+{
+    // Detect and raise error for any unprocessed options.
+    // If any, they are probably a mistyped option in model code.
+    // So, raise an error for each.
+    if (options.size() > 0) {
+        for (auto iter = options.begin(); iter != options.end(); ++iter) {
+            auto& opt_name = iter->first;
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& opt_value = opt_pair.first;
+            auto& opt_loc = opt_pair.second;
+            pp_error(opt_loc, LT("error : unrecognized option '") + opt_name + "'");
         }
     }
 }

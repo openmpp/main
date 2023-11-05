@@ -954,10 +954,16 @@ public:
      * Parse all options in model source code
      * 
      * All key-value pairs in options statements are placed in the map Symbol::options during model
-     * code parsing for subsequent processing by this function. Unrecognized options are ignored, as
-     * are unrecognized values for recognized options.
+     * code parsing for subsequent processing by this function.
+     * This function removes options from the map if recognized and processed.
+     * Some options require delayed processing elsewhere, e.g. local_random_streams.
      */
     static void do_options();
+
+    /**
+     * Look for and handle unrecognized options after post-parse phases
+     */
+    static void do_unrecognized_options();
 
     /**
      * Determine if @a tok is an om outer keyword (introducing a syntactic declarative island)
@@ -1532,7 +1538,7 @@ public:
     /**
      * All key-value pairs given in options statements in model code.
      */
-    static unordered_multimap<string, string> options;
+    static unordered_multimap<string, pair<string, omc::location>> options;
 
     /**
      * true if event_trace capability is requested in options statement.
