@@ -90,6 +90,7 @@
 		D88C314D234D790400863352 /* utf8Convert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30FA234D790300863352 /* utf8Convert.cpp */; };
 		D88C314E234D790400863352 /* log.h in Headers */ = {isa = PBXBuildFile; fileRef = D88C30FB234D790300863352 /* log.h */; };
 		D88C314F234D790400863352 /* splitCsv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D88C30FC234D790300863352 /* splitCsv.cpp */; };
+		D8ED3FA92AF4810900CFC26C /* os.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3FA82AF4810900CFC26C /* os.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -177,6 +178,7 @@
 		D88C30FA234D790300863352 /* utf8Convert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8Convert.cpp; sourceTree = "<group>"; };
 		D88C30FB234D790300863352 /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
 		D88C30FC234D790300863352 /* splitCsv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = splitCsv.cpp; sourceTree = "<group>"; };
+		D8ED3FA82AF4810900CFC26C /* os.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = os.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -306,6 +308,7 @@
 		D88C30F2234D790300863352 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				D8ED3FA82AF4810900CFC26C /* os.cpp */,
 				D88C30F3234D790300863352 /* md5.cpp */,
 				D88C30F4234D790300863352 /* log.cpp */,
 				D88C30F5234D790300863352 /* argReader.cpp */,
@@ -449,6 +452,7 @@
 				D88C3113234D790400863352 /* typeDicTable.cpp in Sources */,
 				D88C310E234D790400863352 /* tableDicTable.cpp in Sources */,
 				D88C311A234D790400863352 /* runLstTable.cpp in Sources */,
+				D8ED3FA92AF4810900CFC26C /* os.cpp in Sources */,
 				D88C310B234D790400863352 /* typeEnumLstTable.cpp in Sources */,
 				D83F4E2728FA859A0026F89F /* entityDicTable.cpp in Sources */,
 				D88C312A234D790400863352 /* modelSqlBuilder.cpp in Sources */,

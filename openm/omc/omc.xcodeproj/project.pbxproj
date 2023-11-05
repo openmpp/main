@@ -14,6 +14,9 @@
 		D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973F247EB25E00D61DAA /* liblibsqlite.a */; };
 		D8939742247EB26400D61DAA /* liblibopenm_omc_db.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */; };
 		D8AA205D29413FA5009C3D48 /* MeasureDimensionSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8AA205A29413FA5009C3D48 /* MeasureDimensionSymbol.cpp */; };
+		D8ED3FA42AF47E2C00CFC26C /* Symbol_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3F9D2AF47E2C00CFC26C /* Symbol_options.cpp */; };
+		D8ED3FA62AF47E2C00CFC26C /* omc_model_metrics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3FA22AF47E2C00CFC26C /* omc_model_metrics.cpp */; };
+		D8ED3FA72AF47E2C00CFC26C /* omc_missing_documentation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3FA32AF47E2C00CFC26C /* omc_missing_documentation.cpp */; };
 		D8FD8832247D83D20006D608 /* BoolSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD882C247D83D20006D608 /* BoolSymbol.cpp */; };
 		D8FD8833247D83D20006D608 /* AggregationSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD882E247D83D20006D608 /* AggregationSymbol.cpp */; };
 		D8FD8834247D83D20006D608 /* AttributeSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8FD8831247D83D20006D608 /* AttributeSymbol.cpp */; };
@@ -111,6 +114,11 @@
 		D8AA205A29413FA5009C3D48 /* MeasureDimensionSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureDimensionSymbol.cpp; sourceTree = "<group>"; };
 		D8AA205B29413FA5009C3D48 /* MeasureDimensionSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureDimensionSymbol.h; sourceTree = "<group>"; };
 		D8AA205E29414093009C3D48 /* omc_location.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = omc_location.hh; sourceTree = "<group>"; };
+		D8ED3F9D2AF47E2C00CFC26C /* Symbol_options.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol_options.cpp; sourceTree = "<group>"; };
+		D8ED3FA02AF47E2C00CFC26C /* omc_model_metrics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_model_metrics.h; sourceTree = "<group>"; };
+		D8ED3FA12AF47E2C00CFC26C /* omc_missing_documentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_missing_documentation.h; sourceTree = "<group>"; };
+		D8ED3FA22AF47E2C00CFC26C /* omc_model_metrics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_model_metrics.cpp; sourceTree = "<group>"; };
+		D8ED3FA32AF47E2C00CFC26C /* omc_missing_documentation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_missing_documentation.cpp; sourceTree = "<group>"; };
 		D8FD8821247D823E0006D608 /* omc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = omc; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8FD882B247D83D20006D608 /* BoolEnumeratorSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoolEnumeratorSymbol.h; sourceTree = "<group>"; };
 		D8FD882C247D83D20006D608 /* BoolSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BoolSymbol.cpp; sourceTree = "<group>"; };
@@ -298,6 +306,11 @@
 				D8AA205A29413FA5009C3D48 /* MeasureDimensionSymbol.cpp */,
 				D8AA205B29413FA5009C3D48 /* MeasureDimensionSymbol.h */,
 				D8FD890B247D94BE0006D608 /* omc.xcconfig */,
+				D8ED3FA32AF47E2C00CFC26C /* omc_missing_documentation.cpp */,
+				D8ED3FA12AF47E2C00CFC26C /* omc_missing_documentation.h */,
+				D8ED3FA22AF47E2C00CFC26C /* omc_model_metrics.cpp */,
+				D8ED3FA02AF47E2C00CFC26C /* omc_model_metrics.h */,
+				D8ED3F9D2AF47E2C00CFC26C /* Symbol_options.cpp */,
 				D8FD890C247DA27A0006D608 /* Xcode-src */,
 				D8FD88EA247D84B20006D608 /* ParameterSymbol.cpp */,
 				D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */,
@@ -599,6 +612,7 @@
 				D8FD88BC247D846C0006D608 /* omc_file.cpp in Sources */,
 				D8FD8884247D84330006D608 /* DependencyGroupSymbol.cpp in Sources */,
 				D8FD8882247D84330006D608 /* BuiltinAttributeSymbol.cpp in Sources */,
+				D8ED3FA62AF47E2C00CFC26C /* omc_model_metrics.cpp in Sources */,
 				D8FD8893247D84330006D608 /* ExtendParameterSymbol.cpp in Sources */,
 				D8FD888C247D84330006D608 /* EntitySymbol.cpp in Sources */,
 				D8FD88BF247D846C0006D608 /* ModelSymbol.cpp in Sources */,
@@ -628,6 +642,7 @@
 				D8FD8885247D84330006D608 /* EntityTableSymbol.cpp in Sources */,
 				D8FD888A247D84330006D608 /* EntityMemberSymbol.cpp in Sources */,
 				D8FD8906247D84B30006D608 /* VersionSymbol.cpp in Sources */,
+				D8ED3FA42AF47E2C00CFC26C /* Symbol_options.cpp in Sources */,
 				D8FD888E247D84330006D608 /* Constant.cpp in Sources */,
 				D8FD88C4247D846C0006D608 /* ParameterGroupSymbol.cpp in Sources */,
 				D8FD8900247D84B30006D608 /* ScenarioSymbol.cpp in Sources */,
@@ -645,6 +660,7 @@
 				D8FD8908247D84B30006D608 /* TimeSymbol.cpp in Sources */,
 				D8FD887A247D84330006D608 /* EnumeratorSymbol.cpp in Sources */,
 				D8FD887C247D84330006D608 /* CodeGen.cpp in Sources */,
+				D8ED3FA72AF47E2C00CFC26C /* omc_missing_documentation.cpp in Sources */,
 				D8FD88F4247D84B30006D608 /* StringSymbol.cpp in Sources */,
 				D8FD8878247D84330006D608 /* Driver.cpp in Sources */,
 				D8FD8888247D84330006D608 /* EntityFuncSymbol.cpp in Sources */,
