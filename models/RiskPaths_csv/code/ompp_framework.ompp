@@ -19,7 +19,7 @@ use "case_based/case_based_lcg41.ompp";
 use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
 
-options use_heuristic_names = off; // parameter csv files use Dim0, etc.
+options use_heuristic_short_names = off; // parameter csv files use Dim0, etc.
 
 #endif
 
