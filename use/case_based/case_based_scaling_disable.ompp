@@ -20,6 +20,6 @@ namespace fmk {
  */
 double population_scaling_factor()
 {
-    // undo the AVG over subs which is used in the aggregate-style generated SQL
+    // subvert the AVG over subs to SUM over subs in the aggregate-style generated SQL
     return (double)fmk::simulation_members;
 }
