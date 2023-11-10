@@ -1,0 +1,25 @@
+/**
+* @file    case_based_scaling_disable.ompp
+* Implementation of population scaling
+*
+*/
+// Copyright (c) 2023-2023 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
+
+// forward declarations of fmk variables
+namespace fmk {
+    extern int simulation_members;
+}
+
+/**
+ * The population scaling factor to use for this member of the simulation.
+ *
+ * This version disables population scaling completely.
+ *
+ * @return A double.
+ */
+double population_scaling_factor()
+{
+    // undo the AVG over subs which is used in the aggregate-style generated SQL
+    return (double)fmk::simulation_members;
+}

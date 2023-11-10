@@ -16,6 +16,7 @@ parameters {
     //EN Disable population scaling
     bool DisablePopulationScaling;
 };
+//LABEL(DisablePopulationScaling,FR) Désamorcer la mise à l'échelle de la population
 
 
 /**
