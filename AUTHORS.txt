@@ -7,7 +7,7 @@ Original version created in 2013 by:
                     User ID     E-mail                     Organization
                     ---------   -------------------------  ------------
 Steve Gribble       esseffgee   steve.gribble@hotmail.com  uOttawa
-Anatoly Cherkassky  amc1999     openmpp99@gmail.com        uOttawa
+Anatoly Cherkassky  amc1999     amc1999@gmail.com          uOttawa
 
 Contributors:
 
@@ -23,14 +23,16 @@ Intellectual property holders
 
 Following organizations are intellectual property holders of OpenM++:
 
-uOttawa: University of Ottawa, www.uottawa.ca
-StatCan: Statistics Canada,    www.statcan.gc.ca
-Her Majesty the Queen in Right of Canada
+uOttawa:
+  University of Ottawa (www.uottawa.ca)
+StatCan:
+  Statistics Canada (www.statcan.gc.ca)
+  Her Majesty the Queen in Right of Canada
 
 ----------
 Contact Us
 ----------
 
 openmpp.org@gmail.com
-www.openmpp.org
-github.com/openmpp/main
+github.com/openmpp
+hhtps://openmpp.org
