@@ -1,6 +1,22 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2023-11-15:
+  c++ core: early error detection of unmatched comment, brace, parenthesis, bracket, or syntactic island
+  c++ core: new Model Metrics Report
+  c++ core: disable model build steps for speedier model code syntax checking
+  c++ core: new options which emit warnings for missing model symbol documentation
+  c++ core: new options which emit warnings for missing explicit names
+  c++ core: explicit short names can be used in //LABEL and /*NOTE
+  c++ core: event Trace can display table increments
+  c++ core: detect unrecognized option and raise error
+  c++ core: disable population scaling for a case-based model
+  dbcopy: suppress zero and/or null in csv output
+  go oms: use ini-file for run description to fix -Description bug
+  go oms API: in run comparison csv allow to use all variant runs, comma separated.
+  R: use openM++ models in cloud from local computer RStudio
+  UI: prevent user to leave parameter page if notes edited and not saved
+
 2023-10-05:
   c++ core: implement suppress/retain of derived parameters exported as tables
   c++ core: new EventTrace filter SelectedEntityKinds

@@ -178,7 +178,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDic.tableId = pp_table_id;
         tableDic.tableName = name;
         tableDic.rank = dimension_count();
-        tableDic.isSparse = true;           // do not store zeroes
+        tableDic.isSparse = false;          // sparse is no longer supported
         tableDic.exprPos = measures_position;
         tableDic.isHidden = is_hidden;
         metaRows.tableDic.push_back(tableDic);

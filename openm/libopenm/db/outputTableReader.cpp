@@ -130,7 +130,7 @@ namespace openm
         const vector<vector<int>> & colIds; // id's for each sql column: expression ids or accumulator ids, sub value ids, enum ids for each dimension
         double * valueArr = nullptr;        // result array to set values
         int idCount = 0;                    // number of id columns
-        unique_ptr<int[]> idxArrUptr;         // storage for current row indices of id's
+        unique_ptr<int[]> idxArrUptr;       // storage for current row indices of id's
         int * idxArr = nullptr;             // current row indices for each id from id column
 
     private:
