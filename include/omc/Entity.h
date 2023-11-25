@@ -1425,7 +1425,7 @@ public:
         {
             auto what = "  INCREMENT";
             auto what_trimmed = "INCREMENT";
-            auto& table_id = other_id;
+            //auto& table_id = other_id; // not used in message
             auto& increment = dbl1;
             auto& accumulator = dbl2;
             auto& table_name = cstr2;
