@@ -605,8 +605,13 @@ void RootController::readAllRunParameters(const RunGroup & i_runGroup) const
 
         // read each parameter sub-values from db and broadcast to all child modeling processes
         for (int nSub = 0; nSub < nSubCount; nSub++) {
-            reader->readParameter(dbExec, nSub, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData.ptr());
-            msgExec->bcastSend(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData.ptr());
+            try {
+                reader->readParameter(dbExec, nSub, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData.ptr());
+                msgExec->bcastSend(i_runGroup.groupOne, parameterNameSizeArr[nPar].typeOf, parameterNameSizeArr[nPar].size, paramData.ptr());
+            }
+            catch (exception & ex) {
+                throw ModelException("Failed to read input parameter: %s sub-value [%d]. %s", parameterNameSizeArr[nPar].name, nSub, ex.what());
+            }
         }
         paramData.cleanup();
     }
