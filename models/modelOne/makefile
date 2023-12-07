@@ -263,7 +263,6 @@ run:
 		-EN.RunDescription "Write microdata into CSV files"
 	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
 		-OpenM.SetName modelOne_other \
-		-Parameter.StartingSeed 8191 \
 		-OpenM.SubValues 4 -OpenM.Threads 4 \
 		-Microdata.All -Microdata.ToDb \
 		-OpenM.RunName "Microdata other in database" \
