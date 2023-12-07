@@ -105,7 +105,7 @@ INSERT INTO workset_parameter_txt (set_id, parameter_hid, lang_id, note) VALUES 
 INSERT INTO task_lst (task_id, model_id, task_name) VALUES (1, 1, 'taskOne');
 
 INSERT INTO task_txt (task_id, lang_id, descr, note) VALUES (1, 0, 'Task One for Model One', 'Task One: two set of input parameters');
-INSERT INTO task_txt (task_id, lang_id, descr, note) VALUES (1, 1, 'Tâche Un pour le Modèle Un', NULL);
+INSERT INTO task_txt (task_id, lang_id, descr, note) VALUES (1, 1, 'Tâche Un pour le Modèle Un', NULL);
 
 INSERT INTO task_set (task_id, set_id) VALUES (1, 2);
 INSERT INTO task_set (task_id, set_id) VALUES (1, 4);
