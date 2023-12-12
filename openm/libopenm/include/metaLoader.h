@@ -76,6 +76,9 @@ namespace openm
         /** database connection string */
         static constexpr const char * dbConnStr = "OpenM.Database";
 
+        /** SQLite database file path */
+        static constexpr const char * dbSqlite = "OpenM.Sqlite";
+
         /** use sparse output tables */
         static constexpr const char * useSparse = "OpenM.SparseOutput";
 
@@ -227,8 +230,11 @@ namespace openm
     /** keys for model run options (short form) */
     struct RunShortKey
     {
-        /** short name for ini file name: -ini fileName.ini */
+        /** short name for ini file path: -ini fileName.ini */
         static constexpr const char * iniFile = "ini";
+
+        /** short name for SQLite database file path: -db fileName.sqlite */
+        static constexpr const char * dbSqlite = "db";
 
         /** short name for: -s working set name to get input parameters */
         static constexpr const char * setName = "s";

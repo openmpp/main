@@ -378,6 +378,7 @@ void RunController::createRunOptions(int i_runId, int i_setId, const string & i_
 
         // hide connection string: it can contain passwords
         if (equalNoCase(optIt->first.c_str(), RunOptionsKey::dbConnStr)) continue;
+        if (equalNoCase(optIt->first.c_str(), RunOptionsKey::dbSqlite)) continue;
         if (equalNoCase(optIt->first.c_str(), dbImportPrefix.c_str(), dbImportPrefix.length())) continue;
 
         i_dbExec->update(

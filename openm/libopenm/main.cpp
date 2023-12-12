@@ -130,9 +130,11 @@ int main(int argc, char ** argv)
 
         try {
             // get db-connection string or use default if not specified
+            string dbSqlite = argOpts.strOption(RunOptionsKey::dbSqlite, string(OM_MODEL_NAME) + ".sqlite");
+
             string connectionStr = argOpts.strOption(
                 RunOptionsKey::dbConnStr,
-                string("Database=") + OM_MODEL_NAME + ".sqlite; Timeout=86400; OpenMode=ReadWrite;"
+                string("Database=") + dbSqlite + "; Timeout=86400; OpenMode=ReadWrite;"
             );
 
             // open db-connection
