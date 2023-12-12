@@ -79,6 +79,9 @@ namespace openm
         /** SQLite database file path */
         static constexpr const char * dbSqlite = "OpenM.Sqlite";
 
+        /** SQLite database file is: directory/of/model/exe/ModelName.sqlite */
+        static constexpr const char * dbFromBin = "OpenM.SqliteFromBin";
+
         /** use sparse output tables */
         static constexpr const char * useSparse = "OpenM.SparseOutput";
 

@@ -101,8 +101,9 @@ int main(int argc, char ** argv)
             );
 
         // read language specific messages from path/to/exe/modelName.message.ini
+        const string exeDir = baseDirOf(argc > 0 ? argv[0] : "");
         IniFileReader::loadMessages(
-            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), OM_MODEL_NAME, ".message.ini").c_str(),
+            makeFilePath(exeDir.c_str(), OM_MODEL_NAME, ".message.ini").c_str(),
             argOpts.strOption(RunOptionsKey::messageLang)
         );
         theLog->logMsg(OM_MODEL_NAME);  // startup message: model name
@@ -130,7 +131,10 @@ int main(int argc, char ** argv)
 
         try {
             // get db-connection string or use default if not specified
-            string dbSqlite = argOpts.strOption(RunOptionsKey::dbSqlite, string(OM_MODEL_NAME) + ".sqlite");
+            string dbSqlite = argOpts.strOption(
+                RunOptionsKey::dbSqlite,
+                makeFilePath((argOpts.boolOption(RunOptionsKey::dbFromBin) ? exeDir.c_str() : ""), OM_MODEL_NAME, ".sqlite")
+            );
 
             string connectionStr = argOpts.strOption(
                 RunOptionsKey::dbConnStr,

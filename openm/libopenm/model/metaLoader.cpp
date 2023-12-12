@@ -42,6 +42,7 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::notOnRoot,
     RunOptionsKey::dbConnStr,
     RunOptionsKey::dbSqlite,
+    RunOptionsKey::dbFromBin,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     RunOptionsKey::doubleFormat,
