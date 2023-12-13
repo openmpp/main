@@ -261,6 +261,12 @@ run:
 		-Microdata.All -Microdata.ToCsv -Microdata.Events Birth,Retire,Death \
 		-OpenM.RunName "Microdata in CSV" \
 		-EN.RunDescription "Write microdata into CSV files"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
+		-OpenM.SetName modelOne_other \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-Microdata.All -Microdata.ToDb \
+		-OpenM.RunName "Microdata other in database" \
+		-EN.RunDescription "Write other microdata into database"
 
 .PHONY: clean
 clean:

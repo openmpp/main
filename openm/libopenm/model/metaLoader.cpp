@@ -41,6 +41,8 @@ static const char * runOptKeyArr[] = {
     RunOptionsKey::threadCount,
     RunOptionsKey::notOnRoot,
     RunOptionsKey::dbConnStr,
+    RunOptionsKey::dbSqlite,
+    RunOptionsKey::dbFromBin,
     RunOptionsKey::useSparse,
     RunOptionsKey::sparseNull,
     RunOptionsKey::doubleFormat,
@@ -77,6 +79,7 @@ static const size_t runOptKeySize = sizeof(runOptKeyArr) / sizeof(const char *);
 static const pair<const char *, const char *> shortPairArr[] = 
 {
     make_pair(RunShortKey::iniFile, ArgKey::iniFile),
+    make_pair(RunShortKey::dbSqlite, RunOptionsKey::dbSqlite),
     make_pair(RunShortKey::setName, RunOptionsKey::setName),
     make_pair(RunShortKey::paramDir, RunOptionsKey::paramDir)
 };

@@ -21,7 +21,7 @@ void RunModel(IModel * const i_model)
 
     if (i_model->runOptions()->isDbMicrodata || i_model->runOptions()->isCsvMicrodata || i_model->runOptions()->isTraceMicrodata)
     {
-        int nEnt = startSeed * i_model->subValueCount();
+        int nEnt = 8191 * i_model->subValueCount();
 
         for (int k = 0; k < nEnt; k++)
         {
@@ -285,7 +285,7 @@ Person::Person(int i_subId, int i_personNumber)
 
 
     // set person attributes pseudo-randomly
-    age = ((i_subId + 1 + i_personNumber) * startSeed) % 100;
+    age = (i_subId + 41 + i_personNumber) % 100;
 
     // age group classification enum id's: 10='10-20' 20='20-30' 30='30-40' 40='40+'
     age_group = MIN_AGE;
@@ -380,7 +380,7 @@ Other::Other(int i_subId, int i_otherNumber)
     entityId = ((uint64_t)i_subId << 48) + i_otherNumber;
 
     // set attributes pseudo-randomly
-    age = ((i_subId + 21 + i_otherNumber) * startSeed) % 100;
+    age = (i_subId + 21 + i_otherNumber) % 100;
 
     // age group classification enum id's: 10='10-20' 20='20-30' 30='30-40' 40='40+'
     age_group = MIN_AGE;

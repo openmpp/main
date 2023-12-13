@@ -889,26 +889,30 @@ bool RunController::importParameter(
         );
     }
     else {  // copy parameter from other database
+        try {
+            unique_ptr<IParameterReader> rd(IParameterReader::create(i_riOpts.runId, i_importRow->fromName.c_str(), dbEx, i_riOpts.meta.get()));
+            size_t nSize = rd->sizeOf();
+            auto vArr = ValueArray(i_nameSizeItem->typeOf, nSize * nSubCount);
+            rd->readParameter(
+                dbEx,
+                i_subOpts.subIds,
+                i_nameSizeItem->typeOf,
+                nSize,
+                vArr.ptr()
+            );
 
-        unique_ptr<IParameterReader> rd(IParameterReader::create(i_riOpts.runId, i_importRow->fromName.c_str(), dbEx, i_riOpts.meta.get()));
-        size_t nSize = rd->sizeOf();
-        auto vArr = ValueArray(i_nameSizeItem->typeOf, nSize * nSubCount);
-        rd->readParameter(
-            dbEx,
-            i_subOpts.subIds,
-            i_nameSizeItem->typeOf,
-            nSize,
-            vArr.ptr()
-        );
-
-        unique_ptr<IParameterRunWriter> wr(IParameterRunWriter::create(i_runId, i_paramRow.paramName.c_str(), i_dbExec, meta()));
-        wr->writeParameter(
-            i_dbExec,
-            i_nameSizeItem->typeOf,
-            nSubCount,
-            nSize,
-            vArr.ptr()
-        );
+            unique_ptr<IParameterRunWriter> wr(IParameterRunWriter::create(i_runId, i_paramRow.paramName.c_str(), i_dbExec, meta()));
+            wr->writeParameter(
+                i_dbExec,
+                i_nameSizeItem->typeOf,
+                nSubCount,
+                nSize,
+                vArr.ptr()
+            );
+        }
+        catch (exception & ex) {
+            throw ModelException("Failed to read import parameter: %s from %s. %s", i_paramRow.paramName.c_str(), i_importRow->fromName.c_str(), ex.what());
+        }
     }
 
     return true;

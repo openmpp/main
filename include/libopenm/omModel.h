@@ -291,18 +291,22 @@ namespace openm
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
+            try {
+                void * pData = &extraVal;
+                if (!isStr) {
+                    extraVal = std::numeric_limits<TVal>::quiet_NaN();   // set default null value
+                }
+                i_runBase->readParameter(i_name, nSub, typeid(TVal), 1, pData);
 
-            void * pData = &extraVal;
-            if (!isStr) {
-                extraVal = std::numeric_limits<TVal>::quiet_NaN();   // set default null value
+                if (allCount <= 1) {
+                    valueVec[0] = extraVal;
+                }
+                else {
+                    if (i_runBase->isUseSubValue(nSub)) valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)] = extraVal;
+                }
             }
-            i_runBase->readParameter(i_name, nSub, typeid(TVal), 1, pData);
-
-            if (allCount <= 1) {
-                valueVec[0] = extraVal;
-            }
-            else {
-                if (i_runBase->isUseSubValue(nSub)) valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)] = extraVal;
+            catch (std::exception & ex) {
+                throw ModelException("Failed to read input parameter: %s sub-value [%d]. %s", i_name, nSub, ex.what());
             }
         }
         return valueVec;
@@ -331,19 +335,23 @@ namespace openm
 
         // read sub-values and place into storage array or send to child process
         for (int nSub = 0; nSub < allCount; nSub++) {
-
-            void * pData = valueVec[0].get();
-            if (allCount > 1) {
-                pData =
-                    i_runBase->isUseSubValue(nSub) ?
-                    valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)].get() :
-                    extraVal.get();
+            try {
+                void * pData = valueVec[0].get();
+                if (allCount > 1) {
+                    pData =
+                        i_runBase->isUseSubValue(nSub) ?
+                        valueVec[i_runBase->parameterSubValueIndex(paramId, nSub)].get() :
+                        extraVal.get();
+                }
+                // set default null values and read parameter
+                if (!isStr) {
+                    std::fill(static_cast<TVal *>(pData), &(static_cast<TVal *>(pData))[i_size], std::numeric_limits<TVal>::quiet_NaN());
+                }
+                i_runBase->readParameter(i_name, nSub, typeid(TVal), i_size, pData);
             }
-            // set default null values and read parameter
-            if (!isStr) {
-                std::fill(static_cast<TVal *>(pData), &(static_cast<TVal *>(pData))[i_size], std::numeric_limits<TVal>::quiet_NaN());
+            catch (std::exception & ex) {
+                throw ModelException("Failed to read input parameter: %s sub-value [%d]. %s", i_name, nSub, ex.what());
             }
-            i_runBase->readParameter(i_name, nSub, typeid(TVal), i_size, pData);
         }
         return valueVec;
     }
