@@ -44,6 +44,7 @@ html/
 .#*
 .*.swp
 *.vcxproj.user
+*.dll
 
 [Tt]humbs.db
 
