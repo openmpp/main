@@ -46,6 +46,11 @@
                Description="Select MPI to incorporate multi-processing capability. A trailing _mpi will be added to the executable name."/>
   </EnumProperty>
   <BoolProperty Category="BuildOptions"
+                Name="MODEL_DOC"
+                DisplayName="Generate model documentation"
+                Description="Produce human readable reference documentation for the model."
+                />
+  <BoolProperty Category="BuildOptions"
                 Name="NO_METADATA"
                 DisplayName="Disable metadata publishing (!)"
                 Description="Can be useful in large models to quickly identify model coding errors, but breaks model build."

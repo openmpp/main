@@ -1801,6 +1801,11 @@ public:
     static bool no_metadata;
 
     /**
+     * True to generate model documentation
+     */
+    static bool model_doc;
+
+    /**
      * True to enable detailed output from parser
      */
     static bool trace_parsing;

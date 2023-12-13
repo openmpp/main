@@ -625,6 +625,8 @@ bool Symbol::no_line_directives = false;
 
 bool Symbol::no_metadata = true;
 
+bool Symbol::model_doc = false;
+
 bool Symbol::trace_parsing = false;
 
 bool Symbol::trace_scanning = false;

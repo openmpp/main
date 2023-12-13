@@ -103,6 +103,9 @@ namespace openm
         /** omc suppress metadata publishing (model cannot be run) */
         static constexpr const char* noMetadata = "Omc.NoMetadata";
 
+        /** omc generate model documentation */
+        static constexpr const char* modelDoc = "Omc.ModelDoc";
+
         /** omc generate detailed output from parser */
         static constexpr const char * traceParsing = "Omc.TraceParsing";
 
@@ -165,6 +168,7 @@ namespace openm
         OmcArgKey::codePage,
         OmcArgKey::noLineDirectives,
         OmcArgKey::noMetadata,
+        OmcArgKey::modelDoc,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
@@ -326,6 +330,9 @@ int main(int argc, char * argv[])
 
         // Obtain information on disabling metadata publishing, default: false
         Symbol::no_metadata = parseBoolOption(OmcArgKey::noMetadata, argStore);
+
+        // Obtain information on generating model documentation, default: false
+        Symbol::model_doc = parseBoolOption(OmcArgKey::modelDoc, argStore);
 
         // Obtain information on detailed parsing option, default: false
         Symbol::trace_parsing = parseBoolOption(OmcArgKey::traceParsing, argStore);
@@ -774,6 +781,12 @@ int main(int argc, char * argv[])
 
         // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
+
+        // generate model documentation
+        if (Symbol::model_doc) {
+            theLog->logMsg("Generating model documentation");
+            // TODO call function here
+        }
 
         // issue wanrings for missing labels,notes,translations
         do_missing_documentation();
