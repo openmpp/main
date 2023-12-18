@@ -237,6 +237,7 @@
     <ClInclude Include="omc_csv.h" />
     <ClInclude Include="omc_file.h" />
     <ClInclude Include="omc_missing_documentation.h" />
+    <ClInclude Include="omc_model_doc.h" />
     <ClInclude Include="omc_model_metrics.h" />
     <ClInclude Include="ParameterGroupSymbol.h" />
     <ClInclude Include="ParameterSymbol.h" />
@@ -325,6 +326,7 @@
     <ClCompile Include="omc_csv.cpp" />
     <ClCompile Include="omc_file.cpp" />
     <ClCompile Include="omc_missing_documentation.cpp" />
+    <ClCompile Include="omc_model_doc.cpp" />
     <ClCompile Include="omc_model_metrics.cpp" />
     <ClCompile Include="ParameterGroupSymbol.cpp" />
     <ClCompile Include="ParameterSymbol.cpp" />

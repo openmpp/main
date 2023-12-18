@@ -63,6 +63,7 @@
 #include "omc_csv.h"
 #include "omc_model_metrics.h"
 #include "omc_missing_documentation.h"
+#include "omc_model_doc.h"
 
 using namespace std;
 using namespace openm;
@@ -781,6 +782,11 @@ int main(int argc, char * argv[])
 
         // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
+
+        // create the model docs
+        // To be replaced by a user set parameter.
+        string docOutDir = "doc/";
+        do_model_doc(docOutDir, model_name, cg);
 
         // generate model documentation
         if (Symbol::model_doc) {

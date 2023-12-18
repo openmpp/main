@@ -282,6 +282,9 @@
     <ClInclude Include="omc_missing_documentation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="omc_model_doc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
@@ -510,6 +513,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Symbol_options.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="omc_model_doc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
