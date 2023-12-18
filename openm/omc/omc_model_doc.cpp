@@ -124,6 +124,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
             }
             rpt << "# " << s->name << "\n";
             rpt << "  - Label: " << s->pp_labels[lid] << "\n";
+            rpt << "  - Note: " << s->pp_notes[lid] << "\n";
             rpt << "  - Type: " << s->pp_datatype->name << "\n";
             rpt << "\n\n";
         }
