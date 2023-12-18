@@ -32,12 +32,23 @@
 #include "omc_file.h"
 #include "omc_model_metrics.h"
 
+#include "maddy/parser.h"
+
 using namespace std;
 using namespace openm;
 using namespace omc;
 
 void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 {
+    // maddy set-up
+    std::stringstream markdownInput("");
+    std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
+    config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER;
+    config->enabledParsers |= maddy::types::HTML_PARSER;
+
+    std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
+    std::string htmlOutput = parser->Parse(markdownInput);
+
     string ModelDocs_md_name = "TOC.md";
     string flpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
     if (!std::filesystem::exists(outDir)) {
