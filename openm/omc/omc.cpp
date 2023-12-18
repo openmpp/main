@@ -16,14 +16,14 @@
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario (can be list of directories)
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
 * * -Omc.ModelDoc       if true then generate model documentation
-* * -Omc.CodePage       code page for converting source files, e.g. windows-1252
-* * -Omc.MessageLanguage    language to display output messages, default: user environment settings
-* * -Omc.MessageFnc     localized message functions, default: LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
 * * -Omc.SqliteDir      output directory to create SQLite model database
 * * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
+* * -Omc.CodePage       code page for converting source files, e.g. windows-1252
+* * -Omc.MessageLanguage    language to display output messages, default: user environment settings
+* * -Omc.MessageFnc     localized message functions, default: LT,logMsg,logFormatted,WriteLogEntry,WarningMsg,ModelExit
 * * -Omc.NoLineDirectives   suppress #line directives in generated cpp files
-* * -Omc.NoMetadata     do not create model database (model cannot be run)
+* * -Omc.NoMetadata     suppress production of model metadata (model cannot be run), default: false
 * * -Omc.TraceScanning  detailed tracing from scanner
 * * -Omc.TraceParsing   detailed tracing from parser
 * * -OpenM.IniFile      path/to/optional/omc.ini
