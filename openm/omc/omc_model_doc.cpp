@@ -47,9 +47,13 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
     config->enabledParsers |= maddy::types::HTML_PARSER;
 
     std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
-    std::string htmlOutput = parser->Parse(markdownInput);
+    //std::string htmlOutput = parser->Parse(markdownInput);
 
     string ModelDocs_md_name = "TOC.md";
+    string ModelDocs_html_name = "TOC.html";
+
+    std::string htmlOutput;
+
     string flpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
     if (!std::filesystem::exists(outDir)) {
         std::filesystem::create_directory(outDir);
@@ -77,6 +81,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
         // create lang dir here EN & FR
         ModelDocs_md_name = "TOC_" + langid + ".md";
+        ModelDocs_html_name = "TOC_" + langid + ".html";
 
         string ldir = langid + string("/");
 
@@ -96,17 +101,17 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
 
         if (lid == 0) {
-            rpt << LT("# Model Parameters Documents for ") << tomb_stone << "\n";
+            rpt << LT("# Model Parameters Documents for ") << tomb_stone << "\n\n";
         }
         else if (lid == 1) {
-            rpt << LT("# Document de Model Parameters pour ") << tomb_stone << "\n";
+            rpt << LT("# Document de Model Parameters pour ") << tomb_stone << "\n\n";
         }
 
-        rpt << "-----" << "\n"; // seperator
+        rpt << "-----" << "\n\n"; // seperator
 
         if (lid == 0) {
             rpt << "## Parameters" << "\n\n";
-            rpt << "| Name | Label |\n";
+            rpt << "|table> Name | Label |\n";
         }
         else if (lid == 1) {
             rpt << "## Parameters" << "\n\n";
@@ -127,7 +132,8 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
         } // end parameter table
         rpt << "\n\n";
-        rpt << "-----" << "\n"; // seperator
+        rpt << "-----" << "\n\n"; // seperator
+
         for (auto& s : Symbol::pp_all_parameters) {
             if (!s->is_published()) {
                 // skip parameter groups which are not published
@@ -140,10 +146,29 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
             rpt << "\n\n";
         }
 
-
+        //markdownInput << rpt.rdbuf();
+        //htmlOutput = parser->Parse(markdownInput);
 
 
         rpt.close();
+
+        //ldpth;
+        //std::string htmlOutput = parser->Parse(markdownInput);
+
+
+        ofstream filePtr, filePtr2;
+        string hdpth = makeFilePath(flpth.c_str(), ModelDocs_html_name.c_str());
+        filePtr.open(hdpth, fstream::out);
+        filePtr2.open(ldpth, fstream::in);
+
+        markdownInput << filePtr2.rdbuf();
+        htmlOutput = parser->Parse(markdownInput);
+        filePtr << htmlOutput.c_str();
+
+
+        filePtr.close();
+        filePtr2.close();
+        //rpt.close();
 
     } // end language loop
 
