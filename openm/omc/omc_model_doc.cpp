@@ -107,19 +107,21 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
             rpt << LT("# Document de Model Parameters pour ") << tomb_stone << "\n\n";
         }
 
-        rpt << "-----" << "\n\n"; // seperator
+        rpt << "---" << "\n\n"; // seperator
 
         if (lid == 0) {
             rpt << "## Parameters" << "\n\n";
-            rpt << "|table> Name | Label |\n";
+            rpt << "|table>" << "\n\n";
+            rpt << " Name | Label \n";
         }
         else if (lid == 1) {
             rpt << "## Parameters" << "\n\n";
-            rpt << "| Name | Label |\n";
+            rpt << "|table>" << "\n\n";
+            rpt << " Name | Label \n";
         }
 
 
-        rpt << "| --- | --- |\n";
+        rpt << " --- | --- \n";
 
         for (auto& s : Symbol::pp_all_parameters) {
             if (!s->is_published()) {
@@ -127,22 +129,24 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
                 continue;
             }
             //rpt << "| " << s->name << "  |  " << s->pp_labels[lid] << " |\n";
-            rpt << "| [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << " | \n";
+            rpt << " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
 
 
         } // end parameter table
+        rpt << "|<table" << "\n\n";
         rpt << "\n\n";
-        rpt << "-----" << "\n\n"; // seperator
+        rpt << "---" << "\n\n"; // seperator
 
         for (auto& s : Symbol::pp_all_parameters) {
             if (!s->is_published()) {
                 // skip parameter groups which are not published
                 continue;
             }
-            rpt << "# " << s->name << "\n";
-            rpt << "  - Label: " << s->pp_labels[lid] << "\n";
-            rpt << "  - Note: " << s->pp_notes[lid] << "\n";
-            rpt << "  - Type: " << s->pp_datatype->name << "\n";
+            //rpt << "## " << s->name << "\n\n";
+            rpt << "\<h2 id=\"" << s->name << "\">" << s->name << "</h2>\n\n";
+            rpt << "  - Label: " << s->pp_labels[lid] << "\n\n";
+            rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
+            rpt << "  - Type: " << s->pp_datatype->name << "\n\n";
             rpt << "\n\n";
         }
 
