@@ -147,8 +147,24 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
             rpt << "  - Label: " << s->pp_labels[lid] << "\n\n";
             rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
             rpt << "  - Type: " << s->pp_datatype->name << "\n\n";
+            //s->pp_all_parameter_groups;
+
+            for (auto& dl : s->dimension_list) {
+                //rpt << "    - " << dl->short_name << "\n";
+                rpt << "    * " << dl->unique_name << "\n\n";
+            }
+            rpt << "\n    * Size[ ";
+            int tt = 0;
+            for (int ps : s->pp_shape) {
+                rpt << ps << " ";
+                tt = tt + ps;
+            }
+            rpt << " ] total:" << tt << " \n";
+
+
+
             rpt << "\n\n";
-        }
+        } // end all_parameters
 
         //markdownInput << rpt.rdbuf();
         //htmlOutput = parser->Parse(markdownInput);
