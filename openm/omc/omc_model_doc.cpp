@@ -147,8 +147,8 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
             rpt << "  - Label: " << s->pp_labels[lid] << "\n\n";
             rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
             rpt << "  - Type: " << s->pp_datatype->name << "\n\n";
-            //s->pp_all_parameter_groups;
 
+            // Dimension and shape
             for (auto& dl : s->dimension_list) {
                 //rpt << "    - " << dl->short_name << "\n";
                 rpt << "    * " << dl->unique_name << "\n\n";
@@ -159,10 +159,53 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
                 rpt << ps << " ";
                 tt = tt + ps;
             }
-            rpt << " ] total:" << tt << " \n";
+            rpt << " ] total:" << tt << " \n\n";
+
+            tt = 0;
+
+            // Dimension and shape another way
+            rpt << "|table>" << "\n\n";
+            rpt << " Name | Label | Size \n";
+            rpt << " --- | --- | --- \n";
+
+            auto dli = s->dimension_list.begin();
+            auto psi = s->pp_shape.begin();
+
+            while ( dli != s->dimension_list.end() ) {
+
+                int xxx = 0;
+
+                rpt << (*dli)->short_name << " | " << (*dli)->pp_labels[lid] << " | " << (*psi) << "\n";
+                tt = tt + (*psi);
+
+                dli = std::next(dli, 1);
+                psi = std::next(psi, 1);
+            } // end while
+
+            rpt << " Total | | " << tt << "\n";
 
 
 
+            rpt << "|<table" << "\n\n";
+            rpt << "\n\n";
+
+            // Group info
+            rpt << "\n ### Belongs to Group(s):\n\n";
+            rpt << "|table>" << "\n\n";
+            rpt << " Name | Label \n";
+            rpt << " --- | --- \n";
+
+            for (auto& pg : s->pp_all_parameter_groups) {
+                for (auto& pr : pg->pp_symbol_list) {
+                    int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
+                    if (zz == 0) {
+                        rpt << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
+                    }
+                }
+
+            }
+
+            rpt << "|<table" << "\n\n";
             rpt << "\n\n";
         } // end all_parameters
 
