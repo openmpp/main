@@ -143,7 +143,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
                 continue;
             }
             //rpt << "## " << s->name << "\n\n";
-            rpt << "\<h2 id=\"" << s->name << "\">" << s->name << "</h2>\n\n";
+            rpt << "<h2 id=\"" << s->name << "\">" << s->name << "</h2>\n\n";
             rpt << "  - Label: " << s->pp_labels[lid] << "\n\n";
             rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
             rpt << "  - Type: " << s->pp_datatype->name << "\n\n";
