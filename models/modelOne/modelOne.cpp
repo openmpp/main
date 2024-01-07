@@ -295,7 +295,7 @@ Person::Person(int i_subId, int i_personNumber)
 
     sex = (i_subId + 1 + i_personNumber) % 2; // sex classification is a zero based enum
 
-    income = (age >= 18 && age < 65) ? (i_subId + 1 + i_personNumber) * startSeed : 0.0;
+    income = (age >= 18 && age < 65) ? 12345 + ( ((i_subId + 1 + i_personNumber) * startSeed) % 192123 ) : 0.0;
     salary = 0.75 * income;
 
     // salary level classification enum id's: 100='L', 200='M', 300='H'
@@ -309,10 +309,10 @@ Person::Person(int i_subId, int i_personNumber)
 
     pension = 0.0;
     if (is_old_age) {
-        pension = ((i_subId + 1 + i_personNumber) * startSeed) / 5.0;
+        pension = 11223 + ( ((i_subId + 1 + i_personNumber) * startSeed) % 65432 );
         if (pension < 23000) pension = 23000;
         if (age < 75) salary = 0.3 * pension;
-        income = pension + salary;
+        income = 1.05 * (pension + salary);
     }
 
     // calculate entity crc-64
@@ -388,7 +388,7 @@ Other::Other(int i_subId, int i_otherNumber)
     if (age >= 30) age_group = 30;
     if (age >= 40) age_group = 40;
 
-    income = (age >= 18 && age < 65) ? (i_subId + 21 + i_otherNumber) * startSeed : 0.0;
+    income = (age >= 18 && age < 65) ? (17654 + ( ((i_subId + 21 + i_otherNumber) * startSeed) % 212345) ) : 0.0;
 
     // calculate entity crc-64
     size_t nSize = sizeof(i_subId) + sizeof(i_otherNumber);
