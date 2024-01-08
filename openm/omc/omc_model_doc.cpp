@@ -40,13 +40,6 @@ using namespace omc;
 
 void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& model_name, CodeGen& cg)
 {
-    // maddy set-up
-    std::stringstream markdownInput("");
-    std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
-    config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER;
-    config->enabledParsers |= maddy::types::HTML_PARSER;
-    std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
-
     // create json file for ompp UI
     {
         string json_name = model_name + ".extra.json";
@@ -218,20 +211,29 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
         //ldpth;
         //std::string htmlOutput = parser->Parse(markdownInput);
 
+        {
+            // maddy set-up
+            std::stringstream markdownInput("");
+            std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
+            config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER;
+            config->enabledParsers |= maddy::types::HTML_PARSER;
+            std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
 
-        ofstream filePtr, filePtr2;
-        string hdpth = makeFilePath(pubDir.c_str(), ModelDocs_html_name.c_str());
-        filePtr.open(hdpth, fstream::out);
-        filePtr2.open(ldpth, fstream::in);
+            ofstream filePtr, filePtr2;
+            string hdpth = makeFilePath(pubDir.c_str(), ModelDocs_html_name.c_str());
+            filePtr.open(hdpth, fstream::out);
+            filePtr2.open(ldpth, fstream::in);
 
-        markdownInput << filePtr2.rdbuf();
-        string htmlOutput = parser->Parse(markdownInput);
-        filePtr << htmlOutput.c_str();
+            markdownInput << filePtr2.rdbuf();
+            string htmlOutput = parser->Parse(markdownInput);
+            filePtr << htmlOutput.c_str();
 
+            filePtr.close();
+            filePtr2.close();
+            //rpt.close();
 
-        filePtr.close();
-        filePtr2.close();
-        //rpt.close();
+        }
+
 
     } // end language loop
 
