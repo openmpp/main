@@ -4,7 +4,7 @@
 * Function to create Model doc
 *
 */
-// Copyright (c) 2023-2023 OpenM++ Contributors (see AUTHORS.txt)
+// Copyright (c) 2023-2024 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt)
 
 #include <iostream>
@@ -104,17 +104,16 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
 
         if (lid == 0) {
             rpt << "## Parameters" << "\n\n";
-            rpt << "|table>" << "\n\n";
+            rpt << "|table>\n"; // maddy-specific
             rpt << " Name | Label \n";
         }
         else if (lid == 1) {
             rpt << "## Parameters" << "\n\n";
-            rpt << "|table>" << "\n\n";
+            rpt << "|table>\n"; // maddy-specific
             rpt << " Name | Label \n";
         }
 
-
-        rpt << " --- | --- \n";
+        rpt << "- | - | -\n"; // maddy-specific
 
         for (auto& s : Symbol::pp_all_parameters) {
             if (!s->is_published()) {
@@ -126,7 +125,7 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
 
 
         } // end parameter table
-        rpt << "|<table" << "\n\n";
+        rpt << "|<table\n"; // maddy-specific
         rpt << "\n\n";
         rpt << "---" << "\n\n"; // seperator
 
@@ -159,7 +158,8 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
             // Dimension and shape another way
             rpt << "|table>" << "\n\n";
             rpt << " Name | Label | Size \n";
-            rpt << " --- | --- | --- \n";
+            rpt << "- | - | -\n"; // maddy-specific
+
 
             auto dli = s->dimension_list.begin();
             auto psi = s->pp_shape.begin();
@@ -186,7 +186,8 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
             rpt << "\n ### Belongs to Group(s):\n\n";
             rpt << "|table>" << "\n\n";
             rpt << " Name | Label \n";
-            rpt << " --- | --- \n";
+            rpt << "- | - | -\n"; // maddy-specific
+
 
             for (auto& pg : s->pp_all_parameter_groups) {
                 for (auto& pr : pg->pp_symbol_list) {
