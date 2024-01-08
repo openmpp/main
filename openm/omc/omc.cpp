@@ -295,6 +295,8 @@ int main(int argc, char * argv[])
         }
 
         // Obtain locations of 'use' folders to make available to parser.
+        
+        /// path of omc.exe
 		string omc_exe = argv[0];
 		{
 			string use_folders;
@@ -790,16 +792,14 @@ int main(int argc, char * argv[])
         if (Symbol::model_doc) {
             theLog->logMsg("Generating model documentation");
 
-            // Obtain location of folder to publish output model documentation HTML file(s).
-            // Default value is sister directory of omc.exe directory, named 'html',
-            // which will publish on local workstation for access by locally-running ompp UI.
+            // Obtain folder to publish output model documentation HTML file(s).
+            // Default value is sister directory of omc.exe directory, named 'html'.
+            // That's the publishing location on local workstation for access by locally-running ompp UI.
             // Assumption: folder is local and writable.
-            // TODO: override that default using new setting Omc.ModelDocOutDir if specified.
-            string omc_exe = argv[0];
-            string docOutDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../html/";
+            // TODO: override that default using new Omc setting if given, e.g. Omc.PubDir
+            string pubDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../html/";
 
-
-            do_model_doc(docOutDir, model_name, cg);
+            do_model_doc(pubDir, outDir, model_name, cg);
         }
 
         // issue wanrings for missing labels,notes,translations

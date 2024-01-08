@@ -38,7 +38,7 @@ using namespace std;
 using namespace openm;
 using namespace omc;
 
-void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
+void do_model_doc(string& pubDir, string& outDir, string& model_name, CodeGen& cg)
 {
     // maddy set-up
     std::stringstream markdownInput("");
@@ -54,9 +54,9 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
     std::string htmlOutput;
 
-    string flpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
-    if (!std::filesystem::exists(outDir)) {
-        std::filesystem::create_directory(outDir);
+    string flpth = makeFilePath(pubDir.c_str(), ModelDocs_md_name.c_str());
+    if (!std::filesystem::exists(pubDir)) {
+        std::filesystem::create_directory(pubDir);
     }
 
     string tomb_stone;
@@ -83,7 +83,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
         ModelDocs_html_name = model_name + ".doc." + langid + ".html";
         ModelDocs_md_name = model_name + ".doc." + langid + ".md";
 
-        // create the markdown file
+        // create the markdown file in outDir (normally 'src')
         string ldpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
         ofstream rpt(ldpth, ios::out | ios::trunc | ios::binary);
         if (rpt.fail()) {
@@ -212,7 +212,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
 
         ofstream filePtr, filePtr2;
-        string hdpth = makeFilePath(outDir.c_str(), ModelDocs_html_name.c_str());
+        string hdpth = makeFilePath(pubDir.c_str(), ModelDocs_html_name.c_str());
         filePtr.open(hdpth, fstream::out);
         filePtr2.open(ldpth, fstream::in);
 
