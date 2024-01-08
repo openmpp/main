@@ -790,7 +790,7 @@ int main(int argc, char * argv[])
 
         // generate model documentation
         if (Symbol::model_doc) {
-            theLog->logMsg("Generating model documentation");
+            theLog->logMsg("Generate model documentation - start");
 
             // Obtain folder to publish output model documentation HTML file(s).
             // Default value is sister directory of omc.exe directory, named 'html'.
@@ -804,6 +804,7 @@ int main(int argc, char * argv[])
             string sqliteDir = outDir + "../bin/";
 
             do_model_doc(pubDir, outDir, sqliteDir, model_name, cg);
+            theLog->logMsg("Generate model documentation - finish");
         }
 
         // issue wanrings for missing labels,notes,translations

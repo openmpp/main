@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 #include "Symbol.h"
 #include "VersionSymbol.h"
@@ -131,13 +132,20 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
 
         for (auto& s : Symbol::pp_all_parameters) {
             if (!s->is_published()) {
-                // skip parameter groups which are not published
+                // skip parameter if not published
                 continue;
             }
             //rpt << "## " << s->name << "\n\n";
             rpt << "<h2 id=\"" << s->name << "\">" << s->name << "</h2>\n\n";
             rpt << "  - Label: " << s->pp_labels[lid] << "\n\n";
-            rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
+            //rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
+            string note_in = s->pp_notes[lid];
+            if (note_in.length()) {
+                // Convert markdown line break (two trailing spaces) to maddy-specifc \r
+                // Maddy documentation says \r\n, but \r seems to be required.
+                string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                rpt << note_out << "\n\n";
+            }
             rpt << "  - Type: " << s->pp_datatype->name << "\n\n";
 
             // Dimension and shape
