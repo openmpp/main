@@ -790,9 +790,15 @@ int main(int argc, char * argv[])
         if (Symbol::model_doc) {
             theLog->logMsg("Generating model documentation");
 
-            // create the model docs
-            // To be replaced by a user set parameter.
-            string docOutDir = "doc/";
+            // Obtain location of folder to publish output model documentation HTML file(s).
+            // Default value is sister directory of omc.exe directory, named 'html',
+            // which will publish on local workstation for access by locally-running ompp UI.
+            // Assumption: folder is local and writable.
+            // TODO: override that default using new setting Omc.ModelDocOutDir if present
+            string omc_exe = argv[0];
+            string docOutDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../html/";
+
+
             do_model_doc(docOutDir, model_name, cg);
         }
 
