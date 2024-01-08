@@ -14,4 +14,4 @@
 
 using namespace std;
 
-extern void do_model_doc(string& pubDir, string& outDir, string& model_name, CodeGen& cg);
+extern void do_model_doc(string& pubDir, string& outDir, string &sqliteDir, string& model_name, CodeGen& cg);

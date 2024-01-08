@@ -38,25 +38,34 @@ using namespace std;
 using namespace openm;
 using namespace omc;
 
-void do_model_doc(string& pubDir, string& outDir, string& model_name, CodeGen& cg)
+void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& model_name, CodeGen& cg)
 {
     // maddy set-up
     std::stringstream markdownInput("");
     std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
     config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER;
     config->enabledParsers |= maddy::types::HTML_PARSER;
-
     std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
-    //std::string htmlOutput = parser->Parse(markdownInput);
-    
-    string ModelDocs_md_name = "TOC.md";
-    string ModelDocs_html_name = "TOC.html";
 
-    std::string htmlOutput;
+    // create json file for ompp UI
+    {
+        string json_name = model_name + ".extra.json";
+        string json_path = makeFilePath(sqliteDir.c_str(), json_name.c_str());
+        ofstream out(json_path, ios::out | ios::trunc | ios::binary);
+        if (out.fail()) {
+            string msg = "omc : warning : Unable to open " + json_path + " for writing.";
+            theLog->logMsg(msg.c_str());
+        }
 
-    string flpth = makeFilePath(pubDir.c_str(), ModelDocs_md_name.c_str());
-    if (!std::filesystem::exists(pubDir)) {
-        std::filesystem::create_directory(pubDir);
+        // Current version of ompp UI supports a single model documentation file,
+        // so for now use the HTML for the model's default language.
+        /// The model's default language
+        string default_lang = Symbol::pp_all_languages.front()->name;
+        out << "{\n";
+        // example: "DocLink": "/IDMM.doc.EN.html"
+        out << "   \"DocLink\": \"/" + model_name + ".doc." + default_lang + ".html\"\n";
+        out << "}\n";
+        out.close();
     }
 
     string tomb_stone;
@@ -73,15 +82,14 @@ void do_model_doc(string& pubDir, string& outDir, string& model_name, CodeGen& c
         tomb_stone = model_name + " " + version_string + " built " + ymd;
     }
 
-
     // Language loop
     for (auto lang : Symbol::pp_all_languages) {
         int lid = lang->language_id;
         string langid = lang->name;
 
         // Example: IDMM.doc.EN.html
-        ModelDocs_html_name = model_name + ".doc." + langid + ".html";
-        ModelDocs_md_name = model_name + ".doc." + langid + ".md";
+        string ModelDocs_html_name = model_name + ".doc." + langid + ".html";
+        string ModelDocs_md_name = model_name + ".doc." + langid + ".md";
 
         // create the markdown file in outDir (normally 'src')
         string ldpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
@@ -217,7 +225,7 @@ void do_model_doc(string& pubDir, string& outDir, string& model_name, CodeGen& c
         filePtr2.open(ldpth, fstream::in);
 
         markdownInput << filePtr2.rdbuf();
-        htmlOutput = parser->Parse(markdownInput);
+        string htmlOutput = parser->Parse(markdownInput);
         filePtr << htmlOutput.c_str();
 
 

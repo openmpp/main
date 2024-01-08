@@ -294,11 +294,11 @@ int main(int argc, char * argv[])
             if (outDir.back() != '/' && outDir.back() != '\\') outDir += '/';
         }
 
-        // Obtain locations of 'use' folders to make available to parser.
-        
         /// path of omc.exe
 		string omc_exe = argv[0];
-		{
+
+        // Obtain locations of 'use' folders to make available to parser.
+        {
 			string use_folders;
 			if (argStore.isOptionExist(OmcArgKey::useDir)) {
 				use_folders = argStore.strOption(OmcArgKey::useDir);
@@ -799,7 +799,11 @@ int main(int argc, char * argv[])
             // TODO: override that default using new Omc setting if given, e.g. Omc.PubDir
             string pubDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../html/";
 
-            do_model_doc(pubDir, outDir, model_name, cg);
+            // shortcut the publish step for now.
+            // Set to the sister directory of outDir, named 'bin'
+            string sqliteDir = outDir + "../bin/";
+
+            do_model_doc(pubDir, outDir, sqliteDir, model_name, cg);
         }
 
         // issue wanrings for missing labels,notes,translations
