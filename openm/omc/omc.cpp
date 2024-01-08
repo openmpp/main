@@ -794,7 +794,7 @@ int main(int argc, char * argv[])
             // Default value is sister directory of omc.exe directory, named 'html',
             // which will publish on local workstation for access by locally-running ompp UI.
             // Assumption: folder is local and writable.
-            // TODO: override that default using new setting Omc.ModelDocOutDir if present
+            // TODO: override that default using new setting Omc.ModelDocOutDir if specified.
             string omc_exe = argv[0];
             string docOutDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../html/";
 

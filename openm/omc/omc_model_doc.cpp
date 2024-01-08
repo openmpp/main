@@ -48,7 +48,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
     std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
     //std::string htmlOutput = parser->Parse(markdownInput);
-
+    
     string ModelDocs_md_name = "TOC.md";
     string ModelDocs_html_name = "TOC.html";
 
@@ -79,20 +79,12 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
         int lid = lang->language_id;
         string langid = lang->name;
 
-        // create lang dir here EN & FR
-        ModelDocs_md_name = "TOC_" + langid + ".md";
-        ModelDocs_html_name = "TOC_" + langid + ".html";
-
-        string ldir = langid + string("/");
-
-        //create lang sub-dir
-        string flpth = makeFilePath(outDir.c_str(), ldir.c_str());
-        if (!std::filesystem::exists(flpth)) {
-            std::filesystem::create_directory(flpth);
-        }
+        // Example: IDMM.doc.EN.html
+        ModelDocs_html_name = model_name + ".doc." + langid + ".html";
+        ModelDocs_md_name = model_name + ".doc." + langid + ".md";
 
         // create the markdown file
-        string ldpth = makeFilePath(flpth.c_str(), ModelDocs_md_name.c_str());
+        string ldpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
         ofstream rpt(ldpth, ios::out | ios::trunc | ios::binary);
         if (rpt.fail()) {
             string msg = "omc : warning : Unable to open " + ModelDocs_md_name + " for writing.";
@@ -220,7 +212,7 @@ void do_model_doc(string& outDir, string& model_name, CodeGen& cg)
 
 
         ofstream filePtr, filePtr2;
-        string hdpth = makeFilePath(flpth.c_str(), ModelDocs_html_name.c_str());
+        string hdpth = makeFilePath(outDir.c_str(), ModelDocs_html_name.c_str());
         filePtr.open(hdpth, fstream::out);
         filePtr2.open(ldpth, fstream::in);
 
