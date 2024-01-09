@@ -45,6 +45,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
     /// target folder for HTML output
     string pubDir = outDir + "../bin/io/download/";
     std::filesystem::create_directories(pubDir);
+
     /// mapped location of pubDir in ompp UI local web server
     string pubURL = "download/";
 
@@ -63,6 +64,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
 
         // Current version of ompp UI supports a single model documentation file,
         // so for now use the HTML for the model's default language.
+
         /// The model's default language
         string default_lang = Symbol::pp_all_languages.front()->name;
         out << "{\n";
@@ -109,93 +111,113 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
     for (auto lang : Symbol::pp_all_languages) {
         int lid = lang->language_id;
         string langid = lang->name;
+        bool isFR = (langid == "FR");
+        // In code below, FR strings contain HTML entities for French accented characters.
+        // Embedding accented characters in this source code module is problematic,
+        // because 1252 codepage instead of UTF might be used on Windows,
+        // which can cause anomalous browser behaviour in a document with a mixture of both.
+        // Unfortunately, trailing u8 on string constants is not yet (as of 2024) supported on clang, so can't use that approach yet.
+        // 
+        // Symbol Entity    Code
+        //  é     &eacute;  &#233;
+        //  É     &Eacute;  &#201;
+        //  è     &egrave;  &#232
+        // For a complete list of HTML entities, see https://mateam.net/html-escape-characters/
 
         // Example: IDMM.doc.EN.html
-        string ModelDocs_html_name = model_name + ".doc." + langid + ".html";
-        string ModelDocs_md_name = model_name + ".doc." + langid + ".md";
+        string htmlName = model_name + ".doc." + langid + ".html";
+        string mdName = model_name + ".doc." + langid + ".md";
 
         // create the markdown file in outDir (normally 'src')
-        string ldpth = makeFilePath(outDir.c_str(), ModelDocs_md_name.c_str());
-        ofstream rpt(ldpth, ios::out | ios::trunc | ios::binary);
-        if (rpt.fail()) {
-            string msg = "omc : warning : Unable to open " + ModelDocs_md_name + " for writing.";
+        string mdPath = makeFilePath(outDir.c_str(), mdName.c_str());
+        ofstream mdStream(mdPath, ios::out | ios::trunc | ios::binary);
+        if (mdStream.fail()) {
+            string msg = "omc : warning : Unable to open " + mdName + " for writing.";
             theLog->logMsg(msg.c_str());
         }
 
-
-        if (lid == 0) {
-            rpt << LT("# Model Parameters Documents for ") << tomb_stone << "\n\n";
-        }
-        else if (lid == 1) {
-            rpt << LT("# Document de Model Parameters pour ") << tomb_stone << "\n\n";
-        }
-
-        rpt << "---" << "\n\n"; // seperator
-
-        if (lid == 0) {
-            rpt << "## Parameters" << "\n\n";
-            rpt << "|table>\n"; // maddy-specific
-            rpt << " Name | Label \n";
-        }
-        else if (lid == 1) {
-            rpt << "## Parameters" << "\n\n";
-            rpt << "|table>\n"; // maddy-specific
-            rpt << " Name | Label \n";
-        }
-
-        rpt << "- | - | -\n"; // maddy-specific
-
-        for (auto& s : Symbol::pp_all_parameters) {
-            if (!s->is_published()) {
-                // skip parameter groups which are not published
-                continue;
+        // Topic: home page (table of contents)
+        {
+            if (!isFR) {
+                mdStream << "<h1 id=\"home-page\">" + model_name + " Model Documentation</h1>\n\n";
+                mdStream << "* [Parameters in alphabetic order](#parameters-alphabetic)\n\n";
             }
-            //rpt << "| " << s->name << "  |  " << s->pp_labels[lid] << " |\n";
-            rpt << " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
+            else {
+                mdStream << "<h1 id=\"home-page\">Documentation du mod&egrave;le " + model_name + "</h1>\n\n";
+                mdStream << "* [Param&egrave;tres dans ordre alphab&eacute;tique](#parameters-alphabetic)\n\n";
+                //mdStream << "# Document de Model Parameters pour " << tomb_stone << "\n\n";
+            }
+            mdStream << "\n\n---\n\n"; // topic separator
+        }
+
+        // Topic: parameters in alphabetic order
+        {
+            if (!isFR) {
+                mdStream << "<h3 id=\"parameters-alphabetic\">Parameters in alphabetic order</h3>\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << " Name | Label \n";
+            }
+            else {
+                mdStream << "<h3 id=\"parameters-alphabetic\">Param&egrave;tres dans ordre alphab&eacute;tique</h3>" << "\n\n";
+                mdStream << "|table>\n"; // maddy-specific end table
+                mdStream << " Nom | &Eacute;tiquette \n";
+            }
+
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+
+            for (auto& s : Symbol::pp_all_parameters) {
+                if (!s->is_published()) {
+                    // skip unpublished parameter
+                    continue;
+                }
+                //mdStream << "| " << s->name << "  |  " << s->pp_labels[lid] << " |\n";
+                mdStream << " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
 
 
-        } // end parameter table
-        rpt << "|<table\n"; // maddy-specific
-        rpt << "\n\n";
-        rpt << "---" << "\n\n"; // seperator
+            } // end parameter table
+            mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << "\n\n";
+            mdStream << "---" << "\n\n"; // topic separator
+        }
 
+        // Topic for each published parameter
         for (auto& s : Symbol::pp_all_parameters) {
             if (!s->is_published()) {
                 // skip parameter if not published
                 continue;
             }
-            //rpt << "## " << s->name << "\n\n";
-            rpt << "<h2 id=\"" << s->name << "\">" << s->name << "</h2>\n\n";
-            rpt << "  - Label: " << s->pp_labels[lid] << "\n\n";
-            //rpt << "  - Note: " << s->pp_notes[lid] << "\n\n";
+            //mdStream << "## " << s->name << "\n\n";
+            mdStream << "<h3 id=\"" << s->name << "\">" << s->name << "</h3>\n\n";
+            mdStream << "  - Label: " << s->pp_labels[lid] << "\n\n";
+            //mdStream << "  - Note: " << s->pp_notes[lid] << "\n\n";
             string note_in = s->pp_notes[lid];
             if (note_in.length()) {
                 // Convert markdown line break (two trailing spaces) to maddy-specifc \r
                 // Maddy documentation says \r\n, but \r seems to be required.
                 string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
-                rpt << note_out << "\n\n";
+                mdStream << note_out << "\n\n";
             }
-            rpt << "  - Type: " << s->pp_datatype->name << "\n\n";
+            mdStream << "  - Type: " << s->pp_datatype->name << "\n\n";
 
             // Dimension and shape
             for (auto& dl : s->dimension_list) {
-                //rpt << "    - " << dl->short_name << "\n";
-                rpt << "    * " << dl->unique_name << "\n\n";
+                //mdStream << "    - " << dl->short_name << "\n";
+                mdStream << "    * " << dl->unique_name << "\n\n";
             }
-            rpt << "\n    * Size[ ";
+            mdStream << "\n    * Size[ ";
             int tt = 0;
             for (int ps : s->pp_shape) {
-                rpt << ps << " ";
+                mdStream << ps << " ";
                 tt = tt + ps;
             }
-            rpt << " ] total:" << tt << " \n\n";
+            mdStream << " ] total:" << tt << " \n\n";
 
             tt = 0;
 
             // Dimension and shape another way
-            rpt << "|table>" << "\n\n";
-            rpt << " Name | Label | Size \n";
-            rpt << "- | - | -\n"; // maddy-specific
+            mdStream << "|table>" << "\n\n";
+            mdStream << " Name | Label | Size \n";
+            mdStream << "- | - | -\n"; // maddy-specific
 
 
             auto dli = s->dimension_list.begin();
@@ -205,49 +227,43 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
 
                 int xxx = 0;
 
-                rpt << (*dli)->short_name << " | " << (*dli)->pp_labels[lid] << " | " << (*psi) << "\n";
+                mdStream << (*dli)->short_name << " | " << (*dli)->pp_labels[lid] << " | " << (*psi) << "\n";
                 tt = tt + (*psi);
 
                 dli = std::next(dli, 1);
                 psi = std::next(psi, 1);
             } // end while
 
-            rpt << " Total | | " << tt << "\n";
+            mdStream << " Total | | " << tt << "\n";
 
 
 
-            rpt << "|<table" << "\n\n";
-            rpt << "\n\n";
+            mdStream << "|<table" << "\n\n";
+            mdStream << "\n\n";
 
             // Group info
-            rpt << "\n ### Belongs to Group(s):\n\n";
-            rpt << "|table>" << "\n\n";
-            rpt << " Name | Label \n";
-            rpt << "- | - | -\n"; // maddy-specific
+            mdStream << "\n ### Belongs to Group(s):\n\n";
+            mdStream << "|table>" << "\n\n";
+            mdStream << " Name | Label \n";
+            mdStream << "- | - | -\n"; // maddy-specific
 
 
             for (auto& pg : s->pp_all_parameter_groups) {
                 for (auto& pr : pg->pp_symbol_list) {
                     int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
                     if (zz == 0) {
-                        rpt << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
+                        mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
                     }
                 }
 
             }
 
-            rpt << "|<table" << "\n\n";
-            rpt << "\n\n";
-        } // end all_parameters
+            mdStream << "|<table" << "\n\n";
+            mdStream << "\n\n";
+            mdStream << "---" << "\n\n"; // topic separator
+        } // Topic for each published parameter
 
-        //markdownInput << rpt.rdbuf();
-        //htmlOutput = parser->Parse(markdownInput);
-
-
-        rpt.close();
-
-        //ldpth;
-        //std::string htmlOutput = parser->Parse(markdownInput);
+        mdStream.close();
 
         {
             // maddy set-up
@@ -259,9 +275,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
 
             ofstream htmlStream;
             ofstream mdStream;
-            string hdpth = makeFilePath(pubDir.c_str(), ModelDocs_html_name.c_str());
+            string hdpth = makeFilePath(pubDir.c_str(), htmlName.c_str());
             htmlStream.open(hdpth, fstream::out);
-            mdStream.open(ldpth, fstream::in);
+            mdStream.open(mdPath, fstream::in);
 
             markdownInput << mdStream.rdbuf();
             string htmlOutput = parser->Parse(markdownInput);
