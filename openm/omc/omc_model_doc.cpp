@@ -13,6 +13,7 @@
 
 #include "Symbol.h"
 #include "VersionSymbol.h"
+#include "ModelSymbol.h"
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
 #include "TableSymbol.h"
@@ -93,20 +94,6 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         }
     }
 
-    string tomb_stone;
-    {
-        // year-month-day and model version # for tombstone
-        const size_t ymd_size = 11;
-        char ymd[ymd_size];
-        std::time_t time = std::time({});
-        std::strftime(ymd, ymd_size, "%F", std::localtime(&time));
-        // Get the version symbol
-        VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
-        assert(vs);
-        string version_string = to_string(vs->major) + "." + to_string(vs->minor) + "." + to_string(vs->sub_minor) + "." + to_string(vs->sub_sub_minor);
-        tomb_stone = model_name + " " + version_string + " built " + ymd;
-    }
-
     // Language loop
     for (auto lang : Symbol::pp_all_languages) {
         int lid = lang->language_id;
@@ -114,14 +101,16 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         bool isFR = (langid == "FR");
         // In code below, FR strings contain HTML entities for French accented characters.
         // Embedding accented characters in this source code module is problematic,
-        // because 1252 codepage instead of UTF might be used on Windows,
+        // because on WIndows 1252 codepage instead of UTF-8 might be used,
         // which can cause anomalous browser behaviour in a document with a mixture of both.
-        // Unfortunately, trailing u8 on string constants is not yet (as of 2024) supported on clang, so can't use that approach yet.
+        // Unfortunately, trailing "some text"u8 on string constants is not yet (as of 2024) supported on clang, so can't use that approach yet.
         // 
         // Symbol Entity    Code
         //  é     &eacute;  &#233;
         //  É     &Eacute;  &#201;
         //  è     &egrave;  &#232
+        //  à     &agrave;
+        //  À     &Agrave;
         // For a complete list of HTML entities, see https://mateam.net/html-escape-characters/
 
         // Example: IDMM.doc.EN.html
@@ -136,11 +125,43 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             theLog->logMsg(msg.c_str());
         }
 
+        ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+        assert(theModelSymbol);
+        bool flagModelNotePresent = theModelSymbol->note(*lang).length() > 0;
+
+        // higher-level topics
+        string anchorHomePage = "home-page";
+        string anchorModelIntroduction = "model-introduction";
+        string anchorParametersAlphabetic = "parameters-alphabetic";
+        string anchorTablesAlphabetic = "tables-alphabetic";
+        string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
+
         // Topic: home page (table of contents)
         {
+            VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
+            assert(vs);
+            string version_string = to_string(vs->major) + "." + to_string(vs->minor) + "." + to_string(vs->sub_minor) + "." + to_string(vs->sub_sub_minor);
+
+            const size_t ymd_size = 11;
+            char ymd[ymd_size];
+            std::time_t time = std::time({});
+            std::strftime(ymd, ymd_size, "%F", std::localtime(&time));
+
             if (!isFR) {
-                mdStream << "<h1 id=\"home-page\">" + model_name + " Model Documentation</h1>\n\n";
-                mdStream << "* [Parameters in alphabetic order](#parameters-alphabetic)\n\n";
+                mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " Model Documentation</h1>\n\n";
+                mdStream << "<h2>Model Version " + version_string + ", built " + ymd + "</h2>\n\n";
+                mdStream << "\n\n";
+                mdStream << "<h3>Table of Contents</h3>\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << "Topic | Description\n"; // maddy-specific table header separator
+                mdStream << "- | - | -\n"; // maddy-specific table header separator
+                if (flagModelNotePresent) {
+                    mdStream << "[Introduction](#" + anchorModelIntroduction + ") | A short overview of the model\n";
+                }
+                mdStream << "[Parameters](#" + anchorParametersAlphabetic + ") | Model input parameters in alphabetic order\n";
+                mdStream << "[Tables](#" + anchorTablesAlphabetic + ") | Model output tables in alphabetic order\n";
+                mdStream << "[Enumerations](#" + anchorEnumerationsAlphabetic + ") | Model enumerations (dimensions) in alphabetic order\n";
+                mdStream << "|<table\n"; // maddy-specific end table
             }
             else {
                 mdStream << "<h1 id=\"home-page\">Documentation du mod&egrave;le " + model_name + "</h1>\n\n";
@@ -150,34 +171,71 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "\n\n---\n\n"; // topic separator
         }
 
+        // Topic: introduction
+        if (flagModelNotePresent) {
+            if (!isFR) {
+                mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">Intoduction to "+ model_name +"</h3>\n\n";
+                mdStream << theModelSymbol->note(*lang);
+                mdStream << "\n\n[[Table of Contents](#"+ anchorHomePage +")]\r\n";
+            }
+            else {
+            }
+        }
+
         // Topic: parameters in alphabetic order
         {
+            // build line with links to first parameter in alphabetic table with leading letter
+            string letterLinks;
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_parameters) {
+                    if (!s->is_published()) {
+                        // skip unpublished parameter
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-param, D-param, etc.
+                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-param)";
+                    }
+                    letterPrev = letterCurr;
+                }
+            }
+
             if (!isFR) {
-                mdStream << "<h3 id=\"parameters-alphabetic\">Parameters in alphabetic order</h3>\n\n";
+                mdStream << "<h3 id=\"" + anchorParametersAlphabetic + "\">Parameters in alphabetic order</h3>\n\n";
+                mdStream << letterLinks + "\n\n";
                 mdStream << "|table>\n"; // maddy-specific begin table
                 mdStream << " Name | Label \n";
             }
             else {
                 mdStream << "<h3 id=\"parameters-alphabetic\">Param&egrave;tres dans ordre alphab&eacute;tique</h3>" << "\n\n";
-                mdStream << "|table>\n"; // maddy-specific end table
+                mdStream << "|table>\n"; // maddy-specific begin table
                 mdStream << " Nom | &Eacute;tiquette \n";
             }
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_parameters) {
+                    if (!s->is_published()) {
+                        // skip unpublished parameter
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    string letterLink = "";
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-param, D-param, etc.
+                        letterLink += "<div id=\"" + letterCurr + "-param\"/>";
+                    }
+                    letterPrev = letterCurr;
 
-            for (auto& s : Symbol::pp_all_parameters) {
-                if (!s->is_published()) {
-                    // skip unpublished parameter
-                    continue;
-                }
-                //mdStream << "| " << s->name << "  |  " << s->pp_labels[lid] << " |\n";
-                mdStream << " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
-
-
-            } // end parameter table
+                    mdStream << letterLink + " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
+                } // end parameter table
+            }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n";
-            mdStream << "---" << "\n\n"; // topic separator
+            mdStream << "\n\n---\n\n"; // topic separator
+            mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
         }
 
         // Topic for each published parameter
