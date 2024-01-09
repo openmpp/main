@@ -244,67 +244,78 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 // skip parameter if not published
                 continue;
             }
-            //mdStream << "## " << s->name << "\n\n";
-            mdStream << "<h3 id=\"" << s->name << "\">" << s->name << "</h3>\n\n";
-            mdStream << "  - Label: " << s->pp_labels[lid] << "\n\n";
-            //mdStream << "  - Note: " << s->pp_notes[lid] << "\n\n";
-            string note_in = s->pp_notes[lid];
-            if (note_in.length()) {
-                // Convert markdown line break (two trailing spaces) to maddy-specifc \r
-                // Maddy documentation says \r\n, but \r seems to be required.
-                string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
-                mdStream << note_out << "\n\n";
+
+            /// is a scalar parameter
+            bool isScalar = (s->pp_shape.size() == 0);
+
+            // header line
+            mdStream
+                // symbol name
+                << "<h3 id=\"" << s->name << "\">" << s->name
+                // symbol label
+                << "<br><span style=\"font-weight:lighter\">&nbsp;&nbsp;&nbsp;&nbsp;" << s->pp_labels[lid] << "</span></h3>\n\n";
+
+            // summary line with type and size
+            {
+                string shapeCompact;
+                if (!isScalar) {
+                    bool isFirst = true;
+                    int cells = 1;
+                    for (int ps : s->pp_shape) {
+                        shapeCompact += (!isFirst ? ", " : "") + to_string(ps);
+                        isFirst = false;
+                        cells *= ps;
+                    }
+                    shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
+                }
+                else {
+                    shapeCompact = "scalar";
+                }
+                mdStream
+                    << "**Type:** " << s->pp_datatype->name
+                    << " **Size:** " << shapeCompact
+                    << "\n\n";
             }
-            mdStream << "  - Type: " << s->pp_datatype->name << "\n\n";
 
-            // Dimension and shape
-            for (auto& dl : s->dimension_list) {
-                //mdStream << "    - " << dl->short_name << "\n";
-                mdStream << "    * " << dl->unique_name << "\n\n";
+            // dimension table with links
+            if (!isScalar) {
+                mdStream << "**Dimensions:**\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << " Export Name | Enumeration | Size | Description \n";
+                mdStream << "- | - | -\n"; // maddy-specific table header separator
+                for (auto& dim : s->dimension_list) {
+                    string dim_export_name = dim->short_name;
+                    auto e = dim->pp_enumeration;
+                    assert(e); // dimensions of parameters are always enumerations
+                    string dim_enumeration = e->name;
+                    string dim_size = to_string(e->pp_size());
+                    string dim_label = dim->pp_labels[lid];
+                    mdStream
+                        << dim_export_name << " | "
+                        << "[" + dim_enumeration +"](#" + dim_enumeration + ")" << " | "
+                        << dim_size << " | "
+                        << dim_label << "\n"
+                        ;
+                }
+                mdStream << "|<table\n"; // maddy-specific end table
             }
-            mdStream << "\n    * Size[ ";
-            int tt = 0;
-            for (int ps : s->pp_shape) {
-                mdStream << ps << " ";
-                tt = tt + ps;
+
+            // symbol note if present
+            {
+                string note_in = s->pp_notes[lid];
+                if (note_in.length()) {
+                    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
+                    // Maddy documentation says \r\n, but \r seems to be required.
+                    string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                    mdStream << note_out << "\n\n";
+                }
             }
-            mdStream << " ] total:" << tt << " \n\n";
-
-            tt = 0;
-
-            // Dimension and shape another way
-            mdStream << "|table>" << "\n\n";
-            mdStream << " Name | Label | Size \n";
-            mdStream << "- | - | -\n"; // maddy-specific
-
-
-            auto dli = s->dimension_list.begin();
-            auto psi = s->pp_shape.begin();
-
-            while ( dli != s->dimension_list.end() ) {
-
-                int xxx = 0;
-
-                mdStream << (*dli)->short_name << " | " << (*dli)->pp_labels[lid] << " | " << (*psi) << "\n";
-                tt = tt + (*psi);
-
-                dli = std::next(dli, 1);
-                psi = std::next(psi, 1);
-            } // end while
-
-            mdStream << " Total | | " << tt << "\n";
-
-
-
-            mdStream << "|<table" << "\n\n";
-            mdStream << "\n\n";
 
             // Group info
             mdStream << "\n ### Belongs to Group(s):\n\n";
             mdStream << "|table>" << "\n\n";
             mdStream << " Name | Label \n";
             mdStream << "- | - | -\n"; // maddy-specific
-
 
             for (auto& pg : s->pp_all_parameter_groups) {
                 for (auto& pr : pg->pp_symbol_list) {
@@ -313,19 +324,19 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                         mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
                     }
                 }
-
             }
 
             mdStream << "|<table" << "\n\n";
             mdStream << "\n\n";
-            mdStream << "---" << "\n\n"; // topic separator
+            mdStream << "\n\n---\n\n"; // topic separator
+            mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
         } // Topic for each published parameter
 
         mdStream.close();
 
+        // convert markdown to HTML
         {
             // maddy set-up
-            std::stringstream markdownInput("");
             std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
             config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER;
             config->enabledParsers |= maddy::types::HTML_PARSER;
@@ -337,6 +348,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             htmlStream.open(hdpth, fstream::out);
             mdStream.open(mdPath, fstream::in);
 
+            std::stringstream markdownInput;
             markdownInput << mdStream.rdbuf();
             string htmlOutput = parser->Parse(markdownInput);
             htmlStream << htmlStyles;
