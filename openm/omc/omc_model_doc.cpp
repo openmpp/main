@@ -39,8 +39,18 @@ using namespace std;
 using namespace openm;
 using namespace omc;
 
-void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& model_name, CodeGen& cg)
+void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg)
 {
+
+    /// target folder for HTML output
+    string pubDir = outDir + "../bin/io/download/";
+    std::filesystem::create_directories(pubDir);
+    /// mapped location of pubDir in ompp UI local web server
+    string pubURL = "download/";
+
+    /// directory of model sqlite database
+    string sqliteDir = outDir + "../bin/";
+
     // create json file for ompp UI
     {
         string json_name = model_name + ".extra.json";
@@ -57,9 +67,28 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
         string default_lang = Symbol::pp_all_languages.front()->name;
         out << "{\n";
         // example: "DocLink": "/IDMM.doc.EN.html"
-        out << "   \"DocLink\": \"/" + model_name + ".doc." + default_lang + ".html\"\n";
+        out << "   \"DocLink\": \"" + pubURL + model_name + ".doc." + default_lang + ".html\"\n";
         out << "}\n";
         out.close();
+    }
+
+    /// styles for HTML output
+    string htmlStyles;
+    {
+        /// styles file (hard-coded)
+        string stylesPath = omrootDir + "props/styles/doc-style-portion.html";
+        ofstream stylesStream;
+        stylesStream.open(stylesPath, fstream::in);
+        if (stylesStream.fail()) {
+            string msg = "omc : warning : Unable to open " + stylesPath + " for reading.";
+            theLog->logMsg(msg.c_str());
+        }
+        else {
+            stringstream ssStyles;
+            ssStyles << stylesStream.rdbuf();
+            htmlStyles = ssStyles.str();
+            stylesStream.close();
+        }
     }
 
     string tomb_stone;
@@ -228,19 +257,18 @@ void do_model_doc(string& pubDir, string& outDir, string& sqliteDir, string& mod
             config->enabledParsers |= maddy::types::HTML_PARSER;
             std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
 
-            ofstream filePtr, filePtr2;
+            ofstream htmlStream;
+            ofstream mdStream;
             string hdpth = makeFilePath(pubDir.c_str(), ModelDocs_html_name.c_str());
-            filePtr.open(hdpth, fstream::out);
-            filePtr2.open(ldpth, fstream::in);
+            htmlStream.open(hdpth, fstream::out);
+            mdStream.open(ldpth, fstream::in);
 
-            markdownInput << filePtr2.rdbuf();
+            markdownInput << mdStream.rdbuf();
             string htmlOutput = parser->Parse(markdownInput);
-            filePtr << htmlOutput.c_str();
-
-            filePtr.close();
-            filePtr2.close();
-            //rpt.close();
-
+            htmlStream << htmlStyles;
+            htmlStream << htmlOutput;
+            htmlStream.close();
+            mdStream.close();
         }
 
 

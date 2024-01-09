@@ -792,18 +792,9 @@ int main(int argc, char * argv[])
         if (Symbol::model_doc) {
             theLog->logMsg("Generate model documentation - start");
 
-            // Obtain folder to publish output model documentation HTML file(s).
-            // Default value is sister directory of omc.exe directory, named 'html'.
-            // That's the publishing location on local workstation for access by locally-running ompp UI.
-            // Assumption: folder is local and writable.
-            // TODO: override that default using new Omc setting if given, e.g. Omc.PubDir
-            string pubDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../html/";
+            string omrootDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../";
 
-            // shortcut the publish step for now.
-            // Set to the sister directory of outDir, named 'bin'
-            string sqliteDir = outDir + "../bin/";
-
-            do_model_doc(pubDir, outDir, sqliteDir, model_name, cg);
+            do_model_doc(outDir, omrootDir, model_name, cg);
             theLog->logMsg("Generate model documentation - finish");
         }
 
