@@ -452,7 +452,7 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
         // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)
         list<string> langLst = splitLanguageName(!i_language.empty() ? i_language : getDefaultLocaleName());
 
-        // set user prefred language(s)
+        // set user prefered language(s)
         unordered_map<string, string> msgMap;
         theLog->swapLanguageMessages(langLst, msgMap);
 
@@ -496,4 +496,53 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
         theLog->logErr(ex, OM_FILE_LINE);
         // throw HelperException(ex.what());    = exit without failure
     }
+}
+
+/** read language specific messages from path/to/theExe.message.ini for all languages */
+list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath, const list<string> & i_langList) noexcept
+{
+    try {
+        // read modelName.message.ini
+        if (!isFileExists(i_iniMsgPath)) return list<pair<string, unordered_map<string, string>>>();    // exit: message.ini does not exists
+
+        IniFileReader rd(i_iniMsgPath);
+        const NoCaseSet sectSet = rd.sectionSet();
+
+        // for each language find section of message.ini and copy messages into message map
+        list<pair<string, unordered_map<string, string>>> allMsg;
+
+        for (const string & lang : i_langList) {
+
+            // if language exist in message.ini
+            auto sectIt = std::find_if(
+                sectSet.cbegin(),
+                sectSet.cend(),
+                [&lang](const string & i_sect) -> bool { return equalNoCase(lang.c_str(), normalizeLanguageName(i_sect).c_str()); }
+            );
+            if (sectIt != sectSet.cend()) {
+
+                unordered_map<string, string> msgMap;
+
+                // add translated messages
+                // use only where translated value is not empty
+                const NoCaseMap cvMap = rd.getSection(sectIt->c_str());
+                for (const auto & cv : cvMap) {
+                    if (!cv.first.empty() && !cv.second.empty()) msgMap[cv.first] = cv.second;
+                }
+                if (!msgMap.empty()) {
+                    allMsg.push_back(pair<string, unordered_map<string, string>>(lang, msgMap));
+                }
+            }
+        }
+        return allMsg;
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw;                               = exit without failure
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw HelperException(ex.what());    = exit without failure
+    }
+    return list<pair<string, unordered_map<string, string>>>(); // retrun empty value on error
 }

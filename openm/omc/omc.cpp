@@ -794,7 +794,7 @@ int main(int argc, char * argv[])
 
             string omrootDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../";
 
-            do_model_doc(outDir, omrootDir, model_name, cg);
+            do_model_doc(outDir, omrootDir, model_name, cg, makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini").c_str());
             theLog->logMsg("Generate model documentation - finish");
         }
 

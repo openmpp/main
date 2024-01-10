@@ -39,7 +39,42 @@ using namespace std;
 using namespace openm;
 using namespace omc;
 
-void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg)
+/** find language-specific message by source non-translated message and language
+* 
+* @param[in] i_lang   language to translate into, e.g.: fr-CA
+* @param[in] i_source source message to tarnslate
+* @param[in] i_allMsg all translated strings form omc.message.ini
+*/
+const string getTranslated(const char * i_lang, const char * i_source, const list<pair<string, unordered_map<string, string>>> & i_allMsg) noexcept
+{
+    try {
+        if (i_lang == nullptr || i_source == nullptr) return "";    // empty result if language code empty or source on null
+
+        // if language exist in message.ini
+        auto msgMapIt = std::find_if(
+            i_allMsg.cbegin(),
+            i_allMsg.cend(),
+            [&i_lang](const pair<string, unordered_map<string, string>> & i_msgPair) -> bool { return equalNoCase(i_lang, i_msgPair.first.c_str()); }
+        );
+        if (msgMapIt == i_allMsg.cend()) return i_source;   // language not found
+
+        // if translation exist then return copy of translated message else return original message (no translation)
+        const unordered_map<string, string>::const_iterator msgIt = msgMapIt->second.find(i_source);
+        return
+            (msgIt != msgMapIt->second.cend()) ? msgIt->second.c_str() : i_source;
+    }
+    catch (...) {
+        return "";
+    }
+}
+
+// translated strings for all model languages from omc.message.ini
+static list<pair<string, unordered_map<string, string>>> allTransaledMsg;
+
+/** LTA translation function: find translated string by language code and source message string. */
+#define LTA(lang, sourceMessage) ((getTranslated(lang.c_str(), sourceMessage, allTransaledMsg)))
+
+void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string & i_msgFilePath)
 {
 
     /// target folder for HTML output
@@ -107,22 +142,17 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         tomb_stone = model_name + " " + version_string + " built " + ymd;
     }
 
+    // read translated strings for all model languages from dir/of/omc.exe/omc.message.ini
+    list<string> langLst;
+    for (auto lang : Symbol::pp_all_languages) {
+        langLst.push_back(lang->name);
+    }
+    allTransaledMsg = IniFileReader::loadAllMessages(i_msgFilePath.c_str(), langLst);
+
     // Language loop
     for (auto lang : Symbol::pp_all_languages) {
         int lid = lang->language_id;
         string langid = lang->name;
-        bool isFR = (langid == "FR");
-        // In code below, FR strings contain HTML entities for French accented characters.
-        // Embedding accented characters in this source code module is problematic,
-        // because 1252 codepage instead of UTF might be used on Windows,
-        // which can cause anomalous browser behaviour in a document with a mixture of both.
-        // Unfortunately, trailing u8 on string constants is not yet (as of 2024) supported on clang, so can't use that approach yet.
-        // 
-        // Symbol Entity    Code
-        //  é     &eacute;  &#233;
-        //  É     &Eacute;  &#201;
-        //  è     &egrave;  &#232
-        // For a complete list of HTML entities, see https://mateam.net/html-escape-characters/
 
         // Example: IDMM.doc.EN.html
         string htmlName = model_name + ".doc." + langid + ".html";
@@ -138,30 +168,17 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
 
         // Topic: home page (table of contents)
         {
-            if (!isFR) {
-                mdStream << "<h1 id=\"home-page\">" + model_name + " Model Documentation</h1>\n\n";
-                mdStream << "* [Parameters in alphabetic order](#parameters-alphabetic)\n\n";
-            }
-            else {
-                mdStream << "<h1 id=\"home-page\">Documentation du mod&egrave;le " + model_name + "</h1>\n\n";
-                mdStream << "* [Param&egrave;tres dans ordre alphab&eacute;tique](#parameters-alphabetic)\n\n";
-                //mdStream << "# Document de Model Parameters pour " << tomb_stone << "\n\n";
-            }
+            mdStream << "<h1 id='home-page'>" + model_name + " " + LTA(langid, "Model Documentation") + "</h1>\n\n";
+            mdStream << "* [" + LTA(langid, "Parameters in alphabetic order") + "](#parameters - alphabetic)\n\n";
+
             mdStream << "\n\n---\n\n"; // topic separator
         }
 
         // Topic: parameters in alphabetic order
         {
-            if (!isFR) {
-                mdStream << "<h3 id=\"parameters-alphabetic\">Parameters in alphabetic order</h3>\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " Name | Label \n";
-            }
-            else {
-                mdStream << "<h3 id=\"parameters-alphabetic\">Param&egrave;tres dans ordre alphab&eacute;tique</h3>" << "\n\n";
-                mdStream << "|table>\n"; // maddy-specific end table
-                mdStream << " Nom | &Eacute;tiquette \n";
-            }
+            mdStream << "<h3 id='parameters-alphabetic'>" + LTA(langid, "Parameters in alphabetic order") + "</h3>\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " Name | Label \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
 
