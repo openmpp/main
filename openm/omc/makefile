@@ -138,6 +138,7 @@ omc.cpp \
 omc_csv.cpp \
 omc_file.cpp \
 omc_missing_documentation.cpp \
+omc_model_doc.cpp \
 omc_model_metrics.cpp \
 ParameterGroupSymbol.cpp \
 ParameterSymbol.cpp \
