@@ -17,14 +17,20 @@
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
 #include "TableSymbol.h"
+#include "DimensionSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
 #include "ImportSymbol.h"
 #include "EntitySymbol.h"
 #include "EntityDataMemberSymbol.h"
 #include "EnumerationSymbol.h"
+#include "EnumerationWithEnumeratorsSymbol.h"
 #include "EnumeratorSymbol.h"
+#include "ClassificationEnumeratorSymbol.h"
 #include "ClassificationSymbol.h"
+#include "RangeSymbol.h"
+#include "PartitionSymbol.h"
+#include "PartitionEnumeratorSymbol.h"
 #include "AggregationSymbol.h"
 #include "MaintainedAttributeSymbol.h"
 #include "EntitySetSymbol.h"
@@ -190,7 +196,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 string letterPrev = "";
                 for (auto& s : Symbol::pp_all_parameters) {
                     if (!s->is_published()) {
-                        // skip unpublished parameter
+                        // skip unpublished symbol
                         continue;
                     }
                     string letterCurr = s->name.substr(0, 1);
@@ -209,7 +215,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 mdStream << " Name | Label \n";
             }
             else {
-                mdStream << "<h3 id=\"parameters-alphabetic\">Param&egrave;tres dans ordre alphab&eacute;tique</h3>" << "\n\n";
+                mdStream << "<h3 id=\"" + anchorParametersAlphabetic + "\">Param&egrave;tres dans ordre alphab&eacute;tique</h3>\n\n";
                 mdStream << "|table>\n"; // maddy-specific begin table
                 mdStream << " Nom | &Eacute;tiquette \n";
             }
@@ -219,7 +225,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 string letterPrev = "";
                 for (auto& s : Symbol::pp_all_parameters) {
                     if (!s->is_published()) {
-                        // skip unpublished parameter
+                        // skip unpublished symbol
                         continue;
                     }
                     string letterCurr = s->name.substr(0, 1);
@@ -248,12 +254,13 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             /// is a scalar parameter
             bool isScalar = (s->pp_shape.size() == 0);
 
-            // header line
+            // topic header line
             mdStream
                 // symbol name
-                << "<h3 id=\"" << s->name << "\">" << s->name
+                << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
                 // symbol label
-                << "<br><span style=\"font-weight:lighter\">&nbsp;&nbsp;&nbsp;&nbsp;" << s->pp_labels[lid] << "</span></h3>\n\n";
+                << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lid] << "</span></h3>\n\n"
+                ;
 
             // summary line with type and size
             {
@@ -271,8 +278,23 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 else {
                     shapeCompact = "scalar";
                 }
+                string typeInfo;
+                {
+                    if (s->pp_datatype->is_enumeration()) {
+                        // hyperlink to enumeration
+                        typeInfo = "[`" + s->pp_datatype->name + "`](#" + s->pp_datatype->name + ")";
+                    }
+                    else {
+                        // just show the name of the type, e.g. "double"
+                        typeInfo = s->pp_datatype->name;
+                    }
+                }
                 mdStream
-                    << "**Type:** " << s->pp_datatype->name
+                    << "**Kind:** Parameter"
+                    << "\n"
+                    << "**Type:** "
+                    << "\n"
+                    << typeInfo
                     << " **Size:** " << shapeCompact
                     << "\n\n";
             }
@@ -292,7 +314,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     string dim_label = dim->pp_labels[lid];
                     mdStream
                         << dim_export_name << " | "
-                        << "[" + dim_enumeration +"](#" + dim_enumeration + ")" << " | "
+                        << "[`" + dim_enumeration +"`](#" + dim_enumeration + ")" << " | "
                         << dim_size << " | "
                         << dim_label << "\n"
                         ;
@@ -304,6 +326,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             {
                 string note_in = s->pp_notes[lid];
                 if (note_in.length()) {
+                    mdStream << "**Note:**\n\n";
                     // Convert markdown line break (two trailing spaces) to maddy-specifc \r
                     // Maddy documentation says \r\n, but \r seems to be required.
                     string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
@@ -312,26 +335,272 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             }
 
             // Group info
-            mdStream << "\n ### Belongs to Group(s):\n\n";
-            mdStream << "|table>" << "\n\n";
-            mdStream << " Name | Label \n";
-            mdStream << "- | - | -\n"; // maddy-specific
+            //mdStream << "\n ### Belongs to Group(s):\n\n";
+            //mdStream << "|table>" << "\n\n";
+            //mdStream << " Name | Label \n";
+            //mdStream << "- | - | -\n"; // maddy-specific
+            //for (auto& pg : s->pp_all_parameter_groups) {
+            //    for (auto& pr : pg->pp_symbol_list) {
+            //        int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
+            //        if (zz == 0) {
+            //            mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
+            //        }
+            //    }
+            //}
+            //mdStream << "|<table" << "\n\n";
+            //mdStream << "\n\n";
 
-            for (auto& pg : s->pp_all_parameter_groups) {
-                for (auto& pr : pg->pp_symbol_list) {
-                    int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
-                    if (zz == 0) {
-                        mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
+            mdStream << "\n\n";
+            mdStream << "[[Parameters](#" + anchorParametersAlphabetic + ")]";
+            mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+        } // Topic for each published parameter
+
+        // Topic: enumerations in alphabetic order
+        {
+            // build line with links to first symbol in alphabetic table with leading letter
+            string letterLinks;
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_enumerations) {
+                    if (!s->is_published()) {
+                        // skip unpublished symbol
+                        continue;
                     }
+                    string letterCurr = s->name.substr(0, 1);
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-enum, D-enum, etc.
+                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-enum)";
+                    }
+                    letterPrev = letterCurr;
                 }
             }
 
-            mdStream << "|<table" << "\n\n";
-            mdStream << "\n\n";
+            if (!isFR) {
+                mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">Enumerations in alphabetic order</h3>\n\n";
+                mdStream << letterLinks + "\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << " Name | Label \n";
+            }
+            else {
+                mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">Enum&acute;rations dans ordre alphab&eacute;tique</h3>\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << " Nom | &Eacute;tiquette \n";
+            }
+
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_enumerations) {
+                    if (!s->is_published()) {
+                        // skip unpublished symbol
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    string letterLink = "";
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-enum, D-enum, etc.
+                        letterLink += "<div id=\"" + letterCurr + "-enum\"/>";
+                    }
+                    letterPrev = letterCurr;
+
+                    mdStream << letterLink + " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
+                } // end enumerations table
+            }
+            mdStream << "|<table\n"; // maddy-specific end table
             mdStream << "\n\n---\n\n"; // topic separator
             mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
-        } // Topic for each published parameter
+        }
 
+        // Topic for each published enumeration
+        for (auto& s : Symbol::pp_all_enumerations) {
+            if (!s->is_published()) {
+                // skip parameter if not published
+                continue;
+            }
+
+            // topic header line
+            mdStream
+                // symbol name
+                << "<h3 id=\"" << s->name << "\">" << "<code>" + s->name + "</code>"
+                // symbol label
+                << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lid] << "</span></h3>\n\n"
+                ;
+
+            // summary line with type and size
+            {
+                string kind;
+                string values;
+                if (s->is_range()) {
+                    kind = "range";
+                    auto r = dynamic_cast<RangeSymbol*>(s);
+                    assert(r);
+                    values = "{" + to_string(r->lower_bound) + ",...," + to_string(r->upper_bound) +"}";
+                }
+                else if (s->is_bool()) {
+                    kind = "bool";
+                    values = "{0,1}";
+                }
+                else if (s->is_classification()) {
+                    kind = "classification";
+                    values = "{0,...," + to_string(s->pp_size() - 1) + "}";
+                }
+                else if (s->is_partition()) {
+                    kind = "partition";
+                    values = "{0,...," + to_string(s->pp_size() - 1) + "}";
+                }
+                else {
+                    // not reached
+                    assert(false);
+                }
+                mdStream
+                    << "**Kind:** " << kind
+                    << " **Size:** " << to_string(s->pp_size())
+                    << " **Values:** " << values
+                    << "\n\n";
+            }
+
+            // table of enumerators
+            {
+                if (s->is_classification()) {
+                    auto c = dynamic_cast<ClassificationSymbol*>(s);
+                    assert(c);
+                    mdStream << "**Enumerators:**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " Export Name | Enumerator | Value | Label \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto enumerator : c->pp_enumerators) {
+                        auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
+                        assert(ce); // logic guarantee
+                        string export_name = ce->short_name;
+                        string name = ce->name;
+                        string value = to_string(ce->ordinal);
+                        string label = ce->pp_labels[lid];
+                        mdStream
+                            << export_name << " | "
+                            << name << " | "
+                            << value << " | "
+                            << label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+                else if (s->is_partition()) {
+                    auto p = dynamic_cast<PartitionSymbol*>(s);
+                    assert(p);
+                    mdStream << "**Enumerators:**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " Lower | Upper | Value | Label \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto enumerator : p->pp_enumerators) {
+                        auto ce = dynamic_cast<PartitionEnumeratorSymbol*>(enumerator);
+                        assert(ce); // logic guarantee
+                        string lower = ce->lower_split_point;
+                        string upper = ce->upper_split_point;
+                        string value = to_string(ce->ordinal);
+                        string label = ce->label(*lang); // odd that pp_labels differs...
+                        mdStream
+                            << lower << " | "
+                            << upper << " | "
+                            << value << " | "
+                            << label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+            }
+
+            // table of parameters using this enumeration
+            {
+                set<string> parameters_used;
+                for (auto& p : Symbol::pp_all_parameters) {
+                    if (!p->is_published()) {
+                        // skip unpublished parameter
+                        continue;
+                    }
+                    // examine enumeration of each parameter dimension
+                    for (auto pe : p->pp_enumeration_list) {
+                        // s is the current enumeration, pe is an enumeration of parameter p
+                        if (s == pe) {
+                            parameters_used.insert(p->name);
+                        }
+                    }
+                    // examine datatype of parameter
+                    if (p->pp_datatype->is_enumeration()) {
+                        if (s == p->pp_datatype) {
+                            parameters_used.insert(p->name);
+                        }
+                    }
+                }
+                if (parameters_used.size() > 0) {
+                    mdStream << "**Parameters using enumeration:**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " Name | Label \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto& name : parameters_used) {
+                        auto sym = Symbol::get_symbol(name);
+                        assert(sym); // logic guarantee
+                        auto label = sym->pp_labels[lid];
+                        mdStream
+                            << "[`" + name + "`](#" + name + ")" << " | "
+                            << label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+            }
+
+            // table of tables using this enumeration
+            {
+                set<string> tables_used;
+                for (auto t : Symbol::pp_all_tables) {
+                    if (!t->is_published()) {
+                        // skip unpublished table
+                        continue;
+                    }
+                    for (auto d : t->dimension_list) {
+                        // s is the current enumeration, te is an enumeration used in table t
+                        auto te = d->pp_enumeration;
+                        if (s == te) {
+                            tables_used.insert(t->name);
+                        }
+                    }
+                }
+                if (tables_used.size() > 0) {
+                    mdStream << "**Tables using enumeration:**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " Name | Label \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto& name : tables_used) {
+                        auto sym = Symbol::get_symbol(name);
+                        assert(sym); // logic guarantee
+                        auto label = sym->pp_labels[lid];
+                        mdStream
+                            << "[`" + name + "`](#" + name + ")" << " | "
+                            << label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+            }
+
+            // symbol note if present
+            {
+                string note_in = s->pp_notes[lid];
+                if (note_in.length()) {
+                    mdStream << "**Note:**\n\n";
+                    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
+                    // Maddy documentation says \r\n, but \r seems to be required.
+                    string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                    mdStream << note_out << "\n\n";
+                }
+            }
+
+            mdStream << "\n\n";
+            mdStream << "[[Enumerations](#" + anchorEnumerationsAlphabetic + ")]";
+            mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+        } // Topic for each published enumeration
+
+        // all done
         mdStream.close();
 
         // convert markdown to HTML
