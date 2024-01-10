@@ -45,9 +45,42 @@
 using namespace std;
 using namespace openm;
 using namespace omc;
-
-void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg)
+/** find language-specific message by source non-translated message and language
+*
+* @param[in] i_lang   language to translate into, e.g.: fr-CA
+* @param[in] i_source source message to tarnslate
+* @param[in] i_allMsg all translated strings form omc.message.ini
+*/
+const string getTranslated(const char* i_lang, const char* i_source, const list<pair<string, unordered_map<string, string>>>& i_allMsg) noexcept
 {
+    try {
+        if (i_lang == nullptr || i_source == nullptr) return "";    // empty result if language code empty or source on null
+
+        // if language exist in message.ini
+        auto msgMapIt = std::find_if(
+            i_allMsg.cbegin(),
+            i_allMsg.cend(),
+            [&i_lang](const pair<string, unordered_map<string, string>>& i_msgPair) -> bool { return equalNoCase(i_lang, i_msgPair.first.c_str()); }
+        );
+        if (msgMapIt == i_allMsg.cend()) return i_source;   // language not found
+
+        // if translation exist then return copy of translated message else return original message (no translation)
+        const unordered_map<string, string>::const_iterator msgIt = msgMapIt->second.find(i_source);
+        return
+            (msgIt != msgMapIt->second.cend()) ? msgIt->second.c_str() : i_source;
+    }
+    catch (...) {
+        return "";
+    }
+}
+
+// translated strings for all model languages from omc.message.ini
+static list<pair<string, unordered_map<string, string>>> allTransaledMsg;
+
+/** LTA translation function: find translated string by language code and source message string. */
+#define LTA(lang, sourceMessage) ((getTranslated(lang.c_str(), sourceMessage, allTransaledMsg)))
+
+void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
 
     /// target folder for HTML output
     string pubDir = outDir + "../bin/io/download/";
@@ -100,24 +133,17 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         }
     }
 
+    // read translated strings for all model languages from dir/of/omc.exe/omc.message.ini
+    list<string> langLst;
+    for (auto lang : Symbol::pp_all_languages) {
+        langLst.push_back(lang->name);
+    }
+    allTransaledMsg = IniFileReader::loadAllMessages(i_msgFilePath.c_str(), langLst);
+
     // Language loop
     for (auto lang : Symbol::pp_all_languages) {
         int lid = lang->language_id;
         string langid = lang->name;
-        bool isFR = (langid == "FR");
-        // In code below, FR strings contain HTML entities for French accented characters.
-        // Embedding accented characters in this source code module is problematic,
-        // because on WIndows 1252 codepage instead of UTF-8 might be used,
-        // which can cause anomalous browser behaviour in a document with a mixture of both.
-        // Unfortunately, trailing "some text"u8 on string constants is not yet (as of 2024) supported on clang, so can't use that approach yet.
-        // 
-        // Symbol Entity    Code
-        //  é     &eacute;  &#233;
-        //  É     &Eacute;  &#201;
-        //  è     &egrave;  &#232
-        //  à     &agrave;
-        //  À     &Agrave;
-        // For a complete list of HTML entities, see https://mateam.net/html-escape-characters/
 
         // Example: IDMM.doc.EN.html
         string htmlName = model_name + ".doc." + langid + ".html";
@@ -153,39 +179,28 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             std::time_t time = std::time({});
             std::strftime(ymd, ymd_size, "%F", std::localtime(&time));
 
-            if (!isFR) {
-                mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " Model Documentation</h1>\n\n";
-                mdStream << "<h2>Model Version " + version_string + ", built " + ymd + "</h2>\n\n";
-                mdStream << "\n\n";
-                mdStream << "<h3>Table of Contents</h3>\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << "Topic | Description\n"; // maddy-specific table header separator
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                if (flagModelNotePresent) {
-                    mdStream << "[Introduction](#" + anchorModelIntroduction + ") | A short overview of the model\n";
-                }
-                mdStream << "[Parameters](#" + anchorParametersAlphabetic + ") | Model input parameters in alphabetic order\n";
-                mdStream << "[Tables](#" + anchorTablesAlphabetic + ") | Model output tables in alphabetic order\n";
-                mdStream << "[Enumerations](#" + anchorEnumerationsAlphabetic + ") | Model enumerations (dimensions) in alphabetic order\n";
-                mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " " + LTA(langid, "Model Documentation") + "</h1>\n\n";
+            mdStream << "<h2>Model Version " + version_string + ", built " + ymd + "</h2>\n\n";
+            mdStream << "\n\n";
+            mdStream << "<h3>Table of Contents</h3>\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << "Topic | Description\n"; // maddy-specific table header separator
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+            if (flagModelNotePresent) {
+                mdStream << "[Introduction](#" + anchorModelIntroduction + ") | A short overview of the model\n";
             }
-            else {
-                mdStream << "<h1 id=\"home-page\">Documentation du mod&egrave;le " + model_name + "</h1>\n\n";
-                mdStream << "* [Param&egrave;tres dans ordre alphab&eacute;tique](#parameters-alphabetic)\n\n";
-                //mdStream << "# Document de Model Parameters pour " << tomb_stone << "\n\n";
-            }
+            mdStream << "[Parameters](#" + anchorParametersAlphabetic + ") | Model input parameters in alphabetic order\n";
+            mdStream << "[Tables](#" + anchorTablesAlphabetic + ") | Model output tables in alphabetic order\n";
+            mdStream << "[Enumerations](#" + anchorEnumerationsAlphabetic + ") | Model enumerations (dimensions) in alphabetic order\n";
+            mdStream << "|<table\n"; // maddy-specific end table
             mdStream << "\n\n---\n\n"; // topic separator
         }
 
         // Topic: introduction
         if (flagModelNotePresent) {
-            if (!isFR) {
-                mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">Intoduction to "+ model_name +"</h3>\n\n";
-                mdStream << theModelSymbol->note(*lang);
-                mdStream << "\n\n[[Table of Contents](#"+ anchorHomePage +")]\r\n";
-            }
-            else {
-            }
+            mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">Introduction to "+ model_name +"</h3>\n\n";
+            mdStream << theModelSymbol->note(*lang);
+            mdStream << "\n\n[[Table of Contents](#"+ anchorHomePage +")]\r\n";
         }
 
         // Topic: parameters in alphabetic order
@@ -208,17 +223,10 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 }
             }
 
-            if (!isFR) {
-                mdStream << "<h3 id=\"" + anchorParametersAlphabetic + "\">Parameters in alphabetic order</h3>\n\n";
-                mdStream << letterLinks + "\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " Name | Label \n";
-            }
-            else {
-                mdStream << "<h3 id=\"" + anchorParametersAlphabetic + "\">Param&egrave;tres dans ordre alphab&eacute;tique</h3>\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " Nom | &Eacute;tiquette \n";
-            }
+            mdStream << "<h3 id=\"" + anchorParametersAlphabetic + "\">" + LTA(langid, "Parameters in alphabetic order") + "</h3>\n\n";
+            mdStream << letterLinks + "\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " Name | Label \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
@@ -375,17 +383,10 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 }
             }
 
-            if (!isFR) {
-                mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">Enumerations in alphabetic order</h3>\n\n";
-                mdStream << letterLinks + "\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " Name | Label \n";
-            }
-            else {
-                mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">Enum&acute;rations dans ordre alphab&eacute;tique</h3>\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " Nom | &Eacute;tiquette \n";
-            }
+            mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">" + LTA(langid, "Enumerations in alphabetic order") + "</h3>\n\n";
+            mdStream << letterLinks + "\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " Name | Label \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {

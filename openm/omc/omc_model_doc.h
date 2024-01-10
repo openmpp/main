@@ -14,4 +14,4 @@
 
 using namespace std;
 
-extern void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg);
+extern void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string & i_msgFilePath);
