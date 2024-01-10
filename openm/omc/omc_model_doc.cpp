@@ -179,10 +179,10 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             std::time_t time = std::time({});
             std::strftime(ymd, ymd_size, "%F", std::localtime(&time));
 
-            mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " " + LTA(langid, "Model Documentation") + "</h1>\n\n";
+            mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " - " + LTA(langid, "Model Documentation") + "</h1>\n\n";
             mdStream << "<h2>Model Version " + version_string + ", built " + ymd + "</h2>\n\n";
             mdStream << "\n\n";
-            mdStream << "<h3>Table of Contents</h3>\n\n";
+            mdStream << "<h3>" + LTA(langid, "Table of Contents") + "</h3>\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
             mdStream << "Topic | Description\n"; // maddy-specific table header separator
             mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -244,7 +244,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     }
                     letterPrev = letterCurr;
 
-                    mdStream << letterLink + " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
+                    mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
                 } // end parameter table
             }
             mdStream << "|<table\n"; // maddy-specific end table
@@ -404,7 +404,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     }
                     letterPrev = letterCurr;
 
-                    mdStream << letterLink + " [" << s->name << "](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
+                    mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
                 } // end enumerations table
             }
             mdStream << "|<table\n"; // maddy-specific end table
@@ -600,6 +600,56 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "[[Enumerations](#" + anchorEnumerationsAlphabetic + ")]";
             mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
         } // Topic for each published enumeration
+
+
+        // Topic: tables in alphabetic order
+        {
+            // build line with links to first table in alphabetic table with leading letter
+            string letterLinks;
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_tables) {
+                    if (!s->is_published()) {
+                        // skip unpublished symbol
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-param, D-param, etc.
+                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-param)";
+                    }
+                    letterPrev = letterCurr;
+                }
+            }
+
+            mdStream << "<h3 id=\"" + anchorTablesAlphabetic + "\">" + LTA(langid, "Tables in alphabetic order") + "</h3>\n\n";
+            mdStream << letterLinks + "\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " Name | Label \n";
+
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_tables) {
+                    if (!s->is_published()) {
+                        // skip unpublished symbol
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    string letterLink = "";
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-param, D-param, etc.
+                        letterLink += "<div id=\"" + letterCurr + "-param\"/>";
+                    }
+                    letterPrev = letterCurr;
+
+                    mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << s->pp_labels[lid] << "  \n";
+                } // end parameter table
+            }
+            mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << "\n\n---\n\n"; // topic separator
+            mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+        }
 
         // all done
         mdStream.close();
