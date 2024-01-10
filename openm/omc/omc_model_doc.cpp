@@ -45,10 +45,11 @@
 using namespace std;
 using namespace openm;
 using namespace omc;
+
 /** find language-specific message by source non-translated message and language
 *
 * @param[in] i_lang   language to translate into, e.g.: fr-CA
-* @param[in] i_source source message to tarnslate
+* @param[in] i_source source message to translate
 * @param[in] i_allMsg all translated strings form omc.message.ini
 */
 const string getTranslated(const char* i_lang, const char* i_source, const list<pair<string, unordered_map<string, string>>>& i_allMsg) noexcept
