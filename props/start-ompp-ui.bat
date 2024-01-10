@@ -119,7 +119,7 @@ cd .
 
 REM delete oms URL file if exist
 
-set OMS_URL_TICKLE=%MODEL_NAME%.oms_url.tickle
+set OMS_URL_TICKLE=%PUBLISH_DIR%\%MODEL_NAME%.oms_url.tickle
 
 REM @echo OMS_URL_TICKLE = %OMS_URL_TICKLE%
 
