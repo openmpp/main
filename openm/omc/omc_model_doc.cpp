@@ -168,7 +168,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         string anchorTablesAlphabetic = "tables-alphabetic";
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
 
-        // frgment for topic separator
+        // HTML fragment for topic separator
         string topicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
 
         // Topic: home page (table of contents)
@@ -183,27 +183,27 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             std::strftime(ymd, ymd_size, "%F", std::localtime(&time));
 
             mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " - " + LTA(langid, "Model Documentation") + "</h1>\n\n";
-            mdStream << "<h2>Model Version " + version_string + ", built " + ymd + "</h2>\n\n";
+            mdStream << "<h2>" + LTA(langid, "Version") + " " + version_string + " " + LTA(langid,"built on") + " " + ymd + "</h2>\n\n";
             mdStream << "\n\n";
             mdStream << "<h3>" + LTA(langid, "Table of Contents") + "</h3>\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
-            mdStream << "Topic | Description\n"; // maddy-specific table header separator
+            mdStream << LTA(langid, "Topic") + " | " + LTA(langid, "Description") + "\n"; // maddy-specific table header separator
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             if (flagModelNotePresent) {
-                mdStream << "[Introduction](#" + anchorModelIntroduction + ") | A short overview of the model\n";
+                mdStream << "[" + LTA(langid, "Introduction") + "](#" + anchorModelIntroduction + ") | " + LTA(langid, "Overview of the model") + "\n";
             }
-            mdStream << "[Parameters](#" + anchorParametersAlphabetic + ") | Model input parameters in alphabetic order\n";
-            mdStream << "[Tables](#" + anchorTablesAlphabetic + ") | Model output tables in alphabetic order\n";
-            mdStream << "[Enumerations](#" + anchorEnumerationsAlphabetic + ") | Model enumerations (dimensions) in alphabetic order\n";
+            mdStream << "[" + LTA(langid, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(langid,"Model input parameters in alphabetic order") + "\n";
+            mdStream << "[" + LTA(langid, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(langid, "Model output tables in alphabetic order") + "\n";
+            mdStream << "[" + LTA(langid, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(langid, "Model enumerations in alphabetic order") + "\n";
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << topicSeparator;
         }
 
         // Topic: introduction
         if (flagModelNotePresent) {
-            mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">Introduction to "+ model_name +"</h3>\n\n";
+            mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">" + LTA(langid, "Introduction to") + " " + model_name + "</h3>\n\n";
             mdStream << theModelSymbol->note(*lang);
-            mdStream << "\n\n[[Table of Contents](#"+ anchorHomePage +")]\r\n";
+            mdStream << "\n\n[[" + LTA(langid, "Table of Contents") + "](#"+ anchorHomePage +")]\r\n";
             mdStream << topicSeparator;
         }
 
@@ -230,7 +230,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "<h3 id=\"" + anchorParametersAlphabetic + "\">" + LTA(langid, "Parameters in alphabetic order") + "</h3>\n\n";
             mdStream << letterLinks + "\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
-            mdStream << " Name | Label \n";
+            mdStream << " " + LTA(langid, "Name") + " | " + LTA(langid, "Label") + " \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
@@ -252,8 +252,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 } // end parameter table
             }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n---\n\n"; // topic separator
-            mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << "\n\n[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         }
 
@@ -289,7 +288,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
                 }
                 else {
-                    shapeCompact = "scalar";
+                    shapeCompact = LTA(langid, "scalar");
                 }
                 string typeInfo;
                 {
@@ -303,20 +302,36 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     }
                 }
                 mdStream
-                    << "**Kind:** Parameter"
+                    << "**" + LTA(langid, "Kind") + ":** " + LTA(langid, "Parameter")
                     << "\n"
-                    << "**Type:** "
+                    << "**" + LTA(langid, "Type") + ":** "
                     << "\n"
                     << typeInfo
-                    << " **Size:** " << shapeCompact
+                    << " **" + LTA(langid, "Size") + ":** " << shapeCompact
                     << "\n\n";
             }
 
+            // Group info
+            //mdStream << "\n ### Belongs to Group(s):\n\n";
+            //mdStream << "|table>" << "\n\n";
+            //mdStream << " Name | Label \n";
+            //mdStream << "- | - | -\n"; // maddy-specific
+            //for (auto& pg : s->pp_all_parameter_groups) {
+            //    for (auto& pr : pg->pp_symbol_list) {
+            //        int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
+            //        if (zz == 0) {
+            //            mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
+            //        }
+            //    }
+            //}
+            //mdStream << "|<table" << "\n\n";
+            //mdStream << "\n\n";
+
             // dimension table with links
             if (!isScalar) {
-                mdStream << "**Dimensions:**\n\n";
+                mdStream << "**"+ LTA(langid, "Dimensions") + ":**\n\n";
                 mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " Export Name | Enumeration | Size | Description \n";
+                mdStream << " " + LTA(langid, "External Name") + " | " + LTA(langid, "Enumeration") + " | " + LTA(langid, "Size") + " | " + LTA(langid, "Label") + " \n";
                 mdStream << "- | - | -\n"; // maddy-specific table header separator
                 for (auto& dim : s->dimension_list) {
                     string dim_export_name = dim->short_name;
@@ -339,7 +354,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             {
                 string note_in = s->pp_notes[lid];
                 if (note_in.length()) {
-                    mdStream << "**Note:**\n\n";
+                    mdStream << "**" + LTA(langid, "Note") + "**\n\n";
                     // Convert markdown line break (two trailing spaces) to maddy-specifc \r
                     // Maddy documentation says \r\n, but \r seems to be required.
                     string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
@@ -347,25 +362,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 }
             }
 
-            // Group info
-            //mdStream << "\n ### Belongs to Group(s):\n\n";
-            //mdStream << "|table>" << "\n\n";
-            //mdStream << " Name | Label \n";
-            //mdStream << "- | - | -\n"; // maddy-specific
-            //for (auto& pg : s->pp_all_parameter_groups) {
-            //    for (auto& pr : pg->pp_symbol_list) {
-            //        int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
-            //        if (zz == 0) {
-            //            mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
-            //        }
-            //    }
-            //}
-            //mdStream << "|<table" << "\n\n";
-            //mdStream << "\n\n";
-
             mdStream << "\n\n";
-            mdStream << "[[Parameters](#" + anchorParametersAlphabetic + ")]";
-            mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << "[[" + LTA(langid, "Parameters") + "](#" + anchorParametersAlphabetic + ")]";
+            mdStream << "[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic for each published parameter
 
@@ -392,7 +391,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">" + LTA(langid, "Enumerations in alphabetic order") + "</h3>\n\n";
             mdStream << letterLinks + "\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
-            mdStream << " Name | Label \n";
+            mdStream << " " + LTA(langid, "Name") + " | " + LTA(langid, "Label") + " \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
@@ -414,8 +413,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 } // end enumerations table
             }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n---\n\n"; // topic separator
-            mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << "\n\n[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic: enumerations in alphabetic order
 
@@ -440,21 +438,21 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 string kind;
                 string values;
                 if (s->is_range()) {
-                    kind = "range";
+                    kind = LTA(langid, "range");
                     auto r = dynamic_cast<RangeSymbol*>(s);
                     assert(r);
                     values = "{" + to_string(r->lower_bound) + ",...," + to_string(r->upper_bound) +"}";
                 }
                 else if (s->is_bool()) {
-                    kind = "bool";
+                    kind = LTA(langid, "bool");
                     values = "{0,1}";
                 }
                 else if (s->is_classification()) {
-                    kind = "classification";
+                    kind = LTA(langid, "classification");
                     values = "{0,...," + to_string(s->pp_size() - 1) + "}";
                 }
                 else if (s->is_partition()) {
-                    kind = "partition";
+                    kind = LTA(langid, "partition");
                     values = "{0,...," + to_string(s->pp_size() - 1) + "}";
                 }
                 else {
@@ -462,20 +460,20 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     assert(false);
                 }
                 mdStream
-                    << "**Kind:** " << kind
-                    << " **Size:** " << to_string(s->pp_size())
-                    << " **Values:** " << values
+                    << "**" + LTA(langid, "Kind") + ":** " << kind
+                    << " **" + LTA(langid, "Size") + ":** " << to_string(s->pp_size())
+                    << " **" + LTA(langid, "Values") + ":** " << values
                     << "\n\n";
             }
 
-            // table of enumerators
+            // table of enumerators of enumeration
             {
                 if (s->is_classification()) {
                     auto c = dynamic_cast<ClassificationSymbol*>(s);
                     assert(c);
-                    mdStream << "**Enumerators:**\n\n";
+                    mdStream << "**" + LTA(langid, "Enumerators") + ":**\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " Export Name | Enumerator | Value | Label \n";
+                    mdStream << " " + LTA(langid, "External Name") + " | " + LTA(langid, "Enumerator") + " | " + LTA(langid, "Value") + " | " + LTA(langid, "Label") +" \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto enumerator : c->pp_enumerators) {
                         auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
@@ -496,9 +494,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 else if (s->is_partition()) {
                     auto p = dynamic_cast<PartitionSymbol*>(s);
                     assert(p);
-                    mdStream << "**Enumerators:**\n\n";
+                    mdStream << "**" + LTA(langid, "Enumerators") + ":**\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " Lower | Upper | Value | Label \n";
+                    mdStream << " " + LTA(langid, "Lower") + " | " + LTA(langid, "Upper") + " | " + LTA(langid, "Value") + " | " + LTA(langid, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto enumerator : p->pp_enumerators) {
                         auto ce = dynamic_cast<PartitionEnumeratorSymbol*>(enumerator);
@@ -541,9 +539,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     }
                 }
                 if (parameters_used.size() > 0) {
-                    mdStream << "**Parameters using enumeration:**\n\n";
+                    mdStream << "**" + LTA(langid, "Parameters using enumeration") + ":**\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " Name | Label \n";
+                    mdStream << " " + LTA(langid, "Name") + " | " + LTA(langid, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& name : parameters_used) {
                         auto sym = Symbol::get_symbol(name);
@@ -575,9 +573,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     }
                 }
                 if (tables_used.size() > 0) {
-                    mdStream << "**Tables using enumeration:**\n\n";
+                    mdStream << "**" + LTA(langid, "Tables using enumeration") + ":**\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " Name | Label \n";
+                    mdStream << " " + LTA(langid, "Name") + " | " + LTA(langid, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& name : tables_used) {
                         auto sym = Symbol::get_symbol(name);
@@ -596,7 +594,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             {
                 string note_in = s->pp_notes[lid];
                 if (note_in.length()) {
-                    mdStream << "**Note:**\n\n";
+                    mdStream << "**" + LTA(langid, "Note") + "**\n\n";
                     // Convert markdown line break (two trailing spaces) to maddy-specifc \r
                     // Maddy documentation says \r\n, but \r seems to be required.
                     string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
@@ -605,8 +603,8 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             }
 
             mdStream << "\n\n";
-            mdStream << "[[Enumerations](#" + anchorEnumerationsAlphabetic + ")]";
-            mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << "[[" + LTA(langid, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ")]";
+            mdStream << "[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic for each published enumeration
 
@@ -634,7 +632,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "<h3 id=\"" + anchorTablesAlphabetic + "\">" + LTA(langid, "Tables in alphabetic order") + "</h3>\n\n";
             mdStream << letterLinks + "\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
-            mdStream << " Name | Label \n";
+            mdStream << " " + LTA(langid, "Name") + " | " + LTA(langid, "Label") + " \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
@@ -656,8 +654,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 } // end parameter table
             }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n---\n\n"; // topic separator
-            mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << "\n\n[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic: tables in alphabetic order
 
