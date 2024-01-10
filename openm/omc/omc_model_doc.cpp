@@ -168,6 +168,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         string anchorTablesAlphabetic = "tables-alphabetic";
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
 
+        // frgment for topic separator
+        string topicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
+
         // Topic: home page (table of contents)
         {
             VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
@@ -193,7 +196,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "[Tables](#" + anchorTablesAlphabetic + ") | Model output tables in alphabetic order\n";
             mdStream << "[Enumerations](#" + anchorEnumerationsAlphabetic + ") | Model enumerations (dimensions) in alphabetic order\n";
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n---\n\n"; // topic separator
+            mdStream << topicSeparator;
         }
 
         // Topic: introduction
@@ -201,6 +204,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">Introduction to "+ model_name +"</h3>\n\n";
             mdStream << theModelSymbol->note(*lang);
             mdStream << "\n\n[[Table of Contents](#"+ anchorHomePage +")]\r\n";
+            mdStream << topicSeparator;
         }
 
         // Topic: parameters in alphabetic order
@@ -250,6 +254,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << "\n\n---\n\n"; // topic separator
             mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << topicSeparator;
         }
 
         // Topic for each published parameter
@@ -361,6 +366,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "\n\n";
             mdStream << "[[Parameters](#" + anchorParametersAlphabetic + ")]";
             mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << topicSeparator;
         } // Topic for each published parameter
 
         // Topic: enumerations in alphabetic order
@@ -410,7 +416,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << "\n\n---\n\n"; // topic separator
             mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
-        }
+            mdStream << topicSeparator;
+        } // Topic: enumerations in alphabetic order
+
 
         // Topic for each published enumeration
         for (auto& s : Symbol::pp_all_enumerations) {
@@ -599,6 +607,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "\n\n";
             mdStream << "[[Enumerations](#" + anchorEnumerationsAlphabetic + ")]";
             mdStream << "[[Table of Contents](#" + anchorHomePage + ")]\r\n";
+            mdStream << topicSeparator;
         } // Topic for each published enumeration
 
 
@@ -649,7 +658,8 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << "\n\n---\n\n"; // topic separator
             mdStream << "\n\n[[Table of Contents](#" + anchorHomePage + ")]\r\n";
-        }
+            mdStream << topicSeparator;
+        } // Topic: tables in alphabetic order
 
         // all done
         mdStream.close();
