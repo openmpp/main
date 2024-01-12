@@ -166,7 +166,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         string anchorHomePage = "home-page";
         string anchorModelIntroduction = "model-introduction";
         string anchorParametersAlphabetic = "parameters-alphabetic";
+        string anchorParameterHierarchy = "parameter-hierarchy";
         string anchorTablesAlphabetic = "tables-alphabetic";
+        string anchorTableHierarchy = "table-hierarchy";
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
 
         // HTML fragment for topic separator
@@ -193,9 +195,15 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             if (flagModelNotePresent) {
                 mdStream << "[" + LTA(langid, "Introduction") + "](#" + anchorModelIntroduction + ") | " + LTA(langid, "Overview of the model") + "\n";
             }
-            mdStream << "[" + LTA(langid, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(langid,"Model input parameters in alphabetic order") + "\n";
-            mdStream << "[" + LTA(langid, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(langid, "Model output tables in alphabetic order") + "\n";
-            mdStream << "[" + LTA(langid, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(langid, "Model enumerations in alphabetic order") + "\n";
+            mdStream << "**" + LTA(langid, "Hierarchy") + "** | \n";
+            // link to anchorParametersAlphabetic instead of anchorParameterHierarchy pending implementation
+            mdStream << "&nbsp;&nbsp;[" + LTA(langid, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(langid, "Model input parameters arranged hierarchically") + "\n";
+            // link to anchorTablesAlphabetic instead of anchorTableHierarchy pending implementation
+            mdStream << "&nbsp;&nbsp;[" + LTA(langid, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(langid, "Model output tables arranged hierarchically") + "\n";
+            mdStream << "**" + LTA(langid, "Alphabetic lists") + "** | \n";
+            mdStream << "&nbsp;&nbsp;[" + LTA(langid, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(langid,"Model input parameters in alphabetic order") + "\n";
+            mdStream << "&nbsp;&nbsp;[" + LTA(langid, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(langid, "Model output tables in alphabetic order") + "\n";
+            mdStream << "&nbsp;&nbsp;[" + LTA(langid, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(langid, "Model enumerations in alphabetic order") + "\n";
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << topicSeparator;
         }
@@ -364,7 +372,6 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             }
 
             mdStream << "\n\n";
-            mdStream << "[[" + LTA(langid, "Parameters") + "](#" + anchorParametersAlphabetic + ")]";
             mdStream << "[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic for each published parameter
@@ -604,7 +611,6 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             }
 
             mdStream << "\n\n";
-            mdStream << "[[" + LTA(langid, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ")]";
             mdStream << "[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic for each published enumeration
