@@ -674,6 +674,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             std::shared_ptr<maddy::ParserConfig> config = std::make_shared<maddy::ParserConfig>();
             config->enabledParsers &= ~maddy::types::EMPHASIZED_PARSER;
             config->enabledParsers |= maddy::types::HTML_PARSER;
+            config->enabledParsers |= maddy::types::LATEX_BLOCK_PARSER;
             std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
 
             ofstream htmlStream;
@@ -685,8 +686,26 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             std::stringstream markdownInput;
             markdownInput << mdStream.rdbuf();
             string htmlOutput = parser->Parse(markdownInput);
+            htmlStream << "<!DOCTYPE html>\n";
+            htmlStream << "<html>\n";
+            htmlStream << "<head>\n";
+
+            // experimental: include LaTeX(MathJax) support 
+            htmlStream << "<meta charset=\"utf-8\">\n";
+            htmlStream << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+            htmlStream << "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n";
+            htmlStream << "<script id=\"MathJax-script\" async \n"
+                            "src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\">";
+            htmlStream << "</script>\n";
+
             htmlStream << htmlStyles;
+
+            htmlStream << "/<head>\n";
+
+            htmlStream << "<body>\n";
             htmlStream << htmlOutput;
+            htmlStream << "</body>\n";
+            htmlStream << "</html>\n";
             htmlStream.close();
             mdStream.close();
         }
