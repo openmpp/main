@@ -93,7 +93,19 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
     /// directory of model sqlite database
     string sqliteDir = outDir + "../bin/";
 
-    // create json file for ompp UI
+    // create json file for ompp UI:
+    /*
+    {
+    "ModelDoc": [{
+            "LangCode": "EN",
+            "Link": "download/RiskPaths.doc.EN.html"
+        }, {
+            "LangCode": "FR",
+            "Link": "download/RiskPaths.doc.FR.html"
+        }
+    ]
+    }
+    */
     {
         string json_name = model_name + ".extra.json";
         string json_path = makeFilePath(sqliteDir.c_str(), json_name.c_str());
@@ -103,15 +115,19 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             theLog->logMsg(msg.c_str());
         }
 
-        // Current version of ompp UI supports a single model documentation file,
-        // so for now use the HTML for the model's default language.
+        out << "{\n\"ModelDoc\": [\n";
+        size_t n = 0;
 
-        /// The model's default language
-        string default_lang = Symbol::pp_all_languages.front()->name;
-        out << "{\n";
-        // example: "DocLink": "/IDMM.doc.EN.html"
-        out << "   \"DocLink\": \"" + pubURL + model_name + ".doc." + default_lang + ".html\"\n";
-        out << "}\n";
+        for (auto lang : Symbol::pp_all_languages) {
+            out <<
+                "   {\n" <<
+                "   \"LangCode\": \"" << lang->name << "\",\n" <<
+                "   \"Link\": \"" << pubURL + model_name + ".doc." + lang->name + ".html\"\n" <<
+                "   }";
+            if (++n < Symbol::pp_all_languages.size()) out << ",";
+            out << "\n";
+        }
+        out << "]\n}\n";
         out.close();
     }
 
