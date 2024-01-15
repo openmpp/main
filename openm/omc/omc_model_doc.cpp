@@ -320,22 +320,6 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     << "\n\n";
             }
 
-            // Group info
-            //mdStream << "\n ### Belongs to Group(s):\n\n";
-            //mdStream << "|table>" << "\n\n";
-            //mdStream << " Name | Label \n";
-            //mdStream << "- | - | -\n"; // maddy-specific
-            //for (auto& pg : s->pp_all_parameter_groups) {
-            //    for (auto& pr : pg->pp_symbol_list) {
-            //        int zz = strcmp(pr->unique_name.c_str(), s->unique_name.c_str());
-            //        if (zz == 0) {
-            //            mdStream << "  " << pg->unique_name << " | " << pg->pp_labels[lid] << "\n";
-            //        }
-            //    }
-            //}
-            //mdStream << "|<table" << "\n\n";
-            //mdStream << "\n\n";
-
             // dimension table with links
             if (!isScalar) {
                 mdStream << "**"+ LTA(langid, "Dimensions") + ":**\n\n";
@@ -664,6 +648,111 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "\n\n[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic: tables in alphabetic order
+
+        // Topic for each published table
+        for (auto& s : Symbol::pp_all_tables) {
+            if (!s->is_published()) {
+                // skip table if not published
+                continue;
+            }
+
+            /// is a scalar table
+            bool isScalar = (s->dimension_list.size() == 0);
+
+            // topic header line
+            mdStream
+                // symbol name
+                << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
+                // symbol label
+                << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lid] << "</span></h3>\n\n"
+                ;
+
+            // summary line with type and size
+            {
+                string shapeCompact;
+                if (!isScalar) {
+                    bool isFirst = true;
+                    int cells = 1;
+                    for (auto dim : s->dimension_list) {
+                        auto e = dim->pp_enumeration;
+                        assert(e);
+                        auto dim_size = e->pp_size() + dim->has_margin;
+                        shapeCompact += (!isFirst ? ", " : "") + to_string(dim_size);
+                        isFirst = false;
+                        cells *= dim_size;
+                    }
+                    shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
+                }
+                else {
+                    shapeCompact = "1";
+                }
+                string measures = to_string(s->measure_count());
+                mdStream
+                    << "**" + LTA(langid, "Kind") + ":** " + LTA(langid, "Table")
+                    << "\n"
+                    << " **" + LTA(langid, "Cells") + ":** " << shapeCompact
+                    << "\n"
+                    << " **" + LTA(langid, "Measures") + ":** " << measures
+                    << "\n\n";
+            }
+
+            // dimension table with links
+            if (!isScalar) {
+                mdStream << "**" + LTA(langid, "Dimensions") + ":**\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << " " + LTA(langid, "External Name") + " | " + LTA(langid, "Enumeration") + " | " + LTA(langid, "Size") + " | " + LTA(langid, "Margin") + " | " + LTA(langid, "Label") + " \n";
+                mdStream << "- | - | -\n"; // maddy-specific table header separator
+                for (auto& dim : s->dimension_list) {
+                    string dim_export_name = dim->short_name;
+                    auto e = dim->pp_enumeration;
+                    assert(e); // dimensions of parameters are always enumerations
+                    string dim_enumeration = e->name;
+                    string dim_size = to_string(e->pp_size());
+                    string dim_label = dim->pp_labels[lid];
+                    mdStream
+                        << dim_export_name << " | "
+                        << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
+                        << dim_size << " | "
+                        << (dim->has_margin ? "**X**" : "") << " | "
+                        << dim_label << "\n"
+                        ;
+                }
+                mdStream << "|<table\n"; // maddy-specific end table
+            }
+
+            // measure table
+            {
+                mdStream << "**" + LTA(langid, "Measures") + ":**\n\n";
+                mdStream << "|table>\n"; // maddy-specific begin table
+                mdStream << " " + LTA(langid, "External Name") + " | " + LTA(langid, "Label") + " \n";
+                mdStream << "- | - | -\n"; // maddy-specific table header separator
+                for (auto& m : s->pp_measures) {
+                    string m_export_name = m->short_name;
+                    string m_label = m->pp_labels[lid];
+                    mdStream
+                        << m_export_name << " | "
+                        << m_label << "\n"
+                        ;
+                }
+                mdStream << "|<table\n"; // maddy-specific end table
+            }
+
+            // symbol note if present
+            {
+                string note_in = s->pp_notes[lid];
+                if (note_in.length()) {
+                    mdStream << "**" + LTA(langid, "Note") + "**\n\n";
+                    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
+                    // Maddy documentation says \r\n, but \r seems to be required.
+                    string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                    mdStream << note_out << "\n\n";
+                }
+            }
+
+            mdStream << "\n\n";
+            mdStream << "[[" + LTA(langid, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
+            mdStream << topicSeparator;
+        } // Topic for each published table
 
         // all done
         mdStream.close();
