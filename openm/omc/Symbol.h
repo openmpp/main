@@ -40,6 +40,7 @@ class AggregationSymbol;
 class ImportSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
+class GroupSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -174,6 +175,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_parent_group(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -218,6 +220,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_parent_group(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -256,6 +259,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_parent_group(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         // find symbol table entry for the existing symbol
@@ -716,6 +720,14 @@ public:
      * Indicates if a label from model source code is allowed for this symbol
      */
     bool code_label_allowed;
+
+    /**
+     * Parent group of this symbol.
+     * 
+     * Can be non-unique.
+     * If no parent group, is nullptr
+     */
+    GroupSymbol *pp_parent_group;
 
     /**
      * Check for existence of symbol with this unique name.
