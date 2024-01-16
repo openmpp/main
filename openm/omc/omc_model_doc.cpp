@@ -89,8 +89,17 @@ static list<pair<string, unordered_map<string, string>>> allTransaledMsg;
  */
 #define LTA(lang, sourceMessage) ((getTranslated(lang.c_str(), sourceMessage, allTransaledMsg)))
 
-
-/// helper function to construct bread crumb hierarchy for symbol s
+/**
+ * @fn  static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* s)
+ *
+ * @brief   helper function to construct bread crumb hierarchy for symbol s
+ *
+ * @param           lang        The language.
+ * @param           lang_index  Zero-based index of the language.
+ * @param           s           The Symbol to process.
+ *
+ * @returns A single-line string which is a self-contained HTML fragment
+ */
 static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* s)
 {
     string bread_crumbs;
@@ -121,6 +130,37 @@ static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* s)
     return bread_crumbs;
 }
 
+static string expand_group(int lang_index, const GroupSymbol* g, int depth)
+{
+    string result;
+    if (g) {
+        string indent;
+        for (int i = 0; i < depth; ++i) {
+            indent += "&nbsp;&nbsp;&nbsp;&nbsp;";
+        }
+        // group anchor and label
+        result = indent 
+            + "<span id=\"" + g->name + "\"/>"
+            + "<b>" + g->pp_labels[lang_index] + "</b>"
+            + "<br>";
+        indent += "&nbsp;&nbsp;&nbsp;&nbsp;";
+        for (auto s : g->pp_symbol_list) {
+            /// subgroup
+            auto sg = dynamic_cast<GroupSymbol*>(s);
+            if (sg) {
+                result += expand_group(lang_index, sg, depth + 1);
+            }
+            else {
+                // symbol hyperlink, name, and label
+                result += indent
+                    + "<a href=\"#" + s->name + "\"><code>" + s->name + "</code></a> "
+                    + s->pp_labels[lang_index]
+                    + "<br>";
+            }
+        }
+    }
+    return result;
+}
 
 void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
 
@@ -254,9 +294,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             }
             mdStream << "**" + LTA(lang, "Hierarchy") + "** | \n";
             // link to anchorParametersAlphabetic instead of anchorParameterHierarchy pending implementation
-            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang, "Model input parameters arranged hierarchically") + "\n";
+            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParameterHierarchy + ") | " + LTA(lang, "Model input parameters arranged hierarchically") + "\n";
             // link to anchorTablesAlphabetic instead of anchorTableHierarchy pending implementation
-            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Model output tables arranged hierarchically") + "\n";
+            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableHierarchy + ") | " + LTA(lang, "Model output tables arranged hierarchically") + "\n";
             mdStream << "**" + LTA(lang, "Alphabetic lists") + "** | \n";
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang,"Model input parameters in alphabetic order") + "\n";
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Model output tables in alphabetic order") + "\n";
@@ -318,6 +358,46 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 } // end parameter table
             }
             mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
+            mdStream << topicSeparator;
+        }
+
+        // Topic: parameter hierarchy
+        {
+            mdStream << "<h3 id=\"" + anchorParameterHierarchy + "\">" + LTA(lang, "Parameter hierarchy") + "</h3>\n\n";
+
+            // top-level groups
+            for (auto g : Symbol::pp_all_parameter_groups) {
+                if (g->pp_parent_group || !g->is_published()) {
+                    // skip group if not top-level or not published.
+                    continue;
+                }
+                mdStream << "<p>" + expand_group(lang_index, g, 0) + "</p>\n\n";
+            }
+            // orphan symbols
+            {
+                string orphan_fragment;
+                bool first_orphan = true;
+                for (auto s : Symbol::pp_all_parameters) {
+                    if (s->pp_parent_group || !s->is_published()) {
+                        // skip symbol if in a group or not published.
+                        continue;
+                    }
+                    if (first_orphan) {
+                        first_orphan = false;
+                        orphan_fragment = "<b>" + LTA(lang, "Orphan parameters") + "</b><br>";
+                    }
+                    // symbol hyperlink, name, and label
+                    orphan_fragment += 
+                        + "<a href=\"#" + s->name + "\"><code>" + s->name + "</code></a> "
+                        + s->pp_labels[lang_index]
+                        + "<br>";
+                }
+                if (orphan_fragment.length() > 0) {
+                    mdStream << "<p>" + orphan_fragment + "</p>\n\n";
+                }
+            }
+
             mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         }
@@ -708,6 +788,46 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         } // Topic: tables in alphabetic order
+
+        // table hierarchy
+        {
+            mdStream << "<h3 id=\"" + anchorTableHierarchy + "\">" + LTA(lang, "Table hierarchy") + "</h3>\n\n";
+
+            // top-level groups
+            for (auto g : Symbol::pp_all_table_groups) {
+                if (g->pp_parent_group || !g->is_published()) {
+                    // skip group if not top-level or not published.
+                    continue;
+                }
+                mdStream << "<p>" + expand_group(lang_index, g, 0) + "</p>\n\n";
+            }
+            // orphan symbols
+            {
+                string orphan_fragment;
+                bool first_orphan = true;
+                for (auto s : Symbol::pp_all_tables) {
+                    if (s->pp_parent_group || !s->is_published()) {
+                        // skip symbol if in a group or not published.
+                        continue;
+                    }
+                    if (first_orphan) {
+                        first_orphan = false;
+                        orphan_fragment = "<b>" + LTA(lang, "Orphan tables") + "</b><br>";
+                    }
+                    // symbol hyperlink, name, and label
+                    orphan_fragment +=
+                        +"<a href=\"#" + s->name + "\"><code>" + s->name + "</code></a> "
+                        + s->pp_labels[lang_index]
+                        + "<br>";
+                }
+                if (orphan_fragment.length() > 0) {
+                    mdStream << "<p>" + orphan_fragment + "</p>\n\n";
+                }
+            }
+
+            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
+            mdStream << topicSeparator;
+        }
 
         // Topic for each published table
         for (auto& s : Symbol::pp_all_tables) {
