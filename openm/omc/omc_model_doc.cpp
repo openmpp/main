@@ -162,6 +162,17 @@ static string expand_group(int lang_index, const GroupSymbol* g, int depth)
     return result;
 }
 
+static string preprocess_markdown(string& md_in)
+{
+    string md_out;
+
+    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
+    // Maddy documentation says \r\n, but \r seems to be required.
+    md_out = std::regex_replace(md_in, std::regex("  \n"), "\r"); // maddy-specific line break
+    
+    return md_out;
+}
+
 void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
 
     /// target folder for HTML output
@@ -488,9 +499,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 string note_in = s->pp_notes[lang_index];
                 if (note_in.length()) {
                     mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
-                    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
-                    // Maddy documentation says \r\n, but \r seems to be required.
-                    string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                    string note_out = preprocess_markdown(note_in);
                     mdStream << note_out << "\n\n";
                 }
             }
@@ -727,9 +736,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 string note_in = s->pp_notes[lang_index];
                 if (note_in.length()) {
                     mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
-                    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
-                    // Maddy documentation says \r\n, but \r seems to be required.
-                    string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                    string note_out = preprocess_markdown(note_in);
                     mdStream << note_out << "\n\n";
                 }
             }
@@ -925,9 +932,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 string note_in = s->pp_notes[lang_index];
                 if (note_in.length()) {
                     mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
-                    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
-                    // Maddy documentation says \r\n, but \r seems to be required.
-                    string note_out = std::regex_replace(note_in, std::regex("  \n"), "\r"); // maddy-specific line break
+                    string note_out = preprocess_markdown(note_in);
                     mdStream << note_out << "\n\n";
                 }
             }
