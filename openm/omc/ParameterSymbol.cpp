@@ -122,6 +122,16 @@ void ParameterSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
+        // Modify content of value NOTE
+        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+            string& note = pp_value_notes[lang_index];
+            if (note.length() > 0) {
+                if (Symbol::option_convert_modgen_note_syntax) {
+                    note = Symbol::note_modgen_to_markdown(note);
+                }
+                note = Symbol::note_expand_embeds(lang_index, note);
+            }
+        }
         // validate dimension list
         // and populate the post-parse version
         for (auto psym : enumeration_list) {

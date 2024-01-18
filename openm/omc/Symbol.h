@@ -1029,9 +1029,21 @@ public:
     /**
      * Replace Modgen syntax in a NOTE by equivalent markdown.
      *
-     * @param cmt The comment.
+     * @param note The note.
      */
-    static std::string normalize_note(const std::string& txt);
+    static std::string note_modgen_to_markdown(const std::string& note);
+
+    /**
+     * Expand embedded constructs in a NOTE.
+     *          
+     * Example: "GetLabel(SymbolName)" is expanded to the label of the Symbol
+     *
+     * @param   lang_index  Zero-based index of the language.
+     * @param   note        The note contents.
+     *
+     * @returns A std::string.
+     */
+    static std::string note_expand_embeds(int lang_index, const std::string& note);
 
     /**
      * Pathnames of use folders.
