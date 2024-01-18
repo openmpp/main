@@ -529,6 +529,16 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 }
             }
 
+            // parameter value note if present
+            {
+                string note_in = s->pp_value_notes[lang_index];
+                if (note_in.length()) {
+                    mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
+                    string note_out = preprocess_markdown(note_in);
+                    mdStream << note_out << "\n\n";
+                }
+            }
+
             mdStream << "\n\n";
             mdStream << "[[" + LTA(lang, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
