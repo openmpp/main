@@ -2624,7 +2624,7 @@ std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
                 + symbol_label
                 + match.suffix().str();
         }
-    };
+    }
 
     return result;
 }

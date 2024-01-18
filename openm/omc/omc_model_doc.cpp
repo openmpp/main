@@ -288,10 +288,10 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             assert(vs);
             string version_string = to_string(vs->major) + "." + to_string(vs->minor) + "." + to_string(vs->sub_minor) + "." + to_string(vs->sub_sub_minor);
 
-            const size_t ymd_size = 11;
+            const size_t ymd_size = 50;
             char ymd[ymd_size];
             std::time_t time = std::time({});
-            std::strftime(ymd, ymd_size, "%F", std::localtime(&time));
+            std::strftime(ymd, ymd_size, "%F %T", std::localtime(&time));
 
             mdStream << "<h1 id=\"" + anchorHomePage + "\">" + model_name + " - " + LTA(lang, "Model Documentation") + "</h1>\n\n";
             mdStream << "<h2>" + LTA(lang, "Version") + " " + version_string + " " + LTA(lang,"built on") + " " + ymd + "</h2>\n\n";
@@ -431,7 +431,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
                 ;
 
-            // summary line with type and size
+            // summary line with type, size, etc.
             {
                 string shapeCompact;
                 if (!isScalar) {
@@ -446,6 +446,28 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                 }
                 else {
                     shapeCompact = LTA(lang, "scalar");
+                }
+                string defaultValue = "";
+                if (isScalar && (s->source == ParameterSymbol::parameter_source::scenario_parameter)) {
+                    /// for sub=0
+                    auto& constants = s->sub_initial_list.front().second;
+                    auto& constant = constants.front();
+                    if (constant->is_literal) {
+                        defaultValue = constant->literal->value();
+                    }
+                    else if (constant->is_enumerator) {
+                        /// pointer to EnumeratorSymbol
+                        auto e = *(constant->enumerator);
+                        defaultValue = e->name;
+                        // Show short name instead if a classification enumerator, since that's what user sees.
+                        auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(e);
+                        if (ce) {
+                            defaultValue = ce->short_name;
+                        }
+                    }
+                    else {
+                        assert(false); // not reached
+                    }
                 }
                 string typeInfo;
                 {
@@ -464,8 +486,11 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     << "**" + LTA(lang, "Type") + ":** "
                     << "\n"
                     << typeInfo
-                    << " **" + LTA(lang, "Size") + ":** " << shapeCompact
-                    << "\n\n";
+                    << " **" + LTA(lang, "Size") + ":** " << shapeCompact;
+                if (defaultValue.length() > 0) {
+                    mdStream << "\n**" + LTA(lang, "Default") + ":** " + defaultValue;
+                }
+                mdStream << "\n\n";
             }
 
             // bread crumb hierachy (possibly empty)
