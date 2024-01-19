@@ -220,7 +220,7 @@ const string openm::cleanPathChars(const string & i_str, int i_maxSize)
 
     for (char nowCh : i_str) {
 
-        bool isOk = isprint(nowCh, locale::classic());
+        bool isOk = isprint(nowCh, locale(""));
         if (isOk) {
             for (char c : "\"'`$}{@><:|?*&^;/\\") {
                 if (isOk = nowCh != c; !isOk) break;
