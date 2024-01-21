@@ -324,17 +324,40 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << topicSeparator;
         }
 
+        // Table-like symbols - published tables merged with derived parameters published as tables
+        list<Symbol*> table_like;
+        {
+            for (auto t : Symbol::pp_all_tables) {
+                if (t->is_published()) {
+                    table_like.push_back(t);
+                }
+            }
+            for (auto p : Symbol::pp_all_parameters) {
+                if (p->publish_as_table && p->is_published()) {
+                    table_like.push_back(p);
+                }
+            }
+            table_like.sort([](Symbol* a, Symbol* b) { return a->name < b->name; });
+        }
+
+        // Parameter-like symbols - published parameters excluding derived parameters published as tables
+        list<Symbol*> parameter_like;
+        {
+            for (auto p : Symbol::pp_all_parameters) {
+                if (!p->publish_as_table && p->is_published()) {
+                    parameter_like.push_back(p);
+                }
+            }
+            // no need to sort because pp_all_parameters is already sorted
+        }
+
         // Topic: parameters in alphabetic order
         {
             // build line with links to first parameter in alphabetic table with leading letter
             string letterLinks;
             {
                 string letterPrev = "";
-                for (auto& s : Symbol::pp_all_parameters) {
-                    if (!s->is_published()) {
-                        // skip unpublished symbol
-                        continue;
-                    }
+                for (auto& s : parameter_like) {
                     string letterCurr = s->name.substr(0, 1);
                     if (letterCurr != letterPrev) {
                         // anchor looks like A-param, D-param, etc.
@@ -352,11 +375,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
                 string letterPrev = "";
-                for (auto& s : Symbol::pp_all_parameters) {
-                    if (!s->is_published()) {
-                        // skip unpublished symbol
-                        continue;
-                    }
+                for (auto& s : parameter_like) {
                     string letterCurr = s->name.substr(0, 1);
                     string letterLink = "";
                     if (letterCurr != letterPrev) {
@@ -389,9 +408,9 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             {
                 string orphan_fragment;
                 bool first_orphan = true;
-                for (auto s : Symbol::pp_all_parameters) {
-                    if (s->pp_parent_group || !s->is_published()) {
-                        // skip symbol if in a group or not published.
+                for (auto s : parameter_like) {
+                    if (s->pp_parent_group) {
+                        // skip symbol if in a group.
                         continue;
                     }
                     if (first_orphan) {
@@ -408,7 +427,6 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     mdStream << "<p>" + orphan_fragment + "</p>\n\n";
                 }
             }
-
             mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorHomePage + ")]\r\n";
             mdStream << topicSeparator;
         }
@@ -433,6 +451,15 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
 
             // summary line with type, size, etc.
             {
+                string kindInfo;
+                {
+                    if (s->is_derived()) {
+                        kindInfo += LTA(lang, "Derived Parameter");
+                    }
+                    else {
+                        kindInfo = LTA(lang, "Parameter");
+                    }
+                }
                 string shapeCompact;
                 if (!isScalar) {
                     bool isFirst = true;
@@ -481,7 +508,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
                     }
                 }
                 mdStream
-                    << "**" + LTA(lang, "Kind") + ":** " + LTA(lang, "Parameter")
+                    << "**" + LTA(lang, "Kind") + ":** " + kindInfo
                     << "\n"
                     << "**" + LTA(lang, "Type") + ":** "
                     << "\n"
@@ -781,18 +808,13 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << topicSeparator;
         } // Topic for each published enumeration
 
-
         // Topic: tables in alphabetic order
         {
             // build line with links to first table in alphabetic table with leading letter
             string letterLinks;
             {
                 string letterPrev = "";
-                for (auto& s : Symbol::pp_all_tables) {
-                    if (!s->is_published()) {
-                        // skip unpublished symbol
-                        continue;
-                    }
+                for (auto& s : table_like) {
                     string letterCurr = s->name.substr(0, 1);
                     if (letterCurr != letterPrev) {
                         // anchor looks like A-param, D-param, etc.
@@ -810,11 +832,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
                 string letterPrev = "";
-                for (auto& s : Symbol::pp_all_tables) {
-                    if (!s->is_published()) {
-                        // skip unpublished symbol
-                        continue;
-                    }
+                for (auto& s : table_like) {
                     string letterCurr = s->name.substr(0, 1);
                     string letterLink = "";
                     if (letterCurr != letterPrev) {
@@ -847,9 +865,18 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             {
                 string orphan_fragment;
                 bool first_orphan = true;
-                for (auto s : Symbol::pp_all_tables) {
-                    if (s->pp_parent_group || !s->is_published()) {
-                        // skip symbol if in a group or not published.
+                for (auto s : table_like) {
+                    bool is_orphan = !s->pp_parent_group;
+                    // Handle special case of a derived parameter published as a table
+                    // whose parent is a parameter group.
+                    if (!is_orphan) {
+                        bool is_derived_parameter = dynamic_cast<ParameterSymbol*>(s);
+                        bool parent_is_parameter_group = dynamic_cast<ParameterGroupSymbol*>(s->pp_parent_group);
+                        if (is_derived_parameter && parent_is_parameter_group) {
+                            is_orphan = true;
+                        }
+                    }
+                    if (!is_orphan) {
                         continue;
                     }
                     if (first_orphan) {
