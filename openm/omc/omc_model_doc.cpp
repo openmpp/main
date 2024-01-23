@@ -183,7 +183,7 @@ static string preprocess_markdown(string& md_in)
     return md_out;
 }
 
-void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
+void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
 
     /// target folder for HTML output
     string pubDir = outDir + "../bin/io/download/";
@@ -208,7 +208,7 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
     ]
     }
     */
-    {
+    if (!devMode) {
         string json_name = model_name + ".extra.json";
         string json_path = makeFilePath(sqliteDir.c_str(), json_name.c_str());
         ofstream out(json_path, ios::out | ios::trunc | ios::binary);
@@ -264,9 +264,18 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
         int lang_index = langSym->language_id;
         string lang = langSym->name;
 
+        // skip model's secondary languages for modeldev version
+        if (devMode && lang_index > 0) {
+            continue;
+        }
+
         // Example: IDMM.doc.EN.html
         string htmlName = model_name + ".doc." + lang + ".html";
         string mdName = model_name + ".doc." + lang + ".md";
+        if (devMode) {
+            htmlName = model_name + ".devdoc." + lang + ".html";
+            mdName = model_name + ".devdoc." + lang + ".md";
+        }
 
         // create the markdown file in outDir (normally 'src')
         string mdPath = makeFilePath(outDir.c_str(), mdName.c_str());
@@ -321,7 +330,12 @@ void do_model_doc(string& outDir, string& omrootDir, string& model_name, CodeGen
             std::time_t time = std::time({});
             std::strftime(ymd, ymd_size, "%F %T", std::localtime(&time));
 
-            mdStream << "<h1 id=\"" + anchorTableOfContents + "\">" + model_name + " - " + LTA(lang, "Model Documentation") + "</h1>\n\n";
+            string mainTitle = LTA(lang, "Model Documentation");
+            if (devMode) {
+                mainTitle += " (" + LTA(lang, "Developer Version") + ")";
+            }
+
+            mdStream << "<h1 id=\"" + anchorTableOfContents + "\">" + model_name + " - " + mainTitle + "</h1>\n\n";
             mdStream << "<h2>" + LTA(lang, "Version") + " " + version_string + " " + LTA(lang,"built on") + " " + ymd + "</h2>\n\n";
             mdStream << "\n\n";
             mdStream << "<h3>" + LTA(lang, "Table of Contents") + "</h3>\n\n";

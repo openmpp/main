@@ -15,7 +15,8 @@
 * * -Omc.UseDir         use/dir/with/ompp/files
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario (can be list of directories)
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
-* * -Omc.ModelDoc       if true then generate model documentation
+* * -Omc.ModelDoc       if true then generate model documentation (user version)
+* * -Omc.ModelDevDoc    if true then generate model documentation (model dev version)
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
 * * -Omc.SqliteDir      output directory to create SQLite model database
 * * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
@@ -107,8 +108,11 @@ namespace openm
         /** omc suppress metadata publishing (model cannot be run) */
         static constexpr const char* noMetadata = "Omc.NoMetadata";
 
-        /** omc generate model documentation */
+        /** omc generate model documentation (user version) */
         static constexpr const char* modelDoc = "Omc.ModelDoc";
+
+        /** omc generate model documentation (model dev version) */
+        static constexpr const char* modelDevDoc = "Omc.ModelDevDoc";
 
         /** omc generate detailed output from parser */
         static constexpr const char * traceParsing = "Omc.TraceParsing";
@@ -173,6 +177,7 @@ namespace openm
         OmcArgKey::noLineDirectives,
         OmcArgKey::noMetadata,
         OmcArgKey::modelDoc,
+        OmcArgKey::modelDevDoc,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
@@ -337,8 +342,11 @@ int main(int argc, char * argv[])
         // Obtain information on disabling metadata publishing, default: false
         Symbol::no_metadata = parseBoolOption(OmcArgKey::noMetadata, argStore);
 
-        // Obtain information on generating model documentation, default: false
+        // Obtain information on generating model documentation (user version), default: false
         Symbol::model_doc = parseBoolOption(OmcArgKey::modelDoc, argStore);
+
+        // Obtain information on generating model documentation (model dev version), default: false
+        Symbol::model_devdoc = parseBoolOption(OmcArgKey::modelDevDoc, argStore);
 
         // Obtain information on detailed parsing option, default: false
         Symbol::trace_parsing = parseBoolOption(OmcArgKey::traceParsing, argStore);
@@ -789,16 +797,23 @@ int main(int argc, char * argv[])
         do_model_metrics_report(outDir, model_name, cg);
 
         // generate model documentation
-        if (Symbol::model_doc) {
+        if (Symbol::model_doc || Symbol::model_devdoc) {
             theLog->logMsg("Generate model documentation - start");
 
             string omrootDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../";
 
-            do_model_doc(outDir, omrootDir, model_name, cg, makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini").c_str());
+            if (Symbol::model_doc) {
+                // create doc version for users
+                do_model_doc(false, outDir, omrootDir, model_name, cg, makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini").c_str());
+            }
+            if (Symbol::model_devdoc) {
+                // create doc version for model developers
+                do_model_doc(true, outDir, omrootDir, model_name, cg, makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini").c_str());
+            }
             theLog->logMsg("Generate model documentation - finish");
         }
 
-        // issue wanrings for missing labels,notes,translations
+        // issue warnings for missing labels,notes,translations
         do_missing_documentation();
         
     }

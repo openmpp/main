@@ -1825,9 +1825,14 @@ public:
     static bool no_metadata;
 
     /**
-     * True to generate model documentation
+     * True to generate model documentation (end user version)
      */
     static bool model_doc;
+
+    /**
+     * True to generate model documentation (model dev version)
+     */
+    static bool model_devdoc;
 
     /**
      * True to enable detailed output from parser
