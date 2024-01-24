@@ -641,7 +641,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             // global functions using this parameter
             if (devMode && s->pp_global_funcs_using.size() > 0) {
-                mdStream << "**" + LTA(lang, "Global Functions Using") + ":**\n\n";
+                mdStream << "**" + LTA(lang, "Referenced in Global Functions") + ":**\n\n";
                 mdStream << "|table>\n"; // maddy-specific begin table
                 mdStream << " " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
                 mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -660,7 +660,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             // entity functions using this parameter
             if (devMode && s->pp_entity_funcs_using.size() > 0) {
-                mdStream << "**" + LTA(lang, "Entity Functions Using") + ":**\n\n";
+                mdStream << "**" + LTA(lang, "Referenced in Entity Functions") + ":**\n\n";
                 mdStream << "|table>\n"; // maddy-specific begin table
                 mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
                 mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -681,7 +681,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             // identity attributes using this parameter
             if (devMode && s->pp_identity_attributes_using.size() > 0) {
-                mdStream << "**" + LTA(lang, "Identity Attributes Using") + ":**\n\n";
+                mdStream << "**" + LTA(lang, "Referenced in Identity Attributes") + ":**\n\n";
                 mdStream << "|table>\n"; // maddy-specific begin table
                 mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
                 mdStream << "- | - | -\n"; // maddy-specific table header separator
