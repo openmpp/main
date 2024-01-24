@@ -258,6 +258,10 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
                 pp_links_used.insert(la);
             }
         }
+        {
+            // xref from symbol to this identity attribute symbol
+            sym->pp_symbol->pp_identity_attributes_using.insert(this);
+        }
     }
     else if (lit != nullptr) {
         // Nothing needs to be done with Literals in the post-parse processing phase.

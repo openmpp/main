@@ -41,6 +41,9 @@ class ImportSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
 class GroupSymbol;
+class EntityFuncSymbol;
+class GlobalFuncSymbol;
+class IdentityAttributeSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -730,6 +733,21 @@ public:
     GroupSymbol *pp_parent_group;
 
     /**
+     * All EntityFuncSymbol which use this Symbol
+     */
+    set<EntityFuncSymbol *> pp_entity_funcs_using;
+
+    /**
+     * All GlobalFuncSymbol which use this Symbol
+     */
+    set<GlobalFuncSymbol *> pp_global_funcs_using;
+
+    /**
+     * All IdentityAttributeSymbol which use this Symbol
+     */
+    set<IdentityAttributeSymbol*> pp_identity_attributes_using;
+
+    /**
      * Check for existence of symbol with this unique name.
      *
      * @param unm The unique name.
@@ -1292,7 +1310,7 @@ public:
     static set<string> pp_visible_member_names;
 
     /**
-     * Map of member function qualified names to all identifiers used in the body of the function.
+     * Map of names of all identifiers used in the body of a function defined in model code.
      * 
      * An example entry might be "Person::MortalityEvent" ==> "alive".
      */

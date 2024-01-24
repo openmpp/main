@@ -285,6 +285,9 @@
     <ClInclude Include="omc_model_doc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="omc_location.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">

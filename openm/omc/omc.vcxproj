@@ -236,6 +236,7 @@
     <ClInclude Include="omc_common.h" />
     <ClInclude Include="omc_csv.h" />
     <ClInclude Include="omc_file.h" />
+    <ClInclude Include="omc_location.hh" />
     <ClInclude Include="omc_missing_documentation.h" />
     <ClInclude Include="omc_model_doc.h" />
     <ClInclude Include="omc_model_metrics.h" />
