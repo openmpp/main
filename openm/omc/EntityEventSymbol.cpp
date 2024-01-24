@@ -17,6 +17,7 @@
 #include "LinkAttributeSymbol.h"
 #include "EntityMultilinkSymbol.h"
 #include "EntityFuncSymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -25,11 +26,11 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
 {
     if (is_developer_supplied) {
         // Create an EntityFuncSymbol for the time function ('true' means the definition is developer-supplied, so suppress definition)
-        time_func = new EntityFuncSymbol(tfs, entity, "Time", "", true, decl_loc);
+        time_func = new EntityFuncSymbol(tfs, entity, "Time", "", true);
         time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + entity->name + " entity (model code).");
 
         // Create an EntityFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
-        implement_func = new EntityFuncSymbol(ifs, entity, "void", "", true, decl_loc);
+        implement_func = new EntityFuncSymbol(ifs, entity, "void", "", true);
         implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + entity->name + " entity (model code).");
     }
     else {
@@ -153,6 +154,14 @@ void EntityEventSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
+        // Propagate event labels to the event time and event implement entity functions.
+        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+            string& label = pp_labels[lang_index];
+            // TODO - use LTA once available here
+            time_func->pp_labels[lang_index] = "Time - " + label;
+            implement_func->pp_labels[lang_index] = "Implement - " + label;
+        }
+
         // Add this entity event time symbol to the entity's list of all such symbols
         pp_entity->pp_events.push_back(this);
 
