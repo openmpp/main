@@ -194,7 +194,7 @@ track Person{
 #endif // Hide non-C++ syntactic island from IDE
 
 /// PreSimulation-related code in PersonCore.mpp
-void PersonCore_PreSimulation(void)
+void PersonCore_PreSimulation(void) //EN Compute derived parameters related to the microdata input file.
 {
   // Do a first pass through the microdata file before simulating cases.
   input_csv inCsv;

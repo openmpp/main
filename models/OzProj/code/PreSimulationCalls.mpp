@@ -5,13 +5,13 @@
 	It calls in order PreSimulation-related functions in other modules.
 */
 
-extern void PersonCore_PreSimulation(void); // PreSimulation-related code in PersonCore.mpp
-extern void Mortality_PreSimulation(void); // PreSimulation-related code in Mortality.mpp
-extern void Fertility_PreSimulation(void); // PreSimulation-related code in Fertility.mpp
-extern void Emigration_PreSimulation(void); // PreSimulation-related code in Emigration.mpp
+extern void PersonCore_PreSimulation(void);
+extern void Mortality_PreSimulation(void);
+extern void Fertility_PreSimulation(void);
+extern void Emigration_PreSimulation(void);
 
 /// The master PreSimulation function in the model.
-void PreSimulation(void)
+void PreSimulation(void) //EN Call all PreSimulation helper functions in a controlled order.
 {
 	PersonCore_PreSimulation();
 	Mortality_PreSimulation();
