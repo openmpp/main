@@ -28,10 +28,12 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
         // Create an EntityFuncSymbol for the time function ('true' means the definition is developer-supplied, so suppress definition)
         time_func = new EntityFuncSymbol(tfs, entity, "Time", "", true);
         time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + entity->name + " entity (model code).");
+        time_func->associated_event = this;
 
         // Create an EntityFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
         implement_func = new EntityFuncSymbol(ifs, entity, "void", "", true);
         implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + entity->name + " entity (model code).");
+        implement_func->associated_event = this;
     }
     else {
         // The functions are created internally (for the internally-generated self-scheduling event)
@@ -152,9 +154,25 @@ void EntityEventSymbol::post_parse(int pass)
         }
         break;
     }
+    case eResolveDataTypes:
+    {
+        // Any explicit Labels and Notes for an event are bound to the implement function of the event,
+        // instead of to the EntityEventSymbol (this), because the name of the implement function is the event name.
+        // If there are any such, propagate them to the EntityEventSymbol (this).
+        {
+            for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+                if (implement_func->pp_labels_explicit[lang_index]) {
+                    pp_labels[lang_index] = implement_func->pp_labels[lang_index];
+                    pp_labels_explicit[lang_index] = true;
+                }
+                pp_notes[lang_index] = implement_func->pp_notes[lang_index];
+            }
+        }
+        break;
+    }
     case ePopulateCollections:
     {
-        // Propagate event labels to the event time and event implement entity functions.
+        // Propagate event labels and notes to the event time and event implement entity functions.
         for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
             string& label = pp_labels[lang_index];
             // TODO - use LTA once available here

@@ -13,6 +13,8 @@
 #include "EntityMemberSymbol.h"
 #include "CodeBlock.h"
 
+class EntityEventSymbol;
+
 using namespace std;
 
 /**
@@ -42,6 +44,7 @@ public:
         , suppress_defn(suppress_defn)
         , suppress_code_if_empty(false)
         , has_line_directive(false)
+        , associated_event(nullptr)
     {
     }
 
@@ -63,6 +66,7 @@ public:
         , suppress_defn(suppress_defn)
         , suppress_code_if_empty(false)
         , has_line_directive(false)
+        , associated_event(nullptr)
     {
     }
 
@@ -155,6 +159,11 @@ public:
      * Default is false.
      */
     bool has_line_directive;
+
+    /**
+     * For event implement functions, points to the event
+     */
+    EntityEventSymbol* associated_event;
 
     /**
      * The function body (if generated)
