@@ -120,7 +120,7 @@ void EntityTableSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         // do not process suppressed table
-        if (is_suppressed) {
+        if (is_suppressed_table) {
             break;
         }
         // Process collections of observations required by accumulators

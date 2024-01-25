@@ -110,7 +110,7 @@ void ParameterSymbol::post_parse(int pass)
             // Mark derived parameter as suppressed (if published as table)
             // Those which are retained will be changed back in a subsequent pass.
             if (is_derived()) {
-                is_suppressed = true;
+                is_suppressed_table = true;
             }
         }
         if (any_show) { // model contains a show statement
@@ -763,7 +763,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
         }
     }
-    else if (publish_as_table && !is_suppressed) {
+    else if (publish_as_table && !is_suppressed_table) {
         // This is a derived parameter which has been marked for export as a table
         // by a parameters_to_tables statement in model code.
 

@@ -1400,11 +1400,11 @@ void Symbol::post_parse_all()
     if (any_tables_retain || any_tables_suppress) {
         // retain tables on which non-suppressed or internal tables depend.
         for (auto tbl : pp_all_tables) {
-            if (!tbl->is_suppressed) {
+            if (!tbl->is_suppressed_table) {
                 for (auto tbl_req : tbl->pp_tables_required) {
-                    if (tbl_req->is_suppressed) {
+                    if (tbl_req->is_suppressed_table) {
                         // do not suppress, make it internal instead
-                        tbl_req->is_suppressed = false;
+                        tbl_req->is_suppressed_table = false;
                         tbl_req->is_internal = true;
                     }
                 }
@@ -1412,7 +1412,7 @@ void Symbol::post_parse_all()
         }
 
         for (auto et : pp_all_entity_tables) {
-            if (et->is_suppressed) {
+            if (et->is_suppressed_table) {
                 // Remove the 3 auxiliary entity member functions from the table's entity
                 auto& ccf = et->current_cell_fn;
                 auto& iif = et->init_increment_fn;
@@ -1433,11 +1433,11 @@ void Symbol::post_parse_all()
             }
         }
         // remove all suppressed entity tables from the master list of entity tables
-        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed; });
+        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed derived tables from the master list of derived tables
-        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed; });
+        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed tables from the master list of tables
-        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed; });
+        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed_table; });
     }
 
     // Sort all global collections

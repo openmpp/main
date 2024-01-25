@@ -36,7 +36,7 @@ public:
         , is_declared(false)
         , is_extendable(false)
         , publish_as_table(false)
-        , is_suppressed(false)
+        , is_suppressed_table(false)
         , pp_index_series(nullptr)
         , index_series_offset(0)
         , datatype2(nullptr)
@@ -401,7 +401,7 @@ public:
      * A derived parameter marked as publish_as_table can be marked for suppression
      * by tables_suppress or tables_retain.
      */
-    bool is_suppressed;
+    bool is_suppressed_table;
 
     /**
      * The parameter containing an index series used to extend the parameter
