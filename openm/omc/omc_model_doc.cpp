@@ -405,7 +405,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 }
             }
             for (auto p : Symbol::pp_all_parameters) {
-                if (p->publish_as_table && p->is_published()) {
+                if (p->metadata_as_table && p->is_published()) {
                     table_like.push_back(p);
                 }
             }
@@ -416,7 +416,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
         list<Symbol*> parameter_like;
         {
             for (auto p : Symbol::pp_all_parameters) {
-                if (!p->publish_as_table && p->is_published()) {
+                if (!p->metadata_as_table && p->is_published()) {
                     parameter_like.push_back(p);
                 }
             }

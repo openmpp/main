@@ -240,7 +240,7 @@ void AnonGroupSymbol::post_parse(int pass)
                 if (ps) {
                     // indicate that this parameter, if derived, is also to be published as a table.
                     if (ps->is_derived()) {
-                        ps->publish_as_table = true;
+                        ps->metadata_as_table = true;
                     }
                     else {
                         pp_error(LT("error : '") + symbol_name + LT("' in parameters_to_tables is not a derived parameter"));

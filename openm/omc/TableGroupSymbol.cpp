@@ -103,7 +103,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
             // else do not publish a table group which contains only non-published tables
         }
-        // else symbol must be a table or a derived parameter marked publish_as_table
+        // else symbol must be a table or a derived parameter marked metadata_as_table
         auto tbl = dynamic_cast<TableSymbol*>(sym);
         auto param = dynamic_cast<ParameterSymbol *>(sym);
         if (tbl) {
@@ -118,7 +118,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
             // else do not publish this table
         }
-        else if (param && param->publish_as_table)  {
+        else if (param && param->metadata_as_table)  {
             GroupPcRow groupPc;
             groupPc.groupId = pp_group_id;
             groupPc.childPos = childPos++;
