@@ -107,7 +107,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         auto tbl = dynamic_cast<TableSymbol*>(sym);
         auto param = dynamic_cast<ParameterSymbol *>(sym);
         if (tbl) {
-            if (!tbl->is_internal && !tbl->is_suppressed) {
+            if (!tbl->is_internal && !tbl->is_suppressed_table) {
                 GroupPcRow groupPc;
                 groupPc.groupId = pp_group_id;
                 groupPc.childPos = childPos++;
@@ -149,7 +149,7 @@ bool TableGroupSymbol::contains_published_table() const
             // element is a table
             auto tbl = dynamic_cast<TableSymbol*>(sym);
             if (tbl) {
-                if (!tbl->is_internal && !tbl->is_suppressed) {
+                if (!tbl->is_internal && !tbl->is_suppressed_table) {
                     return true;
                 }
             }
