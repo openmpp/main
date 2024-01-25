@@ -138,11 +138,12 @@ public:
     }
 
     /**
-     * True if parameter is published.
+     * True if parameter is published
+     * either as a scenario parameter or as a derived parameter (like a table)
      */
     bool is_published(void) const
     {
-        return (source == ParameterSymbol::parameter_source::scenario_parameter) || publish_as_table;
+        return (source == ParameterSymbol::parameter_source::scenario_parameter) || (publish_as_table && !is_suppressed_table);
     }
 
     /**
