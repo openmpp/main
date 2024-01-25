@@ -172,7 +172,7 @@ void EntityEventSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        // Propagate event labels and notes to the event time and event implement entity functions.
+        // Propagate event labels to the event time and event implement entity functions.
         for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
             string& label = pp_labels[lang_index];
             // TODO - use LTA once available here

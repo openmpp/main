@@ -161,7 +161,7 @@ public:
     bool has_line_directive;
 
     /**
-     * For event implement functions, points to the event
+     * For event time and implement functions, points to the event
      */
     EntityEventSymbol* associated_event;
 

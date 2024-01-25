@@ -96,6 +96,15 @@ void EntityTableSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
+        if (filter) {
+            // Propagate event labels to the table filter identity attribute, if present.
+            for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+                string& label = pp_labels[lang_index];
+                // TODO - use LTA once available here
+                filter->pp_labels[lang_index] = "Filter - " + label;
+            }
+        }
+
         // add this table to the complete list of entity tables
         pp_all_entity_tables.push_back(this);
 

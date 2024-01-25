@@ -2420,6 +2420,7 @@ table_filter_opt:
                             // create an anonymous identity attribute for the filter
                             auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(table->entity, BoolSymbol::find(), $root, @root);
                             aia->is_generated = true;
+                            aia->associated_table = table;
                             assert(aia);
                             // note identity attribute in table
                             table->filter = aia;
