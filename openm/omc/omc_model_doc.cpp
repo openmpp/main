@@ -243,6 +243,75 @@ string short_loc(location& loc)
     return result;
 }
 
+static bool do_xref(string lang, int lang_index, Symbol* s, std::ofstream &mdStream)
+{
+    bool any_xref = false;
+    // global functions using this symbol
+    if (s->pp_global_funcs_using.size() > 0) {
+        any_xref = true;
+        mdStream << "**" + LTA(lang, "References in Global Functions") + ":**\n\n";
+        mdStream << "|table>\n"; // maddy-specific begin table
+        mdStream << " " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
+        mdStream << "- | - | -\n"; // maddy-specific table header separator
+        for (auto& f : s->pp_global_funcs_using) {
+            string name = f->name;
+            string module = short_loc(f->decl_loc);
+            string label = f->pp_labels[lang_index];
+            mdStream
+                << name << " | "
+                << module << " | "
+                << label << "\n"
+                ;
+        }
+        mdStream << "|<table\n"; // maddy-specific end table
+    }
+
+    // entity functions using this symbol
+    if (s->pp_entity_funcs_using.size() > 0) {
+        any_xref = true;
+        mdStream << "**" + LTA(lang, "References in Entity Functions") + ":**\n\n";
+        mdStream << "|table>\n"; // maddy-specific begin table
+        mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
+        mdStream << "- | - | -\n"; // maddy-specific table header separator
+        for (auto& m : s->pp_entity_funcs_using) {
+            string entity = m->pp_entity->name;
+            string member = m->name;
+            string module = short_loc(m->defn_loc);
+            string label = m->pp_labels[lang_index];
+            mdStream
+                << entity << " | "
+                << member << " | "
+                << module << " | "
+                << label << "\n"
+                ;
+        }
+        mdStream << "|<table\n"; // maddy-specific end table
+    }
+
+    // identity attributes using this parameter
+    if (s->pp_identity_attributes_using.size() > 0) {
+        any_xref = true;
+        mdStream << "**" + LTA(lang, "References in Identity Attributes") + ":**\n\n";
+        mdStream << "|table>\n"; // maddy-specific begin table
+        mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
+        mdStream << "- | - | -\n"; // maddy-specific table header separator
+        for (auto& m : s->pp_identity_attributes_using) {
+            string entity = m->pp_entity->name;
+            string member = m->name;
+            string module = short_loc(m->decl_loc);
+            string label = m->pp_labels[lang_index];
+            mdStream
+                << entity << " | "
+                << member << " | "
+                << module << " | "
+                << label << "\n"
+                ;
+        }
+        mdStream << "|<table\n"; // maddy-specific end table
+    }
+    return any_xref;
+}
+
 void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
 
     /// target folder for HTML output
@@ -682,65 +751,10 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 mdStream << "|<table\n"; // maddy-specific end table
             }
 
-            // global functions using this parameter
-            if (devMode && s->pp_global_funcs_using.size() > 0) {
-                mdStream << "**" + LTA(lang, "Referenced in Global Functions") + ":**\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                for (auto& f : s->pp_global_funcs_using) {
-                    string name = f->name;
-                    string module = short_loc(f->decl_loc);
-                    string label = f->pp_labels[lang_index];
-                    mdStream
-                        << name << " | "
-                        << module << " | "
-                        << label << "\n"
-                        ;
-                }
-                mdStream << "|<table\n"; // maddy-specific end table
-            }
-
-            // entity functions using this parameter
-            if (devMode && s->pp_entity_funcs_using.size() > 0) {
-                mdStream << "**" + LTA(lang, "Referenced in Entity Functions") + ":**\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                for (auto& m : s->pp_entity_funcs_using) {
-                    string entity = m->pp_entity->name;
-                    string member = m->name;
-                    string module = short_loc(m->defn_loc);
-                    string label = m->pp_labels[lang_index];
-                    mdStream
-                        << entity << " | "
-                        << member << " | "
-                        << module << " | "
-                        << label << "\n"
-                        ;
-                }
-                mdStream << "|<table\n"; // maddy-specific end table
-            }
-
-            // identity attributes using this parameter
-            if (devMode && s->pp_identity_attributes_using.size() > 0) {
-                mdStream << "**" + LTA(lang, "Referenced in Identity Attributes") + ":**\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                for (auto& m : s->pp_identity_attributes_using) {
-                    string entity = m->pp_entity->name;
-                    string member = m->name;
-                    string module = short_loc(m->decl_loc);
-                    string label = m->pp_labels[lang_index];
-                    mdStream
-                        << entity << " | "
-                        << member << " | "
-                        << module << " | "
-                        << label << "\n"
-                        ;
-                }
-                mdStream << "|<table\n"; // maddy-specific end table
+            // x-reference section
+            bool any_xref = false;
+            if (devMode) {
+                any_xref = do_xref(lang, lang_index, s, mdStream);
             }
 
             // symbol note if present
@@ -988,6 +1002,12 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                     }
                     mdStream << "|<table\n"; // maddy-specific end table
                 }
+            }
+
+            // x-reference section
+            bool any_xref = false;
+            if (devMode) {
+                any_xref = do_xref(lang, lang_index, s, mdStream);
             }
 
             // symbol note if present
