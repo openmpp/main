@@ -40,6 +40,10 @@ void TableGroupSymbol::post_parse(int pass)
     {
         // add this to the complete list of table groups
         pp_all_table_groups.push_back(this);
+        // assign reverse link from each member of group to this group
+        for (auto child : pp_symbol_list) {
+            child->pp_parent_groups.insert(this);
+        }
         break;
     }
     default:
@@ -99,11 +103,11 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
             // else do not publish a table group which contains only non-published tables
         }
-        // else symbol must be a table or a derived parameter marked publish_as_table
+        // else symbol must be a table or a derived parameter marked metadata_as_table
         auto tbl = dynamic_cast<TableSymbol*>(sym);
         auto param = dynamic_cast<ParameterSymbol *>(sym);
         if (tbl) {
-            if (!tbl->is_internal && !tbl->is_suppressed) {
+            if (!tbl->is_internal && !tbl->is_suppressed_table) {
                 GroupPcRow groupPc;
                 groupPc.groupId = pp_group_id;
                 groupPc.childPos = childPos++;
@@ -114,7 +118,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
             // else do not publish this table
         }
-        else if (param && param->publish_as_table)  {
+        else if (param && param->metadata_as_table)  {
             GroupPcRow groupPc;
             groupPc.groupId = pp_group_id;
             groupPc.childPos = childPos++;
@@ -145,7 +149,7 @@ bool TableGroupSymbol::contains_published_table() const
             // element is a table
             auto tbl = dynamic_cast<TableSymbol*>(sym);
             if (tbl) {
-                if (!tbl->is_internal && !tbl->is_suppressed) {
+                if (!tbl->is_internal && !tbl->is_suppressed_table) {
                     return true;
                 }
             }

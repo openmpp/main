@@ -58,8 +58,7 @@ table Person BirthsByYear //EN Births by year
 
 #endif // Hide non-C++ syntactic island from IDE
 
-/// PreSimulation-related code in Fertility.mpp
-void Fertility_PreSimulation(void)
+void Fertility_PreSimulation(void) //EN Compute derived parameters related to fertility.
 {
   for (int nA = 0; nA < SIZE(FERTILE_AGE); nA++ ) {
     for (int nY = 0; nY < SIZE(FERTILITY_YEAR); nY++ ) {
