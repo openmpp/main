@@ -91,9 +91,35 @@ static list<pair<string, unordered_map<string, string>>> allTransaledMsg;
  */
 #define LTA(lang, sourceMessage) ((getTranslated(lang.c_str(), sourceMessage, allTransaledMsg)))
 
+static void all_paths(Symbol *sym, list<Symbol*> *path, list<list<Symbol*>*> &result)
+{
+    // extend the path with current symbol
+    path->push_front(sym);
+    auto parents = sym->pp_parent_groups;
+    if (parents.size() == 0) {
+        // terminal at top of hierarchy.
+        // add completed path to the list of paths
+        result.push_back(path);
+        // that's all
+        return;
+    }
+    for (auto parent : parents) {
+        // create a deep copy of the current path
+        auto *new_path = new list<Symbol*>;
+        for (auto& e : *path) {
+            new_path->push_back(e);
+        }
+        // and extend it upwards
+        all_paths(parent, new_path, result);
+    }
+    // cleanup of path
+    // - not the multiple 'new_path' created above
+    // - not the 'path' which terminates at the top of the hierarchy (note 'return' above).
+    path->clear();
+    delete path;
+}
+
 /**
- * @fn  static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* s)
- *
  * @brief   helper function to construct bread crumb hierarchy for symbol s
  *
  * @param           lang        The language.
@@ -102,32 +128,49 @@ static list<pair<string, unordered_map<string, string>>> allTransaledMsg;
  *
  * @returns A single-line string which is a self-contained HTML fragment
  */
-static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* s)
+static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* sym_terminal)
 {
     string bread_crumbs;
-    if (s->pp_parent_group) {
-        /// group hierarchy of s ordered highest to lowest
-        list<GroupSymbol*> grp_list;
-        {
-            auto grp = s->pp_parent_group;
-            while (grp) {
-                grp_list.push_front(grp);
-                grp = grp->pp_parent_group;
-            }
-        }
-        /// HTML fragment for breadcrumbs (escaped from maddy)
+    if (sym_terminal->has_parent_group()) {
+        // prime the pump for the breadth-first traversal of all paths up the hierarcht from s
+
+        // A list of lists.  Each list is a path in the hierarchy
+        list<list<Symbol*>*> result;
+        
+        // first path, empty
+        auto the_path = new list<Symbol*>;
+        all_paths(sym_terminal, the_path, result);
+
         bread_crumbs = "<p>";
         bread_crumbs += "<b>" + LTA(lang, "Hierarchy") + ":</b><br>";
-        string indent = "";
-        for (auto grp : grp_list) {
-            string grp_name = grp->name;
-            string grp_label = grp->pp_labels[lang_index];
-            bread_crumbs += indent + "<a href=\"#" + grp_name + "\"><b>" + grp_label + "</b></a><br>";
-            indent += "&nbsp;&nbsp;&nbsp;&nbsp;";
+
+        for (auto path : result) {
+            string indent = "";
+            size_t steps = 0;
+            for (auto s : *path) {
+                /// HTML fragment for breadcrumbs (escaped from maddy)
+                string name = s->name;
+                string label = s->pp_labels[lang_index];
+                if (steps < (path->size() - 1)) {
+                    // group in hierarchy
+                    bread_crumbs += indent + "<a href=\"#" + name + "\"><b>" + label + "</b></a><br>";
+                }
+                else {
+                    // terminal
+                    bread_crumbs += indent + "<code><b>" + s->name + "</b></code>";
+                }
+                ++steps;
+                indent += "&nbsp;&nbsp;&nbsp;&nbsp;";
+            }
+            bread_crumbs += "<br>"; // separator between paths
         }
-        bread_crumbs += indent + "<code><b>" + s->name + "</b></code>";
         bread_crumbs += "</p>\n\n";
 
+        // clean up result
+        for (auto& path : result) {
+            path->clear();
+            delete path;
+        }
     }
     return bread_crumbs;
 }
@@ -158,11 +201,11 @@ static string expand_group(int lang_index, const GroupSymbol* g, int depth, int 
         for (auto s : g->pp_symbol_list) {
             /// subgroup
             auto sg = dynamic_cast<GroupSymbol*>(s);
-            if (sg && ((max_depth != -1) && (depth < max_depth))) {
+            if (sg && sg->is_published() && ((max_depth != -1) && (depth < max_depth))) {
                 // expand recursively to next level down in hierarchy
                 result += expand_group(lang_index, sg, depth + 1, max_depth, summary_mode);
             }
-            else if (!summary_mode) {
+            else if (!summary_mode && s->is_published()) {
                 // symbol hyperlink, name, and label
                 result += indent
                     + "<a href=\"#" + s->name + "\"><code>" + s->name + "</code></a> "
@@ -471,7 +514,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             mdStream << "<p>";
             // top-level groups
             for (auto g : Symbol::pp_all_parameter_groups) {
-                if (g->pp_parent_group || !g->is_published()) {
+                if (g->has_parent_group() || !g->is_published()) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -488,7 +531,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             // top-level groups
             for (auto g : Symbol::pp_all_parameter_groups) {
-                if (g->pp_parent_group || !g->is_published()) {
+                if (g->has_parent_group() || !g->is_published()) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -499,7 +542,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 string orphan_fragment;
                 bool first_orphan = true;
                 for (auto s : parameter_like) {
-                    if (s->pp_parent_group) {
+                    if (s->has_parent_group()) {
                         // skip symbol if in a group.
                         continue;
                     }
@@ -1010,7 +1053,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             mdStream << "<p>";
             // top-level groups
             for (auto g : Symbol::pp_all_table_groups) {
-                if (g->pp_parent_group || !g->is_published()) {
+                if (g->has_parent_group() || !g->is_published()) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -1027,7 +1070,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             // top-level groups
             for (auto g : Symbol::pp_all_table_groups) {
-                if (g->pp_parent_group || !g->is_published()) {
+                if (g->has_parent_group() || !g->is_published()) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -1038,14 +1081,22 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 string orphan_fragment;
                 bool first_orphan = true;
                 for (auto s : table_like) {
-                    bool is_orphan = !s->pp_parent_group;
-                    // Handle special case of a derived parameter published as a table
-                    // whose parent is a parameter group.
+                    bool is_orphan = !s->has_parent_group();
                     if (!is_orphan) {
+                        // Handle special case of a derived parameter published as a table
+                        // which has a parameter group parent but no table group parent.
                         bool is_derived_parameter = dynamic_cast<ParameterSymbol*>(s);
-                        bool parent_is_parameter_group = dynamic_cast<ParameterGroupSymbol*>(s->pp_parent_group);
-                        if (is_derived_parameter && parent_is_parameter_group) {
-                            is_orphan = true;
+                        if (is_derived_parameter) {
+                            bool has_table_group_parent = false;
+                            for (auto pg : s->pp_parent_groups) {
+                                if (dynamic_cast<TableGroupSymbol*>(pg)) {
+                                    has_table_group_parent = true;
+                                    break;
+                                }
+                            }
+                            if (!has_table_group_parent) {
+                                is_orphan = true;
+                            }
                         }
                     }
                     if (!is_orphan) {

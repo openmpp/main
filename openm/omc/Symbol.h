@@ -178,7 +178,6 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
-        , pp_parent_group(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -223,7 +222,6 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
-        , pp_parent_group(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -262,7 +260,6 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
-        , pp_parent_group(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         // find symbol table entry for the existing symbol
@@ -725,12 +722,14 @@ public:
     bool code_label_allowed;
 
     /**
-     * Parent group of this symbol.
-     * 
-     * Can be non-unique.
-     * If no parent group, is nullptr
+     * Parent groups of this symbol.
      */
-    GroupSymbol *pp_parent_group;
+    set <GroupSymbol*> pp_parent_groups;
+
+    bool has_parent_group(void) const
+    {
+        return (pp_parent_groups.size() > 0);
+    }
 
     /**
      * All EntityFuncSymbol which use this Symbol
