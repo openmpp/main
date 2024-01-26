@@ -231,25 +231,30 @@ static string preprocess_markdown(string& md_in)
 
 string short_loc(location& loc)
 {
-    string result = *loc.begin.filename;
-    auto p = result.find_last_of("/");
-    if ((p != result.npos) && (p < result.length()) ) {
-        result = result.substr(p + 1);
+    if (loc.begin.filename) {
+        string result = *loc.begin.filename;
+        auto p = result.find_last_of("/");
+        if ((p != result.npos) && (p < result.length())) {
+            result = result.substr(p + 1);
+        }
+        result +=
+            +"["
+            + to_string(loc.begin.line)
+            + "]";
+        return result;
     }
-    result +=
-        + "["
-        + to_string(loc.begin.line)
-        + "]";
-    return result;
+    else {
+        return "";
+    }
 }
 
-static bool do_xref(string lang, int lang_index, Symbol* s, std::ofstream &mdStream)
+static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::ofstream &mdStream)
 {
     bool any_xref = false;
     // global functions using this symbol
     if (s->pp_global_funcs_using.size() > 0) {
         any_xref = true;
-        mdStream << "**" + LTA(lang, "References in Global Functions") + ":**\n\n";
+        mdStream << "<strong>" + LTA(lang, "Global functions using") + " <code>" + name + "</code>:</strong>\n\n";
         mdStream << "|table>\n"; // maddy-specific begin table
         mdStream << " " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -269,7 +274,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, std::ofstream &mdStr
     // entity functions using this symbol
     if (s->pp_entity_funcs_using.size() > 0) {
         any_xref = true;
-        mdStream << "**" + LTA(lang, "References in Entity Functions") + ":**\n\n";
+        mdStream << "<strong>" + LTA(lang, "Entity functions using") + " <code>" + name + "</code>:</strong>\n\n";
         mdStream << "|table>\n"; // maddy-specific begin table
         mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -291,7 +296,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, std::ofstream &mdStr
     // identity attributes using this parameter
     if (s->pp_identity_attributes_using.size() > 0) {
         any_xref = true;
-        mdStream << "**" + LTA(lang, "References in Identity Attributes") + ":**\n\n";
+        mdStream << "<strong>" + LTA(lang, "Identity attributes using") + " <code>" + name + "</code>:</strong>\n\n";
         mdStream << "|table>\n"; // maddy-specific begin table
         mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -754,7 +759,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             // x-reference section
             bool any_xref = false;
             if (devMode) {
-                any_xref = do_xref(lang, lang_index, s, mdStream);
+                any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
             }
 
             // symbol note if present
@@ -885,7 +890,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 if (s->is_classification()) {
                     auto c = dynamic_cast<ClassificationSymbol*>(s);
                     assert(c);
-                    mdStream << "**" + LTA(lang, "Enumerators") + ":**\n\n";
+                    mdStream << "<strong>" + LTA(lang, "Enumerators of") + " <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumerator") + " | " + LTA(lang, "Value") + " | " + LTA(lang, "Label") +" \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -898,7 +903,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                         string label = ce->pp_labels[lang_index];
                         mdStream
                             << export_name << " | "
-                            << name << " | "
+                            << ("`" + name + "`") << " | "
                             << value << " | "
                             << label << "\n"
                             ;
@@ -908,7 +913,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 else if (s->is_partition()) {
                     auto p = dynamic_cast<PartitionSymbol*>(s);
                     assert(p);
-                    mdStream << "**" + LTA(lang, "Enumerators") + ":**\n\n";
+                    mdStream << "<strong>" + LTA(lang, "Enumerators of") + " <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "Lower") + " | " + LTA(lang, "Upper") + " | " + LTA(lang, "Value") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -953,7 +958,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                     }
                 }
                 if (parameters_used.size() > 0) {
-                    mdStream << "**" + LTA(lang, "Parameters using enumeration") + ":**\n\n";
+                    mdStream << "<strong>" + LTA(lang, "Parameters using") + " <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -987,7 +992,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                     }
                 }
                 if (tables_used.size() > 0) {
-                    mdStream << "**" + LTA(lang, "Tables using enumeration") + ":**\n\n";
+                    mdStream << "<strong>" + LTA(lang, "Tables using") +" <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -1007,7 +1012,16 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             // x-reference section
             bool any_xref = false;
             if (devMode) {
-                any_xref = do_xref(lang, lang_index, s, mdStream);
+                any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                if (s->is_classification()) {
+                    auto c = dynamic_cast<ClassificationSymbol*>(s);
+                    for (auto enumerator : c->pp_enumerators) {
+                        auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
+                        assert(ce); // logic guarantee
+                        string qualified_name = s->name + "::" + ce->name;
+                        any_xref = do_xref(lang, lang_index, ce, qualified_name, mdStream);
+                    }
+                }
             }
 
             // symbol note if present
