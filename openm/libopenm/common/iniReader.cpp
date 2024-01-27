@@ -499,7 +499,7 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
 }
 
 /** read language specific messages from path/to/theExe.message.ini for all languages */
-list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath, const list<string> & i_langList) noexcept
+list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath) noexcept
 {
     try {
         // read modelName.message.ini
@@ -508,33 +508,16 @@ list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages
         IniFileReader rd(i_iniMsgPath);
         const NoCaseSet sectSet = rd.sectionSet();
 
-        // for each language find section of message.ini and copy messages into message map
-        list<pair<string, unordered_map<string, string>>> allMsg;
+        // make list of languages in descending order, ex: fr-CA fr en-CA en
+        // it is an attempt to get the message in more specific language before more generic: in fr-CA and not in fr
+        // this is a very simplistic approach and result may be incorrect, e.g. en-US is always prefered to en-CA
+        list<string> langLst;
 
-        for (const string & lang : i_langList) {
-
-            // if language exist in message.ini
-            auto sectIt = std::find_if(
-                sectSet.cbegin(),
-                sectSet.cend(),
-                [&lang](const string & i_sect) -> bool { return equalNoCase(lang.c_str(), normalizeLanguageName(i_sect).c_str()); }
-            );
-            if (sectIt != sectSet.cend()) {
-
-                unordered_map<string, string> msgMap;
-
-                // add translated messages
-                // use only where translated value is not empty
-                const NoCaseMap cvMap = rd.getSection(sectIt->c_str());
-                for (const auto & cv : cvMap) {
-                    if (!cv.first.empty() && !cv.second.empty()) msgMap[cv.first] = cv.second;
-                }
-                if (!msgMap.empty()) {
-                    allMsg.push_back(pair<string, unordered_map<string, string>>(lang, msgMap));
-                }
-            }
+        for (auto rIt = sectSet.crbegin(); rIt != sectSet.crend(); ++rIt) {
+            langLst.push_back(*rIt);
         }
-        return allMsg;
+
+        return rd.loadAllMessages(langLst); // copy all messages ordered by language code into message map
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -545,4 +528,51 @@ list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages
         // throw HelperException(ex.what());    = exit without failure
     }
     return list<pair<string, unordered_map<string, string>>>(); // retrun empty value on error
+}
+
+/** read language specific messages from path/to/theExe.message.ini for specified list languages */
+list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath, const list<string> & i_langList) noexcept
+{
+    try {
+        // read modelName.message.ini
+        if (!isFileExists(i_iniMsgPath)) return list<pair<string, unordered_map<string, string>>>();    // exit: message.ini does not exists
+
+        IniFileReader rd(i_iniMsgPath);
+        const NoCaseSet sectSet = rd.sectionSet();
+
+        return rd.loadAllMessages(i_langList);  // copy all messages ordered by language code into message map
+    }
+    catch (HelperException & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw;                               = exit without failure
+    }
+    catch (exception & ex) {
+        theLog->logErr(ex, OM_FILE_LINE);
+        // throw HelperException(ex.what());    = exit without failure
+    }
+    return list<pair<string, unordered_map<string, string>>>(); // retrun empty value on error
+}
+
+/** read language specific messages for specified list languages */
+list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const list<string> & i_langList)
+{
+    // for each language find section of message.ini and copy messages into message map
+    list<pair<string, unordered_map<string, string>>> allMsg;
+
+    for (const string & lang : i_langList) {
+
+        unordered_map<string, string> msgMap;
+
+        // add translated messages
+        // use only where translated value is not empty
+        const NoCaseMap cvMap = getSection(lang.c_str());
+        for (const auto & cv : cvMap) {
+            if (!cv.first.empty() && !cv.second.empty()) msgMap[cv.first] = cv.second;
+        }
+        if (!msgMap.empty()) {
+            allMsg.push_back(pair<string, unordered_map<string, string>>(lang, msgMap));
+        }
+    }
+
+    return allMsg;
 }

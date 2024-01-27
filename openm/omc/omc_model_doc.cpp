@@ -48,49 +48,6 @@ using namespace std;
 using namespace openm;
 using namespace omc;
 
-/** find language-specific message by source non-translated message and language
-*
-* @param[in] i_lang   language to translate into, e.g.: fr-CA
-* @param[in] i_source source message to translate
-* @param[in] i_allMsg all translated strings form omc.message.ini
-*/
-const string getTranslated(const char* i_lang, const char* i_source, const list<pair<string, unordered_map<string, string>>>& i_allMsg) noexcept
-{
-    try {
-        if (i_lang == nullptr || i_source == nullptr) return "";    // empty result if language code empty or source on null
-
-        // if language exist in message.ini
-        auto msgMapIt = std::find_if(
-            i_allMsg.cbegin(),
-            i_allMsg.cend(),
-            [&i_lang](const pair<string, unordered_map<string, string>>& i_msgPair) -> bool { return equalNoCase(i_lang, i_msgPair.first.c_str()); }
-        );
-        if (msgMapIt == i_allMsg.cend()) return i_source;   // language not found
-
-        // if translation exist then return copy of translated message else return original message (no translation)
-        const unordered_map<string, string>::const_iterator msgIt = msgMapIt->second.find(i_source);
-        return
-            (msgIt != msgMapIt->second.cend()) ? msgIt->second.c_str() : i_source;
-    }
-    catch (...) {
-        return "";
-    }
-}
-
-// translated strings for all model languages from omc.message.ini
-static list<pair<string, unordered_map<string, string>>> allTransaledMsg;
-
-/**
- * @def LTA(lang, sourceMessage)
- *
- * @brief   LTA translation function: find translated string by language code and source message
- *          string.
- *
- * @param   lang            The language.
- * @param   sourceMessage   Message describing the source.
- */
-#define LTA(lang, sourceMessage) ((getTranslated(lang.c_str(), sourceMessage, allTransaledMsg)))
-
 static void all_paths(Symbol *sym, list<Symbol*> *path, list<list<Symbol*>*> &result)
 {
     // extend the path with current symbol
@@ -317,7 +274,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
     return any_xref;
 }
 
-void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model_name, CodeGen& cg, const string& i_msgFilePath) {
+void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model_name, CodeGen& cg) {
 
     /// target folder for HTML output
     string pubDir = outDir + "../bin/io/download/";
@@ -385,13 +342,6 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             stylesStream.close();
         }
     }
-
-    // read translated strings for all model languages from dir/of/omc.exe/omc.message.ini
-    list<string> langLst;
-    for (auto langSym : Symbol::pp_all_languages) {
-        langLst.push_back(langSym->name);
-    }
-    allTransaledMsg = IniFileReader::loadAllMessages(i_msgFilePath.c_str(), langLst);
 
     // Language loop
     for (auto langSym : Symbol::pp_all_languages) {

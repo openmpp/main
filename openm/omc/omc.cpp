@@ -234,12 +234,19 @@ int main(int argc, char * argv[])
             argStore.boolOption(ArgKey::logSql)
             );
 
+        string omc_exe = argv[0];   /// path of omc.exe
+
         // read language specific messages from path/to/exe/omc.message.ini
+        string msgFilePath = makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini");
+
         IniFileReader::loadMessages(
-            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), "omc.message.ini").c_str(),
+            msgFilePath.c_str(),
             argStore.strOption(OmcArgKey::messageLang)
         );
         theLog->logMsg("Start omc");
+
+        // load translated messages for all languages from path/to/exe/omc.message.ini
+        theAllTranslated->load(msgFilePath.c_str());
 
         // get model name
         string model_name = argStore.strOption(OmcArgKey::modelName);
@@ -298,9 +305,6 @@ int main(int argc, char * argv[])
         else {
             if (outDir.back() != '/' && outDir.back() != '\\') outDir += '/';
         }
-
-        /// path of omc.exe
-		string omc_exe = argv[0];
 
         // Obtain locations of 'use' folders to make available to parser.
         {
@@ -804,11 +808,11 @@ int main(int argc, char * argv[])
 
             if (Symbol::model_doc) {
                 // create doc version for users
-                do_model_doc(false, outDir, omrootDir, model_name, cg, makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini").c_str());
+                do_model_doc(false, outDir, omrootDir, model_name, cg);
             }
             if (Symbol::model_devdoc) {
                 // create doc version for model developers
-                do_model_doc(true, outDir, omrootDir, model_name, cg, makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini").c_str());
+                do_model_doc(true, outDir, omrootDir, model_name, cg);
             }
             theLog->logMsg("Generate model documentation - finish");
         }

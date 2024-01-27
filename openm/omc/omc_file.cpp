@@ -1,6 +1,6 @@
 /**
 * @file    omc_file.cpp
- * omc file helper functions.
+ * omc file helper functions and translation functions.
 */
 // Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -10,6 +10,39 @@
 using namespace std;
 using namespace openm;
 namespace fs = std::filesystem;
+
+namespace omc
+{
+    /** actual instance of translated message store: empty, loaded in main */
+    static TranslatedStore defaultTranslatedStore;
+
+    /** translated messages for all languages from omc.message.ini */
+    TranslatedStore * theAllTranslated = &defaultTranslatedStore;
+}
+
+// find language-specific message by source non-translated message and language
+const string omc::TranslatedStore::getTranslated(const char * i_lang, const char * i_source) const noexcept
+{
+    try {
+        if (i_lang == nullptr || i_source == nullptr) return "";    // empty result if language code empty or source on null
+
+        // if language exist in message.ini
+        auto msgMapIt = std::find_if(
+            allMsg.cbegin(),
+            allMsg.cend(),
+            [&i_lang](const pair<string, unordered_map<string, string>> & i_msgPair) -> bool { return equalNoCase(i_lang, i_msgPair.first.c_str()); }
+        );
+        if (msgMapIt == allMsg.cend()) return i_source;   // language not found
+
+        // if translation exist then return copy of translated message else return original message (no translation)
+        const unordered_map<string, string>::const_iterator msgIt = msgMapIt->second.find(i_source);
+        return
+            (msgIt != msgMapIt->second.cend()) ? msgIt->second.c_str() : i_source;
+    }
+    catch (...) {
+        return "";
+    }
+}
 
 // get list of files matching extension list from specified directory or current directory if source path is empty
 // each file name in result is a relative path and include source directory

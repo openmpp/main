@@ -90,6 +90,12 @@ namespace openm
         /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
         static void loadMessages(const char * i_iniMsgPath, const string & i_language = "") noexcept;
 
+        /** read language specific messages from path/to/theExe.message.ini for all languages
+        *
+        * @param[in] i_iniMsgPath path to message ini-file, usually: path/to/theExe.message.ini
+        */
+        static list<pair<string, unordered_map<string, string>>> loadAllMessages(const char * i_iniMsgPath) noexcept;
+
         /** read language specific messages from path/to/theExe.message.ini for specified list languages
         *
         * @param[in] i_iniMsgPath path to message ini-file, usually: path/to/theExe.message.ini
@@ -111,6 +117,9 @@ namespace openm
         //  unquote key and value if "quoted" or 'single quoted'
         //  return false on error: if section or key is empty
         bool addIniEntry(const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value);
+
+        // read language specific messages for specified list languages
+        list<pair<string, unordered_map<string, string>>> loadAllMessages(const list<string> & i_langList);
     };
 }
 
