@@ -21,9 +21,9 @@ parameters
   //EN Annual hazard of death
 	model_generated double MortalityHazard[SEX][RANGE_AGE][YEAR];
   /* NOTE(MortalityHazard, EN)
-    A hazard of death can be derived from a mortality rate qx
+    The hazard of death \(h_{x}\) is calculated from the mortality rate \(q_{x}\)
     using the formula
-    >h = - ln( 1 - qx )
+    \(h_{x}=-\ln(1-q_{x})\).
   */
 };
 
@@ -54,8 +54,7 @@ table Person PersonYearsLived //EN Person-years lived by sex, age and year
 
 #endif // Hide non-C++ syntactic island from IDE
 
-/// PreSimulation-related code in Mortality.mpp
-void Mortality_PreSimulation(void)
+void Mortality_PreSimulation(void) //EN Compute derived parameters related to mortality.
 {
   for (int nS = 0; nS < SIZE(SEX); nS++ ) {
     for (int nA = 0; nA < SIZE(RANGE_AGE); nA++ ) {

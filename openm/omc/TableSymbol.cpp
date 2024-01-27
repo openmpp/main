@@ -34,7 +34,7 @@ void TableSymbol::post_parse(int pass)
             // Mark all tables as suppressed.
             // Those which are retained will be changed back in a subsequent pass.
             if (!is_internal) {
-                is_suppressed = true;
+                is_suppressed_table = true;
             }
         }
         if (any_show) { // model contains a show statement
@@ -60,7 +60,7 @@ void TableSymbol::post_parse(int pass)
 void TableSymbol::post_parse_mark_enumerations(void)
 {
     if (true) {
-    //SFG if (!is_internal && !is_suppressed) {
+    //SFG if (!is_internal && !is_suppressed_table) {
         // Mark enumerations required for metadata support for this table
         // The enumeration of each dimension in the table is required
         for (auto dim : dimension_list) {

@@ -35,8 +35,8 @@ public:
         , is_hidden(false)
         , is_declared(false)
         , is_extendable(false)
-        , publish_as_table(false)
-        , is_suppressed(false)
+        , metadata_as_table(false)
+        , is_suppressed_table(false)
         , pp_index_series(nullptr)
         , index_series_offset(0)
         , datatype2(nullptr)
@@ -138,11 +138,12 @@ public:
     }
 
     /**
-     * True if parameter is published.
+     * True if parameter is published
+     * either as a scenario parameter or as a derived parameter (like a table)
      */
     bool is_published(void) const
     {
-        return (source == ParameterSymbol::parameter_source::scenario_parameter) || publish_as_table;
+        return (source == ParameterSymbol::parameter_source::scenario_parameter) || (metadata_as_table && !is_suppressed_table);
     }
 
     /**
@@ -389,19 +390,19 @@ public:
     bool is_extendable;
 
     /**
-     * True if a derived parameter is to be published as a table
+     * True if a derived parameter can be published as a table
      * 
      * Model code uses the parameters_to_tables statement to publish derived parameters as tables
      */
-    bool publish_as_table;
+    bool metadata_as_table;
 
      /**
-     * True if a derived parameter marked publish_as_table is marked for suppression
+     * True if a derived parameter marked metadata_as_table is marked for suppression
      *
-     * A derived parameter marked as publish_as_table can be marked for suppression
+     * A derived parameter marked as metadata_as_table can be marked for suppression
      * by tables_suppress or tables_retain.
      */
-    bool is_suppressed;
+    bool is_suppressed_table;
 
     /**
      * The parameter containing an index series used to extend the parameter

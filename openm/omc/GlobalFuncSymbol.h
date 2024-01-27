@@ -79,4 +79,9 @@ public:
      * The function body.
      */
     CodeBlock func_body;
+
+    /**
+     * The identifiers in the function body (if developer-supplied)
+     */
+    set<string> body_identifiers;
 };

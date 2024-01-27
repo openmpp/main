@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <set>
 #include <map>
+#include <regex>
 #include "omc_location.hh"
 #include "libopenm/omLog.h"
 #include "CodeBlock.h"
@@ -627,6 +628,8 @@ bool Symbol::no_metadata = true;
 
 bool Symbol::model_doc = false;
 
+bool Symbol::model_devdoc = false;
+
 bool Symbol::trace_parsing = false;
 
 bool Symbol::trace_scanning = false;
@@ -744,6 +747,20 @@ void Symbol::post_parse(int pass)
                     pp_labels[j] = lbl;
                     // note that pp_labels_explicit[j] is left at false
                 }
+            }
+        }
+        break;
+    }
+    case ePopulateCollections:
+    {
+        // Modify content of symbol NOTE
+        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+            string& note = pp_notes[lang_index];
+            if (note.length() > 0) {
+                if (Symbol::option_convert_modgen_note_syntax) {
+                    note = Symbol::note_modgen_to_markdown(note);
+                }
+                note = Symbol::note_expand_embeds(lang_index, note);
             }
         }
         break;
@@ -1281,24 +1298,6 @@ void Symbol::post_parse_all()
         pp_error(omc::location(), LT("error : no languages specified"));
     }
 
-    // convert Modgen NOTE syntax to markdown
-    if (Symbol::option_convert_modgen_note_syntax) {
-        // iterate collection of NOTES in model source code notes
-        for (const auto& [key, value] : Symbol::notes_source) {
-            auto text = value.first;
-            auto loc = value.second;
-            auto new_note = Symbol::normalize_note(text);
-            Symbol::notes_source[key] = make_pair(new_note,loc);
-        }
-        // iterate collection of NOTES in parameter value notes
-        for (const auto& [key, value] : Symbol::notes_input) {
-            auto text = value.first;
-            auto loc = value.second;
-            auto new_note = Symbol::normalize_note(text);
-            Symbol::notes_input[key] = make_pair(new_note, loc);
-        }
-    }
-
     // Create pp_symbols now to easily find Symbols while debugging.
     populate_pp_symbols();
     default_sort_pp_symbols();
@@ -1401,11 +1400,11 @@ void Symbol::post_parse_all()
     if (any_tables_retain || any_tables_suppress) {
         // retain tables on which non-suppressed or internal tables depend.
         for (auto tbl : pp_all_tables) {
-            if (!tbl->is_suppressed) {
+            if (!tbl->is_suppressed_table) {
                 for (auto tbl_req : tbl->pp_tables_required) {
-                    if (tbl_req->is_suppressed) {
+                    if (tbl_req->is_suppressed_table) {
                         // do not suppress, make it internal instead
-                        tbl_req->is_suppressed = false;
+                        tbl_req->is_suppressed_table = false;
                         tbl_req->is_internal = true;
                     }
                 }
@@ -1413,7 +1412,7 @@ void Symbol::post_parse_all()
         }
 
         for (auto et : pp_all_entity_tables) {
-            if (et->is_suppressed) {
+            if (et->is_suppressed_table) {
                 // Remove the 3 auxiliary entity member functions from the table's entity
                 auto& ccf = et->current_cell_fn;
                 auto& iif = et->init_increment_fn;
@@ -1434,11 +1433,11 @@ void Symbol::post_parse_all()
             }
         }
         // remove all suppressed entity tables from the master list of entity tables
-        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed; });
+        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed derived tables from the master list of derived tables
-        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed; });
+        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed tables from the master list of tables
-        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed; });
+        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed_table; });
     }
 
     // Sort all global collections
@@ -2559,7 +2558,7 @@ std::string Symbol::build_imports_csv(void)
     return csv;
 }
 
-std::string Symbol::normalize_note(const std::string& txt)
+std::string Symbol::note_modgen_to_markdown(const std::string& txt)
 {
     string result;
     result.reserve(txt.length());
@@ -2607,6 +2606,27 @@ std::string Symbol::normalize_note(const std::string& txt)
         is_first_line = false;
     }
     result += "\n"; // trailing \n of final line
+
+    return result;
+}
+
+std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
+{
+    string result = note;
+
+    std::smatch match;
+    // The following regex matches GetLabel() and the interior of the parentheses with (), e.g. \1
+    while (std::regex_search(result, match, std::regex("GetLabel\\(([A-Za-z0-9_]+)\\)"))) {
+        assert(match.size() >= 2); // guaranteed by above egex
+        string symbol_name = match[1];
+        auto symbol = Symbol::get_symbol(symbol_name);
+        if (symbol) {
+            string symbol_label = symbol->pp_labels[lang_index];
+            result = match.prefix().str()
+                + symbol_label
+                + match.suffix().str();
+        }
+    }
 
     return result;
 }

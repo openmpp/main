@@ -110,7 +110,7 @@ void ParameterSymbol::post_parse(int pass)
             // Mark derived parameter as suppressed (if published as table)
             // Those which are retained will be changed back in a subsequent pass.
             if (is_derived()) {
-                is_suppressed = true;
+                is_suppressed_table = true;
             }
         }
         if (any_show) { // model contains a show statement
@@ -122,6 +122,16 @@ void ParameterSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
+        // Modify content of value NOTE
+        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+            string& note = pp_value_notes[lang_index];
+            if (note.length() > 0) {
+                if (Symbol::option_convert_modgen_note_syntax) {
+                    note = Symbol::note_modgen_to_markdown(note);
+                }
+                note = Symbol::note_expand_embeds(lang_index, note);
+            }
+        }
         // validate dimension list
         // and populate the post-parse version
         for (auto psym : enumeration_list) {
@@ -252,7 +262,7 @@ void ParameterSymbol::post_parse_mark_enumerations(void)
     // Mark enumerations required for metadata support for this parameter
     // Note that .csv or .tsv parameters are not detected until late, so may be marked as missing_parameters
     // so publish meta data for their enumerations.
-    if (source == scenario_parameter || source == missing_parameter || publish_as_table) {
+    if (source == scenario_parameter || source == missing_parameter || metadata_as_table) {
         // The storage type if an enumeration
         if (pp_datatype->is_enumeration()) {
             auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
@@ -683,7 +693,7 @@ CodeBlock ParameterSymbol::dat_definition() const
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Only external (scenario) parameters, or parameters echoed as tables, have metadata
-    if (source != ParameterSymbol::parameter_source::scenario_parameter && !publish_as_table) {
+    if (source != ParameterSymbol::parameter_source::scenario_parameter && !metadata_as_table) {
         // returning before traversing possible higher levels of the hierarchical calling chain 
         // ensures those higher levela are not called for this instance.
         return;
@@ -753,7 +763,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             }
         }
     }
-    else if (publish_as_table && !is_suppressed) {
+    else if (metadata_as_table && !is_suppressed_table) {
         // This is a derived parameter which has been marked for export as a table
         // by a parameters_to_tables statement in model code.
 

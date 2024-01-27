@@ -23,6 +23,9 @@ table_group DerivedParameters //EN Derived Parameters
     MortalityHazard
 };
 
-
+parameter_group ATest
+{
+    MortalityHazard
+};
 
 #endif // Hide non-C++ syntactic island from IDE

@@ -768,7 +768,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int parameter_dimension_labels = 0;
         int parameter_dimension_notes = 0;
         for (auto& s : Symbol::pp_all_parameters) {
-            if (s->source != ParameterSymbol::parameter_source::scenario_parameter && !s->publish_as_table) {
+            if (s->source != ParameterSymbol::parameter_source::scenario_parameter && !s->metadata_as_table) {
                 // skip parameters which are not published
                 continue;
             }

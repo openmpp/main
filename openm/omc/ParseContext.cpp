@@ -6,6 +6,7 @@
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #include "ParseContext.h"
+#include "GlobalFuncSymbol.h"
 
 string ParseContext::cxx_process_token(token_type tok, const string yytext, omc::location * loc)
 {
@@ -127,6 +128,13 @@ string ParseContext::cxx_process_token(token_type tok, const string yytext, omc:
             if (is_memfunc) {
                 // if a member function, the name is the class-qualified name
                 cxx_function_name = name1 + "::" + cxx_function_name;
+            }
+            else {
+                // is a global function definition
+                if (!Symbol::exists(cxx_function_name)) {
+                    // create a GlobalFuncSymbol for this supplied function definition
+                    auto gfs = new GlobalFuncSymbol(cxx_function_name, *loc);
+                }
             }
             reverse(parmlist.begin(), parmlist.end());
             Symbol::function_parmlist.emplace(cxx_function_name, parmlist);

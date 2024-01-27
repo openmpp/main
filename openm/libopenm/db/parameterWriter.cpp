@@ -690,37 +690,23 @@ void ParameterRunWriter::digestParameter(IDbExec * i_dbExec, int i_subCount, con
     //     INNER JOIN run_lst RL ON (RL.run_id = E.run_id)
     //     WHERE E.parameter_hid = 456
     //     AND E.value_digest = '22ee44cc'
-    //     AND RL.status IN ('p', 's')
     //   )
     // WHERE run_id = 11 AND parameter_hid = 456
     //
     i_dbExec->update(
-        "UPDATE run_parameter SET value_digest = " + toQuoted(sDigest) + 
+        "UPDATE run_parameter SET value_digest = " + toQuoted(sDigest) +
         " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
-        );
+    );
 
     i_dbExec->update(
         "UPDATE run_parameter SET base_run_id =" \
         " (" \
-        " SELECT MIN(E.run_id)" \
-        " FROM run_parameter E" \
-        " INNER JOIN run_lst RL ON (RL.run_id = E.run_id)" \
+        " SELECT MIN(E.run_id) FROM run_parameter E" \
         " WHERE E.parameter_hid = " + sHid +
         " AND E.value_digest = " + toQuoted(sDigest) +
-        " AND RL.status = 's'" \
         " )" \
-        " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid +
-        " AND EXISTS"
-        " ("
-        " SELECT * " \
-        " FROM run_parameter E" \
-        " INNER JOIN run_lst RL ON(RL.run_id = E.run_id)" \
-        " WHERE E.parameter_hid = " + sHid +
-        " AND E.value_digest = " + toQuoted(sDigest) +
-        " AND RL.status = 's'" \
-        " AND E.run_id <>" + sHid +
-        " )"
-        );
+        " WHERE run_id = " + sRunId + " AND parameter_hid = " + sHid
+    );
 
     // if same digest already exists then delete current run value rows
     int nBase = i_dbExec->selectToInt(

@@ -90,6 +90,13 @@ namespace openm
         /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
         static void loadMessages(const char * i_iniMsgPath, const string & i_language = "") noexcept;
 
+        /** read language specific messages from path/to/theExe.message.ini for specified list languages
+        *
+        * @param[in] i_iniMsgPath path to message ini-file, usually: path/to/theExe.message.ini
+        * @param[in] i_langList   list of languages to get translated messages, ex.: (en-CA, EN, fr-CA, FR)
+        */
+        static list<pair<string, unordered_map<string, string>>> loadAllMessages(const char * i_iniMsgPath, const list<string> & i_langList) noexcept;
+
     private:
         bool is_loaded;         // if true then ini-file loaded OK else error
         IniEntryVec entryVec;   // ini-file entries: (section, key, value)

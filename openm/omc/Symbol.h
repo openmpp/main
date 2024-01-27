@@ -40,6 +40,10 @@ class AggregationSymbol;
 class ImportSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
+class GroupSymbol;
+class EntityFuncSymbol;
+class GlobalFuncSymbol;
+class IdentityAttributeSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -718,6 +722,31 @@ public:
     bool code_label_allowed;
 
     /**
+     * Parent groups of this symbol.
+     */
+    set <GroupSymbol*> pp_parent_groups;
+
+    bool has_parent_group(void) const
+    {
+        return (pp_parent_groups.size() > 0);
+    }
+
+    /**
+     * All EntityFuncSymbol which use this Symbol
+     */
+    set<EntityFuncSymbol *> pp_entity_funcs_using;
+
+    /**
+     * All GlobalFuncSymbol which use this Symbol
+     */
+    set<GlobalFuncSymbol *> pp_global_funcs_using;
+
+    /**
+     * All IdentityAttributeSymbol which use this Symbol
+     */
+    set<IdentityAttributeSymbol*> pp_identity_attributes_using;
+
+    /**
      * Check for existence of symbol with this unique name.
      *
      * @param unm The unique name.
@@ -1017,9 +1046,21 @@ public:
     /**
      * Replace Modgen syntax in a NOTE by equivalent markdown.
      *
-     * @param cmt The comment.
+     * @param note The note.
      */
-    static std::string normalize_note(const std::string& txt);
+    static std::string note_modgen_to_markdown(const std::string& note);
+
+    /**
+     * Expand embedded constructs in a NOTE.
+     *          
+     * Example: "GetLabel(SymbolName)" is expanded to the label of the Symbol
+     *
+     * @param   lang_index  Zero-based index of the language.
+     * @param   note        The note contents.
+     *
+     * @returns A std::string.
+     */
+    static std::string note_expand_embeds(int lang_index, const std::string& note);
 
     /**
      * Pathnames of use folders.
@@ -1268,7 +1309,7 @@ public:
     static set<string> pp_visible_member_names;
 
     /**
-     * Map of member function qualified names to all identifiers used in the body of the function.
+     * Map of names of all identifiers used in the body of a function defined in model code.
      * 
      * An example entry might be "Person::MortalityEvent" ==> "alive".
      */
@@ -1801,9 +1842,14 @@ public:
     static bool no_metadata;
 
     /**
-     * True to generate model documentation
+     * True to generate model documentation (end user version)
      */
     static bool model_doc;
+
+    /**
+     * True to generate model documentation (model dev version)
+     */
+    static bool model_devdoc;
 
     /**
      * True to enable detailed output from parser

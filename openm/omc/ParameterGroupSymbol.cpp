@@ -37,6 +37,10 @@ void ParameterGroupSymbol::post_parse(int pass)
     {
         // add this to the complete list of parameter groups
         pp_all_parameter_groups.push_back(this);
+        // assign reverse link from each member of group to this group
+        for (auto child : pp_symbol_list) {
+            child->pp_parent_groups.insert(this);
+        }
         break;
     }
     default:

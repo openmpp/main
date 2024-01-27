@@ -129,6 +129,26 @@ void EntityFuncSymbol::post_parse(int pass)
     {
         // Add this entity function to the entity's list of entity functions
         pp_entity->pp_functions.push_back(this);
+
+        // Add this entity function to xref of this identifier
+        for (auto& identifier : body_identifiers) {
+            if (auto s = get_symbol(identifier)) {
+                // identifier is a global symbol
+                s->pp_entity_funcs_using.insert(this);
+            }
+            if (identifier.find("Lookup_") == 0) {
+                // name of parameter used as lookup (discrete distribution)
+                string param_name = identifier.substr(7);
+                if (auto s = get_symbol(param_name)) {
+                    // identifier is a parameter
+                    s->pp_entity_funcs_using.insert(this);
+                }
+            }
+            if (auto s = get_symbol(identifier, pp_entity)) {
+                // identifier is an entity symbol
+                s->pp_entity_funcs_using.insert(this);
+            }
+        }
         break;
     }
     default:
