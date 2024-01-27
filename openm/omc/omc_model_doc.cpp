@@ -346,7 +346,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
     // Language loop
     for (auto langSym : Symbol::pp_all_languages) {
         int lang_index = langSym->language_id;
-        string lang = langSym->name;
+        const string& lang = langSym->name;
 
         // skip model's secondary languages for modeldev version
         if (devMode && lang_index > 0) {
@@ -908,7 +908,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                     }
                 }
                 if (parameters_used.size() > 0) {
-                    mdStream << "<strong>" + LTA(lang, "Parameters using") + " <code>" + s->name + "</code>:</strong>\n\n";
+                    mdStream << "<strong>" + LTA(lang, "Parameters using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -942,7 +942,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                     }
                 }
                 if (tables_used.size() > 0) {
-                    mdStream << "<strong>" + LTA(lang, "Tables using") +" <code>" + s->name + "</code>:</strong>\n\n";
+                    mdStream << "<strong>" + LTA(lang, "Tables using enumeration") +" <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
