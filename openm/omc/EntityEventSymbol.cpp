@@ -19,8 +19,10 @@
 #include "EntityFuncSymbol.h"
 #include "LanguageSymbol.h"
 #include "CodeBlock.h"
+#include "omc_file.h" // for LTA support
 
 using namespace std;
+using namespace omc; // for LTA support
 
 void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool is_developer_supplied)
 {
@@ -173,11 +175,12 @@ void EntityEventSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Propagate event labels to the event time and event implement entity functions.
-        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
-            string& label = pp_labels[lang_index];
-            // TODO - use LTA once available here
-            time_func->pp_labels[lang_index] = "Time - " + label;
-            implement_func->pp_labels[lang_index] = "Implement - " + label;
+        for (auto langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id;
+            const string& lang = langSym->name;
+            const string& label = pp_labels[lang_index];
+            time_func->pp_labels[lang_index] = LTA(lang, "Time") + " - " + label;
+            implement_func->pp_labels[lang_index] = LTA(lang, "Implement") + " - " + label;
         }
 
         // Add this entity event time symbol to the entity's list of all such symbols

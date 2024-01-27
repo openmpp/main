@@ -10,8 +10,10 @@
 #include <algorithm>
 #include "GlobalFuncSymbol.h"
 #include "LanguageSymbol.h"
+#include "omc_file.h" // for LTA support
 
 using namespace std;
+using namespace omc; // for LTA support
 
 void GlobalFuncSymbol::post_parse(int pass)
 {
@@ -52,15 +54,15 @@ void GlobalFuncSymbol::post_parse(int pass)
                     fname = fname.substr(p + 1);
                 }
             }
-            for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+            for (auto langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id;
+                const string& lang = langSym->name;
                 if ((!pp_labels_explicit[lang_index]) && (fname.length() > 0)) {
                     if (name.find("om_PreSimulation_") != name.npos) {
-                        // TODO - use LTA once available here
-                        pp_labels[lang_index] = "PreSimulation function defined in " + fname;
+                        pp_labels[lang_index] = LTA(lang,"PreSimulation function defined in") + " " + fname;
                     }
                     else if (name.find("om_UserTables_") != name.npos) {
-                        // TODO - use LTA once available here
-                        pp_labels[lang_index] = "UserTables function defined in " + fname;
+                        pp_labels[lang_index] = LTA(lang, "UserTables function defined in") + " " + fname;
                     }
                 }
             }

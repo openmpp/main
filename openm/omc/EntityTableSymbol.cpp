@@ -27,9 +27,12 @@
 #include "ModelTypeSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
+#include "omc_file.h" // for LTA support
+
 
 using namespace std;
 using namespace openm;
+using namespace omc; // for LTA support
 
 void EntityTableSymbol::create_auxiliary_symbols()
 {
@@ -98,10 +101,11 @@ void EntityTableSymbol::post_parse(int pass)
     {
         if (filter) {
             // Propagate event labels to the table filter identity attribute, if present.
-            for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
-                string& label = pp_labels[lang_index];
-                // TODO - use LTA once available here
-                filter->pp_labels[lang_index] = "Filter - " + label;
+            for (auto langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id;
+                const string& lang = langSym->name;
+                const string& label = pp_labels[lang_index];
+                filter->pp_labels[lang_index] = LTA(lang,"Filter") + " - " + label;
             }
         }
 
