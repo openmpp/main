@@ -162,7 +162,8 @@ void EntityEventSymbol::post_parse(int pass)
         // instead of to the EntityEventSymbol (this), because the name of the implement function is the event name.
         // If there are any such, propagate them to the EntityEventSymbol (this).
         {
-            for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
                 if (implement_func->pp_labels_explicit[lang_index]) {
                     pp_labels[lang_index] = implement_func->pp_labels[lang_index];
                     pp_labels_explicit[lang_index] = true;
@@ -175,9 +176,9 @@ void EntityEventSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Propagate event labels to the event time and event implement entity functions.
-        for (auto langSym : Symbol::pp_all_languages) {
-            int lang_index = langSym->language_id;
-            const string& lang = langSym->name;
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             const string& label = pp_labels[lang_index];
             time_func->pp_labels[lang_index] = LTA(lang, "Time") + " - " + label;
             implement_func->pp_labels[lang_index] = LTA(lang, "Implement") + " - " + label;

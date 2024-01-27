@@ -311,11 +311,12 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
         out << "{\n\"ModelDoc\": [\n";
         size_t n = 0;
 
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             out <<
                 "   {\n" <<
-                "   \"LangCode\": \"" << lang->name << "\",\n" <<
-                "   \"Link\": \"" << pubURL + model_name + ".doc." + lang->name + ".html\"\n" <<
+                "   \"LangCode\": \"" << lang << "\",\n" <<
+                "   \"Link\": \"" << pubURL + model_name + ".doc." + lang + ".html\"\n" <<
                 "   }";
             if (++n < Symbol::pp_all_languages.size()) out << ",";
             out << "\n";
@@ -344,9 +345,9 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
     }
 
     // Language loop
-    for (auto langSym : Symbol::pp_all_languages) {
-        int lang_index = langSym->language_id;
-        const string& lang = langSym->name;
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        int lang_index = langSym->language_id; // 0-based
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
 
         // skip model's secondary languages for modeldev version
         if (devMode && lang_index > 0) {

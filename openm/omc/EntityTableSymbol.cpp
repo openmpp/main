@@ -101,9 +101,9 @@ void EntityTableSymbol::post_parse(int pass)
     {
         if (filter) {
             // Propagate event labels to the table filter identity attribute, if present.
-            for (auto langSym : Symbol::pp_all_languages) {
-                int lang_index = langSym->language_id;
-                const string& lang = langSym->name;
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 const string& label = pp_labels[lang_index];
                 filter->pp_labels[lang_index] = LTA(lang,"Filter") + " - " + label;
             }
@@ -985,13 +985,14 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
 
         // Labels and notes for accumulators
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TableAccTxtLangRow tableAccTxt;
             tableAccTxt.tableId = pp_table_id;
             tableAccTxt.accId = acc->index;
-            tableAccTxt.langCode = lang->name;
-            tableAccTxt.descr = acc->label(*lang);
-            tableAccTxt.note = acc->note(*lang);
+            tableAccTxt.langCode = lang;
+            tableAccTxt.descr = acc->label(*langSym);
+            tableAccTxt.note = acc->note(*langSym);
             metaRows.tableAccTxt.push_back(tableAccTxt);
         }
     }
@@ -1039,16 +1040,17 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.tableExpr.push_back(tableExpr);
 
         // Labels and notes for measures
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TableExprTxtLangRow tableExprTxt;
             tableExprTxt.tableId = pp_table_id;
             tableExprTxt.exprId = etm->index;
 
-            tableExprTxt.langCode = lang->name;
+            tableExprTxt.langCode = lang;
 
-            tableExprTxt.descr = etm->label(*lang);
+            tableExprTxt.descr = etm->label(*langSym);
 
-            tableExprTxt.note = etm->note(*lang);
+            tableExprTxt.note = etm->note(*langSym);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
 

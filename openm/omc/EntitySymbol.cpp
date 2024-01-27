@@ -1112,14 +1112,15 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     metaRows.entityDic.push_back(entityDic);
 
     // Labels and notes for the entity
-    for (const auto lang : Symbol::pp_all_languages) {
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
 
         EntityDicTxtLangRow entityTxt;
 
         entityTxt.entityId = pp_entity_id;
-        entityTxt.langCode = lang->name;
-        entityTxt.descr = label(*lang);
-        entityTxt.note = note(*lang);
+        entityTxt.langCode = lang;
+        entityTxt.descr = label(*langSym);
+        entityTxt.note = note(*langSym);
 
         metaRows.entityTxt.push_back(entityTxt);
     }
@@ -1139,15 +1140,16 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.entityAttr.push_back(entityAttr);
 
         // Labels and notes
-        for (const auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
 
             EntityAttrTxtLangRow entityAttrTxt;
 
             entityAttrTxt.entityId = pp_entity_id;
             entityAttrTxt.attrId = dm->pp_member_id;
-            entityAttrTxt.langCode = lang->name;
-            entityAttrTxt.descr = dm->label(*lang);
-            entityAttrTxt.note = dm->note(*lang);
+            entityAttrTxt.langCode = lang;
+            entityAttrTxt.descr = dm->label(*langSym);
+            entityAttrTxt.note = dm->note(*langSym);
             metaRows.entityAttrTxt.push_back(entityAttrTxt);
         }
     }

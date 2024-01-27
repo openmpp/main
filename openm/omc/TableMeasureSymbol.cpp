@@ -172,11 +172,12 @@ void TableMeasureSymbol::post_parse(int pass)
     {
         {
             // Create fall-back label if not given explicitly
-            for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-                if (!pp_labels_explicit[j]) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                if (!pp_labels_explicit[lang_index]) {
                     // no explicit label for this language
                     // use Expr0, etc.
-                    pp_labels[j] = short_name_default;
+                    pp_labels[lang_index] = short_name_default;
                 }
             }
         }

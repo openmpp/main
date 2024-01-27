@@ -646,9 +646,8 @@ void Symbol::post_parse(int pass)
     case eAssignLabel:
     {
         // Create default values of symbol labels and notes for all languages
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            auto def_lab = default_label(*lang_sym);
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            auto def_lab = default_label(*langSym);
             assert(def_lab.length() > 0);
             pp_labels.push_back(def_lab);
             pp_labels_explicit.push_back(false);
@@ -734,17 +733,23 @@ void Symbol::post_parse(int pass)
     }
     case eResolveDataTypes:
     {
-        // propagate explicit label in default language to other languages if missing
-        if (pp_labels_explicit[0]) { // default language of model is always at position 0
+        /// Index of the model's default language, which is always 0
+        const int lang_index_default_language = 0;
+        // Propagate explicit label in default language
+        // to other languages which do not have an explicit label.
+        if (pp_labels_explicit[lang_index_default_language]) {
             // symbol has an explicit label in the default language
-            for (int j = 1; j < LanguageSymbol::number_of_languages(); j++) {
-                // iterate other languages
-                if (!pp_labels_explicit[j]) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
+                if (lang_index == lang_index_default_language) {
+                    continue;
+                }
+                if (!pp_labels_explicit[lang_index]) {
                     // no explicit label for this language
-                    // create a label using the explicit label of the default language
-                    auto lang_sym = LanguageSymbol::id_to_sym[j];
-                    string lbl = pp_labels[0] + " (" + lang_sym->name + ")";
-                    pp_labels[j] = lbl;
+                    // create a label using the explicit label in the default language
+                    string lbl = pp_labels[lang_index_default_language] + " (" + lang + ")";
+                    pp_labels[lang_index] = lbl;
                     // note that pp_labels_explicit[j] is left at false
                 }
             }
@@ -754,7 +759,8 @@ void Symbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Modify content of symbol NOTE
-        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
             string& note = pp_notes[lang_index];
             if (note.length() > 0) {
                 if (Symbol::option_convert_modgen_note_syntax) {
@@ -924,30 +930,32 @@ string Symbol::note(const LanguageSymbol & language) const
 void Symbol::associate_explicit_label_or_note(string key)
 {
     // Check for an explicit label specified using //LABEL, for each language
-    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-        auto lang_sym = LanguageSymbol::id_to_sym[j];
-        string key_and_lang = key + "," + lang_sym->name;
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        int lang_index = langSym->language_id; // 0-based
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
+        string key_and_lang = key + "," + lang;
         auto search = explicit_labels.find(key_and_lang);
         if (search != explicit_labels.end()) {
             auto text = (search->second).first;
             auto loc = (search->second).second;
-            pp_labels[j] = trim(text);
-            pp_labels_explicit[j] = true;
-            pp_labels_pos[j] = loc.begin;
+            pp_labels[lang_index] = trim(text);
+            pp_labels_explicit[lang_index] = true;
+            pp_labels_pos[lang_index] = loc.begin;
         }
     }
 
     // Check for a note specified using NOTE comment, for each language
-    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-        auto lang_sym = LanguageSymbol::id_to_sym[j];
-        string key_and_lang = key + "," + lang_sym->name;
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        int lang_index = langSym->language_id; // 0-based
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
+        string key_and_lang = key + "," + lang;
         // search in model source (ignore parameter value NOTEs)
         auto search = notes_source.find(key_and_lang);
         if (search != notes_source.end()) {
             auto text = (search->second).first;
             auto loc = (search->second).second;
-            pp_notes[j] = text;
-            pp_notes_pos[j] = loc.begin;
+            pp_notes[lang_index] = text;
+            pp_notes_pos[lang_index] = loc.begin;
         }
     }
 }
@@ -1303,7 +1311,7 @@ void Symbol::post_parse_all()
     default_sort_pp_symbols();
 
 	//
-    // Pass 1: create additional symbols for foreign types
+    // Pass 1: create additional symbols for foreign types and process languages
     // 
 	// symbols will be processed in lexicographical order within sorting group
 	pp_symbols_ignore.clear();
@@ -1316,6 +1324,9 @@ void Symbol::post_parse_all()
 		//theLog->logFormatted("pass #1 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
 		pr.second->post_parse(eCreateForeignTypes);
 	}
+
+    // Sort global language collection in order given in languages statement
+    pp_all_languages.sort([](LanguageSymbol* a, LanguageSymbol* b) { return a->language_id < b->language_id; });
 
 	// Recreate pp_symbols because symbols may have changed or been added.
 	populate_pp_symbols();
@@ -1441,7 +1452,6 @@ void Symbol::post_parse_all()
     }
 
     // Sort all global collections
-    pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
     pp_all_strings.sort([](StringSymbol *a, StringSymbol *b) { return a->name < b->name; });
     pp_all_types0.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_types1.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });

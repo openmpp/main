@@ -291,10 +291,10 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int language_count = 0;
         int language_labels = 0;
         int language_notes = 0;
-        for (auto& s : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             ++language_count;
-            language_labels += s->is_label_supplied();
-            language_notes += s->is_note_supplied();
+            language_labels += langSym->is_label_supplied();
+            language_notes += langSym->is_note_supplied();
         }
 
         int classification_count = 0;
@@ -714,10 +714,10 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int language_count = 0;
         int language_labels = 0;
         int language_notes = 0;
-        for (auto& s : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             ++language_count;
-            language_labels += s->is_label_supplied();
-            language_notes += s->is_note_supplied();
+            language_labels += langSym->is_label_supplied();
+            language_notes += langSym->is_note_supplied();
         }
 
         int classification_count = 0;

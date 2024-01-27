@@ -84,8 +84,8 @@ void CodeGen::do_preamble()
     version_symbol->populate_metadata(metaRows);
 
     // populate metadata for model languages
-    for (auto lang : Symbol::pp_all_languages) {
-        lang->populate_metadata(metaRows);
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        langSym->populate_metadata(metaRows);
     }
 
     // om_types0.h
@@ -450,16 +450,16 @@ void CodeGen::do_model_strings()
     c += "const char * ModelString(const char * string_name)";
     c += "{";
     c += "static std::map<std::string, std::string> string_map {";
-    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-        auto lang_sym = LanguageSymbol::id_to_sym[j];
-        auto lang_name = lang_sym->name;
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        int lang_index = langSym->language_id; // 0-based
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
         c += "";
-        c += "// strings for " + lang_name;
+        c += "// strings for " + lang;
         for (auto modgen_string : Symbol::pp_all_strings) {
             c += "{"
-                  "\"" + normalizeLanguageName(lang_name) + "@" + modgen_string->name + "\""
+                  "\"" + normalizeLanguageName(lang) + "@" + modgen_string->name + "\""
                   ", "
-                  "\"" + modgen_string->pp_labels[j] + "\""
+                  "\"" + modgen_string->pp_labels[lang_index] + "\""
                   "},";
         }
     }

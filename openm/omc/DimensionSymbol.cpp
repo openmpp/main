@@ -123,17 +123,18 @@ void DimensionSymbol::post_parse(int pass)
         }
         {
             // Create fall-back label if not given explicitly
-            for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-                if (!pp_labels_explicit[j]) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                if (!pp_labels_explicit[lang_index]) {
                     // no explicit label for this language
                     assert(pp_enumeration); // logic guarantee
-                    if (pp_enumeration->pp_labels_explicit[j]) {
+                    if (pp_enumeration->pp_labels_explicit[lang_index]) {
                         // the underlying enumeration has an explicit label for this language, use it
-                        pp_labels[j] = pp_enumeration->pp_labels[j];
+                        pp_labels[lang_index] = pp_enumeration->pp_labels[lang_index];
                     }
                     else {
                         // use Dim0, etc.
-                        pp_labels[j] = short_name_default;
+                        pp_labels[lang_index] = short_name_default;
                     }
                 }
             }

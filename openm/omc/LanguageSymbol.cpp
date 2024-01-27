@@ -17,6 +17,13 @@ void LanguageSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateForeignTypes:
+    {
+        // Process languages in very early pass
+        // Add this language to the complete list of languages.
+        pp_all_languages.push_back(this);
+        break;
+    }
     case eAssignLabel:
     {
         // The label for language symbols follows a special syntax
@@ -44,12 +51,6 @@ void LanguageSymbol::post_parse(int pass)
             lbl = lang_lbl;
         }
 
-        break;
-    }
-    case ePopulateCollections:
-    {
-        // Add this language to the complete list of languages.
-        pp_all_languages.push_back(this);
         break;
     }
     default:

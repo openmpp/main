@@ -330,7 +330,7 @@ public:
 
     enum post_parse_pass {
 
-		///< post-parse pass to identify foreign types
+		///< post-parse pass to identify foreign types and process languages
 		eCreateForeignTypes,
 
 		///< post-parse pass to create/morph missing symbols

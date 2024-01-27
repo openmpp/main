@@ -59,19 +59,20 @@ void ParameterSymbol::post_parse(int pass)
     case eAssignLabel:
     {
         // Create default values for parameter value note for all languages
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             pp_value_notes.push_back("");
         }
 
         // Check for a value note specified using NOTE comment, for each language
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = unique_name + "," + lang_sym->name;
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
+            string key = unique_name + "," + lang;
             auto search = notes_input.find(key);
             if (search != notes_input.end()) {
                 auto text = (search->second).first;
                 auto loc = (search->second).second;
-                pp_value_notes[j] = text;
+                pp_value_notes[lang_index] = text;
             }
         }
         break;
@@ -123,7 +124,8 @@ void ParameterSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Modify content of value NOTE
-        for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
             string& note = pp_value_notes[lang_index];
             if (note.length() > 0) {
                 if (Symbol::option_convert_modgen_note_syntax) {
@@ -721,12 +723,13 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.paramDic.push_back(paramDic);
 
         // label and note for the parameter
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             ParamDicTxtLangRow paramTxt;
             paramTxt.paramId = pp_parameter_id;
-            paramTxt.langCode = lang->name;
-            paramTxt.descr = label(*lang);
-            paramTxt.note = note(*lang);
+            paramTxt.langCode = lang;
+            paramTxt.descr = label(*langSym);
+            paramTxt.note = note(*langSym);
             metaRows.paramTxt.push_back(paramTxt);
         }
 
@@ -750,15 +753,16 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.paramDims.push_back(paramDims);
 
             // Labels and notes for the dimensions of the parameter
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
 
                 ParamDimsTxtLangRow paramDimsTxt;
 
                 paramDimsTxt.paramId = pp_parameter_id;
                 paramDimsTxt.dimId = dim->index;
-                paramDimsTxt.langCode = lang->name;
-                paramDimsTxt.descr = dim->label(*lang);
-                paramDimsTxt.note = dim->note(*lang);
+                paramDimsTxt.langCode = lang;
+                paramDimsTxt.descr = dim->label(*langSym);
+                paramDimsTxt.note = dim->note(*langSym);
                 metaRows.paramDimsTxt.push_back(paramDimsTxt);
             }
         }
@@ -790,14 +794,15 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.tableDic.push_back(tableDic);
 
         // Labels and notes for the table
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
 
             TableDicTxtLangRow tableTxt;
 
             tableTxt.tableId = pp_parameter_to_table_id;
-            tableTxt.langCode = lang->name;
-            tableTxt.descr = label(*lang);
-            tableTxt.note = note(*lang);
+            tableTxt.langCode = lang;
+            tableTxt.descr = label(*langSym);
+            tableTxt.note = note(*langSym);
             tableTxt.exprDescr = "value";
             tableTxt.exprNote = "";
             metaRows.tableTxt.push_back(tableTxt);
@@ -824,15 +829,16 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.tableDims.push_back(tableDims);
 
             // Labels and notes for the dimensions of the table
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
 
                 TableDimsTxtLangRow tableDimsTxt;
 
                 tableDimsTxt.tableId = pp_parameter_to_table_id;
                 tableDimsTxt.dimId = dim->index;
-                tableDimsTxt.langCode = lang->name;
-                tableDimsTxt.descr = dim->label(*lang);
-                tableDimsTxt.note = dim->note(*lang);
+                tableDimsTxt.langCode = lang;
+                tableDimsTxt.descr = dim->label(*langSym);
+                tableDimsTxt.note = dim->note(*langSym);
                 metaRows.tableDimsTxt.push_back(tableDimsTxt);
             }
         }
@@ -848,11 +854,12 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.tableAcc.push_back(tableAcc);
 
             // Labels and notes for accumulators
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 TableAccTxtLangRow tableAccTxt;
                 tableAccTxt.tableId = pp_parameter_to_table_id;
                 tableAccTxt.accId = 0;
-                tableAccTxt.langCode = lang->name;
+                tableAccTxt.langCode = lang;
                 tableAccTxt.descr = "value";
                 tableAccTxt.note = "";
                 metaRows.tableAccTxt.push_back(tableAccTxt);
@@ -880,11 +887,12 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.tableExpr.push_back(tableExpr);
 
             // Labels and notes for measures
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 TableExprTxtLangRow tableExprTxt;
                 tableExprTxt.tableId = pp_parameter_to_table_id;
                 tableExprTxt.exprId = 0;
-                tableExprTxt.langCode = lang->name;
+                tableExprTxt.langCode = lang;
                 tableExprTxt.descr = "value";
                 tableExprTxt.note = "";
                 metaRows.tableExprTxt.push_back(tableExprTxt);

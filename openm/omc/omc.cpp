@@ -719,12 +719,12 @@ int main(int argc, char * argv[])
 
         MetaSetLangHolder metaSet;    // metadata for working set
         metaSet.worksetRow.name = scenario_name;
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             WorksetTxtLangRow worksetTxt;
-            auto lang_name = lang->name;
-            worksetTxt.langCode = lang_name;
-            worksetTxt.descr = scenario_symbol->label(*lang);
-            worksetTxt.note = scenario_symbol->note(*lang);
+            worksetTxt.langCode = lang;
+            worksetTxt.descr = scenario_symbol->label(*langSym);
+            worksetTxt.note = scenario_symbol->note(*langSym);
             metaSet.worksetTxt.push_back(worksetTxt);
         }
 
@@ -740,15 +740,15 @@ int main(int argc, char * argv[])
             metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
 
             // value notes for the parameter
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 WorksetParamTxtLangRow worksetParamTxt;
-                auto lang_id = lang->language_id;
-                auto lang_name = lang->name;
-                assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
-                string value_note = param->pp_value_notes[lang_id];
+                assert(lang_index < (int)param->pp_value_notes.size()); // logic guarantee
+                string value_note = param->pp_value_notes[lang_index];
                 if (value_note.length() > 0) {
                     worksetParamTxt.paramId = wsParam.paramId;
-                    worksetParamTxt.langCode = lang_name;
+                    worksetParamTxt.langCode = lang;
                     worksetParamTxt.note = value_note;
                     metaSet.worksetParamTxt.push_back(worksetParamTxt);
                 }
@@ -945,15 +945,15 @@ static void processExtraParamDir(const string & i_paramDir, const string & i_sce
         metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
 
         // value notes for the parameter
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             WorksetParamTxtLangRow worksetParamTxt;
-            auto lang_id = lang->language_id;
-            auto lang_name = lang->name;
-            assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
-            string value_note = param->pp_value_notes[lang_id];
+            assert(lang_index < (int)param->pp_value_notes.size()); // logic guarantee
+            string value_note = param->pp_value_notes[lang_index];
             if (value_note.length() > 0) {
                 worksetParamTxt.paramId = wsParam.paramId;
-                worksetParamTxt.langCode = lang_name;
+                worksetParamTxt.langCode = lang;
                 worksetParamTxt.note = value_note;
                 metaSet.worksetParamTxt.push_back(worksetParamTxt);
             }

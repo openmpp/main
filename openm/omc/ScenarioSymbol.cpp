@@ -24,14 +24,15 @@ void ScenarioSymbol::post_parse(int pass)
     {
         // Check for a note specified using NOTE comment
         // in scenario input files (.dat and .odat), for each language.
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = unique_name + "," + lang_sym->name;
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
+            string key = unique_name + "," + lang;
             auto search = notes_input.find(key);
             if (search != notes_input.end()) {
                 auto text = (search->second).first;
                 auto loc = (search->second).second;
-                pp_notes[j] = text;
+                pp_notes[lang_index] = text;
             }
         }
         break;

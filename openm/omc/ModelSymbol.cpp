@@ -102,11 +102,12 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
 
     // set language specific model description and notes
-    for (auto lang : Symbol::pp_all_languages) {
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
         ModelDicTxtLangRow modelTxt;
-        modelTxt.langCode = lang->name;
-        modelTxt.descr = label(*lang);
-        modelTxt.note = note(*lang);
+        modelTxt.langCode = lang;
+        modelTxt.descr = label(*langSym);
+        modelTxt.note = note(*langSym);
         metaRows.modelTxt.push_back(modelTxt);
     }
 

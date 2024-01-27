@@ -105,13 +105,13 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
 
         // Labels and notes for accumulators
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             TableAccTxtLangRow tableAccTxt;
             tableAccTxt.tableId = pp_table_id;
             tableAccTxt.accId = acc->index;
-            tableAccTxt.langCode = lang->name;
-            tableAccTxt.descr = acc->label(*lang);
-            tableAccTxt.note = acc->note(*lang);
+            tableAccTxt.langCode = langSym->name;
+            tableAccTxt.descr = acc->label(*langSym);
+            tableAccTxt.note = acc->note(*langSym);
             metaRows.tableAccTxt.push_back(tableAccTxt);
         }
     }
@@ -151,16 +151,17 @@ void DerivedTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.tableExpr.push_back(tableExpr);
 
         // Labels and notes for measures
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TableExprTxtLangRow tableExprTxt;
             tableExprTxt.tableId = pp_table_id;
             tableExprTxt.exprId = measure->index;
 
-            tableExprTxt.langCode = lang->name;
+            tableExprTxt.langCode = lang;
 
-            tableExprTxt.descr = measure->label(*lang);
+            tableExprTxt.descr = measure->label(*langSym);
             
-            tableExprTxt.note = measure->note(*lang);
+            tableExprTxt.note = measure->note(*langSym);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
 

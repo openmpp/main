@@ -184,19 +184,20 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.tableDic.push_back(tableDic);
 
         // Labels and notes for the table
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
 
             TableDicTxtLangRow tableTxt;
 
             tableTxt.tableId = pp_table_id;
-            tableTxt.langCode = lang->name;
-            tableTxt.descr = label(*lang);
-            tableTxt.note = note(*lang);
+            tableTxt.langCode = lang;
+            tableTxt.descr = label(*langSym);
+            tableTxt.note = note(*langSym);
 
             // label and note for measure dimension
             assert(measure_dimension);
-            tableTxt.exprDescr = measure_dimension->label(*lang);
-            tableTxt.exprNote = measure_dimension->note(*lang);
+            tableTxt.exprDescr = measure_dimension->label(*langSym);
+            tableTxt.exprNote = measure_dimension->note(*langSym);
 
             metaRows.tableTxt.push_back(tableTxt);
         }
@@ -223,15 +224,16 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.tableDims.push_back(tableDims);
 
         // Labels and notes for the dimensions of the table
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
 
             TableDimsTxtLangRow tableDimsTxt;
 
             tableDimsTxt.tableId = pp_table_id;
             tableDimsTxt.dimId = dim->index;
-            tableDimsTxt.langCode = lang->name;
-            tableDimsTxt.descr = dim->label(*lang);
-            tableDimsTxt.note = dim->note(*lang);
+            tableDimsTxt.langCode = lang;
+            tableDimsTxt.descr = dim->label(*langSym);
+            tableDimsTxt.note = dim->note(*langSym);
             metaRows.tableDimsTxt.push_back(tableDimsTxt);
         }
     }

@@ -122,11 +122,12 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.typeEnum.push_back(typeEnum);
         }
 
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
             typeEnumTxt.enumId = lower_bound + ordinal;
-            typeEnumTxt.langCode = lang->name;
+            typeEnumTxt.langCode = lang;
             typeEnumTxt.descr = to_string(lower_bound + ordinal);
             typeEnumTxt.note = "";
             metaRows.typeEnumTxt.push_back(typeEnumTxt);

@@ -54,9 +54,9 @@ void GlobalFuncSymbol::post_parse(int pass)
                     fname = fname.substr(p + 1);
                 }
             }
-            for (auto langSym : Symbol::pp_all_languages) {
-                int lang_index = langSym->language_id;
-                const string& lang = langSym->name;
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 if ((!pp_labels_explicit[lang_index]) && (fname.length() > 0)) {
                     if (name.find("om_PreSimulation_") != name.npos) {
                         pp_labels[lang_index] = LTA(lang,"PreSimulation function defined in") + " " + fname;
