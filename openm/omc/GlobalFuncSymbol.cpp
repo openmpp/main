@@ -9,6 +9,7 @@
 #include <set>
 #include <algorithm>
 #include "GlobalFuncSymbol.h"
+#include "LanguageSymbol.h"
 
 using namespace std;
 
@@ -39,6 +40,32 @@ void GlobalFuncSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
+        // Assign generated labels to PreSimulation and UserTables functions
+        {
+            /// name of the containing model code module without the path part
+            string fname;
+            if (decl_loc.begin.filename) {
+                fname = *decl_loc.begin.filename;
+                // remove path portion
+                auto p = fname.find_last_of("/");
+                if ((p != fname.npos) && (p < fname.length())) {
+                    fname = fname.substr(p + 1);
+                }
+            }
+            for (int lang_index = 0; lang_index < LanguageSymbol::number_of_languages(); lang_index++) {
+                if ((!pp_labels_explicit[lang_index]) && (fname.length() > 0)) {
+                    if (name.find("om_PreSimulation_") != name.npos) {
+                        // TODO - use LTA once available here
+                        pp_labels[lang_index] = "PreSimulation function defined in " + fname;
+                    }
+                    else if (name.find("om_UserTables_") != name.npos) {
+                        // TODO - use LTA once available here
+                        pp_labels[lang_index] = "UserTables function defined in " + fname;
+                    }
+                }
+            }
+        }
+
         // add this to the complete list of global funcs
         pp_all_global_funcs.push_back(this);
 
