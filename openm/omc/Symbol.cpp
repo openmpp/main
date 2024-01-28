@@ -630,6 +630,12 @@ bool Symbol::model_doc = false;
 
 bool Symbol::model_devdoc = false;
 
+bool Symbol::in_doc_active = false;
+
+string Symbol::in_doc_dir;
+
+set<string> Symbol::in_doc_stems;
+
 bool Symbol::trace_parsing = false;
 
 bool Symbol::trace_scanning = false;

@@ -54,6 +54,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include "Symbol.h"
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
@@ -348,13 +349,45 @@ int main(int argc, char * argv[])
 		}
 
         // Get 'doc' folder containing authored model documentation files.
-        {
-            // The following is just for testing...
+        if (argStore.isOptionExist(OmcArgKey::docDir)) {
             string docDir = argStore.strOption(OmcArgKey::docDir);
-            // TODO - check if -d option was supplied (docDir non-empty, or use API for that)
-            // TODO - check if directory exists
-            // TODO - check if directory has any .md files (or any files, to be general)
-            theLog->logFormatted("Authored model documentation from: %s", docDir.c_str());
+            // "normalize" input doc directory: 
+            // use empty "" if it is current directory else make sure it ends with /
+            std::replace(docDir.begin(), docDir.end(), '\\', '/');
+            bool isToCurrent = ((docDir == "") || (docDir == "."));
+            if (isToCurrent) {
+                docDir = "";
+            }
+            else {
+                if (docDir.back() != '/') docDir += '/';
+            }
+
+            if (std::filesystem::is_directory(docDir)) {
+                list<string> doc_extensions = { ".md" };
+                Symbol::in_doc_dir = docDir;
+                auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
+                if (in_doc_paths.size() > 0) {
+                    Symbol::in_doc_active = true;
+                    for (auto s : in_doc_paths) {
+                        // remove leading path portion
+                        {
+                            auto p = s.find_last_of('/');
+                            if (p != s.npos) {
+                                s = s.substr(p + 1);
+                            }
+                        }
+                        // remove extension
+                        {
+                            auto p = s.find_last_of('.');
+                            if (p != s.npos) {
+                                s = s.substr(0, p);
+                            }
+                        }
+                        Symbol::in_doc_stems.insert(s);
+                    }
+                    theLog->logFormatted("Authored input model documentation from: %s", docDir.c_str());
+                }
+            }
         }
 
         // Obtain information on code page name, default: empty "" name (= system default code page)

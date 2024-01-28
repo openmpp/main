@@ -1852,6 +1852,23 @@ public:
     static bool model_devdoc;
 
     /**
+     * The directory containing input authored documentation is used.
+     */
+    static bool in_doc_active;
+
+    /**
+     * The directory containing input authored documentation
+     * 
+     * Normalized with forward slashes and trailing / if not current directory.
+     */
+    static string in_doc_dir;
+
+    /**
+     * List of stems of files in the input authored documentation directory
+     */
+    static set<string> in_doc_stems;
+
+    /**
      * True to enable detailed output from parser
      */
     static bool trace_parsing;
