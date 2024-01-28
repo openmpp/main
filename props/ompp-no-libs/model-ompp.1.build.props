@@ -35,6 +35,9 @@
     <!--  Default value for MODEL_CODE_DIR -->
     <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
 
+    <!--  Default value for MODEL_DOC_DIR -->
+    <MODEL_DOC_DIR Condition="'$(MODEL_DOC_DIR)'==''">../doc</MODEL_DOC_DIR>
+
     <!--  Default value for OMC_USE_DIR -->
     <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
   

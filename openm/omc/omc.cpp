@@ -15,6 +15,7 @@
 * * -Omc.UseDir         use/dir/with/ompp/files
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario (can be list of directories)
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
+* * -Omc.DocDir         input/dir/to/find/authored/model/documentation/files/
 * * -Omc.ModelDoc       if true then generate model documentation (user version)
 * * -Omc.ModelDevDoc    if true then generate model documentation (model dev version)
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
@@ -37,6 +38,7 @@
 * * -u short form of -Omc.UseDir
 * * -p short form of -Omc.ParamDir
 * * -f short form of -Omc.FixedDir
+* * -d short form of -Omc.DocDir
 * * -ini short form of -OpenM.IniFile
 * 
 * Also common OpenM log options supported: 
@@ -98,6 +100,9 @@ namespace openm
 
         /** omc input directory with OpenM++ fixed parameter files */
         static constexpr const char * fixedDir = "Omc.FixedDir";
+
+        /** omc input directory with openM++ authored documentation files */
+        static constexpr const char* docDir = "Omc.DocDir";
 
         /**  omc code page: input files encoding name */
         static constexpr const char * codePage = "Omc.CodePage";
@@ -162,6 +167,9 @@ namespace openm
 
         /** short name for omc fixed directory */
         static constexpr const char * fixedDir = "f";
+
+        /** short name for omc doc directory */
+        static constexpr const char* docDir = "d";
     };
 
     /** array of model run option keys. */
@@ -173,6 +181,7 @@ namespace openm
         OmcArgKey::useDir,
         OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
+        OmcArgKey::docDir,
         OmcArgKey::codePage,
         OmcArgKey::noLineDirectives,
         OmcArgKey::noMetadata,
@@ -208,6 +217,7 @@ namespace openm
         make_pair(OmcShortKey::useDir, OmcArgKey::useDir),
         make_pair(OmcShortKey::paramDir, OmcArgKey::paramDir),
         make_pair(OmcShortKey::fixedDir, OmcArgKey::fixedDir),
+        make_pair(OmcShortKey::docDir, OmcArgKey::docDir),
     };
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
@@ -336,6 +346,16 @@ int main(int argc, char * argv[])
 				}
 			}
 		}
+
+        // Get 'doc' folder containing authored model documentation files.
+        {
+            // The following is just for testing...
+            string docDir = argStore.strOption(OmcArgKey::docDir);
+            // TODO - check if -d option was supplied (docDir non-empty, or use API for that)
+            // TODO - check if directory exists
+            // TODO - check if directory has any .md files (or any files, to be general)
+            theLog->logFormatted("Authored model documentation from: %s", docDir.c_str());
+        }
 
         // Obtain information on code page name, default: empty "" name (= system default code page)
         Symbol::code_page = argStore.strOption(OmcArgKey::codePage);
