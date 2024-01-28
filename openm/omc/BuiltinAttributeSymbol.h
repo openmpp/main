@@ -54,14 +54,13 @@ public:
      *
      * @return A string.
      */
-    string default_label(const LanguageSymbol& language) const;
+    string default_label(const LanguageSymbol& language) const override;
 
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_entity();
 
-     /** @brief   The default label for selected language codes */
-    std::map<std::string, std::string> the_default_labels;
-
+    /** The English label */
+    string the_english_label;
 };
 

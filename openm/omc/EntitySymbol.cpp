@@ -29,7 +29,7 @@ using namespace std;
 
 void EntitySymbol::create_auxiliary_symbols()
 {
-    // Create builtin attributes for this entity: time, age, events, entity_id.
+    // Create built-in attributes for this entity: time, age, events, entity_id.
     // Need to handle situation where the symbol exists but requires morphing.
     // This can occur if the symbol has been used in a table before the entity was declared.
 
@@ -49,12 +49,8 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Time"},
-                {"FR", "Temps"}
-            };
+            // Provide the default English label.
+            biav->the_english_label = "Time";
 
             // initialize it
             biav->is_time_like = true; // can change between events
@@ -85,12 +81,8 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Age"},
-                {"FR", u8"Âge"}
-            };
+            // Provide the default English label.
+            biav->the_english_label = "Age";
 
             // initialize it
             biav->is_time_like = true; // can change between events, like time
@@ -113,12 +105,9 @@ void EntitySymbol::create_auxiliary_symbols()
     //            biav = new BuiltinAttributeSymbol(sym, this, typ);
     //        }
     //        assert(biav);
-    //        // Provide the default labels for selected language codes.
-    //        biav->the_default_labels =
-    //        {
-    //            {"EN", "Events"},
-    //            {"FR", u8"Événements"}
-    //        };
+    //        // Provide the default English label.
+    //        biav->the_english_label = "Events";
+    //        //
     //        // initialize it
     //    }
     //}
@@ -139,12 +128,8 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Entity identifier"},
-                {"FR", u8"Identifiant d'entité"}
-            };
+            // Provide the default English label.
+            biav->the_english_label = "Entity identifier";
 
             // initialize it
         }
@@ -166,12 +151,8 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Case seed for random number generators"},
-                {"FR", u8"Graine de cas de nombres aléatoires"}
-            };
+            // Provide the default English label.
+            biav->the_english_label = "Case seed for random number generators";
 
             // initialize it
         }

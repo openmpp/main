@@ -21,9 +21,13 @@
 #include "ConstantSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
+#include "omc_file.h" // for LTA support
+
 
 using namespace std;
 using namespace openm;
+using namespace omc; // for LTA support
+
 
 void ParameterSymbol::post_parse(int pass)
 {
@@ -893,7 +897,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
                 tableExprTxt.tableId = pp_parameter_to_table_id;
                 tableExprTxt.exprId = 0;
                 tableExprTxt.langCode = lang;
-                tableExprTxt.descr = "value";
+                tableExprTxt.descr = LTA(lang,"Value");
                 tableExprTxt.note = "";
                 metaRows.tableExprTxt.push_back(tableExprTxt);
             }
