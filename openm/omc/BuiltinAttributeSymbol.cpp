@@ -22,7 +22,12 @@ using namespace omc; // for LTA support
 string BuiltinAttributeSymbol::default_label(const LanguageSymbol& langSym) const
 {
     const string& lang = langSym.name; // e.g. "EN" or "FR"
-    return LTA(lang, the_english_label.c_str());
+    if (the_english_label.length() > 0) {
+        return LTA(lang, the_english_label.c_str());
+    }
+    else {
+        return name;
+    }
 }
 
 void BuiltinAttributeSymbol::post_parse(int pass)
