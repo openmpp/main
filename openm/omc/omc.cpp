@@ -388,6 +388,9 @@ int main(int argc, char * argv[])
                     theLog->logFormatted("Authored input model documentation from: %s", docDir.c_str());
                 }
             }
+            else {
+                // TODO docDir might be ill-formed, or just might not exist, especially if is default MODEL/doc
+            }
         }
 
         // Obtain information on code page name, default: empty "" name (= system default code page)
