@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		D807DC6424CBC765002E55F6 /* Literal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D807DC6224CBC765002E55F6 /* Literal.cpp */; };
 		D807DC6524CBC765002E55F6 /* omc_csv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D807DC6324CBC765002E55F6 /* omc_csv.cpp */; };
+		D810E02D2B68355F00BFF166 /* omc_model_doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D810E02B2B68355F00BFF166 /* omc_model_doc.cpp */; };
 		D81B6808262DF61400E5CD68 /* AnonGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */; };
 		D893973E247EB25300D61DAA /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973D247EB20600D61DAA /* libiconv.tbd */; };
 		D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973F247EB25E00D61DAA /* liblibsqlite.a */; };
@@ -106,6 +107,8 @@
 		D807DC6124CBC765002E55F6 /* omc_csv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_csv.h; sourceTree = "<group>"; };
 		D807DC6224CBC765002E55F6 /* Literal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Literal.cpp; sourceTree = "<group>"; };
 		D807DC6324CBC765002E55F6 /* omc_csv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_csv.cpp; sourceTree = "<group>"; };
+		D810E02B2B68355F00BFF166 /* omc_model_doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_model_doc.cpp; sourceTree = "<group>"; };
+		D810E02C2B68355F00BFF166 /* omc_model_doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_model_doc.h; sourceTree = "<group>"; };
 		D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnonGroupSymbol.cpp; sourceTree = "<group>"; };
 		D81B6807262DF61400E5CD68 /* AnonGroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnonGroupSymbol.h; sourceTree = "<group>"; };
 		D893973D247EB20600D61DAA /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
@@ -479,6 +482,8 @@
 		D8FD890C247DA27A0006D608 /* Xcode-src */ = {
 			isa = PBXGroup;
 			children = (
+				D810E02B2B68355F00BFF166 /* omc_model_doc.cpp */,
+				D810E02C2B68355F00BFF166 /* omc_model_doc.h */,
 				D8FD8916247DAF1C0006D608 /* location.hh */,
 				D8FD8917247DAF1C0006D608 /* parser.hpp */,
 				D8FD8918247DAF1C0006D608 /* position.hh */,
@@ -610,6 +615,7 @@
 				D8FD88C5247D846C0006D608 /* ModelTypeSymbol.cpp in Sources */,
 				D8FD8903247D84B30006D608 /* ParseContext.cpp in Sources */,
 				D8FD88BC247D846C0006D608 /* omc_file.cpp in Sources */,
+				D810E02D2B68355F00BFF166 /* omc_model_doc.cpp in Sources */,
 				D8FD8884247D84330006D608 /* DependencyGroupSymbol.cpp in Sources */,
 				D8FD8882247D84330006D608 /* BuiltinAttributeSymbol.cpp in Sources */,
 				D8ED3FA62AF47E2C00CFC26C /* omc_model_metrics.cpp in Sources */,
