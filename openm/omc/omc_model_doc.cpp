@@ -276,32 +276,22 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
 
 void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model_name, CodeGen& cg) {
 
-    /// target folder for HTML output
-    string pubDir = outDir + "../bin/io/download/";
-    std::filesystem::create_directories(pubDir);
-
-    /// mapped location of pubDir in ompp UI local web server
-    string pubURL = "download/";
-
-    /// directory of model sqlite database
-    string sqliteDir = outDir + "../bin/";
-
     // create json file for ompp UI:
     /*
     {
     "ModelDoc": [{
             "LangCode": "EN",
-            "Link": "download/RiskPaths.doc.EN.html"
+            "Link": "RiskPaths.doc.EN.html"
         }, {
             "LangCode": "FR",
-            "Link": "download/RiskPaths.doc.FR.html"
+            "Link": "RiskPaths.doc.FR.html"
         }
     ]
     }
     */
     if (!devMode) {
         string json_name = model_name + ".extra.json";
-        string json_path = makeFilePath(sqliteDir.c_str(), json_name.c_str());
+        string json_path = makeFilePath(baseDirOf(outDir).c_str(), json_name.c_str());
         ofstream out(json_path, ios::out | ios::trunc | ios::binary);
         if (out.fail()) {
             string msg = "omc : warning : Unable to open " + json_path + " for writing.";
@@ -316,7 +306,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             out <<
                 "   {\n" <<
                 "   \"LangCode\": \"" << lang << "\",\n" <<
-                "   \"Link\": \"" << pubURL + model_name + ".doc." + lang + ".html\"\n" <<
+                "   \"Link\": \"" << model_name + ".doc." + lang + ".html\"\n" <<
                 "   }";
             if (++n < Symbol::pp_all_languages.size()) out << ",";
             out << "\n";
@@ -329,7 +319,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
     string htmlStyles;
     {
         /// styles file (hard-coded)
-        string stylesPath = omrootDir + "props/styles/doc-style-portion.html";
+        string stylesPath = makeFilePath(omrootDir.c_str(), "props/styles/doc-style-portion.html");
         ofstream stylesStream;
         stylesStream.open(stylesPath, fstream::in);
         if (stylesStream.fail()) {
@@ -1233,7 +1223,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             ofstream htmlStream;
             ofstream mdStream;
-            string hdpth = makeFilePath(pubDir.c_str(), htmlName.c_str());
+            string hdpth = makeFilePath(outDir.c_str(), htmlName.c_str());
             htmlStream.open(hdpth, fstream::out);
             mdStream.open(mdPath, fstream::in);
 

@@ -15,7 +15,8 @@
 * * -Omc.UseDir         use/dir/with/ompp/files
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario (can be list of directories)
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
-* * -Omc.DocDir         input/dir/to/find/authored/model/documentation/files/
+* * -Omc.InDocDir       input/dir/to/find/authored/model/documentation/files/
+* * -Omc.OutDocDir      output directory to create model documentation files, e.g.: ompp/bin/doc
 * * -Omc.ModelDoc       if true then generate model documentation (user version)
 * * -Omc.ModelDevDoc    if true then generate model documentation (model dev version)
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
@@ -103,7 +104,10 @@ namespace openm
         static constexpr const char * fixedDir = "Omc.FixedDir";
 
         /** omc input directory with openM++ authored documentation files */
-        static constexpr const char* docDir = "Omc.DocDir";
+        static constexpr const char* inDocDir = "Omc.InDocDir";
+
+        /** omc output directory with openM++ authored documentation files */
+        static constexpr const char * outDocDir = "Omc.OutDocDir";
 
         /**  omc code page: input files encoding name */
         static constexpr const char * codePage = "Omc.CodePage";
@@ -170,7 +174,7 @@ namespace openm
         static constexpr const char * fixedDir = "f";
 
         /** short name for omc doc directory */
-        static constexpr const char* docDir = "d";
+        static constexpr const char* inDocDir = "d";
     };
 
     /** array of model run option keys. */
@@ -182,7 +186,8 @@ namespace openm
         OmcArgKey::useDir,
         OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
-        OmcArgKey::docDir,
+        OmcArgKey::inDocDir,
+        OmcArgKey::outDocDir,
         OmcArgKey::codePage,
         OmcArgKey::noLineDirectives,
         OmcArgKey::noMetadata,
@@ -218,7 +223,7 @@ namespace openm
         make_pair(OmcShortKey::useDir, OmcArgKey::useDir),
         make_pair(OmcShortKey::paramDir, OmcArgKey::paramDir),
         make_pair(OmcShortKey::fixedDir, OmcArgKey::fixedDir),
-        make_pair(OmcShortKey::docDir, OmcArgKey::docDir),
+        make_pair(OmcShortKey::inDocDir, OmcArgKey::inDocDir),
     };
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
@@ -349,8 +354,8 @@ int main(int argc, char * argv[])
 		}
 
         // Get 'doc' folder containing authored model documentation files.
-        if (argStore.isOptionExist(OmcArgKey::docDir)) {
-            string docDir = argStore.strOption(OmcArgKey::docDir);
+        if (argStore.isOptionExist(OmcArgKey::inDocDir)) {
+            string docDir = argStore.strOption(OmcArgKey::inDocDir);
             // "normalize" input doc directory: 
             // use empty "" if it is current directory else make sure it ends with /
             std::replace(docDir.begin(), docDir.end(), '\\', '/');
@@ -407,6 +412,13 @@ int main(int argc, char * argv[])
 
         // Obtain information on generating model documentation (model dev version), default: false
         Symbol::model_devdoc = parseBoolOption(OmcArgKey::modelDevDoc, argStore);
+
+        // check if output documentation directory exists, it cannot be empty
+        string outDocDir = argStore.strOption(OmcArgKey::outDocDir);
+
+        if (Symbol::model_doc || Symbol::model_devdoc) {
+            if (!isFileExists(outDocDir.c_str())) throw HelperException(LT("error : invalid output documentation directory: %s"), outDocDir.c_str());
+        }
 
         // Obtain information on detailed parsing option, default: false
         Symbol::trace_parsing = parseBoolOption(OmcArgKey::traceParsing, argStore);
@@ -860,15 +872,15 @@ int main(int argc, char * argv[])
         if (Symbol::model_doc || Symbol::model_devdoc) {
             theLog->logMsg("Generate model documentation - start");
 
-            string omrootDir = omc_exe.substr(0, omc_exe.find_last_of("/\\") + 1) + "../";
+            string omrootDir = baseDirOf(baseDirOf(omc_exe));
 
             if (Symbol::model_doc) {
                 // create doc version for users
-                do_model_doc(false, outDir, omrootDir, model_name, cg);
+                do_model_doc(false, outDocDir, omrootDir, model_name, cg);
             }
             if (Symbol::model_devdoc) {
                 // create doc version for model developers
-                do_model_doc(true, outDir, omrootDir, model_name, cg);
+                do_model_doc(true, outDocDir, omrootDir, model_name, cg);
             }
             theLog->logMsg("Generate model documentation - finish");
         }

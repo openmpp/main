@@ -35,9 +35,6 @@
     <!--  Default value for MODEL_CODE_DIR -->
     <MODEL_CODE_DIR Condition="'$(MODEL_CODE_DIR)'==''">../code</MODEL_CODE_DIR>
 
-    <!--  Default value for MODEL_DOC_DIR -->
-    <MODEL_DOC_DIR Condition="'$(MODEL_DOC_DIR)'==''">../doc</MODEL_DOC_DIR>
-
     <!--  Default value for OMC_USE_DIR -->
     <OMC_USE_DIR Condition="'$(OMC_USE_DIR)'==''">$(OM_ROOT)/use</OMC_USE_DIR>
   
@@ -80,6 +77,10 @@
 
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
 
+    <!--  Default values for model documnetation directories -->
+    <IN_DOC_DIR Condition="'$(IN_DOC_DIR)'==''">../doc</IN_DOC_DIR>
+    <OUT_DOC_DIR Condition="'$(OUT_DOC_DIR)'==''">$(PUBLISH_DIR)/doc</OUT_DOC_DIR>
+
     <PLATFORM_SUFFIX Condition="'$(Platform)'=='Win32'"></PLATFORM_SUFFIX>
     <PLATFORM_SUFFIX Condition="'$(Platform)'=='x64'">64</PLATFORM_SUFFIX>
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Release'"></CONFIG_SUFFIX>
@@ -119,6 +120,8 @@
     <OMC_MODEL_DOC_OPT Condition="'$(MODEL_DOC)'=='true'">-Omc.ModelDoc 1</OMC_MODEL_DOC_OPT>
     <!-- omc -modelDevDoc option -->
     <OMC_MODEL_DEVDOC_OPT Condition="'$(MODEL_DEVDOC)'=='true'">-Omc.ModelDevDoc 1</OMC_MODEL_DEVDOC_OPT>
+    <!-- omc -OutDocDir option -->
+    <OMC_OUT_DOC_OPT Condition="'$(MODEL_DOC)'=='true' Or '$(MODEL_DEVDOC)'=='true'">-Omc.OutDocDir $(OUT_DOC_DIR)</OMC_OUT_DOC_OPT>
     <!-- omc -noLineDirectives option -->
     <OMC_NO_LINE_DIRECTIVES_OPT Condition="'$(NO_LINE_DIRECTIVES)'=='true'">-Omc.noLineDirectives 1</OMC_NO_LINE_DIRECTIVES_OPT>
   </PropertyGroup>
