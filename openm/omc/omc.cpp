@@ -39,7 +39,7 @@
 * * -u short form of -Omc.UseDir
 * * -p short form of -Omc.ParamDir
 * * -f short form of -Omc.FixedDir
-* * -d short form of -Omc.DocDir
+* * -d short form of -Omc.InDocDir
 * * -ini short form of -OpenM.IniFile
 * 
 * Also common OpenM log options supported: 
