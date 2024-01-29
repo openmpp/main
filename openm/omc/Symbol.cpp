@@ -2690,12 +2690,7 @@ std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
         }
         else {
             // a symbol with that name does not exist, so 'expand' GetLabel(Name) to the invalid Name and emit a warning
-            {
-                const size_t buf_size = 255;
-                char buf[buf_size];
-                snprintf(buf, buf_size, LT("The argument of 'GetLabel(%s)' in Note for '%s' is invalid"), symbol_name.c_str(), unique_name.c_str());
-                pp_warning(buf);
-            }
+            pp_warning(formatToString(LT("The argument of 'GetLabel(%s)' in Note for '%s' is invalid"), symbol_name.c_str(), unique_name.c_str()));
             result = match.prefix().str()
                 + symbol_name // invalid symbol name which could not be expanded to its label
                 + match.suffix().str();
