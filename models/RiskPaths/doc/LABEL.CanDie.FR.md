@@ -1,0 +1,1 @@
+Activation de la mortalité

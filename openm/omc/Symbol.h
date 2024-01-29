@@ -570,10 +570,13 @@ public:
      *
      * An explicit label is a C++ one-line comment like LABEL(key,EN) text
      * A note is a C-style comment like NOTE(key,EN) text
+     * Alternatively, explicit labels and notes can be supplied
+     * by files in the authored input doc directory, with names like
+     * LABEL.TheSymbol.EN.md or NOTE.TheSymbol.EN.md.
      * 
-     * @param key The key used to search comments, e.g. MyTable::Dim0
+     * @param key The key used for searching, e.g. MyTable::Dim0
      */
-    void associate_explicit_label_or_note(string key);
+    void associate_explicit_label_or_note(const string& key);
 
     /**
      * The unique identifier for the symbol
@@ -1060,7 +1063,14 @@ public:
      *
      * @returns A std::string.
      */
-    static std::string note_expand_embeds(int lang_index, const std::string& note);
+    std::string note_expand_embeds(int lang_index, const std::string& note);
+
+    /**
+     * Slurp a developer-supplied documentation file.
+     *
+     * @returns A std::string.
+     */
+    static std::string slurp_doc_file(const std::string& stem);
 
     /**
      * Pathnames of use folders.

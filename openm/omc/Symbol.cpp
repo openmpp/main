@@ -64,6 +64,7 @@
 #include "ImportSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
+#include "libopenm/common/omFile.h"
 
 using namespace std;
 using namespace openm;
@@ -682,6 +683,7 @@ void Symbol::post_parse(int pass)
             }
         }
 
+        // Check for explicit labels and notes in authored input documentation directory, if supplied.
         // Check for an explicit label specified using //LABEL, for each language.
         // Check for a note specified using NOTE comment, for each language.
         // modgen_unique_name follows Modgen-style conventions for dimension numbering in tables,
@@ -771,9 +773,8 @@ void Symbol::post_parse(int pass)
             int lang_index = langSym->language_id; // 0-based
             string& note = pp_notes[lang_index];
             if (note.length() > 0) {
-                if (Symbol::option_convert_modgen_note_syntax) {
-                    note = Symbol::note_modgen_to_markdown(note);
-                }
+                // For note_expand_embeds to work as intended, all labels must have their definitive value.
+                // That occurs in previous post-parse passes.
                 note = Symbol::note_expand_embeds(lang_index, note);
             }
         }
@@ -935,35 +936,78 @@ string Symbol::note(const LanguageSymbol & language) const
     return pp_notes[language.language_id];
 }
 
-void Symbol::associate_explicit_label_or_note(string key)
+void Symbol::associate_explicit_label_or_note(const string& key)
 {
-    // Check for an explicit label specified using //LABEL, for each language
-    for (const auto& langSym : Symbol::pp_all_languages) {
-        int lang_index = langSym->language_id; // 0-based
-        const string& lang = langSym->name; // e.g. "EN" or "FR"
-        string key_and_lang = key + "," + lang;
-        auto search = explicit_labels.find(key_and_lang);
-        if (search != explicit_labels.end()) {
-            auto text = (search->second).first;
-            auto loc = (search->second).second;
-            pp_labels[lang_index] = trim(text);
-            pp_labels_explicit[lang_index] = true;
-            pp_labels_pos[lang_index] = loc.begin;
+    /// key modified to replace :: with .
+    string key_with_dot;
+    if (in_doc_active) {
+        key_with_dot = key;
+        // replace :: by . for two-part keys, e.g. unique names
+        {
+            auto p = key_with_dot.find("::");
+            if (p != key_with_dot.npos) {
+                key_with_dot = key_with_dot.substr(0, p) + "." + key_with_dot.substr(p + 1);
+            }
         }
     }
-
-    // Check for a note specified using NOTE comment, for each language
     for (const auto& langSym : Symbol::pp_all_languages) {
         int lang_index = langSym->language_id; // 0-based
         const string& lang = langSym->name; // e.g. "EN" or "FR"
-        string key_and_lang = key + "," + lang;
-        // search in model source (ignore parameter value NOTEs)
-        auto search = notes_source.find(key_and_lang);
-        if (search != notes_source.end()) {
-            auto text = (search->second).first;
-            auto loc = (search->second).second;
-            pp_notes[lang_index] = text;
-            pp_notes_pos[lang_index] = loc.begin;
+        // Look for explicit LABEL
+        {
+            bool found_md = false;
+            if (in_doc_active) {
+                // Look for a matching LABEL file supplied in authored doc directory
+                string file_stem = "LABEL." + key_with_dot + "." + lang;
+                if (in_doc_stems.count(file_stem) > 0) {
+                    // The file is there, so slurp it
+                    found_md = true;
+                    pp_labels[lang_index] = slurp_doc_file(file_stem);
+                    pp_labels_explicit[lang_index] = true;
+                    pp_labels_pos[lang_index] = omc::position();  // no associated code position
+                }
+            }
+            if (!found_md) {
+                // Look for a matching //LABEL from model source
+                string key_and_lang = key + "," + lang;
+                auto search = explicit_labels.find(key_and_lang);
+                if (search != explicit_labels.end()) {
+                    auto& text = (search->second).first;
+                    auto& loc = (search->second).second;
+                    pp_labels[lang_index] = trim(text);
+                    pp_labels_explicit[lang_index] = true;
+                    pp_labels_pos[lang_index] = loc.begin;
+                }
+            }
+        }
+        // Look for explicit NOTE
+        {
+            bool found_md = false;
+            if (in_doc_active) {
+                // Look for a matching NOTE file supplied in authored doc directory
+                string file_stem = "NOTE." + key_with_dot + "." + lang;
+                if (in_doc_stems.count(file_stem) > 0) {
+                    // The file is there, so slurp it
+                    found_md = true;
+                    pp_notes[lang_index] = slurp_doc_file(file_stem);
+                    pp_notes_pos[lang_index] = omc::position();  // no associated code position
+                }
+            }
+            if (!found_md) {
+                // Look for a matching /*NOTE*/ in model source
+                string key_and_lang = key + "," + lang;
+                // search in model source (ignore parameter value NOTEs)
+                auto search = notes_source.find(key_and_lang);
+                if (search != notes_source.end()) {
+                    auto text = (search->second).first;
+                    auto& loc = (search->second).second;
+                    if (Symbol::option_convert_modgen_note_syntax) {
+                        text = Symbol::note_modgen_to_markdown(text);
+                    }
+                    pp_notes[lang_index] = text;
+                    pp_notes_pos[lang_index] = loc.begin;
+                }
+            }
         }
     }
 }
@@ -2634,7 +2678,7 @@ std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
 
     std::smatch match;
     // The following regex matches GetLabel() and the interior of the parentheses with (), e.g. \1
-    while (std::regex_search(result, match, std::regex("GetLabel\\(([A-Za-z0-9_]+)\\)"))) {
+    while (std::regex_search(result, match, std::regex("GetLabel\\(([A-Za-z0-9_:.]+)\\)"))) {
         assert(match.size() >= 2); // guaranteed by above egex
         string symbol_name = match[1];
         auto symbol = Symbol::get_symbol(symbol_name);
@@ -2644,7 +2688,30 @@ std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
                 + symbol_label
                 + match.suffix().str();
         }
+        else {
+            // a symbol with that name does not exist, so 'expand' GetLabel(Name) to the invalid Name and emit a warning
+            {
+                const size_t buf_size = 255;
+                char buf[buf_size];
+                snprintf(buf, buf_size, LT("The argument of 'GetLabel(%s)' in Note for '%s' is invalid"), symbol_name.c_str(), unique_name.c_str());
+                pp_warning(buf);
+            }
+            result = match.prefix().str()
+                + symbol_name // invalid symbol name which could not be expanded to its label
+                + match.suffix().str();
+        }
     }
 
     return result;
+}
+
+std::string Symbol::slurp_doc_file(const std::string& file_stem)
+{
+    if (!in_doc_active) {
+        return string();
+    }
+    else {
+        string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "md");
+        return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
+    }
 }
