@@ -640,7 +640,15 @@ decl_use:
  */
 
 decl_languages:
-          "languages" "{" language_list "}" ";"
+          "languages"[keyword] "{" language_list "}" ";"
+                        {
+                            if (Symbol::languages_statement_encountered) {
+                                error(@keyword, LT("error: 'languages' statement already specified"));
+                            }
+                            else {
+                                Symbol::languages_statement_encountered = true;
+                            }
+                        }
         | "languages" "{" error "}" ";"
         | "languages" error ";"
         ;

@@ -598,6 +598,8 @@ token_type Symbol::real_ctype = token::TK_double;
 
 token_type Symbol::Time_ctype = token::TK_double;
 
+bool Symbol::languages_statement_encountered = false;
+
 bool Symbol::any_hide = false;
 
 bool Symbol::any_show = false;
