@@ -417,6 +417,23 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
     io_buffer[i_size - 1] = '\0';
 }
 
+/** format message into string result using vsnprintf() */
+std::string openm::formatToString(const std::string format, ...)
+{
+    const size_t i_size = 1000;
+    char io_buffer[i_size];
+    std::string result;
+
+    va_list argList;
+    va_start(argList, format);
+    vsnprintf(io_buffer, i_size, format.c_str(), argList);
+    va_end(argList);
+
+    io_buffer[i_size - 1] = '\0';
+    result = io_buffer;  // copies until null terminator
+    return result;
+}
+
 /** if source string exceed max size than return ellipted copy into the buffer */
 const char * openm::elliptString(const char * i_src, size_t i_size, char * io_buffer)
 {
