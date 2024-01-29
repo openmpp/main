@@ -1516,6 +1516,11 @@ public:
     static token_type Time_ctype;
 
     /**
+     * If true, parser has encountered a languages statement
+     */
+    static bool languages_statement_encountered;
+
+    /**
      * If true, model contains one or more hide statements
      */
     static bool any_hide;
