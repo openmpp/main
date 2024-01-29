@@ -4,6 +4,7 @@ local_PLATFORM_UNAME := $(shell uname -s)
 local_BIN_DIR = bin
 local_SQL_DIR = sql
 local_LOG_DIR = log
+local_DOC_DIR = doc
 
 ifdef OUT_PREFIX
   model_OUT_PREFIX = OUT_PREFIX
@@ -21,6 +22,7 @@ else
 endif
 
 model_BIN_DIR = $(model_OUT_PREFIX)/bin
+model_DOC_DIR = $(model_OUT_PREFIX)/bin/doc
 
 #
 # models to build
@@ -82,6 +84,9 @@ publish-all : prepare publish
 	$(foreach d,$(filter $(OZ_PROJ_MODELS),$(MODEL_DIRS)),cp -prf $(d)/microdata $(local_BIN_DIR)/$d/;)
 	$(foreach d,$(filter modelOne,$(MODEL_DIRS)),cp -pf modelOne/*.sql $(local_SQL_DIR);)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
+ifndef MODEL_DOC_DISABLE
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_DOC_DIR)/*.html $(local_DOC_DIR);)
+endif
 
 .PHONY : prepare
 prepare:

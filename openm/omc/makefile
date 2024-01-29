@@ -84,9 +84,9 @@ CPPFLAGS = $(CXXFLAGS)
 OMC_EXE = omc$(BIN_POSTFIX)
 
 OMC_CPPLIST = \
+AggregationSymbol.cpp \
 AnonGroupSymbol.cpp \
 AttributeSymbol.cpp \
-AggregationSymbol.cpp \
 BoolSymbol.cpp \
 BuiltinAttributeSymbol.cpp \
 ClassificationSymbol.cpp \
@@ -138,6 +138,7 @@ omc.cpp \
 omc_csv.cpp \
 omc_file.cpp \
 omc_missing_documentation.cpp \
+omc_model_code_metrics.cpp \
 omc_model_doc.cpp \
 omc_model_metrics.cpp \
 ParameterGroupSymbol.cpp \

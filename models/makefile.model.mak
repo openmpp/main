@@ -169,12 +169,24 @@ ifndef MODEL_CODE_DIR
   MODEL_CODE_DIR = code
 endif
 
+# omc model documenation directories and options
 #
-# authored model documentation subdirectory: .md
-#
-ifndef MODEL_DOC_DIR
-  MODEL_DOC_DIR = doc
+
+# if not disabled then create model documenation
+ifndef MODEL_DOC_DISABLE
+  MODEL_DOC_OPTS = -Omc.ModelDoc true -Omc.ModelDevDoc true
 endif
+
+#   input subdirectory to find authored model documentation : .md
+ifndef MODEL_INDOC_DIR
+  MODEL_INDOC_DIR = $(CURDIR)/doc
+endif
+
+#   output subdirectory to create output html
+ifndef MODEL_OUTDOC_DIR
+  MODEL_OUTDOC_DIR = $(OUT_BIN_DIR)/doc
+endif
+
 #
 # libraries and omc: openM++ compiler
 #
@@ -271,7 +283,10 @@ $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 .PHONY : omc_compile
 $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP) $(MODEL_SCENARIO_DAT) $(MODEL_FIXED_DAT)
-	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -d $(CURDIR)/$(MODEL_DOC_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) \
+	$(OMC_EXE) \
+	-m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) \
+	$(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) -Omc.SqlDir $(OM_SQL_DIR) \
+	$(MODEL_DOC_OPTS) -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_INDOC_DIR) \
 	|| { echo "error at omc compile, exit code: " $$? ; kill $$PPID ; }
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp | omc_compile
@@ -346,6 +361,9 @@ prepare:
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_BIN_DIR) ] ; then mkdir -p $(OUT_BIN_DIR) ; fi
 	@if [ ! -d $(PUBLISH_DIR) ] ; then mkdir -p $(PUBLISH_DIR) ; fi
+ifndef MODEL_DOC_DISABLE
+	@if [ ! -d $(MODEL_OUTDOC_DIR) ] ; then mkdir -p $(MODEL_OUTDOC_DIR) ; fi
+endif
 ifeq ($(PLATFORM_UNAME), Darwin)
 	@sed \
 	-e "s_<string>0.0.1</string>_<string>$(BUNDLE_VERSION)</string>_" \
