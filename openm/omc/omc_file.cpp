@@ -98,7 +98,7 @@ void omc::buildMessageIni(
 {
     if (i_msgSet.empty()) return;   // exit: no messages to translate
 
-    map<string, NoCaseMap, LessNoCase> iniMap;  // output ini-flie as case-netral map
+    map<string, NoCaseMap, LessNoCase> iniMap;  // output ini-flie as case-neutral map
     NoCaseSet langSet;
     locale loc("");         // current user locale
 

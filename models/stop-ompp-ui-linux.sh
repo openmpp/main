@@ -97,7 +97,7 @@ fi
 # if any other non-zero exit code, for exmaple: 7 = Connection refused
 # then assume web-service already inactive (eg: system restart)
 #
-oms_shutdown_url="${oms_url}/api/admin/shutdown"
+oms_shutdown_url="${oms_url}/shutdown"
 
 echo "Stop oms web-service:"    | tee -a "$STOP_OMPP_UI_LOG"
 echo "curl -X PUT ${oms_shutdown_url}" | tee -a "$STOP_OMPP_UI_LOG"
