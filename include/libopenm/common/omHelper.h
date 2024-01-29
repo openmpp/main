@@ -166,7 +166,7 @@ namespace openm
     extern void formatTo(size_t i_size, char * io_buffer, const char * i_format, va_list io_args);
 
     /** format message into string result using vsnprintf() */
-    extern std::string formatToString(const std::string format, ...);
+    extern std::string formatToString(const char * i_format, ...);
 
     /** if source string exceed max size than return ellipted copy into the buffer */
     extern const char * elliptString(const char * i_src, size_t i_size, char * io_buffer);

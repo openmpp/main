@@ -418,15 +418,15 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
 }
 
 /** format message into string result using vsnprintf() */
-std::string openm::formatToString(const std::string format, ...)
+std::string openm::formatToString(const char * i_format, ...)
 {
     const size_t i_size = 1000;
     char io_buffer[i_size];
     std::string result;
 
     va_list argList;
-    va_start(argList, format);
-    vsnprintf(io_buffer, i_size, format.c_str(), argList);
+    va_start(argList, i_format);
+    vsnprintf(io_buffer, i_size, i_format, argList);
     va_end(argList);
 
     io_buffer[i_size - 1] = '\0';
