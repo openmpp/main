@@ -500,6 +500,11 @@ void EntitySymbol::post_parse(int pass)
                         // morph it
                         biav = new BuiltinAttributeSymbol(sym, this, typ);
                     }
+                    assert(biav);
+
+                    // Provide the default English label.
+                    biav->the_english_label = "Case identifier";
+
                     // Push the name into the post parse ignore hash for the current pass.
                     pp_symbols_ignore.insert(biav->unique_name);
                 }
