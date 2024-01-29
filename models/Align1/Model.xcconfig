@@ -24,6 +24,10 @@ OMC_FIXED_PARAM_DIR = $(SRCROOT)/parameters/Fixed
 OMC_CODE_PAGE = WINDOWS-1252
 OMC_NO_LINE = false
 
+// any value of MODEL_DOC_DISABLE would disable build of model documentation
+//
+// MODEL_DOC_DISABLE = Y
+
 // UI settings:
 //
 // START_OMPP_UI: if true then start openM++ UI.

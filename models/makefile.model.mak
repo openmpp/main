@@ -169,12 +169,12 @@ ifndef MODEL_CODE_DIR
   MODEL_CODE_DIR = code
 endif
 
-# omc model documenation directories and options
+# omc model documentation directories and options
 #
 
-# if not disabled then create model documenation
+# if not disabled then create model documentation
 ifndef MODEL_DOC_DISABLE
-  MODEL_DOC_OPTS = -Omc.ModelDoc true -Omc.ModelDevDoc true
+  OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true -Omc.ModelDevDoc true
 endif
 
 #   input subdirectory to find authored model documentation : .md
@@ -286,7 +286,7 @@ $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP) $
 	$(OMC_EXE) \
 	-m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) \
 	$(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) -Omc.SqlDir $(OM_SQL_DIR) \
-	$(MODEL_DOC_OPTS) -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_OUTDOC_DIR) \
+	$(OMC_MODEL_DOC_OPTS) -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_OUTDOC_DIR) \
 	|| { echo "error at omc compile, exit code: " $$? ; kill $$PPID ; }
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp | omc_compile
