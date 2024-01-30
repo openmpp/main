@@ -876,11 +876,11 @@ int main(int argc, char * argv[])
 
             if (Symbol::model_doc) {
                 // create doc version for users
-                do_model_doc(false, outDocDir, omrootDir, model_name, cg);
+                do_model_doc(model_name, false, outDocDir, outDir, omrootDir, cg);
             }
             if (Symbol::model_devdoc) {
                 // create doc version for model developers
-                do_model_doc(true, outDocDir, omrootDir, model_name, cg);
+                do_model_doc(model_name, true, outDocDir, outDir, omrootDir, cg);
             }
             theLog->logMsg("Generate model documentation - finish");
         }

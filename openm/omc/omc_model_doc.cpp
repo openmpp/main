@@ -274,7 +274,10 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
     return any_xref;
 }
 
-void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model_name, CodeGen& cg) {
+/** create model user documentation and model developer documentation. */
+void do_model_doc(
+    const string & model_name, bool devMode, const string & docOutDir, const string & mdOutDir, const string & omrootDir, const CodeGen & cg
+) {
 
     // create json file for ompp UI:
     /*
@@ -291,7 +294,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
     */
     if (!devMode) {
         string json_name = model_name + ".extra.json";
-        string json_path = makeFilePath(baseDirOf(outDir).c_str(), json_name.c_str());
+        string json_path = makeFilePath(baseDirOf(docOutDir).c_str(), json_name.c_str());
         ofstream out(json_path, ios::out | ios::trunc | ios::binary);
         if (out.fail()) {
             string msg = "omc : warning : Unable to open " + json_path + " for writing.";
@@ -353,7 +356,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
         }
 
         // create the markdown file in outDir (normally 'src')
-        string mdPath = makeFilePath(outDir.c_str(), mdName.c_str());
+        string mdPath = makeFilePath(mdOutDir.c_str(), mdName.c_str());
         ofstream mdStream(mdPath, ios::out | ios::trunc | ios::binary);
         if (mdStream.fail()) {
             string msg = "omc : warning : Unable to open " + mdName + " for writing.";
@@ -1286,7 +1289,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
             ofstream htmlStream;
             ofstream mdStream;
-            string hdpth = makeFilePath(outDir.c_str(), htmlName.c_str());
+            string hdpth = makeFilePath(docOutDir.c_str(), htmlName.c_str());
             htmlStream.open(hdpth, fstream::out);
             mdStream.open(mdPath, fstream::in);
 

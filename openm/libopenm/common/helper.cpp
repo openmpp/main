@@ -420,6 +420,8 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
 /** format message into string result using vsnprintf() */
 std::string openm::formatToString(const char * i_format, ...)
 {
+    if (i_format == NULL) return "";
+
     const size_t i_size = 1000;
     char io_buffer[i_size];
     std::string result;
