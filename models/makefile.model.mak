@@ -313,7 +313,7 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 # copy model.ini and model.message.ini files into output folder
 #
 .PHONY : publish
-publish : $(MODEL_SQLITE) publish-views copy_ini
+publish : $(MODEL_SQLITE) publish-views copy_ini copy_extra_doc
 
 $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
@@ -322,6 +322,13 @@ $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 copy_ini:
 	@if [ -e $(MODEL_NAME).ini ] ; then cp -pvf $(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
 	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pvf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
+
+.PHONY : copy_extra_doc
+copy_extra_doc:
+ifndef MODEL_DOC_DISABLE
+	@if [ ! -d $(MODEL_CODE_DIR) ] ; then cp -pvf $(MODEL_CODE_DIR)/*.pdf $(MODEL_OUTDOC_DIR) ; fi
+	@if [ ! -d $(MODEL_CODE_DIR) ] ; then cp -pvf $(MODEL_CODE_DIR)/*.PDF $(MODEL_OUTDOC_DIR) ; fi
+endif
 
 .PHONY : publish-views
 publish-views : \
@@ -353,6 +360,7 @@ clean-all: clean
 	rm -f $(MODEL_SQLITE)
 	rm -f $(OUT_BIN_DIR)/*.ini
 	rm -f $(OUT_BIN_DIR)/*.log
+	rm -f $(MODEL_OUTDOC_DIR)
 
 .PHONY: prepare
 prepare:
