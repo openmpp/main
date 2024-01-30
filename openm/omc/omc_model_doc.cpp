@@ -360,6 +360,54 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             theLog->logMsg(msg.c_str());
         }
 
+        // HTML fragment for topic separator
+        string topicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
+
+        /// Name of the Home topic
+        const string homeTopic = "Home";
+
+        /// Is there a stand-alone authored Home topic?
+        bool authoredHomeTopicPresent = Symbol::in_doc_active && (Symbol::in_doc_stems.count(homeTopic + "." + lang) > 0);
+
+        /// list of all stand-alone authored topics
+        list<string> authoredTopics;
+        for (auto& s : Symbol::in_doc_stems) {
+            if ((s.length() >= 6) && s.substr(0, 6) == "LABEL.") {  // Use starts_with() in C++20
+                // skip LABEL topics
+                continue;
+            }
+            if ((s.length() >= 5) && s.substr(0, 5) == "NOTE.") {  // Use starts_with() in C++20
+                // skip NOTE topics
+                continue;
+            }
+            if ((s.length() >= (lang.length() + 1))
+                && s.substr(s.length() - lang.length() - 1, lang.length() + 1) != "." + lang) { // Use ends_with() in C++20
+                // skip topics for other languages
+                continue;
+            }
+            string topic = s.substr(0, s.length() - lang.length() - 1);
+            authoredTopics.push_back(topic);
+        }
+
+        if (authoredHomeTopicPresent) {
+            // The authored stand-alone Home topic is the first topic in the document.
+            string topic = homeTopic;
+            mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
+            mdStream << Symbol::slurp_doc_file(topic + "." + lang);
+            mdStream << topicSeparator;
+
+            // all other authored stand-alone topics
+            for (auto& topic : authoredTopics) {
+                if (topic == homeTopic) {
+                    // already done
+                    continue;
+                }
+                mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
+                mdStream << Symbol::slurp_doc_file(topic + "." + lang);
+                mdStream << topicSeparator;
+            }
+        }
+
         ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
         assert(theModelSymbol);
         bool flagModelNotePresent = theModelSymbol->note(*langSym).length() > 0;
@@ -390,9 +438,6 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 break;
             }
         }
-
-        // HTML fragment for topic separator
-        string topicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
 
         // Topic: Table of contents
         {
