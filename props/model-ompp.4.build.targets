@@ -137,6 +137,25 @@
     />
   </Target>
 
+  <!--
+  Copy additional model documentation files into documentation output directory
+  -->
+  <Target Name="ModelDocCopy"
+          AfterTargets="OmcCompile"
+          Condition="('$(MODEL_DOC)'=='true' Or '$(MODEL_DEVDOC)'=='true') And Exists('$(IN_DOC_DIR)') And Exists('$(OUT_DOC_DIR)')"
+          >
+    <Message Text="Copy $(IN_DOC_DIR)/*.pdf to $(OUT_DOC_DIR)" />
+
+    <ItemGroup>
+      <ExtraModelDocFiles Include="$(IN_DOC_DIR)/*.pdf" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(ExtraModelDocFiles)"
+      DestinationFolder="$(OUT_DOC_DIR)"
+    />
+  </Target>
+
+  <!-- -->
   <PropertyGroup>
     <BuildDependsOn>OmcCompile;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
