@@ -417,7 +417,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
 
         // higher-level topics
         string anchorSymbolReference = "symbol-reference";
-        string anchorModelIntroduction = "model-introduction";
+        string anchorModelSymbol = "model";
         string anchorParametersAlphabetic = "parameters-alphabetic";
         string anchorParameterHierarchy = "parameter-hierarchy";
         string anchorParameterMajorGroups = "parameter-major_groups";
@@ -474,7 +474,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             mdStream << LTA(lang, "Topic") + " | " + LTA(lang, "Description") + "\n"; // maddy-specific table header separator
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             if (flagModelNotePresent) {
-                mdStream << "[" + LTA(lang, "Introduction") + "](#" + anchorModelIntroduction + ") | " + LTA(lang, "Overview of the model") + "\n";
+                mdStream << "[`model`](#" + anchorModelSymbol + ") | " + LTA(lang, "The unique `model` symbol") + "\n";
             }
             if (do_parameter_hierarchy || do_table_hierarchy) {
                 mdStream << "**" + LTA(lang, "Major Groups") + "** | \n";
@@ -505,10 +505,17 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             mdStream << fragmentTopicSeparator;
         }
 
-        // Topic: introduction
+        // Topic: the unique symbol 'model'
         if (flagModelNotePresent) {
-            mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">" + LTA(lang, "Introduction to") + " " + model_name + "</h3>\n\n";
-            mdStream << theModelSymbol->note(*langSym);
+            string modelLabel = theModelSymbol->label(*langSym);
+            string modelNote = theModelSymbol->note(*langSym);
+            mdStream
+                // symbol name
+                << "<h3 id=\"" + anchorModelSymbol + "\"><code>model</code>"
+                // symbol label
+                << "<span style=\"font-weight:lighter\"> " << modelLabel << "</span></h3>\n\n"
+                ;
+            mdStream << modelNote;
             mdStream << fragmentReturnLinks;
             mdStream << fragmentTopicSeparator;
         }
