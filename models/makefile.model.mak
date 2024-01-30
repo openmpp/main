@@ -326,8 +326,7 @@ copy_ini:
 .PHONY : copy_extra_doc
 copy_extra_doc:
 ifndef MODEL_DOC_DISABLE
-	@if [ -d $(MODEL_INDOC_DIR) ] ; then cp -pvf $(MODEL_INDOC_DIR)/*.pdf $(MODEL_OUTDOC_DIR) ; fi
-	@if [ -d $(MODEL_INDOC_DIR) ] ; then cp -pvf $(MODEL_INDOC_DIR)/*.PDF $(MODEL_OUTDOC_DIR) ; fi
+	@if [ -d $(MODEL_INDOC_DIR) ] ; then find $(MODEL_INDOC_DIR) -iname "*.pdf" -exec cp -pvf {} $(MODEL_OUTDOC_DIR) \;; fi
 endif
 
 .PHONY : publish-views
