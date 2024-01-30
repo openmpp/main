@@ -86,6 +86,8 @@ publish-all : prepare publish
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
 ifndef MODEL_DOC_DISABLE
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_DOC_DIR)/*.html $(local_DOC_DIR);)
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/doc/*.pdf $(local_DOC_DIR);)
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/doc/*.PDF $(local_DOC_DIR);)
 endif
 
 .PHONY : prepare
