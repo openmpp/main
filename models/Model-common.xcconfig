@@ -10,22 +10,28 @@
 // then change OM_ROOT, for example:
 //   OM_ROOT = $(HOME)/my-openmpp
 //
-OM_ROOT = $(SRCROOT)/../..
-OM_SQL_DIR = $(OM_ROOT)/sql
+OM_ROOT      = $(SRCROOT)/../..
+OM_SQL_DIR   = $(OM_ROOT)/sql
 OM_SQLITE_DIR=${OM_SQL_DIR}/sqlite
 
 // model source code directory: .cpp. .h .mpp .ompp
-// 
-MODEL_CODE_DIR = $(SRCROOT)/code
+// and model additional documentation directory
+//
+MODEL_CODE_DIR  = $(SRCROOT)/code
+MODEL_INDOC_DIR = $(SRCROOT)/doc
 
 // omc compiler settings:
 //
-// OMC_USE_DIR:  use headers directory
-// OMC_OUT_DIR:  output directory: .cpp .h .sql
+// OMC_USE_DIR:   use headers directory
+// OMC_OUT_DIR:   output directory: .cpp .h .sql
+// OMC_CODE_PAGE: convert source files to utf-8 from Windows code page
 //
-OMC_USE_DIR = $(OM_ROOT)/use
-OMC_OUT_DIR = $(SRCROOT)/Xcode-src
+OMC_USE_DIR   = $(OM_ROOT)/use
+OMC_OUT_DIR   = $(SRCROOT)/Xcode-src
+// OMC_CODE_PAGE = WINDOWS-1252
 
 // model publish settings (also used by UI):
+// model output documentation directory
 //
-PUBLISH_DIR = $(TARGET_BUILD_DIR)
+PUBLISH_DIR      = $(TARGET_BUILD_DIR)
+MODEL_OUTDOC_DIR = $(TARGET_BUILD_DIR)/doc

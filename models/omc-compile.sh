@@ -21,7 +21,7 @@ fi
 
 OMC_FIXED_OPT=
 if [ -d ${OMC_FIXED_PARAM_DIR} ] && [ -n "$(ls ${OMC_FIXED_PARAM_DIR})" ]; then
-  OMC_FIXED_OPT ="-f ${OMC_FIXED_PARAM_DIR}"
+  OMC_FIXED_OPT="-f ${OMC_FIXED_PARAM_DIR}"
 fi
 
 OMC_CODE_PAGE_OPT=
@@ -32,6 +32,17 @@ fi
 OMC_NO_LINE_OPT=
 if [ -n "$OMC_NO_LINE" ]; then
   OMC_NO_LINE_OPT="-Omc.NoLineDirectives ${OMC_NO_LINE}"
+fi
+
+# if not disabled then create model documentation
+#
+OMC_MODEL_DOC_OPTS=
+if [ -z "${MODEL_DOC_DISABLE}" ]; then
+  OMC_MODEL_DOC_OPTS="-Omc.ModelDoc true -Omc.ModelDevDoc true"
+
+  if [ ! -d "${MODEL_OUTDOC_DIR}" ]; then
+    mkdir "${MODEL_OUTDOC_DIR}"
+  fi
 fi
 
 # do omc compile
@@ -46,6 +57,9 @@ ${OMC_EXE} \
  ${OMC_SCENARIO_OPT} \
  ${OMC_FIXED_OPT} \
  ${OMC_NO_LINE_OPT} \
- ${OMC_CODE_PAGE_OPT}
+ ${OMC_CODE_PAGE_OPT} \
+ ${OMC_MODEL_DOC_OPTS} \
+ -d ${MODEL_INDOC_DIR} \
+ -omc.OutDocDir ${MODEL_OUTDOC_DIR}
 
 # done
