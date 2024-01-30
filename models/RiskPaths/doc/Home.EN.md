@@ -1,7 +1,8 @@
-# RiakPaths is Great!
+# RiskPaths rocks!!
 
-- A great parameter is [ProbMort](#ProbMort).  CHeck it out!
-- Or, check out the entire [parameter hierarchy](#parameter-hierarchy). 
+- A great parameter is [ProbMort](#ProbMort).  Check it out!
+- Or, check out the entire [parameter hierarchy](#parameter-hierarchy).
+- And, of course, the [Symbol Reference](#symbol-reference).
 
 RiskPaths-related resources:
 

@@ -361,10 +361,13 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
         }
 
         // HTML fragment for topic separator
-        string topicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
+        string fragmentTopicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
 
         /// Name of the Home topic
         const string homeTopic = "Home";
+
+        /// Anchor of the Home topic
+        const string anchorHome = "Home";
 
         /// Is there a stand-alone authored Home topic?
         bool authoredHomeTopicPresent = Symbol::in_doc_active && (Symbol::in_doc_stems.count(homeTopic + "." + lang) > 0);
@@ -394,7 +397,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             string topic = homeTopic;
             mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
             mdStream << Symbol::slurp_doc_file(topic + "." + lang);
-            mdStream << topicSeparator;
+            mdStream << fragmentTopicSeparator;
 
             // all other authored stand-alone topics
             for (auto& topic : authoredTopics) {
@@ -404,7 +407,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 }
                 mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
                 mdStream << Symbol::slurp_doc_file(topic + "." + lang);
-                mdStream << topicSeparator;
+                mdStream << fragmentTopicSeparator;
             }
         }
 
@@ -413,7 +416,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
         bool flagModelNotePresent = theModelSymbol->note(*langSym).length() > 0;
 
         // higher-level topics
-        string anchorTableOfContents = "table-of-contents";
+        string anchorSymbolReference = "symbol-reference";
         string anchorModelIntroduction = "model-introduction";
         string anchorParametersAlphabetic = "parameters-alphabetic";
         string anchorParameterHierarchy = "parameter-hierarchy";
@@ -422,6 +425,14 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
         string anchorTableHierarchy = "table-hierarchy";
         string anchorTableMajorGroups = "table-major-groups";
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
+
+        // Fragment for back navigation
+        //string fragmentReturnLinks = "\n\n[[" + LTA(lang, "Symbol Reference") + "](#" + anchorSymbolReference + ")]\r\n";
+        string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
+        if (authoredHomeTopicPresent) {
+            fragmentReturnLinks += "<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
+        }
+        fragmentReturnLinks += "\n\n";
 
         bool do_parameter_hierarchy = false;
         for (auto s : Symbol::pp_all_parameter_groups) {
@@ -439,7 +450,7 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             }
         }
 
-        // Topic: Table of contents
+        // Topic: Symbol Reference Main Topic
         {
             VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
             assert(vs);
@@ -450,15 +461,15 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             std::time_t time = std::time({});
             std::strftime(ymd, ymd_size, "%F %T", std::localtime(&time));
 
-            string mainTitle = LTA(lang, "Model Documentation");
+            string mainTitle = LTA(lang, "Symbol Reference");
             if (devMode) {
                 mainTitle += " (" + LTA(lang, "Developer Edition") + ")";
             }
 
-            mdStream << "<h1 id=\"" + anchorTableOfContents + "\">" + model_name + " - " + mainTitle + "</h1>\n\n";
+            mdStream << "<h1 id=\"" + anchorSymbolReference + "\">" + model_name + " - " + mainTitle + "</h1>\n\n";
             mdStream << "<h2>" + LTA(lang, "Version") + " " + version_string + " " + LTA(lang,"built on") + " " + ymd + "</h2>\n\n";
             mdStream << "\n\n";
-            mdStream << "<h3>" + LTA(lang, "Table of Contents") + "</h3>\n\n";
+            mdStream << "<h3>" + LTA(lang, "Navigation Aids") + "</h3>\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
             mdStream << LTA(lang, "Topic") + " | " + LTA(lang, "Description") + "\n"; // maddy-specific table header separator
             mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -488,15 +499,18 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Output tables in alphabetic order") + "\n";
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << topicSeparator;
+            if (authoredHomeTopicPresent) {
+                mdStream << "\n\n<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
+            }
+            mdStream << fragmentTopicSeparator;
         }
 
         // Topic: introduction
         if (flagModelNotePresent) {
             mdStream << "<h3 id=\"" + anchorModelIntroduction + "\">" + LTA(lang, "Introduction to") + " " + model_name + "</h3>\n\n";
             mdStream << theModelSymbol->note(*langSym);
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#"+ anchorTableOfContents +")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         }
 
         // Table-like symbols - published tables merged with derived parameters published as tables
@@ -563,8 +577,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 } // end parameter table
             }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         }
 
         // Topic: parameter major groups
@@ -581,8 +595,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 mdStream << expand_group(lang_index, g, 0, 1, true);
             }
             mdStream << "</p>\n\n";
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         }
 
         // Topic: parameter hierarchy
@@ -620,8 +634,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                     mdStream << "<p>" + orphan_fragment + "</p>\n\n";
                 }
             }
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         }
 
         // Topic for each published parameter
@@ -768,9 +782,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 }
             }
 
-            mdStream << "\n\n";
-            mdStream << "[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         } // Topic for each published parameter
 
         // Topic: enumerations in alphabetic order
@@ -818,8 +831,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 } // end enumerations table
             }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         } // Topic: enumerations in alphabetic order
 
 
@@ -1020,9 +1033,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 }
             }
 
-            mdStream << "\n\n";
-            mdStream << "[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         } // Topic for each published enumeration
 
         // Topic: tables in alphabetic order
@@ -1062,8 +1074,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 } // end parameter table
             }
             mdStream << "|<table\n"; // maddy-specific end table
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         } // Topic: tables in alphabetic order
 
         // Topic: table major groups
@@ -1080,8 +1092,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 mdStream << expand_group(lang_index, g, 0, 1, true);
             }
             mdStream << "</p>\n\n";
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         }
 
         // Topic: table hierarchy
@@ -1137,8 +1149,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 }
             }
 
-            mdStream << "\n\n[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         }
 
         // Topic for each published table
@@ -1249,9 +1261,8 @@ void do_model_doc(bool devMode, string& outDir, string& omrootDir, string& model
                 }
             }
 
-            mdStream << "\n\n";
-            mdStream << "[[" + LTA(lang, "Table of Contents") + "](#" + anchorTableOfContents + ")]\r\n";
-            mdStream << topicSeparator;
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
         } // Topic for each published table
 
         // all done
