@@ -33,14 +33,14 @@ and
 
 #### Additional resources
 
-> Martin Spielauer's compendium on microsimulation, c. 2008, as individual PDF files:
+> Martin Spielauer's discourse on microsimulation, c. 2008, in PDF format:
 
 * [Chapter 1: What is Dynamic Social Science Microsimulation?](chap1-eng.pdf)
 * [Chapter 2: Microsimulation Approaches](chap2-eng.pdf)
 * [Chapter 3: Exploring the Model RiskPaths](chap3-eng.pdf)
 * [Chapter 4: RiskPaths from the Model Developer's View](chap4-eng.pdf)
 
-Material from chapters 3 and 4 was extracted and adapted to produce this documentation.
+This documentation is based on extracts from chapters 3 and 4.
 
 The original source of this material was the 
 [Statistics Canada web site](https://www.statcan.gc.ca/en/microsimulation/modgen/modgen). 
