@@ -86,8 +86,7 @@ publish-all : prepare publish
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
 ifndef MODEL_DOC_DISABLE
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_DOC_DIR)/*.html $(local_DOC_DIR);)
-	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/doc/*.pdf $(local_DOC_DIR);)
-	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/doc/*.PDF $(local_DOC_DIR);)
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),if [ -d $(d)/doc ]; then find $(d)/doc -iname "*.pdf" -exec cp -pf {} $(local_DOC_DIR) \;; fi;)
 endif
 
 .PHONY : prepare
@@ -103,5 +102,6 @@ clean-all: clean
 .PHONY : clean
 clean:
 	rm -rf $(local_BIN_DIR)
-	@if [ -d $(local_SQL_DIR) ] ;  then rm -rf $(local_SQL_DIR) ; fi
-	@if [ -d $(local_LOG_DIR) ] ;  then rm -rf $(local_LOG_DIR) ; fi
+	@if [ -d $(local_SQL_DIR) ] ;  then rm -rf $(local_SQL_DIR)   ; fi
+	@if [ -d $(local_LOG_DIR) ] ;  then rm -rf $(local_LOG_DIR)/* ; fi
+	@if [ -d $(local_DOC_DIR) ] ;  then rm -rf $(local_DOC_DIR)/* ; fi

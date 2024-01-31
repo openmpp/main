@@ -177,9 +177,9 @@ ifndef MODEL_DOC_DISABLE
   OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true -Omc.ModelDevDoc true
 endif
 
-#   input subdirectory to find authored model documentation : .md
+# input subdirectory to find authored model documentation : .md
 ifndef MODEL_INDOC_DIR
-  MODEL_INDOC_DIR = $(CURDIR)/doc
+  MODEL_INDOC_DIR = doc
 endif
 
 #   output subdirectory to create output html
@@ -326,8 +326,7 @@ copy_ini:
 .PHONY : copy_extra_doc
 copy_extra_doc:
 ifndef MODEL_DOC_DISABLE
-	@if [ ! -d $(MODEL_CODE_DIR) ] ; then cp -pvf $(MODEL_CODE_DIR)/*.pdf $(MODEL_OUTDOC_DIR) ; fi
-	@if [ ! -d $(MODEL_CODE_DIR) ] ; then cp -pvf $(MODEL_CODE_DIR)/*.PDF $(MODEL_OUTDOC_DIR) ; fi
+	@if [ -d $(MODEL_INDOC_DIR) ] ; then find $(MODEL_INDOC_DIR) -iname "*.pdf" -exec cp -pvf {} $(MODEL_OUTDOC_DIR) \;; fi
 endif
 
 .PHONY : publish-views
@@ -360,7 +359,8 @@ clean-all: clean
 	rm -f $(MODEL_SQLITE)
 	rm -f $(OUT_BIN_DIR)/*.ini
 	rm -f $(OUT_BIN_DIR)/*.log
-	rm -f $(MODEL_OUTDOC_DIR)
+	rm -rf $(MODEL_OUTDOC_DIR)
+	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME).extra.json
 
 .PHONY: prepare
 prepare:
