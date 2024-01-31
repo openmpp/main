@@ -21,7 +21,8 @@ time_type double;
 
 // Supported languages
 languages {
-	EN // English
+   EN,
+   FR
 };
 
 #endif // Hide non-C++ syntactic island from IDE

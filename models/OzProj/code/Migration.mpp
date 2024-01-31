@@ -43,18 +43,30 @@ actor Person {
 // Migration event
 // 
 
-actor Person{
-    //EN Time of next migration event
-    TIME next_migration_time = { TIME_INFINITE };
+actor Person {
+  //EN Time of next migration event
+  TIME next_migration_time = { TIME_INFINITE };
 
-//EN Schedule the migration event
-void ScheduleMigrationEvent();
+  //EN Schedule the migration event
+  void ScheduleMigrationEvent();
 
-//EN Compute migration probability
-double MigrationProbability();
+  //EN Compute migration probability
+  double MigrationProbability();
 
-event timeMigrationEvent, MigrationEvent; //EN Migration event
+  event timeMigrationEvent, MigrationEvent; //EN Migration event
 };
+
+//LABEL(Person.MigrationEvent, FR) Évènement de migration
+/*NOTE(Person.MigrationEvent, EN)
+  Migration data is based on location at two moments in time,
+  one year apart.
+  So, the data does observes migration behaviour at a coarseness of one year.
+  This coarseness is deliberately reproduced in this model for consistency
+  with the source data, by restricting migration events to at most one
+  per year of calendar time.
+  Migration is implemented by two events which work together,
+  MigrationEvent and MigrationClockEvent.
+*/
 
 table Person MigrantsByOriginAndDestination //EN Migrants by origin and destination
 {
