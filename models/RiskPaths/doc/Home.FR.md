@@ -19,11 +19,11 @@ et
 [énumerations](#enumerations-alphabetic).
 
 
-#### [Introduction](#Introduction)
+#### [Introduction](#001-Introduction)
 > Une introduction à RiskPaths.
 
 
-#### [La substance du modèle](#Substance)
+#### [La substance du modèle](#002-General-description)
 > Les modèles statistiques sous-jacents et leur estimation. 
  
 
@@ -47,3 +47,5 @@ Cette documentation est fondée sur des extraits des chapitres 3 et 4.
 La source d'origine de ce materiel est le  
 [site web de Statistiques Canada](https://www.statcan.gc.ca/fr/microsimulation/modgen/modgen). 
 
+
+[[Suivant >>](#001-Introduction)]
