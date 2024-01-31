@@ -26,7 +26,7 @@ and
  
 
 
-#### [Model Implementation](#Implementation)
+#### [Model Implementation](#008-Organization-of-files)
 > The implementation of the RiskPaths model. 
  
 
