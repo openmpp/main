@@ -35,7 +35,7 @@ et
 
 #### Ressources additionelles
 
-> Le discours de Martin Spielauer sur la microsimulation, c. 2008, en format PDF :
+> Un discours sur la microsimulation par l'auteur de RiskPaths, Martin Spielauer, c. 2008, en format PDF :
 
 * [Chapitre 1 : Qu’est-ce la microsimulation dynamique en sciences sociales ?](chap1-fra.pdf)
 * [Chapitre 2 : Approches de microsimulation ](chap2-fra.pdf)

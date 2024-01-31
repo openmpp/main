@@ -33,7 +33,7 @@ and
 
 #### Additional resources
 
-> Martin Spielauer's discourse on microsimulation, c. 2008, in PDF format:
+> A discussion of microsimulation by the author of RiskPaths, Martin Spielauer, c. 2008, in PDF format:
 
 * [Chapter 1: What is Dynamic Social Science Microsimulation?](chap1-eng.pdf)
 * [Chapter 2: Microsimulation Approaches](chap2-eng.pdf)
