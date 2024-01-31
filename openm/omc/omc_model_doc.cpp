@@ -395,23 +395,23 @@ void do_model_doc(
             authoredTopics.push_back(topic);
         }
 
+        // The authored stand-alone Home topic is the first topic in the document.
         if (authoredHomeTopicPresent) {
-            // The authored stand-alone Home topic is the first topic in the document.
             string topic = homeTopic;
             mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
             mdStream << Symbol::slurp_doc_file(topic + "." + lang);
             mdStream << fragmentTopicSeparator;
+        }
 
-            // all other authored stand-alone topics
-            for (auto& topic : authoredTopics) {
-                if (topic == homeTopic) {
-                    // already done
-                    continue;
-                }
-                mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
-                mdStream << Symbol::slurp_doc_file(topic + "." + lang);
-                mdStream << fragmentTopicSeparator;
+        // all other authored stand-alone topics
+        for (auto& topic : authoredTopics) {
+            if (topic == homeTopic) {
+                // already done
+                continue;
             }
+            mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
+            mdStream << Symbol::slurp_doc_file(topic + "." + lang);
+            mdStream << fragmentTopicSeparator;
         }
 
         ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
@@ -430,7 +430,6 @@ void do_model_doc(
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
 
         // Fragment for back navigation
-        //string fragmentReturnLinks = "\n\n[[" + LTA(lang, "Symbol Reference") + "](#" + anchorSymbolReference + ")]\r\n";
         string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
         if (authoredHomeTopicPresent) {
             fragmentReturnLinks += "<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
