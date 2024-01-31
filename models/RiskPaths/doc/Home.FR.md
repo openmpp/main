@@ -44,8 +44,8 @@ et
 
 Cette documentation est fondée sur des extraits des chapitres 3 et 4.
 
-La source d'origine de ce materiel est le  
-[site web de Statistiques Canada](https://www.statcan.gc.ca/fr/microsimulation/modgen/modgen). 
+La source d'origine de ce materiel est une  
+[section du site web de Statistiques Canada](https://www.statcan.gc.ca/fr/microsimulation/modgen/modgen). 
 
 
 [[Suivant >>](#001-Introduction)]

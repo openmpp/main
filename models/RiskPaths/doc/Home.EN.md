@@ -42,8 +42,8 @@ and
 
 This documentation is based on extracts from chapters 3 and 4.
 
-The original source of this material was the 
-[Statistics Canada web site](https://www.statcan.gc.ca/en/microsimulation/modgen/modgen). 
+The original source of this material was a 
+[section of the Statistics Canada web site](https://www.statcan.gc.ca/en/microsimulation/modgen/modgen). 
 
 
 [[Next >>](#001-Introduction)]
