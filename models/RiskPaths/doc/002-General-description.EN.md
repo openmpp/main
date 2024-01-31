@@ -30,4 +30,4 @@ In other words, the 15th birthday will be followed by one of these four possible
 Death or pregnancy terminates the simulation. A change of age index requires that the waiting times for the competing events union formation and pregnancy be updated. The union formation event alters the risk of first pregnancy (making it much higher) and changes the set of competing risks. A woman is then no longer at risk of first union formation but becomes subject to union dissolution risk.  
 
 
-[[Home](#Home)] [[<< Prev](#001-Introduction)] [[Next >>](#003-QQQ)]
+[[Home](#Home)] [[<< Prev](#001-Introduction)] [[Next >>](#003-First-pregnancy)]
