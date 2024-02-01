@@ -143,7 +143,7 @@ REM start oms web-service and UI
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
 
-START "oms" /MIN "%OM_ROOT%"\bin\oms.exe -l localhost:0 -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HomeDir "%PUBLISH_DIR%" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
+START "oms" /MIN "%OM_ROOT%"\bin\oms.exe -l localhost:0 -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%"\doc -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HomeDir "%PUBLISH_DIR%" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
 if ERRORLEVEL 1 (
   @echo FAILED to start %OM_ROOT%\bin\oms.exe
   EXIT 1
