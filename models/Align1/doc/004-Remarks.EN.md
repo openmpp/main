@@ -1,0 +1,11 @@
+### Remarks
+
+1. A natural way for continuous time models to align is to tinker with the timing of events which “would have occurred anyway”.  This helps preserve aspects of model logic, since prohibited events remain prohibited under alignment.
+2. An event which was deferred or advanced by alignment will still have its event time recomputed if entity attributes change (perhaps to +inf if the entity is no longer eligible for the event).  This maintains aspects of the internal causative logic of the model, even under alignment.
+3. The ‘event censoring’ optimization should perhaps not be used in models using this alignment technique, since that might deplete the pool of future events which can be advanced into an alignment interval.  For example, in experiment 1 above, the 6 events which were advanced to year 19 to hit the target had original times beyond the end of the run (which ended at time=20).  They would have been right censored hence never placed in the queue.
+4. In the current version of `Align1`, event times do not change during the simulation within an alignment window (year).  It might be interesting to add a birthday event to the model and have a mortality schedule which varies by single year of age, to make tests more realistic.
+5. The algorithm could be adapted to split an alignment interval (year) into sub-intervals (e.g. 10 equal intervals in each year), with recalculation of progress to the target for the current year.  That would allow the algorithm to adjust for interacting events during the simulation of the current year.  That would require counting events as they occur during the alignment interval, which was not needed in this version of `Align1`.
+6. As the number of alignment targets increases, and if targets are classified by entity characteristics (e.g. age group), the code volume for alignment could become massive and error-prone (even though mechanical).  That makes it a tempting candidate for new supporting functionality to automate some aspects.
+
+
+[[Home](#Home)] [[<< Previous](#003-Experiment-2)]
