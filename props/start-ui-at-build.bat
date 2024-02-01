@@ -120,9 +120,9 @@ set OM_CFG_INI_ANY_KEY=true
 REM set OM_ModelName=/path/to/model/dir
 
 set model_root_name=OM_%MODEL_NAME%
-set %model_root_name%="%CD%"
+set %model_root_name%=%CD%
 
-REM @echo %model_root_name% = %CD%
+@echo %model_root_name% = %CD%
 
 START "oms" "%OM_ROOT%"\bin\oms.exe -l localhost:0 -oms.ModelDir ..\bin -oms.ModelLogDir ..\bin -oms.UrlSaveTo %OMS_URL_TICKLE% -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir ..\bin -oms.ModelDocDir ..\bin\doc -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest -OpenM.LogToFile
 if ERRORLEVEL 1 (
