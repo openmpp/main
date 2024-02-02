@@ -3,8 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 /* NOTE(PersonCore, EN)
-	This module contains basic functions and actor states not specific
-	to the individual behaviours organized in separate modules.
+    This module contains basic functions and actor states not specific
+    to the individual behaviours organized in separate modules.
 */
 
 #include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
@@ -12,75 +12,75 @@
 #if 0 // Hide non-C++ syntactic island from IDE
 
 ///////////////////////////////////////////////////////////////////////////
-// Type definitions 
+// Type definitions
 
-range LIFE 									//EN Simulated age range
+range LIFE //EN Simulated age range
 {
-	0,100
+    0,100
 };
 
-partition AGEINT_STATE			//EN 2.5 year age intervals
+partition AGEINT_STATE //EN 2.5 year age intervals
 {
-	15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 37.5, 40
+    15, 17.5, 20, 22.5, 25, 27.5, 30, 32.5, 35, 37.5, 40
 };
 
-classification UNION_STATE 			//EN Union status
+classification UNION_STATE //EN Union status
 {
-	US_NEVER_IN_UNION,				//EN Never in union	
-	US_FIRST_UNION_PERIOD1,			//EN First union < 3 years
-	US_FIRST_UNION_PERIOD2,			//EN First Union > 3 years
-	US_AFTER_FIRST_UNION,			//EN After first union	
-	US_SECOND_UNION,				//EN Second union
-	US_AFTER_SECOND_UNION			//EN After second union
+    US_NEVER_IN_UNION,      //EN Never in union
+    US_FIRST_UNION_PERIOD1, //EN First union < 3 years
+    US_FIRST_UNION_PERIOD2, //EN First Union > 3 years
+    US_AFTER_FIRST_UNION,   //EN After first union
+    US_SECOND_UNION,        //EN Second union
+    US_AFTER_SECOND_UNION   //EN After second union
 };
 
 ///////////////////////////////////////////////////////////////////////////
 // Actor states and functions
 
-actor Person 					//EN Individual
+actor Person //EN Individual
 {
-	//EN Current integer age
-	LIFE integer_age = COERCE( LIFE, self_scheduling_int(age) );
+    //EN Current integer age
+    LIFE integer_age = COERCE( LIFE, self_scheduling_int(age) );
 
-	//EN Current age interval
-	int age_status = self_scheduling_split(age, AGEINT_STATE);
+    //EN Current age interval
+    int age_status = self_scheduling_split(age, AGEINT_STATE);
 
-	//EN Function starting the life of an actor
-	void Start();
+    //EN Function starting the life of an actor
+    void Start();
 
-	//EN Function finishing the life of an actor
-	void Finish();
-};  
+    //EN Function finishing the life of an actor
+    void Finish();
+};
 
 #endif // Hide non-C++ syntactic island from IDE
 
 /*NOTE(Person.Start, EN)
-	The Start function initializes actor variables before simulation
-	of the actor commences.
+    The Start function initializes actor variables before simulation
+    of the actor commences.
 */
 void Person::Start()
 {
     // Initialize all attributes (OpenM++).
     initialize_attributes();
 
-	// Age and time are variables automatically maintained by 
-	// Modgen. They can be set only in the Start function
-	age = 0;		 
-	time = 0;
+    // Age and time are variables automatically maintained by
+    // Modgen. They can be set only in the Start function
+    age = 0;
+    time = 0;
 
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 }
 
 /*NOTE(Person.Finish, EN)
-	The Finish function terminates the simulation of an actor.
+    The Finish function terminates the simulation of an actor.
 */
 void Person::Finish()
 {
     // Have the entity exit the simulation (OpenM++).
     exit_simulation();
 
-	// After the code in this function (if any) is executed,
-	// Modgen removes the actor from tables and from the simulation.
-	// Modgen also recuperates any memory used by the actor.
+    // After the code in this function (if any) is executed,
+    // Modgen removes the actor from tables and from the simulation.
+    // Modgen also recuperates any memory used by the actor.
 }
