@@ -8,7 +8,7 @@
     and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 

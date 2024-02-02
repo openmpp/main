@@ -8,7 +8,8 @@
     and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h" // For IDE
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
 #if 0 // Hide from IDE
 // The following modules will be compiled and assembled in this order
 // after all model-specific modules.

@@ -3,7 +3,7 @@
 
 //LABEL(TestEventDependency, EN) Test event dependency on linked attributes, etc.
 
-#include "omc/omSimulation.h" // For IDE to understand C++ code in this module
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 
 /*

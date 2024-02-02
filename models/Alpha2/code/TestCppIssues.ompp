@@ -3,7 +3,7 @@
 
 //LABEL(TestCppIssues, EN) Tests of C++ language issues with OpenM++ attributes
 
-#include "omc/omSimulation.h" // For IDE to understand C++ code in this module
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 

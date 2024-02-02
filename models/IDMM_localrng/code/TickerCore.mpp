@@ -7,9 +7,7 @@
 	accurate reports.
 */
 
-#if !defined(MODGEN) // Hide from Modgen for x-compatible models
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
-#endif
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 

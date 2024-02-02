@@ -4,9 +4,7 @@
 	This module contains various tests.
 */
 
-#ifndef MODGEN
-#include "omc/omSimulation.h" // enable IDE to understand C++ portions
-#endif
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if false // hide syntactic island from IDE
 actor Person {

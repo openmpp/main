@@ -1,8 +1,6 @@
 //LABEL(LocalAttribute, EN) Tests of ability to create Attribute a local variable
 
-#ifndef MODGEN
-#include "omc/omSimulation.h" // enable IDE to understand C++ portions
-#endif
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if false // hide syntactic island from IDE
 actor Person {
@@ -14,10 +12,6 @@ double my_q = { 2.2 }; // this is an Attribute (AssignableAttribute)
     hook LocalAttributeTests, MortalityEvent, 2;
 };
 #endif // hide syntactic island from IDE
-
-#ifndef MODGEN
-#include "omc/omSimulation.h" // so that IDE understands C++ portions
-#endif
 
 // The implement function of MortalityEvent
 void Person::LocalAttributeTests()
