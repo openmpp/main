@@ -11,7 +11,7 @@ La
 utilise souvent RiskPaths comme exemple.
 
 
-### [Recueil des symboles](#symbol-reference)
+#### [Recueil des symboles](#symbol-reference)
 > Renseignements recoupés sur les symboles de Riskpaths, y compris les 
 [paramètres](#parameter-hierarchy), 
 [tableaux](#table-hierarchy), 

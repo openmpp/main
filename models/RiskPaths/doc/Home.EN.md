@@ -9,7 +9,7 @@ The
 [OpenM++ wiki documentation](https://github.com/openmpp/openmpp.github.io/wiki) 
 uses RiskPaths extensively in examples.
 
-### [Symbol Reference](#symbol-reference)
+#### [Symbol Reference](#symbol-reference)
 > Cross-referenced information about the symbols of Riskpaths, including its 
 [parameters](#parameter-hierarchy), 
 [tables](#table-hierarchy), 
