@@ -58,7 +58,10 @@ void CaseSimulation(case_info &ci)
  */
 void Simulation_start(case_info &ci)
 {
-    // Initialize case information in ci (if used).
+#if !defined(MODGEN)
+	theLog->logMsg(LT("Welcome to the RiskPaths model!"));
+#endif
+	// Initialize case information in ci (if used).
 }
 
 /**
