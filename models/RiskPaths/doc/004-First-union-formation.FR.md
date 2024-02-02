@@ -19,7 +19,7 @@ Les risques sont donnés sous forme de taux constants par morceaux évoluant ave
 35 à 37,5 ans | 0,0455 | 0,0388 | 0,0255 | 0,0396 
 37,5 à 40 ans | 0,0400 | 0,0324 | 0,0224 | 0,0330 
 |<table
- 
+
 L’exemple de paramétrisation donné au tableau 2 s’interprète de la façon suivante : le risque de formation d’une première union des femmes bulgares de la première cohorte est nul jusqu’au 15e anniversaire; après cela, il évolue par intervalle de 2,5 ans de 0,0309 à 0,1341, puis de 0,1341 à 0,1672, et ainsi de suite. Le risque le plus élevé s’observe pour le groupe des 20 à 22,5 ans — au taux de 0,1672, la durée prévue jusqu’à la formation d’une union est de 1/0,1672=6 ans. Une femme qui est célibataire à son 20e anniversaire a une probabilité de 34 % de former une première union au cours des 2,5 années suivantes (p=1-exp(-0,1672*2,5)). 
 
 
