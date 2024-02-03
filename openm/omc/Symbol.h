@@ -1832,6 +1832,21 @@ public:
     static bool option_missing_name_warning_published_table;
 
     /**
+     * true to turn on most other option_symref_* options.
+     */
+    static bool option_symref_developer_edition;
+
+    /**
+     * true to include unpublished symbols in symbol reference.
+     */
+    static bool option_symref_unpublished_symbols;
+
+    /**
+     * true to include in symbol reference the unique symbol named "model".
+     */
+    static bool option_symref_model_symbol;
+
+    /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
      */
     static bool option_alternate_attribute_dependency_implementation;

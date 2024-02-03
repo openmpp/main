@@ -158,11 +158,11 @@ static string expand_group(int lang_index, const GroupSymbol* g, int depth, int 
         for (auto s : g->pp_symbol_list) {
             /// subgroup
             auto sg = dynamic_cast<GroupSymbol*>(s);
-            if (sg && sg->is_published() && ((max_depth != -1) && (depth < max_depth))) {
+            if (sg && (sg->is_published() || Symbol::option_symref_unpublished_symbols) && ((max_depth != -1) && (depth < max_depth))) {
                 // expand recursively to next level down in hierarchy
                 result += expand_group(lang_index, sg, depth + 1, max_depth, summary_mode);
             }
-            else if (!summary_mode && s->is_published()) {
+            else if (!summary_mode && (s->is_published() || Symbol::option_symref_unpublished_symbols)) {
                 // symbol hyperlink, name, and label
                 result += indent
                     + "<a href=\"#" + s->name + "\"><code>" + s->name + "</code></a> "
@@ -337,6 +337,18 @@ void do_model_doc(
         }
     }
 
+    /// Generate content for Developer Edition
+    bool do_developer_edition;
+    if (devMode) {
+        do_developer_edition = true;
+    }
+    else {
+        do_developer_edition = Symbol::option_symref_developer_edition;
+    }
+
+    /// Show unpublished symbols (convenience reference)
+    const bool& do_unpublished = Symbol::option_symref_unpublished_symbols;
+
     // Language loop
     for (const auto& langSym : Symbol::pp_all_languages) {
         int lang_index = langSym->language_id; // 0-based
@@ -418,7 +430,12 @@ void do_model_doc(
         assert(theModelSymbol);
         bool flagModelNotePresent = theModelSymbol->note(*langSym).length() > 0;
 
-        // higher-level topics
+        /// Generate content for the unique 'model' symbol
+        bool do_model_symbol = 
+            flagModelNotePresent
+            && Symbol::option_symref_model_symbol;
+
+        /// anchor target of a higher-level topic
         string anchorSymbolReference = "symbol-reference";
         string anchorModelSymbol = "model";
         string anchorParametersAlphabetic = "parameters-alphabetic";
@@ -438,7 +455,7 @@ void do_model_doc(
 
         bool do_parameter_hierarchy = false;
         for (auto s : Symbol::pp_all_parameter_groups) {
-            if (s->is_published()) {
+            if (s->is_published() || do_unpublished) {
                 do_parameter_hierarchy = true;
                 break;
             }
@@ -446,7 +463,7 @@ void do_model_doc(
 
         bool do_table_hierarchy = false;
         for (auto s : Symbol::pp_all_table_groups) {
-            if (s->is_published()) {
+            if (s->is_published() || do_unpublished) {
                 do_table_hierarchy = true;
                 break;
             }
@@ -464,7 +481,7 @@ void do_model_doc(
             std::strftime(ymd, ymd_size, "%F %T", std::localtime(&time));
 
             string mainTitle = LTA(lang, "Symbol Reference");
-            if (devMode) {
+            if (do_developer_edition) {
                 mainTitle += " (" + LTA(lang, "Developer Edition") + ")";
             }
 
@@ -475,7 +492,7 @@ void do_model_doc(
             mdStream << "|table>\n"; // maddy-specific begin table
             mdStream << LTA(lang, "Topic") + " | " + LTA(lang, "Description") + "\n"; // maddy-specific table header separator
             mdStream << "- | - | -\n"; // maddy-specific table header separator
-            if (flagModelNotePresent) {
+            if (do_model_symbol) {
                 mdStream << "[`model`](#" + anchorModelSymbol + ") | " + LTA(lang, "The unique `model` symbol") + "\n";
             }
             if (do_parameter_hierarchy || do_table_hierarchy) {
@@ -508,7 +525,7 @@ void do_model_doc(
         }
 
         // Topic: the unique symbol 'model'
-        if (flagModelNotePresent) {
+        if (do_model_symbol) {
             string modelLabel = theModelSymbol->label(*langSym);
             string modelNote = theModelSymbol->note(*langSym);
             mdStream
@@ -526,12 +543,12 @@ void do_model_doc(
         list<Symbol*> table_like;
         {
             for (auto t : Symbol::pp_all_tables) {
-                if (t->is_published()) {
+                if (t->is_published() || do_unpublished) {
                     table_like.push_back(t);
                 }
             }
             for (auto p : Symbol::pp_all_parameters) {
-                if (p->metadata_as_table && p->is_published()) {
+                if (p->metadata_as_table && (p->is_published() || do_unpublished)) {
                     table_like.push_back(p);
                 }
             }
@@ -542,7 +559,7 @@ void do_model_doc(
         list<Symbol*> parameter_like;
         {
             for (auto p : Symbol::pp_all_parameters) {
-                if (!p->metadata_as_table && p->is_published()) {
+                if (!p->metadata_as_table && (p->is_published() || do_unpublished)) {
                     parameter_like.push_back(p);
                 }
             }
@@ -597,7 +614,7 @@ void do_model_doc(
             mdStream << "<p>";
             // top-level groups
             for (auto g : Symbol::pp_all_parameter_groups) {
-                if (g->has_parent_group() || !g->is_published()) {
+                if (g->has_parent_group() || !(g->is_published() || do_unpublished)) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -614,7 +631,7 @@ void do_model_doc(
 
             // top-level groups
             for (auto g : Symbol::pp_all_parameter_groups) {
-                if (g->has_parent_group() || !g->is_published()) {
+                if (g->has_parent_group() || !(g->is_published() || do_unpublished)) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -649,7 +666,7 @@ void do_model_doc(
 
         // Topic for each published parameter
         for (auto s : Symbol::pp_all_parameters) {
-            if (!s->is_published()) {
+            if (!(s->is_published() || do_unpublished)) {
                 // skip parameter if not published
                 continue;
             }
@@ -767,7 +784,7 @@ void do_model_doc(
 
             // x-reference section
             bool any_xref = false;
-            if (devMode) {
+            if (do_developer_edition) {
                 any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
             }
 
@@ -802,7 +819,7 @@ void do_model_doc(
             {
                 string letterPrev = "";
                 for (auto& s : Symbol::pp_all_enumerations) {
-                    if (!s->is_published()) {
+                    if (!(s->is_published() || do_unpublished)) {
                         // skip unpublished symbol
                         continue;
                     }
@@ -824,7 +841,7 @@ void do_model_doc(
             {
                 string letterPrev = "";
                 for (auto& s : Symbol::pp_all_enumerations) {
-                    if (!s->is_published()) {
+                    if (!(s->is_published() || do_unpublished)) {
                         // skip unpublished symbol
                         continue;
                     }
@@ -847,7 +864,7 @@ void do_model_doc(
 
         // Topic for each published enumeration
         for (auto& s : Symbol::pp_all_enumerations) {
-            if (!s->is_published()) {
+            if (!(s->is_published() || do_unpublished)) {
                 // skip parameter if not published
                 continue;
             }
@@ -947,7 +964,7 @@ void do_model_doc(
             {
                 set<string> parameters_used;
                 for (auto& p : Symbol::pp_all_parameters) {
-                    if (!p->is_published()) {
+                    if (!(p->is_published() || do_unpublished)) {
                         // skip unpublished parameter
                         continue;
                     }
@@ -987,7 +1004,7 @@ void do_model_doc(
             {
                 set<string> tables_used;
                 for (auto t : Symbol::pp_all_tables) {
-                    if (!t->is_published()) {
+                    if (!(t->is_published() || do_unpublished)) {
                         // skip unpublished table
                         continue;
                     }
@@ -1019,7 +1036,7 @@ void do_model_doc(
 
             // x-reference section
             bool any_xref = false;
-            if (devMode) {
+            if (do_developer_edition) {
                 any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
                 if (s->is_classification()) {
                     auto c = dynamic_cast<ClassificationSymbol*>(s);
@@ -1094,7 +1111,7 @@ void do_model_doc(
             mdStream << "<p>";
             // top-level groups
             for (auto g : Symbol::pp_all_table_groups) {
-                if (g->has_parent_group() || !g->is_published()) {
+                if (g->has_parent_group() || !(g->is_published() || do_unpublished)) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -1111,7 +1128,7 @@ void do_model_doc(
 
             // top-level groups
             for (auto g : Symbol::pp_all_table_groups) {
-                if (g->has_parent_group() || !g->is_published()) {
+                if (g->has_parent_group() || !(g->is_published() || do_unpublished)) {
                     // skip group if not top-level or not published.
                     continue;
                 }
@@ -1164,7 +1181,7 @@ void do_model_doc(
 
         // Topic for each published table
         for (auto& s : Symbol::pp_all_tables) {
-            if (!s->is_published()) {
+            if (!(s->is_published() || do_unpublished)) {
                 // skip table if not published
                 continue;
             }

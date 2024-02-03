@@ -69,6 +69,9 @@ bool Symbol::option_missing_name_warning_table = false;
 bool Symbol::option_missing_name_warning_published_classification = false;
 bool Symbol::option_missing_name_warning_published_parameter = false;
 bool Symbol::option_missing_name_warning_published_table = false;
+bool Symbol::option_symref_developer_edition = false;
+bool Symbol::option_symref_unpublished_symbols = false;
+bool Symbol::option_symref_model_symbol = true;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
 
@@ -818,6 +821,46 @@ void Symbol::do_options()
             if (value == "on") {
                 option_missing_name_warning_published_table = true;
             }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_developer_edition";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_symref_developer_edition = true;
+                // turn on other symref options
+                option_symref_model_symbol = true;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_unpublished_symbols";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_unpublished_symbols = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_model_symbol";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_model_symbol = (value == "on");
             // remove processed option
             options.erase(iter);
         }
