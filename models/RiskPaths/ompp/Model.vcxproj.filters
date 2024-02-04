@@ -17,5 +17,9 @@
       <UniqueIdentifier>{9d673919-854a-495c-b069-c7e667f5e12f}</UniqueIdentifier>
       <Extensions>ini</Extensions>
     </Filter>
+    <Filter Include="Model Documentation Files">
+      <UniqueIdentifier>{734f218c-d7be-4271-b862-5f51628fca8d}</UniqueIdentifier>
+      <Extensions>md;txt</Extensions>
+    </Filter>
   </ItemGroup>
 </Project>
