@@ -17,7 +17,7 @@
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
 * * -Omc.InDocDir       input/dir/to/find/authored/model/documentation/files/
 * * -Omc.OutDocDir      output directory to create model documentation files, e.g.: ompp/bin/doc
-* * -Omc.ModelDoc       if true then generate model documentation (user version)
+* * -Omc.ModelDoc       if true then generate model documentation
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
 * * -Omc.SqliteDir      output directory to create SQLite model database
 * * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
@@ -75,6 +75,7 @@
 using namespace std;
 using namespace openm;
 using namespace omc;
+namespace fs = std::filesystem;
 
 namespace openm
 {
@@ -362,28 +363,16 @@ int main(int argc, char * argv[])
                 if (docDir.back() != '/') docDir += '/';
             }
 
-            if (std::filesystem::is_directory(docDir)) {
+            if (fs::is_directory(docDir)) {
                 list<string> doc_extensions = { ".md" };
                 Symbol::in_doc_dir = docDir;
                 auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
                 if (in_doc_paths.size() > 0) {
                     Symbol::in_doc_active = true;
                     for (auto s : in_doc_paths) {
-                        // remove leading path portion
-                        {
-                            auto p = s.find_last_of('/');
-                            if (p != s.npos) {
-                                s = s.substr(p + 1);
-                            }
-                        }
-                        // remove extension
-                        {
-                            auto p = s.find_last_of('.');
-                            if (p != s.npos) {
-                                s = s.substr(0, p);
-                            }
-                        }
-                        Symbol::in_doc_stems.insert(s);
+                        fs::path p( s );
+                        string stem = p.stem().u8string();
+                        Symbol::in_doc_stems.insert(stem);
                     }
                     theLog->logFormatted("Authored input model documentation from: %s", docDir.c_str());
                 }
