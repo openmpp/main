@@ -1,0 +1,19 @@
+// Copyright (c) 2024-2024 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(ompp_options, EN) options statements
+
+/* NOTE(ompp_options, EN)
+    This module contains options statements for the model.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+//options resource_use = on;
+options symref_developer_edition = on;
+options symref_unpublished_symbols = on;
+options symref_model_symbol = on;
+
+#endif // Hide non-C++ syntactic island from IDE
