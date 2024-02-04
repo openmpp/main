@@ -118,10 +118,8 @@
     <OMC_NO_METADATA_OPT Condition="'$(NO_METADATA)'=='true'">-Omc.noMetadata 1</OMC_NO_METADATA_OPT>
     <!-- omc -modelDoc option -->
     <OMC_MODEL_DOC_OPT Condition="'$(MODEL_DOC)'=='true'">-Omc.ModelDoc 1</OMC_MODEL_DOC_OPT>
-    <!-- omc -modelDevDoc option -->
-    <OMC_MODEL_DEVDOC_OPT Condition="'$(MODEL_DEVDOC)'=='true'">-Omc.ModelDevDoc 1</OMC_MODEL_DEVDOC_OPT>
     <!-- omc -OutDocDir option -->
-    <OMC_OUT_DOC_OPT Condition="'$(MODEL_DOC)'=='true' Or '$(MODEL_DEVDOC)'=='true'">-Omc.OutDocDir $(OUT_DOC_DIR)</OMC_OUT_DOC_OPT>
+    <OMC_OUT_DOC_OPT Condition="'$(MODEL_DOC)'=='true'">-Omc.OutDocDir $(OUT_DOC_DIR)</OMC_OUT_DOC_OPT>
     <!-- omc -noLineDirectives option -->
     <OMC_NO_LINE_DIRECTIVES_OPT Condition="'$(NO_LINE_DIRECTIVES)'=='true'">-Omc.noLineDirectives 1</OMC_NO_LINE_DIRECTIVES_OPT>
   </PropertyGroup>

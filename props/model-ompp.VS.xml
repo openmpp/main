@@ -47,13 +47,8 @@
   </EnumProperty>
   <BoolProperty Category="BuildOptions"
                 Name="MODEL_DOC"
-                DisplayName="Generate model documentation (user)"
-                Description="Produce human readable reference documentation for the model (end user version)."
-                />
-  <BoolProperty Category="BuildOptions"
-                Name="MODEL_DEVDOC"
-                DisplayName="Generate model documentation (dev)"
-                Description="Produce human readable reference documentation for the model (model developer version).  The model dev version contains additional information not visible to end users."
+                DisplayName="Generate model documentation"
+                Description="Produce human-readable documentation for the model."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="NO_METADATA"

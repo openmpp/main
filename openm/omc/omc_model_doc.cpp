@@ -276,7 +276,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
 
 /** create model user documentation and model developer documentation. */
 void do_model_doc(
-    const string & model_name, bool devMode, const string & docOutDir, const string & mdOutDir, const string & omrootDir, const CodeGen & cg
+    const string & model_name, const string & docOutDir, const string & mdOutDir, const string & omrootDir, const CodeGen & cg
 ) {
 
     // create json file for ompp UI:
@@ -292,7 +292,7 @@ void do_model_doc(
     ]
     }
     */
-    if (!devMode) {
+    {
         string json_name = model_name + ".extra.json";
         string json_path = makeFilePath(baseDirOf(docOutDir).c_str(), json_name.c_str());
         ofstream out(json_path, ios::out | ios::trunc | ios::binary);
@@ -338,13 +338,7 @@ void do_model_doc(
     }
 
     /// Generate content for Developer Edition
-    bool do_developer_edition;
-    if (devMode) {
-        do_developer_edition = true;
-    }
-    else {
-        do_developer_edition = Symbol::option_symref_developer_edition;
-    }
+    const bool& do_developer_edition = Symbol::option_symref_developer_edition;
 
     /// Show unpublished symbols (convenience reference)
     const bool& do_unpublished = Symbol::option_symref_unpublished_symbols;
@@ -354,18 +348,9 @@ void do_model_doc(
         int lang_index = langSym->language_id; // 0-based
         const string& lang = langSym->name; // e.g. "EN" or "FR"
 
-        // skip model's secondary languages for modeldev version
-        if (devMode && lang_index > 0) {
-            continue;
-        }
-
         // Example: IDMM.doc.EN.html
         string htmlName = model_name + ".doc." + lang + ".html";
         string mdName = model_name + ".doc." + lang + ".md";
-        if (devMode) {
-            htmlName = model_name + ".devdoc." + lang + ".html";
-            mdName = model_name + ".devdoc." + lang + ".md";
-        }
 
         // create the markdown file in outDir (normally 'src')
         string mdPath = makeFilePath(mdOutDir.c_str(), mdName.c_str());

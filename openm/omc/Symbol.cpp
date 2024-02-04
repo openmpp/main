@@ -631,8 +631,6 @@ bool Symbol::no_metadata = true;
 
 bool Symbol::model_doc = false;
 
-bool Symbol::model_devdoc = false;
-
 bool Symbol::in_doc_active = false;
 
 string Symbol::in_doc_dir;

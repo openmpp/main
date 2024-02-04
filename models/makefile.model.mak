@@ -174,7 +174,7 @@ endif
 
 # if not disabled then create model documentation
 ifndef MODEL_DOC_DISABLE
-  OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true -Omc.ModelDevDoc true
+  OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true
 endif
 
 # input subdirectory to find authored model documentation : .md

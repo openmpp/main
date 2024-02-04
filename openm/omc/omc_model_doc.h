@@ -24,5 +24,5 @@ using namespace std;
  * @param[in] cg          code generator to get model metadata
  */
 extern void do_model_doc(
-	const string & model_name, bool devMode, const string & docOutDir, const string & mdOutDir, const string & omrootDir, const CodeGen & cg
+	const string & model_name, const string & docOutDir, const string & mdOutDir, const string & omrootDir, const CodeGen & cg
 );

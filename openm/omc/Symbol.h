@@ -1877,11 +1877,6 @@ public:
     static bool model_doc;
 
     /**
-     * True to generate model documentation (model dev version)
-     */
-    static bool model_devdoc;
-
-    /**
      * The directory containing input authored documentation is used.
      */
     static bool in_doc_active;

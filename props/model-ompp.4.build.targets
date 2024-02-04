@@ -112,14 +112,14 @@
           >
     <MakeDir Directories="$(OMC_OUT_DIR)" />
     <MakeDir Directories="$(PUBLISH_DIR)" />
-    <MakeDir Directories="$(OUT_DOC_DIR)" Condition="'$(MODEL_DOC)'=='true' Or '$(MODEL_DEVDOC)'=='true'" />
+    <MakeDir Directories="$(OUT_DOC_DIR)" Condition="'$(MODEL_DOC)'=='true'" />
 
     <PropertyGroup>
       <START_TIME>$([System.DateTime]::Now)</START_TIME>
       <PUBLISH_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir), $(PUBLISH_DIR)))</PUBLISH_DIR_REL>
       <OMC_OUT_DIR_REL>$([MSBuild]::MakeRelative($(ProjectDir), $(OMC_OUT_DIR)))</OMC_OUT_DIR_REL>
     </PropertyGroup>
-    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -d $(IN_DOC_DIR) -o $(OMC_OUT_DIR_REL) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_MODEL_DOC_OPT) $(OMC_MODEL_DEVDOC_OPT) $(OMC_OUT_DOC_OPT) $(OMC_NO_METADATA_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT) -Omc.SqliteDir $(PUBLISH_DIR_REL)" />
+    <Exec Command="$(COMPLETE_OMC_EXE) -m $(MODEL_NAME) -s @(SCENARIO_NAMES_COLLECTION) -p @(SCENARIO_FOLDERS_COLLECTION) -i $(OMC_IN_DIR) -d $(IN_DOC_DIR) -o $(OMC_OUT_DIR_REL) -u $(OMC_USE_DIR) $(OMC_IN_FIXED_OPT) $(OMC_MODEL_DOC_OPT) $(OMC_OUT_DOC_OPT) $(OMC_NO_METADATA_OPT) $(OMC_NO_LINE_DIRECTIVES_OPT) -Omc.SqliteDir $(PUBLISH_DIR_REL)" />
     <Message Text="omc elapsed time: $([System.DateTime]::Now.Subtract($(START_TIME)))"
              Condition="'$(OM_ELAPSED_TIME_INFO)'=='1'"
     />
@@ -142,7 +142,7 @@
   -->
   <Target Name="ModelDocCopy"
           AfterTargets="OmcCompile"
-          Condition="('$(MODEL_DOC)'=='true' Or '$(MODEL_DEVDOC)'=='true') And Exists('$(IN_DOC_DIR)') And Exists('$(OUT_DOC_DIR)')"
+          Condition="'$(MODEL_DOC)'=='true' And Exists('$(IN_DOC_DIR)') And Exists('$(OUT_DOC_DIR)')"
           >
     <Message Text="Copy $(IN_DOC_DIR)/*.pdf to $(OUT_DOC_DIR)" />
 

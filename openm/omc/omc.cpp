@@ -18,7 +18,6 @@
 * * -Omc.InDocDir       input/dir/to/find/authored/model/documentation/files/
 * * -Omc.OutDocDir      output directory to create model documentation files, e.g.: ompp/bin/doc
 * * -Omc.ModelDoc       if true then generate model documentation (user version)
-* * -Omc.ModelDevDoc    if true then generate model documentation (model dev version)
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
 * * -Omc.SqliteDir      output directory to create SQLite model database
 * * -Omc.SqlPublishTo   create sql scripts to publish in SQLite,MySQL,PostgreSQL,MSSQL,Oracle,DB2, default: SQLite
@@ -121,9 +120,6 @@ namespace openm
         /** omc generate model documentation (user version) */
         static constexpr const char* modelDoc = "Omc.ModelDoc";
 
-        /** omc generate model documentation (model dev version) */
-        static constexpr const char* modelDevDoc = "Omc.ModelDevDoc";
-
         /** omc generate detailed output from parser */
         static constexpr const char * traceParsing = "Omc.TraceParsing";
 
@@ -192,7 +188,6 @@ namespace openm
         OmcArgKey::noLineDirectives,
         OmcArgKey::noMetadata,
         OmcArgKey::modelDoc,
-        OmcArgKey::modelDevDoc,
         OmcArgKey::traceParsing,
         OmcArgKey::traceScanning,
         OmcArgKey::sqlDir,
@@ -410,13 +405,10 @@ int main(int argc, char * argv[])
         // Obtain information on generating model documentation (user version), default: false
         Symbol::model_doc = parseBoolOption(OmcArgKey::modelDoc, argStore);
 
-        // Obtain information on generating model documentation (model dev version), default: false
-        Symbol::model_devdoc = parseBoolOption(OmcArgKey::modelDevDoc, argStore);
-
         // check if output documentation directory exists, it cannot be empty
         string outDocDir = argStore.strOption(OmcArgKey::outDocDir);
 
-        if (Symbol::model_doc || Symbol::model_devdoc) {
+        if (Symbol::model_doc) {
             if (!isFileExists(outDocDir.c_str())) throw HelperException(LT("error : invalid output documentation directory: %s"), outDocDir.c_str());
         }
 
@@ -869,25 +861,15 @@ int main(int argc, char * argv[])
         do_model_metrics_report(outDir, model_name, cg);
 
         // generate model documentation
-        if (Symbol::model_doc || Symbol::model_devdoc) {
+        if (Symbol::model_doc) {
             theLog->logMsg("Generate model documentation - start");
-
             string omrootDir = baseDirOf(baseDirOf(omc_exe));
-
-            if (Symbol::model_doc) {
-                // create doc version for users
-                do_model_doc(model_name, false, outDocDir, outDir, omrootDir, cg);
-            }
-            if (Symbol::model_devdoc) {
-                // create doc version for model developers
-                do_model_doc(model_name, true, outDocDir, outDir, omrootDir, cg);
-            }
+            do_model_doc(model_name, outDocDir, outDir, omrootDir, cg);
             theLog->logMsg("Generate model documentation - finish");
         }
 
         // issue warnings for missing labels,notes,translations
         do_missing_documentation();
-        
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
