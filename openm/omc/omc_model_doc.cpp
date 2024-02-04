@@ -337,6 +337,9 @@ void do_model_doc(
         }
     }
 
+    /// Show authored stand-alone content (convenience reference)
+    const bool& do_stand_alone = Symbol::option_authored_stand_alone;
+
     /// Generate content for Developer Edition
     const bool& do_developer_edition = Symbol::option_symref_developer_edition;
 
@@ -378,10 +381,6 @@ void do_model_doc(
         /// list of all stand-alone authored topics
         list<string> authoredTopics;
         for (auto& s : Symbol::in_doc_stems_md) {
-            if ((s.length() >= 6) && s.substr(0, 6) == "LABEL.") {  // Use starts_with() in C++20
-                // skip LABEL topics
-                continue;
-            }
             if ((s.length() >= 5) && s.substr(0, 5) == "NOTE.") {  // Use starts_with() in C++20
                 // skip NOTE topics
                 continue;
@@ -396,22 +395,24 @@ void do_model_doc(
         }
 
         // The authored stand-alone Home topic is the first topic in the document.
-        if (authoredHomeTopicPresent) {
+        if (authoredHomeTopicPresent && do_stand_alone) {
             string topic = homeTopic;
             mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
             mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
             mdStream << fragmentTopicSeparator;
         }
 
-        // all other authored stand-alone topics
-        for (auto& topic : authoredTopics) {
-            if (topic == homeTopic) {
-                // already done
-                continue;
+        if (do_stand_alone) {
+            // all other authored stand-alone topics
+            for (auto& topic : authoredTopics) {
+                if (topic == homeTopic) {
+                    // already done
+                    continue;
+                }
+                mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
+                mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
+                mdStream << fragmentTopicSeparator;
             }
-            mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
-            mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
-            mdStream << fragmentTopicSeparator;
         }
 
         ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
@@ -436,7 +437,7 @@ void do_model_doc(
 
         // Fragment for back navigation
         string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
-        if (authoredHomeTopicPresent) {
+        if (authoredHomeTopicPresent && do_stand_alone) {
             fragmentReturnLinks += "<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
         }
         fragmentReturnLinks += "\n\n";
@@ -516,7 +517,7 @@ void do_model_doc(
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Output tables in alphabetic order") + "\n";
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
             mdStream << "|<table\n"; // maddy-specific end table
-            if (authoredHomeTopicPresent) {
+            if (authoredHomeTopicPresent && do_stand_alone) {
                 mdStream << "\n\n<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
             }
             mdStream << fragmentTopicSeparator;

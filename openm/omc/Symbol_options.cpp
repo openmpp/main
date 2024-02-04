@@ -69,6 +69,7 @@ bool Symbol::option_missing_name_warning_table = false;
 bool Symbol::option_missing_name_warning_published_classification = false;
 bool Symbol::option_missing_name_warning_published_parameter = false;
 bool Symbol::option_missing_name_warning_published_table = false;
+bool Symbol::option_authored_stand_alone = true;
 bool Symbol::option_symref_developer_edition = false;
 bool Symbol::option_symref_unpublished_symbols = false;
 bool Symbol::option_symref_model_symbol = true;
@@ -825,6 +826,17 @@ void Symbol::do_options()
                 option_missing_name_warning_published_table = true;
             }
             // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "authored_stand_alone";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_authored_stand_alone = (value == "on");            // remove processed option
             options.erase(iter);
         }
     }
