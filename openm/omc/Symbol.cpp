@@ -635,7 +635,9 @@ bool Symbol::in_doc_active = false;
 
 string Symbol::in_doc_dir;
 
-set<string> Symbol::in_doc_stems;
+set<string> Symbol::in_doc_stems_md;
+
+set<string> Symbol::in_doc_stems_txt;
 
 bool Symbol::trace_parsing = false;
 
@@ -953,19 +955,19 @@ void Symbol::associate_explicit_label_or_note(const string& key)
         const string& lang = langSym->name; // e.g. "EN" or "FR"
         // Look for explicit LABEL
         {
-            bool found_md = false;
+            bool found_txt = false;
             if (in_doc_active) {
-                // Look for a matching LABEL file supplied in authored doc directory
                 string file_stem = "LABEL." + key_with_dot + "." + lang;
-                if (in_doc_stems.count(file_stem) > 0) {
+                // Example: LABEL.SymbolName.FR
+                if (in_doc_stems_txt.count(file_stem) > 0) {
                     // The file is there, so slurp it
-                    found_md = true;
-                    pp_labels[lang_index] = slurp_doc_file(file_stem);
+                    found_txt = true;
+                    pp_labels[lang_index] = slurp_doc_file_txt(file_stem);
                     pp_labels_explicit[lang_index] = true;
                     pp_labels_pos[lang_index] = omc::position();  // no associated code position
                 }
             }
-            if (!found_md) {
+            if (!found_txt) {
                 // Look for a matching //LABEL from model source
                 string key_and_lang = key + "," + lang;
                 auto search = explicit_labels.find(key_and_lang);
@@ -982,12 +984,12 @@ void Symbol::associate_explicit_label_or_note(const string& key)
         {
             bool found_md = false;
             if (in_doc_active) {
-                // Look for a matching NOTE file supplied in authored doc directory
                 string file_stem = "NOTE." + key_with_dot + "." + lang;
-                if (in_doc_stems.count(file_stem) > 0) {
+                // Example: NOTE.SymbolName.FR
+                if (in_doc_stems_md.count(file_stem) > 0) {
                     // The file is there, so slurp it
                     found_md = true;
-                    pp_notes[lang_index] = slurp_doc_file(file_stem);
+                    pp_notes[lang_index] = slurp_doc_file_md(file_stem);
                     pp_notes_pos[lang_index] = omc::position();  // no associated code position
                 }
             }
@@ -2698,13 +2700,24 @@ std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
     return result;
 }
 
-std::string Symbol::slurp_doc_file(const std::string& file_stem)
+std::string Symbol::slurp_doc_file_md(const std::string& file_stem)
 {
     if (!in_doc_active) {
         return string();
     }
     else {
         string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "md");
+        return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
+    }
+}
+
+std::string Symbol::slurp_doc_file_txt(const std::string& file_stem)
+{
+    if (!in_doc_active) {
+        return string();
+    }
+    else {
+        string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "txt");
         return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
     }
 }

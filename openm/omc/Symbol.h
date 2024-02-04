@@ -1066,11 +1066,18 @@ public:
     std::string note_expand_embeds(int lang_index, const std::string& note);
 
     /**
-     * Slurp a developer-supplied documentation file.
+     * Slurp a developer-supplied .md documentation file.
      *
      * @returns A std::string.
      */
-    static std::string slurp_doc_file(const std::string& stem);
+    static std::string slurp_doc_file_md(const std::string& stem);
+
+    /**
+     * Slurp a developer-supplied .txt documentation file.
+     *
+     * @returns A std::string.
+     */
+    static std::string slurp_doc_file_txt(const std::string& stem);
 
     /**
      * Pathnames of use folders.
@@ -1899,9 +1906,14 @@ public:
     static string in_doc_dir;
 
     /**
-     * List of stems of files in the input authored documentation directory
+     * List of stems of .md files in the input authored documentation directory
      */
-    static set<string> in_doc_stems;
+    static set<string> in_doc_stems_md;
+
+    /**
+     * List of stems of .txt files in the input authored documentation directory
+     */
+    static set<string> in_doc_stems_txt;
 
     /**
      * True to enable detailed output from parser

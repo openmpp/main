@@ -370,11 +370,11 @@ void do_model_doc(
         const string anchorHome = "Home";
 
         /// Is there a stand-alone authored Home topic?
-        bool authoredHomeTopicPresent = Symbol::in_doc_active && (Symbol::in_doc_stems.count(homeTopic + "." + lang) > 0);
+        bool authoredHomeTopicPresent = Symbol::in_doc_active && (Symbol::in_doc_stems_md.count(homeTopic + "." + lang) > 0);
 
         /// list of all stand-alone authored topics
         list<string> authoredTopics;
-        for (auto& s : Symbol::in_doc_stems) {
+        for (auto& s : Symbol::in_doc_stems_md) {
             if ((s.length() >= 6) && s.substr(0, 6) == "LABEL.") {  // Use starts_with() in C++20
                 // skip LABEL topics
                 continue;
@@ -396,7 +396,7 @@ void do_model_doc(
         if (authoredHomeTopicPresent) {
             string topic = homeTopic;
             mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
-            mdStream << Symbol::slurp_doc_file(topic + "." + lang);
+            mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
             mdStream << fragmentTopicSeparator;
         }
 
@@ -407,7 +407,7 @@ void do_model_doc(
                 continue;
             }
             mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
-            mdStream << Symbol::slurp_doc_file(topic + "." + lang);
+            mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
             mdStream << fragmentTopicSeparator;
         }
 

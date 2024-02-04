@@ -364,16 +364,34 @@ int main(int argc, char * argv[])
             }
 
             if (fs::is_directory(docDir)) {
-                list<string> doc_extensions = { ".md" };
                 Symbol::in_doc_dir = docDir;
-                auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
-                if (in_doc_paths.size() > 0) {
-                    Symbol::in_doc_active = true;
-                    for (auto s : in_doc_paths) {
-                        fs::path p( s );
-                        string stem = p.stem().u8string();
-                        Symbol::in_doc_stems.insert(stem);
+                {
+                    // find and note all *.md files in the doc directory
+                    list<string> doc_extensions = { ".md" };
+                    auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
+                    if (in_doc_paths.size() > 0) {
+                        Symbol::in_doc_active = true;
+                        for (auto s : in_doc_paths) {
+                            fs::path p(s);
+                            string stem = p.stem().u8string();
+                            Symbol::in_doc_stems_md.insert(stem);
+                        }
                     }
+                }
+                {
+                    // find and note all *.txt files in the doc directory
+                    list<string> doc_extensions = { ".txt" };
+                    auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
+                    if (in_doc_paths.size() > 0) {
+                        Symbol::in_doc_active = true;
+                        for (auto s : in_doc_paths) {
+                            fs::path p(s);
+                            string stem = p.stem().u8string();
+                            Symbol::in_doc_stems_txt.insert(stem);
+                        }
+                    }
+                }
+                if (Symbol::in_doc_active) {
                     theLog->logFormatted("Authored input model documentation from: %s", docDir.c_str());
                 }
             }
