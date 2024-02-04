@@ -454,6 +454,16 @@ void do_model_doc(
             }
         }
 
+        bool do_parameter_major_groups = do_parameter_hierarchy;
+        if (!Symbol::option_symref_parameter_major_groups) {
+            do_parameter_major_groups = false;
+        }
+
+        bool do_table_major_groups = do_table_hierarchy;
+        if (!Symbol::option_symref_table_major_groups) {
+            do_table_major_groups = false;
+        }
+
         // Topic: Symbol Reference Main Topic
         {
             VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
@@ -480,14 +490,14 @@ void do_model_doc(
             if (do_model_symbol) {
                 mdStream << "[`model`](#" + anchorModelSymbol + ") | " + LTA(lang, "The unique `model` symbol") + "\n";
             }
-            if (do_parameter_hierarchy || do_table_hierarchy) {
+            if (do_parameter_major_groups || do_table_major_groups) {
                 mdStream << "**" + LTA(lang, "Major Groups") + "** | \n";
-            }
-            if (do_parameter_hierarchy) {
-                mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParameterMajorGroups + ") | " + LTA(lang, "Major groups of input parameters") + "\n";
-            }
-            if (do_table_hierarchy) {
-                mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableMajorGroups + ") | " + LTA(lang, "Major groups of output tables") + "\n";
+                if (do_parameter_major_groups) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParameterMajorGroups + ") | " + LTA(lang, "Major groups of input parameters") + "\n";
+                }
+                if (do_table_major_groups) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableMajorGroups + ") | " + LTA(lang, "Major groups of output tables") + "\n";
+                }
             }
             if (do_parameter_hierarchy || do_table_hierarchy) {
                 mdStream << "**" + LTA(lang, "Hierarchies") + "** | \n";
@@ -593,7 +603,7 @@ void do_model_doc(
         }
 
         // Topic: parameter major groups
-        {
+        if (do_parameter_major_groups) {
             mdStream << "<h3 id=\"" + anchorParameterMajorGroups + "\">" + LTA(lang, "Parameter Major Groups") + "</h3>\n\n";
 
             mdStream << "<p>";
@@ -1090,7 +1100,7 @@ void do_model_doc(
         } // Topic: tables in alphabetic order
 
         // Topic: table major groups
-        {
+        if (do_table_major_groups) {
             mdStream << "<h3 id=\"" + anchorTableMajorGroups + "\">" + LTA(lang, "Table Major Groups") + "</h3>\n\n";
 
             mdStream << "<p>";

@@ -1847,6 +1847,16 @@ public:
     static bool option_symref_model_symbol;
 
     /**
+     * true to include in symbol reference the parameter major group section.
+     */
+    static bool option_symref_parameter_major_groups;
+
+    /**
+     * true to include in symbol reference the table major group section.
+     */
+    static bool option_symref_table_major_groups;
+
+    /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
      */
     static bool option_alternate_attribute_dependency_implementation;
