@@ -343,6 +343,9 @@ void do_model_doc(
     /// Show unpublished symbols (convenience reference)
     const bool& do_unpublished = Symbol::option_symref_unpublished_symbols;
 
+    /// Show authored NOTEs (convenience reference)
+    const bool& do_NOTEs = Symbol::option_symref_authored_notes;
+
     // Language loop
     for (const auto& langSym : Symbol::pp_all_languages) {
         int lang_index = langSym->language_id; // 0-based
@@ -784,10 +787,10 @@ void do_model_doc(
             }
 
             // symbol note if present
-            {
+            if (do_NOTEs) {
                 string note_in = s->pp_notes[lang_index];
                 if (note_in.length()) {
-                    mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                    mdStream << "\n\n";
                     string note_out = preprocess_markdown(note_in);
                     mdStream << note_out << "\n\n";
                 }
@@ -1045,10 +1048,10 @@ void do_model_doc(
             }
 
             // symbol note if present
-            {
+            if (do_NOTEs) {
                 string note_in = s->pp_notes[lang_index];
                 if (note_in.length()) {
-                    mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                    mdStream << "\n\n";
                     string note_out = preprocess_markdown(note_in);
                     mdStream << note_out << "\n\n";
                 }
@@ -1273,10 +1276,10 @@ void do_model_doc(
             }
 
             // symbol note if present
-            {
+            if (do_NOTEs) {
                 string note_in = s->pp_notes[lang_index];
                 if (note_in.length()) {
-                    mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                    mdStream << "\n\n";
                     string note_out = preprocess_markdown(note_in);
                     mdStream << note_out << "\n\n";
                 }

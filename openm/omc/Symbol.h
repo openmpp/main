@@ -1864,6 +1864,11 @@ public:
     static bool option_symref_table_major_groups;
 
     /**
+     * true to include in symbol reference any authored NOTEs.
+     */
+    static bool option_symref_authored_notes;
+
+    /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
      */
     static bool option_alternate_attribute_dependency_implementation;
