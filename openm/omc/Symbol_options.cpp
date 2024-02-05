@@ -69,13 +69,15 @@ bool Symbol::option_missing_name_warning_table = false;
 bool Symbol::option_missing_name_warning_published_classification = false;
 bool Symbol::option_missing_name_warning_published_parameter = false;
 bool Symbol::option_missing_name_warning_published_table = false;
-bool Symbol::option_authored_stand_alone = true;
+bool Symbol::option_generated_documentation = true;
+bool Symbol::option_authored_documentation = true;
 bool Symbol::option_symref_developer_edition = false;
 bool Symbol::option_symref_unpublished_symbols = false;
+bool Symbol::option_symref_main_topic = true;
 bool Symbol::option_symref_model_symbol = true;
 bool Symbol::option_symref_parameter_major_groups = true;
 bool Symbol::option_symref_table_major_groups = true;
-bool Symbol::option_symref_authored_notes = true;
+bool Symbol::option_symref_notes = true;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
 
@@ -831,12 +833,25 @@ void Symbol::do_options()
     }
 
     {
-        string key = "authored_stand_alone";
+        string key = "generated_documentation";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            option_authored_stand_alone = (value == "on");            // remove processed option
+            option_generated_documentation = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "authored_documentation";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_authored_documentation = (value == "on");
+            // remove processed option
             options.erase(iter);
         }
     }
@@ -847,11 +862,7 @@ void Symbol::do_options()
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            if (value == "on") {
-                option_symref_developer_edition = true;
-                // turn on other symref options
-                option_symref_model_symbol = true;
-            }
+            option_symref_developer_edition = (value == "on");
             // remove processed option
             options.erase(iter);
         }
@@ -864,6 +875,18 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             option_symref_unpublished_symbols = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_main_topic";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_main_topic = (value == "on");
             // remove processed option
             options.erase(iter);
         }
@@ -906,12 +929,12 @@ void Symbol::do_options()
     }
 
     {
-        string key = "symref_authored_notes";
+        string key = "symref_notes";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            option_symref_authored_notes = (value == "on");
+            option_symref_notes = (value == "on");
             // remove processed option
             options.erase(iter);
         }

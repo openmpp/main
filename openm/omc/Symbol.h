@@ -1839,9 +1839,14 @@ public:
     static bool option_missing_name_warning_published_table;
 
     /**
+     * true to turn on generated symbol reference content in model documentation.
+     */
+    static bool option_generated_documentation;
+
+    /**
      * true to turn on authored stand-alone content in model documentation.
      */
-    static bool option_authored_stand_alone;
+    static bool option_authored_documentation;
 
     /**
      * true to turn on most other option_symref_* options.
@@ -1852,6 +1857,11 @@ public:
      * true to include unpublished symbols in symbol reference.
      */
     static bool option_symref_unpublished_symbols;
+
+    /**
+     * true to include in symbol reference the main topic including navigation aid links.
+     */
+    static bool option_symref_main_topic;
 
     /**
      * true to include in symbol reference the unique symbol named "model".
@@ -1871,7 +1881,7 @@ public:
     /**
      * true to include in symbol reference any authored NOTEs.
      */
-    static bool option_symref_authored_notes;
+    static bool option_symref_notes;
 
     /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.

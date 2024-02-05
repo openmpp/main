@@ -337,17 +337,33 @@ void do_model_doc(
         }
     }
 
-    /// Show authored stand-alone content (convenience reference)
-    const bool& do_stand_alone = Symbol::option_authored_stand_alone;
+    /// Show generated content
+    const bool& do_generated_content = Symbol::option_generated_documentation;
+
+    /// Show authored stand-alone content
+    const bool& do_authored_content = Symbol::option_authored_documentation;
 
     /// Generate content for Developer Edition
     const bool& do_developer_edition = Symbol::option_symref_developer_edition;
 
-    /// Show unpublished symbols (convenience reference)
+    /// Show unpublished symbols
     const bool& do_unpublished = Symbol::option_symref_unpublished_symbols;
 
-    /// Show authored NOTEs (convenience reference)
-    const bool& do_NOTEs = Symbol::option_symref_authored_notes;
+    /// Show authored NOTEs
+    const bool& do_NOTEs = Symbol::option_symref_notes;
+
+    /// Show main topic
+    bool do_main_topic = Symbol::option_symref_main_topic;
+
+    /// Show topic for model symbol (provided it has a note in the language)
+    bool do_model_symbol = Symbol::option_symref_model_symbol;
+
+    if (!do_generated_content) {
+        // turn off all parts of generated content
+        do_main_topic = false;
+        do_model_symbol = false;
+        // TODO
+    }
 
     // Language loop
     for (const auto& langSym : Symbol::pp_all_languages) {
@@ -395,14 +411,14 @@ void do_model_doc(
         }
 
         // The authored stand-alone Home topic is the first topic in the document.
-        if (authoredHomeTopicPresent && do_stand_alone) {
+        if (authoredHomeTopicPresent && do_authored_content) {
             string topic = homeTopic;
             mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
             mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
             mdStream << fragmentTopicSeparator;
         }
 
-        if (do_stand_alone) {
+        if (do_authored_content) {
             // all other authored stand-alone topics
             for (auto& topic : authoredTopics) {
                 if (topic == homeTopic) {
@@ -414,15 +430,6 @@ void do_model_doc(
                 mdStream << fragmentTopicSeparator;
             }
         }
-
-        ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
-        assert(theModelSymbol);
-        bool flagModelNotePresent = theModelSymbol->note(*langSym).length() > 0;
-
-        /// Generate content for the unique 'model' symbol
-        bool do_model_symbol = 
-            flagModelNotePresent
-            && Symbol::option_symref_model_symbol;
 
         /// anchor target of a higher-level topic
         string anchorSymbolReference = "symbol-reference";
@@ -437,7 +444,7 @@ void do_model_doc(
 
         // Fragment for back navigation
         string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
-        if (authoredHomeTopicPresent && do_stand_alone) {
+        if (authoredHomeTopicPresent && do_authored_content) {
             fragmentReturnLinks += "<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
         }
         fragmentReturnLinks += "\n\n";
@@ -445,6 +452,7 @@ void do_model_doc(
         bool do_parameter_hierarchy = false;
         for (auto s : Symbol::pp_all_parameter_groups) {
             if (s->is_published() || do_unpublished) {
+                // hierarchy exists
                 do_parameter_hierarchy = true;
                 break;
             }
@@ -453,6 +461,7 @@ void do_model_doc(
         bool do_table_hierarchy = false;
         for (auto s : Symbol::pp_all_table_groups) {
             if (s->is_published() || do_unpublished) {
+                // hierarchy exists
                 do_table_hierarchy = true;
                 break;
             }
@@ -460,16 +469,18 @@ void do_model_doc(
 
         bool do_parameter_major_groups = do_parameter_hierarchy;
         if (!Symbol::option_symref_parameter_major_groups) {
+            // turn it off
             do_parameter_major_groups = false;
         }
 
         bool do_table_major_groups = do_table_hierarchy;
         if (!Symbol::option_symref_table_major_groups) {
+            // turn it off
             do_table_major_groups = false;
         }
 
         // Topic: Symbol Reference Main Topic
-        {
+        if (do_main_topic) {
             VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
             assert(vs);
             string version_string = to_string(vs->major) + "." + to_string(vs->minor) + "." + to_string(vs->sub_minor) + "." + to_string(vs->sub_sub_minor);
@@ -517,7 +528,7 @@ void do_model_doc(
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Output tables in alphabetic order") + "\n";
             mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
             mdStream << "|<table\n"; // maddy-specific end table
-            if (authoredHomeTopicPresent && do_stand_alone) {
+            if (authoredHomeTopicPresent && do_authored_content) {
                 mdStream << "\n\n<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
             }
             mdStream << fragmentTopicSeparator;
@@ -525,17 +536,22 @@ void do_model_doc(
 
         // Topic: the unique symbol 'model'
         if (do_model_symbol) {
-            string modelLabel = theModelSymbol->label(*langSym);
-            string modelNote = theModelSymbol->note(*langSym);
-            mdStream
-                // symbol name
-                << "<h3 id=\"" + anchorModelSymbol + "\"><code>model</code>"
-                // symbol label
-                << "<span style=\"font-weight:lighter\"> " << modelLabel << "</span></h3>\n\n"
-                ;
-            mdStream << modelNote;
-            mdStream << fragmentReturnLinks;
-            mdStream << fragmentTopicSeparator;
+            ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+            assert(theModelSymbol);
+            bool flagModelNotePresent = theModelSymbol->note(*langSym).length() > 0;
+            if (flagModelNotePresent) {
+                string modelLabel = theModelSymbol->label(*langSym);
+                string modelNote = theModelSymbol->note(*langSym);
+                mdStream
+                    // symbol name
+                    << "<h3 id=\"" + anchorModelSymbol + "\"><code>model</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << modelLabel << "</span></h3>\n\n"
+                    ;
+                mdStream << modelNote;
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            }
         }
 
         // Table-like symbols - published tables merged with derived parameters published as tables
