@@ -1869,6 +1869,16 @@ public:
     static bool option_symref_model_symbol;
 
     /**
+     * true to include in symbol reference the parameter hierarchy.
+     */
+    static bool option_symref_parameter_hierarchy;
+
+    /**
+     * true to include in symbol reference the table hierarchy.
+     */
+    static bool option_symref_table_hierarchy;
+
+    /**
      * true to include in symbol reference the parameter major group section.
      */
     static bool option_symref_parameter_major_groups;

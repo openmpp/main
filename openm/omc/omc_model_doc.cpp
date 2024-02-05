@@ -362,6 +362,48 @@ void do_model_doc(
     /// Show topic for model symbol (provided it has a note in the language)
     bool do_model_symbol = Symbol::option_symref_model_symbol;
 
+    /// Show the parameter hierarchy topic
+    bool do_parameter_hierarchy = false;
+    for (auto s : Symbol::pp_all_parameter_groups) {
+        if (s->is_published() || do_unpublished) {
+            // hierarchy exists
+            do_parameter_hierarchy = true;
+            break;
+        }
+    }
+    if (!Symbol::option_symref_parameter_hierarchy) {
+        // turn it off
+        do_parameter_hierarchy = false;
+    }
+
+    /// Show the table hierarchy topic
+    bool do_table_hierarchy = false;
+    for (auto s : Symbol::pp_all_table_groups) {
+        if (s->is_published() || do_unpublished) {
+            // hierarchy exists
+            do_table_hierarchy = true;
+            break;
+        }
+    }
+    if (!Symbol::option_symref_table_hierarchy) {
+        // turn it off
+        do_table_hierarchy = false;
+    }
+
+    /// Show the parameter major groups topic
+    bool do_parameter_major_groups = do_parameter_hierarchy;
+    if (!Symbol::option_symref_parameter_major_groups) {
+        // turn it off
+        do_parameter_major_groups = false;
+    }
+
+    /// Show the table major groups topic
+    bool do_table_major_groups = do_table_hierarchy;
+    if (!Symbol::option_symref_table_major_groups) {
+        // turn it off
+        do_table_major_groups = false;
+    }
+
     /// Show the parameters alphabetic list topic
     bool do_parameters_alphabetic_topic = Symbol::option_symref_parameters_alphabetic;
 
@@ -375,6 +417,10 @@ void do_model_doc(
         // turn off all parts of generated content
         do_main_topic = false;
         do_model_symbol = false;
+        do_parameter_hierarchy = false;
+        do_table_hierarchy = false;
+        do_parameter_major_groups = false;
+        do_table_major_groups = false;
         do_parameters_alphabetic_topic = false;
         do_tables_alphabetic_topic = false;
         do_enumerations_alphabetic_topic = false;
@@ -464,36 +510,6 @@ void do_model_doc(
             fragmentReturnLinks += "<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
         }
         fragmentReturnLinks += "\n\n";
-
-        bool do_parameter_hierarchy = false;
-        for (auto s : Symbol::pp_all_parameter_groups) {
-            if (s->is_published() || do_unpublished) {
-                // hierarchy exists
-                do_parameter_hierarchy = true;
-                break;
-            }
-        }
-
-        bool do_table_hierarchy = false;
-        for (auto s : Symbol::pp_all_table_groups) {
-            if (s->is_published() || do_unpublished) {
-                // hierarchy exists
-                do_table_hierarchy = true;
-                break;
-            }
-        }
-
-        bool do_parameter_major_groups = do_parameter_hierarchy;
-        if (!Symbol::option_symref_parameter_major_groups) {
-            // turn it off
-            do_parameter_major_groups = false;
-        }
-
-        bool do_table_major_groups = do_table_hierarchy;
-        if (!Symbol::option_symref_table_major_groups) {
-            // turn it off
-            do_table_major_groups = false;
-        }
 
         // Topic: Symbol Reference Main Topic
         if (do_main_topic) {
@@ -665,7 +681,7 @@ void do_model_doc(
         }
 
         // Topic: parameter hierarchy
-        {
+        if (do_parameter_hierarchy) {
             mdStream << "<h3 id=\"" + anchorParameterHierarchy + "\">" + LTA(lang, "Parameter hierarchy") + "</h3>\n\n";
 
             // top-level groups
@@ -795,8 +811,10 @@ void do_model_doc(
                 mdStream << "\n\n";
             }
 
-            // bread crumb hierachy (possibly empty)
-            mdStream << bread_crumb_hierarchy(lang, lang_index, s);
+            // bread crumb hierarchy (possibly empty)
+            if (do_parameter_hierarchy) {
+                mdStream << bread_crumb_hierarchy(lang, lang_index, s);
+            }
 
             // dimension table with links
             if (!isScalar) {
@@ -1162,7 +1180,7 @@ void do_model_doc(
         }
 
         // Topic: table hierarchy
-        {
+        if (do_table_hierarchy) {
             mdStream << "<h3 id=\"" + anchorTableHierarchy + "\">" + LTA(lang, "Table hierarchy") + "</h3>\n\n";
 
             // top-level groups
@@ -1273,7 +1291,9 @@ void do_model_doc(
             }
 
             // bread crumb hierarchy (possibly empty)
-            mdStream << bread_crumb_hierarchy(lang, lang_index, s);
+            if (do_table_hierarchy) {
+                mdStream << bread_crumb_hierarchy(lang, lang_index, s);
+            }
 
             // dimension table with links
             if (!isScalar) {

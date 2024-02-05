@@ -77,6 +77,8 @@ bool Symbol::option_symref_main_topic = true;
 bool Symbol::option_symref_model_symbol = true;
 bool Symbol::option_symref_parameter_major_groups = true;
 bool Symbol::option_symref_table_major_groups = true;
+bool Symbol::option_symref_parameter_hierarchy = true;
+bool Symbol::option_symref_table_hierarchy = true;
 bool Symbol::option_symref_parameters_alphabetic = true;
 bool Symbol::option_symref_tables_alphabetic = true;
 bool Symbol::option_symref_enumerations_alphabetic = true;
@@ -902,6 +904,30 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             option_symref_model_symbol = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_parameter_hierarchy";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_parameter_hierarchy = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_table_hierarchy";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_table_hierarchy = (value == "on");
             // remove processed option
             options.erase(iter);
         }
