@@ -1904,6 +1904,21 @@ public:
     static bool option_symref_enumerations_alphabetic;
 
     /**
+     * true to include in symbol reference individual parameter topics.
+     */
+    static bool option_symref_parameter_topics;
+
+    /**
+     * true to include in symbol reference individual table topics.
+     */
+    static bool option_symref_table_topics;
+
+    /**
+     * true to include in symbol reference individual enumeration topics.
+     */
+    static bool option_symref_enumeration_topics;
+
+    /**
      * true to include in symbol reference any authored NOTEs.
      */
     static bool option_symref_notes;

@@ -82,6 +82,9 @@ bool Symbol::option_symref_table_hierarchy = true;
 bool Symbol::option_symref_parameters_alphabetic = true;
 bool Symbol::option_symref_tables_alphabetic = true;
 bool Symbol::option_symref_enumerations_alphabetic = true;
+bool Symbol::option_symref_parameter_topics = true;
+bool Symbol::option_symref_table_topics = true;
+bool Symbol::option_symref_enumeration_topics = true;
 bool Symbol::option_symref_notes = true;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
@@ -988,6 +991,42 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             option_symref_enumerations_alphabetic = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_parameter_topics";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_parameter_topics = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_table_topics";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_table_topics = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_enumeration_topics";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_enumeration_topics = (value == "on");
             // remove processed option
             options.erase(iter);
         }

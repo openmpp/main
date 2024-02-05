@@ -413,6 +413,15 @@ void do_model_doc(
     /// Show the enumerations alphabetic list topic
     bool do_enumerations_alphabetic_topic = Symbol::option_symref_enumerations_alphabetic;
 
+    /// Show the individual parameter topics
+    bool do_parameter_topics = Symbol::option_symref_parameter_topics;
+
+    /// Show the individual table topics
+    bool do_table_topics = Symbol::option_symref_table_topics;
+
+    /// Show the individual enumeration topics
+    bool do_enumeration_topics = Symbol::option_symref_enumeration_topics;
+
     if (!do_generated_content) {
         // turn off all parts of generated content
         do_main_topic = false;
@@ -424,6 +433,9 @@ void do_model_doc(
         do_parameters_alphabetic_topic = false;
         do_tables_alphabetic_topic = false;
         do_enumerations_alphabetic_topic = false;
+        do_parameter_topics = false;
+        do_table_topics = false;
+        do_enumeration_topics = false;
         // TODO add more as they are implemented
     }
 
@@ -446,6 +458,11 @@ void do_model_doc(
 
         // HTML fragment for topic separator
         string fragmentTopicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
+
+        // no content!
+        if (!do_generated_content && !do_authored_content) {
+            mdStream << "**" + LTA(lang, "This page intentionally left blank.") + "**\n\n";
+        }
 
         /// Name of the Home topic
         const string homeTopic = "Home";
@@ -511,6 +528,12 @@ void do_model_doc(
         }
         fragmentReturnLinks += "\n\n";
 
+        /// The unique 'model' symbol
+        ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
+        assert(theModelSymbol);
+        /// The unique 'model' symbol has a note in the current language
+        bool model_symbol_has_note = theModelSymbol->note(*langSym).length() > 0;
+
         // Topic: Symbol Reference Main Topic
         if (do_main_topic) {
             VersionSymbol* vs = dynamic_cast<VersionSymbol*>(Symbol::find_a_symbol(typeid(VersionSymbol)));
@@ -534,7 +557,7 @@ void do_model_doc(
             mdStream << "|table>\n"; // maddy-specific begin table
             mdStream << LTA(lang, "Topic") + " | " + LTA(lang, "Description") + "\n"; // maddy-specific table header separator
             mdStream << "- | - | -\n"; // maddy-specific table header separator
-            if (do_model_symbol) {
+            if (do_model_symbol && model_symbol_has_note) {
                 mdStream << "[`model`](#" + anchorModelSymbol + ") | " + LTA(lang, "The unique `model` symbol") + "\n";
             }
             if (do_parameter_major_groups || do_table_major_groups) {
@@ -576,10 +599,7 @@ void do_model_doc(
 
         // Topic: the unique symbol 'model'
         if (do_model_symbol) {
-            ModelSymbol* theModelSymbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
-            assert(theModelSymbol);
-            bool flagModelNotePresent = theModelSymbol->note(*langSym).length() > 0;
-            if (flagModelNotePresent) {
+            if (model_symbol_has_note) {
                 string modelLabel = theModelSymbol->label(*langSym);
                 string modelNote = theModelSymbol->note(*langSym);
                 mdStream
@@ -719,155 +739,157 @@ void do_model_doc(
             mdStream << fragmentTopicSeparator;
         }
 
-        // Topic for each published parameter
-        for (auto s : Symbol::pp_all_parameters) {
-            if (!(s->is_published() || do_unpublished)) {
-                // skip parameter if not published
-                continue;
-            }
+        // Topic for each parameter
+        if (do_parameter_topics) {
+            for (auto s : Symbol::pp_all_parameters) {
+                if (!(s->is_published() || do_unpublished)) {
+                    // skip parameter if not published
+                    continue;
+                }
 
-            /// is a scalar parameter
-            bool isScalar = (s->pp_shape.size() == 0);
+                /// is a scalar parameter
+                bool isScalar = (s->pp_shape.size() == 0);
 
-            // topic header line
-            mdStream
-                // symbol name
-                << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
-                // symbol label
-                << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
-                ;
+                // topic header line
+                mdStream
+                    // symbol name
+                    << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
+                    ;
 
-            // summary line with type, size, etc.
-            {
-                string kindInfo;
+                // summary line with type, size, etc.
                 {
-                    if (s->is_derived()) {
-                        kindInfo += LTA(lang, "Derived Parameter");
-                    }
-                    else {
-                        kindInfo = LTA(lang, "Parameter");
-                    }
-                    if (s->is_hidden) {
-                        kindInfo += "(" + LTA(lang, "hidden") + ")";
-                    }
-                }
-                string shapeCompact;
-                if (!isScalar) {
-                    bool isFirst = true;
-                    int cells = 1;
-                    for (int ps : s->pp_shape) {
-                        shapeCompact += (!isFirst ? ", " : "") + to_string(ps);
-                        isFirst = false;
-                        cells *= ps;
-                    }
-                    shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
-                }
-                else {
-                    shapeCompact = LTA(lang, "scalar");
-                }
-                string defaultValue = "";
-                if (isScalar && (s->source == ParameterSymbol::parameter_source::scenario_parameter)) {
-                    /// for sub=0
-                    auto& constants = s->sub_initial_list.front().second;
-                    auto& constant = constants.front();
-                    if (constant->is_literal) {
-                        defaultValue = constant->literal->value();
-                    }
-                    else if (constant->is_enumerator) {
-                        /// pointer to EnumeratorSymbol
-                        auto e = *(constant->enumerator);
-                        defaultValue = e->name;
-                        // Show short name instead if a classification enumerator, since that's what user sees.
-                        auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(e);
-                        if (ce) {
-                            defaultValue = ce->short_name;
+                    string kindInfo;
+                    {
+                        if (s->is_derived()) {
+                            kindInfo += LTA(lang, "Derived Parameter");
+                        }
+                        else {
+                            kindInfo = LTA(lang, "Parameter");
+                        }
+                        if (s->is_hidden) {
+                            kindInfo += "(" + LTA(lang, "hidden") + ")";
                         }
                     }
+                    string shapeCompact;
+                    if (!isScalar) {
+                        bool isFirst = true;
+                        int cells = 1;
+                        for (int ps : s->pp_shape) {
+                            shapeCompact += (!isFirst ? ", " : "") + to_string(ps);
+                            isFirst = false;
+                            cells *= ps;
+                        }
+                        shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
+                    }
                     else {
-                        assert(false); // not reached
+                        shapeCompact = LTA(lang, "scalar");
                     }
-                }
-                string typeInfo;
-                {
-                    if (s->pp_datatype->is_enumeration()) {
-                        // hyperlink to enumeration
-                        typeInfo = "[`" + s->pp_datatype->name + "`](#" + s->pp_datatype->name + ")";
+                    string defaultValue = "";
+                    if (isScalar && (s->source == ParameterSymbol::parameter_source::scenario_parameter)) {
+                        /// for sub=0
+                        auto& constants = s->sub_initial_list.front().second;
+                        auto& constant = constants.front();
+                        if (constant->is_literal) {
+                            defaultValue = constant->literal->value();
+                        }
+                        else if (constant->is_enumerator) {
+                            /// pointer to EnumeratorSymbol
+                            auto e = *(constant->enumerator);
+                            defaultValue = e->name;
+                            // Show short name instead if a classification enumerator, since that's what user sees.
+                            auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(e);
+                            if (ce) {
+                                defaultValue = ce->short_name;
+                            }
+                        }
+                        else {
+                            assert(false); // not reached
+                        }
                     }
-                    else {
-                        // just show the name of the type, e.g. "double"
-                        typeInfo = s->pp_datatype->name;
+                    string typeInfo;
+                    {
+                        if (s->pp_datatype->is_enumeration()) {
+                            // hyperlink to enumeration
+                            typeInfo = "[`" + s->pp_datatype->name + "`](#" + s->pp_datatype->name + ")";
+                        }
+                        else {
+                            // just show the name of the type, e.g. "double"
+                            typeInfo = s->pp_datatype->name;
+                        }
                     }
-                }
-                mdStream
-                    << "**" + LTA(lang, "Kind") + ":** " + kindInfo
-                    << "\n"
-                    << "**" + LTA(lang, "Type") + ":** "
-                    << "\n"
-                    << typeInfo
-                    << " **" + LTA(lang, "Size") + ":** " << shapeCompact;
-                if (defaultValue.length() > 0) {
-                    mdStream << "\n**" + LTA(lang, "Default") + ":** " + defaultValue;
-                }
-                mdStream << "\n\n";
-            }
-
-            // bread crumb hierarchy (possibly empty)
-            if (do_parameter_hierarchy) {
-                mdStream << bread_crumb_hierarchy(lang, lang_index, s);
-            }
-
-            // dimension table with links
-            if (!isScalar) {
-                mdStream << "**"+ LTA(lang, "Dimensions") + ":**\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Label") + " \n";
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                for (auto& dim : s->dimension_list) {
-                    string dim_export_name = dim->short_name;
-                    auto e = dim->pp_enumeration;
-                    assert(e); // dimensions of parameters are always enumerations
-                    string dim_enumeration = e->name;
-                    string dim_size = to_string(e->pp_size());
-                    string dim_label = dim->pp_labels[lang_index];
                     mdStream
-                        << dim_export_name << " | "
-                        << "[`" + dim_enumeration +"`](#" + dim_enumeration + ")" << " | "
-                        << dim_size << " | "
-                        << dim_label << "\n"
-                        ;
-                }
-                mdStream << "|<table\n"; // maddy-specific end table
-            }
-
-            // x-reference section
-            bool any_xref = false;
-            if (do_developer_edition) {
-                any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
-            }
-
-            // symbol note if present
-            if (do_NOTEs) {
-                string note_in = s->pp_notes[lang_index];
-                if (note_in.length()) {
+                        << "**" + LTA(lang, "Kind") + ":** " + kindInfo
+                        << "\n"
+                        << "**" + LTA(lang, "Type") + ":** "
+                        << "\n"
+                        << typeInfo
+                        << " **" + LTA(lang, "Size") + ":** " << shapeCompact;
+                    if (defaultValue.length() > 0) {
+                        mdStream << "\n**" + LTA(lang, "Default") + ":** " + defaultValue;
+                    }
                     mdStream << "\n\n";
-                    string note_out = preprocess_markdown(note_in);
-                    mdStream << note_out << "\n\n";
                 }
-            }
 
-            // parameter value note if present
-            {
-                string note_in = s->pp_value_notes[lang_index];
-                if (note_in.length()) {
-                    mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
-                    string note_out = preprocess_markdown(note_in);
-                    mdStream << note_out << "\n\n";
+                // bread crumb hierarchy (possibly empty)
+                if (do_parameter_hierarchy) {
+                    mdStream << bread_crumb_hierarchy(lang, lang_index, s);
                 }
-            }
 
-            mdStream << fragmentReturnLinks;
-            mdStream << fragmentTopicSeparator;
-        } // Topic for each published parameter
+                // dimension table with links
+                if (!isScalar) {
+                    mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto& dim : s->dimension_list) {
+                        string dim_export_name = dim->short_name;
+                        auto e = dim->pp_enumeration;
+                        assert(e); // dimensions of parameters are always enumerations
+                        string dim_enumeration = e->name;
+                        string dim_size = to_string(e->pp_size());
+                        string dim_label = dim->pp_labels[lang_index];
+                        mdStream
+                            << dim_export_name << " | "
+                            << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
+                            << dim_size << " | "
+                            << dim_label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+
+                // x-reference section
+                bool any_xref = false;
+                if (do_developer_edition) {
+                    any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                }
+
+                // symbol note if present
+                if (do_NOTEs) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                // parameter value note if present
+                {
+                    string note_in = s->pp_value_notes[lang_index];
+                    if (note_in.length()) {
+                        mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            } // Topic for each parameter
+        }
 
         // Topic: enumerations in alphabetic order
         if (do_enumerations_alphabetic_topic) {
@@ -918,209 +940,210 @@ void do_model_doc(
             mdStream << fragmentTopicSeparator;
         } // Topic: enumerations in alphabetic order
 
+        // Topic for each enumeration
+        if (do_enumeration_topics) {
+            for (auto& s : Symbol::pp_all_enumerations) {
+                if (!(s->is_published() || do_unpublished)) {
+                    // skip parameter if not published
+                    continue;
+                }
 
-        // Topic for each published enumeration
-        for (auto& s : Symbol::pp_all_enumerations) {
-            if (!(s->is_published() || do_unpublished)) {
-                // skip parameter if not published
-                continue;
-            }
-
-            // topic header line
-            mdStream
-                // symbol name
-                << "<h3 id=\"" << s->name << "\">" << "<code>" + s->name + "</code>"
-                // symbol label
-                << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
-                ;
-
-            // summary line with type and size
-            {
-                string kind;
-                string values;
-                if (s->is_range()) {
-                    kind = LTA(lang, "range");
-                    auto r = dynamic_cast<RangeSymbol*>(s);
-                    assert(r);
-                    values = "{" + to_string(r->lower_bound) + ",...," + to_string(r->upper_bound) +"}";
-                }
-                else if (s->is_bool()) {
-                    kind = LTA(lang, "bool");
-                    values = "{0,1}";
-                }
-                else if (s->is_classification()) {
-                    kind = LTA(lang, "classification");
-                    values = "{0,...," + to_string(s->pp_size() - 1) + "}";
-                }
-                else if (s->is_partition()) {
-                    kind = LTA(lang, "partition");
-                    values = "{0,...," + to_string(s->pp_size() - 1) + "}";
-                }
-                else {
-                    // not reached
-                    assert(false);
-                }
+                // topic header line
                 mdStream
-                    << "**" + LTA(lang, "Kind") + ":** " << kind
-                    << " **" + LTA(lang, "Size") + ":** " << to_string(s->pp_size())
-                    << " **" + LTA(lang, "Values") + ":** " << values
-                    << "\n\n";
-            }
+                    // symbol name
+                    << "<h3 id=\"" << s->name << "\">" << "<code>" + s->name + "</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
+                    ;
 
-            // table of enumerators of enumeration
-            {
-                if (s->is_classification()) {
-                    auto c = dynamic_cast<ClassificationSymbol*>(s);
-                    assert(c);
-                    mdStream << "<strong>" + LTA(lang, "Enumerators of") + " <code>" + s->name + "</code>:</strong>\n\n";
-                    mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumerator") + " | " + LTA(lang, "Value") + " | " + LTA(lang, "Label") +" \n";
-                    mdStream << "- | - | -\n"; // maddy-specific table header separator
-                    for (auto enumerator : c->pp_enumerators) {
-                        auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
-                        assert(ce); // logic guarantee
-                        string export_name = ce->short_name;
-                        string name = ce->name;
-                        string value = to_string(ce->ordinal);
-                        string label = ce->pp_labels[lang_index];
-                        mdStream
-                            << export_name << " | "
-                            << ("`" + name + "`") << " | "
-                            << value << " | "
-                            << label << "\n"
-                            ;
+                // summary line with type and size
+                {
+                    string kind;
+                    string values;
+                    if (s->is_range()) {
+                        kind = LTA(lang, "range");
+                        auto r = dynamic_cast<RangeSymbol*>(s);
+                        assert(r);
+                        values = "{" + to_string(r->lower_bound) + ",...," + to_string(r->upper_bound) + "}";
                     }
-                    mdStream << "|<table\n"; // maddy-specific end table
-                }
-                else if (s->is_partition()) {
-                    auto p = dynamic_cast<PartitionSymbol*>(s);
-                    assert(p);
-                    mdStream << "<strong>" + LTA(lang, "Enumerators of") + " <code>" + s->name + "</code>:</strong>\n\n";
-                    mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "Lower") + " | " + LTA(lang, "Upper") + " | " + LTA(lang, "Value") + " | " + LTA(lang, "Label") + " \n";
-                    mdStream << "- | - | -\n"; // maddy-specific table header separator
-                    for (auto enumerator : p->pp_enumerators) {
-                        auto ce = dynamic_cast<PartitionEnumeratorSymbol*>(enumerator);
-                        assert(ce); // logic guarantee
-                        string lower = ce->lower_split_point;
-                        string upper = ce->upper_split_point;
-                        string value = to_string(ce->ordinal);
-                        string label = ce->label(*langSym); // odd that pp_labels differs...
-                        mdStream
-                            << lower << " | "
-                            << upper << " | "
-                            << value << " | "
-                            << label << "\n"
-                            ;
+                    else if (s->is_bool()) {
+                        kind = LTA(lang, "bool");
+                        values = "{0,1}";
                     }
-                    mdStream << "|<table\n"; // maddy-specific end table
+                    else if (s->is_classification()) {
+                        kind = LTA(lang, "classification");
+                        values = "{0,...," + to_string(s->pp_size() - 1) + "}";
+                    }
+                    else if (s->is_partition()) {
+                        kind = LTA(lang, "partition");
+                        values = "{0,...," + to_string(s->pp_size() - 1) + "}";
+                    }
+                    else {
+                        // not reached
+                        assert(false);
+                    }
+                    mdStream
+                        << "**" + LTA(lang, "Kind") + ":** " << kind
+                        << " **" + LTA(lang, "Size") + ":** " << to_string(s->pp_size())
+                        << " **" + LTA(lang, "Values") + ":** " << values
+                        << "\n\n";
                 }
-            }
 
-            // table of parameters using this enumeration
-            {
-                set<string> parameters_used;
-                for (auto& p : Symbol::pp_all_parameters) {
-                    if (!(p->is_published() || do_unpublished)) {
-                        // skip unpublished parameter
-                        continue;
+                // table of enumerators of enumeration
+                {
+                    if (s->is_classification()) {
+                        auto c = dynamic_cast<ClassificationSymbol*>(s);
+                        assert(c);
+                        mdStream << "<strong>" + LTA(lang, "Enumerators of") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumerator") + " | " + LTA(lang, "Value") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto enumerator : c->pp_enumerators) {
+                            auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
+                            assert(ce); // logic guarantee
+                            string export_name = ce->short_name;
+                            string name = ce->name;
+                            string value = to_string(ce->ordinal);
+                            string label = ce->pp_labels[lang_index];
+                            mdStream
+                                << export_name << " | "
+                                << ("`" + name + "`") << " | "
+                                << value << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
                     }
-                    // examine enumeration of each parameter dimension
-                    for (auto pe : p->pp_enumeration_list) {
-                        // s is the current enumeration, pe is an enumeration of parameter p
-                        if (s == pe) {
-                            parameters_used.insert(p->name);
+                    else if (s->is_partition()) {
+                        auto p = dynamic_cast<PartitionSymbol*>(s);
+                        assert(p);
+                        mdStream << "<strong>" + LTA(lang, "Enumerators of") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Lower") + " | " + LTA(lang, "Upper") + " | " + LTA(lang, "Value") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto enumerator : p->pp_enumerators) {
+                            auto ce = dynamic_cast<PartitionEnumeratorSymbol*>(enumerator);
+                            assert(ce); // logic guarantee
+                            string lower = ce->lower_split_point;
+                            string upper = ce->upper_split_point;
+                            string value = to_string(ce->ordinal);
+                            string label = ce->label(*langSym); // odd that pp_labels differs...
+                            mdStream
+                                << lower << " | "
+                                << upper << " | "
+                                << value << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
+                // table of parameters using this enumeration
+                {
+                    set<string> parameters_used;
+                    for (auto& p : Symbol::pp_all_parameters) {
+                        if (!(p->is_published() || do_unpublished)) {
+                            // skip unpublished parameter
+                            continue;
+                        }
+                        // examine enumeration of each parameter dimension
+                        for (auto pe : p->pp_enumeration_list) {
+                            // s is the current enumeration, pe is an enumeration of parameter p
+                            if (s == pe) {
+                                parameters_used.insert(p->name);
+                            }
+                        }
+                        // examine datatype of parameter
+                        if (p->pp_datatype->is_enumeration()) {
+                            if (s == p->pp_datatype) {
+                                parameters_used.insert(p->name);
+                            }
                         }
                     }
-                    // examine datatype of parameter
-                    if (p->pp_datatype->is_enumeration()) {
-                        if (s == p->pp_datatype) {
-                            parameters_used.insert(p->name);
+                    if (parameters_used.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Parameters using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto& name : parameters_used) {
+                            auto sym = Symbol::get_symbol(name);
+                            assert(sym); // logic guarantee
+                            auto label = sym->pp_labels[lang_index];
+                            mdStream
+                                << "[`" + name + "`](#" + name + ")" << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
+                // table of tables using this enumeration
+                {
+                    set<string> tables_used;
+                    for (auto t : Symbol::pp_all_tables) {
+                        if (!(t->is_published() || do_unpublished)) {
+                            // skip unpublished table
+                            continue;
+                        }
+                        for (auto d : t->dimension_list) {
+                            // s is the current enumeration, te is an enumeration used in table t
+                            auto te = d->pp_enumeration;
+                            if (s == te) {
+                                tables_used.insert(t->name);
+                            }
+                        }
+                    }
+                    if (tables_used.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Tables using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto& name : tables_used) {
+                            auto sym = Symbol::get_symbol(name);
+                            assert(sym); // logic guarantee
+                            auto label = sym->pp_labels[lang_index];
+                            mdStream
+                                << "[`" + name + "`](#" + name + ")" << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
+                // x-reference section
+                bool any_xref = false;
+                if (do_developer_edition) {
+                    any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                    if (s->is_classification()) {
+                        auto c = dynamic_cast<ClassificationSymbol*>(s);
+                        for (auto enumerator : c->pp_enumerators) {
+                            auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
+                            assert(ce); // logic guarantee
+                            string qualified_name = s->name + "::" + ce->name;
+                            any_xref = do_xref(lang, lang_index, ce, qualified_name, mdStream);
                         }
                     }
                 }
-                if (parameters_used.size() > 0) {
-                    mdStream << "<strong>" + LTA(lang, "Parameters using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
-                    mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
-                    mdStream << "- | - | -\n"; // maddy-specific table header separator
-                    for (auto& name : parameters_used) {
-                        auto sym = Symbol::get_symbol(name);
-                        assert(sym); // logic guarantee
-                        auto label = sym->pp_labels[lang_index];
-                        mdStream
-                            << "[`" + name + "`](#" + name + ")" << " | "
-                            << label << "\n"
-                            ;
-                    }
-                    mdStream << "|<table\n"; // maddy-specific end table
-                }
-            }
 
-            // table of tables using this enumeration
-            {
-                set<string> tables_used;
-                for (auto t : Symbol::pp_all_tables) {
-                    if (!(t->is_published() || do_unpublished)) {
-                        // skip unpublished table
-                        continue;
-                    }
-                    for (auto d : t->dimension_list) {
-                        // s is the current enumeration, te is an enumeration used in table t
-                        auto te = d->pp_enumeration;
-                        if (s == te) {
-                            tables_used.insert(t->name);
-                        }
+                // symbol note if present
+                if (do_NOTEs) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
                     }
                 }
-                if (tables_used.size() > 0) {
-                    mdStream << "<strong>" + LTA(lang, "Tables using enumeration") +" <code>" + s->name + "</code>:</strong>\n\n";
-                    mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
-                    mdStream << "- | - | -\n"; // maddy-specific table header separator
-                    for (auto& name : tables_used) {
-                        auto sym = Symbol::get_symbol(name);
-                        assert(sym); // logic guarantee
-                        auto label = sym->pp_labels[lang_index];
-                        mdStream
-                            << "[`" + name + "`](#" + name + ")" << " | "
-                            << label << "\n"
-                            ;
-                    }
-                    mdStream << "|<table\n"; // maddy-specific end table
-                }
-            }
 
-            // x-reference section
-            bool any_xref = false;
-            if (do_developer_edition) {
-                any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
-                if (s->is_classification()) {
-                    auto c = dynamic_cast<ClassificationSymbol*>(s);
-                    for (auto enumerator : c->pp_enumerators) {
-                        auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
-                        assert(ce); // logic guarantee
-                        string qualified_name = s->name + "::" + ce->name;
-                        any_xref = do_xref(lang, lang_index, ce, qualified_name, mdStream);
-                    }
-                }
-            }
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            } // Topic for each enumeration
+        }
 
-            // symbol note if present
-            if (do_NOTEs) {
-                string note_in = s->pp_notes[lang_index];
-                if (note_in.length()) {
-                    mdStream << "\n\n";
-                    string note_out = preprocess_markdown(note_in);
-                    mdStream << note_out << "\n\n";
-                }
-            }
-
-            mdStream << fragmentReturnLinks;
-            mdStream << fragmentTopicSeparator;
-        } // Topic for each published enumeration
-
-        // Topic: tables in alphabetic order
+        // Topic: list of tables in alphabetic order
         if (do_tables_alphabetic_topic) {
             // build line with links to first table in alphabetic table with leading letter
             string letterLinks;
@@ -1236,119 +1259,121 @@ void do_model_doc(
             mdStream << fragmentTopicSeparator;
         }
 
-        // Topic for each published table
-        for (auto& s : Symbol::pp_all_tables) {
-            if (!(s->is_published() || do_unpublished)) {
-                // skip table if not published
-                continue;
-            }
-
-            /// is a scalar table
-            bool isScalar = (s->dimension_list.size() == 0);
-
-            // topic header line
-            mdStream
-                // symbol name
-                << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
-                // symbol label
-                << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
-                ;
-
-            // summary line with type and size
-            {
-                string kindInfo;
-                {
-                    kindInfo = LTA(lang, "Table");
-                    if (s->is_hidden) {
-                        kindInfo += "(" + LTA(lang, "hidden") + ")";
-                    }
+        if (do_table_topics) {
+            // Topic for each table
+            for (auto& s : Symbol::pp_all_tables) {
+                if (!(s->is_published() || do_unpublished)) {
+                    // skip table
+                    continue;
                 }
-                string shapeCompact;
-                if (!isScalar) {
-                    bool isFirst = true;
-                    int cells = 1;
-                    for (auto dim : s->dimension_list) {
-                        auto e = dim->pp_enumeration;
-                        assert(e);
-                        auto dim_size = e->pp_size() + dim->has_margin;
-                        shapeCompact += (!isFirst ? ", " : "") + to_string(dim_size);
-                        isFirst = false;
-                        cells *= dim_size;
-                    }
-                    shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
-                }
-                else {
-                    shapeCompact = "1";
-                }
-                string measures = to_string(s->measure_count());
+
+                /// is a scalar table
+                bool isScalar = (s->dimension_list.size() == 0);
+
+                // topic header line
                 mdStream
-                    << "**" + LTA(lang, "Kind") + ":** " + kindInfo
-                    << "\n"
-                    << " **" + LTA(lang, "Cells") + ":** " << shapeCompact
-                    << "\n"
-                    << " **" + LTA(lang, "Measures") + ":** " << measures
-                    << "\n\n";
-            }
+                    // symbol name
+                    << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
+                    ;
 
-            // bread crumb hierarchy (possibly empty)
-            if (do_table_hierarchy) {
-                mdStream << bread_crumb_hierarchy(lang, lang_index, s);
-            }
-
-            // dimension table with links
-            if (!isScalar) {
-                mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Margin") + " | " + LTA(lang, "Label") + " \n";
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                for (auto& dim : s->dimension_list) {
-                    string dim_export_name = dim->short_name;
-                    auto e = dim->pp_enumeration;
-                    assert(e); // dimensions of parameters are always enumerations
-                    string dim_enumeration = e->name;
-                    string dim_size = to_string(e->pp_size());
-                    string dim_label = dim->pp_labels[lang_index];
+                // summary line with type and size
+                {
+                    string kindInfo;
+                    {
+                        kindInfo = LTA(lang, "Table");
+                        if (s->is_hidden) {
+                            kindInfo += "(" + LTA(lang, "hidden") + ")";
+                        }
+                    }
+                    string shapeCompact;
+                    if (!isScalar) {
+                        bool isFirst = true;
+                        int cells = 1;
+                        for (auto dim : s->dimension_list) {
+                            auto e = dim->pp_enumeration;
+                            assert(e);
+                            auto dim_size = e->pp_size() + dim->has_margin;
+                            shapeCompact += (!isFirst ? ", " : "") + to_string(dim_size);
+                            isFirst = false;
+                            cells *= dim_size;
+                        }
+                        shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
+                    }
+                    else {
+                        shapeCompact = "1";
+                    }
+                    string measures = to_string(s->measure_count());
                     mdStream
-                        << dim_export_name << " | "
-                        << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
-                        << dim_size << " | "
-                        << (dim->has_margin ? "**X**" : "") << " | "
-                        << dim_label << "\n"
-                        ;
+                        << "**" + LTA(lang, "Kind") + ":** " + kindInfo
+                        << "\n"
+                        << " **" + LTA(lang, "Cells") + ":** " << shapeCompact
+                        << "\n"
+                        << " **" + LTA(lang, "Measures") + ":** " << measures
+                        << "\n\n";
                 }
-                mdStream << "|<table\n"; // maddy-specific end table
-            }
 
-            // measure table
-            {
-                mdStream << "**" + LTA(lang, "Measures") + ":**\n\n";
-                mdStream << "|table>\n"; // maddy-specific begin table
-                mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Label") + " \n";
-                mdStream << "- | - | -\n"; // maddy-specific table header separator
-                for (auto& m : s->pp_measures) {
-                    string m_export_name = m->short_name;
-                    string m_label = m->pp_labels[lang_index];
-                    mdStream
-                        << m_export_name << " | "
-                        << m_label << "\n"
-                        ;
+                // bread crumb hierarchy (possibly empty)
+                if (do_table_hierarchy) {
+                    mdStream << bread_crumb_hierarchy(lang, lang_index, s);
                 }
-                mdStream << "|<table\n"; // maddy-specific end table
-            }
 
-            // symbol note if present
-            if (do_NOTEs) {
-                string note_in = s->pp_notes[lang_index];
-                if (note_in.length()) {
-                    mdStream << "\n\n";
-                    string note_out = preprocess_markdown(note_in);
-                    mdStream << note_out << "\n\n";
+                // dimension table with links
+                if (!isScalar) {
+                    mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Margin") + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto& dim : s->dimension_list) {
+                        string dim_export_name = dim->short_name;
+                        auto e = dim->pp_enumeration;
+                        assert(e); // dimensions of parameters are always enumerations
+                        string dim_enumeration = e->name;
+                        string dim_size = to_string(e->pp_size());
+                        string dim_label = dim->pp_labels[lang_index];
+                        mdStream
+                            << dim_export_name << " | "
+                            << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
+                            << dim_size << " | "
+                            << (dim->has_margin ? "**X**" : "") << " | "
+                            << dim_label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
                 }
-            }
 
-            mdStream << fragmentReturnLinks;
-            mdStream << fragmentTopicSeparator;
-        } // Topic for each published table
+                // measure table
+                {
+                    mdStream << "**" + LTA(lang, "Measures") + ":**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto& m : s->pp_measures) {
+                        string m_export_name = m->short_name;
+                        string m_label = m->pp_labels[lang_index];
+                        mdStream
+                            << m_export_name << " | "
+                            << m_label << "\n"
+                            ;
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+
+                // symbol note if present
+                if (do_NOTEs) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            } // Topic for each table
+        }
 
         // all done
         mdStream.close();
