@@ -337,7 +337,11 @@ void do_model_doc(
         }
     }
 
-    /// Show generated content
+    //
+    // CONTENT CONTROL OPTIONS
+    // 
+
+    /** @brief   (Immutable) Show generated content */
     const bool& do_generated_content = Symbol::option_generated_documentation;
 
     /// Show authored stand-alone content
@@ -358,11 +362,23 @@ void do_model_doc(
     /// Show topic for model symbol (provided it has a note in the language)
     bool do_model_symbol = Symbol::option_symref_model_symbol;
 
+    /// Show the parameters alphabetic list topic
+    bool do_parameters_alphabetic_topic = Symbol::option_symref_parameters_alphabetic;
+
+    /// Show the tables alphabetic list topic
+    bool do_tables_alphabetic_topic = Symbol::option_symref_tables_alphabetic;
+
+    /// Show the enumerations alphabetic list topic
+    bool do_enumerations_alphabetic_topic = Symbol::option_symref_enumerations_alphabetic;
+
     if (!do_generated_content) {
         // turn off all parts of generated content
         do_main_topic = false;
         do_model_symbol = false;
-        // TODO
+        do_parameters_alphabetic_topic = false;
+        do_tables_alphabetic_topic = false;
+        do_enumerations_alphabetic_topic = false;
+        // TODO add more as they are implemented
     }
 
     // Language loop
@@ -523,10 +539,18 @@ void do_model_doc(
             if (do_table_hierarchy) {
                 mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableHierarchy + ") | " + LTA(lang, "Output tables arranged hierarchically") + "\n";
             }
-            mdStream << "**" + LTA(lang, "Lists") + "** | \n";
-            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang,"Input parameters in alphabetic order") + "\n";
-            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Output tables in alphabetic order") + "\n";
-            mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
+            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic) {
+                mdStream << "**" + LTA(lang, "Lists") + "** | \n";
+                if (do_parameters_alphabetic_topic) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang, "Input parameters in alphabetic order") + "\n";
+                }
+                if (do_tables_alphabetic_topic) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Output tables in alphabetic order") + "\n";
+                }
+                if (do_enumerations_alphabetic_topic) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
+                }
+            }
             mdStream << "|<table\n"; // maddy-specific end table
             if (authoredHomeTopicPresent && do_authored_content) {
                 mdStream << "\n\n<br><a href=\"#" + anchorHome + "\">[" + LTA(lang, "Home") + "]</a>";
@@ -582,7 +606,7 @@ void do_model_doc(
         }
 
         // Topic: parameters in alphabetic order
-        {
+        if (do_parameters_alphabetic_topic) {
             // build line with links to first parameter in alphabetic table with leading letter
             string letterLinks;
             {
@@ -828,7 +852,7 @@ void do_model_doc(
         } // Topic for each published parameter
 
         // Topic: enumerations in alphabetic order
-        {
+        if (do_enumerations_alphabetic_topic) {
             // build line with links to first symbol in alphabetic table with leading letter
             string letterLinks;
             {
@@ -1079,7 +1103,7 @@ void do_model_doc(
         } // Topic for each published enumeration
 
         // Topic: tables in alphabetic order
-        {
+        if (do_tables_alphabetic_topic) {
             // build line with links to first table in alphabetic table with leading letter
             string letterLinks;
             {

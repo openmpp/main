@@ -1879,6 +1879,21 @@ public:
     static bool option_symref_table_major_groups;
 
     /**
+     * true to include in symbol reference the parameter alphabetic list topic.
+     */
+    static bool option_symref_parameters_alphabetic;
+
+    /**
+     * true to include in symbol reference the table alphabetic list topic.
+     */
+    static bool option_symref_tables_alphabetic;
+
+    /**
+     * true to include in symbol reference the enumerations alphabetic list topic.
+     */
+    static bool option_symref_enumerations_alphabetic;
+
+    /**
      * true to include in symbol reference any authored NOTEs.
      */
     static bool option_symref_notes;
