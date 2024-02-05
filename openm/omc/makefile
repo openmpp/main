@@ -132,6 +132,7 @@ MaintainedAttributeSymbol.cpp \
 MeasureDimensionSymbol.cpp \
 ModelSymbol.cpp \
 ModelTypeSymbol.cpp \
+ModuleSymbol.cpp \
 MultilinkAttributeSymbol.cpp \
 NumericSymbol.cpp \
 omc.cpp \

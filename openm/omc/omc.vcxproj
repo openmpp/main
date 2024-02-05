@@ -319,6 +319,7 @@
     <ClCompile Include="MeasureDimensionSymbol.cpp" />
     <ClCompile Include="ModelSymbol.cpp" />
     <ClCompile Include="ModelTypeSymbol.cpp" />
+    <ClCompile Include="ModuleSymbol.cpp" />
     <ClCompile Include="MultilinkAttributeSymbol.cpp" />
     <ClCompile Include="NumericSymbol.cpp" />
     <ClCompile Include="omc.cpp" />

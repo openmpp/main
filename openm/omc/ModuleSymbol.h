@@ -35,5 +35,7 @@ public:
         : Symbol(nm)
     {
     }
+
+    void post_parse(int pass);
 };
 
