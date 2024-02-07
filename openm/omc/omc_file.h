@@ -29,11 +29,27 @@ namespace omc
     // each file name in result is a relative path and include source directory
     extern list<string> listSourceFiles(const string & i_srcPath, const list<string> & i_extensions);
 
-    // get extension of filename
-    extern string getFileNameExt(const string &file_name);
+    // get extension of path
+    extern string getPathExtension(const string& path);
 
-    // get stem of filename
-    extern string getFileNameStem(const string &file_name);
+    // get stem of path
+    extern string getPathStem(const string& path);
+
+    // get filename of path
+    extern string getPathFilename(const string& path);
+
+    /**
+     * true if the module given by path is skipped by omc.
+     *
+     * As a special case, module stems starting with "modgen_" are skipped by omc.
+     * This mechanism allows a single model code base to support compilation
+     * by either the Modgen or OpenM++ compilers.
+     * 
+     * @param   path    Full pathname of the file.
+     *
+     * @returns True if path is a module skipped by omc.
+     */
+    extern bool skipPathModule(const string& path);
 
     // create output/modelName.message.ini file by merging model messages and languages with existing code/modelName.message.ini 
     extern void buildMessageIni(

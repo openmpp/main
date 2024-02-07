@@ -38,6 +38,7 @@ class DependencyGroupSymbol;
 class GlobalFuncSymbol;
 class AggregationSymbol;
 class ImportSymbol;
+class ModuleSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
 class GroupSymbol;
@@ -993,6 +994,11 @@ public:
     static void do_options();
 
     /**
+     * Assign provenance of ModuleSymbols
+     */
+    static void do_module_provenance(void);
+
+    /**
      * Look for and handle unrecognized options after post-parse phases
      */
     static void do_unrecognized_options();
@@ -1101,8 +1107,8 @@ public:
     /**
      * 'mpp' source files for the model.
      *
-     * A subset of all_source_files, consisting just of those which
-     * were found in the model code directory.
+     * A subset of all_source_files, just those 
+     * in the model code directory.
      * It includes both mpp and ompp files.
      */
     static list<string> mpp_source_files;
@@ -1110,17 +1116,17 @@ public:
 	/**
      * 'use' source files for the model.
      * 
-     * A subset of all_source_files, consisting just of those which 
-     * were included in compilation through a 'use' statement.
+     * A subset of all_source_files, just those 
+     * included during compilation through a 'use' statement.
      */
     static list<string> use_source_files;
 
     /**
      * 'dat' source files for the model.
      *
-     * A subset of all_source_files, consisting just of those which
-     * specified were found in the model code directory.
-     * It includes both mpp and ompp files.
+     * A subset of all_source_files, just those
+     * in the model parameters/Default directory.
+     * It includes both dat and odat files.
      */
     static list<string> dat_source_files;
 
@@ -1308,6 +1314,13 @@ public:
     * Populated after parsing is complete.
     */
     static list<ImportSymbol*> pp_all_imports;
+
+    /**
+    * The modules in the model
+    *
+    * Populated after parsing is complete.
+    */
+    static list<ModuleSymbol*> pp_all_modules;
 
     /**
     * The event names in the model

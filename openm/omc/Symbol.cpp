@@ -14,6 +14,7 @@
 #include <map>
 #include <regex>
 #include "omc_location.hh"
+#include "omc_file.h"
 #include "libopenm/omLog.h"
 #include "CodeBlock.h"
 #include "Symbol.h"
@@ -62,6 +63,7 @@
 #include "ModelSymbol.h"
 #include "ScenarioSymbol.h"
 #include "ImportSymbol.h"
+#include "ModuleSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
 #include "libopenm/common/omFile.h"
@@ -124,6 +126,8 @@ list<AnonGroupSymbol *> Symbol::pp_all_anon_groups;
 list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
 
 list<ImportSymbol *> Symbol::pp_all_imports;
+
+list<ModuleSymbol*> Symbol::pp_all_modules;
 
 set<string> Symbol::pp_all_event_names;
 
@@ -939,7 +943,7 @@ string Symbol::note(const LanguageSymbol & language) const
 void Symbol::associate_explicit_label_or_note(const string& key)
 {
     /// key modified to replace :: with .
-    string key_with_dot;
+    string key_with_dot; // is deliberately left empty if model/doc is not active
     if (in_doc_active) {
         key_with_dot = key;
         // replace :: by . for two-part keys, e.g. unique names
@@ -1244,6 +1248,43 @@ void Symbol::populate_pp_symbols()
     }
 }
 
+void Symbol::do_module_provenance(void)
+{
+    for (auto p : mpp_source_files) {
+        if (omc::skipPathModule(p)) {
+            continue;
+        }
+        auto symbol_name = omc::getPathFilename(p);
+        auto s = get_symbol(symbol_name);
+        assert(s); // every parsed module has an associated Symbol
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        assert(ms); // every parsed module has an associated ModuleSysmbol
+        ms->provenance = ModuleSymbol::module_provenance::from_code;
+    }
+    for (auto p : use_source_files) {
+        if (omc::skipPathModule(p)) {
+            continue;
+        }
+        auto symbol_name = omc::getPathFilename(p);
+        auto s = get_symbol(symbol_name);
+        assert(s); // every parsed module has an associated Symbol
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        assert(ms); // every parsed module has an associated ModuleSysmbol
+        ms->provenance = ModuleSymbol::module_provenance::from_use;
+    }
+    for (auto p : dat_source_files) {
+        if (omc::skipPathModule(p)) {
+            continue;
+        }
+        auto symbol_name = omc::getPathFilename(p);
+        auto s = get_symbol(symbol_name);
+        assert(s); // every parsed module has an associated Symbol
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        assert(ms); // every parsed module has an associated ModuleSysmbol
+        ms->provenance = ModuleSymbol::module_provenance::from_dat;
+    }
+}
+
 void Symbol::default_sort_pp_symbols()
 {
     // The default order of pp_symbols is sorting_group, followed by unique_name.
@@ -1361,6 +1402,9 @@ void Symbol::post_parse_all()
     // Create pp_symbols now to easily find Symbols while debugging.
     populate_pp_symbols();
     default_sort_pp_symbols();
+
+    // Assign provenance of ModuleSymbols
+    do_module_provenance();
 
 	//
     // Pass 1: create additional symbols for foreign types and process languages
@@ -1518,6 +1562,7 @@ void Symbol::post_parse_all()
     pp_all_anon_groups.sort( [] (AnonGroupSymbol *a, AnonGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_imports.sort( [] (ImportSymbol* a, ImportSymbol* b) { return a->pp_target_param->name < b->pp_target_param->name; } );
+    pp_all_modules.sort([](ModuleSymbol* a, ModuleSymbol* b) { return a->name < b->name; });
     // pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     // pp_all_table_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );

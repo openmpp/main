@@ -911,24 +911,18 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
     using namespace openm;
     for (auto it = start_it; it != files.cend(); it++) {
 
-        string full_name = *it;
+        string path = *it;
         try {
-            string file_ext = getFileNameExt(full_name);
-            string file_stem = getFileNameStem(full_name);
-            string file_name = file_stem + file_ext;
-            // As a special case, ignore file starting with "modgen_".
-            // This mechanism allows a single model code base to support compilation
-            // by either the Modgen or OpenM++ compilers.
-            string file_name_lc = file_name;
-            openm::toLower(file_name_lc);
+            string stem = omc::getPathStem(path);
+            string filename = omc::getPathFilename(path);
 
-            if (openm::equalNoCase(file_name.c_str(), "modgen_", 7)) {
-                theLog->logFormatted("Skipping %s", full_name.c_str());
+            if (omc::skipPathModule(path)) {
+                theLog->logFormatted("Skipping %s", path.c_str());
                 continue;
             }
 
-            theLog->logFormatted("Parsing %s", full_name.c_str());
-            string normalized_full_name = replaceAll(full_name, "\\", "/");
+            theLog->logFormatted("Parsing %s", path.c_str());
+            string normalized_full_name = replaceAll(path, "\\", "/");
             *markup_stream << endl; // required in case last line of previous file had no trailing newline
             string line_start = Symbol::no_line_directives ? "//#line " : "#line ";
             *markup_stream << line_start << "1 \"" << normalized_full_name << "\"" << endl;
@@ -938,11 +932,11 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             drv.trace_scanning = Symbol::trace_scanning;
             drv.trace_parsing = Symbol::trace_parsing;
             // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
-            drv.parse(&*it, file_name, file_stem, markup_stream);
+            drv.parse(&*it, filename, stem, markup_stream);
             // record the line count of the parsed file
-            Symbol::source_files_line_count.insert({ full_name, pc.all_line_count });
+            Symbol::source_files_line_count.insert({ path, pc.all_line_count });
             // record the syntactic island line count of the parsed file
-            Symbol::source_files_island_line_count.insert({ full_name, pc.island_line_count });
+            Symbol::source_files_island_line_count.insert({ path, pc.island_line_count });
         }
         catch(exception & ex) {
             theLog->logErr(ex);
@@ -990,7 +984,7 @@ static void processExtraParamDir(const string & i_paramDir, const string & i_sce
 
     // Create working set for published scenario
     MetaSetLangHolder metaSet;
-    metaSet.worksetRow.name = !i_scenarioName.empty() ? i_scenarioName : getFileNameStem(i_paramDir);
+    metaSet.worksetRow.name = !i_scenarioName.empty() ? i_scenarioName : getPathStem(i_paramDir);
 
     for (auto param : Symbol::pp_all_parameters) {
         if (param->source != ParameterSymbol::scenario_parameter) continue; // write into db only scenario parameters

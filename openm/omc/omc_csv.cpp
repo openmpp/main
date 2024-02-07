@@ -55,13 +55,13 @@ extern void omc::readParameterCsvFiles(
         // get parameter name from file path
         // parameter values separator: comma .csv or tab .tsv
         // file content: dimensions and values or parameter values only
-        string nameLc = getFileNameStem(pathCsv);
+        string nameLc = getPathStem(pathCsv);
         toLower(nameLc);
-        const char * separator = equalNoCase(getFileNameExt(pathCsv).c_str(), ".csv") ? "," : "\t";
+        const char * separator = equalNoCase(getPathExtension(pathCsv).c_str(), ".csv") ? "," : "\t";
 
         bool isValueOnly = endWithNoCase(nameLc, ".value");
         bool isIdCsv = endWithNoCase(nameLc, ".id");
-        if (isValueOnly || isIdCsv) nameLc = getFileNameStem(nameLc);
+        if (isValueOnly || isIdCsv) nameLc = getPathStem(nameLc);
 
         // find parameter name in lower case
         auto paramIt = paramNameMap.find(nameLc);

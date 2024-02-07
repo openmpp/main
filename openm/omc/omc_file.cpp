@@ -73,18 +73,35 @@ list<string> omc::listSourceFiles(const string & i_srcPath, const list<string> &
     return pathLst;
 }
 
-// get extension of filename
-string omc::getFileNameExt(const string &file_name)
+// get extension of path normalized to lowercase
+string omc::getPathExtension(const string& path)
 {
-    string ext = fs::path(file_name).extension().generic_string();
+    string ext = fs::path(path).extension().generic_string();
     openm::toLower(ext);
     return ext;
 }
 
-// get stem of filename
-string omc::getFileNameStem(const string &file_name)
+// get stem of path
+string omc::getPathStem(const string& path)
 {
-    return fs::path(file_name).stem().generic_string();
+    return fs::path(path).stem().generic_string();
+}
+
+// get filename of path
+string omc::getPathFilename(const string& path)
+{
+    return fs::path(path).filename().generic_string();
+}
+
+bool omc::skipPathModule(const string& path)
+{
+    string stem = omc::getPathStem(path);
+    if (openm::equalNoCase(stem.c_str(), "modgen_", 7)) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 // create output/modelName.message.ini file by merging model messages and languages with existing code/modelName.message.ini 
