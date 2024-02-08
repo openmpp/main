@@ -31,11 +31,13 @@ void EntityEventSymbol::create_auxiliary_symbols(Symbol *tfs, Symbol *ifs, bool 
         time_func = new EntityFuncSymbol(tfs, entity, "Time", "", true);
         time_func->doc_block = doxygen_short("Return the time to the event " + event_name + " in the " + entity->name + " entity (model code).");
         time_func->associated_event = this;
+        time_func->decl_loc = decl_loc;  // same declaration location as the event
 
         // Create an EntityFuncSymbol for the implement function ('true' means the definition is developer-supplied, so suppress definition)
         implement_func = new EntityFuncSymbol(ifs, entity, "void", "", true);
         implement_func->doc_block = doxygen_short("Implement the event " + event_name + " when it occurs in the " + entity->name + " entity (model code).");
         implement_func->associated_event = this;
+        implement_func->decl_loc = decl_loc;  // same declaration location as the event
     }
     else {
         // The functions are created internally (for the internally-generated self-scheduling event)
