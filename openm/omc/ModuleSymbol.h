@@ -72,5 +72,10 @@ public:
      * Provenance of the module.
      */
     module_provenance provenance;
+
+    /**
+     * Symbols declared in this module.
+     */
+    list<Symbol *> pp_symbols_declared;
 };
 

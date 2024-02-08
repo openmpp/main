@@ -179,6 +179,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_module(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -223,6 +224,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_module(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -261,6 +263,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_module(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         // find symbol table entry for the existing symbol
@@ -724,6 +727,11 @@ public:
      * Indicates if a label from model source code is allowed for this symbol
      */
     bool code_label_allowed;
+
+    /**
+     * If non-null, the module where this symbol was declared.
+     */
+    ModuleSymbol *pp_module;
 
     /**
      * Parent groups of this symbol.
@@ -1919,22 +1927,22 @@ public:
     /**
      * true to include in symbol reference individual parameter topics.
      */
-    static bool option_symref_parameter_topics;
+    static bool option_symref_topic_parameters;
 
     /**
      * true to include in symbol reference individual table topics.
      */
-    static bool option_symref_table_topics;
+    static bool option_symref_topic_tables;
 
     /**
      * true to include in symbol reference individual enumeration topics.
      */
-    static bool option_symref_enumeration_topics;
+    static bool option_symref_topic_enumerations;
 
     /**
      * true to include in symbol reference any authored NOTEs.
      */
-    static bool option_symref_notes;
+    static bool option_symref_topic_notes;
 
     /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.

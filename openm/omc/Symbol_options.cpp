@@ -82,10 +82,10 @@ bool Symbol::option_symref_table_hierarchy = true;
 bool Symbol::option_symref_parameters_alphabetic = true;
 bool Symbol::option_symref_tables_alphabetic = true;
 bool Symbol::option_symref_enumerations_alphabetic = true;
-bool Symbol::option_symref_parameter_topics = true;
-bool Symbol::option_symref_table_topics = true;
-bool Symbol::option_symref_enumeration_topics = true;
-bool Symbol::option_symref_notes = true;
+bool Symbol::option_symref_topic_parameters = true;
+bool Symbol::option_symref_topic_tables = true;
+bool Symbol::option_symref_topic_enumerations = true;
+bool Symbol::option_symref_topic_notes = true;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
 
@@ -997,48 +997,48 @@ void Symbol::do_options()
     }
 
     {
-        string key = "symref_parameter_topics";
+        string key = "symref_topic_parameters";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            option_symref_parameter_topics = (value == "on");
+            option_symref_topic_parameters = (value == "on");
             // remove processed option
             options.erase(iter);
         }
     }
 
     {
-        string key = "symref_table_topics";
+        string key = "symref_topic_tables";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            option_symref_table_topics = (value == "on");
+            option_symref_topic_tables = (value == "on");
             // remove processed option
             options.erase(iter);
         }
     }
 
     {
-        string key = "symref_enumeration_topics";
+        string key = "symref_topic_enumerations";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            option_symref_enumeration_topics = (value == "on");
+            option_symref_topic_enumerations = (value == "on");
             // remove processed option
             options.erase(iter);
         }
     }
 
     {
-        string key = "symref_notes";
+        string key = "symref_topic_notes";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
-            option_symref_notes = (value == "on");
+            option_symref_topic_notes = (value == "on");
             // remove processed option
             options.erase(iter);
         }

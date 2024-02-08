@@ -347,14 +347,14 @@ void do_model_doc(
     /// Show authored stand-alone content
     const bool& do_authored_content = Symbol::option_authored_documentation;
 
-    /// Generate content for Developer Edition
+    /// Show content for Developer Edition
     const bool& do_developer_edition = Symbol::option_symref_developer_edition;
 
     /// Show unpublished symbols
     const bool& do_unpublished = Symbol::option_symref_unpublished_symbols;
 
     /// Show authored NOTEs
-    const bool& do_NOTEs = Symbol::option_symref_notes;
+    const bool& do_NOTEs = Symbol::option_symref_topic_notes;
 
     /// Show main topic
     bool do_main_topic = Symbol::option_symref_main_topic;
@@ -414,13 +414,13 @@ void do_model_doc(
     bool do_enumerations_alphabetic_topic = Symbol::option_symref_enumerations_alphabetic;
 
     /// Show the individual parameter topics
-    bool do_parameter_topics = Symbol::option_symref_parameter_topics;
+    bool do_parameter_topics = Symbol::option_symref_topic_parameters;
 
     /// Show the individual table topics
-    bool do_table_topics = Symbol::option_symref_table_topics;
+    bool do_table_topics = Symbol::option_symref_topic_tables;
 
     /// Show the individual enumeration topics
-    bool do_enumeration_topics = Symbol::option_symref_enumeration_topics;
+    bool do_enumeration_topics = Symbol::option_symref_topic_enumerations;
 
     if (!do_generated_content) {
         // turn off all parts of generated content

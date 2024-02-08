@@ -743,6 +743,16 @@ void Symbol::post_parse(int pass)
             omc::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
             process_symbol_label(pos);
         }
+
+        // record module of declaration, if any
+        if (decl_loc.begin.filename != nullptr) {
+            string filename = omc::getPathFilename(*(decl_loc.begin.filename));
+            auto s = get_symbol(filename);
+            assert(s); // a ModuleSymbol exists for each parsed input file
+            auto ms = dynamic_cast<ModuleSymbol*>(s);
+            assert(ms); // a ModuleSymbol exists for each parsed input file
+            pp_module = ms;
+        }
         break;
     }
     case eResolveDataTypes:
@@ -781,6 +791,11 @@ void Symbol::post_parse(int pass)
                 // That occurs in previous post-parse passes.
                 note = Symbol::note_expand_embeds(lang_index, note);
             }
+        }
+
+        // Populate ModuleSymbol's collection of declarations
+        if (decl_loc.begin.filename != nullptr) {
+            pp_module->pp_symbols_declared.push_back(this);
         }
         break;
     }
@@ -1661,6 +1676,12 @@ void Symbol::post_parse_all()
         table->pp_accumulators.sort( [] (EntityTableAccumulatorSymbol *a, EntityTableAccumulatorSymbol *b) { return a->index < b->index; } );
         // Sort measure attributes in sequence order
         table->pp_measure_attributes.sort( [] (EntityTableMeasureAttributeSymbol *a, EntityTableMeasureAttributeSymbol *b) { return a->index < b->index; } );
+    }
+
+    // Sort collections in modules
+    for (auto module : pp_all_modules) {
+        // Sort symbols in lexicographic order by name
+        module->pp_symbols_declared.sort([](Symbol* a, Symbol* b) { return a->name < b->name; });
     }
 
     {
