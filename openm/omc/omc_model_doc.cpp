@@ -38,6 +38,7 @@
 #include "EntityEventSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "GlobalFuncSymbol.h"
+#include "ModuleSymbol.h"
 #include "ParseContext.h"
 #include "omc_file.h"
 #include "omc_model_metrics.h"
@@ -185,26 +186,6 @@ static string preprocess_markdown(string& md_in)
     return md_out;
 }
 
-
-string short_loc(location& loc)
-{
-    if (loc.begin.filename) {
-        string result = *loc.begin.filename;
-        auto p = result.find_last_of("/");
-        if ((p != result.npos) && (p < result.length())) {
-            result = result.substr(p + 1);
-        }
-        result +=
-            +"["
-            + to_string(loc.begin.line)
-            + "]";
-        return result;
-    }
-    else {
-        return "";
-    }
-}
-
 static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::ofstream &mdStream)
 {
     bool any_xref = false;
@@ -217,7 +198,9 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& f : s->pp_global_funcs_using) {
             string name = f->name;
-            string module = short_loc(f->decl_loc);
+            string module = f->pp_module ?
+                ("[`" + f->pp_module->name + "`](#" + f->pp_module->name + ")")
+                : "";
             string label = f->pp_labels[lang_index];
             mdStream
                 << name << " | "
@@ -238,7 +221,9 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         for (auto& m : s->pp_entity_funcs_using) {
             string entity = m->pp_entity->name;
             string member = m->name;
-            string module = short_loc(m->defn_loc);
+            string module = m->pp_module ?
+                ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
+                : "";
             string label = m->pp_labels[lang_index];
             mdStream
                 << entity << " | "
@@ -260,7 +245,9 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         for (auto& m : s->pp_identity_attributes_using) {
             string entity = m->pp_entity->name;
             string member = m->name;
-            string module = short_loc(m->decl_loc);
+            string module = m->pp_module ?
+                ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
+                : "";
             string label = m->pp_labels[lang_index];
             mdStream
                 << entity << " | "
@@ -421,6 +408,14 @@ void do_model_doc(
 
     /// Show the individual enumeration topics
     bool do_enumeration_topics = Symbol::option_symref_topic_enumerations;
+
+    /// Show the individual module topics
+    bool do_module_topics = Symbol::option_symref_topic_modules;
+
+    if (do_developer_edition) {
+        // turn on related flags
+        do_module_topics = true;
+    }
 
     if (!do_generated_content) {
         // turn off all parts of generated content
@@ -786,6 +781,12 @@ void do_model_doc(
                     else {
                         shapeCompact = LTA(lang, "scalar");
                     }
+                    string moduleInfo = "";
+                    if (do_module_topics) {
+                        if (s->pp_module) {
+                            moduleInfo = "[`" + s->pp_module->name + "`](#" + s->pp_module->name + ")";
+                        }
+                    }
                     string defaultValue = "";
                     if (isScalar && (s->source == ParameterSymbol::parameter_source::scenario_parameter)) {
                         /// for sub=0
@@ -828,6 +829,9 @@ void do_model_doc(
                         << " **" + LTA(lang, "Size") + ":** " << shapeCompact;
                     if (defaultValue.length() > 0) {
                         mdStream << "\n**" + LTA(lang, "Default") + ":** " + defaultValue;
+                    }
+                    if (moduleInfo.length() > 0) {
+                        mdStream << "\n**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
                     }
                     mdStream << "\n\n";
                 }
@@ -877,7 +881,7 @@ void do_model_doc(
                 }
 
                 // parameter value note if present
-                {
+                if (do_NOTEs) {
                     string note_in = s->pp_value_notes[lang_index];
                     if (note_in.length()) {
                         mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
@@ -956,7 +960,7 @@ void do_model_doc(
                     << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
                     ;
 
-                // summary line with type and size
+                // summary line with type, size, etc.
                 {
                     string kind;
                     string values;
@@ -982,11 +986,21 @@ void do_model_doc(
                         // not reached
                         assert(false);
                     }
+                    string moduleInfo = "";
+                    if (do_module_topics) {
+                        if (s->pp_module) {
+                            moduleInfo = "[`" + s->pp_module->name + "`](#" + s->pp_module->name + ")";
+                            //moduleInfo = "Hello";
+                        }
+                    }
                     mdStream
                         << "**" + LTA(lang, "Kind") + ":** " << kind
                         << " **" + LTA(lang, "Size") + ":** " << to_string(s->pp_size())
-                        << " **" + LTA(lang, "Values") + ":** " << values
-                        << "\n\n";
+                        << " **" + LTA(lang, "Values") + ":** " << values;
+                    if (moduleInfo.length() > 0) {
+                        mdStream << "\n**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
+                    }
+                    mdStream << "\n\n";
                 }
 
                 // table of enumerators of enumeration
@@ -1305,13 +1319,22 @@ void do_model_doc(
                         shapeCompact = "1";
                     }
                     string measures = to_string(s->measure_count());
+                    string moduleInfo = "";
+                    if (do_module_topics) {
+                        if (s->pp_module) {
+                            moduleInfo = "[`" + s->pp_module->name + "`](#" + s->pp_module->name + ")";
+                        }
+                    }
                     mdStream
                         << "**" + LTA(lang, "Kind") + ":** " + kindInfo
                         << "\n"
                         << " **" + LTA(lang, "Cells") + ":** " << shapeCompact
                         << "\n"
-                        << " **" + LTA(lang, "Measures") + ":** " << measures
-                        << "\n\n";
+                        << " **" + LTA(lang, "Measures") + ":** " << measures;
+                    if (moduleInfo.length() > 0) {
+                        mdStream << "\n**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
+                    }
+                    mdStream << "\n\n";
                 }
 
                 // bread crumb hierarchy (possibly empty)
