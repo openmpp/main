@@ -435,7 +435,10 @@ void do_model_doc(
         do_module_use_topics = Symbol::option_symref_topic_modules_use;
     }
 
-    /// Show the modules alphabetic list topic
+    /// Show the symbols declared table in individual module topics
+    bool do_module_symbols_declared = Symbol::option_symref_topic_modules_symbols_declared;
+
+    /** @brief   Show the modules alphabetic list topic */
     bool do_modules_alphabetic = false;
     if (do_module_topics) {
         do_modules_alphabetic = true;
@@ -1500,7 +1503,7 @@ void do_model_doc(
                 }
 
                 // table of symbols declared in this module
-                {
+                if (do_module_symbols_declared) {
                     mdStream << "<strong>" + LTA(lang, "Symbols declared in") + " <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Kind") + " | " + LTA(lang, "Entity") +  + " | " + LTA(lang, "Label") + " \n";
@@ -1555,15 +1558,10 @@ void do_model_doc(
                             entity = ia->pp_entity->name;
                             kind = LTA(lang, "simple attribute");
                         }
-                        else if (auto ia = dynamic_cast<AttributeSymbol*>(d)) {
-                            name = maddy_symbol(ia->name);
-                            entity = ia->pp_entity->name;
-                            kind = LTA(lang, "attribute");
-                        }
-                        else if (auto em = dynamic_cast<EntityMemberSymbol*>(d)) {
+                        else if (auto em = dynamic_cast<LinkAttributeSymbol*>(d)) {
                             name = maddy_symbol(em->name);
                             entity = em->pp_entity->name;
-                            kind = LTA(lang, "entity member");
+                            kind = LTA(lang, "link attribute");
                         }
                         else if (auto es = dynamic_cast<EntitySetSymbol*>(d)) {
                             name = maddy_symbol(es->name);

@@ -1950,6 +1950,11 @@ public:
     static bool option_symref_topic_modules_use;
 
     /**
+     * true to include symbols declared table in individual module topics.
+     */
+    static bool option_symref_topic_modules_symbols_declared;
+
+    /**
      * true to include in symbol reference any authored NOTEs.
      */
     static bool option_symref_topic_notes;
