@@ -86,6 +86,7 @@ bool Symbol::option_symref_topic_parameters = true;
 bool Symbol::option_symref_topic_tables = true;
 bool Symbol::option_symref_topic_enumerations = true;
 bool Symbol::option_symref_topic_modules = false;
+bool Symbol::option_symref_topic_modules_use = false;
 bool Symbol::option_symref_topic_notes = true;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
@@ -1040,6 +1041,18 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             option_symref_topic_modules = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_modules_use";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_modules_use = (value == "on");
             // remove processed option
             options.erase(iter);
         }

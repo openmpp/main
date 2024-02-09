@@ -1945,6 +1945,11 @@ public:
     static bool option_symref_topic_modules;
 
     /**
+     * true to include in symbol reference individual module topics for use modules.
+     */
+    static bool option_symref_topic_modules_use;
+
+    /**
      * true to include in symbol reference any authored NOTEs.
      */
     static bool option_symref_topic_notes;

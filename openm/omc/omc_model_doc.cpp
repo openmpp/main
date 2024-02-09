@@ -37,6 +37,7 @@
 #include "EntityTableSymbol.h"
 #include "EntityEventSymbol.h"
 #include "IdentityAttributeSymbol.h"
+#include "SimpleAttributeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ModuleSymbol.h"
 #include "ParseContext.h"
@@ -261,9 +262,19 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
     return any_xref;
 }
 
+static string maddy_link(string& name)
+{
+    return "[`" + name + "`](#" + name + ")";
+}
+
+static string maddy_symbol(string& name)
+{
+    return "`" + name + "`";
+}
+
 /** create model user documentation and model developer documentation. */
 void do_model_doc(
-    const string & model_name, const string & docOutDir, const string & mdOutDir, const string & omrootDir, const CodeGen & cg
+    const string& model_name, const string& docOutDir, const string& mdOutDir, const string& omrootDir, const CodeGen& cg
 ) {
 
     // create json file for ompp UI:
@@ -417,6 +428,19 @@ void do_model_doc(
         do_module_topics = true;
     }
 
+    /// Show the individual module topics for use modules
+    bool do_module_use_topics = false;
+    if (do_module_topics) {
+        // Use modules are normally off, but they can be turned on here
+        do_module_use_topics = Symbol::option_symref_topic_modules_use;
+    }
+
+    /// Show the modules alphabetic list topic
+    bool do_modules_alphabetic = false;
+    if (do_module_topics) {
+        do_modules_alphabetic = true;
+    }
+
     if (!do_generated_content) {
         // turn off all parts of generated content
         do_main_topic = false;
@@ -515,6 +539,7 @@ void do_model_doc(
         string anchorTableHierarchy = "table-hierarchy";
         string anchorTableMajorGroups = "table-major-groups";
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
+        string anchorModulesAlphabetic = "modules-alphabetic";
 
         // Fragment for back navigation
         string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
@@ -573,7 +598,7 @@ void do_model_doc(
             if (do_table_hierarchy) {
                 mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableHierarchy + ") | " + LTA(lang, "Output tables arranged hierarchically") + "\n";
             }
-            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic) {
+            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic || do_modules_alphabetic) {
                 mdStream << "**" + LTA(lang, "Lists") + "** | \n";
                 if (do_parameters_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang, "Input parameters in alphabetic order") + "\n";
@@ -583,6 +608,9 @@ void do_model_doc(
                 }
                 if (do_enumerations_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
+                }
+                if (do_modules_alphabetic) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Modules") + "](#" + anchorModulesAlphabetic + ") | " + LTA(lang, "Modules in alphabetic order") + "\n";
                 }
             }
             mdStream << "|<table\n"; // maddy-specific end table
@@ -1166,8 +1194,8 @@ void do_model_doc(
                 for (auto& s : table_like) {
                     string letterCurr = s->name.substr(0, 1);
                     if (letterCurr != letterPrev) {
-                        // anchor looks like A-param, D-param, etc.
-                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-param)";
+                        // anchor looks like A-table, D-table, etc.
+                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-table)";
                     }
                     letterPrev = letterCurr;
                 }
@@ -1185,13 +1213,13 @@ void do_model_doc(
                     string letterCurr = s->name.substr(0, 1);
                     string letterLink = "";
                     if (letterCurr != letterPrev) {
-                        // anchor looks like A-param, D-param, etc.
-                        letterLink += "<div id=\"" + letterCurr + "-param\"/>";
+                        // anchor looks like A-table, D-table, etc.
+                        letterLink += "<div id=\"" + letterCurr + "-table\"/>";
                     }
                     letterPrev = letterCurr;
 
                     mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << s->pp_labels[lang_index] << "  \n";
-                } // end parameter table
+                } // end tables table
             }
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << fragmentReturnLinks;
@@ -1398,6 +1426,179 @@ void do_model_doc(
             } // Topic for each table
         }
 
+        // Topic: modules in alphabetic order
+        if (do_modules_alphabetic) {
+            // build line with links to first symbol in alphabetic table with leading letter
+            string letterLinks;
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_modules) {
+                    if ((s->provenance == ModuleSymbol::module_provenance::from_dat) || (s->provenance == ModuleSymbol::module_provenance::from_use && !do_module_use_topics)) {
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-module, D-module, etc.
+                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-module)";
+                    }
+                    letterPrev = letterCurr;
+                }
+            }
+
+            mdStream << "<h3 id=\"" + anchorModulesAlphabetic + "\">" + LTA(lang, "Modules in alphabetic order") + "</h3>\n\n";
+            mdStream << letterLinks + "\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+            {
+                string letterPrev = "";
+                for (auto& s : Symbol::pp_all_modules) {
+                    if ((s->provenance == ModuleSymbol::module_provenance::from_dat) || (s->provenance == ModuleSymbol::module_provenance::from_use && !do_module_use_topics)) {
+                        continue;
+                    }
+                    string letterCurr = s->name.substr(0, 1);
+                    string letterLink = "";
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-module, D-module, etc.
+                        letterLink += "<div id=\"" + letterCurr + "-module\"/>";
+                    }
+                    letterPrev = letterCurr;
+
+                    mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << s->pp_labels[lang_index] << "  \n";
+                } // end modules table
+            }
+            mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
+        } // Topic: modules in alphabetic order
+
+        if (do_module_topics) {
+            for (auto& s : Symbol::pp_all_modules) {
+                if ((s->provenance == ModuleSymbol::module_provenance::from_dat) || (s->provenance == ModuleSymbol::module_provenance::from_use && !do_module_use_topics)) {
+                    continue;
+                }
+
+                // topic header line
+                mdStream
+                    // symbol name
+                    << "<h3 id=\"" << s->name << "\">" << "<code>" + s->name + "</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
+                    ;
+
+                // summary line with type, size, etc.
+                {
+                    //mdStream
+                    //    << "**" + LTA(lang, "Kind") + ":** " << kind
+                    //    << " **" + LTA(lang, "Size") + ":** " << to_string(s->pp_size())
+                    //    << " **" + LTA(lang, "Values") + ":** " << values;
+                    //if (moduleInfo.length() > 0) {
+                    //    mdStream << "\n**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
+                    //}
+                    mdStream << "\n\n";
+                }
+
+                // table of symbols declared in this module
+                {
+                    mdStream << "<strong>" + LTA(lang, "Symbols declared in") + " <code>" + s->name + "</code>:</strong>\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Kind") + " | " + LTA(lang, "Entity") +  + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto d : s->pp_symbols_declared) {
+                        string name = "";
+                        string kind = "";
+                        string entity = "";
+                        if (auto p = dynamic_cast<ParameterSymbol*>(d)) {
+                            name = maddy_link(p->name);
+                            kind = LTA(lang, "parameter");
+                        }
+                        else if (auto t = dynamic_cast<TableSymbol*>(d)) {
+                            name = maddy_link(t->name);
+                            kind = LTA(lang, "table");
+                        }
+                        else if (auto c = dynamic_cast<ClassificationSymbol*>(d)) {
+                            name = maddy_link(c->name);
+                            kind = LTA(lang, "classification");
+                        }
+                        else if (auto r = dynamic_cast<RangeSymbol*>(d)) {
+                            name = maddy_link(r->name);
+                            kind = LTA(lang, "range");
+                        }
+                        else if (auto part = dynamic_cast<PartitionSymbol*>(d)) {
+                            name = maddy_link(part->name);
+                            kind = LTA(lang, "partition");
+                        }
+                        else if (auto ef = dynamic_cast<EntityFuncSymbol*>(d)) {
+                            name = maddy_symbol(ef->name);
+                            entity = ef->pp_entity->name;
+                            kind = LTA(lang, "entity function");
+                            if (auto ee = ef->associated_event) {
+                                if (ef == ee->time_func_original) {
+                                    kind = "event time function";
+                                }
+                                if (ef == ee->implement_func_original) {
+                                    kind = "event implement function";
+                                }
+                                else {
+                                    assert(false); // internal logic error
+                                }
+                            }
+                        }
+                        else if (auto ia = dynamic_cast<IdentityAttributeSymbol*>(d)) {
+                            name = maddy_symbol(ia->name);
+                            entity = ia->pp_entity->name;
+                            kind = LTA(lang, "identity attribute");
+                        }
+                        else if (auto ia = dynamic_cast<SimpleAttributeSymbol*>(d)) {
+                            name = maddy_symbol(ia->name);
+                            entity = ia->pp_entity->name;
+                            kind = LTA(lang, "simple attribute");
+                        }
+                        else if (auto ia = dynamic_cast<AttributeSymbol*>(d)) {
+                            name = maddy_symbol(ia->name);
+                            entity = ia->pp_entity->name;
+                            kind = LTA(lang, "attribute");
+                        }
+                        else if (auto em = dynamic_cast<EntityMemberSymbol*>(d)) {
+                            name = maddy_symbol(em->name);
+                            entity = em->pp_entity->name;
+                            kind = LTA(lang, "entity member");
+                        }
+                        else if (auto es = dynamic_cast<EntitySetSymbol*>(d)) {
+                            name = maddy_symbol(es->name);
+                            kind = LTA(lang, "entity set");
+                        }
+                        else if (auto gf = dynamic_cast<GlobalFuncSymbol*>(d)) {
+                            name = maddy_symbol(d->name);
+                            kind = LTA(lang, "global function");
+                        }
+                        else {
+                            continue;
+                        }
+                        string label = d->pp_labels[lang_index];
+                        mdStream << name;
+                        mdStream << " | " + kind;
+                        mdStream << " | " + entity;
+                        mdStream << " | " + label + "\n";
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+
+                // symbol note if present
+                if (do_NOTEs) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            } // Topic for each enumeration
+        }
         // all done
         mdStream.close();
 
