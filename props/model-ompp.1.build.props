@@ -40,7 +40,7 @@
   
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
 
-    <OMC_EXE>omc.exe</OMC_EXE>
+    <OMC_EXE>omc64.exe</OMC_EXE>
     <DBCOPY_EXE>dbcopy.exe</DBCOPY_EXE>
     <MPIEXEC_EXE>mpiexec.exe</MPIEXEC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>

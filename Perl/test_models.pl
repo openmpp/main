@@ -155,7 +155,8 @@ my $modgen_id_offset = $opt->modgen_id_offset;
 #####################
 
 # ompp compiler version for Windows (4 possible values), without leading path
-my $omc_exe = 'omc.exe';
+my $omc_exe = 'omc64.exe';
+#my $omc_exe = 'omc.exe';
 #my $omc_exe = 'omcD.exe';
 #my $omc_exe = 'omc64.exe';
 #my $omc_exe = 'omc64D.exe';
