@@ -195,8 +195,8 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
                 auto sym = efavs->symbol;
                 if (sym->is_base_symbol() && !Symbol::exists(sym->name)) {
                     // an undeclared SYMBOL followed by a '('
-                    // create a GlobalFuncSymbol with that name
-                    auto gfs = new GlobalFuncSymbol(sym->name, sym->decl_loc);
+                    // create a GlobalFuncSymbol with that name (no decl_loc because this is a use, not a declaration)
+                    auto gfs = new GlobalFuncSymbol(sym->name);
 					// Push the name into the post parse ignore hash for the current pass.
 					pp_symbols_ignore.insert(gfs->unique_name);
                 }
