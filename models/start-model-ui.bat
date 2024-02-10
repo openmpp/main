@@ -41,7 +41,7 @@ set model_root_name=OM_%MODEL_NAME%
 set model_root_value=%MODEL_FULL_DIR%
 if "%model_root_value:~-1%"==\ set model_root_value="%model_root_value:~0,-1%"
 
-set %model_root_name%="%model_root_value%"
+set %model_root_name%=%model_root_value%
 
 @echo %model_root_name% = %model_root_value%
 

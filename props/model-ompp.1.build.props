@@ -40,7 +40,7 @@
   
     <OM_BIN_DIR Condition="'$(OM_BIN_DIR)'==''">$(OM_ROOT)/bin</OM_BIN_DIR>
 
-    <OMC_EXE>omc64.exe</OMC_EXE>
+    <OMC_EXE>omc.exe</OMC_EXE>
     <DBCOPY_EXE>dbcopy.exe</DBCOPY_EXE>
     <MPIEXEC_EXE>mpiexec.exe</MPIEXEC_EXE>
     <SQLITE_EXE>sqlite3.exe</SQLITE_EXE>
@@ -81,8 +81,8 @@
     <IN_DOC_DIR Condition="'$(IN_DOC_DIR)'==''">../doc</IN_DOC_DIR>
     <OUT_DOC_DIR Condition="'$(OUT_DOC_DIR)'==''">$(PUBLISH_DIR)/doc</OUT_DOC_DIR>
 
-    <PLATFORM_SUFFIX Condition="'$(Platform)'=='Win32'"></PLATFORM_SUFFIX>
-    <PLATFORM_SUFFIX Condition="'$(Platform)'=='x64'">64</PLATFORM_SUFFIX>
+    <PLATFORM_SUFFIX Condition="'$(Platform)'=='Win32'">32</PLATFORM_SUFFIX>
+    <PLATFORM_SUFFIX Condition="'$(Platform)'=='x64'"></PLATFORM_SUFFIX>
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Release'"></CONFIG_SUFFIX>
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Debug'">D</CONFIG_SUFFIX>
 
