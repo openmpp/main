@@ -77,7 +77,8 @@
 
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
 
-    <!--  Default values for model documnetation directories -->
+    <!--  Default values for model documentation directories and option -->
+    <MODEL_DOC Condition="'$(MODEL_DOC)'==''">true</MODEL_DOC>
     <IN_DOC_DIR Condition="'$(IN_DOC_DIR)'==''">../doc</IN_DOC_DIR>
     <OUT_DOC_DIR Condition="'$(OUT_DOC_DIR)'==''">$(PUBLISH_DIR)/doc</OUT_DOC_DIR>
 
