@@ -1540,7 +1540,7 @@ void do_model_doc(
                                 if (ef == ee->time_func_original) {
                                     kind = "event time function";
                                 }
-                                if (ef == ee->implement_func_original) {
+                                else if (ef == ee->implement_func_original) {
                                     kind = "event implement function";
                                 }
                                 else {
