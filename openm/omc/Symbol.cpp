@@ -2769,21 +2769,20 @@ std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
 std::string Symbol::slurp_doc_file_md(const std::string& file_stem)
 {
     if (!in_doc_active) {
-        return string();
+        return string(); // empty string
     }
-    else {
-        string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "md");
-        return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
-    }
+    string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "md");
+    string step1 = openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
+    // normalize line endings
+    string step2 = std::regex_replace(step1, std::regex("\r\n"), "\n");
+    return step2;
 }
 
 std::string Symbol::slurp_doc_file_txt(const std::string& file_stem)
 {
     if (!in_doc_active) {
-        return string();
+        return string(); // empty string
     }
-    else {
-        string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "txt");
-        return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
-    }
+    string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "txt");
+    return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
 }
