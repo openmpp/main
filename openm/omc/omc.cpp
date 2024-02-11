@@ -837,6 +837,14 @@ int main(int argc, char * argv[])
             builder->buildCompatibilityViews(metaRows);
         }
 
+        // generate model documentation
+        if (Symbol::model_doc) {
+            theLog->logMsg("Generate model documentation - start");
+            string omrootDir = baseDirOf(baseDirOf(omc_exe));
+            do_model_doc(model_name, outDocDir, outDir, omrootDir, cg);
+            theLog->logMsg("Generate model documentation - finish");
+        }
+
         // cleanup literals created from csv files
         for (auto & cp : cpLst) {
             if (cp->literal != nullptr) delete cp->literal;
@@ -866,14 +874,6 @@ int main(int argc, char * argv[])
 
         // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
-
-        // generate model documentation
-        if (Symbol::model_doc) {
-            theLog->logMsg("Generate model documentation - start");
-            string omrootDir = baseDirOf(baseDirOf(omc_exe));
-            do_model_doc(model_name, outDocDir, outDir, omrootDir, cg);
-            theLog->logMsg("Generate model documentation - finish");
-        }
 
         // issue warnings for missing labels,notes,translations
         do_missing_documentation();
