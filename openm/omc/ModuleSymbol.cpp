@@ -22,9 +22,19 @@ void ModuleSymbol::post_parse(int pass)
     case eAssignLabel:
     {
         assert(provenance != unknown); // assigned before post-parse passes
+
+        // Symbol level of hierarchical calling chain already looked for Stem.Extension
+
+        // Look for label and note replacing . separator by ::
+        // as work-around to aoodity of handling two-part names in two ways.
+        string stem = omc::getPathStem(name);
+        string ext = omc::getPathExtension(name);
+        if (ext.length() >= 1) {
+            associate_explicit_label_or_note(stem + "::" + ext.substr(1));
+        }
+
         // Unlike modgen, in ompp ModuleSymbol name includes extension.
         // For backwards compatibility, look for LABEL and NOTE using stem of module name.
-        string stem = omc::getPathStem(name);
         associate_explicit_label_or_note(stem);
         break;
     }
