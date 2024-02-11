@@ -194,6 +194,7 @@
     <ClInclude Include="DerivedAttributeSymbol.h" />
     <ClInclude Include="DerivedTableSymbol.h" />
     <ClInclude Include="DimensionSymbol.h" />
+    <ClInclude Include="disable_selected_warnings.h" />
     <ClInclude Include="Driver.h" />
     <ClInclude Include="EntityArrayMemberSymbol.h" />
     <ClInclude Include="EntityDataMemberSymbol.h" />

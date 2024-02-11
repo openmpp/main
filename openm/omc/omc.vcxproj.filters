@@ -288,6 +288,9 @@
     <ClInclude Include="omc_location.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="disable_selected_warnings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CodeGen.cpp">
