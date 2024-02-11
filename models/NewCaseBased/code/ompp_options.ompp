@@ -1,10 +1,16 @@
 // Copyright (c) 2024-2024 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-//LABEL(ompp_options, EN) options statements
+//LABEL(ompp_options.ompp, EN) openM++ model options
+//LABEL(ompp_options.ompp, FR) Options de modèle d'openM++
 
-/* NOTE(ompp_options, EN)
-    This module contains some often-modified options statements for the model.
+/* NOTE(ompp_options.ompp, EN)
+    This module contains some commonly modified model options.
+    It is not read by Modgen so can contain options not recognized by Modgen.
+*/
+/* NOTE(ompp_options.ompp, FR)
+    Ce module contient des options de modèle souvent modifiées.
+    Il n'est pas lu par Modgen donc peut contenir des options pas reconnues par Modgen.
 */
 
 #include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
