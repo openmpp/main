@@ -1538,10 +1538,10 @@ void do_model_doc(
                             kind = LTA(lang, "entity function");
                             if (auto ee = ef->associated_event) {
                                 if (ef == ee->time_func_original) {
-                                    kind = "event time function";
+                                    kind = LTA(lang, "event time function");
                                 }
                                 else if (ef == ee->implement_func_original) {
-                                    kind = "event implement function";
+                                    kind = LTA(lang, "event implement function");
                                 }
                                 else {
                                     assert(false); // internal logic error
