@@ -1,0 +1,22 @@
+// Copyright (c) 2024-2024 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(ompp_options, EN) options statements
+
+/* NOTE(ompp_options, EN)
+    This module contains some often-modified options statements for the model.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+// 
+// Model documentation options:
+//  (These have no effect unless Model Documentation is turned on)
+//   
+options symref_developer_edition = on;       // Comment this line for production models.
+options symref_parameter_major_groups = off; // Comment this line for models with large parameter hierarchies.
+options symref_table_major_groups = off;     // Comment this line for models with large table hierarchies.
+
+#endif // Hide non-C++ syntactic island from IDE
