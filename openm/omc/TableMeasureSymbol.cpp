@@ -33,7 +33,7 @@ void TableMeasureSymbol::to_column_name(const string & i_tableName, const list<T
 {
     assert(io_me);
     size_t maxlen = std::min<size_t>(short_name_max_length, OM_NAME_DB_MAX);
-    string colName = openm::toAlphaNumeric(io_me->short_name, maxlen);   // make measure name alphanumeric and truncate it to 255 chars
+    string colName = openm::toAlphaNumeric(io_me->short_name, (int)maxlen);   // make measure name alphanumeric and truncate it to 255 chars
 
     for (auto pIt = i_measureLst.cbegin(); pIt != i_measureLst.cend() && *pIt != io_me; ++pIt) {
         if (colName == (*pIt)->short_name) {
@@ -238,7 +238,7 @@ string TableMeasureSymbol::heuristic_short_name(void) const
     }
 
     // Make name alphanumeric and truncate it to maximum length.
-    hn = openm::toAlphaNumeric(hn, short_name_max_length);
+    hn = openm::toAlphaNumeric(hn, (int)short_name_max_length);
 
     // trim off trailing "_" if present
     //if (hn.ends_with("_")) { // c++20

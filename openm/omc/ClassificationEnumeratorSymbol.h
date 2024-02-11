@@ -85,7 +85,7 @@ public:
         }
 
         // Make name alphanumeric and truncate it to maximum length.
-        hn = openm::toAlphaNumeric(hn, short_name_max_length);
+        hn = openm::toAlphaNumeric(hn, (int)short_name_max_length);
 
         // trim off trailing "_" if present
         //if (hn.ends_with("_")) { // c++20

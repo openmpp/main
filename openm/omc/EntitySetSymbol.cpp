@@ -276,7 +276,7 @@ void EntitySetSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
 
-    int rank = dimension_list.size();
+    size_t rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0

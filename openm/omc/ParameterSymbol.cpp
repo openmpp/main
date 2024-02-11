@@ -43,13 +43,14 @@ void ParameterSymbol::post_parse(int pass)
             
             // construct the argument list
             string args = "double uniform";
-            int rank = enumeration_list.size();
-            int conditional_dims = rank - cumrate_dims;
-            int lookup_dims = cumrate_dims;
-            for (int j = 0; j < conditional_dims; j++) {
+            size_t rank = enumeration_list.size();
+            assert(rank >= cumrate_dims);
+            size_t conditional_dims = (rank >= cumrate_dims) ? (rank - cumrate_dims) : size_t(0);
+            size_t lookup_dims = cumrate_dims;
+            for (size_t j = 0; j < conditional_dims; j++) {
                 args += ", int cond" + to_string(j);
             }
-            for (int j = 0; j < lookup_dims; j++) {
+            for (size_t j = 0; j < lookup_dims; j++) {
                 args += ", int * draw" + to_string(j);
             }
 
@@ -238,7 +239,7 @@ void ParameterSymbol::post_parse(int pass)
             c += "distribution_index = " + cumrate_name() + ".draw(conditioning_index, uniform);";
             c += "}";
             c += "// Calculate values of distribution dimensions";
-            int distr_index = distribution_dims() - 1;
+            int distr_index = (int)distribution_dims() - 1;
             // reverse iterate through the distribution shape
             for (auto it = pp_distribution_shape.rbegin(); it != pp_distribution_shape.rend(); ++it) {
                 if (distr_index > 0) {
@@ -516,7 +517,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
         if (rank() >= 1) {
             // number of values per line is size of trailing dimension
             auto es = pp_enumeration_list.back();
-            values_per_line = es->pp_size();
+            values_per_line = (int)es->pp_size();
         }
         c += "{";
         if (haz1rate) {
@@ -555,7 +556,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
             // TODO
             string s_value = "QNAN_D";
             //(pp_datatype->is_floating());
-            int unspecified_count = size() - initializer_list.size();
+            int unspecified_count = (int)size() - (int)initializer_list.size();
             for (int k = 0; k < unspecified_count; ++k) {
                 // output line if values per line limit has been reached
                 if (values_in_line == values_per_line) {
@@ -614,8 +615,8 @@ void ParameterSymbol::validate_initializer()
         }
         if (is_extendable) {
             // check that last slice of initializer is complete
-            int first_dim_size = pp_shape.front();
-            int slice_size = size() / first_dim_size;
+            size_t first_dim_size = pp_shape.front();
+            size_t slice_size = size() / first_dim_size;
             if (0 != (lst.size() % slice_size)) {
                 pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", last slice incomplete"));
             }
@@ -654,7 +655,7 @@ pair< int, list<string> > ParameterSymbol::initializer_for_storage(int i_sub_ind
     }
     if (is_extendable) {
         // if an extendable parameter has unspecified trailing values, append NULL's
-        int unspecified_count = size() - slIt->second.size();
+        int unspecified_count = (int)size() - (int)slIt->second.size();
         for (int k = 0; k < unspecified_count; ++k) {
             values.push_back("NULL");
         }
@@ -719,7 +720,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         paramDic.paramId = pp_parameter_id;
         paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
-        paramDic.rank = rank();
+        paramDic.rank = (int)rank();
         paramDic.typeId = pp_datatype->type_id;
         paramDic.isExtendable = is_extendable;
         paramDic.isHidden = is_hidden;
@@ -791,7 +792,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableDic.tableId = pp_parameter_to_table_id;
         tableDic.tableName = name; // name of derived parameter is used for name of table
-        tableDic.rank = rank();
+        tableDic.rank = (int)rank();
         tableDic.isSparse = true;           // do not store zeroes
         tableDic.exprPos = -1;              // before all classificatory dimensions
         tableDic.isHidden = is_hidden;
@@ -829,7 +830,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableDims.name = dim->short_name;     // Default is dim0, dim1, but can be named in model using =>
             tableDims.typeId = es->type_id;
             tableDims.isTotal = dim->has_margin;
-            tableDims.dimSize = es->pp_size() + dim->has_margin;
+            tableDims.dimSize = (int)(es->pp_size() + dim->has_margin);
             metaRows.tableDims.push_back(tableDims);
 
             // Labels and notes for the dimensions of the table

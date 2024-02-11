@@ -8,7 +8,7 @@
 // The following code is written to the header file, not the implementation file
 %code requires {
 
-// Copyright (c) 2013-2022 OpenM++ Contributors
+// Copyright (c) 2013-2024 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
@@ -16,6 +16,7 @@
 #include <sstream>
 #include <list>
 #include <typeinfo>
+#include "disable_selected_warnings.h"
 
 using namespace std;
 
@@ -1208,7 +1209,7 @@ decl_anon_group:
     anon_group_kw[tok] symbol_list ";"
                         {
                             // the originating anonymous group statement, eg parameters_suppress
-                            AnonGroupSymbol::eKind anon_kind;
+                            AnonGroupSymbol::eKind anon_kind = AnonGroupSymbol::eKind::hide; // initialized arbitrarily to avoid warning
 
                             // assign anon_kind by translating token to enum
                             switch ($tok) {
@@ -1464,7 +1465,11 @@ decl_parameter:
                             parm->cumrate = true;
                             // record number of non-conditioning trailing dimensions
                             if ($cumrate_dims) {
-                                parm->cumrate_dims = stoi($cumrate_dims->value());
+                                int val = stoi($cumrate_dims->value());
+                                if (val < 0) {
+                                    error(@cumrate_dims, LT("error: number of non-conditioning trailing dimensions cannot be negative"));
+                                }
+                                parm->cumrate_dims = (size_t) val;
                                 delete $cumrate_dims;
                                 $cumrate_dims = nullptr;
                             }

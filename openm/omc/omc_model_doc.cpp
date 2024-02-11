@@ -801,8 +801,8 @@ void do_model_doc(
                     string shapeCompact;
                     if (!isScalar) {
                         bool isFirst = true;
-                        int cells = 1;
-                        for (int ps : s->pp_shape) {
+                        size_t cells = 1;
+                        for (size_t ps : s->pp_shape) {
                             shapeCompact += (!isFirst ? ", " : "") + to_string(ps);
                             isFirst = false;
                             cells *= ps;
@@ -1335,7 +1335,7 @@ void do_model_doc(
                     string shapeCompact;
                     if (!isScalar) {
                         bool isFirst = true;
-                        int cells = 1;
+                        size_t cells = 1;
                         for (auto dim : s->dimension_list) {
                             auto e = dim->pp_enumeration;
                             assert(e);

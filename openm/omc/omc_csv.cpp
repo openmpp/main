@@ -482,7 +482,7 @@ const vector<PDim> getDims(bool i_isIdCsv, const ParameterSymbol * i_param)
         PDim d = {
             dim->short_name,
             et,
-            et->pp_size(),
+            (int)et->pp_size(),
             1
         };
 

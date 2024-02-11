@@ -177,7 +177,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableDic.tableId = pp_table_id;
         tableDic.tableName = name;
-        tableDic.rank = dimension_count();
+        tableDic.rank = (int)dimension_count();
         tableDic.isSparse = false;          // sparse is no longer supported
         tableDic.exprPos = measures_position;
         tableDic.isHidden = is_hidden;
@@ -220,7 +220,7 @@ void TableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         tableDims.name = dim->short_name;     // Default is dim0, dim1, but can be named in model using =>
         tableDims.typeId = es->type_id;
         tableDims.isTotal = dim->has_margin;
-        tableDims.dimSize = es->pp_size() + dim->has_margin;
+        tableDims.dimSize = (int)(es->pp_size() + dim->has_margin);
         metaRows.tableDims.push_back(tableDims);
 
         // Labels and notes for the dimensions of the table

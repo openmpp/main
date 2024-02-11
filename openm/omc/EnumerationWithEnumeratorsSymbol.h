@@ -62,7 +62,7 @@ public:
      *
      * @return An int.
      */
-    int pp_size() const override;
+    size_t pp_size() const override;
 
     /**
      * Determines if this is a ClassificationSymbol

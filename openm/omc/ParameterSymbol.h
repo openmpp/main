@@ -214,7 +214,7 @@ public:
     /**
      * Number of trailing non-conditioning dimensions for cumrate parameters
      */
-    int cumrate_dims;
+    size_t cumrate_dims;
 
     /**
      * Name of the cumrate object in generated code
@@ -271,7 +271,8 @@ public:
      */
     size_t size() const
     {
-        return accumulate(pp_shape.begin(), pp_shape.end(), 1, multiplies<size_t>());
+        // Can use 1uz instead of size_t(1) in c++23, when supported by all our target C++ compilers.
+        return accumulate(pp_shape.begin(), pp_shape.end(), size_t(1), multiplies<size_t>());
     }
 
     /**
@@ -299,7 +300,8 @@ public:
      */
     size_t conditioning_size()
     {
-        return accumulate(pp_conditioning_shape.begin(), pp_conditioning_shape.end(), 1, multiplies<size_t>());
+        // Can use 1uz instead of size_t(1) in c++23, when supported by all our target C++ compilers.
+        return accumulate(pp_conditioning_shape.begin(), pp_conditioning_shape.end(), size_t(1), multiplies<size_t>());
     }
 
     /**
@@ -307,7 +309,7 @@ public:
      *
      * @return An int.
      */
-    int distribution_dims() const
+    size_t distribution_dims() const
     {
         return cumrate_dims;
     }
@@ -327,7 +329,8 @@ public:
      */
     size_t distribution_size()
     {
-        return accumulate(pp_distribution_shape.begin(), pp_distribution_shape.end(), 1, multiplies<size_t>());
+        // Can use 1uz instead of size_t(1) in c++23, when supported by all our target C++ compilers.
+        return accumulate(pp_distribution_shape.begin(), pp_distribution_shape.end(), size_t(1), multiplies<size_t>());
     }
 
     /**

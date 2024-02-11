@@ -69,7 +69,7 @@ public:
      *
      * @return An int.
      */
-    virtual int pp_size() const = 0;
+    virtual size_t pp_size() const = 0;
 
     /**
      * True if enumeration is published.

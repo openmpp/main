@@ -234,10 +234,10 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    int n_dimensions = dimension_count();
-    int n_cells = cell_count();
-    int n_measures = measure_count();
-    int n_accumulators = accumulator_count();
+    size_t n_dimensions = dimension_count();
+    size_t n_cells = cell_count();
+    size_t n_measures = measure_count();
+    size_t n_accumulators = accumulator_count();
 
     string cxx_template;
     if (n_collections == 0) {
@@ -591,7 +591,7 @@ void EntityTableSymbol::build_body_current_cell()
     c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
     c += "";
 
-    int rank = dimension_list.size();
+    size_t rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0

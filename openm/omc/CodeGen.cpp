@@ -2318,8 +2318,8 @@ void CodeGen::do_RunModel()
                 c += "{ // multilinks";
                 c += "auto table_title = \"    " + ent->name + " Multilink elements\";";
                 std::string col1header = "multilink";
-                int col1width = col1header.length();
-                for (auto ml : ent->pp_multilink_members) { col1width = std::max<int>(col1width, ml->name.length()); };
+                size_t col1width = col1header.length();
+                for (auto ml : ent->pp_multilink_members) { col1width = std::max<size_t>(col1width, ml->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2358,8 +2358,8 @@ void CodeGen::do_RunModel()
                 c += "{ // events";
                 c += "auto table_title = \"    " + ent->name + " Events\";";
                 std::string col1header = "event";
-                int col1width = col1header.length();
-                for (auto evt : ent->pp_events) { col1width = std::max<int>(col1width, evt->event_name.length()); };
+                size_t col1width = col1header.length();
+                for (auto evt : ent->pp_events) { col1width = std::max<size_t>(col1width, evt->event_name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2398,8 +2398,8 @@ void CodeGen::do_RunModel()
                 c += "{ // sets";
                 c += "auto table_title = \"    " + ent->name + " Sets\";";
                 std::string col1header = "set";
-                int col1width = col1header.length();
-                for (auto entset : ent->pp_sets) { col1width = std::max<int>(col1width, entset->name.length()); };
+                size_t col1width = col1header.length();
+                for (auto entset : ent->pp_sets) { col1width = std::max<size_t>(col1width, entset->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2442,8 +2442,8 @@ void CodeGen::do_RunModel()
                 c += "{ // tables";
                 c += "auto table_title = \"    " + ent->name + " Tables\";";
                 std::string col1header = "table";
-                int col1width = col1header.length();
-                for (auto tbl : ent->pp_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+                size_t col1width = col1header.length();
+                for (auto tbl : ent->pp_tables) { col1width = std::max<size_t>(col1width, tbl->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "int suppressed_count = 0; // number of tables suppressed at runtime";
                 c += "const char * col1header = \"" + col1header + "\";";
@@ -2495,9 +2495,9 @@ void CodeGen::do_RunModel()
                 c += "{ // entity members (detail)";
                 c += "auto table_title = \"    " + ent->name + " Members (detail)\";";
                 std::string col1header = "member                 "; // extra padding to force a minimum width for total block at bottom of table
-                int col1width = col1header.length();
-                for (auto dm : dml) { col1width = std::max<int>(col1width, 4 + dm->pretty_name().length()); }; // add +4 in case indented twice
-                col1width = std::min<int>(80, col1width); // impose a maximum to the computed col1width
+                size_t col1width = col1header.length();
+                for (auto dm : dml) { col1width = std::max<size_t>(col1width, 4 + dm->pretty_name().length()); }; // add +4 in case indented twice
+                col1width = std::min<size_t>(80, col1width); // impose a maximum to the computed col1width
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2642,8 +2642,8 @@ void CodeGen::do_RunModel()
             c += "{ // derived tables";
             c += "auto table_title = \"     Derived Tables\";";
             std::string col1header = "derived table";
-            int col1width = col1header.length();
-            for (auto tbl : Symbol::pp_all_derived_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+            size_t col1width = col1header.length();
+            for (auto tbl : Symbol::pp_all_derived_tables) { col1width = std::max<size_t>(col1width, tbl->name.length()); };
             c += "int col1width = " + to_string(col1width) + ";";
             c += "int suppressed_count = 0; // number of tables suppressed at runtime";
             c += "const char * col1header = \"" + col1header + "\";";

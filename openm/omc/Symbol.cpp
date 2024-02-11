@@ -1698,7 +1698,7 @@ void Symbol::post_parse_all()
             for (auto *event : ent->pp_events) {
                 string str = event->event_name;
                 auto iter = pp_all_event_names.find(str);
-                event->pp_event_id = distance(pp_all_event_names.begin(), iter);
+                event->pp_event_id = (int)distance(pp_all_event_names.begin(), iter);
             }
         }
     }
@@ -1718,7 +1718,7 @@ void Symbol::post_parse_all()
             for (auto* dm : entity->pp_data_members) {
                 if (dm->is_visible_attribute() || dm->is_multilink()) {
                     auto iter = pp_visible_member_names.find(dm->name);
-                    dm->pp_member_id = distance(pp_visible_member_names.begin(), iter);
+                    dm->pp_member_id = (int)distance(pp_visible_member_names.begin(), iter);
                 }
             }
         }
@@ -1742,12 +1742,12 @@ void Symbol::post_parse_all()
             if (event == ent->ss_event) {
                 // special case for self-scheduling event: assign 1 greater
                 // than the highest numbered event
-                event->pp_modgen_event_num = entity_event_names.size();
+                event->pp_modgen_event_num = (int)entity_event_names.size();
                 continue;
             }
             string str = event->pp_modgen_name();
             auto iter = entity_event_names.find(str);
-            event->pp_modgen_event_num = distance(entity_event_names.begin(), iter);
+            event->pp_modgen_event_num = (int)distance(entity_event_names.begin(), iter);
         }
     }
 
