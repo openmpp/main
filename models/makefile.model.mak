@@ -174,17 +174,16 @@ endif
 
 # if not disabled then create model documentation
 ifndef MODEL_DOC_DISABLE
-  OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true
-endif
 
-# input subdirectory to find authored model documentation : .md
-ifndef MODEL_INDOC_DIR
-  MODEL_INDOC_DIR = doc
-endif
+  ifndef MODEL_INDOC_DIR
+    MODEL_INDOC_DIR = doc
+  endif
 
-#   output subdirectory to create output html
-ifndef MODEL_OUTDOC_DIR
-  MODEL_OUTDOC_DIR = $(OUT_BIN_DIR)/doc
+  ifndef MODEL_OUTDOC_DIR
+    MODEL_OUTDOC_DIR = $(OUT_BIN_DIR)/doc
+  endif
+
+  OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_OUTDOC_DIR)
 endif
 
 #
@@ -286,7 +285,7 @@ $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP) $
 	$(OMC_EXE) \
 	-m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) \
 	$(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) -Omc.SqlDir $(OM_SQL_DIR) \
-	$(OMC_MODEL_DOC_OPTS) -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_OUTDOC_DIR) \
+	$(OMC_MODEL_DOC_OPTS) \
 	|| { echo "error at omc compile, exit code: " $$? ; kill $$PPID ; }
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp | omc_compile
