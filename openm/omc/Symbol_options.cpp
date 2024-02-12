@@ -41,6 +41,7 @@ bool Symbol::option_microdata_output_warning = true;
 bool Symbol::option_microdata_write_on_enter = false;
 bool Symbol::option_microdata_write_on_exit = false;
 bool Symbol::option_microdata_write_on_event = false;
+size_t Symbol::option_microdata_max_enumerators = 1000;
 bool Symbol::option_all_attributes_visible = false;
 bool Symbol::option_use_heuristic_short_names = false;
 bool Symbol::option_enable_heuristic_names_for_enumerators = true;
@@ -426,6 +427,21 @@ void Symbol::do_options()
             }
             else if (value == "off") {
                 option_microdata_write_on_event = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "microdata_max_enumerators";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            auto ivalue = stoi(value);
+            if (ivalue > 0) {
+                option_microdata_max_enumerators = (size_t)ivalue;
             }
             // remove processed option
             options.erase(iter);

@@ -49,8 +49,8 @@
 * Parameters can be specified on command line or through ini-file. 
 * Command line parameters take precedence.
 */
-// Copyright (c) 2013-2015 OpenM++
-// This code is licensed under the MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2024 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
 
 #include <iostream>
 #include <fstream>

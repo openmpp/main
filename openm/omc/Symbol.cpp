@@ -845,7 +845,7 @@ CodeBlock Symbol::injection_description()
     return c;
 }
 
-void Symbol::pp_error(const string& msg)
+void Symbol::pp_error(const string& msg) const
 {
     post_parse_errors++;
     pp_log_message(msg);
@@ -856,20 +856,20 @@ void Symbol::pp_error(const string& msg)
     }
 }
 
-void Symbol::pp_fatal(const string& msg)
+void Symbol::pp_fatal(const string& msg) const
 {
     post_parse_errors++;
     pp_log_message(msg);
     throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
 }
 
-void Symbol::pp_warning(const string& msg)
+void Symbol::pp_warning(const string& msg) const
 {
     post_parse_warnings++;
     pp_log_message(msg);
 }
 
-void Symbol::pp_warning(const string& msg, omc::position& pos)
+void Symbol::pp_warning(const string& msg, const omc::position& pos) const
 {
     post_parse_warnings++;
     pp_log_message(msg, pos);
@@ -880,12 +880,12 @@ void Symbol::pp_message(const string& msg)
     pp_log_message(msg);
 }
 
-void Symbol::pp_log_message(const string& msg)
+void Symbol::pp_log_message(const string& msg) const
 {
     pp_log_message(msg, decl_loc.begin);
 }
 
-void Symbol::pp_log_message(const string& msg, omc::position& pos)
+void Symbol::pp_log_message(const string& msg, const omc::position& pos) const
 {
     if (pos.filename) {
         // The symbol has a declaration position

@@ -473,7 +473,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_error(const string& msg);
+    void pp_error(const string& msg) const;
 
     /**
      * Process a fatal semantic error encountered during the post-parse phase.
@@ -483,7 +483,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_fatal(const string& msg);
+    void pp_fatal(const string& msg) const;
 
     /**
      * Process a semantic warning encountered during the post-parse phase.
@@ -492,7 +492,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_warning(const string& msg);
+    void pp_warning(const string& msg) const;
 
     /**
      * Process a semantic warning encountered during the post-parse phase.
@@ -501,7 +501,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_warning(const string& msg, omc::position& pos);
+    void pp_warning(const string& msg, const omc::position& pos) const;
 
     /**
      * Process a semantic message during the post-parse phase.
@@ -519,7 +519,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_log_message(const string& msg);
+    void pp_log_message(const string& msg) const;
 
     /**
      * Output a warning or error message to the log.
@@ -528,7 +528,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_log_message(const string& msg, omc::position &pos);
+    void pp_log_message(const string& msg, const omc::position &pos) const;
 
     /**
      * Get the symbol label in the given language.
@@ -1723,6 +1723,11 @@ public:
      * true or false depending on whether microdata is written after any event.
      */
     static bool option_microdata_write_on_event;
+
+    /**
+     * enumeration size above which microdata attribute is not published.
+     */
+    static size_t option_microdata_max_enumerators;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.
