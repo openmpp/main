@@ -1,4 +1,6 @@
 {
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
@@ -31,19 +33,19 @@
         {
             "label": "start-ui-RiskPaths",
             "type": "shell",
-            "command": "../start-model-ui-linux.sh",
+            "command": "../start-model-ui-mac.sh",
             "problemMatcher": []
         },
         {
             "label": "start-ui-RiskPaths-release",
             "type": "shell",
-            "command": "RELEASE=1 ../start-model-ui-linux.sh",
+            "command": "RELEASE=1 ../start-model-ui-mac.sh",
             "problemMatcher": []
         },
         {
             "label": "stop-ui-RiskPaths",
             "type": "shell",
-            "command": "../stop-model-ui-linux.sh",
+            "command": "../stop-model-ui-mac.sh",
             "problemMatcher": []
         },
         {
