@@ -56,6 +56,25 @@ using namespace openm;
 */
 IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageName) : is_loaded(false)
 {
+    // load ini-file using case neutral key comparison
+    // if there are duplicated case-neutral keys then result is not defined
+    // for example result is unpredictable if there are:
+    //   KEY = abc
+    //   key = def
+    load(i_filePath, true, i_codePageName, entryVec);
+
+    is_loaded = true;   // no exceptions, ini-file loaded correctly
+}
+
+/** load all ini-file entries in memory and convert into UTF-8 and return true if there are no exceptions during ini-file load.
+*
+* @param[in]  i_filePath      path to ini-file.
+* @param[in]  is_noCase       if true then keys are case neutral, e.g. KEY = abc is the same as key = def
+* @param[in]  i_codePageName  name of encoding or Windows code page, ie: English_US.1252
+* @param[out] o_entryVec      return ini-file entries: (section, key, value)
+*/
+void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i_codePageName, IniEntryVec & o_entryVec)
+{
     try {
         if (i_filePath == NULL || i_filePath[0] == '\0') return;    // nothing to do: empty ini-file name
 
@@ -99,7 +118,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
             if (nLen <= 0) {
                 if (isContinue && !sKey.empty()) {
 
-                    addIniEntry(sLine, nLine, section, sKey, sValue);
+                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
 
                     sKey = "";
                     sValue = "";
@@ -142,7 +161,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
             if (nRem == 0) {
                 if (isContinue && !sKey.empty()) {
 
-                    addIniEntry(sLine, nLine, section, sKey, sValue);
+                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
 
                     sKey = "";
                     sValue = "";
@@ -158,7 +177,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
             if (nLen <= 0) {
                 if (isContinue && !sKey.empty()) {
 
-                    addIniEntry(sLine, nLine, section, sKey, sValue);
+                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
 
                     sKey = "";
                     sValue = "";
@@ -231,7 +250,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
             if (isContinue) continue;   // done with this line, next line is a value continuation
 
             // add new ini-entry, if it is a valid (if section and key are not empty)
-            addIniEntry(sLine, nLine, section, sKey, sValue);
+            addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
 
             sKey = "";
             sValue = "";
@@ -241,10 +260,8 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
         // process last line ini-file end with line continuation without cr-lf
         // if this is line continuation and key not empty then add new ini-entry
         if (isContinue && !sKey.empty()) {
-            addIniEntry(sLine, nLine, section, sKey, sValue);
+            addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
         }
-
-        is_loaded = true;   // ini-file loaded correctly
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -259,7 +276,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
 // insert new or update existing ini-file entry:
 //  unquote key and value if "quoted" or 'single quoted'
 //  return false on error: if section or key is empty
-bool IniFileReader::addIniEntry(const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value)
+bool IniFileReader::addIniEntry(bool is_noCase, const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value, IniEntryVec & o_entryVec)
 {
 
     // make new entry, unquote key and value if "quoted" or 'single quoted'
@@ -271,15 +288,19 @@ bool IniFileReader::addIniEntry(const string & i_src, int i_nLine, const string 
 
     // add to the entry list or replace existing entry with new value
     IniEntryVec::const_iterator entryIt = std::find_if(
-        entryVec.cbegin(),
-        entryVec.cend(),
-        [&newEntry](const IniEntry & i_entry) -> bool { return i_entry.equalTo(newEntry.section.c_str(), newEntry.key.c_str()); }
+        o_entryVec.cbegin(),
+        o_entryVec.cend(),
+        [&is_noCase, &newEntry, &i_section, &i_key](const IniEntry & i_entry) -> bool {
+            return is_noCase ?
+                i_entry.equalTo(newEntry.section.c_str(), newEntry.key.c_str()) :
+                i_entry.section == i_section && i_entry.key == i_key;
+        }
     );
-    if (entryIt != entryVec.cend()) {
-        entryVec[entryIt - entryVec.cbegin()].val = newEntry.val;
+    if (entryIt != o_entryVec.cend()) {
+        o_entryVec[entryIt - o_entryVec.cbegin()].val = newEntry.val;
     }
     else {
-        entryVec.push_back(newEntry);
+        o_entryVec.push_back(newEntry);
     }
 
     return true;
@@ -341,7 +362,7 @@ bool IniFileReader::isExist(const char * i_sectionKey) const noexcept
     }
 }
 
-/** return string value by section and key or deafult value if not found. */
+/** return string value by section and .key using case-neutral search, or default value if not found. */
 const string IniFileReader::strValue(const char * i_section, const char * i_key, const string & i_default) const noexcept
 {
     try {
@@ -356,7 +377,7 @@ const string IniFileReader::strValue(const char * i_section, const char * i_key,
     }
 }
 
-/** return string value by section.key or deafult value if not found. */
+/** return string value by section.key using case-neutral search, or default value if not found. */
 const string IniFileReader::strValue(const char * i_sectionKey, const string & i_default) const noexcept
 {
     try {
@@ -433,20 +454,20 @@ void IniEntry::setValue(const string & i_value)
     if (len >= 2 && (val[0] == '"' || val[0] == '\'') && val[len - 1] == val[0]) val = val.substr(1, len - 2);
 }
 
-/** ini-file entry section.key case neutral equal comparison. */
+/** ini-file entry section.key using case neutral equal comparison. */
 bool IniEntry::bySectionKey(const char * i_sectionKey) const
 {
     return i_sectionKey != nullptr && equalNoCase((section + "." + key).c_str(), i_sectionKey);
 }
 
-/** ini-file entry section.key case neutral equal comparison. */
+/** ini-file entry section and key using case neutral equal comparison. */
 bool IniEntry::equalTo(const char * i_section, const char * i_key) const
 {
     return i_section != nullptr && i_key != nullptr && equalNoCase(section.c_str(), i_section) && equalNoCase(key.c_str(), i_key);
 }
 
 /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_language) noexcept
+void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_language, const char * i_codePageName) noexcept
 {
     try {
         // get list of user prefered languages, if user language == en_CA.UTF-8 then list is: (en-ca, en)
@@ -459,29 +480,22 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
         // read modelName.message.ini
         if (!isFileExists(i_iniMsgPath)) return;     // exit: message.ini does not exists
 
-        IniFileReader rd(i_iniMsgPath);
-        const NoCaseSet sectSet = rd.sectionSet();
+        IniEntryVec eIniVec;
+        load(i_iniMsgPath, false, i_codePageName, eIniVec);    // load ini-file using case sensitive key comparison
 
         // find user language(s) as section of message.ini and copy messages into message map
         // translated message is searched in language prefered order: (en-ca, en)
 
         for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
 
-            // if language exist in message.ini
-            auto sectIt = std::find_if(
-                sectSet.cbegin(),
-                sectSet.cend(),
-                [&lang](const string & i_sect) -> bool { return equalNoCase(lang.c_str(), normalizeLanguageName(i_sect).c_str()); }
-            );
-            if (sectIt != sectSet.cend()) {
+            for (const auto & e : eIniVec) {
+
+                // if section is not a current language then skip message.ini entry
+                if (!equalNoCase(lang.c_str(), normalizeLanguageName(e.section).c_str())) continue;
 
                 // add translated messages, if not already in message map
                 // use only translated messages (where translated value is not empty)
-                const NoCaseMap cvMap = rd.getSection(sectIt->c_str());
-                for (const auto & cv : cvMap) {
-                    if (cv.first.empty() || cv.second.empty()) continue;
-                    if (msgMap.find(cv.first) == msgMap.end()) msgMap[cv.first] = cv.second;
-                }
+                if (!e.key.empty() && !e.val.empty() && msgMap.find(e.key) == msgMap.end()) msgMap[e.key] = e.val;
             }
         }
 
@@ -499,25 +513,46 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
 }
 
 /** read language specific messages from path/to/theExe.message.ini for all languages */
-list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath) noexcept
+list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath, const char * i_codePageName) noexcept
 {
     try {
         // read modelName.message.ini
         if (!isFileExists(i_iniMsgPath)) return list<pair<string, unordered_map<string, string>>>();    // exit: message.ini does not exists
 
-        IniFileReader rd(i_iniMsgPath);
-        const NoCaseSet sectSet = rd.sectionSet();
+        IniEntryVec eIniVec;
+        load(i_iniMsgPath, false, i_codePageName, eIniVec);    // load ini-file using case sensitive key comparison
 
-        // make list of languages in descending order, ex: fr-CA fr en-CA en
-        // it is an attempt to get the message in more specific language before more generic: in fr-CA and not in fr
-        // this is a very simplistic approach and result may be incorrect, e.g. en-US is always prefered to en-CA
-        list<string> langLst;
-
-        for (auto rIt = sectSet.crbegin(); rIt != sectSet.crend(); ++rIt) {
-            langLst.push_back(*rIt);
+        NoCaseSet sectSet;
+        for (const auto & e : eIniVec) {
+            sectSet.insert(e.section);
         }
 
-        return rd.loadAllMessages(langLst); // copy all messages ordered by language code into message map
+        // for each language find section of message.ini and copy messages into message map
+        // 
+        //   loop over the list of languages in descending order, ex: fr-CA fr en-CA en
+        //   it is an attempt to get the message in more specific language before more generic: in fr-CA and not in fr
+        //   this is a very simplistic approach and result may be incorrect, e.g. en-US is always prefered to en-CA
+        list<pair<string, unordered_map<string, string>>> allMsg;
+
+        for (auto langSecIt = sectSet.crbegin(); langSecIt != sectSet.crend(); ++langSecIt) {
+
+            unordered_map<string, string> msgMap;
+
+            for (const auto & e : eIniVec) {
+
+                // if section is not a current language then skip message.ini entry
+                if (!equalNoCase(langSecIt->c_str(), normalizeLanguageName(e.section).c_str())) continue;
+
+                // add translated messages, if not already in message map
+                // use only translated messages (where translated value is not empty)
+                if (!e.key.empty() && !e.val.empty() && msgMap.find(e.key) == msgMap.end()) msgMap[e.key] = e.val;
+            }
+            if (!msgMap.empty()) {
+                allMsg.push_back(pair<string, unordered_map<string, string>>(*langSecIt, msgMap));
+            }
+        }
+
+        return allMsg;
     }
     catch (HelperException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -528,51 +563,4 @@ list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages
         // throw HelperException(ex.what());    = exit without failure
     }
     return list<pair<string, unordered_map<string, string>>>(); // retrun empty value on error
-}
-
-/** read language specific messages from path/to/theExe.message.ini for specified list languages */
-list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const char * i_iniMsgPath, const list<string> & i_langList) noexcept
-{
-    try {
-        // read modelName.message.ini
-        if (!isFileExists(i_iniMsgPath)) return list<pair<string, unordered_map<string, string>>>();    // exit: message.ini does not exists
-
-        IniFileReader rd(i_iniMsgPath);
-        const NoCaseSet sectSet = rd.sectionSet();
-
-        return rd.loadAllMessages(i_langList);  // copy all messages ordered by language code into message map
-    }
-    catch (HelperException & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        // throw;                               = exit without failure
-    }
-    catch (exception & ex) {
-        theLog->logErr(ex, OM_FILE_LINE);
-        // throw HelperException(ex.what());    = exit without failure
-    }
-    return list<pair<string, unordered_map<string, string>>>(); // retrun empty value on error
-}
-
-/** read language specific messages for specified list languages */
-list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages(const list<string> & i_langList)
-{
-    // for each language find section of message.ini and copy messages into message map
-    list<pair<string, unordered_map<string, string>>> allMsg;
-
-    for (const string & lang : i_langList) {
-
-        unordered_map<string, string> msgMap;
-
-        // add translated messages
-        // use only where translated value is not empty
-        const NoCaseMap cvMap = getSection(lang.c_str());
-        for (const auto & cv : cvMap) {
-            if (!cv.first.empty() && !cv.second.empty()) msgMap[cv.first] = cv.second;
-        }
-        if (!msgMap.empty()) {
-            allMsg.push_back(pair<string, unordered_map<string, string>>(lang, msgMap));
-        }
-    }
-
-    return allMsg;
 }

@@ -212,7 +212,7 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
     list<string> langLst = theLog->getLanguages();
     if (langLst.empty()) langLst = splitLanguageName(getDefaultLocaleName());
 
-    // make list of language id's by srorten user language: en-ca, en
+    // make list of language id's by shorten user language: en-ca, en
     vector<int> langIdArr;
     bool isDef = false;     // if true then it is model default language
 

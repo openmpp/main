@@ -115,16 +115,15 @@ void omc::buildMessageIni(
 {
     if (i_msgSet.empty()) return;   // exit: no messages to translate
 
-    map<string, NoCaseMap, LessNoCase> iniMap;  // output ini-flie as case-neutral map
-    NoCaseSet langSet;
-    locale loc("");         // current user locale
-
     // cleanup line breaks
     unordered_set<string> msgSet;
     for (string msg : i_msgSet) {
         blankCrLf(msg);
         msgSet.insert(msg);
     }
+    locale loc("");         // current user locale
+
+    map<string, map<string, string>, LessNoCase> iniMap;  // output ini-file, section names are case-neutral
 
     // if exist code/modelName.message.ini then read it and 
     // for each language merge new model messages with existing message translations
@@ -132,40 +131,50 @@ void omc::buildMessageIni(
 
     if (isFileExists(srcPath.c_str())) {    // if exist code/modelName.message.ini
 
-        // read existing translation file and get languages, which are section names
-        IniFileReader rd(srcPath.c_str(), i_codePageName);
-        langSet = rd.sectionSet();
+        // read existing translation file, languages are section names
+        list<pair<string, unordered_map<string, string>>> langMsgLst = IniFileReader::loadAllMessages(srcPath.c_str(), i_codePageName);
 
-        for (const auto & sect : langSet) {
+        // for all languages from message.ini
+        for (const auto & langMsg : langMsgLst) {
 
-            auto sectIt = iniMap.insert(pair<string, NoCaseMap>(sect, NoCaseMap()));
-            NoCaseMap & ctMap = sectIt.first->second;
+            auto sectIt = iniMap.insert(pair<string, map<string, string>>(langMsg.first, map<string, string>()));
+            map<string, string> & sectMsg = sectIt.first->second;
 
             for (const string & msg : msgSet) {
-                ctMap[msg] = rd.strValue(sect.c_str(), msg.c_str());
+                const auto mIt = langMsg.second.find(msg);
+                sectMsg[msg] = (mIt != langMsg.second.cend()) ? mIt->second : "";
             }
         }
 
         // BEGIN of optional code: can be commented
-        // if required count deleted translations for each model language
+        //
+        // count deleted translations for each model language
         for (const LangLstRow & langRow : i_metaRows.langLst) {
 
-            const auto sectIt = iniMap.find(trim(langRow.code, loc));   // language section in new ini-file
-            if (sectIt == iniMap.end()) continue;                       // skip: no such model language
+            const auto lc = trim(langRow.code, loc);
+            const auto sectIt = iniMap.find(lc);        // language section in new ini-file
+            if (sectIt == iniMap.cend()) continue;      // skip: no such model language
 
-            NoCaseMap rdMap = rd.getSection(sectIt->first.c_str()); // section [language] => (code,translation)
+            const auto rdIt = find_if(
+                langMsgLst.cbegin(),
+                langMsgLst.cend(),
+                [&lc](const pair<string, unordered_map<string, string>> i_lm) -> bool { return equalNoCase(i_lm.first.c_str(), lc.c_str()); });
+
+            if (rdIt == langMsgLst.cend()) continue;    // protect from internal bug
+
             int nDel = 0;
 
-            for (const auto & rd : rdMap) {
+            for (const auto & rd : rdIt->second) {
                 if (sectIt->second.find(rd.first) == sectIt->second.end()) nDel++;
             }
-            if (nDel > 0) theLog->logFormatted("Deleted %d translated message(s) from language %s", nDel, langRow.code.c_str());
+            if (nDel > 0) theLog->logFormatted("Deleted %d translated message(s) from language %s", nDel, lc.c_str());
         }
         // END of optional code
     }
     // merge done for existing ini-file messages
 
     // BEGIN of optional code: can be commented
+    //
     // do the counts and report translation status
     // assume no translations if only one model language
     if (i_metaRows.langLst.size() > 1) {
@@ -208,14 +217,14 @@ void omc::buildMessageIni(
         for (const LangLstRow & langRow : i_metaRows.langLst) {
 
             // if language section exist in new ini-file then skip it
-            string sect = trim(langRow.code, loc);
-            if (iniMap.find(sect) != iniMap.end()) continue;
+            string lc = trim(langRow.code, loc);
+            if (iniMap.find(lc) != iniMap.end()) continue;
 
-            auto sectIt = iniMap.insert(pair<string, NoCaseMap>(sect, NoCaseMap()));
-            NoCaseMap & ctMap = sectIt.first->second;
+            auto sectIt = iniMap.insert(pair<string, map<string, string>>(lc, map<string, string>()));
+            map<string, string> & sectMsg = sectIt.first->second;
 
             for (const string & msg : msgSet) { // insert empty translation
-                ctMap[msg] = "";
+                sectMsg[msg] = "";
             }
         }
     }
