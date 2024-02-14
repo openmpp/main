@@ -1,6 +1,28 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-11-13:
+  create model documentation as part of model build
+  multiple changes and fixes in c++ core, UI and other projects to support bilingual models
+  c++ core: special handling for attributes with many enumerators
+  c++ core bilingual: use case sensitive search for translated messages
+  c++ Linux and MacOS makefile: for all models included in openM++ release use Windows-1252 code page
+  c++ core: fix input parameters multiple copies issue (rollback previous change to check run status at digest calculation)
+  c++ core: add -OpenM.Sqlite option for model.exe to simplify running the database connection string
+  c++ core: add -OpenM.SqliteFromBin option for model.exe to simplify running the database connection string
+  c++ core: drop support for legacy SparseTable feature
+  go: re-write delete of model, model run and workset to make it more robust
+  go oms API: compare microdata
+  go oms API: add OM_COUNT_IF function to output tables and microdata calculation
+  go oms API: allow to use scalar model parameters in output tables and microdata calculation
+  go oms: add memory resources  management to model run queue
+  go oms: allow to limit number of CPU cores available to the user model run queue
+  go oms API: fix model run queue pause bug , add API call to pause model run queue fro all users
+  go and UI: provide storage (disk space) management UI
+  go and UI: allow to delete multiple model runs or worksets in UI
+  UI: correctly detect user language (browser language) in UI
+  Docker build: allow to build c++ part from separate git branch
+
 2023-11-15:
   c++ core: early error detection of unmatched comment, brace, parenthesis, bracket, or syntactic island
   c++ core: new Model Metrics Report
