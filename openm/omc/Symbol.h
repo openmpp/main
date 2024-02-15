@@ -1680,6 +1680,11 @@ public:
     static bool option_verify_valid_table_increment;
 
     /**
+     * true or false depending on weighted_tabulation_allow_time_based value in options statement.
+     */
+    static bool option_weighted_tabulation_allow_time_based;
+
+    /**
      * true or false depending on weighted_tabulation value in options statement.
      */
     static bool option_weighted_tabulation;
