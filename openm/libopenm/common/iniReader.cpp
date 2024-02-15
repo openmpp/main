@@ -61,8 +61,7 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
     // for example result is unpredictable if there are:
     //   KEY = abc
     //   key = def
-    load(i_filePath, true, i_codePageName, entryVec);
-
+    entryVec = load(i_filePath, true, i_codePageName);
     is_loaded = true;   // no exceptions, ini-file loaded correctly
 }
 
@@ -73,10 +72,11 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
 * @param[in]  i_codePageName  name of encoding or Windows code page, ie: English_US.1252
 * @param[out] o_entryVec      return ini-file entries: (section, key, value)
 */
-void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i_codePageName, IniEntryVec & o_entryVec)
+const IniFileReader::IniEntryVec IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i_codePageName)
 {
+    IniEntryVec eVec;
     try {
-        if (i_filePath == NULL || i_filePath[0] == '\0') return;    // nothing to do: empty ini-file name
+        if (i_filePath == NULL || i_filePath[0] == '\0') return eVec;    // nothing to do: empty ini-file name
 
         // read ini-file into UTF-8 string
         string fileContent = fileToUtf8(i_filePath, i_codePageName);
@@ -118,7 +118,7 @@ void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i
             if (nLen <= 0) {
                 if (isContinue && !sKey.empty()) {
 
-                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
+                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, eVec);
 
                     sKey = "";
                     sValue = "";
@@ -161,7 +161,7 @@ void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i
             if (nRem == 0) {
                 if (isContinue && !sKey.empty()) {
 
-                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
+                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, eVec);
 
                     sKey = "";
                     sValue = "";
@@ -177,7 +177,7 @@ void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i
             if (nLen <= 0) {
                 if (isContinue && !sKey.empty()) {
 
-                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
+                    addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, eVec);
 
                     sKey = "";
                     sValue = "";
@@ -250,7 +250,7 @@ void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i
             if (isContinue) continue;   // done with this line, next line is a value continuation
 
             // add new ini-entry, if it is a valid (if section and key are not empty)
-            addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
+            addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, eVec);
 
             sKey = "";
             sValue = "";
@@ -260,7 +260,7 @@ void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i
         // process last line ini-file end with line continuation without cr-lf
         // if this is line continuation and key not empty then add new ini-entry
         if (isContinue && !sKey.empty()) {
-            addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, o_entryVec);
+            addIniEntry(is_noCase, sLine, nLine, section, sKey, sValue, eVec);
         }
     }
     catch (HelperException & ex) {
@@ -271,6 +271,7 @@ void IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i
         theLog->logErr(ex, OM_FILE_LINE);
         throw HelperException(ex.what());
     }
+    return eVec;
 }
 
 // insert new or update existing ini-file entry:
@@ -480,8 +481,8 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
         // read modelName.message.ini
         if (!isFileExists(i_iniMsgPath)) return;     // exit: message.ini does not exists
 
-        IniEntryVec eIniVec;
-        load(i_iniMsgPath, false, i_codePageName, eIniVec);    // load ini-file using case sensitive key comparison
+        // load ini-file using case sensitive key comparison
+        IniEntryVec eIniVec = load(i_iniMsgPath, false, i_codePageName);
 
         // find user language(s) as section of message.ini and copy messages into message map
         // translated message is searched in language prefered order: (en-ca, en)
@@ -519,8 +520,8 @@ list<pair<string, unordered_map<string, string>>> IniFileReader::loadAllMessages
         // read modelName.message.ini
         if (!isFileExists(i_iniMsgPath)) return list<pair<string, unordered_map<string, string>>>();    // exit: message.ini does not exists
 
-        IniEntryVec eIniVec;
-        load(i_iniMsgPath, false, i_codePageName, eIniVec);    // load ini-file using case sensitive key comparison
+        // load ini-file using case sensitive key comparison
+        IniEntryVec eIniVec = load(i_iniMsgPath, false, i_codePageName);
 
         NoCaseSet sectSet;
         for (const auto & e : eIniVec) {

@@ -105,9 +105,8 @@ namespace openm
         * @param[in]  i_filePath      path to ini-file.
         * @param[in]  is_noCase       if true then keys are case neutral, e.g. KEY = abc is the same as key = def
         * @param[in]  i_codePageName  name of encoding or Windows code page, ie: English_US.1252
-        * @param[out] o_entryVec      ini-file entries: (section, key, value)
         */
-        static void load(const char * i_filePath, bool is_noCase, const char * i_codePageName, IniEntryVec & o_entryVec);
+        static const IniEntryVec load(const char * i_filePath, bool is_noCase, const char * i_codePageName);
 
         // find index of section and key or -1 if not found
         ptrdiff_t findIndex(const char * i_section, const char * i_key) const;
