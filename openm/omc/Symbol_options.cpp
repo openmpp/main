@@ -33,6 +33,7 @@ bool Symbol::option_time_undef_is_minus_one = false;
 bool Symbol::option_verify_attribute_modification = true;
 bool Symbol::option_verify_timelike_attribute_access = true;
 bool Symbol::option_verify_valid_table_increment = true;
+bool Symbol::option_weighted_tabulation_allow_time_based = false;
 bool Symbol::option_weighted_tabulation = false;
 bool Symbol::option_resource_use = false;
 bool Symbol::option_entity_member_packing = false;
@@ -291,6 +292,23 @@ void Symbol::do_options()
     }
 
     {
+        string key = "weighted_tabulation_allow_time_based";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_weighted_tabulation_allow_time_based = true;
+            }
+            else if (value == "off") {
+                option_weighted_tabulation_allow_time_based = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
         string key = "weighted_tabulation";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -309,7 +327,7 @@ void Symbol::do_options()
         auto mts = ModelTypeSymbol::find();
         assert(mts);
         bool is_time_based = !mts->is_case_based();
-        if (is_time_based && option_weighted_tabulation) {
+        if (!option_weighted_tabulation_allow_time_based && is_time_based && option_weighted_tabulation) {
             pp_error(mts->decl_loc, LT("error : weighted tabulation is not allowed with a time-based model, use population scaling instead."));
         }
     }
