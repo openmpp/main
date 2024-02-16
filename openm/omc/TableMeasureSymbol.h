@@ -69,6 +69,8 @@ public:
         return "1.0E" + to_string(scale);
     }
 
+    bool is_published() const override;
+
     /**
      * Short name of the measure
      */

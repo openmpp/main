@@ -57,6 +57,12 @@ void TableMeasureSymbol::to_column_name(const string & i_tableName, const list<T
     }
 }
 
+bool TableMeasureSymbol::is_published() const
+{
+    // table measure is published if containing table is published
+    return pp_table->is_published();
+}
+
 void TableMeasureSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
