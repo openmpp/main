@@ -9,8 +9,6 @@
 #include <cassert>
 #include "EnumeratorSymbol.h"
 
-class EnumerationSymbol;
-
 using namespace std;
 
 class ClassificationEnumeratorSymbol : public EnumeratorSymbol
