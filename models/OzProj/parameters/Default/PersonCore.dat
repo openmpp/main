@@ -12,7 +12,7 @@ parameters {
 		},
 	};
 	file	MicroDataInputFile = "../../../OzProjGen/microdata/OzProj22_5K.csv"; //EN File name of starting population
-    logical MicroDataOutputFlag = TRUE;
+    logical MicroDataOutputFlag = FALSE;
     double  MicroDataOutputTime = 2016.5;
 	file	MicroDataOutputFile = "../../microdata/OzProj22_5K_projected.csv"; //EN Microdata output file
 	int	RealWorldStartPopulation = 22340024; //EN Real world population count at start
