@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-11-16:
+  go oms: fix a read bug of microdata entity_key database column
+  c++ core: new option weighted_tabulation_allow_time_based
+  UI: notify user if microdata is empty in the model run (zero rows)
+  UI: handle errors in UI if database read return with error on server for parameter, output table or microdata
+  UI disk use: change refersh time if changed on the server
+
 2024-11-13:
   create model documentation as part of model build
   multiple changes and fixes in c++ core, UI and other projects to support bilingual models
