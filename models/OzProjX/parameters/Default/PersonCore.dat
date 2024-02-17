@@ -11,7 +11,7 @@ parameters {
 			(2) 0.000, 
 		},
 	};
-	file	MicroDataInputFile = "../../../OzProjGen/microdata/OzProj22_5K.csv"; //EN File name of starting population
+	file	MicroDataInputFile = "../../../OzProjGenX/microdata/OzProj22_5K.csv"; //EN File name of starting population
     logical MicroDataOutputFlag = FALSE;
     double  MicroDataOutputTime = 2016.5;
 	file	MicroDataOutputFile = "../../microdata/OzProj22_5K_projected.csv"; //EN Microdata output file
