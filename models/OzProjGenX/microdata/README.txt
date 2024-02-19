@@ -1,2 +1,2 @@
 This do-nothing file exists just to ensure that the containing microdata directory exists in the ompp git repository.
-If that directory does not exist, OnzProjGenX will fail because its unable to open the output microdata file.
+If that directory does not exist, OnzProjGenX will fail with Default run because it's unable to open the output microdata file.
