@@ -50,7 +50,15 @@ void CaseSimulation(case_info &ci)
 // Invoked before simulating cases
 void Simulation_start(case_info &ci)
 {
-  ci.out_csv.open(MicroDataOutputFile);
+#if defined(MODGEN)
+	std_string path = CT2A(MicroDataOutputFile.GetString());
+#else
+	std_string path = MicroDataOutputFile;
+#endif
+  int subs = GetSubSamples();
+  int sub = GetCaseSample();
+  path = piece_it(path, subs, sub);  // appends suffix to file name if subs > 1
+  ci.out_csv.open(path);
 }
 
 // Invoked after simulating cases

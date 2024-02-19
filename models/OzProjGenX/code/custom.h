@@ -10,3 +10,5 @@
 #include <cassert>
 #include "case_based.h"
 #include "omc/fixed_modgen_api.h"
+
+extern std::string piece_it(std::string path, int subs, int sub);
