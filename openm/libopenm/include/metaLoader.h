@@ -82,10 +82,10 @@ namespace openm
         /** SQLite database file is: directory/of/model/exe/ModelName.sqlite */
         static constexpr const char * dbFromBin = "OpenM.SqliteFromBin";
 
-        /** use sparse output tables */
+        /** OBSOLETE, for backward compatibility only. use sparse output tables */
         static constexpr const char * useSparse = "OpenM.SparseOutput";
 
-        /** sparse null value */
+        /** OBSOLETE, for backward compatibility only. sparse null value */
         static constexpr const char * sparseNull = "OpenM.SparseNullValue";
 
         /** convert to string format for float, double, long double */
