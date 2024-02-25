@@ -30,10 +30,10 @@ namespace openm
         /** sub-value index for current modeling thread */
         int subValueId;
 
-        /** if true then use sparse output to database */
+        /** OBSOLETE, for backward compatibility only. if true then use sparse output to database */
         bool useSparse;
 
-        /** if use sparse and abs(value) <= nullValue then value not stored */
+        /** OBSOLETE, for backward compatibility only. if use sparse and abs(value) <= nullValue then value not stored */
         double nullValue;
 
         /** if true then model run is storing microdata in database */
