@@ -3,6 +3,7 @@
 Being a model for the study of childlessness, the main event of RiskPaths is the first pregnancy (which is always assumed to lead to birth). Pregnancy can occur at any point in time after the 15th birthday, with risks changing by both age and union status. The underlying statistical models are piecewise constant hazard regressions. With respect to fertility this implies the assumption of a constant pregnancy risk for a given age group (e.g. age 15-17.5) and union status (e.g. single with no prior unions).  
 
 For unions, we distinguish four possible state levels:  
+
 - single  
 - the first three years in a first union  
 - the following years in a first union  
