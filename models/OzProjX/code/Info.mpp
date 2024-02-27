@@ -14,17 +14,6 @@
   The course content also teaches how to use Modgen through concrete self-contained examples.
 
   The model is based on data from the web site of the Australian Bureau of Statistics.
-
-  Detailed mortality rates are given in the parameter [MortalityRate](#MortalityRate)
-  which has label "GetLabel(MortalityRate)" and can also be linked from [GetLabel(MortalityRate)](#MortalityRate)
-
-  Never forget the following:
-
-  When \(a \ne 0\),
-  there are two solutions to \(ax^2 + bx + c = 0\) and they are  
-
-  \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\]
-
 */
 
 

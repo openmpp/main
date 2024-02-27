@@ -33,13 +33,19 @@ languages {
 void CaseSimulation(case_info &ci)
 {
   extern void SimulateEvents(); // defined in a simulation framework module
-
-  // Read the record corresponding to the case_id of the case
-  long long lCaseID = GetCaseID();
-  bool success = ci.in_csv.read_record(lCaseID);
+  long long record_to_read = 0;
+  if (MicroDataInPieces) {
+      // Read the next record
+      record_to_read = ci.in_csv.record_number();
+  }
+  else {
+      // Read the record corresponding to the case_id of the case
+      record_to_read = GetCaseID();
+  }
+  bool success = ci.in_csv.read_record(record_to_read);
   if (!success) {
       std::stringstream ss;
-      ss << "error : unable to read record " << lCaseID << " (zero-based)";
+      ss << "error : unable to read record " << record_to_read << " (zero-based)";
       ModelExit(ss.str().c_str());
       // not reached
   }
@@ -96,10 +102,23 @@ void CaseSimulation(case_info &ci)
 // Invoked at the beginning of the simulation
 void Simulation_start(case_info &ci)
 {
-  ci.in_csv.open(MicroDataInputFile);
-  if (MicroDataOutputFlag) {
-      ci.out_csv.open(MicroDataOutputFile);
-  }
+    if (MicroDataInPieces) {
+#if defined(MODGEN)
+        std_string path = CT2A(MicroDataInputFile.GetString());
+#else
+        std_string path = MicroDataInputFile;
+#endif
+        int subs = GetSubSamples();
+        int sub = GetCaseSample();
+        path = piece_it(path, subs, sub);  // appends suffix to file name if subs > 1
+        ci.in_csv.open(path);
+    }
+    else {
+        ci.in_csv.open(MicroDataInputFile);
+    }
+    if (MicroDataOutputFlag && !MicroDataInPieces) {
+        ci.out_csv.open(MicroDataOutputFile);
+    }
 }
 
 // Invoked at the end of the simulation

@@ -13,6 +13,9 @@ parameters
   //EN Microdata input file for the starting population
   file MicroDataInputFile;
 
+  //EN If true, microdata input file is in pieces, one for each sub
+  logical MicroDataInPieces;
+
   //EN Microdata output option
   logical MicroDataOutputFlag;
 
@@ -191,12 +194,31 @@ track Person{
 
 #endif // Hide non-C++ syntactic island from IDE
 
+// declarations of fmk variables
+namespace fmk {
+    extern long long all_cases;
+    extern thread_local long long member_cases;
+}
+
 /// PreSimulation-related code in PersonCore.mpp
 void PersonCore_PreSimulation(void) //EN Compute derived parameters related to the microdata input file.
 {
   // Do a first pass through the microdata file before simulating cases.
   input_csv inCsv;
-  inCsv.open(MicroDataInputFile);
+  if (MicroDataInPieces) {
+#if defined(MODGEN)
+      std_string path = CT2A(MicroDataInputFile.GetString());
+#else
+      std_string path = MicroDataInputFile;
+#endif
+      int subs = GetSubSamples();
+      int sub = GetCaseSample();
+      path = piece_it(path, subs, sub);  // appends suffix to file name if subs > 1
+      inCsv.open(path);
+  }
+  else {
+      inCsv.open(MicroDataInputFile);
+  }
   ImmigrantDonors = 0;
   long long nRecordCount = 0;
   while (inCsv.read_record(nRecordCount)) {
@@ -210,13 +232,24 @@ void PersonCore_PreSimulation(void) //EN Compute derived parameters related to t
   // Issue a warning if the number of records in the input microdata file
   // differs from the number of records in the simulation.
   // GetAllCases is used because it works in both ompp and Modgen versions of OzProj.
-  long long nSimulationCases = GetAllCases();
-  if (nRecordCount != nSimulationCases) {
+  
+  long long nCasesToDo = 0;
+  if (MicroDataInPieces) {
+#if defined(MODGEN)
+      nCasesToDo = GetSubSampleCases(GetCaseSample());
+#else
+      nCasesToDo = fmk::member_cases;
+#endif
+  }
+  else {
+      nCasesToDo = GetAllCases();
+  }
+  if (nRecordCount != nCasesToDo) {
       std::stringstream ss;
       ss << "warning : "
           << nRecordCount
           << " records in micro data input file but "
-          << nSimulationCases
+          << nCasesToDo
           << " cases requested";
       WriteLogEntry(ss.str().c_str());
       ;

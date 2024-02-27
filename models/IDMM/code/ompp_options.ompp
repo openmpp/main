@@ -22,7 +22,11 @@
 //  (These have no effect unless Model Documentation is turned on)
 //   
 options symref_developer_edition = on;       // Comment this line for production models.
+options symref_unpublished_symbols = on;     // Comment this line for production models.
 options symref_parameter_major_groups = off; // Comment this line for models with large parameter hierarchies.
 options symref_table_major_groups = off;     // Comment this line for models with large table hierarchies.
+
+options weighted_tabulation_allow_time_based = on;
+options weighted_tabulation = on;
 
 #endif // Hide non-C++ syntactic island from IDE
