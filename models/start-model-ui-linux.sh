@@ -124,6 +124,7 @@ fi
 #
 export OM_CFG_INI_ALLOW="true"
 export OM_CFG_INI_ANY_KEY="true"
+export OM_CFG_TYPE_MAX_LEN=256
 
 # start oms web-service
 #
