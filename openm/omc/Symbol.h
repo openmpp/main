@@ -1935,6 +1935,11 @@ public:
     static bool option_symref_enumerations_alphabetic;
 
     /**
+     * true to include in symbol reference the attributes alphabetic list topic.
+     */
+    static bool option_symref_attributes_alphabetic;
+
+    /**
      * true to include in symbol reference individual parameter topics.
      */
     static bool option_symref_topic_parameters;
@@ -1963,6 +1968,11 @@ public:
      * true to include symbols declared table in individual module topics.
      */
     static bool option_symref_topic_modules_symbols_declared;
+
+    /**
+     * true to include in symbol reference individual attribute topics.
+     */
+    static bool option_symref_topic_attributes;
 
     /**
      * true to include in symbol reference any authored NOTEs.

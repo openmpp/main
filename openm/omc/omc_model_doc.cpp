@@ -411,6 +411,9 @@ void do_model_doc(
     /// Show the enumerations alphabetic list topic
     bool do_enumerations_alphabetic_topic = Symbol::option_symref_enumerations_alphabetic;
 
+    /// Show the attributes alphabetic list topic
+    bool do_attributes_alphabetic_topic = Symbol::option_symref_attributes_alphabetic;
+
     /// Show the individual parameter topics
     bool do_parameter_topics = Symbol::option_symref_topic_parameters;
 
@@ -423,9 +426,14 @@ void do_model_doc(
     /// Show the individual module topics
     bool do_module_topics = Symbol::option_symref_topic_modules;
 
+    /// Show the individual attribute topics
+    bool do_attribute_topics = Symbol::option_symref_topic_attributes;
+
     if (do_developer_edition) {
         // turn on related flags
+        // TODO verify why override above options?
         do_module_topics = true;
+        do_attribute_topics = true;
     }
 
     /// Show the individual module topics for use modules
@@ -438,7 +446,7 @@ void do_model_doc(
     /// Show the symbols declared table in individual module topics
     bool do_module_symbols_declared = Symbol::option_symref_topic_modules_symbols_declared;
 
-    /** @brief   Show the modules alphabetic list topic */
+    /// Show the modules alphabetic list topic
     bool do_modules_alphabetic = false;
     if (do_module_topics) {
         do_modules_alphabetic = true;
@@ -458,6 +466,8 @@ void do_model_doc(
         do_parameter_topics = false;
         do_table_topics = false;
         do_enumeration_topics = false;
+        do_module_topics = false;
+        do_attribute_topics = false;
         // TODO add more as they are implemented
     }
 
@@ -543,6 +553,7 @@ void do_model_doc(
         string anchorTableMajorGroups = "table-major-groups";
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
         string anchorModulesAlphabetic = "modules-alphabetic";
+        string anchorAttributesAlphabetic = "attributes-alphabetic";
 
         // Fragment for back navigation
         string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
