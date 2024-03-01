@@ -1976,6 +1976,16 @@ public:
     static bool option_symref_topic_tables;
 
     /**
+     * true to include in symbol reference individual attribute topics.
+     */
+    static bool option_symref_topic_attributes;
+
+    /**
+     * true to include in symbol reference individual internal attribute topics.
+     */
+    static bool option_symref_topic_attributes_internal;
+
+    /**
      * true to include in symbol reference individual enumeration topics.
      */
     static bool option_symref_topic_enumerations;
@@ -1994,16 +2004,6 @@ public:
      * true to include symbols declared table in individual module topics.
      */
     static bool option_symref_topic_modules_symbols_declared;
-
-    /**
-     * true to include in symbol reference individual attribute topics.
-     */
-    static bool option_symref_topic_attributes;
-
-    /**
-     * true to include in symbol reference individual internal attribute topics.
-     */
-    static bool option_symref_topic_attributes_internal;
 
     /**
      * true to include in symbol reference any authored NOTEs.
