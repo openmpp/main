@@ -1,0 +1,1 @@
+L’attribut `age` est une variable continue gérée automatiquement qui est initialisée à 0 lorsqu’une entité `Person` entre dans la simulation. Une unité d'âge est une année.
