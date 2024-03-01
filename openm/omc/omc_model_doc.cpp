@@ -259,6 +259,50 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         }
         mdStream << "|<table\n"; // maddy-specific end table
     }
+
+    // entity tables using this symbol
+    if (s->pp_entity_tables_using.size() > 0) {
+        any_xref = true;
+        mdStream << "<strong>" + LTA(lang, "Entity tables using") + " <code>" + name + "</code>:</strong>\n\n";
+        mdStream << "|table>\n"; // maddy-specific begin table
+        mdStream << " " + LTA(lang, "Table") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
+        mdStream << "- | - | -\n"; // maddy-specific table header separator
+        for (auto& m : s->pp_entity_tables_using) {
+            string symbol = m->name;
+            string module = m->pp_module ?
+                ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
+                : "";
+            string label = m->pp_labels[lang_index];
+            mdStream
+                << symbol << " | "
+                << module << " | "
+                << label << "\n"
+                ;
+        }
+        mdStream << "|<table\n"; // maddy-specific end table
+    }
+
+    // entity sets using this symbol
+    if (s->pp_entity_sets_using.size() > 0) {
+        any_xref = true;
+        mdStream << "<strong>" + LTA(lang, "Entity sets using") + " <code>" + name + "</code>:</strong>\n\n";
+        mdStream << "|table>\n"; // maddy-specific begin table
+        mdStream << " " + LTA(lang, "Entity set") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
+        mdStream << "- | - | -\n"; // maddy-specific table header separator
+        for (auto& m : s->pp_entity_sets_using) {
+            string symbol = m->name;
+            string module = m->pp_module ?
+                ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
+                : "";
+            string label = m->pp_labels[lang_index];
+            mdStream
+                << symbol << " | "
+                << module << " | "
+                << label << "\n"
+                ;
+        }
+        mdStream << "|<table\n"; // maddy-specific end table
+    }
     return any_xref;
 }
 

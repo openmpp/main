@@ -775,6 +775,16 @@ public:
     set<IdentityAttributeSymbol*> pp_identity_attributes_using;
 
     /**
+     * All EntityTableSymbol which use this Symbol
+     */
+    set<EntityTableSymbol*> pp_entity_tables_using;
+
+    /**
+     * All EntitySetSymbol which use this Symbol
+     */
+    set<EntitySetSymbol*> pp_entity_sets_using;
+
+    /**
      * Check for existence of symbol with this unique name.
      *
      * @param unm The unique name.

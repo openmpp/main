@@ -118,6 +118,23 @@ void EntityTableSymbol::post_parse(int pass)
         // Add the increment for this table to the entity's list of all callback members
         pp_entity->pp_callback_members.push_back(increment);
 
+        // Add this entity table to xref of each attribute used as a dimension
+        for (auto d : dimension_list) {
+            auto a = d->pp_attribute;
+            assert(a); // logic guarantee
+            a->pp_entity_tables_using.insert(this);
+        }
+        // Add this entity table to xref of the attribute of its filter
+        if (filter) {
+            filter->pp_entity_tables_using.insert(this);
+        }
+        // Add this entity table to xref of each attribute used in expressions
+        for (auto ma : pp_measure_attributes) {
+            auto a = ma->pp_attribute;
+            assert(a); // logic guarantee
+            a->pp_entity_tables_using.insert(this);
+        }
+
         break;
     }
 
