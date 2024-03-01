@@ -458,6 +458,22 @@ public:
     virtual bool is_published() const { return false; }
 
     /**
+     * Returns unique_name with "::" replaced by "."
+     *
+     * @return The string result.
+     */
+    string dot_name() const
+    {
+        auto n = unique_name.find("::");
+        if ( n != unique_name.npos && unique_name.length() > n + 2) {
+            return unique_name.substr(0, n) + "." + unique_name.substr(n + 2);
+        }
+        else {
+            return unique_name;
+        }
+    }
+
+    /**
      * Description of code injection into side-effect function.
      * 
      * Used to insert a comment in generated code.
@@ -1973,6 +1989,11 @@ public:
      * true to include in symbol reference individual attribute topics.
      */
     static bool option_symref_topic_attributes;
+
+    /**
+     * true to include in symbol reference individual internal attribute topics.
+     */
+    static bool option_symref_topic_attributes_internal;
 
     /**
      * true to include in symbol reference any authored NOTEs.

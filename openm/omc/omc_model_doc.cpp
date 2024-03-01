@@ -236,7 +236,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << "|<table\n"; // maddy-specific end table
     }
 
-    // identity attributes using this parameter
+    // identity attributes using this symbol
     if (s->pp_identity_attributes_using.size() > 0) {
         any_xref = true;
         mdStream << "<strong>" + LTA(lang, "Identity attributes using") + " <code>" + name + "</code>:</strong>\n\n";
@@ -447,9 +447,9 @@ void do_model_doc(
     bool do_module_symbols_declared = Symbol::option_symref_topic_modules_symbols_declared;
 
     /// Show the modules alphabetic list topic
-    bool do_modules_alphabetic = false;
+    bool do_modules_alphabetic_topic = false;
     if (do_module_topics) {
-        do_modules_alphabetic = true;
+        do_modules_alphabetic_topic = true;
     }
 
     if (!do_generated_content) {
@@ -462,13 +462,67 @@ void do_model_doc(
         do_table_major_groups = false;
         do_parameters_alphabetic_topic = false;
         do_tables_alphabetic_topic = false;
+        do_attributes_alphabetic_topic = false;
         do_enumerations_alphabetic_topic = false;
+        do_modules_alphabetic_topic = false;
         do_parameter_topics = false;
         do_table_topics = false;
         do_enumeration_topics = false;
         do_module_topics = false;
         do_attribute_topics = false;
         // TODO add more as they are implemented
+    }
+
+    // Table-like symbols - published tables merged with derived parameters published as tables
+    list<Symbol*> table_like;
+    {
+        for (auto t : Symbol::pp_all_tables) {
+            if (t->is_published() || do_unpublished) {
+                table_like.push_back(t);
+            }
+        }
+        for (auto p : Symbol::pp_all_parameters) {
+            if (p->metadata_as_table && (p->is_published() || do_unpublished)) {
+                table_like.push_back(p);
+            }
+        }
+        table_like.sort([](Symbol* a, Symbol* b) { return a->name < b->name; });
+    }
+
+    // Parameter-like symbols - published parameters excluding derived parameters published as tables
+    list<Symbol*> parameter_like;
+    {
+        for (auto p : Symbol::pp_all_parameters) {
+            if (!p->metadata_as_table && (p->is_published() || do_unpublished)) {
+                parameter_like.push_back(p);
+            }
+        }
+        // no need to sort because pp_all_parameters is already sorted
+    }
+
+    // Attribute symbols - published attributes
+    list<AttributeSymbol*> attributes;
+    {
+        for (auto e : Symbol::pp_all_entities) {
+            for (auto dm : e->pp_data_members) {
+                if (dm->is_attribute()) {
+                    auto a = dynamic_cast<AttributeSymbol*>(dm);
+                    assert(a); // logic guarantee
+                    if ((a->is_published() || do_unpublished)) {
+                        if (!a->is_generated || Symbol::option_symref_topic_attributes_internal) {
+                            // suppress generated attributes, except if explicitly requested.
+                            attributes.push_back(a);
+                        }
+                    }
+                }
+            }
+        }
+        // sort by attributes name, and if tied, by entity name
+        attributes.sort([](AttributeSymbol* a, AttributeSymbol* b) { return (a->name + "|" + a->entity->name) < (b->name + "|" + b->entity->name); });
+        // if no attributes to show, suppress alphabetic list of attributes
+        if (attributes.size() == 0) {
+            do_attributes_alphabetic_topic = false;
+        }
     }
 
     // Language loop
@@ -612,7 +666,7 @@ void do_model_doc(
             if (do_table_hierarchy) {
                 mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableHierarchy + ") | " + LTA(lang, "Output tables arranged hierarchically") + "\n";
             }
-            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic || do_modules_alphabetic) {
+            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic || do_attributes_alphabetic_topic || do_modules_alphabetic_topic) {
                 mdStream << "**" + LTA(lang, "Lists") + "** | \n";
                 if (do_parameters_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang, "Input parameters in alphabetic order") + "\n";
@@ -620,10 +674,13 @@ void do_model_doc(
                 if (do_tables_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTablesAlphabetic + ") | " + LTA(lang, "Output tables in alphabetic order") + "\n";
                 }
+                if (do_attributes_alphabetic_topic) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Attributes") + "](#" + anchorAttributesAlphabetic + ") | " + LTA(lang, "Attributes in alphabetic order") + "\n";
+                }
                 if (do_enumerations_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
                 }
-                if (do_modules_alphabetic) {
+                if (do_modules_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Modules") + "](#" + anchorModulesAlphabetic + ") | " + LTA(lang, "Modules in alphabetic order") + "\n";
                 }
             }
@@ -649,33 +706,6 @@ void do_model_doc(
                 mdStream << fragmentReturnLinks;
                 mdStream << fragmentTopicSeparator;
             }
-        }
-
-        // Table-like symbols - published tables merged with derived parameters published as tables
-        list<Symbol*> table_like;
-        {
-            for (auto t : Symbol::pp_all_tables) {
-                if (t->is_published() || do_unpublished) {
-                    table_like.push_back(t);
-                }
-            }
-            for (auto p : Symbol::pp_all_parameters) {
-                if (p->metadata_as_table && (p->is_published() || do_unpublished)) {
-                    table_like.push_back(p);
-                }
-            }
-            table_like.sort([](Symbol* a, Symbol* b) { return a->name < b->name; });
-        }
-
-        // Parameter-like symbols - published parameters excluding derived parameters published as tables
-        list<Symbol*> parameter_like;
-        {
-            for (auto p : Symbol::pp_all_parameters) {
-                if (!p->metadata_as_table && (p->is_published() || do_unpublished)) {
-                    parameter_like.push_back(p);
-                }
-            }
-            // no need to sort because pp_all_parameters is already sorted
         }
 
         // Topic: parameters in alphabetic order
@@ -1440,8 +1470,173 @@ void do_model_doc(
             } // Topic for each table
         }
 
+        // Topic: list of attributes in alphabetic order
+        if (do_attributes_alphabetic_topic) {
+            // build line with links to first row in alphabetic table with leading letter
+            string letterLinks;
+            {
+                string letterPrev = "";
+                for (auto& s : attributes) {
+                    string letterCurr = s->name.substr(0, 1);
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-table, D-table, etc.
+                        letterLinks += " [" + letterCurr + "](#" + letterCurr + "-attribute)";
+                    }
+                    letterPrev = letterCurr;
+                }
+            }
+
+            mdStream << "<h3 id=\"" + anchorAttributesAlphabetic + "\">" + LTA(lang, "Attributes in alphabetic order") + "</h3>\n\n";
+            mdStream << letterLinks + "\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+            {
+                string letterPrev = "";
+                for (auto& s : attributes) {
+                    string letterCurr = s->name.substr(0, 1);
+                    string letterLink = "";
+                    if (letterCurr != letterPrev) {
+                        // anchor looks like A-table, D-table, etc.
+                        letterLink += "<div id=\"" + letterCurr + "-attribute\"/>";
+                    }
+                    letterPrev = letterCurr;
+
+                    mdStream
+                        << letterLink
+                        << "`" + s->pp_entity->name + "` | "
+                        << " [`" + s->name + "`](#" + s->dot_name() + ") | "
+                        << s->pp_labels[lang_index]
+                        << "  \n";
+                } // end tables table
+            }
+            mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
+        } // Topic: attributes in alphabetic order
+
+        // Topic for each attribute
+        if (do_attribute_topics) {
+            for (auto& s : attributes) {
+                // topic header line
+                mdStream
+                    // symbol name
+                    << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->name + "</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
+                    ;
+
+                // summary line with type, size, etc.
+                {
+                    string entityInfo = "`" + s->pp_entity->name + "`";
+                    //string entityInfo = s->pp_entity->name;
+
+                    string kindInfo;
+                    {
+                        kindInfo += LTA(lang, "Attribute");
+                        kindInfo += " (";
+
+                        if (s->is_builtin_attribute()) {
+                            kindInfo += LTA(lang, "built-in");
+                        }
+                        else if (s->is_link_attribute()) {
+                            kindInfo += LTA(lang, "link");
+                        }
+                        else if (s->is_identity_attribute()) {
+                            kindInfo += LTA(lang, "identity");
+                        }
+                        else if (s->is_derived_attribute()) {
+                            kindInfo += LTA(lang, "derived");
+                        }
+                        else if (s->is_multilink_aggregate_attribute()) {
+                            kindInfo += LTA(lang, "multilink aggregate");
+                        }
+                        else if (s->is_simple_attribute()) {
+                            kindInfo += LTA(lang, "simple");
+                        }
+                        else {
+                            assert(false); // should not be reached
+                            kindInfo += LTA(lang, "other");
+                        }
+                        if (s->is_generated) {
+                            kindInfo += "," + LTA(lang, "generated");
+                        }
+                        kindInfo += ")";
+                    }
+
+                    string moduleInfo = "";
+                    if (do_module_topics) {
+                        if (s->pp_module) {
+                            moduleInfo = "[`" + s->pp_module->name + "`](#" + s->pp_module->name + ")";
+                        }
+                    }
+                    string typeInfo;
+                    {
+                        if (s->pp_data_type->is_enumeration()) {
+                            // hyperlink to enumeration
+                            typeInfo = "[`" + s->pp_data_type->name + "`](#" + s->pp_data_type->name + ")";
+                        }
+                        else {
+                            // just show the name of the type, e.g. "double"
+                            typeInfo = s->pp_data_type->name;
+                        }
+                    }
+                    mdStream
+                        << " **" + LTA(lang, "Kind") + ":** "
+                        << "\n"
+                        << kindInfo
+                        << " **" + LTA(lang, "Type") + ":** "
+                        << "\n"
+                        << typeInfo
+                        << " **" + LTA(lang, "Entity") + ":** "
+                        << "\n"
+                        << entityInfo
+                        ;
+                    if (moduleInfo.length() > 0) {
+                        mdStream << "\n**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
+                    }
+                    mdStream << "\n\n";
+                }
+
+                // declaration section
+                if (do_developer_edition) {
+                    if (s->is_identity_attribute()) {
+                        auto ia = dynamic_cast<IdentityAttributeSymbol*>(s);
+                        assert(ia); // logic guarantee
+                        mdStream << "**" + LTA(lang, "Declaration") + ":** \n";
+                        mdStream << "\n";
+                        // enclose declaration in c++ code block
+                        mdStream << "```cpp\n";
+                        // TODO: find a way to get a string containing the original model code for the identity attribute instead.
+                        mdStream << ia->cxx_expression(ia->root);
+                        mdStream << "\n```\n\n";
+                    }
+                }
+
+                // x-reference section
+                bool any_xref = false;
+                if (do_developer_edition) {
+                    any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                }
+
+                // symbol note if present
+                if (do_NOTEs) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            } // Topic for each attribute
+        }
+
         // Topic: modules in alphabetic order
-        if (do_modules_alphabetic) {
+        if (do_modules_alphabetic_topic) {
             // build line with links to first symbol in alphabetic table with leading letter
             string letterLinks;
             {
@@ -1608,6 +1803,7 @@ void do_model_doc(
                 mdStream << fragmentTopicSeparator;
             } // Topic for each enumeration
         }
+
         // all done
         mdStream.close();
 
