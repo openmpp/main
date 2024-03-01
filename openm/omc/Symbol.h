@@ -465,7 +465,7 @@ public:
     string dot_name() const
     {
         auto n = unique_name.find("::");
-        if ( n != unique_name.npos && unique_name.length() > n + 2) {
+        if ((n != unique_name.npos) && (unique_name.length() > n + 2)) {
             return unique_name.substr(0, n) + "." + unique_name.substr(n + 2);
         }
         else {

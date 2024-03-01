@@ -964,8 +964,8 @@ void Symbol::associate_explicit_label_or_note(const string& key)
         // replace :: by . for two-part keys, e.g. unique names
         {
             auto p = key_with_dot.find("::");
-            if (p != key_with_dot.npos) {
-                key_with_dot = key_with_dot.substr(0, p) + "." + key_with_dot.substr(p + 1);
+            if ((p != key_with_dot.npos) && (key_with_dot.length() > p + 2)) {
+                key_with_dot = key_with_dot.substr(0, p) + "." + key_with_dot.substr(p + 2);
             }
         }
     }
