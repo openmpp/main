@@ -198,7 +198,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << " " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& f : s->pp_global_funcs_using) {
-            string name = f->name;
+            string name = "`" + f->name + "`";
             string module = f->pp_module ?
                 ("[`" + f->pp_module->name + "`](#" + f->pp_module->name + ")")
                 : "";
@@ -220,8 +220,8 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Function") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& m : s->pp_entity_funcs_using) {
-            string entity = m->pp_entity->name;
-            string member = m->name;
+            string entity = "`" + m->pp_entity->name + "`";
+            string member = "`" + m->name + "`";
             string module = m->pp_module ?
                 ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
                 : "";
@@ -244,8 +244,8 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& m : s->pp_identity_attributes_using) {
-            string entity = m->pp_entity->name;
-            string member = m->name;
+            string entity = "`" + m->pp_entity->name + "`";
+            string member = "[`" + m->name + "`](#" + m->dot_name() + ")";
             string module = m->pp_module ?
                 ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
                 : "";
@@ -268,7 +268,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << " " + LTA(lang, "Table") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& m : s->pp_entity_tables_using) {
-            string symbol = m->name;
+            string symbol = "[`" + m->name + "`](#" + m->name + ")";
             string module = m->pp_module ?
                 ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
                 : "";
@@ -290,7 +290,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
         mdStream << " " + LTA(lang, "Entity set") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& m : s->pp_entity_sets_using) {
-            string symbol = m->name;
+            string symbol = "`" + m->name + "`";
             string module = m->pp_module ?
                 ("[`" + m->pp_module->name + "`](#" + m->pp_module->name + ")")
                 : "";
