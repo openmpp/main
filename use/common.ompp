@@ -16,19 +16,38 @@ parameters {
     //EN Simulation starting seed
     long long SimulationSeed;
 };
-//LABEL(SimulationSeed,FR) Graine de nombre aléatoire de la simulation
+
+#endif // Hide non-C++ syntactic island from IDE
+
 /*NOTE(SimulationSeed,EN)
 `SimulationSeed` determines the starting seeds of all random number generators in the run.
 It is an integer greater than 0 and normally less than 2147483648.
 Values larger than 2147483648 are reserved to reproduce a single selected member.
 */
+
+//LABEL(SimulationSeed,FR) Graine de nombre aléatoire de la simulation
+
 /*NOTE(SimulationSeed,FR)
-'SimulationSeed' détermine les valeurs initiales de départ de tous les générateurs de nombres aléatoires de l’exécution. 
-Il s’agit d’un entier supérieur à 0 et normalement inférieur à 2147483648.
-Les valeurs supérieures à 2147483648 sont réservées à la reproduction d’un seul membre sélectionné.
+`SimulationSeed` détermine les valeurs initiales de départ de tous les générateurs de nombres aléatoires de l'exécution.
+Il s'agit d'un entier supérieur à 0 et normalement inférieur à 2147483648.
+Les valeurs supérieures à 2147483648 sont réservées à la reproduction d'un seul membre sélectionné.
 */
 
-#endif // Hide non-C++ syntactic island from IDE
+//LABEL(bool,EN) boolean
+/*NOTE(bool,EN)
+A symbol of type `bool` has one of two values, `true` or `false`. 
+A `bool` can be used in a numeric context, in which case `true` is `1` and `false` is `0`. 
+A `bool` can also be used like a classification, 
+for example as a dimension of a parameter or table.
+*/
+
+//LABEL(bool,FR) booléen
+/*NOTE(bool,FR)
+Un symbole de type `bool` a l'une des deux valeurs suivantes, `true` ou `false`. 
+Un `bool` peut être utilisé dans un contexte numérique, auquel cas `true` est `1` et `false` est `0`. 
+Un `bool` peut également être utilisé comme une classification, 
+par exemple comme dimension d'un paramètre ou tableau.
+*/
 
 /**
 * Called before model PreSimulation functions.

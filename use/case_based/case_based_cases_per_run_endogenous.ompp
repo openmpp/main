@@ -6,11 +6,31 @@
 // Copyright (c) 2013-2022 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 parameters {
     //EN Number of cases in run (over all members)
     derived long long SimulationCases;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(SimulationCases, EN)
+`SimulationCases` is the total number of cases in a run.
+If a run has multiple members,
+the cases are divided among the members
+as equally as possible.
+*/
+
 //LABEL(SimulationCases,FR) Nombre de cas dans tous les membres
+/*NOTE(SimulationCases, FR)
+`SimulationCases` est le nombre total de cas dans une exécution.
+Si une exécution a plusieurs membres,
+les cas sont répartis entre les membres
+le plus également que possible.
+*/
 
 /**
 * Called by before_presimulation.
