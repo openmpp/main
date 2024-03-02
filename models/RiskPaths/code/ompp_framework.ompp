@@ -21,6 +21,13 @@ use "case_based/case_based_lcg41.ompp";
 use "case_based/case_based_common.ompp";
 use "case_based/case_based_scaling_none.ompp";
 
+parameter_group P04_SimulationControl //EN Simulation Control
+{
+    SimulationCases,
+    SimulationSeed
+};
+//LABEL(P04_SimulationControl,FR) Contrôle de la simulation
+
 #endif // Hide non-C++ syntactic island from IDE
 
 // process development model run options from model ini-file
