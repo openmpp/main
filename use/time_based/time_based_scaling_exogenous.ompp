@@ -6,6 +6,10 @@
 // Copyright (c) 2013-2016 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 parameters {
 
     //EN Starting population sample size
@@ -15,8 +19,56 @@ parameters {
     double StartingPopulationRealSize;
 
 };
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(StartingPopulationSize, EN)
+`StartingPopulationSize` is the size of the artificial population simulated by each member of a run.
+Typically it is the number of entities created in the starting population at the beginning of a simulation.
+
+[`StartingPopulationSize`](#StartingPopulationSize)
+and
+[`StartingPopulationRealSize`](#StartingPopulationRealSize)
+work together to scale
+table counts and sums to represent a total population equal to
+[`StartingPopulationRealSize`](#StartingPopulationRealSize).
+*/
+
 //LABEL(StartingPopulationSize,FR) Taille de l'échantillon de la population au début
+/*NOTE(StartingPopulationSize, FR)
+`StartingPopulationSize` correspond à la taille de la population artificielle simulée par chaque membre d'une exécution.
+En règle générale, il s'agit du nombre d'entités créées dans la population de départ au début d'une simulation.
+
+[`StartingPopulationSize`](#StartingPopulationSize)
+et
+[`StartingPopulationRealSize`](#StartingPopulationRealSize)
+travaillent ensemble pour calculer
+les totaux et les sommes qui représentent une population totale égale à 
+[`StartingPopulationRealSize`](#StartingPopulationRealSize).
+*/
+
+/*NOTE(StartingPopulationRealSize, EN)
+`StartingPopulationRealSize` is the size of the real-world population represented by each member of a run.
+
+[`StartingPopulationSize`](#StartingPopulationSize) 
+and 
+[`StartingPopulationRealSize`](#StartingPopulationRealSize) 
+work together to scale
+table counts and sums to represent a total population equal to 
+[`StartingPopulationRealSize`](#StartingPopulationRealSize).
+*/
+
 //LABEL(StartingPopulationRealSize,FR) Taille au complet de la population au début
+/*NOTE(StartingPopulationRealSize, FR)
+`StartingPopulationRealSize` est la taille de la population réelle représentée par chaque membre d'une exécution.
+
+[`StartingPopulationSize`](#StartingPopulationSize)
+et 
+[`StartingPopulationRealSize`](#StartingPopulationRealSize) 
+travaillent ensemble pour calculer 
+les totaux et les sommes qui représentent une population totale égale à 
+[`StartingPopulationRealSize`](#StartingPopulationRealSize).
+*/
 
 /**
  * The population scaling factor to use for this member of the simulation.

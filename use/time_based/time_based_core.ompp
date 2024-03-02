@@ -6,11 +6,33 @@
 // Copyright (c) 2013-2023 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt)
 
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 parameters {
     //EN Simulation end time
     Time SimulationEnd;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(SimulationEnd, EN)
+`SimulationEnd` is the exact time at which the simulation ends. 
+Precisely, if the time of the next event in the simulation would exceed `SimulationEnd`, 
+that event is not executed. 
+Instead, all entities are aged to `SimulationEnd` 
+and then exit the simulation.
+*/
+
 //LABEL(SimulationEnd,FR) Temps de fin de la simulation
+/*NOTE(SimulationEnd, FR)
+`SimulationEnd` est le moment exacte quand la simulation se termine.
+Précisément, si le temps du prochain événement de la simulation dépasse `SimulationEnd`, 
+cet événement n'est pas exécuté.
+Au lieu de cela, toutes les entités sont vieillies jusqu'à `SimulationEnd`, 
+puis elles quittent la simulation.
+*/
 
 namespace fmk {
 
