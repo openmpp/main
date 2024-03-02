@@ -26,6 +26,8 @@ options symref_unpublished_symbols = on;     // Comment this line for production
 options symref_parameter_major_groups = off; // Comment this line for models with large parameter hierarchies.
 options symref_table_major_groups = off;     // Comment this line for models with large table hierarchies.
 
+//options symref_topic_attributes_internal = on;
+
 options microdata_output = on;
 options microdata_write_on_exit = on;
 

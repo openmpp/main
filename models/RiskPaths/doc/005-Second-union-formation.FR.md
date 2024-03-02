@@ -1,6 +1,6 @@
 ### Formation de la deuxième union 
 
-Une femme devient exposée au risque de formation d’une deuxième union si et quand sa première réunion est dissoute. Contrairement à la formation de la première union qui est fondée sur l’âge, ce processus ne démarque pas à un point fixe dans le temps, mais est déclenché par un autre événement (dissolution de la première union). Par conséquent, les intervalles de temps des taux de risque constants par morceaux estimés ont trait au temps écoulé depuis la dissolution de la première union. 
+Une femme devient exposée au risque de formation d'une deuxième union si et quand sa première réunion est dissoute. Contrairement à la formation de la première union qui est fondée sur l'âge, ce processus ne démarque pas à un point fixe dans le temps, mais est déclenché par un autre événement (dissolution de la première union). Par conséquent, les intervalles de temps des taux de risque constants par morceaux estimés ont trait au temps écoulé depuis la dissolution de la première union. 
 
 **Tableau 3 : Risques de formation de la deuxième union** 
 
