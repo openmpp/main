@@ -17,6 +17,16 @@ parameters {
     long long SimulationSeed;
 };
 //LABEL(SimulationSeed,FR) Graine de nombre aléatoire de la simulation
+/*NOTE(SimulationSeed,EN)
+`SimulationSeed` determines the starting seeds of all random number generators in the run.
+It is an integer greater than 0 and normally less than 2147483648.
+Values larger than 2147483648 are reserved to reproduce a single selected member.
+*/
+/*NOTE(SimulationSeed,FR)
+'SimulationSeed' détermine les valeurs initiales de départ de tous les générateurs de nombres aléatoires de l’exécution. 
+Il s’agit d’un entier supérieur à 0 et normalement inférieur à 2147483648.
+Les valeurs supérieures à 2147483648 sont réservées à la reproduction d’un seul membre sélectionné.
+*/
 
 #endif // Hide non-C++ syntactic island from IDE
 
@@ -38,6 +48,10 @@ void before_presimulation(int mem_id, int mem_count)
 
     // code block for SimulationSeed
     {
+        if (SimulationSeed <= 0) {
+            auto msg = openm::formatToString(LT("error - SimulationSeed '%lld' must be greater than 0"), SimulationSeed);
+            ModelExit(msg.c_str());
+        }
         // Factor the combined seed SimulationSeed into its two parts
         fmk::SimulationSeed_member_part = SimulationSeed / ((long long)fmk::lcg_modulus + 1);
         fmk::SimulationSeed_seed_part = SimulationSeed - ((long long)fmk::lcg_modulus + 1) * fmk::SimulationSeed_member_part;

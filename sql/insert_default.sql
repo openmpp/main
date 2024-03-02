@@ -98,6 +98,8 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' exceeds the 
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' Increase the number of streams in ompp_framework.ompp.', ' Increase the number of streams in ompp_framework.ompp.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' Increase the number of streams in ompp_framework.ompp.',
                                                                   ' Augmentez le nombre de fluxes aléatoires dans ompp_framework.ompp.');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'error - SimulationSeed ''%lld'' must be greater than 0',
+                                                                  'erreur - SimulationSeed ''%lld'' doit être supérieur à 0');
 
 
 																  
