@@ -54,7 +54,7 @@ namespace fmk {
  */
 void report_simulation_progress(int member, int percent, Time i_time)
 {
-    theLog->logFormatted("member=%d Simulation progress=%d%% time=%g", member, percent, (double)i_time);
+    theLog->logFormatted(LT("member=%d Simulation progress=%d%% time=%g"), member, percent, (double)i_time);
     report_simulation_progress_beat(percent, (double)i_time);
 }
 
@@ -76,14 +76,14 @@ void LogSimulationStart()
 {
     // Initial global start time
     BaseEvent::set_global_time(-time_infinite);
-    theLog->logFormatted("member=%d Create starting population", fmk::simulation_member);
+    theLog->logFormatted(LT("member=%d Create starting population"), fmk::simulation_member);
 }
 
 void SimulateEvents()
 {
     using namespace fmk;
 
-    theLog->logFormatted("member=%d Simulate events - start", fmk::simulation_member);
+    theLog->logFormatted(LT("member=%d Simulate events - start"), fmk::simulation_member);
 
     // Note clock time at which event simulation started.
     // This allows separating simulation time into portion for creation
@@ -196,13 +196,13 @@ void SimulateEvents()
         report_simulation_progress(simulation_member, 100, simulation_end);
     }
 
-    theLog->logFormatted("member=%d Simulate events - end", fmk::simulation_member);
+    theLog->logFormatted(LT("member=%d Simulate events - end"), fmk::simulation_member);
 
     // cleanup
 
-    theLog->logFormatted("member=%d Exit all entities from simulation - start", fmk::simulation_member);
+    theLog->logFormatted(LT("member=%d Exit all entities from simulation - start"), fmk::simulation_member);
     BaseEntity::exit_simulation_all();
-    theLog->logFormatted("member=%d Exit all entities from simulation - end", fmk::simulation_member);
+    theLog->logFormatted(LT("member=%d Exit all entities from simulation - end"), fmk::simulation_member);
     BaseEvent::clean_all();
     BaseEntity::free_all_zombies();
 }
@@ -278,7 +278,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         auto event_count = BaseEvent::global_event_counter;
         double events_per_entity = (double)event_count / (double)fmk::member_entity_counter;
         theLog->logFormatted(
-            "member=%d Simulation summary: entities=%ld, events/entity=%.1f, elapsed(startpop)=%.6fs, elapsed(events)=%.6fs",
+            LT("member=%d Simulation summary: entities=%ld, events/entity=%.1f, elapsed(startpop)=%.6fs, elapsed(events)=%.6fs"),
             fmk::simulation_member,
             fmk::member_entity_counter,
             events_per_entity,

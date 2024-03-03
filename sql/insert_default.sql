@@ -65,37 +65,42 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'MPI error: se
                                                                   'erreur MPI : envoie %d inachevé de %d à %d');
 
 -- model runtime messages from use .mpp .ompp
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d create starting population', 'Member=%d create starting population');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Member=%d create starting population',
-                                                                  'Member=%d créer la population de départ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Member=%d simulation progress=%d%%', 'Member=%d simulation progress=%d%%');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Member=%d simulation progress=%d%%',
-                                                                  'Membre=%d progrès de la simulation=%d%%');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'error : Event time ', 'error : Event time ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Create starting population',
+                                                                  'membre=%d Créer la population de départ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulate events - start',
+                                                                  'membre=%d Simuler les évènements - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulate events - end',
+                                                                  'membre=%d Simuler les évènements - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulation progress=%d%%',
+                                                                  'membre=%d Progrès de la simulation = %d %%');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulation progress=%d%% cases=%lld',
+                                                                  'membre=%d Progrès de la simulation = %d %% cas = %lld');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulation progress=%d%% time=%g',
+                                                                  'membre=%d Progrès de la simulation = %d %% temps = %g');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Exit all entities from simulation - start',
+                                                                  'membre=%d Sortir toutes les entités de la simulation - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Exit all entities from simulation - end',
+                                                                  'membre=%d Sortir toutes les entités de la simulation - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulation summary: cases=%lld, events/case=%.1f, entities/case=%.1f, elapsed=%.6fs',
+                                                                  'membre=%d Sommaire de la simulation : cas = %lld, évènements/cas = %.1f, entités/cas = %.1f, temps écoulé = %.6fs');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Simulation summary: entities=%ld, events/entity=%.1f, elapsed(startpop)=%.6fs, elapsed(events)=%.6fs',
+                                                                  'membre=%d Sommaire de la simulation : entités = %ld, évènements/entité = %.1f, temps(création) = %.6fs, temps(évènements) = %.6fs');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'error : Event time ',
                                                                   'erreur : Le temps d''évènement ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' is earlier than current time ', ' is earlier than current time ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' is earlier than current time ',
                                                                   ' est plus tôt que le temps actuel ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' in simulation member ', ' in simulation member ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' in simulation member ',
                                                                   ' dans le membre de simulation ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' in event ', ' in event ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' in event ',
                                                                   ' dans l''évènement ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' in entity_id ', ' in entity_id ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' in entity_id ',
                                                                   ' dans entity_id ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' with combined seed ', ' with combined seed ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' with combined seed ',
                                                                   ' avec graine aléatoire combinée ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'error : stream number ', 'error : stream number ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'error : stream number ',
                                                                   'erreur : La fluxe aléatoire numéro ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' exceeds the maximum number of streams ', ' exceeds the maximum number of streams ');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' exceeds the maximum number of streams ',
                                                                   ' dépasse le nombre maximal de fluxes ');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' Increase the number of streams in ompp_framework.ompp.', ' Increase the number of streams in ompp_framework.ompp.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' Increase the number of streams in ompp_framework.ompp.',
                                                                   ' Augmentez le nombre de fluxes aléatoires dans ompp_framework.ompp.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Error - SimulationSeed ''%lld'' must be greater than 0',
@@ -103,7 +108,7 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Error - Simul
 
 -- model runtime messages from generated code in om_definitions.cpp (by code order in CodeGen.cpp)
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model build    : % s % s % s',
-                                                                  'Construction du modèle : % s % s % s');
+                                                                  'Compilation du modèle : % s % s % s');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : parameter ''%s'' was missing when the model was built',
                                                                   'Attention : le paramètre ''%s'' était manquant lors de la construction du modèle');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Prepare fixed and missing parameters',
@@ -140,14 +145,14 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Com
                                                                   'membre=%d Calculer les tableaux dérivés');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write output tables - start',
                                                                   'membre=%d Ecrire les tableaux de sortie - début');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write output tableaux - finish',
-                                                                  'membre=%d Ecrire les tables de sortie - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write output tables - finish',
+                                                                  'membre=%d Ecrire les tableaux de sortie - fin');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write derived parameters - start',
                                                                   'membre=%d Ecrire les paramètres dérivés - début');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write derived parameters - finish',
                                                                   'membre=%d Ecrire les paramètres dérivés - fin');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Process peak memory usage: %.2f MB',
-                                                                  'membre=%d Utilisation maximale de la mémoire du processus : %.2f Mo');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Process peak memory usage: %.2f MB',
+                                                                  'Utilisation maximale de la mémoire du processus : %.2f Mo');
 
 
 																  

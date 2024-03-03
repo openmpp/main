@@ -59,7 +59,7 @@ namespace fmk {
  */
 void report_simulation_progress(int member, int percent, long long cases)
 {
-    theLog->logFormatted("member=%d Simulation progress=%d%% cases=%lld", member, percent, cases);
+    theLog->logFormatted(LT("member=%d Simulation progress=%d%% cases=%lld"), member, percent, cases);
     report_simulation_progress_beat(percent, (double)cases);
 }
 
@@ -265,7 +265,7 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         double entities_per_case = (double)fmk::member_entity_counter / (double)fmk::member_cases;
         // double seconds_per_case = clock_time_delta / (double)fmk::member_cases;
         theLog->logFormatted(
-            "member=%d Simulation summary: cases=%lld, events/case=%.1f, entities/case=%.1f, elapsed=%.6fs",
+            LT("member=%d Simulation summary: cases=%lld, events/case=%.1f, entities/case=%.1f, elapsed=%.6fs"),
             fmk::simulation_member,
             fmk::member_cases,
             events_per_case,

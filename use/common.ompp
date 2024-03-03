@@ -476,7 +476,7 @@ void ModelExit(const char* msg)
  */
 void report_simulation_progress(int member, int percent)
 {
-    theLog->logFormatted("member=%d Simulation progress=%d%%", member, percent);
+    theLog->logFormatted(LT("member=%d Simulation progress=%d%%"), member, percent);
     report_simulation_progress_beat(percent);
 }
 
