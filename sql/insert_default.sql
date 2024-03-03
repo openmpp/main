@@ -34,6 +34,30 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'min', 'Min');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'max', 'Max');
 
 -- model runtime messages from library
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model version  ',
+                                                                  'Modèle - version   ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model created  ',
+                                                                  'Modèle - créé      ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model digest   ',
+                                                                  'Modèle - empreinte ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'OpenM++ version',
+                                                                  'OpenM++ - version      ');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'OpenM++ build  : %s %s %s',
+                                                                  'OpenM++ - construction : %s %s %s');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Development version (build from source code)',
+                                                                  'Version de développement (construction à partir du code source)');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Run model with %d modeling thread(s)',
+                                                                  'Exécuter le modèle avec %d fil(s) de modélisation');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Parallel run of %d modeling processes, %d thread(s) each',
+                                                                  'Exécution parallèle de %d processus de modélisation, %d fil(s) chacun(s)');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Run single model process with %d modeling thread(s)',
+                                                                  'Exécuter un processus de modèle unique avec %d fil(s) de modélisation');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Run: %s',
+                                                                  'Exécution : %s');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Run: %d %s',
+                                                                  'Exécution : %d %s');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Writing into aggregated output tables, run: %d',
+                                                                  'Écriture dans des tableaux de sortie agrégés, exécution : %d');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Model', 'Model');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model',
                                                                   'Modèle');
@@ -43,7 +67,6 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'FAILED',
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Done.', 'Done.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Done.',
                                                                   'Fini.');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Parallel run of %d modeling processes, %d thread(s) each', 'Parallel run of %d modeling processes, %d thread(s) each');
 
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'Read', 'Read');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Read',
@@ -108,7 +131,7 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Error - Simul
 
 -- model runtime messages from generated code in om_definitions.cpp (by code order in CodeGen.cpp)
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model build    : % s % s % s',
-                                                                  'Compilation du modèle : % s % s % s');
+                                                                  'Modèle - construction : % s % s % s');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : parameter ''%s'' was missing when the model was built',
                                                                   'Attention : le paramètre ''%s'' était manquant lors de la construction du modèle');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Prepare fixed and missing parameters',
