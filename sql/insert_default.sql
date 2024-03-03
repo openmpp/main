@@ -98,8 +98,34 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' exceeds the 
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, ' Increase the number of streams in ompp_framework.ompp.', ' Increase the number of streams in ompp_framework.ompp.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' Increase the number of streams in ompp_framework.ompp.',
                                                                   ' Augmentez le nombre de fluxes aléatoires dans ompp_framework.ompp.');
-INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'error - SimulationSeed ''%lld'' must be greater than 0',
-                                                                  'erreur - SimulationSeed ''%lld'' doit être supérieur à 0');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Error - SimulationSeed ''%lld'' must be greater than 0',
+                                                                  'Erreur - SimulationSeed ''%lld'' doit être supérieur à 0');
+
+-- model runtime messages from omc generated om_definitions.cpp (in code order in CodeGen.cpp)
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model build    : % s % s % s',
+                                                                  'Construction du modèle : % s % s % s');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : parameter ''%s'' was missing when the model was built',
+                                                                  'Attention : le paramètre ''%s'' était manquant lors de la construction du modèle');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Prepare fixed and missing parameters',
+                                                                  'Préparer les paramètres fixes et manquants');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Note : this Debug model was built with Microsoft iterator debug disabled',
+                                                                  'Note : ce modèle de débogage a été compilé avec le débogage de l’itérateur Microsoft désactivé');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : prohibited attribute assignment not detected with verify_attribute_modification = off',
+                                                                  'Attention : l''affectation d''attribut interdite n''est pas détectée avec verify_attribute_modification = off');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off',
+                                                                  'Attention : l''accès aux attributs temporels interdits n''est pas détecté avec verify_timelike_attribute_access = off');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : invalid table increment is not detected with verify_valid_table_increment = off',
+                                                                  'Attention : l''incrément de tableau invalide n''est pas détecté avec verify_valid_table_increment = off');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : model can expose microdata at run-time with output_microdata = on',
+                                                                  'Attention : le modèle peut exposer des microdonnées au moment de l''exécution quand output_microdata = on');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations',
+                                                                  'Note : le modèle est construit avec le poids et les microdonnées, incluez entity_weight dans Microdonnées pour les opérations pondérées en aval');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : model can expose microdata at run-time with event_trace = on',
+                                                                  'Attention : le modèle peut exposer des microdonnées au moment de l''exécution avec event_trace = on');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Get scenario parameters for process',
+                                                                  'Obtenir les paramètres de scénario pour le processus');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Bind scenario parameters',
+                                                                  'membre=%d Lier les paramètres du scénario');
 
 
 																  

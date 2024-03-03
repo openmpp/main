@@ -68,7 +68,7 @@ void before_presimulation(int mem_id, int mem_count)
     // code block for SimulationSeed
     {
         if (SimulationSeed <= 0) {
-            auto msg = openm::formatToString(LT("error - SimulationSeed '%lld' must be greater than 0"), SimulationSeed);
+            auto msg = openm::formatToString(LT("Error - SimulationSeed '%lld' must be greater than 0"), SimulationSeed);
             ModelExit(msg.c_str());
         }
         // Factor the combined seed SimulationSeed into its two parts

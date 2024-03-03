@@ -685,9 +685,9 @@ void CodeGen::do_RunOnce()
     c += "void RunOnce(IRunBase * const i_runBase)";
     c += "{";
     c += "// report model build environment";
-    c += "theLog->logFormatted(\"Model build    : % s % s % s\", omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
+    c += "theLog->logFormatted(LT(\"Model build    : % s % s % s\"), omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
     c += "";
-    c += "theLog->logMsg(\"Prepare fixed and missing parameters\");";
+    c += "theLog->logMsg(LT(\"Prepare fixed and missing parameters\"));";
     // Missing parameters are handled like fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -703,7 +703,7 @@ void CodeGen::do_RunOnce()
             }
             m += parameter->dat_definition();
             // create warning message which the model will output whenever it is run
-            c += "theLog->logFormatted(\"warning : parameter '" + parameter->name + "' was missing when the model was built\");";
+            c += "theLog->logFormatted(LT(\"Warning : parameter '%s' was missing when the model was built\"), \"" + parameter->name + "\");";
         }
 
         if (parameter->cumrate) {
@@ -765,7 +765,7 @@ void CodeGen::do_RunInit()
     c += "// Process model dev options for EventTrace";
     c += "process_trace_options(i_runBase);";
     c += "";
-    c += "theLog->logMsg(\"Get scenario parameters for process\");";
+    c += "theLog->logMsg(LT(\"Get scenario parameters for process\"));";
     c += "";
     c += "int64_t last_progress_ms = getMilliseconds();";
     c += "";
@@ -800,7 +800,7 @@ void CodeGen::do_ModelStartup()
     c += "// Bind scenario parameter references to thread local values (for scenario parameters).";
     c += "// Until this is done scenario parameter values are undefined and cannot be used by the model.";
     c += "";
-    c += "theLog->logFormatted(\"member=%d Bind scenario parameters\", simulation_member);";
+    c += "theLog->logFormatted(LT(\"member=%d Bind scenario parameters\"), simulation_member);";
 
     c += "";
     c += "#ifdef OM_DEBUG_PARAMETERS";
