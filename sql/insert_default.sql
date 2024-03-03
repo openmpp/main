@@ -101,7 +101,7 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, ' Increase the
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Error - SimulationSeed ''%lld'' must be greater than 0',
                                                                   'Erreur - SimulationSeed ''%lld'' doit être supérieur à 0');
 
--- model runtime messages from omc generated om_definitions.cpp (in code order in CodeGen.cpp)
+-- model runtime messages from generated code in om_definitions.cpp (by code order in CodeGen.cpp)
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Model build    : % s % s % s',
                                                                   'Construction du modèle : % s % s % s');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : parameter ''%s'' was missing when the model was built',
@@ -126,6 +126,28 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Get scenario 
                                                                   'Obtenir les paramètres de scénario pour le processus');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Bind scenario parameters',
                                                                   'membre=%d Lier les paramètres du scénario');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance',
+                                                                  'membre=%d Mémoire prédite requise = %d Mo par membre parallèle et %d Mo par instance');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Compute derived parameters',
+                                                                  'membre=%d Calculer les paramètres dérivés');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Prepare for simulation',
+                                                                  'membre=%d Préparer la simulation');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Compute entity tables',
+                                                                  'membre=%d Calculer les tableaux d''entité');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Compute post-simulation',
+                                                                  'membre=%d Calcul post-simulation');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Compute derived tables',
+                                                                  'membre=%d Calculer les tableaux dérivés');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write output tables - start',
+                                                                  'membre=%d Ecrire les tableaux de sortie - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write output tableaux - finish',
+                                                                  'membre=%d Ecrire les tables de sortie - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write derived parameters - start',
+                                                                  'membre=%d Ecrire les paramètres dérivés - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write derived parameters - finish',
+                                                                  'membre=%d Ecrire les paramètres dérivés - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Process peak memory usage: %.2f MB',
+                                                                  'membre=%d Utilisation maximale de la mémoire du processus : %.2f Mo');
 
 
 																  

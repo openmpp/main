@@ -906,7 +906,7 @@ void CodeGen::do_ModelStartup()
     c += "// Parameters are now ready and can be used by the model.";
     c += "";
 
-    c += "theLog->logFormatted(\"member=%d Compute derived parameters\", simulation_member);";
+    c += "theLog->logFormatted(LT(\"member=%d Compute derived parameters\"), simulation_member);";
     auto & sg = Symbol::pre_simulation;
     c += "int mem_id = i_model->subValueId();";
     c += "int mem_count = i_model->subValueCount();";
@@ -1045,7 +1045,7 @@ void CodeGen::do_ModelShutdown()
     c += "int simulation_member = i_model->subValueId();";
     c += "";
     c += "// extract accumulators, and scale them to population size";
-    c += "theLog->logFormatted(\"member=%d Compute entity tables\", simulation_member);";
+    c += "theLog->logFormatted(LT(\"member=%d Compute entity tables\"), simulation_member);";
 
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
@@ -1062,7 +1062,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::post_simulation;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logFormatted(\"member=%d Compute post-simulation\", simulation_member);";
+            c += "theLog->logFormatted(LT(\"member=%d Compute post-simulation\"), simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -1076,7 +1076,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::derived_tables;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logFormatted(\"member=%d Compute derived tables\", simulation_member);";
+            c += "theLog->logFormatted(LT(\"member=%d Compute derived tables\"), simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -1087,7 +1087,7 @@ void CodeGen::do_ModelShutdown()
         }
     }
 
-    c += "theLog->logFormatted(\"member=%d Write output tables - start\", simulation_member);";
+    c += "theLog->logFormatted(LT(\"member=%d Write output tables - start\"), simulation_member);";
     c += "";
     c += "extern int64_t report_table_write_progress(int member, int tableNumber, const char * name, int64_t lastTime);";
     c += "";
@@ -1121,12 +1121,12 @@ void CodeGen::do_ModelShutdown()
     }
     c += "// at this point table->measure[k][j] will cause memory access violation";
     c += "";
-    c += "theLog->logFormatted(\"member=%d Write output tables - finish\", simulation_member);";
+    c += "theLog->logFormatted(LT(\"member=%d Write output tables - finish\"), simulation_member);";
 
     if (Symbol::any_parameters_to_tables) {
         // process derived parameters published as tables
         c += "";
-        c += "theLog->logFormatted(\"member=%d Write derived parameters - start\", simulation_member);";
+        c += "theLog->logFormatted(LT(\"member=%d Write derived parameters - start\"), simulation_member);";
         for (auto param : Symbol::pp_all_parameters) {
             if (param->metadata_as_table && !param->is_suppressed_table) {
                 // Write this derived parameter as a table
@@ -1152,7 +1152,7 @@ void CodeGen::do_ModelShutdown()
                 c += "}";
             }
         }
-        c += "theLog->logFormatted(\"member=%d Write derived parameters - finish\", simulation_member);";
+        c += "theLog->logFormatted(LT(\"member=%d Write derived parameters - finish\"), simulation_member);";
     }
 
     c += "// Entity table destruction";
