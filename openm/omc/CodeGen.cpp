@@ -685,9 +685,9 @@ void CodeGen::do_RunOnce()
     c += "void RunOnce(IRunBase * const i_runBase)";
     c += "{";
     c += "// report model build environment";
-    c += "theLog->logFormatted(LT(\"Model build    : % s % s % s\"), omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
+    c += "theLog->logFormatted(\"Model build    : % s % s % s\", omr::modelTargetOsName, omr::modelTargetConfigName, omr::modelTargetMpiUseName);";
     c += "";
-    c += "theLog->logMsg(LT(\"Prepare fixed and missing parameters\"));";
+    c += "theLog->logMsg(\"Prepare fixed and missing parameters\");";
     // Missing parameters are handled like fixed parameters.
     bool any_missing_parameters = false;
     for (auto parameter : Symbol::pp_all_parameters) {
@@ -703,7 +703,7 @@ void CodeGen::do_RunOnce()
             }
             m += parameter->dat_definition();
             // create warning message which the model will output whenever it is run
-            c += "theLog->logFormatted(LT(\"Warning : parameter '%s' was missing when the model was built\"), \"" + parameter->name + "\");";
+            c += "theLog->logFormatted(\"Warning : parameter '%s' was missing when the model was built\", \"" + parameter->name + "\");";
         }
 
         if (parameter->cumrate) {
@@ -731,32 +731,32 @@ void CodeGen::do_RunInit()
 	c += "{";
     {
         c += "#if defined(_MSC_VER) && defined(_DEBUG) && defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL < 2";
-        c += "    theLog->logFormatted(LT(\"Note : this Debug model was built with Microsoft iterator debug disabled\"));";
+        c += "    theLog->logFormatted(\"Note : this Debug model was built with Microsoft iterator debug disabled\");";
         c += "#endif";
         c += "";
     }
     if (!Symbol::option_verify_attribute_modification) {
-        c += "theLog->logFormatted(LT(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\"));";
+        c += "theLog->logFormatted(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\");";
         c += "";
     }
     if (!Symbol::option_verify_timelike_attribute_access) {
-        c += "theLog->logFormatted(LT(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\"));";
+        c += "theLog->logFormatted(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\");";
         c += "";
     }
     if (!Symbol::option_verify_valid_table_increment) {
-        c += "theLog->logFormatted(LT(\"Warning : invalid table increment is not detected with verify_valid_table_increment = off\"));";
+        c += "theLog->logFormatted(\"Warning : invalid table increment is not detected with verify_valid_table_increment = off\");";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_microdata_output_warning) {
-        c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with output_microdata = on\"));";
+        c += "theLog->logFormatted(\"Warning : model can expose microdata at run-time with output_microdata = on\");";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_weighted_tabulation) {
-        c += "theLog->logFormatted(LT(\"Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations\"));";
+        c += "theLog->logFormatted(\"Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations\");";
         c += "";
     }
     if (Symbol::option_event_trace && Symbol::option_event_trace_warning) {
-        c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with event_trace = on\"));";
+        c += "theLog->logFormatted(\"Warning : model can expose microdata at run-time with event_trace = on\");";
         c += "";
     }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
@@ -765,7 +765,7 @@ void CodeGen::do_RunInit()
     c += "// Process model dev options for EventTrace";
     c += "process_trace_options(i_runBase);";
     c += "";
-    c += "theLog->logMsg(LT(\"Get scenario parameters for process\"));";
+    c += "theLog->logMsg(\"Get scenario parameters for process\");";
     c += "";
     c += "int64_t last_progress_ms = getMilliseconds();";
     c += "";
@@ -800,7 +800,7 @@ void CodeGen::do_ModelStartup()
     c += "// Bind scenario parameter references to thread local values (for scenario parameters).";
     c += "// Until this is done scenario parameter values are undefined and cannot be used by the model.";
     c += "";
-    c += "theLog->logFormatted(LT(\"member=%d Bind scenario parameters\"), simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Bind scenario parameters\", simulation_member);";
 
     c += "";
     c += "#ifdef OM_DEBUG_PARAMETERS";
@@ -869,7 +869,7 @@ void CodeGen::do_ModelStartup()
             c += "memory_sub += omr::memory_MB_popsize_coefficient * " + popsize_param->name + ";";
         }
         c += "memory_sub *= omr::memory_safety_factor;";
-        c += "theLog->logFormatted(LT(\"member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance\"), simulation_member, (int)memory_sub, (int)memory_shared);";
+        c += "theLog->logFormatted(\"member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance\", simulation_member, (int)memory_sub, (int)memory_shared);";
         c += "}";
     }
 
@@ -906,7 +906,7 @@ void CodeGen::do_ModelStartup()
     c += "// Parameters are now ready and can be used by the model.";
     c += "";
 
-    c += "theLog->logFormatted(LT(\"member=%d Compute derived parameters\"), simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Compute derived parameters\", simulation_member);";
     auto & sg = Symbol::pre_simulation;
     c += "int mem_id = i_model->subValueId();";
     c += "int mem_count = i_model->subValueCount();";
@@ -1045,7 +1045,7 @@ void CodeGen::do_ModelShutdown()
     c += "int simulation_member = i_model->subValueId();";
     c += "";
     c += "// extract accumulators, and scale them to population size";
-    c += "theLog->logFormatted(LT(\"member=%d Compute entity tables\"), simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Compute entity tables\", simulation_member);";
 
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
@@ -1062,7 +1062,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::post_simulation;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logFormatted(LT(\"member=%d Compute post-simulation\"), simulation_member);";
+            c += "theLog->logFormatted(\"member=%d Compute post-simulation\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -1076,7 +1076,7 @@ void CodeGen::do_ModelShutdown()
     {
         auto & sg = Symbol::derived_tables;
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
-            c += "theLog->logFormatted(LT(\"member=%d Compute derived tables\"), simulation_member);";
+            c += "theLog->logFormatted(\"member=%d Compute derived tables\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
                 c += sg.disambiguated_name(id) + "();";
             }
@@ -1087,7 +1087,7 @@ void CodeGen::do_ModelShutdown()
         }
     }
 
-    c += "theLog->logFormatted(LT(\"member=%d Write output tables - start\"), simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Write output tables - start\", simulation_member);";
     c += "";
     c += "extern int64_t report_table_write_progress(int member, int tableNumber, const char * name, int64_t lastTime);";
     c += "";
@@ -1121,12 +1121,12 @@ void CodeGen::do_ModelShutdown()
     }
     c += "// at this point table->measure[k][j] will cause memory access violation";
     c += "";
-    c += "theLog->logFormatted(LT(\"member=%d Write output tables - finish\"), simulation_member);";
+    c += "theLog->logFormatted(\"member=%d Write output tables - finish\", simulation_member);";
 
     if (Symbol::any_parameters_to_tables) {
         // process derived parameters published as tables
         c += "";
-        c += "theLog->logFormatted(LT(\"member=%d Write derived parameters - start\"), simulation_member);";
+        c += "theLog->logFormatted(\"member=%d Write derived parameters - start\", simulation_member);";
         for (auto param : Symbol::pp_all_parameters) {
             if (param->metadata_as_table && !param->is_suppressed_table) {
                 // Write this derived parameter as a table
@@ -1152,7 +1152,7 @@ void CodeGen::do_ModelShutdown()
                 c += "}";
             }
         }
-        c += "theLog->logFormatted(LT(\"member=%d Write derived parameters - finish\"), simulation_member);";
+        c += "theLog->logFormatted(\"member=%d Write derived parameters - finish\", simulation_member);";
     }
 
     c += "// Entity table destruction";
@@ -1208,7 +1208,7 @@ void CodeGen::do_RunShutdown()
     c += "// max memory usage";
     c += "auto [nMem, nMax] = getProcessMemorySize();";
     c += "";
-    c += "if (nMax > 0) theLog->logFormatted(LT(\"Process peak memory usage: %.2f MB\"), ((double)nMax / (1024.0 * 1024.0)));";
+    c += "if (nMax > 0) theLog->logFormatted(\"Process peak memory usage: %.2f MB\", ((double)nMax / (1024.0 * 1024.0)));";
     c += "}";
     c += "";
 }
@@ -2001,7 +2001,7 @@ void CodeGen::do_RunModel()
         c += "auto stars = stars_str.c_str();";
         c += "int set_node_bytes = 4 * sizeof(void *); // assume 3 words for b-tree, plus 1 word for payload (pointer)";
         c += "int rb_node_bytes = sizeof(rb_node<void *>);";
-        c += "theLog->logFormatted(LT(\"Warning : Model built with resource_use = on\"));";
+        c += "theLog->logFormatted(\"Warning : Model built with resource_use = on\");";
         c += "theLog->logFormatted(\"%sResource Use Report - Begin (for sub/member/replicate %d)\", prefix0, sub_id);";
         c += "theLog->logFormatted(\"%s\", prefix0);";
         c += "";
