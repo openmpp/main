@@ -58,6 +58,7 @@ if not exist "%PUBLISH_DIR%" (
 
 REM check if model.exe exist and model.sqlite exist
 REM if only Debug modelD.exe exist then set model run template to run.Debug.template.txt
+REM if Debug modelD.exe does not exists then check for MPI model_mpi.exe and for modelD_mpi.exe
 
 if exist "%PUBLISH_DIR%\%MODEL_NAME%.exe" (
   set model_exe_name=%MODEL_NAME%.exe
@@ -69,6 +70,26 @@ if not defined model_exe_name (
 
     if not defined OM_CFG_DEFAULT_RUN_TMPL (
       set OM_CFG_DEFAULT_RUN_TMPL=run.Debug.template.txt
+    )
+  )
+)
+if not defined model_exe_name (
+  if exist "%PUBLISH_DIR%\%MODEL_NAME%_mpi.exe" (
+
+    set model_exe_name=%MODEL_NAME%_mpi.exe
+
+    if not defined OM_CFG_DEFAULT_RUN_TMPL (
+      set OM_CFG_DEFAULT_RUN_TMPL=mpi.ModelRun.template.txt
+    )
+  )
+)
+if not defined model_exe_name (
+  if exist "%PUBLISH_DIR%\%MODEL_NAME%D_mpi.exe" (
+
+    set model_exe_name=%MODEL_NAME%D_mpi.exe
+
+    if not defined OM_CFG_DEFAULT_RUN_TMPL (
+      set OM_CFG_DEFAULT_RUN_TMPL=mpi.ModelDebug.template.txt
     )
   )
 )
