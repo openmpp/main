@@ -2011,6 +2011,16 @@ public:
     static bool option_symref_topic_notes;
 
     /**
+     * true to place notes early in an individual symbol topic.
+     */
+    static bool option_symref_topic_notes_early;
+
+    /**
+     * true to show the Note heading in an individual symbol topic
+     */
+    static bool option_symref_topic_note_heading;
+
+    /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
      */
     static bool option_alternate_attribute_dependency_implementation;

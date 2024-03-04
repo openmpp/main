@@ -398,6 +398,12 @@ void do_model_doc(
     /// Show authored NOTEs
     const bool& do_NOTEs = Symbol::option_symref_topic_notes;
 
+    /// Show authored NOTEs early in indiviudal topics
+    const bool& do_NOTEs_early = Symbol::option_symref_topic_notes_early;
+
+    /// Show the Note: heading in indiviudal topics
+    const bool& do_NOTE_heading = Symbol::option_symref_topic_note_heading;
+
     /// Show main topic
     bool do_main_topic = Symbol::option_symref_main_topic;
 
@@ -957,6 +963,32 @@ void do_model_doc(
                     mdStream << bread_crumb_hierarchy(lang, lang_index, s);
                 }
 
+                // symbol notes if present
+                if (do_NOTEs && do_NOTEs_early) {
+                    // symbol note if present
+                    {
+                        string note_in = s->pp_notes[lang_index];
+                        if (note_in.length()) {
+                            if (do_NOTE_heading) {
+                                mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                            }
+                            mdStream << "\n\n";
+                            string note_out = preprocess_markdown(note_in);
+                            mdStream << note_out << "\n\n";
+                        }
+                    }
+                    // parameter value note if present
+                    {
+                        string note_in = s->pp_value_notes[lang_index];
+                        if (note_in.length()) {
+                            mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
+                            string note_out = preprocess_markdown(note_in);
+                            mdStream << note_out << "\n\n";
+                        }
+
+                    }
+                }
+
                 // dimension table with links
                 if (!isScalar) {
                     mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
@@ -981,28 +1013,33 @@ void do_model_doc(
                 }
 
                 // x-reference section
-                bool any_xref = false;
                 if (do_developer_edition) {
-                    any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                    do_xref(lang, lang_index, s, s->name, mdStream);
                 }
 
-                // symbol note if present
-                if (do_NOTEs) {
-                    string note_in = s->pp_notes[lang_index];
-                    if (note_in.length()) {
-                        mdStream << "\n\n";
-                        string note_out = preprocess_markdown(note_in);
-                        mdStream << note_out << "\n\n";
+                // symbol notes if present
+                if (do_NOTEs && !do_NOTEs_early) {
+                    // symbol note if present
+                    {
+                        string note_in = s->pp_notes[lang_index];
+                        if (note_in.length()) {
+                            if (do_NOTE_heading) {
+                                mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                            }
+                            mdStream << "\n\n";
+                            string note_out = preprocess_markdown(note_in);
+                            mdStream << note_out << "\n\n";
+                        }
                     }
-                }
+                    // parameter value note if present
+                    {
+                        string note_in = s->pp_value_notes[lang_index];
+                        if (note_in.length()) {
+                            mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
+                            string note_out = preprocess_markdown(note_in);
+                            mdStream << note_out << "\n\n";
+                        }
 
-                // parameter value note if present
-                if (do_NOTEs) {
-                    string note_in = s->pp_value_notes[lang_index];
-                    if (note_in.length()) {
-                        mdStream << "**" + LTA(lang, "Default Value Note") + ":**\n\n";
-                        string note_out = preprocess_markdown(note_in);
-                        mdStream << note_out << "\n\n";
                     }
                 }
 
@@ -1117,6 +1154,19 @@ void do_model_doc(
                         mdStream << "\n**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
                     }
                     mdStream << "\n\n";
+                }
+
+                // symbol note if present
+                if (do_NOTEs && do_NOTEs_early) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
                 }
 
                 // table of enumerators of enumeration
@@ -1244,24 +1294,26 @@ void do_model_doc(
                 }
 
                 // x-reference section
-                bool any_xref = false;
                 if (do_developer_edition) {
-                    any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                    do_xref(lang, lang_index, s, s->name, mdStream);
                     if (s->is_classification()) {
                         auto c = dynamic_cast<ClassificationSymbol*>(s);
                         for (auto enumerator : c->pp_enumerators) {
                             auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
                             assert(ce); // logic guarantee
                             string qualified_name = s->name + "::" + ce->name;
-                            any_xref = do_xref(lang, lang_index, ce, qualified_name, mdStream);
+                            do_xref(lang, lang_index, ce, qualified_name, mdStream);
                         }
                     }
                 }
 
                 // symbol note if present
-                if (do_NOTEs) {
+                if (do_NOTEs && !do_NOTEs_early) {
                     string note_in = s->pp_notes[lang_index];
                     if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
                         mdStream << "\n\n";
                         string note_out = preprocess_markdown(note_in);
                         mdStream << note_out << "\n\n";
@@ -1458,6 +1510,19 @@ void do_model_doc(
                     mdStream << bread_crumb_hierarchy(lang, lang_index, s);
                 }
 
+                // symbol note if present
+                if (do_NOTEs && do_NOTEs_early) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
                 // dimension table with links
                 if (!isScalar) {
                     mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
@@ -1500,9 +1565,12 @@ void do_model_doc(
                 }
 
                 // symbol note if present
-                if (do_NOTEs) {
+                if (do_NOTEs && !do_NOTEs_early) {
                     string note_in = s->pp_notes[lang_index];
                     if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
                         mdStream << "\n\n";
                         string note_out = preprocess_markdown(note_in);
                         mdStream << note_out << "\n\n";
@@ -1643,6 +1711,19 @@ void do_model_doc(
                     mdStream << "\n\n";
                 }
 
+                // symbol note if present
+                if (do_NOTEs && do_NOTEs_early) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
                 // declaration section
                 if (do_developer_edition) {
                     if (s->is_identity_attribute()) {
@@ -1659,15 +1740,17 @@ void do_model_doc(
                 }
 
                 // x-reference section
-                bool any_xref = false;
                 if (do_developer_edition) {
-                    any_xref = do_xref(lang, lang_index, s, s->name, mdStream);
+                    do_xref(lang, lang_index, s, s->name, mdStream);
                 }
 
                 // symbol note if present
-                if (do_NOTEs) {
+                if (do_NOTEs && !do_NOTEs_early) {
                     string note_in = s->pp_notes[lang_index];
                     if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
                         mdStream << "\n\n";
                         string note_out = preprocess_markdown(note_in);
                         mdStream << note_out << "\n\n";
@@ -1752,6 +1835,19 @@ void do_model_doc(
                     mdStream << "\n\n";
                 }
 
+                // symbol note if present
+                if (do_NOTEs && do_NOTEs_early) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
                 // table of symbols declared in this module
                 if (do_module_symbols_declared) {
                     mdStream << "<strong>" + LTA(lang, "Symbols declared in") + " <code>" + s->name + "</code>:</strong>\n\n";
@@ -1834,9 +1930,12 @@ void do_model_doc(
                 }
 
                 // symbol note if present
-                if (do_NOTEs) {
+                if (do_NOTEs && !do_NOTEs_early) {
                     string note_in = s->pp_notes[lang_index];
                     if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
                         mdStream << "\n\n";
                         string note_out = preprocess_markdown(note_in);
                         mdStream << note_out << "\n\n";
