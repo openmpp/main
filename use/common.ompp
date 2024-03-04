@@ -476,7 +476,7 @@ void ModelExit(const char* msg)
  */
 void report_simulation_progress(int member, int percent)
 {
-    theLog->logFormatted(LT("member=%d Simulation progress=%d%%"), member, percent);
+    theLog->logFormatted("member=%d Simulation progress=%d%%", member, percent);
     report_simulation_progress_beat(percent);
 }
 
@@ -724,7 +724,7 @@ void process_trace_options(IRunBase* const i_runBase)
     if (om_event_trace_capable) { // is constexpr
         // Model was compiled with event trace capability
 
-        theLog->logFormatted(LT("Warning : possible performance impact - model built with event_trace = on"));
+        theLog->logFormatted("Warning : possible performance impact - model built with event_trace = on");
 
         {
             std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle", "modgen");
@@ -739,7 +739,7 @@ void process_trace_options(IRunBase* const i_runBase)
                 BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eCsv;
             }
             else {
-                theLog->logFormatted(LT("Warning : unrecognized EventTrace.ReportStyle=%s"), rptStyle.c_str());
+                theLog->logFormatted("Warning : unrecognized EventTrace.ReportStyle=%s", rptStyle.c_str());
             }
         }
 
@@ -826,7 +826,7 @@ void process_trace_options(IRunBase* const i_runBase)
         if (i_runBase->isOptionExist("EventTrace.SelectLinkedEntities")) {
             BaseEntity::event_trace_select_linked_entities = i_runBase->boolOption("EventTrace.SelectLinkedEntities");
             if (BaseEntity::event_trace_select_linked_entities && 0 == BaseEntity::event_trace_selected_entities.size()) {
-                theLog->logFormatted(LT("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.SelectLinkedEntities"));
+                theLog->logFormatted("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.SelectLinkedEntities");
                 BaseEntity::event_trace_select_linked_entities = false;
             }
         }
@@ -840,7 +840,7 @@ void process_trace_options(IRunBase* const i_runBase)
                     BaseEntity::event_trace_selected_events.insert(id);
                 }
                 else {
-                    theLog->logFormatted(LT("Warning : unrecognized event EventTrace.SelectedEvents=%s"), str.c_str());
+                    theLog->logFormatted("Warning : unrecognized event EventTrace.SelectedEvents=%s", str.c_str());
                 }
             }
         }
@@ -854,7 +854,7 @@ void process_trace_options(IRunBase* const i_runBase)
                     BaseEntity::event_trace_selected_attributes.insert(id);
                 }
                 else {
-                    theLog->logFormatted(LT("Warning : unrecognized attribute EventTrace.SelectedAttributes=%s"), str.c_str());
+                    theLog->logFormatted("Warning : unrecognized attribute EventTrace.SelectedAttributes=%s", str.c_str());
                 }
             }
         }
@@ -872,7 +872,7 @@ void process_trace_options(IRunBase* const i_runBase)
                     BaseEntity::event_trace_selected_tables.insert(id);
                 }
                 else {
-                    theLog->logFormatted(LT("Warning : unrecognized table EventTrace.SelectedTables=%s"), str.c_str());
+                    theLog->logFormatted("Warning : unrecognized table EventTrace.SelectedTables=%s", str.c_str());
                 }
             }
         }
