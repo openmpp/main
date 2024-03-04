@@ -825,15 +825,15 @@ void MetaLoader::parseImportOptions(void)
 /** parse suppress options to build list of tables to exclude from calculation and run output results.
 *
 * There are two ways to specify tables suppression:             \n
-*   Suppress.AgeTable,IncomeGroup           \n
+*   -Tables.Suppress AgeTable,IncomeGroup           \n
 * this means suppress only AgeTable and IncomeGroup of tables.  \n
 * Or:                                       \n
-*   Retain.AgeTable,IncomeGroup             \n
+*   -Tables.Retain AgeTable,IncomeGroup             \n
 * result in suppression of all output tables except of AgeTable and IncomeGroup of tables.
 *
 * Suppress true and false values are mutually exclusive and cannot be mixed.
 * For example, this model run will fail:    \n
-*   model.exe -Suppress A -Retain B
+*   model.exe -Tables.Suppress A -Tables.Retain B
 */
 void MetaLoader::parseSuppressOptions(void)
 {
