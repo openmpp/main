@@ -17,21 +17,24 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-// 
-// Model documentation options:
-//  (These have no effect unless Model Documentation is turned on)
-//   
-options symref_developer_edition = on;       // Comment this line for production models.
-options symref_unpublished_symbols = on;     // Comment this line for production models.
-options symref_parameter_major_groups = off; // Comment this line for models with large parameter hierarchies.
-options symref_table_major_groups = off;     // Comment this line for models with large table hierarchies.
-
-//options symref_topic_attributes_internal = on;
-
 options microdata_output = on;
 options microdata_write_on_exit = on;
 
-options authored_documentation = on;
-options generated_documentation = on;
+// 
+// Model Documentation options:
+// (These have no effect if Model Documentation is disabled in build settings.)
+//
+
+//options authored_documentation = off;        // Comment this line to include the autonomous authored component.
+//options generated_documentation = off;       // Comment this line to include the generated Symbol Reference component.
+
+// 
+// Selected Symbol Reference options:
+//
+
+options symref_developer_edition = on;       // Comment this line to produce the User Edition.
+options symref_unpublished_symbols = on;     // Comment this line to remove symbols which are absent from the UI.
+options symref_parameter_major_groups = off; // Comment this line for models with large parameter hierarchies.
+options symref_table_major_groups = off;     // Comment this line for models with large table hierarchies.
 
 #endif // Hide non-C++ syntactic island from IDE
