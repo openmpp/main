@@ -306,9 +306,14 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
     return any_xref;
 }
 
-static string maddy_link(string& name)
+static string maddy_link(const string& name)
 {
     return "[`" + name + "`](#" + name + ")";
+}
+
+static string maddy_link(const string& name, const string& link)
+{
+    return "[`" + name + "`](#" + link + ")";
 }
 
 static string maddy_symbol(string& name)
@@ -1184,7 +1189,7 @@ void do_model_doc(
                         for (auto enumerator : c->pp_enumerators) {
                             auto ce = dynamic_cast<ClassificationEnumeratorSymbol*>(enumerator);
                             assert(ce); // logic guarantee
-                            string export_name = ce->short_name;
+                            string export_name = maddy_symbol(ce->short_name);
                             string name = ce->name;
                             string value = to_string(ce->ordinal);
                             string label = ce->pp_labels[lang_index];
@@ -1918,7 +1923,7 @@ void do_model_doc(
                         }
                         else if (auto ef = dynamic_cast<EntityFuncSymbol*>(d)) {
                             name = maddy_symbol(ef->name);
-                            entity = ef->pp_entity->name;
+                            entity = maddy_symbol(ef->pp_entity->name);
                             kind = LTA(lang, "entity function");
                             if (auto ee = ef->associated_event) {
                                 if (ef == ee->time_func_original) {
@@ -1932,19 +1937,19 @@ void do_model_doc(
                                 }
                             }
                         }
-                        else if (auto ia = dynamic_cast<IdentityAttributeSymbol*>(d)) {
-                            name = maddy_symbol(ia->name);
-                            entity = ia->pp_entity->name;
+                        else if (auto a = dynamic_cast<IdentityAttributeSymbol*>(d)) {
+                            name = maddy_link(a->name, a->dot_name());
+                            entity = maddy_symbol(a->pp_entity->name);
                             kind = LTA(lang, "identity attribute");
                         }
-                        else if (auto ia = dynamic_cast<SimpleAttributeSymbol*>(d)) {
-                            name = maddy_symbol(ia->name);
-                            entity = ia->pp_entity->name;
+                        else if (auto a = dynamic_cast<SimpleAttributeSymbol*>(d)) {
+                            name = maddy_link(a->name, a->dot_name());
+                            entity = maddy_symbol(a->pp_entity->name);
                             kind = LTA(lang, "simple attribute");
                         }
-                        else if (auto em = dynamic_cast<LinkAttributeSymbol*>(d)) {
-                            name = maddy_symbol(em->name);
-                            entity = em->pp_entity->name;
+                        else if (auto a = dynamic_cast<LinkAttributeSymbol*>(d)) {
+                            name = maddy_link(a->name, a->dot_name());
+                            entity = maddy_symbol(a->pp_entity->name);
                             kind = LTA(lang, "link attribute");
                         }
                         else if (auto es = dynamic_cast<EntitySetSymbol*>(d)) {
