@@ -393,7 +393,10 @@ void do_model_doc(
     const bool& do_developer_edition = Symbol::option_symref_developer_edition;
 
     /// Show unpublished symbols
-    const bool& do_unpublished = Symbol::option_symref_unpublished_symbols;
+    bool do_unpublished = false;
+    if (do_developer_edition) {
+        do_unpublished = Symbol::option_symref_unpublished_symbols;
+    }
 
     /// Show authored NOTEs
     const bool& do_NOTEs = Symbol::option_symref_topic_notes;
