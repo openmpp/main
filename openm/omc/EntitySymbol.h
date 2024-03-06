@@ -83,7 +83,7 @@ public:
     void post_parse(int pass);
 
     /** Mark enumerations required for metadata support for this entity. */
-    void post_parse_mark_enumerations(void);
+    void mark_enumerations_to_publish(void);
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 

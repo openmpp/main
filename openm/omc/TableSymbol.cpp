@@ -57,10 +57,9 @@ void TableSymbol::post_parse(int pass)
     }
 }
 
-void TableSymbol::post_parse_mark_enumerations(void)
+void TableSymbol::mark_enumerations_to_publish(void)
 {
-    if (true) {
-    //SFG if (!is_internal && !is_suppressed_table) {
+    if (is_published()) {
         // Mark enumerations required for metadata support for this table
         // The enumeration of each dimension in the table is required
         for (auto dim : dimension_list) {
@@ -70,7 +69,6 @@ void TableSymbol::post_parse_mark_enumerations(void)
         }
     }
 }
-
 
 CodeBlock TableSymbol::cxx_declaration_global()
 {

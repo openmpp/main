@@ -60,6 +60,9 @@
 #include "ParameterSymbol.h"
 #include "ScenarioSymbol.h"
 #include "AnonGroupSymbol.h"
+#include "ParameterSymbol.h"
+#include "TableSymbol.h"
+#include "EntitySymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -597,6 +600,22 @@ int main(int argc, char * argv[])
                         }
                     }
                 }
+            }
+        }
+
+        // Determine enumeration metadata required by published symbols
+        {
+            // Determine enumeration metadata required by published parameters
+            for (auto param : Symbol::pp_all_parameters) {
+                param->mark_enumerations_to_publish();
+            }
+            // Determine enumeration metadata required by published tables
+            for (auto tbl : Symbol::pp_all_tables) {
+                tbl->mark_enumerations_to_publish();
+            }
+            // Determine enumeration metadata required by published entity attributes
+            for (auto ent : Symbol::pp_all_entities) {
+                ent->mark_enumerations_to_publish();
             }
         }
 

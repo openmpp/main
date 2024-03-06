@@ -264,12 +264,10 @@ void ParameterSymbol::post_parse(int pass)
 }
 
 // Mark enumerations required for metadata support for this parameter
-void ParameterSymbol::post_parse_mark_enumerations(void)
+void ParameterSymbol::mark_enumerations_to_publish(void)
 {
     // Mark enumerations required for metadata support for this parameter
-    // Note that .csv or .tsv parameters are not detected until late, so may be marked as missing_parameters
-    // so publish meta data for their enumerations.
-    if (source == scenario_parameter || source == missing_parameter || metadata_as_table) {
+    if (is_published()) {
         // The storage type if an enumeration
         if (pp_datatype->is_enumeration()) {
             auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
@@ -700,9 +698,9 @@ CodeBlock ParameterSymbol::dat_definition() const
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Only external (scenario) parameters, or parameters echoed as tables, have metadata
-    if (source != ParameterSymbol::parameter_source::scenario_parameter && !metadata_as_table) {
+    if (!is_published()) {
         // returning before traversing possible higher levels of the hierarchical calling chain 
-        // ensures those higher levela are not called for this instance.
+        // ensures those higher levela are not called for this Symbol.
         return;
     }
 
@@ -903,6 +901,9 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
                 metaRows.tableExprTxt.push_back(tableExprTxt);
             }
         }
+    }
+    else {
+        assert(false); // logic guarantee
     }
 }
 

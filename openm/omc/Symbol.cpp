@@ -2059,24 +2059,9 @@ void Symbol::post_parse_all()
     // Generate and apply heuristic short names as needed
     heuristic_short_names();
 
-    // Determine enumeration metadata required by published parameters
-    for (auto param : pp_all_parameters) {
-        param->post_parse_mark_enumerations();
-    }
-
-    // Determine enumeration metadata required by published tables
-    for (auto tbl : pp_all_tables) {
-        tbl->post_parse_mark_enumerations();
-    }
-
     // Terminate the event time function body for the self-scheduling event (if present)
     for (auto * ent : pp_all_entities) {
         ent->finish_ss_event();
-    }
-
-    // Determine enumeration metadata required by published entity attributes
-    for (auto * ent : pp_all_entities) {
-        ent->post_parse_mark_enumerations();
     }
 
     // Process PreSimulation, PostSimulation, UserTables

@@ -661,7 +661,7 @@ void EntitySymbol::post_parse(int pass)
 }
 
 // Mark enumerations required for metadata support for this entity
-void EntitySymbol::post_parse_mark_enumerations(void)
+void EntitySymbol::mark_enumerations_to_publish(void)
 {
     // Mark enumerations required for metadata support for this entity's eligible attributes
     for (auto dm : pp_data_members) {

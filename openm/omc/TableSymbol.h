@@ -50,7 +50,7 @@ public:
     void post_parse(int pass);
 
     /** Mark enumerations required for metadata support for this table. */
-    void post_parse_mark_enumerations(void);
+    void mark_enumerations_to_publish(void);
 
     CodeBlock cxx_declaration_global();
 
