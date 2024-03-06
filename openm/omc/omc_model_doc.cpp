@@ -1296,6 +1296,41 @@ void do_model_doc(
                     }
                 }
 
+                // table of attributes using this enumeration
+                {
+                    set<string> attributes_used;
+                    for (auto a : attributes) {
+                        if (a->pp_data_type->is_enumeration()) {
+                            auto t = dynamic_cast<EnumerationSymbol*>(a->pp_data_type);
+                            assert(t); // logic guarantee
+                            if (s == t) {
+                                attributes_used.insert(a->unique_name);
+                            }
+                        }
+                    }
+                    if (attributes_used.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Attributes using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto& au : attributes_used) {
+                            auto sym = Symbol::get_symbol(au);
+                            assert(sym); // logic guarantee
+                            auto a = dynamic_cast<AttributeSymbol*>(sym);
+                            assert(a); // logic guarantee
+                            auto name = a->name;
+                            auto entity = a->pp_entity->name;
+                            auto label = a->pp_labels[lang_index];
+                            mdStream
+                                << "`" + entity + "` | "
+                                << "[`" + name + "`](#" + a->dot_name() + ")" << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
                 // x-reference section
                 if (do_developer_edition) {
                     do_xref(lang, lang_index, s, s->name, mdStream);
