@@ -1004,14 +1004,14 @@ void do_model_doc(
                     mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& dim : s->dimension_list) {
-                        string dim_export_name = dim->short_name;
+                        string dim_external_name = maddy_symbol(dim->short_name);
                         auto e = dim->pp_enumeration;
                         assert(e); // dimensions of parameters are always enumerations
                         string dim_enumeration = e->name;
                         string dim_size = to_string(e->pp_size());
                         string dim_label = dim->pp_labels[lang_index];
                         mdStream
-                            << dim_export_name << " | "
+                            << dim_external_name << " | "
                             << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
                             << dim_size << " | "
                             << dim_label << "\n"
@@ -1573,14 +1573,14 @@ void do_model_doc(
                     mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Margin") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& dim : s->dimension_list) {
-                        string dim_export_name = dim->short_name;
+                        string dim_external_name = maddy_symbol(dim->short_name);
                         auto e = dim->pp_enumeration;
                         assert(e); // dimensions of parameters are always enumerations
                         string dim_enumeration = e->name;
                         string dim_size = to_string(e->pp_size());
                         string dim_label = dim->pp_labels[lang_index];
                         mdStream
-                            << dim_export_name << " | "
+                            << dim_external_name << " | "
                             << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
                             << dim_size << " | "
                             << (dim->has_margin ? "**X**" : "") << " | "
