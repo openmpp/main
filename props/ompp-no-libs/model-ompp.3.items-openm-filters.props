@@ -50,6 +50,12 @@
     <ClInclude Include="$(OM_ROOT)/include/libopenm/common/omFile.h">
       <Filter>openm-include\common</Filter>
     </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/common/omOS.h">
+      <Filter>openm-include\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(OM_ROOT)/include/libopenm/common/xz_crc64.h">
+      <Filter>openm-include\common</Filter>
+    </ClInclude>
     <ClInclude Include="$(OM_ROOT)/include/libopenm/db/dbCommon.h">
       <Filter>openm-include\db</Filter>
     </ClInclude>
@@ -164,6 +170,12 @@
       <Filter>libopenm</Filter>
     </ClCompile>
     
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/argReader.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/crc32.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/file.cpp">
       <Filter>libopenm\common</Filter>
     </ClCompile>
@@ -176,16 +188,19 @@
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/log.cpp">
       <Filter>libopenm\common</Filter>
     </ClCompile>
-    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/utf8Convert.cpp">
-      <Filter>libopenm\common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/argReader.cpp">
-      <Filter>libopenm\common</Filter>
-    </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/md5.cpp">
       <Filter>libopenm\common</Filter>
     </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/os.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/splitCsv.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/utf8Convert.cpp">
+      <Filter>libopenm\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/common/xz_crc64.c">
       <Filter>libopenm\common</Filter>
     </ClCompile>
 
@@ -193,6 +208,18 @@
       <Filter>libopenm\db</Filter>
     </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbMetaRow.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityAttrTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityAttrTxtTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityDicTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityDicTxtTable.cpp">
       <Filter>libopenm\db</Filter>
     </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupLstTable.cpp">
@@ -244,9 +271,6 @@
       <Filter>libopenm\db</Filter>
     </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runOptionTable.cpp">
-      <Filter>libopenm\db</Filter>
-    </ClCompile>
-    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runTxtTable.cpp">
       <Filter>libopenm\db</Filter>
     </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/tableAccTable.cpp">
@@ -324,9 +348,6 @@
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbExec.cpp">
       <Filter>libopenm\db</Filter>
     </ClCompile>
-    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/runParamTxtTable.cpp">
-      <Filter>libopenm\db</Filter>
-    </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/dbValue.cpp">
       <Filter>libopenm\db</Filter>
     </ClCompile>
@@ -362,6 +383,9 @@
       <Filter>libopenm\model</Filter>
     </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/modelHelper.cpp">
+      <Filter>libopenm\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/runControllerMicrodata.cpp">
       <Filter>libopenm\model</Filter>
     </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/model/runControllerNewRun.cpp">
