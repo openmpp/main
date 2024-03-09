@@ -1598,6 +1598,18 @@ void do_model_doc(
                     }
                 }
 
+                // filter if present
+                if (do_developer_edition && isEntityTable && et->filter) {
+                    auto ia = et->filter;
+                    mdStream << "**" + LTA(lang, "Filter:") + ":** \n";
+                    mdStream << "\n";
+                    // enclose declaration of associated identity attribute in c++ code block
+                    mdStream << "```cpp\n";
+                    // TODO: find a way to get a string containing the original model code for the identity attribute instead.
+                    mdStream << ia->cxx_expression(ia->root);
+                    mdStream << "\n```\n\n";
+                }
+
                 // dimensions table with links
                 if (!isScalar) {
                     mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
@@ -1821,7 +1833,7 @@ void do_model_doc(
                     if (s->is_identity_attribute()) {
                         auto ia = dynamic_cast<IdentityAttributeSymbol*>(s);
                         assert(ia); // logic guarantee
-                        mdStream << "**" + LTA(lang, "Declaration") + ":** \n";
+                        mdStream << "**" + LTA(lang, "Declaration:") + "** \n";
                         mdStream << "\n";
                         // enclose declaration in c++ code block
                         mdStream << "```cpp\n";
