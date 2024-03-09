@@ -205,6 +205,8 @@ void MpiExec::waitRequest(int i_pollTime, MPI_Request & io_request) const {
 
     long nAttempt = 1 + OM_WAIT_SLEEP_TIME / OM_ACTIVE_SLEEP_TIME;
     int isDone = 0;
+    // 2024-003-08: using sleep to mitigate Microsoft MPI bug which may cause incorrect success
+    // this_thread::sleep_for(chrono::milliseconds(i_pollTime));
     do {
         int mpiRet = MPI_Test(&io_request, &isDone, MPI_STATUS_IGNORE);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
@@ -240,8 +242,7 @@ void MpiExec::bcastValue(int i_groupOne, const type_info & i_type, void * io_val
         int mpiRet = MPI_Ibcast(io_value, 1, MpiPacked::toMpiType(i_type), rootRank, mComm, &mpiRq);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-        // wait until broadcast completed
-        waitRequest((isRoot() ? OM_SEND_SLEEP_TIME : OM_SEND_SLEEP_TIME), mpiRq);
+        waitRequest((isRoot() ? OM_SEND_SLEEP_TIME : OM_RECV_SLEEP_TIME), mpiRq);   // wait until broadcast completed
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -283,6 +284,8 @@ void MpiExec::bcastSend(int i_groupOne, const type_info & i_type, size_t i_size,
             int mpiRet = MPI_Ibcast(&sendSize, 1, MPI_INT, rootRank, mComm, &sizeRq);
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
+            waitRequest(OM_SEND_SLEEP_TIME, sizeRq);    // wait until size broadcast send completed
+
             // send value array
             mpiRet = MPI_Ibcast(io_valueArr, sendSize, MpiPacked::toMpiType(i_type), rootRank, mComm, &dataRq);
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
@@ -292,6 +295,8 @@ void MpiExec::bcastSend(int i_groupOne, const type_info & i_type, size_t i_size,
             const string * srcArr = reinterpret_cast<const string *>(io_valueArr);
             int sendSize = MpiPacked::packedSize(i_size, srcArr);
             if (sendSize <= 0 || sendSize >= INT_MAX) throw MsgException("Invalid size of data to broadcast: %d", sendSize);
+
+            waitRequest(OM_SEND_SLEEP_TIME, sizeRq);    // wait until size broadcast send completed
 
             packedData = MpiPacked::packArray(i_size, srcArr);
 
@@ -303,10 +308,7 @@ void MpiExec::bcastSend(int i_groupOne, const type_info & i_type, size_t i_size,
             mpiRet = MPI_Ibcast(packedData.get(), sendSize, MPI_PACKED, rootRank, mComm, &dataRq);
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
         }
-
-        // wait until broadcast send completed
-        waitRequest(OM_SEND_SLEEP_TIME, sizeRq);
-        waitRequest(OM_SEND_SLEEP_TIME, dataRq);
+        waitRequest(OM_SEND_SLEEP_TIME, dataRq);    // wait until data send completed
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -408,14 +410,14 @@ void MpiExec::bcastSendPacked(int i_groupOne, IRowBaseVec & io_rowVec, const IPa
         int mpiRet = MPI_Ibcast(&packedSize, 1, MPI_INT, rootRank, mComm, &sizeRq);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
+        waitRequest(OM_SEND_SLEEP_TIME, sizeRq);    // wait until size broadcast send completed
+
         // send packed db rows
         MPI_Request dataRq = MPI_REQUEST_NULL;
         mpiRet = MPI_Ibcast(packedData.data(), packedSize, MPI_PACKED, rootRank, mComm, &dataRq);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
 
-        // wait until broadcast send completed
-        waitRequest(OM_RECV_SLEEP_TIME, sizeRq);
-        waitRequest(OM_RECV_SLEEP_TIME, dataRq);
+        waitRequest(OM_SEND_SLEEP_TIME, dataRq);    // wait until data send completed
     }
     catch (MsgException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
