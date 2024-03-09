@@ -1598,7 +1598,7 @@ void do_model_doc(
                     }
                 }
 
-                // dimension table with links
+                // dimensions table with links
                 if (!isScalar) {
                     mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
@@ -1634,19 +1634,24 @@ void do_model_doc(
                     mdStream << "|<table\n"; // maddy-specific end table
                 }
 
-                // measure table
+                // measures table
                 {
-                    mdStream << "**" + LTA(lang, "Measures") + ":**\n\n";
+                    auto mdim = s->measure_dimension;
+                    assert(mdim); // logic guarantee
+                    mdStream << "**" + LTA(lang, "Measures") + ":**";
+                    mdStream << "\n" + mdim->pp_labels[lang_index];
+                    mdStream << "\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << " " + LTA(lang, "External Name");
+                    mdStream << " | " + LTA(lang, "Label");
+                    mdStream << " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& m : s->pp_measures) {
                         string m_external_name = maddy_symbol(m->short_name);
                         string m_label = m->pp_labels[lang_index];
-                        mdStream
-                            << m_external_name << " | "
-                            << m_label << "\n"
-                            ;
+                        mdStream << m_external_name;
+                        mdStream << " | " + m_label;
+                        mdStream << "\n";
                     }
                     mdStream << "|<table\n"; // maddy-specific end table
                 }
