@@ -1911,7 +1911,7 @@ public:
     static bool option_symref_developer_edition;
 
     /**
-     * true to include unpublished symbols in symbol reference.
+     * false to exclude unpublished symbols in symbol reference.
      */
     static bool option_symref_unpublished_symbols;
 

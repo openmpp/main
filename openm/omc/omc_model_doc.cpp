@@ -134,7 +134,7 @@ static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* sym_ter
     return bread_crumbs;
 }
 
-static string expand_group(int lang_index, const GroupSymbol* g, int depth, int max_depth, bool summary_mode)
+static string expand_group(int lang_index, const GroupSymbol* g, int depth, int max_depth, bool summary_mode, bool do_unpublished)
 {
     string result;
     if (g) {
@@ -160,11 +160,11 @@ static string expand_group(int lang_index, const GroupSymbol* g, int depth, int 
         for (auto s : g->pp_symbol_list) {
             /// subgroup
             auto sg = dynamic_cast<GroupSymbol*>(s);
-            if (sg && (sg->is_published() || Symbol::option_symref_unpublished_symbols) && ((max_depth != -1) && (depth < max_depth))) {
+            if (sg && (sg->is_published() || do_unpublished) && ((max_depth != -1) && (depth < max_depth))) {
                 // expand recursively to next level down in hierarchy
-                result += expand_group(lang_index, sg, depth + 1, max_depth, summary_mode);
+                result += expand_group(lang_index, sg, depth + 1, max_depth, summary_mode, do_unpublished);
             }
-            else if (!summary_mode && (s->is_published() || Symbol::option_symref_unpublished_symbols)) {
+            else if (!summary_mode && (s->is_published() || do_unpublished)) {
                 // symbol hyperlink, name, and label
                 result += indent
                     + "<a href=\"#" + s->name + "\"><code>" + s->name + "</code></a> "
@@ -400,7 +400,12 @@ void do_model_doc(
     /// Show unpublished symbols
     bool do_unpublished = false;
     if (do_developer_edition) {
+        // allow unpublished symbols to be turned off in Developer Edition
         do_unpublished = Symbol::option_symref_unpublished_symbols;
+    }
+    else {
+        // unpublished symbols are always excluded in User Edition
+        do_unpublished = false;
     }
 
     /// Show authored NOTEs
@@ -818,7 +823,7 @@ void do_model_doc(
                     // skip group if not top-level or not published.
                     continue;
                 }
-                mdStream << expand_group(lang_index, g, 0, 1, true);
+                mdStream << expand_group(lang_index, g, 0, 1, true, do_unpublished);
             }
             mdStream << "</p>\n\n";
             mdStream << fragmentReturnLinks;
@@ -835,7 +840,7 @@ void do_model_doc(
                     // skip group if not top-level or not published.
                     continue;
                 }
-                mdStream << "<p>" + expand_group(lang_index, g, 0, 1000, false) + "</p>\n\n";
+                mdStream << "<p>" + expand_group(lang_index, g, 0, 1000, false, do_unpublished) + "</p>\n\n";
             }
             // orphan symbols
             {
@@ -1420,7 +1425,7 @@ void do_model_doc(
                     // skip group if not top-level or not published.
                     continue;
                 }
-                mdStream << expand_group(lang_index, g, 0, 1, true);
+                mdStream << expand_group(lang_index, g, 0, 1, true, do_unpublished);
             }
             mdStream << "</p>\n\n";
             mdStream << fragmentReturnLinks;
@@ -1437,7 +1442,7 @@ void do_model_doc(
                     // skip group if not top-level or not published.
                     continue;
                 }
-                mdStream << "<p>" + expand_group(lang_index, g, 0, 1000, false) + "</p>\n\n";
+                mdStream << "<p>" + expand_group(lang_index, g, 0, 1000, false, do_unpublished) + "</p>\n\n";
             }
             // orphan symbols
             {
@@ -1495,6 +1500,10 @@ void do_model_doc(
                 /// is a scalar table
                 bool isScalar = (s->dimension_list.size() == 0);
 
+                /// is an entity table
+                bool isEntityTable = s->is_entity_table();
+                auto et = dynamic_cast<EntityTableSymbol*>(s);
+
                 // topic header line
                 mdStream
                     // symbol name
@@ -1507,10 +1516,26 @@ void do_model_doc(
                 {
                     string kindInfo;
                     {
-                        kindInfo = LTA(lang, "Table");
-                        if (s->is_hidden) {
-                            kindInfo += "(" + LTA(lang, "hidden") + ")";
+                        if (do_developer_edition) {
+                            if (isEntityTable) {
+                                kindInfo = LTA(lang, "Entity Table");
+
+                            }
+                            else {
+                                kindInfo = LTA(lang, "Derived Table");
+                            }
+                            if (s->is_hidden) {
+                                kindInfo += " (" + LTA(lang, "hidden") + ")";
+                            }
                         }
+                        else {
+                            kindInfo = LTA(lang, "Table");
+                        }
+                    }
+                    string entityInfo;
+                    if (isEntityTable) {
+                        assert(et); // logic guarantee
+                        entityInfo = maddy_symbol(et->pp_entity->name);
                     }
                     string shapeCompact;
                     if (!isScalar) {
@@ -1538,8 +1563,15 @@ void do_model_doc(
                     }
                     mdStream
                         << "**" + LTA(lang, "Kind") + ":** " + kindInfo
-                        << "\n"
-                        << " **" + LTA(lang, "Cells") + ":** " << shapeCompact
+                        << "\n";
+                    if (do_developer_edition && isEntityTable) {
+                        mdStream
+                            << "**" + LTA(lang, "Entity") + ":** "
+                            << "\n"
+                            << entityInfo
+                            << "\n";
+                    }
+                    mdStream << " **" + LTA(lang, "Cells") + ":** " << shapeCompact
                         << "\n"
                         << " **" + LTA(lang, "Measures") + ":** " << measures;
                     if (moduleInfo.length() > 0) {
@@ -1576,12 +1608,12 @@ void do_model_doc(
                         string dim_external_name = maddy_symbol(dim->short_name);
                         auto e = dim->pp_enumeration;
                         assert(e); // dimensions of parameters are always enumerations
-                        string dim_enumeration = e->name;
+                        string dim_enumeration = maddy_link(e->name);
                         string dim_size = to_string(e->pp_size());
                         string dim_label = dim->pp_labels[lang_index];
                         mdStream
                             << dim_external_name << " | "
-                            << "[`" + dim_enumeration + "`](#" + dim_enumeration + ")" << " | "
+                            << dim_enumeration << " | "
                             << dim_size << " | "
                             << (dim->has_margin ? "**X**" : "") << " | "
                             << dim_label << "\n"
@@ -1597,10 +1629,10 @@ void do_model_doc(
                     mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& m : s->pp_measures) {
-                        string m_export_name = m->short_name;
+                        string m_external_name = maddy_symbol(m->short_name);
                         string m_label = m->pp_labels[lang_index];
                         mdStream
-                            << m_export_name << " | "
+                            << m_external_name << " | "
                             << m_label << "\n"
                             ;
                     }
