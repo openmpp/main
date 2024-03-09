@@ -1602,7 +1602,15 @@ void do_model_doc(
                 if (!isScalar) {
                     mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "External Name") + " | " + LTA(lang, "Enumeration") + " | " + LTA(lang, "Size") + " | " + LTA(lang, "Margin") + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << " " + LTA(lang, "External Name");
+                    mdStream << " | " + LTA(lang, "Enumeration");
+                    if (do_developer_edition && isEntityTable) {
+                        mdStream << " | " + LTA(lang, "Attribute");
+                    }
+                    mdStream << " | " + LTA(lang, "Size");
+                    mdStream << " | " + LTA(lang, "Margin");
+                    mdStream << " | " + LTA(lang, "Label");
+                    mdStream << " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
                     for (auto& dim : s->dimension_list) {
                         string dim_external_name = maddy_symbol(dim->short_name);
@@ -1611,13 +1619,17 @@ void do_model_doc(
                         string dim_enumeration = maddy_link(e->name);
                         string dim_size = to_string(e->pp_size());
                         string dim_label = dim->pp_labels[lang_index];
-                        mdStream
-                            << dim_external_name << " | "
-                            << dim_enumeration << " | "
-                            << dim_size << " | "
-                            << (dim->has_margin ? "**X**" : "") << " | "
-                            << dim_label << "\n"
-                            ;
+                        mdStream << dim_external_name;
+                        mdStream << " | " + dim_enumeration;
+                        if (do_developer_edition && isEntityTable) {
+                            auto a = dim->pp_attribute;
+                            assert(a); // logic guarantee
+                            mdStream << " | " + maddy_link(a->name, a->dot_name());
+                        }
+                        mdStream << " | " + dim_size;
+                        mdStream << " | " << (dim->has_margin ? "**X**" : "");
+                        mdStream << " | " + dim_label;
+                        mdStream << "\n";
                     }
                     mdStream << "|<table\n"; // maddy-specific end table
                 }
