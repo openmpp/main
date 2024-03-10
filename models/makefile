@@ -28,7 +28,7 @@ model_DOC_DIR = $(model_OUT_PREFIX)/bin/doc
 # models to build
 #
 ifndef MODEL_DIRS
-  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths OzProjX OzProjGenX Alpha2
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths OzProjGenX OzProjX Alpha2
 endif
 
 #
@@ -71,9 +71,9 @@ publish :
 run :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) run || { exit $$?; };)
 
-# OzProjX models reading microdata from ../../microdata/some.file.csv
+# OzProjX models reading microdata from ../../../OzProjGenX/microdata/OzProj22_5K.csv
 #
-OZ_PROJ_MODELS = OzProjX OzProjGenX
+OZ_PROJ_MODELS = OzProjGenX OzProjX
 
 .PHONY : publish-all
 publish-all : prepare publish
