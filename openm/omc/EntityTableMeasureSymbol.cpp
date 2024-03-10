@@ -73,39 +73,61 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
         string result;
         switch (style) {
         case cxx:
+        {
             result = "acc[" + to_string(accumulator->index) + "][cell]";
             break;
+        }
         case sql_aggregated_accumulators:
-            {
-                string agg_func = "";
-                switch (accumulator->accumulator) {
-                case token::TK_sum:
-                case token::TK_unit:
-                    agg_func = "OM_AVG";
-                    break;
-                case token::TK_minimum:
-                    agg_func = "OM_MIN";
-                    break;
-                case token::TK_maximum:
-                    agg_func = "OM_MAX";
-                    break;
-                default:
-                    // Other accumulators cannot be composited, so average
-                    agg_func = "OM_AVG";
-                    break;
-                }
-                result = agg_func + "( acc" + to_string(accumulator->index) + " )";
+        {
+            string agg_func = "";
+            switch (accumulator->accumulator) {
+            case token::TK_sum:
+            case token::TK_unit:
+                agg_func = "OM_AVG";
+                break;
+            case token::TK_minimum:
+                agg_func = "OM_MIN";
+                break;
+            case token::TK_maximum:
+                agg_func = "OM_MAX";
+                break;
+            default:
+                // Other accumulators cannot be composited, so average
+                agg_func = "OM_AVG";
                 break;
             }
+            result = agg_func + "( acc" + to_string(accumulator->index) + " )";
             break;
+        }
         case sql_accumulators:
-            {
-                result = "acc" + to_string(accumulator->index);
-                break;
+        {
+            result = "acc" + to_string(accumulator->index);
+            break;
+        }
+        case table_syntax:
+        {
+            if (accumulator->accumulator == token::TK_unit) {
+                result = "count()";
+            }
+            else {
+                auto a = accumulator->pp_attribute;
+                assert(a); // logic guarantee
+                result = a->pretty_name();
+                // surround attribute with table operator, increment, accumulator if not defaults
+                if (accumulator->table_op != token::TK_interval) {
+                    result = token_to_string(accumulator->table_op) + "(" + result + ")";
+                }
+                if (accumulator->increment != token::TK_delta) {
+                    result = token_to_string(accumulator->increment) + "(" + result + ")";
+                }
+                if (accumulator->accumulator != token::TK_sum) {
+                    result = token_to_string(accumulator->accumulator) + "(" + result + ")";
+                }
             }
             break;
+        }
         default:
-            assert(0);
+            assert(false); // not reached
         }
         return result;
     }
@@ -129,7 +151,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
             return "sqrt( " + expr_right + " )";
         }
         else {
-            return "( " + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + " )";
+            return "(" + expr_left + " " + token_to_string(binary_node->op) + " " + expr_right + ")";
         }
     }
 }

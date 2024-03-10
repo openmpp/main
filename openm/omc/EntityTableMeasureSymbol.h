@@ -50,7 +50,10 @@ public:
         sql_aggregated_accumulators,
 
         // ompp SQL with unaggregated accumulators
-        sql_accumulators
+        sql_accumulators,
+
+        // table expression syntax
+        table_syntax
     };
 
     /**
@@ -59,7 +62,7 @@ public:
      * @param node  The root of the expression tree.
      * @param style The style.
      *
-     * @return Result as a \a CodeBlock.
+     * @return Result as a string.
      */
     string get_expression(const ExprForTable *node, expression_style style);
 

@@ -290,7 +290,7 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
 }
 
 //static
-string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
+string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node, bool use_pretty_name)
 {
     string result;
 
@@ -301,7 +301,12 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
     auto ternary_op = dynamic_cast<const ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
-        result = sym->symbol->name;
+        if (use_pretty_name) {
+            result = sym->symbol->pretty_name();
+        }
+        else {
+            result = sym->symbol->name;
+        }
     }
     else if (lit != nullptr) {
         result = lit->constant->value();
@@ -310,39 +315,39 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
         assert(unary_op->right); // grammar guarantee
         result =
             token_to_string(unary_op->op)
-            + cxx_expression(unary_op->right);
+            + cxx_expression(unary_op->right, use_pretty_name);
     }
     else if (binary_op != nullptr) {
         assert(binary_op->left); // grammar guarantee
         assert(binary_op->right); // grammar guarantee
         if (binary_op->op == token::TK_LEFT_PAREN) {
             // function-style cast or call
-            result = cxx_expression(binary_op->left)
+            result = cxx_expression(binary_op->left, use_pretty_name)
                 + "("
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 + ")";
         }
         else if (binary_op->op == token::TK_LEFT_BRACKET) {
             // array indexing
-            result = cxx_expression(binary_op->left)
+            result = cxx_expression(binary_op->left, use_pretty_name)
                 + "["
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 + "]";
         }
         else if (binary_op->op == token::TK_COMMA) {
             // infix "," binary operator - do not enclose in parentheses 
             result = 
-                  cxx_expression(binary_op->left)
+                  cxx_expression(binary_op->left, use_pretty_name)
                 + ", "
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 ;
         }
         else {
             // infix binary operator
             result = "("
-                + cxx_expression(binary_op->left)
+                + cxx_expression(binary_op->left, use_pretty_name)
                 + " " + token_to_string(binary_op->op) + " "
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 + ")";
         }
     }
@@ -351,9 +356,9 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
         assert(ternary_op->first); // grammar guarantee
         assert(ternary_op->second); // grammar guarantee
         result = "("
-            + cxx_expression(ternary_op->cond) + " ? "
-            + cxx_expression(ternary_op->first) + " : "
-            + cxx_expression(ternary_op->second)
+            + cxx_expression(ternary_op->cond, use_pretty_name) + " ? "
+            + cxx_expression(ternary_op->first, use_pretty_name) + " : "
+            + cxx_expression(ternary_op->second, use_pretty_name)
             + ")";
     }
     else {

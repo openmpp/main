@@ -35,6 +35,7 @@
 #include "MaintainedAttributeSymbol.h"
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
+#include "EntityTableMeasureSymbol.h"
 #include "EntityEventSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "SimpleAttributeSymbol.h"
@@ -1601,12 +1602,12 @@ void do_model_doc(
                 // filter if present
                 if (do_developer_edition && isEntityTable && et->filter) {
                     auto ia = et->filter;
-                    mdStream << "**" + LTA(lang, "Filter:") + ":** \n";
+                    mdStream << "**" + LTA(lang, "Filter:") + "** \n";
                     mdStream << "\n";
                     // enclose declaration of associated identity attribute in c++ code block
                     mdStream << "```cpp\n";
                     // TODO: find a way to get a string containing the original model code for the identity attribute instead.
-                    mdStream << ia->cxx_expression(ia->root);
+                    mdStream << ia->cxx_expression(ia->root, true);  // true means use_pretty_name
                     mdStream << "\n```\n\n";
                 }
 
@@ -1636,7 +1637,7 @@ void do_model_doc(
                         if (do_developer_edition && isEntityTable) {
                             auto a = dim->pp_attribute;
                             assert(a); // logic guarantee
-                            mdStream << " | " + maddy_link(a->name, a->dot_name());
+                            mdStream << " | " + maddy_link(a->pretty_name(), a->dot_name());
                         }
                         mdStream << " | " + dim_size;
                         mdStream << " | " << (dim->has_margin ? "**X**" : "");
@@ -1655,6 +1656,9 @@ void do_model_doc(
                     mdStream << "\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
                     mdStream << " " + LTA(lang, "External Name");
+                    if (do_developer_edition && isEntityTable) {
+                        mdStream << " | " + LTA(lang, "Expression");
+                    }
                     mdStream << " | " + LTA(lang, "Label");
                     mdStream << " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -1662,6 +1666,12 @@ void do_model_doc(
                         string m_external_name = maddy_symbol(m->short_name);
                         string m_label = m->pp_labels[lang_index];
                         mdStream << m_external_name;
+                        if (do_developer_edition && isEntityTable) {
+                            auto etms = dynamic_cast<EntityTableMeasureSymbol*>(m);
+                            assert(etms); // logic guarantee
+                            auto expr = etms->get_expression(etms->root, EntityTableMeasureSymbol::expression_style::table_syntax);
+                            mdStream << " | ```" + expr + "```";
+                        }
                         mdStream << " | " + m_label;
                         mdStream << "\n";
                     }
@@ -1838,7 +1848,7 @@ void do_model_doc(
                         // enclose declaration in c++ code block
                         mdStream << "```cpp\n";
                         // TODO: find a way to get a string containing the original model code for the identity attribute instead.
-                        mdStream << ia->cxx_expression(ia->root);
+                        mdStream << ia->cxx_expression(ia->root, true); // true means use_pretty_name
                         mdStream << "\n```\n\n";
                     }
                 }

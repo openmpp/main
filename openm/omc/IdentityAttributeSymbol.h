@@ -103,7 +103,7 @@ public:
      *
      * @return The expression.
      */
-    static string cxx_expression(const ExprForAttribute *node);
+    static string cxx_expression(const ExprForAttribute *node, bool use_pretty_name = false);
 
     /**
      * Creates an anonymous identity attribute for an expression tree or returns it if already created.
