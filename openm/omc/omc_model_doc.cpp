@@ -665,7 +665,7 @@ void do_model_doc(
                     assert(a); // logic guarantee
                     if ((a->is_published() || do_unpublished)) {
                         if (!a->is_generated || Symbol::option_symref_topic_attributes_internal) {
-                            // suppress generated attributes, except if explicitly requested.
+                            // suppress generated attributes, including derived attributes, if requested.
                             attributes.push_back(a);
                         }
                     }
