@@ -2759,7 +2759,7 @@ std::string Symbol::slurp_doc_file_md(const std::string& file_stem)
     string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "md");
     string step1 = openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
     // normalize line endings
-    string step2 = std::regex_replace(step1, std::regex("\r\n"), "\n");
+    string step2 = std::regex_replace(step1, std::regex("\\r\\n"), "\n");
     return step2;
 }
 
