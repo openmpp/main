@@ -850,16 +850,34 @@ void DerivedAttributeSymbol::record_dependencies()
     // dependency on explicitly named attribute (first)
     if (pp_av1) {
         pp_dependent_attributes.emplace(pp_av1);
+        pp_av1->pp_derived_attributes_using.insert(this);
     }
 
     // dependency on explicitly named attribute (second)
     if (pp_av2) {
         pp_dependent_attributes.emplace(pp_av2);
+        pp_av2->pp_derived_attributes_using.insert(this);
     }
 
     // dependency on explicit condition (identity attribute)
     if (iav) {
         pp_dependent_attributes.emplace(iav);
+        iav->pp_derived_attributes_using.insert(this);
+    }
+
+    // Dependency on constant k1
+    if (k1 && k1->is_enumerator) {
+        k1->pp_enumerator->pp_derived_attributes_using.insert(this);
+    }
+
+    // Dependency on constant k2
+    if (k2 && k2->is_enumerator) {
+        k2->pp_enumerator->pp_derived_attributes_using.insert(this);
+    }
+
+    // Dependency on constant k3
+    if (k3 && k3->is_enumerator) {
+        k3->pp_enumerator->pp_derived_attributes_using.insert(this);
     }
 
     // implicit dependencies on non-argument attributes
@@ -874,6 +892,7 @@ void DerivedAttributeSymbol::record_dependencies()
         auto *sym = pp_entity->pp_time;
         assert(sym);
         pp_dependent_attributes.emplace(sym);
+        sym->pp_derived_attributes_using.insert(this);
         break;
     }
 
@@ -899,6 +918,8 @@ void DerivedAttributeSymbol::record_dependencies()
         // to record only the first change.
         assert(dav);
         dav->pp_dependent_attributes.emplace(this);
+        dav->pp_derived_attributes_using.insert(this);
+        break;
     }
 
     case token::TK_completed_spell_duration:
@@ -912,6 +933,8 @@ void DerivedAttributeSymbol::record_dependencies()
         // to record its value before the spell becomes false.
         assert(dav);
         dav->pp_dependent_attributes.emplace(this);
+        dav->pp_derived_attributes_using.insert(this);
+        break;
     }
 
     case token::TK_weighted_cumulation:

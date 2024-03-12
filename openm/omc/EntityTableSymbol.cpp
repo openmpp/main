@@ -100,7 +100,7 @@ void EntityTableSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         if (filter) {
-            // Propagate event labels to the table filter identity attribute, if present.
+            // Propagate table label to the table filter anonymous identity attribute, if present.
             for (const auto& langSym : Symbol::pp_all_languages) {
                 int lang_index = langSym->language_id; // 0-based
                 const string& lang = langSym->name; // e.g. "EN" or "FR"

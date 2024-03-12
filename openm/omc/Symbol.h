@@ -45,6 +45,7 @@ class GroupSymbol;
 class EntityFuncSymbol;
 class GlobalFuncSymbol;
 class IdentityAttributeSymbol;
+class DerivedAttributeSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -773,6 +774,11 @@ public:
      * All IdentityAttributeSymbol which use this Symbol
      */
     set<IdentityAttributeSymbol*> pp_identity_attributes_using;
+
+    /**
+     * All DerivedAttributeSymbol which use this Symbol
+     */
+    set<DerivedAttributeSymbol*> pp_derived_attributes_using;
 
     /**
      * All EntityTableSymbol which use this Symbol

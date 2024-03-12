@@ -38,6 +38,8 @@
 #include "EntityTableMeasureSymbol.h"
 #include "EntityEventSymbol.h"
 #include "IdentityAttributeSymbol.h"
+#include "DerivedAttributeSymbol.h"
+#include "MaintainedAttributeSymbol.h"
 #include "SimpleAttributeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ModuleSymbol.h"
@@ -217,6 +219,43 @@ static string preprocess_markdown(const string& md_in)
 }
 
 /**
+ * Construct a maddy markdown link for a symbol
+ *
+ * @param   name The name to display for the symbol and the target of the link.
+ *
+ * @returns A markdwon fragment.
+ */
+static string maddy_link(const string& name)
+{
+    return "[`" + name + "`](#" + name + ")";
+}
+
+/**
+ * Construct a maddy markdown link for a symbol
+ *
+ * @param   name The name to display for the symbol
+ * @param   link The target of the link.
+ *
+ * @returns A markdwon fragment.
+ */
+static string maddy_link(const string& name, const string& link)
+{
+    return "[`" + name + "`](#" + link + ")";
+}
+
+/**
+ * Construct a maddy markdown name for a symbol
+ *
+ * @param [in,out]  name The name to display for the symbol.
+ *
+ * @returns A markdwon fragment.
+ */
+static string maddy_symbol(string& name)
+{
+    return "`" + name + "`";
+}
+
+/**
  * Construct the cross reference content for a symbol
  *
  * @param           lang       The language.
@@ -300,6 +339,25 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::st
         mdStream << "|<table\n"; // maddy-specific end table
     }
 
+    // derived attributes using this symbol
+    if (s->pp_derived_attributes_using.size() > 0) {
+        any_xref = true;
+        mdStream << "<strong>" + LTA(lang, "Derived attributes using") + " <code>" + name + "</code>:</strong>\n\n";
+        mdStream << "|table>\n"; // maddy-specific begin table
+        mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " \n";
+        mdStream << "- | - | -\n"; // maddy-specific table header separator
+        for (auto& m : s->pp_derived_attributes_using) {
+            string entity = "`" + m->pp_entity->name + "`";
+            string member = maddy_link(m->pretty_name(), m->dot_name());
+            mdStream
+                << entity << " | "
+                << member << " | "
+                << "\n"
+                ;
+        }
+        mdStream << "|<table\n"; // maddy-specific end table
+    }
+
     // entity tables using this symbol
     if (s->pp_entity_tables_using.size() > 0) {
         any_xref = true;
@@ -344,43 +402,6 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::st
         mdStream << "|<table\n"; // maddy-specific end table
     }
     return any_xref;
-}
-
-/**
- * Construct a maddy markdown link for a symbol
- *
- * @param   name The name to display for the symbol and the target of the link.
- *
- * @returns A markdwon fragment.
- */
-static string maddy_link(const string& name)
-{
-    return "[`" + name + "`](#" + name + ")";
-}
-
-/**
- * Construct a maddy markdown link for a symbol
- *
- * @param   name The name to display for the symbol
- * @param   link The target of the link.
- *
- * @returns A markdwon fragment.
- */
-static string maddy_link(const string& name, const string& link)
-{
-    return "[`" + name + "`](#" + link + ")";
-}
-
-/**
- * Construct a maddy markdown name for a symbol
- *
- * @param [in,out]  name The name to display for the symbol.
- *
- * @returns A markdwon fragment.
- */
-static string maddy_symbol(string& name)
-{
-    return "`" + name + "`";
 }
 
 /**
@@ -651,7 +672,7 @@ void do_model_doc(
             }
         }
         // sort by attributes name, and if tied, by entity name
-        attributes.sort([](AttributeSymbol* a, AttributeSymbol* b) { return (a->name + "|" + a->entity->name) < (b->name + "|" + b->entity->name); });
+        attributes.sort([](AttributeSymbol* a, AttributeSymbol* b) { return (a->pretty_name() + "|" + a->entity->name) < (b->pretty_name() + "|" + b->entity->name); });
         // if no attributes to show, suppress alphabetic list of attributes
         if (attributes.size() == 0) {
             do_attributes_alphabetic_topic = false;
@@ -1293,20 +1314,13 @@ void do_model_doc(
                     }
                 }
 
-                // table of parameters using this enumeration
+                // table of parameters using this enumeration as type
                 {
                     set<string> parameters_used;
                     for (auto& p : Symbol::pp_all_parameters) {
                         if (!(p->is_published() || do_unpublished)) {
                             // skip unpublished parameter
                             continue;
-                        }
-                        // examine enumeration of each parameter dimension
-                        for (auto pe : p->pp_enumeration_list) {
-                            // s is the current enumeration, pe is an enumeration of parameter p
-                            if (s == pe) {
-                                parameters_used.insert(p->name);
-                            }
                         }
                         // examine datatype of parameter
                         if (p->pp_datatype->is_enumeration()) {
@@ -1316,7 +1330,7 @@ void do_model_doc(
                         }
                     }
                     if (parameters_used.size() > 0) {
-                        mdStream << "<strong>" + LTA(lang, "Parameters using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "<strong>" + LTA(lang, "Parameters of type") + " <code>" + s->name + "</code>:</strong>\n\n";
                         mdStream << "|table>\n"; // maddy-specific begin table
                         mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
                         mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -1333,7 +1347,79 @@ void do_model_doc(
                     }
                 }
 
-                // table of tables using this enumeration
+                // table of attributes using this enumeration as type
+                {
+                    set<string> attributes_used;
+                    for (auto a : attributes) {
+                        if (a->pp_data_type->is_enumeration()) {
+                            auto t = dynamic_cast<EnumerationSymbol*>(a->pp_data_type);
+                            assert(t); // logic guarantee
+                            if (s == t) {
+                                attributes_used.insert(a->unique_name);
+                            }
+                        }
+                    }
+                    if (attributes_used.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Attributes of type") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto& au : attributes_used) {
+                            auto sym = Symbol::get_symbol(au);
+                            assert(sym); // logic guarantee
+                            auto a = dynamic_cast<AttributeSymbol*>(sym);
+                            assert(a); // logic guarantee
+                            auto name = a->pretty_name();
+                            auto entity = a->pp_entity->name;
+                            auto label = a->pp_labels[lang_index];
+                            if (a->is_derived_attribute()) {
+                                label = ""; // is already in pretty_name
+                            }
+                            mdStream
+                                << maddy_symbol(entity) + " | "
+                                << maddy_link(name, a->dot_name()) << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
+                // table of parameters using this enumeration as dimension
+                {
+                    set<string> parameters_used;
+                    for (auto& p : Symbol::pp_all_parameters) {
+                        if (!(p->is_published() || do_unpublished)) {
+                            // skip unpublished parameter
+                            continue;
+                        }
+                        // examine enumeration of each parameter dimension
+                        for (auto pe : p->pp_enumeration_list) {
+                            // s is the current enumeration, pe is an enumeration of parameter p
+                            if (s == pe) {
+                                parameters_used.insert(p->name);
+                            }
+                        }
+                    }
+                    if (parameters_used.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Parameters with dimension") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto& name : parameters_used) {
+                            auto sym = Symbol::get_symbol(name);
+                            assert(sym); // logic guarantee
+                            auto label = sym->pp_labels[lang_index];
+                            mdStream
+                                << "[`" + name + "`](#" + name + ")" << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
+                // table of tables using this enumeration as a dimension
                 {
                     set<string> tables_used;
                     for (auto t : Symbol::pp_all_tables) {
@@ -1350,7 +1436,7 @@ void do_model_doc(
                         }
                     }
                     if (tables_used.size() > 0) {
-                        mdStream << "<strong>" + LTA(lang, "Tables using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "<strong>" + LTA(lang, "Tables with dimension") + " <code>" + s->name + "</code>:</strong>\n\n";
                         mdStream << "|table>\n"; // maddy-specific begin table
                         mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
                         mdStream << "- | - | -\n"; // maddy-specific table header separator
@@ -1360,41 +1446,6 @@ void do_model_doc(
                             auto label = sym->pp_labels[lang_index];
                             mdStream
                                 << "[`" + name + "`](#" + name + ")" << " | "
-                                << label << "\n"
-                                ;
-                        }
-                        mdStream << "|<table\n"; // maddy-specific end table
-                    }
-                }
-
-                // table of attributes using this enumeration
-                {
-                    set<string> attributes_used;
-                    for (auto a : attributes) {
-                        if (a->pp_data_type->is_enumeration()) {
-                            auto t = dynamic_cast<EnumerationSymbol*>(a->pp_data_type);
-                            assert(t); // logic guarantee
-                            if (s == t) {
-                                attributes_used.insert(a->unique_name);
-                            }
-                        }
-                    }
-                    if (attributes_used.size() > 0) {
-                        mdStream << "<strong>" + LTA(lang, "Attributes using enumeration") + " <code>" + s->name + "</code>:</strong>\n\n";
-                        mdStream << "|table>\n"; // maddy-specific begin table
-                        mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
-                        mdStream << "- | - | -\n"; // maddy-specific table header separator
-                        for (auto& au : attributes_used) {
-                            auto sym = Symbol::get_symbol(au);
-                            assert(sym); // logic guarantee
-                            auto a = dynamic_cast<AttributeSymbol*>(sym);
-                            assert(a); // logic guarantee
-                            auto name = a->name;
-                            auto entity = a->pp_entity->name;
-                            auto label = a->pp_labels[lang_index];
-                            mdStream
-                                << "`" + entity + "` | "
-                                << "[`" + name + "`](#" + a->dot_name() + ")" << " | "
                                 << label << "\n"
                                 ;
                         }
@@ -1806,13 +1857,15 @@ void do_model_doc(
         if (do_attribute_topics) {
             for (auto& s : attributes) {
                 // topic header line
-                mdStream
-                    // symbol name
-                    << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->pretty_name() + "</code>"
-                    // symbol label
-                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
-                    ;
-
+                // symbol name
+                mdStream << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->pretty_name() + "</code>";
+                string label = s->pp_labels[lang_index];
+                if (s->is_derived_attribute()) {
+                    // empty label derived attributes because is same as pretty_name()
+                    label = "";
+                }
+                // symbol label
+                mdStream << "<span style=\"font-weight:lighter\"> " << label << "</span></h3>\n\n";
                 // summary line with type, size, etc.
                 {
                     string entityInfo = "`" + s->pp_entity->name + "`";
@@ -1911,11 +1964,41 @@ void do_model_doc(
                         mdStream << ia->cxx_expression(ia->root, true); // true means use_pretty_name
                         mdStream << "\n```\n\n";
                     }
+                    if (s->is_derived_attribute()) {
+                        auto da = dynamic_cast<DerivedAttributeSymbol*>(s);
+                        assert(da); // logic guarantee
+                        mdStream << "**" + LTA(lang, "Name:") + "** \n";
+                        mdStream << maddy_symbol(da->name) + "\n";
+                        mdStream << "\n\n";
+                    }
+                    if (s->is_maintained_attribute()) {
+                        auto ma = dynamic_cast<MaintainedAttributeSymbol*>(s);
+                        assert(ma); // logic guarantee
+                        if (ma->pp_dependent_attributes.size()) {
+                            mdStream << "<strong>" + LTA(lang, "Attributes used by") + " <code>" + ma->pretty_name() + "</code>:</strong>\n\n";
+                            mdStream << "|table>\n"; // maddy-specific begin table
+                            mdStream << " " + LTA(lang, "Entity") + " | " + LTA(lang, "Attribute") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
+                            mdStream << "- | - | -\n"; // maddy-specific table header separator
+                            for (auto& dep : ma->pp_dependent_attributes) {
+                                string entity = maddy_symbol(ma->pp_entity->name);
+                                string member = maddy_link(dep->pretty_name(),dep->dot_name());
+                                string module = dep->pp_module ? maddy_link(dep->pp_module->name) : "";
+                                string label = dep->pp_labels[lang_index];
+                                mdStream
+                                    << entity << " | "
+                                    << member << " | "
+                                    << module << " | "
+                                    << label << "\n"
+                                    ;
+                            }
+                            mdStream << "|<table\n"; // maddy-specific end table
+                        }
+                    }
                 }
 
                 // x-reference section
                 if (do_developer_edition) {
-                    do_xref(lang, lang_index, s, s->name, mdStream);
+                    do_xref(lang, lang_index, s, s->pretty_name(), mdStream);
                 }
 
                 // symbol note if present
