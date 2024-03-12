@@ -183,7 +183,9 @@ void EntityEventSymbol::post_parse(int pass)
             const string& lang = langSym->name; // e.g. "EN" or "FR"
             const string& label = pp_labels[lang_index];
             time_func->pp_labels[lang_index] = LTA(lang, "Time") + " - " + label;
+            time_func->pp_labels_explicit[lang_index] = true;
             implement_func->pp_labels[lang_index] = LTA(lang, "Implement") + " - " + label;
+            implement_func->pp_labels_explicit[lang_index] = true;
         }
 
         // Add this entity event time symbol to the entity's list of all such symbols
