@@ -257,6 +257,29 @@ static string maddy_symbol(string& name)
 }
 
 /**
+ * Escape markdown characters in a generated label
+ *
+ * @param   s          The label.
+ * @param   lang_index Zero-based index of the language.
+ *
+ * @returns A markdwon fragment.
+ */
+static string escape_generated_label(const Symbol *s, int lang_index)
+{
+    string lbl = s->pp_labels[lang_index];
+    if (s->pp_labels_explicit[lang_index]) {
+        // label is not generated
+        return lbl;
+    }
+    else {
+        // Replace "|" by HTML entity
+        lbl = std::regex_replace(lbl, std::regex("\\|"), "&vert;");
+        // markdown as code
+        return "`" + lbl + "`";
+    }
+}
+
+/**
  * Construct the cross reference content for a symbol
  *
  * @param           lang       The language.
@@ -323,7 +346,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::st
             string entity = maddy_symbol(m->pp_entity->name);
             string member = maddy_link(m->name, m->dot_name());
             string module = m->pp_module ? maddy_link(m->pp_module->name) : "";
-            string label = m->pp_labels[lang_index];
+            string label = escape_generated_label(m, lang_index);
             mdStream
                 << entity << " | "
                 << member << " | "
@@ -1362,7 +1385,7 @@ void do_model_doc(
                             assert(a); // logic guarantee
                             auto name = a->pretty_name();
                             auto entity = a->pp_entity->name;
-                            auto label = a->pp_labels[lang_index];
+                            auto label = escape_generated_label(a, lang_index);
                             if (a->is_derived_attribute()) {
                                 label = ""; // is already in pretty_name
                             }
@@ -1853,9 +1876,9 @@ void do_model_doc(
 
                     mdStream
                         << letterLink
-                        << "`" + s->pp_entity->name + "` | "
-                        << " [`" + s->pretty_name() + "`](#" + s->dot_name() + ") | "
-                        << s->pp_labels[lang_index]
+                        << maddy_symbol(s->pp_entity->name) + " | "
+                        << maddy_link(s->pretty_name(), s->dot_name()) + " | "
+                        << escape_generated_label(s, lang_index)
                         << "  \n";
                 }
             }
