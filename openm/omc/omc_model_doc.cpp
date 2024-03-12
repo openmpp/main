@@ -1895,7 +1895,11 @@ void do_model_doc(
                 mdStream << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->pretty_name() + "</code>";
                 string label = s->pp_labels[lang_index];
                 if (s->is_derived_attribute()) {
-                    // empty label derived attributes because is same as pretty_name()
+                    // use empty label for derived attributes because is same as pretty_name()
+                    label = "";
+                }
+                if (s->is_identity_attribute() && s->is_generated) {
+                    // use empty label for generated identity attributes because is same as expression shown later
                     label = "";
                 }
                 // symbol label
