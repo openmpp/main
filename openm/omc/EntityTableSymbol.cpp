@@ -99,17 +99,6 @@ void EntityTableSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
-        if (filter) {
-            // Propagate table label to the table filter anonymous identity attribute, if present.
-            for (const auto& langSym : Symbol::pp_all_languages) {
-                int lang_index = langSym->language_id; // 0-based
-                const string& lang = langSym->name; // e.g. "EN" or "FR"
-                const string& label = pp_labels[lang_index];
-                filter->pp_labels[lang_index] = LTA(lang,"Filter") + " - " + label;
-                filter->pp_labels_explicit[lang_index] = true;
-            }
-        }
-
         // add this table to the complete list of entity tables
         pp_all_entity_tables.push_back(this);
 
