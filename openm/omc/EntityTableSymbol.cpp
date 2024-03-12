@@ -124,15 +124,9 @@ void EntityTableSymbol::post_parse(int pass)
             assert(a); // logic guarantee
             a->pp_entity_tables_using.insert(this);
         }
-        // Add this entity table to xref of the attribute of its filter
+        // Add this entity table to xref of its filter identity attribute
         if (filter) {
             filter->pp_entity_tables_using.insert(this);
-        }
-        // Add this entity table to xref of each attribute used in expressions
-        for (auto ma : pp_measure_attributes) {
-            auto a = ma->pp_attribute;
-            assert(a); // logic guarantee
-            a->pp_entity_tables_using.insert(this);
         }
 
         break;
@@ -143,6 +137,12 @@ void EntityTableSymbol::post_parse(int pass)
         // do not process suppressed table
         if (is_suppressed_table) {
             break;
+        }
+        // Add this entity table to xref of each attribute used in expressions
+        for (auto ma : pp_measure_attributes) {
+            auto a = ma->pp_attribute;
+            assert(a); // logic guarantee
+            a->pp_entity_tables_using.insert(this);
         }
         // Process collections of observations required by accumulators
         for (auto acc : pp_accumulators) {
