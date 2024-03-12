@@ -36,6 +36,7 @@
 #include "EntitySetSymbol.h"
 #include "EntityTableSymbol.h"
 #include "EntityTableMeasureSymbol.h"
+#include "EntityTableMeasureAttributeSymbol.h"
 #include "EntityEventSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "DerivedAttributeSymbol.h"
@@ -1785,6 +1786,25 @@ void do_model_doc(
                             mdStream << " | ```" + expr + "```";
                         }
                         mdStream << " | " + m_label;
+                        mdStream << "\n";
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+
+                // attributes in measures table
+                if (do_developer_edition && isEntityTable && et->pp_measure_attributes.size() > 0) {
+                    mdStream << "**" + LTA(lang, "Attributes in measures") + ":**";
+                    mdStream << "\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " " + LTA(lang, "Attribute");
+                    mdStream << " | " + LTA(lang, "Label");
+                    mdStream << " \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto ma : et->pp_measure_attributes) {
+                        auto a = ma->pp_attribute;
+                        assert(a); // logic guarantee
+                        mdStream << maddy_link(a->pretty_name(), a->dot_name());
+                        mdStream << " | " + a->pp_labels[lang_index];
                         mdStream << "\n";
                     }
                     mdStream << "|<table\n"; // maddy-specific end table
