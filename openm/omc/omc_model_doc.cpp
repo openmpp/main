@@ -1714,7 +1714,8 @@ void do_model_doc(
                 if (do_developer_edition && isEntityTable && et->filter) {
                     auto ia = et->filter;
                     mdStream << "**" + LTA(lang, "Filter:") + "** \n";
-                    mdStream << "\n";
+                    mdStream << maddy_link(ia->name, ia->dot_name());
+                    mdStream << "\n\n";
                     // enclose declaration of associated identity attribute in c++ code block
                     mdStream << "```cpp\n";
                     // TODO: find a way to get a string containing the original model code for the identity attribute instead.
@@ -1960,8 +1961,11 @@ void do_model_doc(
                         mdStream << "\n";
                         // enclose declaration in c++ code block
                         mdStream << "```cpp\n";
-                        // TODO: find a way to get a string containing the original model code for the identity attribute instead.
-                        mdStream << ia->cxx_expression(ia->root, true); // true means use_pretty_name
+                        // TODO: consider finding a way to get a string containing the original model code for the identity attribute,
+                        // to preserve the lin breaks in highly complex identity attributes.
+                        string decl = ia->pp_data_type->name + " " + ia->name + " = ";
+                        decl += ia->cxx_expression(ia->root, true); // true means use_pretty_name
+                        mdStream << decl;
                         mdStream << "\n```\n\n";
                     }
                     if (s->is_derived_attribute()) {
