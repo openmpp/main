@@ -16,6 +16,7 @@
 #include "UnknownTypeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ConstantSymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
 #include "Literal.h"
 
@@ -101,6 +102,16 @@ void IdentityAttributeSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
+        // if a generated identity attribute has no label, create one using the expression
+        if (is_generated) {
+            string expr = cxx_expression(root, true); // true means use pretty names
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                if (!pp_labels_explicit[lang_index]) {
+                    pp_labels[lang_index] = expr;
+                }
+            }
+        }
         // construct function body which evaluates the expression
         build_body_expression();
 
