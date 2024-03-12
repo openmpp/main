@@ -37,21 +37,29 @@ void BuiltinAttributeSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateDependencies:
-        {
-            if (name == "age") {
-                // add side-effect to attribute 'time'
-                AttributeSymbol *av = pp_entity->pp_time;
-                assert(av);
-                CodeBlock& time_cxx = av->side_effects_fn->func_body;
-                time_cxx += injection_description();
-                time_cxx += "if (om_active) {";
-                time_cxx += "// Advance time for the attribute 'age'";
-                time_cxx += "age.set(age.get() + om_delta);";
-                time_cxx += "}";
-            }
+    case eAssignLabel:
+    {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            pp_labels_explicit[lang_index] = true;
         }
         break;
+    }
+    case ePopulateDependencies:
+    {
+        if (name == "age") {
+            // add side-effect to attribute 'time'
+            AttributeSymbol *av = pp_entity->pp_time;
+            assert(av);
+            CodeBlock& time_cxx = av->side_effects_fn->func_body;
+            time_cxx += injection_description();
+            time_cxx += "if (om_active) {";
+            time_cxx += "// Advance time for the attribute 'age'";
+            time_cxx += "age.set(age.get() + om_delta);";
+            time_cxx += "}";
+        }
+        break;
+    }
     default:
         break;
     }
