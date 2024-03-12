@@ -1816,8 +1816,17 @@ void do_model_doc(
                     for (auto ma : et->pp_measure_attributes) {
                         auto a = ma->pp_attribute;
                         assert(a); // logic guarantee
-                        mdStream << maddy_link(a->pretty_name(), a->dot_name());
-                        mdStream << " | " + a->pp_labels[lang_index];
+                        string name = maddy_link(a->pretty_name(), a->dot_name());
+                        string label;
+                        if (a->is_derived_attribute()) {
+                            // use empty label for derived attributes because is same as pretty_name()
+                            label = "";
+                        }
+                        else {
+                            label = s->pp_labels[lang_index];
+                        }
+                        mdStream << name;
+                        mdStream << " | " + label;
                         mdStream << "\n";
                     }
                     mdStream << "|<table\n"; // maddy-specific end table
