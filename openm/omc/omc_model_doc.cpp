@@ -51,6 +51,15 @@ using namespace std;
 using namespace openm;
 using namespace omc;
 
+/**
+ * Find all paths to top of hierarchy from a symbol
+ *
+ * Called recursively.
+ * 
+ * @param [in,out]  sym    Symbol at top of path.
+ * @param [in,out]  path   Path being extended.
+ * @param [out]     result Resulting list of paths in the hierarcy.
+ */
 static void all_paths(Symbol *sym, list<Symbol*> *path, list<list<Symbol*>*> &result)
 {
     // extend the path with current symbol
@@ -80,20 +89,19 @@ static void all_paths(Symbol *sym, list<Symbol*> *path, list<list<Symbol*>*> &re
 }
 
 /**
- * @brief   helper function to construct bread crumb hierarchy for symbol s
+ * helper function to construct bread crumb hierarchy for symbol s
  *
- * @param           lang        The language.
- * @param           lang_index  Zero-based index of the language.
- * @param           s           The Symbol to process.
+ * @param           lang         The language.
+ * @param           lang_index   Zero-based index of the language.
+ * @param [in,out]  sym_terminal The Symbol to process.
  *
- * @returns A single-line string which is a self-contained HTML fragment
+ * @returns A single-line string which is a self-contained HTML fragment.
  */
 static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* sym_terminal)
 {
     string bread_crumbs;
     if (sym_terminal->has_parent_group()) {
-        // prime the pump for the breadth-first traversal of all paths up the hierarcht from s
-
+        // prime the pump for the breadth-first traversal of all paths up the hierarchy from s
         // A list of lists.  Each list is a path in the hierarchy
         list<list<Symbol*>*> result;
         
@@ -135,6 +143,20 @@ static string bread_crumb_hierarchy(string lang, int lang_index, Symbol* sym_ter
     return bread_crumbs;
 }
 
+/**
+ * Expand group
+ * 
+ * Called recursively.
+ *
+ * @param   lang_index     Zero-based index of the language.
+ * @param   g              A GroupSymbol to process.
+ * @param   depth          The depth.
+ * @param   max_depth      The maximum depth.
+ * @param   summary_mode   True to enable summary mode, false to disable it.
+ * @param   do_unpublished True if do unpublished.
+ *
+ * @returns A string.
+ */
 static string expand_group(int lang_index, const GroupSymbol* g, int depth, int max_depth, bool summary_mode, bool do_unpublished)
 {
     string result;
@@ -177,18 +199,35 @@ static string expand_group(int lang_index, const GroupSymbol* g, int depth, int 
     return result;
 }
 
-static string preprocess_markdown(string& md_in)
+/**
+ * Applies pre-processing to the markdown for maddy
+ *
+ * @param   md_in The input markdown.
+ *
+ * @returns The pre-preocessed markdown.
+ */
+static string preprocess_markdown(const string& md_in)
 {
     string md_out;
 
-    // Convert markdown line break (two trailing spaces) to maddy-specifc \r
-    // Maddy documentation says \r\n, but \r seems to be required.
-    md_out = std::regex_replace(md_in, std::regex("  \n"), "\r"); // maddy-specific line break
+    // Convert markdown line break (two or more trailing spaces) to maddy-specifc \r\n
+    md_out = std::regex_replace(md_in, std::regex("  +\\n"), "\r\n"); // maddy-specific line break
     
     return md_out;
 }
 
-static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::ofstream &mdStream)
+/**
+ * Construct the cross reference content for a symbol
+ *
+ * @param           lang       The language.
+ * @param           lang_index Zero-based index of the language.
+ * @param [in,out]  s          If non-null, a Symbol to process.
+ * @param           name       The name to use for the symbol in output.
+ * @param [in,out]  mdStream   The md stream.
+ *
+ * @returns True if it succeeds, false if it fails.
+ */
+static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::stringstream &mdStream)
 {
     bool any_xref = false;
     // global functions using this symbol
@@ -307,22 +346,52 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::of
     return any_xref;
 }
 
+/**
+ * Construct a maddy markdown link for a symbol
+ *
+ * @param   name The name to display for the symbol and the target of the link.
+ *
+ * @returns A markdwon fragment.
+ */
 static string maddy_link(const string& name)
 {
     return "[`" + name + "`](#" + name + ")";
 }
 
+/**
+ * Construct a maddy markdown link for a symbol
+ *
+ * @param   name The name to display for the symbol
+ * @param   link The target of the link.
+ *
+ * @returns A markdwon fragment.
+ */
 static string maddy_link(const string& name, const string& link)
 {
     return "[`" + name + "`](#" + link + ")";
 }
 
+/**
+ * Construct a maddy markdown name for a symbol
+ *
+ * @param [in,out]  name The name to display for the symbol.
+ *
+ * @returns A markdwon fragment.
+ */
 static string maddy_symbol(string& name)
 {
     return "`" + name + "`";
 }
 
-/** create model user documentation and model developer documentation. */
+/**
+ * create model user documentation and model developer documentation.
+ *
+ * @param   model_name Name of the model.
+ * @param   docOutDir  The document out dir.
+ * @param   mdOutDir   The md out dir.
+ * @param   omrootDir  The omroot dir.
+ * @param   cg         The cg.
+ */
 void do_model_doc(
     const string& model_name, const string& docOutDir, const string& mdOutDir, const string& omrootDir, const CodeGen& cg
 ) {
@@ -343,27 +412,27 @@ void do_model_doc(
     {
         string json_name = model_name + ".extra.json";
         string json_path = makeFilePath(baseDirOf(docOutDir).c_str(), json_name.c_str());
-        ofstream out(json_path, ios::out | ios::trunc | ios::binary);
-        if (out.fail()) {
-            string msg = "omc : warning : Unable to open " + json_path + " for writing.";
-            theLog->logMsg(msg.c_str());
+        ofstream json_stream(json_path, ios::out | ios::trunc | ios::binary);
+        if (json_stream.fail()) {
+            theLog->logFormatted("omc : error : Unable to open '%s' for writing.", json_path);
+            throw HelperException(LT("fatal error - no model documentation"));
         }
 
-        out << "{\n\"ModelDoc\": [\n";
+        json_stream << "{\n\"ModelDoc\": [\n";
         size_t n = 0;
 
         for (const auto& langSym : Symbol::pp_all_languages) {
             const string& lang = langSym->name; // e.g. "EN" or "FR"
-            out <<
+            json_stream <<
                 "   {\n" <<
                 "   \"LangCode\": \"" << lang << "\",\n" <<
                 "   \"Link\": \"" << model_name + ".doc." + lang + ".html\"\n" <<
                 "   }";
-            if (++n < Symbol::pp_all_languages.size()) out << ",";
-            out << "\n";
+            if (++n < Symbol::pp_all_languages.size()) json_stream << ",";
+            json_stream << "\n";
         }
-        out << "]\n}\n";
-        out.close();
+        json_stream << "]\n}\n";
+        json_stream.close();
     }
 
     /// styles for HTML output
@@ -594,17 +663,8 @@ void do_model_doc(
         int lang_index = langSym->language_id; // 0-based
         const string& lang = langSym->name; // e.g. "EN" or "FR"
 
-        // Example: IDMM.doc.EN.html
-        string htmlName = model_name + ".doc." + lang + ".html";
-        string mdName = model_name + ".doc." + lang + ".md";
-
-        // create the markdown file in outDir (normally 'src')
-        string mdPath = makeFilePath(mdOutDir.c_str(), mdName.c_str());
-        ofstream mdStream(mdPath, ios::out | ios::trunc | ios::binary);
-        if (mdStream.fail()) {
-            string msg = "omc : warning : Unable to open " + mdName + " for writing.";
-            theLog->logMsg(msg.c_str());
-        }
+        // markdown content
+        stringstream mdStream;
 
         // HTML fragment for topic separator
         string fragmentTopicSeparator = "\n\n<p style=\"margin-bottom:3cm; break-after:page;\"></p>\n\n";
@@ -643,7 +703,7 @@ void do_model_doc(
         if (authoredHomeTopicPresent && do_authored_content) {
             string topic = homeTopic;
             mdStream << "<span id=\"" + topic + "\"/>\n\n"; // topic destination anchor
-            mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
+            mdStream << preprocess_markdown(Symbol::slurp_doc_file_md(topic + "." + lang));
             mdStream << fragmentTopicSeparator;
         }
 
@@ -655,7 +715,7 @@ void do_model_doc(
                     continue;
                 }
                 mdStream << "<span id=\"" + topic + "\"></span>\n\n"; // topic destination anchor
-                mdStream << Symbol::slurp_doc_file_md(topic + "." + lang);
+                mdStream << preprocess_markdown(Symbol::slurp_doc_file_md(topic + "." + lang));
                 mdStream << fragmentTopicSeparator;
             }
         }
@@ -1703,7 +1763,7 @@ void do_model_doc(
             {
                 string letterPrev = "";
                 for (auto& s : attributes) {
-                    string letterCurr = s->name.substr(0, 1);
+                    string letterCurr = (s->pretty_name()).substr(0, 1);
                     if (letterCurr != letterPrev) {
                         // anchor looks like A-table, D-table, etc.
                         letterLinks += " [" + letterCurr + "](#" + letterCurr + "-attribute)";
@@ -1721,7 +1781,7 @@ void do_model_doc(
             {
                 string letterPrev = "";
                 for (auto& s : attributes) {
-                    string letterCurr = s->name.substr(0, 1);
+                    string letterCurr = (s->pretty_name()).substr(0, 1);
                     string letterLink = "";
                     if (letterCurr != letterPrev) {
                         // anchor looks like A-table, D-table, etc.
@@ -1732,10 +1792,10 @@ void do_model_doc(
                     mdStream
                         << letterLink
                         << "`" + s->pp_entity->name + "` | "
-                        << " [`" + s->name + "`](#" + s->dot_name() + ") | "
+                        << " [`" + s->pretty_name() + "`](#" + s->dot_name() + ") | "
                         << s->pp_labels[lang_index]
                         << "  \n";
-                } // end tables table
+                }
             }
             mdStream << "|<table\n"; // maddy-specific end table
             mdStream << fragmentReturnLinks;
@@ -1748,7 +1808,7 @@ void do_model_doc(
                 // topic header line
                 mdStream
                     // symbol name
-                    << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->name + "</code>"
+                    << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->pretty_name() + "</code>"
                     // symbol label
                     << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
                     ;
@@ -2058,11 +2118,10 @@ void do_model_doc(
 
                 mdStream << fragmentReturnLinks;
                 mdStream << fragmentTopicSeparator;
-            } // Topic for each enumeration
+            } // Topic for each module
         }
 
-        // all done
-        mdStream.close();
+        // finished markdown creation
 
         // convert markdown to HTML
         {
@@ -2073,15 +2132,18 @@ void do_model_doc(
             config->enabledParsers |= maddy::types::LATEX_BLOCK_PARSER;
             std::shared_ptr<maddy::Parser> parser = std::make_shared<maddy::Parser>(config);
 
-            ofstream htmlStream;
-            ofstream mdStream;
-            string hdpth = makeFilePath(docOutDir.c_str(), htmlName.c_str());
-            htmlStream.open(hdpth, fstream::out);
-            mdStream.open(mdPath, fstream::in);
+            // maddy html output
+            string htmlOutput = parser->Parse(mdStream);
 
-            std::stringstream markdownInput;
-            markdownInput << mdStream.rdbuf();
-            string htmlOutput = parser->Parse(markdownInput);
+            /// HTML output name.  Example: RiskPaths.doc.EN.html
+            string htmlName = model_name + ".doc." + lang + ".html";
+            string htmlPath = makeFilePath(docOutDir.c_str(), htmlName.c_str());
+            ofstream htmlStream(htmlPath, ios::out | ios::trunc | ios::binary);
+            if (htmlStream.fail()) {
+                theLog->logFormatted("omc : error : Unable to open '%s' for writing.", htmlPath);
+                throw HelperException(LT("fatal error - no model documentation"));
+            }
+
             htmlStream << "<!DOCTYPE html>\n";
             htmlStream << "<html>\n";
             htmlStream << "<head>\n";
@@ -2103,7 +2165,6 @@ void do_model_doc(
             htmlStream << "</body>\n";
             htmlStream << "</html>\n";
             htmlStream.close();
-            mdStream.close();
         }
 
 
