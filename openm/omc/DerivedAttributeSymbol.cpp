@@ -21,6 +21,7 @@
 #include "RealSymbol.h"
 #include "BoolSymbol.h"
 #include "AggregationSymbol.h"
+#include "LanguageSymbol.h"
 #include "ExprForAttribute.h"
 #include "Literal.h"
 #include "CodeBlock.h"
@@ -2869,6 +2870,15 @@ void DerivedAttributeSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         create_side_effects();
+        // Replace default label created earlier by pretty_name
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            auto new_lab = pretty_name();
+            pp_labels[lang_index] = new_lab;
+            pp_labels_explicit[lang_index] = false;
+            pp_labels_pos[lang_index] = omc::position();
+        }
+
         break;
     }
     default:
