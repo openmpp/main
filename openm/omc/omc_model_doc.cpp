@@ -404,7 +404,7 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::st
         mdStream << " " + LTA(lang, "Entity set") + " | " + LTA(lang, "Module") + " | " + LTA(lang, "Label") + " \n";
         mdStream << "- | - | -\n"; // maddy-specific table header separator
         for (auto& m : s->pp_entity_sets_using) {
-            string symbol = maddy_symbol(m->name);
+            string symbol = maddy_link(m->name);
             string module = m->pp_module ? maddy_link(m->pp_module->name) : "";
             string label = m->pp_labels[lang_index];
             mdStream
@@ -493,7 +493,7 @@ void do_model_doc(
     // CONTENT CONTROL OPTIONS
     // 
 
-    /** @brief   (Immutable) Show generated content */
+    /// Show generated content
     const bool& do_generated_content = Symbol::option_generated_documentation;
 
     /// Show authored stand-alone content
@@ -597,11 +597,20 @@ void do_model_doc(
     /// Show the individual attribute topics
     bool do_attribute_topics = Symbol::option_symref_topic_attributes;
 
+    /// Show the individual entity set topics
+    bool do_entity_set_topics = Symbol::option_symref_topic_entity_sets;
+    if (Symbol::pp_all_entity_sets.size() == 0) {
+        do_entity_set_topics = false;
+    }
+
     if (do_developer_edition) {
-        // turn on related flags
-        // TODO verify why override above options?
-        do_module_topics = true;
+        // turn on/off flags for Developer Edition independent of options
         do_attribute_topics = true;
+    }
+    else {
+        // turn on/off flags for User Edition independent of options
+        do_module_topics = false;
+        do_entity_set_topics = false;
     }
 
     /// Show the individual module topics for use modules
@@ -620,23 +629,35 @@ void do_model_doc(
         do_modules_alphabetic_topic = true;
     }
 
+    /// Show the entity sets alphabetic list topic
+    bool do_entity_sets_alphabetic_topic = false;
+    if (do_entity_set_topics) {
+        do_entity_sets_alphabetic_topic = true;
+    }
+
     if (!do_generated_content) {
         // turn off all parts of generated content
         do_main_topic = false;
         do_model_symbol = false;
+
         do_parameter_hierarchy = false;
         do_table_hierarchy = false;
+
         do_parameter_major_groups = false;
         do_table_major_groups = false;
+
         do_parameters_alphabetic_topic = false;
         do_tables_alphabetic_topic = false;
         do_attributes_alphabetic_topic = false;
         do_enumerations_alphabetic_topic = false;
+        do_entity_sets_alphabetic_topic = false;
         do_modules_alphabetic_topic = false;
+
         do_parameter_topics = false;
         do_table_topics = false;
         do_enumeration_topics = false;
         do_module_topics = false;
+        do_entity_set_topics = false;
         do_attribute_topics = false;
         // TODO add more as they are implemented
     }
@@ -755,7 +776,8 @@ void do_model_doc(
             }
         }
 
-        /// anchor target of a higher-level topic
+        /// anchor target of each higher-level topic
+
         string anchorSymbolReference = "symbol-reference";
         string anchorModelSymbol = "model";
         string anchorParametersAlphabetic = "parameters-alphabetic";
@@ -767,6 +789,7 @@ void do_model_doc(
         string anchorEnumerationsAlphabetic = "enumerations-alphabetic";
         string anchorModulesAlphabetic = "modules-alphabetic";
         string anchorAttributesAlphabetic = "attributes-alphabetic";
+        string anchorEntitySetsAlphabetic = "entity-sets-alphabetic";
 
         // Fragment for back navigation
         string fragmentReturnLinks = "\n\n<a href=\"#" + anchorSymbolReference + "\">[" + LTA(lang, "Symbol Reference") + "]</a>";
@@ -825,7 +848,7 @@ void do_model_doc(
             if (do_table_hierarchy) {
                 mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Tables") + "](#" + anchorTableHierarchy + ") | " + LTA(lang, "Output tables arranged hierarchically") + "\n";
             }
-            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic || do_attributes_alphabetic_topic || do_modules_alphabetic_topic) {
+            if (do_parameters_alphabetic_topic || do_tables_alphabetic_topic || do_enumerations_alphabetic_topic || do_attributes_alphabetic_topic || do_modules_alphabetic_topic || do_entity_sets_alphabetic_topic) {
                 mdStream << "**" + LTA(lang, "Lists") + "** | \n";
                 if (do_parameters_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Parameters") + "](#" + anchorParametersAlphabetic + ") | " + LTA(lang, "Input parameters in alphabetic order") + "\n";
@@ -838,6 +861,9 @@ void do_model_doc(
                 }
                 if (do_enumerations_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Enumerations") + "](#" + anchorEnumerationsAlphabetic + ") | " + LTA(lang, "Enumerations in alphabetic order") + "\n";
+                }
+                if (do_entity_sets_alphabetic_topic) {
+                    mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Entity Sets") + "](#" + anchorEntitySetsAlphabetic + ") | " + LTA(lang, "Entity sets in alphabetic order") + "\n";
                 }
                 if (do_modules_alphabetic_topic) {
                     mdStream << "&nbsp;&nbsp;[" + LTA(lang, "Modules") + "](#" + anchorModulesAlphabetic + ") | " + LTA(lang, "Modules in alphabetic order") + "\n";
@@ -1210,7 +1236,7 @@ void do_model_doc(
         if (do_enumeration_topics) {
             for (auto& s : Symbol::pp_all_enumerations) {
                 if (!(s->is_published() || do_unpublished)) {
-                    // skip parameter if not published
+                    // skip if not published
                     continue;
                 }
 
@@ -1459,7 +1485,37 @@ void do_model_doc(
                             assert(sym); // logic guarantee
                             auto label = sym->pp_labels[lang_index];
                             mdStream
-                                << "[`" + name + "`](#" + name + ")" << " | "
+                                << maddy_link(name) << " | "
+                                << label << "\n"
+                                ;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                    }
+                }
+
+                // table of entity sets using this enumeration as a dimension
+                {
+                    set<string> entity_sets_used;
+                    for (auto es : Symbol::pp_all_entity_sets) {
+                        for (auto d : es->dimension_list) {
+                            // s is the current enumeration, te is an enumeration used in t
+                            auto te = d->pp_enumeration;
+                            if (s == te) {
+                                entity_sets_used.insert(es->name);
+                            }
+                        }
+                    }
+                    if (entity_sets_used.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Entity sets with dimension") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto& name : entity_sets_used) {
+                            auto sym = Symbol::get_symbol(name);
+                            assert(sym); // logic guarantee
+                            auto label = sym->pp_labels[lang_index];
+                            mdStream
+                                << maddy_link(name) << " | "
                                 << label << "\n"
                                 ;
                         }
@@ -2069,6 +2125,170 @@ void do_model_doc(
             } // Topic for each attribute
         }
 
+        // Topic: entity sets in alphabetic order
+        {
+            mdStream << "<h3 id=\"" + anchorEntitySetsAlphabetic + "\">" + LTA(lang, "Entity sets in alphabetic order") + "</h3>\n\n";
+            mdStream << "\n\n";
+            mdStream << "|table>\n"; // maddy-specific begin table
+            mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+
+            mdStream << "- | - | -\n"; // maddy-specific table header separator
+            {
+                for (auto& s : Symbol::pp_all_entity_sets) {
+                    mdStream << maddy_link(s->name);
+                    mdStream << " | ";
+                    mdStream << s->pp_labels[lang_index];
+                    mdStream << "\n";
+                }
+            }
+            mdStream << "|<table\n"; // maddy-specific end table
+            mdStream << fragmentReturnLinks;
+            mdStream << fragmentTopicSeparator;
+        } // Topic: entity sets in alphabetic order
+
+        if (do_entity_set_topics) {
+            // Topic for each entity set
+            for (auto& s : Symbol::pp_all_entity_sets) {
+
+                /// is a scalar
+                bool isScalar = (s->dimension_list.size() == 0);
+
+                // topic header line
+                mdStream
+                    // symbol name
+                    << "<h3 id=\"" << s->name << "\">" << " <code>" + s->name + "</code>"
+                    // symbol label
+                    << "<span style=\"font-weight:lighter\"> " << s->pp_labels[lang_index] << "</span></h3>\n\n"
+                    ;
+
+                // summary line with type and size
+                {
+                    string kindInfo = LTA(lang, "Entity Set");
+                    string entityInfo = maddy_symbol(s->pp_entity->name);
+                    string orderInfo;
+                    if (s->pp_order_attribute) {
+                        orderInfo = maddy_link(s->pp_order_attribute->name, s->pp_order_attribute->dot_name());
+                    }
+                    string shapeCompact;
+                    if (!isScalar) {
+                        bool isFirst = true;
+                        size_t cells = 1;
+                        for (auto dim : s->dimension_list) {
+                            auto e = dim->pp_enumeration;
+                            assert(e);
+                            auto dim_size = e->pp_size() + dim->has_margin;
+                            shapeCompact += (!isFirst ? ", " : "") + to_string(dim_size);
+                            isFirst = false;
+                            cells *= dim_size;
+                        }
+                        shapeCompact = "[ " + shapeCompact + " ] = " + to_string(cells);
+                    }
+                    else {
+                        shapeCompact = "1";
+                    }
+                    string moduleInfo = "";
+                    if (do_module_topics) {
+                        if (s->pp_module) {
+                            moduleInfo = "[`" + s->pp_module->name + "`](#" + s->pp_module->name + ")";
+                        }
+                    }
+                    mdStream
+                        << "**" + LTA(lang, "Kind") + ":** " + kindInfo
+                        << "\n";
+                    mdStream
+                        << "**" + LTA(lang, "Entity") + ":** "
+                        << "\n"
+                        << entityInfo
+                        << "\n";
+                    if (orderInfo.length() > 0) {
+                        mdStream
+                            << "**" + LTA(lang, "Order:") + "** "
+                            << "\n"
+                            << orderInfo
+                            << "\n";
+                    }
+                    mdStream << " **" + LTA(lang, "Cells") + ":** " << shapeCompact
+                        << "\n";
+                    if (moduleInfo.length() > 0) {
+                        mdStream << "**" + LTA(lang, "Module") + ":** \n" + moduleInfo;
+                    }
+                    mdStream << "\n\n";
+                }
+
+                // symbol note if present
+                if (do_NOTEs && do_NOTEs_early) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                // filter if present
+                if (s->filter) {
+                    auto ia = s->filter;
+                    mdStream << "**" + LTA(lang, "Filter:") + "** \n";
+                    mdStream << maddy_link(ia->name, ia->dot_name());
+                    mdStream << "\n\n";
+                    // enclose declaration of associated identity attribute in c++ code block
+                    mdStream << "```cpp\n";
+                    // TODO: find a way to get a string containing the original model code for the identity attribute instead.
+                    mdStream << ia->cxx_expression(ia->root, true);  // true means use_pretty_name
+                    mdStream << "\n```\n\n";
+                }
+
+                // dimensions table with links
+                if (!isScalar) {
+                    mdStream << "**" + LTA(lang, "Dimensions") + ":**\n\n";
+                    mdStream << "|table>\n"; // maddy-specific begin table
+                    mdStream << " " + LTA(lang, "Enumeration");
+                    mdStream << " | " + LTA(lang, "Attribute");
+                    mdStream << " | " + LTA(lang, "Size");
+                    mdStream << " | " + LTA(lang, "Label");
+                    mdStream << " \n";
+                    mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    for (auto& dim : s->dimension_list) {
+                        auto e = dim->pp_enumeration;
+                        assert(e);
+                        string dim_enumeration = maddy_link(e->name);
+                        string dim_size = to_string(e->pp_size());
+                        string dim_label = dim->pp_labels[lang_index];
+                        mdStream << " " + dim_enumeration;
+                        auto a = dim->pp_attribute;
+                        assert(a); // logic guarantee
+                        mdStream << " | " + maddy_link(a->pretty_name(), a->dot_name());
+                        mdStream << " | " + dim_size;
+                        mdStream << " | " + dim_label;
+                        mdStream << "\n";
+                    }
+                    mdStream << "|<table\n"; // maddy-specific end table
+                }
+
+                // x-reference section
+                do_xref(lang, lang_index, s, s->name, mdStream);
+
+                // symbol note if present
+                if (do_NOTEs && !do_NOTEs_early) {
+                    string note_in = s->pp_notes[lang_index];
+                    if (note_in.length()) {
+                        if (do_NOTE_heading) {
+                            mdStream << "**" + LTA(lang, "Note") + ":**\n\n";
+                        }
+                        mdStream << "\n\n";
+                        string note_out = preprocess_markdown(note_in);
+                        mdStream << note_out << "\n\n";
+                    }
+                }
+
+                mdStream << fragmentReturnLinks;
+                mdStream << fragmentTopicSeparator;
+            } // Topic for each table
+        }
+
         // Topic: modules in alphabetic order
         if (do_modules_alphabetic_topic) {
             // build line with links to first symbol in alphabetic table with leading letter
@@ -2217,7 +2437,7 @@ void do_model_doc(
                             kind = LTA(lang, "link attribute");
                         }
                         else if (auto es = dynamic_cast<EntitySetSymbol*>(d)) {
-                            name = maddy_symbol(es->name);
+                            name = maddy_link(es->name);
                             kind = LTA(lang, "entity set");
                         }
                         else if (auto gf = dynamic_cast<GlobalFuncSymbol*>(d)) {

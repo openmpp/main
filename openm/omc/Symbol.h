@@ -1997,6 +1997,11 @@ public:
     static bool option_symref_topic_enumerations;
 
     /**
+     * true to include in symbol reference individual mentity set topics.
+     */
+    static bool option_symref_topic_entity_sets;
+
+    /**
      * true to include in symbol reference individual module topics.
      */
     static bool option_symref_topic_modules;
