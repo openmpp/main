@@ -7,6 +7,7 @@
 
 #pragma once
 #include "MaintainedAttributeSymbol.h"
+#include "EntityMultilinkSymbol.h"
 #include "NumericSymbol.h"
 #include "UnknownTypeSymbol.h"
 
@@ -81,6 +82,19 @@ public:
     void post_parse(int pass);
 
     CodeBlock cxx_declaration_entity();
+
+    string pretty_name() const override
+    {
+        string result = token_to_string(func);
+        result += "(";
+        result += pp_multilink->name;
+        if (func != token::TK_count) {
+            result += ",";
+            result += pp_attribute->pretty_name();
+        }
+        result += ")";
+        return result;
+    }
 
     /** The function which computes the current value of the attribute from the multilink */
     EntityFuncSymbol *evaluate_fn;
