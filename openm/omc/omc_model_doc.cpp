@@ -1959,19 +1959,19 @@ void do_model_doc(
                 // symbol name
                 mdStream << "<h3 id=\"" << s->dot_name() << "\">" << " <code>" + s->pretty_name() + "</code>";
                 string label = s->pp_labels[lang_index];
-                if (s->is_derived_attribute()) {
-                    // use empty label for derived attributes because is same as pretty_name()
+                if (s->is_derived_attribute() || s->is_multilink_aggregate_attribute()) {
+                    // use empty label for derived attributes and multilink aggregate attributes because is same as pretty_name()
                     label = "";
                 }
                 if (s->is_identity_attribute() && s->is_generated) {
-                    // use empty label for generated identity attributes because is same as expression shown later
+                    // use empty label for generated identity attributes because is same as expression shown immediately below
                     label = "";
                 }
                 // symbol label
                 mdStream << "<span style=\"font-weight:lighter\"> " << label << "</span></h3>\n\n";
                 // summary line with type, size, etc.
                 {
-                    string entityInfo = "`" + s->pp_entity->name + "`";
+                    string entityInfo = maddy_symbol(s->pp_entity->name);
                     //string entityInfo = s->pp_entity->name;
 
                     string kindInfo;
@@ -2070,11 +2070,9 @@ void do_model_doc(
                         mdStream << decl;
                         mdStream << "\n```\n\n";
                     }
-                    if (s->is_derived_attribute()) {
-                        auto da = dynamic_cast<DerivedAttributeSymbol*>(s);
-                        assert(da); // logic guarantee
+                    if (s->is_derived_attribute() || s->is_multilink_aggregate_attribute()) {
                         mdStream << "**" + LTA(lang, "Name:") + "** \n";
-                        mdStream << maddy_symbol(da->name) + "\n";
+                        mdStream << maddy_symbol(s->name) + "\n";
                         mdStream << "\n\n";
                     }
                     if (s->is_maintained_attribute()) {
