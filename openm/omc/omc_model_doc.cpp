@@ -2385,6 +2385,7 @@ void do_model_doc(
                         string name = "";
                         string kind = "";
                         string entity = "";
+                        string label = d->pp_labels[lang_index];
                         if (auto p = dynamic_cast<ParameterSymbol*>(d)) {
                             name = maddy_link(p->name);
                             kind = LTA(lang, "parameter");
@@ -2425,6 +2426,7 @@ void do_model_doc(
                             name = maddy_link(a->name, a->dot_name());
                             entity = maddy_symbol(a->pp_entity->name);
                             kind = LTA(lang, "identity attribute");
+                            label = escape_generated_label(a, lang_index);  // replace label by escaped version
                         }
                         else if (auto a = dynamic_cast<SimpleAttributeSymbol*>(d)) {
                             name = maddy_link(a->name, a->dot_name());
@@ -2447,7 +2449,6 @@ void do_model_doc(
                         else {
                             continue;
                         }
-                        string label = d->pp_labels[lang_index];
                         mdStream << name;
                         mdStream << " | " + kind;
                         mdStream << " | " + entity;
