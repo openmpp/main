@@ -96,6 +96,20 @@ public:
         return result;
     }
 
+    /**
+     * Gets the fixed label for the multilink aggregate attribute
+     * The specialization is language independent.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
+    string label(const LanguageSymbol& language) const override
+    {
+        return pretty_name();
+    }
+
+
     /** The function which computes the current value of the attribute from the multilink */
     EntityFuncSymbol *evaluate_fn;
 

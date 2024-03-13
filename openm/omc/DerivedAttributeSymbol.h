@@ -410,7 +410,7 @@ public:
      */
     void create_side_effects();
 
-    virtual string pretty_name() const;
+    virtual string pretty_name() const override;
 
     /**
      * Gets the fixed label for the derived attribute.
@@ -421,7 +421,7 @@ public:
      *
      * @return A string.
      */
-    string label(const LanguageSymbol& language) const
+    string label(const LanguageSymbol& language) const override
     {
         return pretty_name();
     }

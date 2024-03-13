@@ -9,6 +9,7 @@
 #include "EntityFuncSymbol.h"
 #include "EntityMultilinkSymbol.h"
 #include "LinkAttributeSymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
 
 using namespace std;
@@ -227,8 +228,18 @@ void MultilinkAttributeSymbol::post_parse(int pass)
                 c += "";
             }
         }
+
+        // Replace default label created earlier by pretty_name
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            auto new_lab = pretty_name();
+            pp_labels[lang_index] = new_lab;
+            pp_labels_explicit[lang_index] = false;
+            pp_labels_pos[lang_index] = omc::position();
+        }
+
+        break;
     }
-    break;
 
     default:
     break;
