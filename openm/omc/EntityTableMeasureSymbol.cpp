@@ -106,24 +106,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
         }
         case table_syntax:
         {
-            if (accumulator->accumulator == token::TK_unit) {
-                result = "count()";
-            }
-            else {
-                auto a = accumulator->pp_attribute;
-                assert(a); // logic guarantee
-                result = a->pretty_name();
-                // surround attribute with table operator, increment, accumulator if not defaults
-                if (accumulator->table_op != token::TK_interval) {
-                    result = token_to_string(accumulator->table_op) + "(" + result + ")";
-                }
-                if (accumulator->increment != token::TK_delta) {
-                    result = token_to_string(accumulator->increment) + "(" + result + ")";
-                }
-                if (accumulator->accumulator != token::TK_sum) {
-                    result = token_to_string(accumulator->accumulator) + "(" + result + ")";
-                }
-            }
+            result = accumulator->decl_short();
             break;
         }
         default:

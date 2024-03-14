@@ -8,6 +8,7 @@
 #pragma once
 #include <cassert>
 #include "Symbol.h"
+#include "AttributeSymbol.h"
 
 class AttributeSymbol;
 class EntityTableMeasureAttributeSymbol;
@@ -162,6 +163,30 @@ public:
             || increment == token::TK_value_out
             || increment == token::TK_value_out2
             || increment == token::TK_nz_value_out;
+    }
+
+    string decl_short(void) const
+    {
+        string result;
+        if (accumulator == token::TK_unit) {
+            result = "count()";
+        }
+        else {
+            auto a = pp_attribute;
+            assert(a); // logic guarantee
+            result = a->pretty_name();
+            // surround attribute with table operator, increment, accumulator if not defaults
+            if (table_op != token::TK_interval) {
+                result = token_to_string(table_op) + "(" + result + ")";
+            }
+            if (increment != token::TK_delta) {
+                result = token_to_string(increment) + "(" + result + ")";
+            }
+            if (accumulator != token::TK_sum) {
+                result = token_to_string(accumulator) + "(" + result + ")";
+            }
+        }
+        return result;
     }
 
     /**
