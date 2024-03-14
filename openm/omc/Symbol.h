@@ -1464,6 +1464,15 @@ public:
     static unordered_map<string, pair<string, omc::location>> explicit_names;
 
     /**
+     * Map of EXPR from symbol name to expression (for derived tables).
+     *
+     * This maps "symbol" as a key to an override SQL expression {expr,location} specified
+     * explicitly by a //EXPR statement in the model source code, eg.
+     *   //EXPR MyTable.Expr2 OM_AVG(acc2)
+     */
+    static unordered_map<string, pair<string, omc::location>> explicit_exprs;
+
+    /**
      * Map of NOTE from symbol name to note (model source)
      * 
      * This maps "symbol,language" as a key to the associated {note,location} specified

@@ -579,6 +579,8 @@ unordered_map<string, pair<string, omc::location>> Symbol::explicit_labels;
 
 unordered_map<string, pair<string, omc::location>> Symbol::explicit_names;
 
+unordered_map<string, pair<string, omc::location>> Symbol::explicit_exprs;
+
 unordered_map<string, pair<string, omc::location>> Symbol::notes_source;
 
 unordered_map<string, pair<string, omc::location>> Symbol::notes_input;

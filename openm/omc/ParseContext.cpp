@@ -369,12 +369,52 @@ void ParseContext::process_cxx_comment(const string& cmt, const omc::location& l
             return;
         }
         string shrt_nam = cmt.substr(p);
-//        string nam = cmt.substr(p);
 
         // Insert short name into map of all explicit //NAME comments
         Symbol::explicit_names.emplace(sym_name, make_pair(shrt_nam, loc));
 
         // Don't place //NAME comments into list of all cxx_comments,
+        // which is used for //EN, etc.
+        return;
+    }
+
+    // Parse //EXPR comments
+    if (cmt.length() >= 4 && cmt.substr(0, 4) == "EXPR") {
+        //TODO use regex!
+        std::string::size_type p = 4;
+        std::string::size_type q = 4;
+
+        // Extract symbol name
+        p = cmt.find_first_not_of("( \t", p);
+        if (p == std::string::npos) {
+            warning(loc, LT("warning : problem (#1) with EXPR comment - not processed"));
+            return;
+        }
+        q = cmt.find_first_of(", \t", p);
+        if (q == std::string::npos) {
+            warning(loc, LT("warning : problem (#2) with EXPR comment - not processed"));
+            return;
+        }
+        string sym_name = cmt.substr(p, q - p);
+        // Change . to :: to align with Symbol unique_name
+        // e.g. Person.age to Person::age
+        auto r = sym_name.find(".");
+        if (r != string::npos) {
+            sym_name.replace(r, 1, "::");
+        }
+
+        // Skip white space between symbol name and expression
+        p = cmt.find_first_not_of(" \t", q);
+        if (p == std::string::npos) {
+            // ignore empty name
+            return;
+        }
+        string expr = cmt.substr(p);
+
+        // Insert expression into map of all explicit //EXPR comments
+        Symbol::explicit_exprs.emplace(sym_name, make_pair(expr, loc));
+
+        // Don't place //EXPR comments into list of all cxx_comments,
         // which is used for //EN, etc.
         return;
     }
