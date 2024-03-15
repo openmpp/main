@@ -2125,6 +2125,38 @@ void Symbol::post_parse_all()
         }
     }
 
+    // issue warning for //EXPR with invalid target
+    {
+        string prev_target;
+        for (auto& it : explicit_exprs) {
+            /// The target of //EXPR, e.g. T00_Test.E0
+            string target = it.first;
+            /// The SQL for the expression, e.g. OM_SUM(acc1) / OM_DIV_BY(acc2)
+            auto& text = it.second.first;
+            /// The code location of the //EXPR comment
+            auto loc = it.second.second;
+
+            auto s = get_symbol(target);
+            if (!s) {
+                post_parse_warnings++;
+                /// The target with . instead of :: in two-part name
+                string dot_target = std::regex_replace(target, std::regex("::"), ".");
+                string msg = formatToString(LT("warning : //EXPR ignored - target '%s' not found"), dot_target.c_str());
+                pp_logmsg(loc, msg);
+            }
+            else {
+                auto t = dynamic_cast<TableMeasureSymbol*>(s);
+                if (!t) {
+                    post_parse_warnings++;
+                    /// The target with . instead of :: in two-part name
+                    string dot_target = std::regex_replace(target, std::regex("::"), ".");
+                    string msg = formatToString(LT("warning : //EXPR ignored - target '%s' is not a table measure"), dot_target.c_str());
+                    pp_logmsg(loc, msg);
+                }
+            }
+        }
+    }
+
     // Any unprocessed options at this point are errors,
     // probably a mistyped option in model code.
     // Identify any such and raise error.

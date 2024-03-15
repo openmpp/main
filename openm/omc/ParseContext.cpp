@@ -411,6 +411,11 @@ void ParseContext::process_cxx_comment(const string& cmt, const omc::location& l
         }
         string expr = cmt.substr(p);
 
+        // check for duplicate
+        if (Symbol::explicit_exprs.count(sym_name) > 0) {
+            warning(loc, LT("warning : EXPR comment - target is duplicate of another EXPR comment"));
+        }
+
         // Insert expression into map of all explicit //EXPR comments
         Symbol::explicit_exprs.emplace(sym_name, make_pair(expr, loc));
 
