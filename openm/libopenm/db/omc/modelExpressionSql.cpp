@@ -127,6 +127,9 @@ struct LevelDef
 
 int AggregationColumnExpr::nextExprNumber = 1;   // next aggregation expression number
 
+// return true if there any accumulators in source expression
+static bool isAccInExpr(const string & i_srcMsg, const string & i_expr, const vector<string> & i_accNames);
+
 /** translate output aggregation expression into sql */
 const string ModelAggregationSql::translateAggregationExpr(const string & i_outTableName, const string & i_name, const string & i_colName, const string & i_expr)
 {
@@ -146,6 +149,7 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
     bool isFound = false;
     do {
         isAccUsedArr.assign(accCount, false);  // clear accumulator usage flags
+        bool isAnyFnc = false;
 
         for (AggregationColumnExpr & currExpr : levelArr.back().exprArr) {
 
@@ -157,13 +161,31 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
                 // find next function in current expression
                 FncToken fnc = FncToken::next(srcMsg, expr);
                 if (fnc.code == FncCode::undefined) {   // no function found: copy source expression into output
-                    currExpr.sqlExpr += expr;
+
+                    if (level <= 1) {
+                        if (isAccInExpr(srcMsg, expr, accNames))
+                            throw DbException(LT("error in expression, accumulators must be inside of aggregation function: %s of %s"),
+                                i_expr.c_str(),
+                                srcMsg.c_str()
+                            );
+                    }
+                    currExpr.sqlExpr += expr;   // copy source expression into output
                     expr.clear();
                 }
                 else {
 
                     // if anything before the function then copy it into output
-                    if (fnc.namePos != 0) currExpr.sqlExpr += expr.substr(0, fnc.namePos);
+                    if (fnc.namePos != 0) {
+
+                        if (level <= 1) {
+                            if (isAccInExpr(srcMsg, expr.substr(0, fnc.namePos), accNames))
+                                throw DbException(LT("error in expression, accumulators must be inside of aggregation function: %s of %s"),
+                                    i_expr.c_str(),
+                                    srcMsg.c_str()
+                                );
+                        }
+                        currExpr.sqlExpr += expr.substr(0, fnc.namePos); // copy source before the function into the output
+                    }
 
                     // translate function into sql expression and append to output
                     currExpr.sqlExpr += translateAggregationFnc(
@@ -172,9 +194,11 @@ const string ModelAggregationSql::translateAggregationExpr(const string & i_outT
 
                     // remove parsed function from expression
                     expr = (fnc.closePos + 1 < expr.length()) ? expr.substr(fnc.closePos + 1) : "";
+                    isAnyFnc = true;
                 }
             }
         }
+        if (!isAnyFnc && level <= 1) throw DbException(LT("error in table expression, top level must have aggregation function: %s of %s"), i_expr.c_str(), srcMsg.c_str());
 
         // second pass: translate accumulators for all sql expressions
         levelArr.back().accUsageArr = isAccUsedArr;
@@ -368,7 +392,7 @@ const string ModelBaseExpressionSql::translateAllSimpleFnc(const string & i_srcM
                         continue;
                     }
                     // else
-                    throw DbException(LT("error in derived accumulator, invalid function: %s at position %zd in: %s of %s"),
+                    throw DbException(LT("error in expression, invalid function: %s at position %zd in: %s of %s"),
                         expr.substr(fnc.namePos, fnc.openPos - fnc.namePos).c_str(),
                         fnc.namePos,
                         i_expr.c_str(),
@@ -919,5 +943,74 @@ const string ModelAccumulatorSql::translateDerivedAccExpr(
     }
 
     return sql;
+}
+
+// return true if there any accumulators in source expression
+bool isAccInExpr(
+    const string & i_srcMsg, const string & i_expr, const vector<string> & i_accNames
+)
+{
+    bool isLeftDelim = true;
+    size_t nAcc = i_accNames.size();
+
+    for (size_t nPos = 0; nPos < i_expr.length(); nPos++) {
+
+        // skip until end of "quotes" or 'apostrophes'
+        size_t nSkip = skipIfQuoted(i_srcMsg, nPos, i_expr);
+        if (nSkip != nPos) {
+            if (nSkip < i_expr.length()) {      // skip quoted part
+                nPos = nSkip;
+                isLeftDelim = false;    // "quotes" or 'apostrophes' is not left delimiter
+                continue;               // move to the next char after "quotes" or 'apostrophes'
+            }
+            else {
+                break;      // skipped until end of string
+            }
+        }
+
+        // if previous char was name left delimiter then check for accumulator name in current position
+        if (isLeftDelim) {
+
+            // check for each accumulator name
+            bool isAcc = false;
+            size_t nLen = 0;
+            int accPos;
+            for (accPos = 0; accPos < nAcc; accPos++) {
+
+                nLen = i_accNames[accPos].length();
+                isAcc = equalNoCase(i_accNames[accPos].c_str(), i_expr.c_str() + nPos, nLen);
+
+                // check if accumulator name end with right delimiter
+                if (isAcc && nPos + nLen < i_expr.length()) {
+
+                    char chEnd = i_expr[nPos + nLen];
+                    isAcc =
+                        isspace<char>(chEnd, locale::classic()) ||
+                        std::any_of(
+                            rightDelimArr,
+                            rightDelimArr + rightDelimSize,
+                            [chEnd](const char i_delim) -> bool { return chEnd == i_delim; }
+                    );
+                }
+
+                if (isAcc) {
+                    return true;    // exit: accumulator found
+                }
+            }
+        }
+
+        // check if current char is a name delimiter
+        char chNow = i_expr[nPos];
+
+        isLeftDelim =
+            isspace<char>(chNow, locale::classic()) ||
+            std::any_of(
+                leftDelimArr,
+                leftDelimArr + leftDelimSize,
+                [chNow](const char i_delim) -> bool { return chNow == i_delim; }
+        );
+    }
+
+    return false;   // no accumulators is source expression
 }
 
