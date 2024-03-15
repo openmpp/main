@@ -1043,6 +1043,14 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
         }
 
+        // override the table measure expression if a matching //EXPR was supplied
+        auto search = explicit_exprs.find(measure->unique_name);
+        if (search != explicit_exprs.end()) {
+            auto text = (search->second).first;
+            auto loc = (search->second).second;
+            tableExpr.srcExpr = text;
+        }
+
         // save table measure metadata
         metaRows.tableExpr.push_back(tableExpr);
 

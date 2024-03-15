@@ -111,7 +111,7 @@ public:
     int decimals;
 
     /**
-     * The decimal scaling to applyt o this measure
+     * The decimal scaling to apply to this measure
      */
     int scale;
 };
