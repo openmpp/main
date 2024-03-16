@@ -165,24 +165,37 @@ public:
             || increment == token::TK_nz_value_out;
     }
 
-    string decl_short(void) const
+    /**
+     * Accumulator declaration
+     *
+     * @param   full     (Optional) True to produce full version including defaults.
+     * @param   ellipses (Optional) True to use ellipses instead of attribute name.
+     *
+     * @returns A string, example: value_in(age)
+     */
+    string declaration(bool full = false, bool ellipses = false) const
     {
         string result;
         if (accumulator == token::TK_unit) {
             result = "count()";
         }
         else {
-            auto a = pp_attribute;
-            assert(a); // logic guarantee
-            result = a->pretty_name();
+            if (ellipses) {
+                result = "...";
+            }
+            else {
+                auto a = pp_attribute;
+                assert(a); // all accumulators except count() have an attribute
+                result = a->pretty_name();
+            }
             // surround attribute with table operator, increment, accumulator if not defaults
-            if (table_op != token::TK_interval) {
+            if (full || (table_op != token::TK_interval)) {
                 result = token_to_string(table_op) + "(" + result + ")";
             }
-            if (increment != token::TK_delta) {
+            if (full || (increment != token::TK_delta)) {
                 result = token_to_string(increment) + "(" + result + ")";
             }
-            if (accumulator != token::TK_sum) {
+            if (full || (accumulator != token::TK_sum)) {
                 result = token_to_string(accumulator) + "(" + result + ")";
             }
         }

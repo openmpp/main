@@ -106,7 +106,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
         }
         case table_syntax:
         {
-            result = accumulator->decl_short();
+            result = accumulator->declaration();
             break;
         }
         default:

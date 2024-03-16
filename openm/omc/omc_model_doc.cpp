@@ -37,6 +37,7 @@
 #include "EntityTableSymbol.h"
 #include "EntityTableMeasureSymbol.h"
 #include "EntityTableMeasureAttributeSymbol.h"
+#include "EntityTableAccumulatorSymbol.h"
 #include "EntityEventSymbol.h"
 #include "IdentityAttributeSymbol.h"
 #include "DerivedAttributeSymbol.h"
@@ -247,11 +248,11 @@ static string maddy_link(const string& name, const string& link)
 /**
  * Construct a maddy markdown name for a symbol
  *
- * @param [in,out]  name The name to display for the symbol.
+ * @param   name The name to display for the symbol.
  *
  * @returns A markdwon fragment.
  */
-static string maddy_symbol(string& name)
+static string maddy_symbol(const string& name)
 {
     return "`" + name + "`";
 }
@@ -1822,7 +1823,7 @@ void do_model_doc(
                             mdStream << " | " + maddy_link(a->pretty_name(), a->dot_name());
                         }
                         mdStream << " | " + dim_size;
-                        mdStream << " | " << (dim->has_margin ? "**X**" : "");
+                        mdStream << " | " << (dim->has_margin ? "**&nbsp;&nbsp;&nbsp;&nbsp;X**" : "");
                         mdStream << " | " + dim_label;
                         mdStream << "\n";
                     }
@@ -1860,29 +1861,51 @@ void do_model_doc(
                     mdStream << "|<table\n"; // maddy-specific end table
                 }
 
-                // attributes in measures table
-                if (do_developer_edition && isEntityTable && et->pp_measure_attributes.size() > 0) {
-                    mdStream << "**" + LTA(lang, "Attributes in measures") + ":**";
+                // accumulators table
+                if (do_developer_edition && isEntityTable) {
+                    mdStream << "**" + LTA(lang, "Accumulators") + ":**";
                     mdStream << "\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "Attribute");
-                    mdStream << " | " + LTA(lang, "Label");
+                    mdStream << " " + LTA(lang, "Name");
+                    mdStream << " | " + LTA(lang, "Statistic");
+                    mdStream << " | " + LTA(lang, "Increment");
+                    mdStream << " | " + LTA(lang, "Timing");
+                    mdStream << " | " + LTA(lang, "Assembled");
+                    mdStream << " | " + LTA(lang, "Attribute");
+                    mdStream << " | " + LTA(lang, "Attribute Label");
                     mdStream << " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
-                    for (auto ma : et->pp_measure_attributes) {
-                        auto a = ma->pp_attribute;
-                        assert(a); // logic guarantee
-                        string name = maddy_link(a->pretty_name(), a->dot_name());
-                        string label;
-                        if (a->is_derived_attribute()) {
-                            // use empty label for derived attributes because is same as pretty_name()
-                            label = "";
+                    assert(et);
+                    for (auto& acc : et->pp_accumulators) {
+                        string name = "acc" + std::to_string(acc->index);
+                        string stat = maddy_symbol(Symbol::token_to_string(acc->accumulator));
+                        string incr;
+                        string tmng;
+                        if (acc->accumulator != token::TK_unit) {
+                            incr = maddy_symbol(Symbol::token_to_string(acc->increment));
+                            tmng = maddy_symbol(Symbol::token_to_string(acc->table_op));
                         }
-                        else {
-                            label = s->pp_labels[lang_index];
+                        string assembled = maddy_symbol(acc->declaration(false, true));
+                        auto attr = acc->pp_attribute;
+                        string attr_name;
+                        string attr_label;
+                        if (attr) {
+                            attr_name = maddy_link(attr->pretty_name(), attr->dot_name());
+                            if (attr->is_derived_attribute()) {
+                                // use empty label for derived attributes because is same as pretty_name()
+                                attr_label = "";
+                            }
+                            else {
+                                attr_label = attr->pp_labels[lang_index];
+                            }
                         }
-                        mdStream << name;
-                        mdStream << " | " + label;
+                        mdStream << maddy_symbol(name);
+                        mdStream << " | " + stat;
+                        mdStream << " | " + incr;
+                        mdStream << " | " + tmng;
+                        mdStream << " | " + assembled;
+                        mdStream << " | " + attr_name;
+                        mdStream << " | " + attr_label;
                         mdStream << "\n";
                     }
                     mdStream << "|<table\n"; // maddy-specific end table
