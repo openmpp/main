@@ -28,6 +28,11 @@ public:
     {
     }
 
+    string default_label(const LanguageSymbol& language) const override
+    {
+        return external_name;
+    }
+
     void post_parse(int pass);
 
     /**
