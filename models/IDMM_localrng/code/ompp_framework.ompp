@@ -34,8 +34,3 @@ options microdata_output = on;
 options resource_use = on;
 
 #endif // Hide non-C++ syntactic island from IDE
-
-// process development model run options from model ini-file
-void ProcessDevelopmentOptions(const IRunOptions * const i_options)
-{
-}

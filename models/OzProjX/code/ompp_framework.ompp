@@ -23,9 +23,3 @@ use "common_modgen.ompp";
 use "case_based/case_based_modgen.ompp";
 
 #endif // Hide non-C++ syntactic island from IDE
-
-// process development model run options from model ini-file
-void ProcessDevelopmentOptions(const IRunOptions * const i_options)
-{
-    // see wiki for more information on development model run options
-}
