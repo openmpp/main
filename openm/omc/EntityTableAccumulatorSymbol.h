@@ -27,11 +27,11 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableAccumulatorSymbol(Symbol *table, token_type accumulator, token_type increment, token_type table_op, Symbol *attribute, Symbol *analysis_attribute, int index)
-        : Symbol(symbol_name(table, accumulator, increment, table_op, attribute))
+    EntityTableAccumulatorSymbol(Symbol *table, token_type statistic, token_type increment, token_type table_op, Symbol *attribute, Symbol *analysis_attribute, int index)
+        : Symbol(symbol_name(table, statistic, increment, table_op, attribute))
         , table(table->stable_rp())
         , pp_table(nullptr)
-        , accumulator(accumulator)
+        , statistic(statistic)
         , increment(increment)
         , table_op(table_op)
         , attribute(attribute ? attribute->stable_pp() : nullptr)
@@ -43,32 +43,32 @@ public:
         , index(index)
     {
         // grammar guarantee
-        assert(accumulator == token::TK_unit
-            || accumulator == token::TK_sum
-            || accumulator == token::TK_minimum
-            || accumulator == token::TK_maximum
-            || accumulator == token::TK_gini
-            || accumulator == token::TK_P1
-            || accumulator == token::TK_P2
-            || accumulator == token::TK_P5
-            || accumulator == token::TK_P10
-            || accumulator == token::TK_P20
-            || accumulator == token::TK_P25
-            || accumulator == token::TK_P30
-            || accumulator == token::TK_P40
-            || accumulator == token::TK_P50
-            || accumulator == token::TK_P60
-            || accumulator == token::TK_P70
-            || accumulator == token::TK_P75
-            || accumulator == token::TK_P80
-            || accumulator == token::TK_P90
-            || accumulator == token::TK_P95
-            || accumulator == token::TK_P98
-            || accumulator == token::TK_P99
+        assert(statistic == token::TK_unit
+            || statistic == token::TK_sum
+            || statistic == token::TK_minimum
+            || statistic == token::TK_maximum
+            || statistic == token::TK_gini
+            || statistic == token::TK_P1
+            || statistic == token::TK_P2
+            || statistic == token::TK_P5
+            || statistic == token::TK_P10
+            || statistic == token::TK_P20
+            || statistic == token::TK_P25
+            || statistic == token::TK_P30
+            || statistic == token::TK_P40
+            || statistic == token::TK_P50
+            || statistic == token::TK_P60
+            || statistic == token::TK_P70
+            || statistic == token::TK_P75
+            || statistic == token::TK_P80
+            || statistic == token::TK_P90
+            || statistic == token::TK_P95
+            || statistic == token::TK_P98
+            || statistic == token::TK_P99
             );
 
         // grammar guarantee
-        assert((increment == token::TK_unused && (accumulator == token::TK_unit))
+        assert((increment == token::TK_unused && (statistic == token::TK_unit))
             || increment == token::TK_delta
             || increment == token::TK_delta2
             || increment == token::TK_nz_delta
@@ -81,30 +81,30 @@ public:
             );
 
         // grammar guarantee
-        assert((table_op == token::TK_unused && (accumulator == token::TK_unit))
+        assert((table_op == token::TK_unused && (statistic == token::TK_unit))
             || table_op == token::TK_interval
             || table_op == token::TK_event
             );
 
         // determine if there is an associated collection of observations
-        has_obs_collection = accumulator == token::TK_gini
-                          || accumulator == token::TK_P1
-                          || accumulator == token::TK_P2
-                          || accumulator == token::TK_P5
-                          || accumulator == token::TK_P10
-                          || accumulator == token::TK_P20
-                          || accumulator == token::TK_P25
-                          || accumulator == token::TK_P30
-                          || accumulator == token::TK_P40
-                          || accumulator == token::TK_P50
-                          || accumulator == token::TK_P60
-                          || accumulator == token::TK_P70
-                          || accumulator == token::TK_P75
-                          || accumulator == token::TK_P80
-                          || accumulator == token::TK_P90
-                          || accumulator == token::TK_P95
-                          || accumulator == token::TK_P98
-                          || accumulator == token::TK_P99
+        has_obs_collection = statistic == token::TK_gini
+                          || statistic == token::TK_P1
+                          || statistic == token::TK_P2
+                          || statistic == token::TK_P5
+                          || statistic == token::TK_P10
+                          || statistic == token::TK_P20
+                          || statistic == token::TK_P25
+                          || statistic == token::TK_P30
+                          || statistic == token::TK_P40
+                          || statistic == token::TK_P50
+                          || statistic == token::TK_P60
+                          || statistic == token::TK_P70
+                          || statistic == token::TK_P75
+                          || statistic == token::TK_P80
+                          || statistic == token::TK_P90
+                          || statistic == token::TK_P95
+                          || statistic == token::TK_P98
+                          || statistic == token::TK_P99
                           ;
          
     }
@@ -113,27 +113,27 @@ public:
      * Get the unique name for this EntityTableAccumulatorSymbol.
      *
      * @param table       The table.
-     * @param accumulator The accumulator, e.g. token::TK_sum.
+     * @param statistic   The statistic, e.g. token::TK_sum.
      * @param increment   The increment, e.g. token::TK_delta.
      * @param table_op    The table operation: TK_interval or TK_event.
-     * @param attribute    The attribute.
+     * @param attribute   The attribute.
      *
      * @return The name, e.g. om_ta_DurationOfLife_sum_delta_om_duration.
      */
-    static string symbol_name(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *attribute);
+    static string symbol_name(const Symbol *table, token_type statistic, token_type increment, token_type table_op, const Symbol *attribute);
 
     /**
      * Check for existence of symbol with this unique name.
      *
      * @param table       The table.
-     * @param accumulator The accumulator, e.g. token::TK_sum.
+     * @param statistic   The statistic, e.g. token::TK_sum.
      * @param increment   The increment, e.g. token::TK_delta.
      * @param table_op    The table operation: TK_interval or TK_event
-     * @param attribute    The attribute.
+     * @param attribute   The attribute.
      *
      * @return true if found, else false.
      */
-    static bool exists(const Symbol *table, token_type accumulator, token_type increment, token_type table_op, const Symbol *attribute);
+    static bool exists(const Symbol *table, token_type statistic, token_type increment, token_type table_op, const Symbol *attribute);
 
     void post_parse(int pass);
 
@@ -176,7 +176,7 @@ public:
     string declaration(bool full = false, bool ellipses = false) const
     {
         string result;
-        if (accumulator == token::TK_unit) {
+        if (statistic == token::TK_unit) {
             result = "count()";
         }
         else {
@@ -188,15 +188,15 @@ public:
                 assert(a); // all accumulators except count() have an attribute
                 result = a->pretty_name();
             }
-            // surround attribute with table operator, increment, accumulator if not defaults
+            // surround attribute with table operator, increment, statistic if not defaults
             if (full || (table_op != token::TK_interval)) {
                 result = token_to_string(table_op) + "(" + result + ")";
             }
             if (full || (increment != token::TK_delta)) {
                 result = token_to_string(increment) + "(" + result + ")";
             }
-            if (full || (accumulator != token::TK_sum)) {
-                result = token_to_string(accumulator) + "(" + result + ")";
+            if (full || (statistic != token::TK_sum)) {
+                result = token_to_string(statistic) + "(" + result + ")";
             }
         }
         return result;
@@ -217,9 +217,9 @@ public:
     EntityTableSymbol* pp_table;
 
     /**
-     * The kind of accumulator, e.g. TK_sum, TK_minimum, TK_maximum
+     * The statistic of the accumulator, e.g. TK_sum, TK_minimum, TK_maximum
      */
-    token_type accumulator;
+    token_type statistic;
 
     /**
      * The kind of increment, e.g. TK_delta, TK_value_in

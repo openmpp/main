@@ -80,7 +80,7 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
         case sql_aggregated_accumulators:
         {
             string agg_func = "";
-            switch (accumulator->accumulator) {
+            switch (accumulator->statistic) {
             case token::TK_sum:
             case token::TK_unit:
                 agg_func = "OM_AVG";

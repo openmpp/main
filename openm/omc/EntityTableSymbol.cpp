@@ -311,7 +311,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
 
     for (auto acc : pp_accumulators) {
         string initial_value = "";
-        switch (acc->accumulator) {
+        switch (acc->statistic) {
         case token::TK_unit:
         case token::TK_sum:
             initial_value = "  0.0";
@@ -347,12 +347,12 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             assert(0);
         }
         // e.g.  sum(value_in(alive))
-        if (acc->accumulator == token::TK_unit) {
-            c += "// " + Symbol::token_to_string(acc->accumulator);
+        if (acc->statistic == token::TK_unit) {
+            c += "// " + Symbol::token_to_string(acc->statistic);
         }
         else {
             assert(acc->pp_attribute);
-            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
+            c += "// " + Symbol::token_to_string(acc->statistic) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
         }
         // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
         c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
@@ -522,7 +522,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 c += "// Assign " + acc->pretty_name();
                 string acc_index = to_string(acc->index);
                 string obs_index = to_string(acc->obs_collection_index);
-                string stat_name = token_to_string(acc->accumulator);
+                string stat_name = token_to_string(acc->statistic);
                 c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
                 c += "";
             }
@@ -543,14 +543,14 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "double scale_factor = population_scaling_factor();";
     c += "if (scale_factor != 1.0) {";
     for (auto acc : pp_accumulators) {
-        if (acc->accumulator == token::TK_sum || acc->accumulator == token::TK_unit ) {
+        if (acc->statistic == token::TK_sum || acc->statistic == token::TK_unit ) {
             // e.g.  sum(value_in(alive))
-            if (acc->accumulator == token::TK_unit) {
-                c += "// " + Symbol::token_to_string(acc->accumulator);
+            if (acc->statistic == token::TK_unit) {
+                c += "// " + Symbol::token_to_string(acc->statistic);
             }
             else {
                 assert(acc->pp_attribute);
-                c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
+                c += "// " + Symbol::token_to_string(acc->statistic) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
             }
             // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] *= scale_factor;
             c += "for (int cell = 0; cell < n_cells; cell++) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
@@ -789,7 +789,7 @@ void EntityTableSymbol::build_body_push_increment()
         c += "const int acc_index = " + to_string(acc->index) + "; // accumulator index";
         c += "";
         c += "// Compute increment";
-        if (acc->accumulator != token::TK_unit) {
+        if (acc->statistic != token::TK_unit) {
             auto attr = acc->pp_attribute;
             assert(attr);
             if (acc->uses_value_out()) {
@@ -851,11 +851,11 @@ void EntityTableSymbol::build_body_push_increment()
             assert(false); // parser guarantee
         }
 
-        if (Symbol::option_verify_valid_table_increment && acc->accumulator != token::TK_unit) {
+        if (Symbol::option_verify_valid_table_increment && acc->statistic != token::TK_unit) {
             auto attr = acc->pp_attribute;
             assert(attr);
             c += "";
-            if (acc->accumulator == token::TK_sum || acc->accumulator == token::TK_gini) {
+            if (acc->statistic == token::TK_sum || acc->statistic == token::TK_gini) {
                 // runtime error if increment is Nan or inf
                 c += "// Check increment validity when accumulator is sum or gini";
                 c += "if (!std::isfinite(dIncrement)) {";
@@ -881,7 +881,7 @@ void EntityTableSymbol::build_body_push_increment()
             c += "for (size_t cell : cells_to_increment) {";
         }
         c += "auto& dAccumulator = table->acc[acc_index][cell];";
-        switch (acc->accumulator) {
+        switch (acc->statistic) {
         case token::TK_unit:
             if (Symbol::option_weighted_tabulation) {
                 c += "dAccumulator += entity_weight * dIncrement;";

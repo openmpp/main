@@ -1878,10 +1878,10 @@ void do_model_doc(
                     assert(et);
                     for (auto& acc : et->pp_accumulators) {
                         string name = "acc" + std::to_string(acc->index);
-                        string stat = maddy_symbol(Symbol::token_to_string(acc->accumulator));
+                        string stat = maddy_symbol(Symbol::token_to_string(acc->statistic));
                         string incr;
                         string tmng;
-                        if (acc->accumulator != token::TK_unit) {
+                        if (acc->statistic != token::TK_unit) {
                             incr = maddy_symbol(Symbol::token_to_string(acc->increment));
                             tmng = maddy_symbol(Symbol::token_to_string(acc->table_op));
                         }
