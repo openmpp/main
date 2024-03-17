@@ -26,6 +26,11 @@ languages // The languages supported by the model
     FR  // Français
 };
 
+// Descriptive label for RiskPaths shown in the UI.
+
+//LABEL(model,EN) An illustrative microsimulation model of fertility behaviour in a political transition
+//LABEL(model,FR) Un modèle de microsimulation illustratif du comportement de fécondité dans une transition politique
+
 #endif // Hide non-C++ syntactic island from IDE
 
 ///////////////////////////////////////////////////////////////////////////
