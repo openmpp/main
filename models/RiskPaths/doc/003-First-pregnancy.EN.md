@@ -1,4 +1,4 @@
-### First pregnancy 
+### First pregnancy
 
 As outlined above, first pregnancy is modeled by an age baseline hazard and relative risks dependent on union status and duration. The following Table 1 displays the parameter estimates for Bulgaria and Russia before and after the political and economical transition.  
 

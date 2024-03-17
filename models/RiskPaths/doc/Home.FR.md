@@ -5,7 +5,7 @@ introduire la microsimulation à des spécialistes des sciences sociales et dém
 [Modgen](https://www.statcan.gc.ca/microsimulation/modgen/modgen-fra.htm) 
 où 
 [OpenM++](https://openmpp.org/) 
-. 
+.  
 La 
 [documentation wiki d'OpenM++](https://github.com/openmpp/openmpp.github.io/wiki) 
 utilise souvent RiskPaths comme exemple.

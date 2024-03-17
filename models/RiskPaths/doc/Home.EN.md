@@ -4,7 +4,7 @@ RiskPaths is a simple, competing risk, case-based continuous time microsimulatio
 [Modgen](https://www.statcan.gc.ca/microsimulation/modgen/modgen-eng.htm) 
 or 
 [OpenM++](https://openmpp.org/) 
-. 
+.  
 The 
 [OpenM++ wiki documentation](https://github.com/openmpp/openmpp.github.io/wiki) 
 uses RiskPaths extensively in examples.

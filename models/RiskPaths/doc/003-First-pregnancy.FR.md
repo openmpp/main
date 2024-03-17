@@ -1,4 +1,4 @@
-### Première grossesse  
+### Première grossesse
 
 Comme nous l'avons décrit plus haut, la première grossesse est modélisée au moyen d'un risque à un âge de référence et des risques relatifs dépendant de la situation d'union et de la durée. Le tableau 1 qui suit donne les estimations des paramètres pour la Bulgarie et la Russie avant et après la transition politique et économique. 
 
