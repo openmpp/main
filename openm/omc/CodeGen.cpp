@@ -52,6 +52,7 @@ void CodeGen::do_all()
     do_ParameterNameSize();
     do_EntityNameSize();
     do_EventIdName();
+    do_missing_global_funcs();
     if (!Symbol::pp_all_strings.empty()) do_model_strings();
 
     // set meta row values and calculate metadata digests: model, types, parameters, output tables
@@ -2855,4 +2856,14 @@ void CodeGen::do_EventIdName(void)
     c += "};";
     c += "}";
     c += "";
+}
+
+void CodeGen::do_missing_global_funcs(void)
+{
+    for (auto gfs : Symbol::pp_missing_global_funcs) {
+        h += gfs->cxx_declaration_global();
+        h += "";
+        c += gfs->cxx_definition_global();
+        c += "";
+    }
 }

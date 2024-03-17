@@ -1039,6 +1039,11 @@ public:
     static void do_module_provenance(void);
 
     /**
+     * Create missing global functions
+     */
+    static void create_missing_global_funcs(void);
+
+    /**
      * Look for and handle unrecognized options after post-parse phases
      */
     static void do_unrecognized_options();
@@ -1430,6 +1435,11 @@ public:
      * Multimap of rng stream to code location of call.
      */
     static multimap<int, string> rng_stream_calls;
+
+    /**
+     * Set of global funcs which need a declaration or definition.
+     */
+    static set<GlobalFuncSymbol*> pp_missing_global_funcs;
 
     /**
      * A map of all the C++ style single line comments in the model source code, indexed by location

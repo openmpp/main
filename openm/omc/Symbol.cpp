@@ -153,6 +153,8 @@ map<string, omc::location> Symbol::function_defn_loc;
 
 multimap<int, string> Symbol::rng_stream_calls;
 
+set<GlobalFuncSymbol*> Symbol::pp_missing_global_funcs;
+
 /**
 * Map from a token to the preferred string representation of that token.
 *
@@ -1302,6 +1304,22 @@ void Symbol::do_module_provenance(void)
     }
 }
 
+void Symbol::create_missing_global_funcs(void)
+{
+    {
+        // create a definition of ProcessDevelopmentOptions if not supplied in model code.
+        string name = "ProcessDevelopmentOptions";
+        string return_decl = "void";
+        string arg_list_decl = "const IRunOptions * const i_options";
+        if (!exists(name)) {
+            auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
+            s->suppress_decl = true;  // already declared elsewhere
+            s->suppress_defn = false; // have omc emit the (empty) definition
+            pp_missing_global_funcs.insert(s);
+        }
+    }
+}
+
 void Symbol::default_sort_pp_symbols()
 {
     // The default order of pp_symbols is sorting_group, followed by unique_name.
@@ -1422,6 +1440,9 @@ void Symbol::post_parse_all()
 
     // Assign provenance of ModuleSymbols
     do_module_provenance();
+
+    // Create missing global functions if not supplied, e.g. ProcessDevelopmentOptions
+    create_missing_global_funcs();
 
 	//
     // Pass 1: create additional symbols for foreign types and process languages

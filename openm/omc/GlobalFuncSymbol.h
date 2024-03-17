@@ -33,6 +33,7 @@ public:
         : Symbol(name, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
+        , suppress_decl(false)
         , suppress_defn(false)
     {
     }
@@ -45,6 +46,7 @@ public:
      */
     GlobalFuncSymbol(const string name, omc::location decl_loc = omc::location())
         : Symbol(name, decl_loc)
+        , suppress_decl(true)
         , suppress_defn(true)
     {
     }
@@ -69,6 +71,11 @@ public:
      * The return value part of the function declaration.
      */
     string return_decl;
+
+    /**
+     * Flag to suppress generation of function declaration.
+     */
+    bool suppress_decl;
 
     /**
      * Flag to suppress generation of function definition.

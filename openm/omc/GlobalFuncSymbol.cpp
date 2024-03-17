@@ -91,8 +91,7 @@ CodeBlock GlobalFuncSymbol::cxx_declaration_global()
 {
     CodeBlock h;
 
-    // Emit declaration only if created by omc
-    if (!suppress_defn) {
+    if (!suppress_decl) {
 
         // Hook into the hierarchical calling chain
         h = super::cxx_declaration_global();
@@ -118,7 +117,6 @@ CodeBlock GlobalFuncSymbol::cxx_definition_global()
 {
     CodeBlock c;
 
-    // Emit declaration only if created by omc
     if (!suppress_defn) {
         // Hook into the hierarchical calling chain
         c = super::cxx_definition_global();
