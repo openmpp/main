@@ -1883,7 +1883,7 @@ void do_model_doc(
                         string tmng;
                         if (acc->statistic != token::TK_unit) {
                             incr = maddy_symbol(Symbol::token_to_string(acc->increment));
-                            tmng = maddy_symbol(Symbol::token_to_string(acc->table_op));
+                            tmng = maddy_symbol(Symbol::token_to_string(acc->timing));
                         }
                         string assembled = maddy_symbol(acc->declaration(false, true));
                         auto attr = acc->pp_attribute;

@@ -42,7 +42,7 @@ string EntityTableAccumulatorSymbol::pretty_name() const
     string result = " accumulator " + to_string(index) + ": " + token_to_string(statistic);
     if (statistic != token::TK_unit) {
         assert(attribute); // grammar guarantee
-        result += "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + (*attribute)->pretty_name() + ")))";
+        result += "(" + token_to_string(increment) + "(" + token_to_string(timing) + "(" + (*attribute)->pretty_name() + ")))";
     }
     return result;
 }
@@ -57,7 +57,7 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
     case eCreateMissingSymbols:
     {
         // If attribute is subject to event() tabulation operator create lagged version.
-        if (table_op == token::TK_event) {
+        if (timing == token::TK_event) {
             auto av = dynamic_cast<AttributeSymbol *>(pp_symbol(attribute));
             assert(av);
             av->create_lagged();
