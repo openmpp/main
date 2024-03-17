@@ -844,7 +844,7 @@ void EntityTableSymbol::build_body_push_increment()
             c += "dIncrement = ((double)value_out - (double)value_in) * ((double)value_out - (double)value_in);";
             break;
         case token::TK_unused:
-            assert(acc->accumulator == token::TK_unit);
+            assert(acc->statistic == token::TK_unit);
             c += "dIncrement = 1.0;";
             break;
         default:
