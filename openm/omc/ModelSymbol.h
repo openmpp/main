@@ -36,6 +36,9 @@ public:
 
     string default_label(const LanguageSymbol& language) const override
     {
+        // Use the model name to construct the default label, e.g. "RiskPaths".
+        // This is typically overridden in model code by providing a label to the 'model' symbol, e.g.
+        //     //LABEL(model,EN) The model label...
         return external_name;
     }
 

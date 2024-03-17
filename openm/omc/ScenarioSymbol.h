@@ -30,6 +30,8 @@ public:
 
     string default_label(const LanguageSymbol& language) const override
     {
+        // Use the name of the scenario used to build the model to construct the default label.
+        // This is normally "Default".
         return external_name;
     }
 
