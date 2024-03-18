@@ -604,16 +604,6 @@ void do_model_doc(
         do_entity_set_topics = false;
     }
 
-    if (do_developer_edition) {
-        // turn on/off flags for Developer Edition independent of options
-        do_attribute_topics = true;
-    }
-    else {
-        // turn on/off flags for User Edition independent of options
-        do_module_topics = false;
-        do_entity_set_topics = false;
-    }
-
     /// Show the individual module topics for use modules
     bool do_module_use_topics = false;
     if (do_module_topics) {
@@ -634,6 +624,18 @@ void do_model_doc(
     bool do_entity_sets_alphabetic_topic = false;
     if (do_entity_set_topics) {
         do_entity_sets_alphabetic_topic = true;
+    }
+
+    if (do_developer_edition) {
+        // turn on/off flags for Developer Edition independent of options
+        do_attribute_topics = true;
+    }
+    else {
+        // turn on/off flags for User Edition independent of options
+        do_module_topics = false;
+        do_modules_alphabetic_topic = false;
+        do_entity_set_topics = false;
+        do_entity_sets_alphabetic_topic = false;
     }
 
     if (!do_generated_content) {
@@ -2147,7 +2149,7 @@ void do_model_doc(
         }
 
         // Topic: entity sets in alphabetic order
-        {
+        if (do_entity_sets_alphabetic_topic) {
             mdStream << "<h3 id=\"" + anchorEntitySetsAlphabetic + "\">" + LTA(lang, "Entity sets in alphabetic order") + "</h3>\n\n";
             mdStream << "\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
