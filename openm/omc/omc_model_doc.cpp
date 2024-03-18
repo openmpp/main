@@ -450,7 +450,7 @@ void do_model_doc(
         string json_path = makeFilePath(baseDirOf(docOutDir).c_str(), json_name.c_str());
         ofstream json_stream(json_path, ios::out | ios::trunc | ios::binary);
         if (json_stream.fail()) {
-            theLog->logFormatted("omc : error : Unable to open '%s' for writing.", json_path);
+            theLog->logFormatted("omc : error : Unable to open '%s' for writing.", json_path.c_str());
             throw HelperException(LT("fatal error - no model documentation"));
         }
 
@@ -2517,7 +2517,7 @@ void do_model_doc(
             string htmlPath = makeFilePath(docOutDir.c_str(), htmlName.c_str());
             ofstream htmlStream(htmlPath, ios::out | ios::trunc | ios::binary);
             if (htmlStream.fail()) {
-                theLog->logFormatted("omc : error : Unable to open '%s' for writing.", htmlPath);
+                theLog->logFormatted("omc : error : Unable to open '%s' for writing.", htmlPath.c_str());
                 throw HelperException(LT("fatal error - no model documentation"));
             }
 
