@@ -1,14 +1,26 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
-2024-11-16:
+2024-03-18:
+  c++ core: New 'standard' model files
+  c++ core: French translations of run log messages
+  c++ core: Control the aggregation of subs to produce run-level tables
+  c++ core: Generated Model Documentation enhancements
+  c++ core: Function definition of ProcessDevelopmentOptions no longer required in model code
+  c++ core: Renamed demo models OzProj and OzProjGen – microdata removed from distribution
+  UI and back-end: set storage space limit for cloud users
+  UI and back-end: provide UI and back-end support to cleanup database, download and upload files
+  UI and back-end: fix issues related to large range types handling in back-end and UI
+  UI and back-end: do not allow to open parameter, table or microdata if dimension type size or attribute size exceeds the limit
+
+2024-02-16:
   go oms: fix a read bug of microdata entity_key database column
   c++ core: new option weighted_tabulation_allow_time_based
   UI: notify user if microdata is empty in the model run (zero rows)
   UI: handle errors in UI if database read return with error on server for parameter, output table or microdata
   UI disk use: change refersh time if changed on the server
 
-2024-11-13:
+2024-02-13:
   create model documentation as part of model build
   multiple changes and fixes in c++ core, UI and other projects to support bilingual models
   c++ core: special handling for attributes with many enumerators
@@ -24,7 +36,7 @@ Please note:
   go oms API: allow to use scalar model parameters in output tables and microdata calculation
   go oms: add memory resources  management to model run queue
   go oms: allow to limit number of CPU cores available to the user model run queue
-  go oms API: fix model run queue pause bug , add API call to pause model run queue fro all users
+  go oms API: fix model run queue pause bug, add API call to pause model run queue fro all users
   go and UI: provide storage (disk space) management UI
   go and UI: allow to delete multiple model runs or worksets in UI
   UI: correctly detect user language (browser language) in UI
