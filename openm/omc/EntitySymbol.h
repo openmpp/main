@@ -391,7 +391,7 @@ public:
     EntityFuncSymbol *ss_implement_fn;
 
     /**
-     * The get_entity_ley function.
+     * The get_entity_key function.
      */
     EntityFuncSymbol* get_entity_key_fn;
 
@@ -399,6 +399,11 @@ public:
      * The get_microdata_key() function.
      */
     EntityFuncSymbol* get_microdata_key_fn;
+
+    /**
+     * The write_microdata() function.
+     */
+    EntityFuncSymbol* write_microdata_fn;
 
     /**
      * The self-scheduling event.

@@ -19,14 +19,6 @@ void EntityFuncSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
-        // Allow model code to override generated member function body for specific member functions
-        if (name == "get_entity_key" || name == "get_microdata_key") {
-            auto search = function_defn_loc.find(unique_name);
-            if (search != function_defn_loc.end()) {
-                suppress_defn = true;
-            }
-        }
-
         // Process early to handle possible missing symbol creation
         if (suppress_defn) {
             // Is a developer-supplied entity member function.
