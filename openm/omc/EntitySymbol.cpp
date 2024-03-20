@@ -464,15 +464,25 @@ void EntitySymbol::post_parse(int pass)
                 // A definition for get_microdata_key not supplied in model code, so generate one.
                 get_microdata_key_fn->suppress_defn = false;
                 CodeBlock& c = get_microdata_key_fn->func_body;
-                c += "// The following default function body was generated because none was supplied in model code.";
-                c += "uint64_t microdata_key = get_entity_key();";
-                c += "return microdata_key;";
+                if (option_microdata_output) {
+                    c += "// The following default function body was generated because none was supplied in model code.";
+                    c += "uint64_t microdata_key = 10000 * get_entity_key() + om_microdata_counter;";
+                    c += "return microdata_key;";
+                }
+                else {
+                    c += "// Do-nothing generated body because options microdata_output = off";
+                    c += "return 0;";
+                }
             }
         }
         {
             assert(write_microdata_fn); // assigned during instantiation
             CodeBlock& c = write_microdata_fn->func_body;
             c += "if constexpr(om_microdata_output_capable) {";
+            if (option_microdata_output && !get_microdata_key_fn->suppress_defn) {
+                // see generated function body for get_microdata_key immediately above
+                c += "++om_microdata_counter; // maintain counter for use in get_microdata_key()";
+            }
             c +=     "uint64_t microdata_key = get_microdata_key();";
             c +=     "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
             c +=     "int event_id = BaseEvent::current_event_id;";
@@ -609,6 +619,17 @@ void EntitySymbol::post_parse(int pass)
                 // Push the name into the post parse ignore hash for the current pass.
                 pp_symbols_ignore.insert(biav->unique_name);
             }
+        }
+
+        if (option_microdata_output && !get_microdata_key_fn->suppress_defn) {
+            // create om_microdata_counter EntityInternalSymbol to support
+            // the default generated get_microdata_key implementation code.
+            string nm = "om_microdata_counter";
+            auto* typ = NumericSymbol::find(token::TK_short);
+            auto mem = new EntityInternalSymbol(nm, this, typ, "0");
+            assert(mem);
+            auto sym = new EntityInternalSymbol(nm, this, typ);
+            sym->provenance = name + " microdata record counter";
         }
 
         {
