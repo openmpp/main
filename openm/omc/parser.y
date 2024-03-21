@@ -2528,6 +2528,27 @@ expr_for_table[result]:
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
                         }
+      // Ex. count, synonym for unit
+    | "count"
+                        {
+                            // This is the special accumulator which counts increments
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
+                        }
+      // Ex. counter, synonym for unit
+    | "counter"
+                        {
+                            // This is the special accumulator which counts increments
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
+                        }
+      // Ex. increments, synonym for unit
+    | "increments"
+                        {
+                            // This is the special accumulator which counts increments
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
+                        }
       // Ex. max_value_in(income)
     | modgen_cumulation_operator "(" symbol_in_table ")"
                         {
