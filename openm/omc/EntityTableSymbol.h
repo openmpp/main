@@ -38,6 +38,18 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
+    /**
+     * Enumeration indicating the kind of entity table.
+     */
+    enum class table_kind {
+        ///< classic entity table.
+        classic,
+        ///< duration-style entity table.
+        duration,
+        ///< snapshot-style entity table.
+        snapshot,
+    };
+
     EntityTableSymbol(Symbol *sym, const Symbol * ent, omc::location decl_loc = omc::location())
         : TableSymbol(sym, decl_loc)
         , entity(ent->stable_rp())
@@ -48,6 +60,8 @@ public:
         , push_increment_fn(nullptr)
         , filter(nullptr)
         , n_collections(0)
+        , kind(table_kind::classic)
+        , is_unweighted(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -155,6 +169,14 @@ public:
      * for each cell of the table.  This is the count of the number of such collections in each table cell.
      */
     int n_collections;
+
+    /** The kind of table */
+    table_kind kind;
+
+    /**
+     * True if the table is marked unweighted.
+     */
+    bool is_unweighted;
 
     /**
      * Class name used to declare the entity table.

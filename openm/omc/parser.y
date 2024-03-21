@@ -15,6 +15,7 @@
 #include <string>
 #include <sstream>
 #include <list>
+#include <set>
 #include <typeinfo>
 #include "disable_selected_warnings.h"
 
@@ -107,6 +108,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
     string               *pval_string;
     list<string *>       *pval_string_list;
     list<Symbol *>       *pval_Symbol_list;
+    set<int>             *pval_token_set;
 };
 
 %printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
@@ -545,6 +547,8 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %type <pval_string>      option_rhs
 %type <pval_Symbol_list> array_decl_dimension_list
 %type <pval_Symbol_list> symbol_list
+%type <val_token>        table_keyword_set_element
+%type <pval_token_set>   table_keyword_set
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -1164,7 +1168,6 @@ symbol_list:
                             $$ = $pls;
                         }
 	;
-
 
 /*
  * table_group
@@ -2385,7 +2388,7 @@ entity_set_order_opt:
  */
 
 decl_table: // Some code for decl_entity_set and decl_table is nearly identical
-      "table" SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
+      "table" table_keyword_set[keywords] SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
                         {
                             EntityTableSymbol *table = nullptr;
 
@@ -2402,6 +2405,27 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 assert(table); // grammar/logic guarantee
                                 // redeclaration not allowed
                                 error(@table, LT("error: a table named '") + $table->name + LT("' already exists"));
+                            }
+                            // process table keywords if any
+                            {
+                                assert($keywords); // grammar creates empty instance if no keywords
+                                bool unweighted = $keywords->count(token::TK_unweighted) > 0;
+                                bool snapshot = $keywords->count(token::TK_snapshot) > 0;
+                                bool duration = $keywords->count(token::TK_duration) > 0;
+                                if (unweighted) {
+                                    table->is_unweighted = true;
+                                }
+                                if (snapshot && duration) {
+                                    error(@table, LT("error: entity table cannot be both snapshot and duration"));
+                                }
+                                if (snapshot) {
+                                    table->kind = EntityTableSymbol::table_kind::snapshot;
+                                }
+                                if (duration) {
+                                    table->kind = EntityTableSymbol::table_kind::duration;
+                                }
+                                $keywords->clear();
+                                delete $keywords;
                             }
                             // Set entity context and table context for body of table declaration
                             pc.set_entity_context( $entity);
@@ -2428,6 +2452,31 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             pc.reset_working_counters();
                         }
     ;
+
+// A possibly empty set of whitespace-separated keywords.
+table_keyword_set:
+      table_keyword_set[psi] table_keyword_set_element
+                        {
+                            // insert element into existing set
+                            assert($psi);
+                            $psi->insert($table_keyword_set_element);
+                            $$ = $psi;
+                        }
+    | /* nothing */
+                        {
+                            // start a new keyword set
+                            auto* psi = new set<int>;
+                            $$ = psi;
+                        }
+	;
+
+// Allowed keywords in a table_keyword_set.
+table_keyword_set_element:
+      "snapshot"
+    | "duration"
+    | "unweighted"
+	;
+
 
 table_filter_opt:
     "[" expr_for_attribute[root] "]"
