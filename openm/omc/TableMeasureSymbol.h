@@ -22,7 +22,7 @@ private:
     typedef Symbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     TableMeasureSymbol(Symbol* table, string* pname_default, string* pname_explicit, int index, omc::location decl_loc = omc::location())
         : Symbol(symbol_name(table, index, pname_default), decl_loc)
@@ -50,9 +50,9 @@ public:
      */
     static void to_column_name(const string & i_tableName, const list<TableMeasureSymbol *> i_measureLst, TableMeasureSymbol * io_me);
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    string pretty_name() const;
+    string pretty_name() const override;
 
     /**
      * Heuristically-generated short name for the dimension

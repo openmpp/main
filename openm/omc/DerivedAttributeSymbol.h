@@ -30,7 +30,7 @@ private:
     typedef MaintainedAttributeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor with all arguments.
@@ -450,11 +450,11 @@ public:
         return "flag_" + name;
     }
 
-    string pp_modgen_name() const;
+    string pp_modgen_name() const override;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_entity();
+    CodeBlock cxx_declaration_entity() override;
 
     /**
      * The token for the derived attribute

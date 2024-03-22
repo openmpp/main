@@ -20,7 +20,7 @@ private:
     typedef Symbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     ScenarioSymbol(string nm, string enm)
         : Symbol(nm)
@@ -35,7 +35,7 @@ public:
         return external_name;
     }
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
     /**
      * The external name of the published scenario.

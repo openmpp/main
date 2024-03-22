@@ -19,7 +19,7 @@ private:
     typedef AttributeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor by name.
@@ -56,9 +56,9 @@ public:
      */
     string default_label(const LanguageSymbol& language) const override;
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_entity();
+    CodeBlock cxx_declaration_entity() override;
 
     /** The English label */
     string the_english_label;

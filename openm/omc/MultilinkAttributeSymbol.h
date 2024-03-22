@@ -27,7 +27,7 @@ private:
     typedef MaintainedAttributeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -79,9 +79,9 @@ public:
      */
     void create_auxiliary_symbols();
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_entity();
+    CodeBlock cxx_declaration_entity() override;
 
     string pretty_name() const override
     {
