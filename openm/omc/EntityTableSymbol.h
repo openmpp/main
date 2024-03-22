@@ -174,6 +174,46 @@ public:
     table_kind kind;
 
     /**
+     * Query if this EntityTableSymbol is classic
+     *
+     * @returns True if classic, false if not.
+     */
+    bool is_classic(void) const
+    {
+        return kind == table_kind::classic;
+    }
+
+    /**
+     * Query if this EntityTableSymbol is duration
+     *
+     * @returns True if duration, false if not.
+     */
+    bool is_duration(void) const
+    {
+        return kind == table_kind::duration;
+    }
+
+    /**
+     * Query if this EntityTableSymbol is snapshot
+     *
+     * @returns True if snapshot, false if not.
+     */
+    bool is_snapshot(void) const
+    {
+        return kind == table_kind::snapshot;
+    }
+
+    const char * kind_as_string(void) const
+    {
+        switch (kind) {
+        case table_kind::classic: return "classic";
+        case table_kind::duration: return "duration";
+        case table_kind::snapshot: return "snapshot";
+        default: return ""; // not reached
+        }
+    }
+
+    /**
      * True if the table is marked unweighted.
      */
     bool is_unweighted;

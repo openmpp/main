@@ -1702,15 +1702,25 @@ void do_model_doc(
                     string kindInfo;
                     {
                         if (do_developer_edition) {
+                            string extraInfo;
                             if (isEntityTable) {
+                                assert(et);
                                 kindInfo = LTA(lang, "Entity Table");
-
+                                extraInfo = LTA(lang, et->kind_as_string()); // possibilities: classic, duration, snapshot
+                                if (et->is_unweighted) {
+                                    extraInfo += (extraInfo.length() > 0) ? "," : "";
+                                    extraInfo += LTA(lang, "unweighted");
+                                }
                             }
                             else {
                                 kindInfo = LTA(lang, "Derived Table");
                             }
                             if (s->is_hidden) {
-                                kindInfo += " (" + LTA(lang, "hidden") + ")";
+                                extraInfo += (extraInfo.length() > 0) ? "," : "";
+                                extraInfo += LTA(lang, "hidden");
+                            }
+                            if (extraInfo.length() > 0) {
+                                kindInfo += " (" + extraInfo + ")";
                             }
                         }
                         else {
