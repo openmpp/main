@@ -1,6 +1,10 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-03-22:
+  c++ core: provide implementation for default microdata key uniqueness
+  c++ core: bug fix for tablle suppression check
+
 2024-03-18:
   c++ core: New 'standard' model files
   c++ core: French translations of run log messages
