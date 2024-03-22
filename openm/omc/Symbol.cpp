@@ -1586,6 +1586,20 @@ void Symbol::post_parse_all()
         pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed tables from the master list of tables
         pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed_table; });
+
+        // for the tables which remain, remove any dependencies to suppressed tables
+        for (auto tbl : pp_all_tables) {
+            auto& requiring = tbl->pp_tables_requiring;
+            // standard C++ paradigm to remove elements from a set while iterating it
+            for (auto iter = requiring.begin(); iter != requiring.end();) {
+                if ((*iter)->is_suppressed_table) {
+                    iter = requiring.erase(iter);
+                }
+                else {
+                    ++iter;
+                }
+            }
+        }
     }
 
     // Sort all global collections
