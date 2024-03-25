@@ -274,7 +274,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_undergone_exit            "undergone_exit"
 %token <val_token>    TK_undergone_transition      "undergone_transition"
 %token <val_token>    TK_unit                      "unit"
-%token <val_token>    TK_unweighted                "unweighted"
+%token <val_token>    TK_untransformed             "untransformed"
 %token <val_token>    TK_ushort                    "ushort"
 %token <val_token>    TK_value_at_changes          "value_at_changes"
 %token <val_token>    TK_value_at_entrances        "value_at_entrances"
@@ -2409,11 +2409,11 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             // process table keywords if any
                             {
                                 assert($keywords); // grammar creates empty instance if no keywords
-                                bool unweighted = $keywords->count(token::TK_unweighted) > 0;
+                                bool untransformed = $keywords->count(token::TK_untransformed) > 0;
                                 bool snapshot = $keywords->count(token::TK_snapshot) > 0;
                                 bool duration = $keywords->count(token::TK_duration) > 0;
-                                if (unweighted) {
-                                    table->is_unweighted = true;
+                                if (untransformed) {
+                                    table->is_untransformed = true;
                                 }
                                 if (snapshot && duration) {
                                     error(@table, LT("error: entity table cannot be both snapshot and duration"));
@@ -2474,7 +2474,7 @@ table_keyword_set:
 table_keyword_set_element:
       "snapshot"
     | "duration"
-    | "unweighted"
+    | "untransformed"
 	;
 
 

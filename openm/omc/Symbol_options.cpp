@@ -1351,11 +1351,11 @@ void Symbol::do_options()
 
         if (is_case_based) {
             // case-based models, by default, aggregate accumulators across simulation members before evaluating the expression
-            measures_are_aggregated = true;
+            measures_method = aggregate;
         }
         else {
             // time-based models, by default, compute the average of the expression across simulation members
-            measures_are_aggregated = false;
+            measures_method = average;
         }
 
         // Override default aggregation method if measures_method option was specified.
@@ -1366,13 +1366,16 @@ void Symbol::do_options()
             string& value = opt_pair.first;
             auto& loc = opt_pair.second;
             if (value == "aggregate") {
-                measures_are_aggregated = true;
+                measures_method = aggregate;
             }
             else if (value == "average") {
-                measures_are_aggregated = false;
+                measures_method = average;
+            }
+            else if (value == "assemble") {
+                measures_method = assemble;
             }
             else {
-                pp_error(loc, LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
+                pp_error(loc, LT("error : '") + value + LT("' is invalid - measures_method must be average, aggregate, or assemble"));
             }
             // remove processed option
             options.erase(iter);

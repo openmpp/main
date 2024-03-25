@@ -1644,11 +1644,23 @@ public:
      */
     static bool any_parameters_to_tables;
 
+    ///  Method to compute run results from subs
+    enum run_table_method {
+
+        /// average measures across subs expression_style = sql_accumulators
+        average,
+
+        /// aggregate measures across subs expression_style = sql_aggregated_accumulators
+        aggregate,
+
+        /// ossemble measures across subs expression_style = sql_assembled_accumulators
+        assemble,
+    };
+
     /**
-     * If true, table measures are aggregated across simulation members.
-     * If false, table measures are averaged across simulation members.
+     * The method used to compute run level results from subs.
      */
-    static bool measures_are_aggregated;
+    static run_table_method measures_method;
 
     /**
      * A count of type changes made in a single post-parse pass.

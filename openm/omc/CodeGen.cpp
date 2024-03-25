@@ -1050,7 +1050,9 @@ void CodeGen::do_ModelShutdown()
 
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
-	    c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";
+        if (!table->is_untransformed) {
+            c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";
+        }
     }
 	c += "";
 

@@ -1706,11 +1706,12 @@ void do_model_doc(
                             if (isEntityTable) {
                                 assert(et);
                                 kindInfo = LTA(lang, "Entity Table");
-                                extraInfo = LTA(lang, et->kind_as_string()); // possibilities: classic, duration, snapshot
-                                if (et->is_unweighted) {
+                                if (et->is_untransformed) {
                                     extraInfo += (extraInfo.length() > 0) ? "," : "";
-                                    extraInfo += LTA(lang, "unweighted");
+                                    extraInfo += LTA(lang, "untransformed");
                                 }
+                                extraInfo += (extraInfo.length() > 0) ? "," : "";
+                                extraInfo += LTA(lang, et->kind_as_string()); // possibilities: classic, duration, snapshot
                             }
                             else {
                                 kindInfo = LTA(lang, "Derived Table");

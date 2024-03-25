@@ -313,7 +313,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_undergone_exit, "undergone_exit" },
     { token::TK_undergone_transition, "undergone_transition" },
     { token::TK_unit, "unit" },
-    { token::TK_unweighted, "unweighted" },
+    { token::TK_untransformed, "untransformed" },
     { token::TK_ushort, "ushort" },
     { token::TK_value_at_changes, "value_at_changes" },
     { token::TK_value_at_entrances, "value_at_entrances" },
@@ -626,7 +626,7 @@ bool Symbol::any_tables_retain = false;
 
 bool Symbol::any_parameters_to_tables = false;
 
-bool Symbol::measures_are_aggregated = true;
+Symbol::run_table_method Symbol::measures_method = run_table_method::average;
 
 int Symbol::type_changes = 0;
 

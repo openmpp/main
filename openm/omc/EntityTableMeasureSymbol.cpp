@@ -78,12 +78,13 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
             break;
         }
         case sql_aggregated_accumulators:
+        case sql_assembled_accumulators:
         {
             string agg_func = "";
             switch (accumulator->statistic) {
             case token::TK_sum:
             case token::TK_unit:
-                agg_func = "OM_AVG";
+                agg_func = (style == sql_aggregated_accumulators) ? "OM_AVG" : "OM_SUM";
                 break;
             case token::TK_minimum:
                 agg_func = "OM_MIN";

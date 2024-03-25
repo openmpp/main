@@ -883,7 +883,7 @@ void EntityTableSymbol::build_body_push_increment()
         c += "auto& dAccumulator = table->acc[acc_index][cell];";
         switch (acc->statistic) {
         case token::TK_unit:
-            if (Symbol::option_weighted_tabulation) {
+            if (Symbol::option_weighted_tabulation && !is_untransformed) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }
             else {
@@ -891,7 +891,7 @@ void EntityTableSymbol::build_body_push_increment()
             }
             break;
         case token::TK_sum:
-            if (Symbol::option_weighted_tabulation) {
+            if (Symbol::option_weighted_tabulation && !is_untransformed) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }
             else {
@@ -1007,14 +1007,14 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Measures for entity table.
     for (auto mIt = pp_measures.begin(); mIt != pp_measures.end(); ++mIt) {
 
-        TableMeasureSymbol * measure = *mIt;
+        TableMeasureSymbol* measure = *mIt;
 
         // make measure db column name: it must be unique, alpanumeric and not longer than 255 chars
         TableMeasureSymbol::to_column_name(name, pp_measures, measure);
 
         TableExprRow tableExpr;
 
-        auto etm = dynamic_cast<EntityTableMeasureSymbol *>(measure);
+        auto etm = dynamic_cast<EntityTableMeasureSymbol*>(measure);
         assert(etm); // logic guarantee
 
         tableExpr.tableId = pp_table_id;
@@ -1032,15 +1032,40 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         string measure_expr = etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
 
         // Construct the expression used to compute the measure over simulation members.
-        if (measures_are_aggregated) {
-            // Aggregate accumulators across simulation members before evaluating the expression for the measure.
+        if (is_untransformed) {
+            // Assemble accumulators across simulation members before evaluating the expression for the measure.
             tableExpr.srcExpr =
                 scale_part
-                + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
+                + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_assembled_accumulators);
         }
         else {
-            // Average the measure across simulation members.
-            tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
+            switch (measures_method) {
+            case run_table_method::aggregate:
+            {
+                // Aggregate accumulators across simulation members before evaluating the expression for the measure.
+                tableExpr.srcExpr =
+                    scale_part
+                    + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
+                break;
+            }
+            case run_table_method::assemble:
+            {
+                // Assemble accumulators across simulation members before evaluating the expression for the measure.
+                tableExpr.srcExpr =
+                    scale_part
+                    + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_assembled_accumulators);
+                break;
+            }
+            case run_table_method::average:
+            {
+                // Average the measure across simulation members.
+                tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
+                break;
+            }
+            default:
+                assert(false); // not reached
+                break;
+            }
         }
 
         // override the table measure expression if a matching //EXPR was supplied

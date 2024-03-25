@@ -61,7 +61,7 @@ public:
         , filter(nullptr)
         , n_collections(0)
         , kind(table_kind::classic)
-        , is_unweighted(false)
+        , is_untransformed(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -214,9 +214,9 @@ public:
     }
 
     /**
-     * True if the table is marked unweighted.
+     * True if the table is unweighted, unscaled, and aggregated across subs.
      */
-    bool is_unweighted;
+    bool is_untransformed;
 
     /**
      * Class name used to declare the entity table.
