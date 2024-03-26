@@ -41,7 +41,7 @@ then
 
 fi
 
-[ "$OM_ROOT" != "$PWD" ] && pushd $OM_ROOT
+[ "$OM_ROOT" != "$PWD" ] && pushd "$OM_ROOT"
 
 # allow to use $MODEL_NAME.ini file in UI for model run
 #
