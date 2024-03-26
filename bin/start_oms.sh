@@ -26,7 +26,7 @@ fi
 
 # set openM++ root folder 
 #
-self=$(basename $0)
+self=$(basename "$0")
 
 if [ -z "$OM_ROOT" ] ;
 then
@@ -55,7 +55,7 @@ export OM_CFG_TYPE_MAX_LEN=256
 
 echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest"
 
-OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
+OM_ROOT="$OM_ROOT" ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
 status=$?
 
 if [ $status -ne 0 ] ;
