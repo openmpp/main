@@ -58,6 +58,8 @@ public:
         , reset_derived_attributes_fn(nullptr)
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
+        , lifecycle_enter_fn(nullptr)
+        , lifecycle_exit_fn(nullptr)
         , start_trace_fn(nullptr)
         , ss_time_fn(nullptr)
         , ss_implement_fn(nullptr)
@@ -261,6 +263,16 @@ public:
      * The entity function which empties all multilinks when the entity finishes.
      */
     EntityFuncSymbol *finalize_multilinks_fn;
+
+    /**
+     * The entity function which supports lifecycle attributes on enter_simulation.
+     */
+    EntityFuncSymbol* lifecycle_enter_fn;
+
+    /**
+     * The entity function which supports lifecycle attributes on exit_simulation.
+     */
+    EntityFuncSymbol* lifecycle_exit_fn;
 
     /**
      * The entity function which implements trace messages at the start of the entity lifecycle.

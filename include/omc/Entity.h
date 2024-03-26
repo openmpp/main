@@ -185,6 +185,16 @@ public:
     virtual void write_microdata() = 0;
 
     /**
+     * Handle lifecycle attribute maintenance on enter_simulation.
+     */
+    virtual void om_lifecycle_enter() = 0;
+
+    /**
+     * Handle lifecycle attribute maintenance on exit_simulation.
+     */
+    virtual void om_lifecycle_exit() = 0;
+
+    /**
      * Age all entities to the given time.
      * 
      * If originating_entity_id is not supplied, no check for time running backwards is performed
@@ -276,6 +286,7 @@ public:
         initialize_local_random_streams();
         make_active();
         om_active = true;
+        om_lifecycle_enter();
         if constexpr (om_microdata_output_capable && om_microdata_write_on_enter) {
             write_microdata();
         }
@@ -307,6 +318,10 @@ public:
      */
     void exit_simulation()
     {
+        om_lifecycle_exit();
+        if constexpr (om_microdata_output_capable && om_microdata_write_on_exit) {
+            write_microdata();
+        }
         if constexpr(om_event_trace_capable) {
             extern double GetCaseSeed();
             if (event_trace_on) {
@@ -324,9 +339,6 @@ public:
                     et_msg_type::eExitSimulation
                 );
             }
-        }
-        if constexpr (om_microdata_output_capable && om_microdata_write_on_exit) {
-            write_microdata();
         }
         om_finalize_entity_sets();
         om_finalize_tables();

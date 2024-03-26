@@ -397,6 +397,24 @@ void EntitySymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The lifecycle_enter member function
+    {
+        assert(nullptr == lifecycle_enter_fn); // initialization guarantee
+        lifecycle_enter_fn = new EntityFuncSymbol("om_lifecycle_enter", this);
+        assert(lifecycle_enter_fn); // out of memory check
+        lifecycle_enter_fn->doc_block = doxygen_short("Maintain lifecycle attributes on enter_simulation.");
+        // function body is generated in post-parse phase
+    }
+
+    // The lifecycle_exit member function
+    {
+        assert(nullptr == lifecycle_exit_fn); // initialization guarantee
+        lifecycle_exit_fn = new EntityFuncSymbol("om_lifecycle_exit", this);
+        assert(lifecycle_exit_fn); // out of memory check
+        lifecycle_exit_fn->doc_block = doxygen_short("Maintain lifecycle attributes on exit_simulation.");
+        // function body is generated in post-parse phase
+    }
+
     // The start_trace member function
     {
         assert(nullptr == start_trace_fn); // initialization guarantee
@@ -687,6 +705,9 @@ void EntitySymbol::post_parse(int pass)
                 // note that pp_events is not available in this early pass
                 set<string> event_names;
                 for (auto& it : pp_symbols) {
+                    if (pp_symbols_ignore.count(it.first) > 0) {
+                        continue;  // skip orphaned entries which were morphed earlier in this pass
+                    }
                     if (auto e = dynamic_cast<EntityEventSymbol*>(it.second)) {
                         if (e->entity == this) {
                             event_names.insert(e->event_name);
@@ -829,6 +850,20 @@ void EntitySymbol::post_parse(int pass)
 
                     // Push the name into the post parse ignore hash for the current pass.
                     pp_symbols_ignore.insert(biav->unique_name);
+                }
+                {
+                    // create function body for om_lifecycle_enter
+                    assert(lifecycle_enter_fn);
+                    CodeBlock& c = lifecycle_enter_fn->func_body;
+                    c += "lifecycle_event = " + enum_prefix + "enter_simulation;";
+                    c += "++lifecycle_counter;";
+                }
+                {
+                    // create function body for om_lifecycle_exit
+                    assert(lifecycle_exit_fn);
+                    CodeBlock& c = lifecycle_exit_fn->func_body;
+                    c += "lifecycle_event = " + enum_prefix + "exit_simulation;";
+                    c += "++lifecycle_counter;";
                 }
             }
         }
