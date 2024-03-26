@@ -749,8 +749,8 @@ option:
                                 auto& opt_pair = srch->second; // opt_pair is option value, option location
                                 if (opt_pair.first != *$value) {
                                     // key already specified in model source with different value
-                                    if (*$key == "local_random_streams") {
-                                        // special case, allow multiple options statements
+                                    if ((*$key == "local_random_streams") || (*$key == "lifecycle_attributes")) {
+                                        // special cases, allow multiple options statements
                                     }
                                     else {
                                         error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (opt_pair.first) + LT("'"));

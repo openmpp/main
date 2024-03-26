@@ -21,6 +21,7 @@ class LinkAttributeSymbol;
 class EntityMultilinkSymbol;
 class EntityInternalSymbol;
 class BuiltinAttributeSymbol;
+class ClassificationSymbol;
 
 using namespace std;
 
@@ -67,6 +68,8 @@ public:
         , pp_entity_id(-1)
         , pp_local_rng_streams_requested(false)
         , pp_local_rng_streams_present(false)
+        , pp_lifecycle_attributes_requested(false)
+        , pp_lifecycle_classification(nullptr)
         , any_set_has_order_clause(false)
     {
         create_auxiliary_symbols();
@@ -429,6 +432,16 @@ public:
      * Indicates if local RNG streams are present in this entity kind.
      */
     bool pp_local_rng_streams_present;
+
+    /**
+     * Indicates if lifecycle attributes were requested for this entity kind.
+     */
+    bool pp_lifecycle_attributes_requested;
+
+    /**
+     * The lifecycle classification, if requested
+     */
+    ClassificationSymbol* pp_lifecycle_classification;
 
     /**
      * Indicates if any set of this entity kind has an order clause.

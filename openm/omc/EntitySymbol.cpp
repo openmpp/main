@@ -23,6 +23,8 @@
 #include "BoolSymbol.h"
 #include "ModelTypeSymbol.h"
 #include "LanguageSymbol.h"
+#include "ClassificationSymbol.h"
+#include "ClassificationEnumeratorSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
@@ -643,11 +645,11 @@ void EntitySymbol::post_parse(int pass)
                 if (name == opt_pair.first) {
                     // found local_random_streams = name of this entity
                     pp_local_rng_streams_requested = true;
+                    // remove processed option
+                    options.erase(it);
                     break;
                 }
             }
-            // remove processed options
-            options.erase(range.first, range.second);
 
             if (pp_local_rng_streams_requested) {
                 string nm = "om_local_rng_streams_initialized";
@@ -655,6 +657,71 @@ void EntitySymbol::post_parse(int pass)
                 BoolSymbol* typ = BoolSymbol::find();
                 auto mem = new EntityInternalSymbol(nm, this, typ, "false");
                 assert(mem);
+            }
+        }
+
+        {
+            // determine if lifecycle attributes are requested for this entity kind
+            // examine options multimap for lifecycle_attributes = name of this entity
+            string key = "lifecycle_attributes";
+            pp_lifecycle_attributes_requested = false;
+            auto range = options.equal_range(key);
+            for (auto it = range.first; it != range.second; ++it) {
+                auto& opt_pair = it->second; // opt_pair is option value, option location
+                if (name == opt_pair.first) {
+                    // found local_random_streams = name of this entity
+                    pp_lifecycle_attributes_requested = true;
+                    // remove processed option
+                    options.erase(it);
+                    break;
+                }
+            }
+
+            if (pp_lifecycle_attributes_requested) {
+                string cl_name = "LIFECYCLE_" + name;
+                string enum_prefix = "L" + name.substr(0, 1) + "_";
+                auto sym = get_symbol(cl_name);
+                if (sym && !sym->is_base_symbol()) {
+                    sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                    assert(false); // not reached
+                }
+                if (!sym) {
+                    sym = new Symbol(cl_name);
+                }
+                assert(sym);
+                auto cl = new ClassificationSymbol(sym); // morph it
+                assert(cl);
+                // record it
+                pp_lifecycle_classification = cl;
+                // Create labels for the classification symbol.
+                //TODO requires generalizing the_english_label as in code for identity attribute above
+                // Find all events of this entity
+                // note that pp_events is not available in this early pass
+                set<string> event_names;
+                for (auto& it : pp_symbols) {
+                    if (auto e = dynamic_cast<EntityEventSymbol*>(it.second)) {
+                        if (e->entity == this) {
+                            event_names.insert(e->event_name);
+                        }
+                    }
+                }
+                // create enumerators
+                int ord = 0;
+                for (auto& evt_name : event_names) {
+                    string lvl_name = enum_prefix + evt_name;
+                    auto sym = get_symbol(lvl_name);
+                    if (sym && !sym->is_base_symbol()) {
+                        sym->pp_error("error : Declaration in model code not allowed with option lifecycle_attributes");
+                        break;
+                    }
+                    if (!sym) {
+                        sym = new Symbol(lvl_name);
+                    }
+                    assert(sym);
+                    auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                    assert(lvl);
+                    ++ord;
+                }
             }
         }
 
