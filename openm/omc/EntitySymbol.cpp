@@ -617,7 +617,13 @@ void EntitySymbol::post_parse(int pass)
                     // morph it
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
-                // Initialized to 1.0 by generated code in function om_initialize_data_members.
+                assert(biav);
+
+                // Provide the default English label.
+                biav->the_english_label = "Weight";
+
+                // The entity_weight attribute is initialized to 1.0 by generated code in function om_initialize_data_members.
+
                 // Push the name into the post parse ignore hash for the current pass.
                 pp_symbols_ignore.insert(biav->unique_name);
             }
@@ -669,7 +675,7 @@ void EntitySymbol::post_parse(int pass)
             for (auto it = range.first; it != range.second; ++it) {
                 auto& opt_pair = it->second; // opt_pair is option value, option location
                 if (name == opt_pair.first) {
-                    // found local_random_streams = name of this entity
+                    // found lifecycle_attributes = name of this entity
                     pp_lifecycle_attributes_requested = true;
                     // remove processed option
                     options.erase(it);
@@ -693,6 +699,9 @@ void EntitySymbol::post_parse(int pass)
                 assert(cl);
                 // record it
                 pp_lifecycle_classification = cl;
+                // Push the name into the post parse ignore hash for the current pass.
+                pp_symbols_ignore.insert(cl->unique_name);
+
                 // Create labels for the classification symbol.
                 //TODO requires generalizing the_english_label as in code for identity attribute above
                 // Find all events of this entity
@@ -705,26 +714,145 @@ void EntitySymbol::post_parse(int pass)
                         }
                     }
                 }
-                // create enumerators
-                int ord = 0;
-                for (auto& evt_name : event_names) {
-                    string lvl_name = enum_prefix + evt_name;
-                    auto sym = get_symbol(lvl_name);
-                    if (sym && !sym->is_base_symbol()) {
-                        sym->pp_error("error : Declaration in model code not allowed with option lifecycle_attributes");
-                        break;
+                // create enumerators for the classification
+                {
+                    /// The numeric id of the classification level (enum)
+                    int ord = 0;
+                    {
+                        // the lvl for enter_simulation
+                        string lvl_name = enum_prefix + "enter_simulation";
+                        auto sym = get_symbol(lvl_name);
+                        if (sym) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide the default English label.
+                        //lvl->the_english_label = "enter simulation";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
                     }
+                    {
+                        // the lvl for exit_simulation
+                        string lvl_name = enum_prefix + "exit_simulation";
+                        auto sym = get_symbol(lvl_name);
+                        if (sym && !sym->is_base_symbol()) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide the default English label.
+                        //lvl->the_english_label = "exit simulation";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
+                    {
+                        // the lvl for self-scheduled event om_ss_event which may or may not be created later.
+                        string lvl_name = enum_prefix + "self_scheduled";
+                        auto sym = get_symbol(lvl_name);
+                        if (sym && !sym->is_base_symbol()) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide the default English label.
+                        //lvl->the_english_label = "self scheduled";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
+                    for (auto& evt_name : event_names) {
+                        string lvl_name = enum_prefix + evt_name;
+                        auto sym = get_symbol(lvl_name);
+                        if (sym && !sym->is_base_symbol()) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        assert(sym);
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide the default English label.
+                        //lvl->the_english_label = "hmm...";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
+                }
+                {
+                    // create attribute lifecycle_counter
+                    string nm = "lifecycle_counter";
+                    auto sym = Symbol::get_symbol(nm, this);
+                    NumericSymbol* typ = NumericSymbol::find(token::TK_short);
+                    BuiltinAttributeSymbol* biav = nullptr;
                     if (!sym) {
-                        sym = new Symbol(lvl_name);
+                        // create it
+                        biav = new BuiltinAttributeSymbol(nm, this, typ);
                     }
-                    assert(sym);
-                    auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
-                    assert(lvl);
-                    ++ord;
+                    else {
+                        // morph it
+                        biav = new BuiltinAttributeSymbol(sym, this, typ);
+                    }
+                    assert(biav);
+
+                    // Provide the default English label.
+                    biav->the_english_label = "Lifecycle counter";
+
+                    // Push the name into the post parse ignore hash for the current pass.
+                    pp_symbols_ignore.insert(biav->unique_name);
+                }
+                {
+                    // create lifecycle_event
+                    string nm = "lifecycle_event";
+                    auto sym = Symbol::get_symbol(nm, this);
+                    auto typ = pp_lifecycle_classification;
+                    BuiltinAttributeSymbol* biav = nullptr;
+                    if (!sym) {
+                        // create it
+                        biav = new BuiltinAttributeSymbol(nm, this, typ);
+                    }
+                    else {
+                        // morph it
+                        biav = new BuiltinAttributeSymbol(sym, this, typ);
+                    }
+                    assert(biav);
+
+                    // Provide the default English label.
+                    biav->the_english_label = "Lifecycle event";
+
+                    // Push the name into the post parse ignore hash for the current pass.
+                    pp_symbols_ignore.insert(biav->unique_name);
                 }
             }
         }
-
         break;
     }
 
