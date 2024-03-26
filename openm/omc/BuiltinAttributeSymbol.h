@@ -45,22 +45,8 @@ public:
     {
     }
 
-    /**
-     * Get the default symbol label for the given language.
-     *
-     * @param language The language.
-     *
-     * Overrides the default behaviour implemented in Symbol::default_label
-     *
-     * @return A string.
-     */
-    string default_label(const LanguageSymbol& language) const override;
-
     void post_parse(int pass) override;
 
     CodeBlock cxx_declaration_entity() override;
-
-    /** The English label */
-    string the_english_label;
 };
 

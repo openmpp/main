@@ -12,23 +12,8 @@
 #include "EntitySymbol.h"
 #include "LanguageSymbol.h"
 #include "CodeBlock.h"
-#include "omc_file.h" // for LTA support
-
 
 using namespace std;
-using namespace omc; // for LTA support
-
-
-string BuiltinAttributeSymbol::default_label(const LanguageSymbol& langSym) const
-{
-    const string& lang = langSym.name; // e.g. "EN" or "FR"
-    if (the_english_label.length() > 0) {
-        return LTA(lang, the_english_label.c_str());
-    }
-    else {
-        return name;
-    }
-}
 
 void BuiltinAttributeSymbol::post_parse(int pass)
 {

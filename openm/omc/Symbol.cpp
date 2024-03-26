@@ -67,9 +67,11 @@
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
 #include "libopenm/common/omFile.h"
+#include "omc_file.h" // for LTA support
 
 using namespace std;
 using namespace openm;
+using namespace omc; // for LTA support
 
 vector<string> Symbol::use_folders;
 
@@ -941,9 +943,20 @@ bool Symbol::process_symbol_label(const omc::position& pos)
     return false;
 }
 
-string Symbol::default_label(const LanguageSymbol& language) const
+string Symbol::default_label(const LanguageSymbol& langSym) const
 {
-    return name;
+    const string& lang = langSym.name; // e.g. "EN" or "FR"
+    if (builtin_alingual_label.length() > 0) {
+        return builtin_alingual_label;
+    }
+    else if (builtin_english_label.length() > 0) {
+        // will pass through the label for EN
+        return LTA(lang, builtin_english_label.c_str());
+    }
+    else {
+        // use the symbol name as label
+        return name;
+    }
 }
 
 

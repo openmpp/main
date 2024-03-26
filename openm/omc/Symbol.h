@@ -568,6 +568,12 @@ public:
      */
     virtual string default_label(const LanguageSymbol& language) const;
 
+    /** English label provided for built-in symbols (optional) */
+    string builtin_english_label;
+
+    /** alingual label provided for built-in symbols (optional) */
+    string builtin_alingual_label;
+
     /**
      * Gets the symbol label in the default language.
      *

@@ -52,7 +52,7 @@ void EntitySymbol::create_auxiliary_symbols()
             assert(biav);
 
             // Provide the default English label.
-            biav->the_english_label = "Time";
+            biav->builtin_english_label = "Time";
 
             // initialize it
             biav->is_time_like = true; // can change between events
@@ -84,7 +84,7 @@ void EntitySymbol::create_auxiliary_symbols()
             assert(biav);
 
             // Provide the default English label.
-            biav->the_english_label = "Age";
+            biav->builtin_english_label = "Age";
 
             // initialize it
             biav->is_time_like = true; // can change between events, like time
@@ -108,7 +108,7 @@ void EntitySymbol::create_auxiliary_symbols()
     //        }
     //        assert(biav);
     //        // Provide the default English label.
-    //        biav->the_english_label = "Events";
+    //        biav->builtin_english_label = "Events";
     //        //
     //        // initialize it
     //    }
@@ -131,7 +131,7 @@ void EntitySymbol::create_auxiliary_symbols()
             assert(biav);
 
             // Provide the default English label.
-            biav->the_english_label = "Entity identifier";
+            biav->builtin_english_label = "Entity identifier";
 
             // initialize it
         }
@@ -154,7 +154,7 @@ void EntitySymbol::create_auxiliary_symbols()
             assert(biav);
 
             // Provide the default English label.
-            biav->the_english_label = "Case seed for random number generators";
+            biav->builtin_english_label = "Case seed for random number generators";
 
             // initialize it
         }
@@ -547,7 +547,7 @@ void EntitySymbol::post_parse(int pass)
                     assert(biav);
 
                     // Provide the default English label.
-                    biav->the_english_label = "Case identifier";
+                    biav->builtin_english_label = "Case identifier";
 
                     // Push the name into the post parse ignore hash for the current pass.
                     pp_symbols_ignore.insert(biav->unique_name);
@@ -620,7 +620,7 @@ void EntitySymbol::post_parse(int pass)
                 assert(biav);
 
                 // Provide the default English label.
-                biav->the_english_label = "Weight";
+                biav->builtin_english_label = "Weight";
 
                 // The entity_weight attribute is initialized to 1.0 by generated code in function om_initialize_data_members.
 
@@ -703,7 +703,7 @@ void EntitySymbol::post_parse(int pass)
                 pp_symbols_ignore.insert(cl->unique_name);
 
                 // Create labels for the classification symbol.
-                //TODO requires generalizing the_english_label as in code for identity attribute above
+                //TODO requires generalizing builtin_english_label as in code for identity attribute above
                 // Find all events of this entity
                 // note that pp_events is not available in this early pass
                 set<string> event_names;
@@ -733,7 +733,7 @@ void EntitySymbol::post_parse(int pass)
                         assert(lvl);
 
                         // Provide the default English label.
-                        //lvl->the_english_label = "enter simulation";
+                        //lvl->builtin_english_label = "enter simulation";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -755,7 +755,7 @@ void EntitySymbol::post_parse(int pass)
                         assert(lvl);
 
                         // Provide the default English label.
-                        //lvl->the_english_label = "exit simulation";
+                        //lvl->builtin_english_label = "exit simulation";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -777,7 +777,7 @@ void EntitySymbol::post_parse(int pass)
                         assert(lvl);
 
                         // Provide the default English label.
-                        //lvl->the_english_label = "self scheduled";
+                        //lvl->builtin_english_label = "self scheduled";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -799,7 +799,7 @@ void EntitySymbol::post_parse(int pass)
                         assert(lvl);
 
                         // Provide the default English label.
-                        //lvl->the_english_label = "hmm...";
+                        //lvl->builtin_english_label = "hmm...";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -824,7 +824,7 @@ void EntitySymbol::post_parse(int pass)
                     assert(biav);
 
                     // Provide the default English label.
-                    biav->the_english_label = "Lifecycle counter";
+                    biav->builtin_english_label = "Lifecycle counter";
 
                     // Push the name into the post parse ignore hash for the current pass.
                     pp_symbols_ignore.insert(biav->unique_name);
@@ -846,7 +846,7 @@ void EntitySymbol::post_parse(int pass)
                     assert(biav);
 
                     // Provide the default English label.
-                    biav->the_english_label = "Lifecycle event";
+                    biav->builtin_english_label = "Lifecycle event";
 
                     // Push the name into the post parse ignore hash for the current pass.
                     pp_symbols_ignore.insert(biav->unique_name);
