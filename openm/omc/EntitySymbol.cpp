@@ -92,28 +92,6 @@ void EntitySymbol::create_auxiliary_symbols()
         }
     }
 
-    //{
-    //    string nm = "events";
-    //    auto sym = Symbol::get_symbol(nm, this);
-    //    if (!sym || sym->is_base_symbol()) {
-    //        NumericSymbol *typ = NumericSymbol::find(token::TK_counter);
-    //        BuiltinAttributeSymbol *biav = nullptr;
-    //        if (!sym) {
-    //            // create it
-    //            biav = new BuiltinAttributeSymbol(nm, this, typ);
-    //        }
-    //        else {
-    //            // morph it
-    //            biav = new BuiltinAttributeSymbol(sym, this, typ);
-    //        }
-    //        assert(biav);
-    //        // Provide the default English label.
-    //        biav->builtin_english_label = "Events";
-    //        //
-    //        // initialize it
-    //    }
-    //}
-
     {
         string nm = "entity_id";
         auto sym = Symbol::get_symbol(nm, this);
@@ -619,7 +597,7 @@ void EntitySymbol::post_parse(int pass)
                 }
                 assert(biav);
 
-                // Provide the default English label.
+                // Provide a default English label.
                 biav->builtin_english_label = "Weight";
 
                 // The entity_weight attribute is initialized to 1.0 by generated code in function om_initialize_data_members.
@@ -702,8 +680,9 @@ void EntitySymbol::post_parse(int pass)
                 // Push the name into the post parse ignore hash for the current pass.
                 pp_symbols_ignore.insert(cl->unique_name);
 
-                // Create labels for the classification symbol.
-                //TODO requires generalizing builtin_english_label as in code for identity attribute above
+                // Provide a default English label.
+                cl->builtin_english_label = "Lifecycle";
+
                 // Find all events of this entity
                 // note that pp_events is not available in this early pass
                 set<string> event_names;
@@ -732,8 +711,8 @@ void EntitySymbol::post_parse(int pass)
                         auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
                         assert(lvl);
 
-                        // Provide the default English label.
-                        //lvl->builtin_english_label = "enter simulation";
+                        // Provide a default English label.
+                        lvl->builtin_english_label = "enter simulation";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -754,8 +733,8 @@ void EntitySymbol::post_parse(int pass)
                         auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
                         assert(lvl);
 
-                        // Provide the default English label.
-                        //lvl->builtin_english_label = "exit simulation";
+                        // Provide a default English label.
+                        lvl->builtin_english_label = "exit simulation";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -776,8 +755,8 @@ void EntitySymbol::post_parse(int pass)
                         auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
                         assert(lvl);
 
-                        // Provide the default English label.
-                        //lvl->builtin_english_label = "self scheduled";
+                        // Provide a default English label.
+                        lvl->builtin_english_label = "self-scheduled event";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -798,8 +777,8 @@ void EntitySymbol::post_parse(int pass)
                         auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
                         assert(lvl);
 
-                        // Provide the default English label.
-                        //lvl->builtin_english_label = "hmm...";
+                        // Provide a default alingual label.
+                        lvl->builtin_alingual_label = evt_name;
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
