@@ -30,18 +30,18 @@ set -m
 # set model name, openM++ root folder and "publish" directory
 #     if PUBLISH_DIR is relative then it MUST BE relative to $OM_ROOT
 #
-[ -z "$MODEL_NAME" ]  && MODEL_NAME="$(basename $PWD)"
+[ -z "$MODEL_NAME" ]  && MODEL_NAME=$(basename "$PWD")
 [ -z "$OM_ROOT" ]     && OM_ROOT="../.."
 [ -z "$PUBLISH_DIR" ] && PUBLISH_DIR="${PWD}/ompp-linux/bin"
 
 # set model root, for example: OM_NewCaseBased=/home/user/NewCaseBased
 #
 model_root_name=OM_${MODEL_NAME}
-model_root_value=$PWD
+model_root_value="$PWD"
 
 pushd "$OM_ROOT"
 export OM_ROOT="$PWD"
-export $model_root_name=$model_root_value
+export $model_root_name="$model_root_value"
 
 echo "MODEL_NAME  = $MODEL_NAME"
 echo "OM_ROOT     = $OM_ROOT"
@@ -147,9 +147,9 @@ echo "OMS_PID     = $OMS_PID" | tee -a "$START_OMPP_UI_LOG"
 #
 sleep 1
 
-echo "cat ${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"
+echo cat "${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"
 
-OMS_URL=`cat ${OMS_URL_TICKLE} 2>/dev/null`
+OMS_URL=`cat "${OMS_URL_TICKLE}" 2>/dev/null`
 if [ $? -ne 0 ] ;
 then
   echo "FAILED to read oms url from file: ${OMS_URL_TICKLE}" | tee -a "$START_OMPP_UI_LOG"

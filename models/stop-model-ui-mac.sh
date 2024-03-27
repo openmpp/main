@@ -27,7 +27,7 @@ set -e
 # set model name, openM++ root folder and "publish" directory
 #     if PUBLISH_DIR is relative then it MUST BE relative to $OM_ROOT
 #
-[ -z "$MODEL_NAME" ]  && MODEL_NAME="$(basename $PWD)"
+[ -z "$MODEL_NAME" ]  && MODEL_NAME=$(basename "$PWD")
 [ -z "$OM_ROOT" ]     && OM_ROOT="../.."
 [ -z "$PUBLISH_DIR" ] && PUBLISH_DIR="${PWD}/ompp-mac/bin"
 
@@ -72,9 +72,9 @@ fi
 
 # read oms url from file
 #
-echo "cat ${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
+echo cat "${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
 
-oms_url=`cat ${OMS_URL_TICKLE} 2>/dev/null`
+oms_url=`cat "${OMS_URL_TICKLE}" 2>/dev/null`
 if [ $? -ne 0 ] ;
 then
   echo "FAILED to read oms url from file: ${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
