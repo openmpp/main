@@ -415,6 +415,15 @@ void EntitySymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The lifecycle_event member function
+    {
+        assert(nullptr == lifecycle_event_fn); // initialization guarantee
+        lifecycle_event_fn = new EntityFuncSymbol("om_lifecycle_event", this, "void", "int event_id");
+        assert(lifecycle_event_fn); // out of memory check
+        lifecycle_event_fn->doc_block = doxygen_short("Maintain lifecycle attributes at events.");
+        // function body is generated in post-parse phase
+    }
+
     // The start_trace member function
     {
         assert(nullptr == start_trace_fn); // initialization guarantee
@@ -681,7 +690,7 @@ void EntitySymbol::post_parse(int pass)
 
             if (pp_lifecycle_attributes_requested) {
                 string cl_name = "LIFECYCLE_" + name;
-                string enum_prefix = "L" + name.substr(0, 1) + "_";
+                string enum_prefix = "LC_" + name + "_";
                 auto sym = get_symbol(cl_name);
                 if (sym && !sym->is_base_symbol()) {
                     sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
@@ -776,6 +785,9 @@ void EntitySymbol::post_parse(int pass)
                         auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
                         assert(lvl);
 
+                        // update the map of event name to classification level name
+                        pp_lifecycle_name_map.insert({"om_ss_event", lvl_name});
+
                         // Provide a default English label.
                         lvl->builtin_english_label = "self-scheduled event";
 
@@ -797,6 +809,9 @@ void EntitySymbol::post_parse(int pass)
                         assert(sym);
                         auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
                         assert(lvl);
+
+                        // update the map of event name to classification level name
+                        pp_lifecycle_name_map.insert({ evt_name, lvl_name });
 
                         // Provide a default alingual label.
                         lvl->builtin_alingual_label = evt_name;
@@ -914,6 +929,7 @@ void EntitySymbol::post_parse(int pass)
         build_body_finalize_links();
         build_body_finalize_multilinks();
         build_body_start_trace();
+        build_body_lifecycle_event();
 
         break;
     }
@@ -1294,6 +1310,30 @@ void EntitySymbol::build_body_start_trace()
         c += "} // if (event_trace_on)";
         c += "} // if constexpr (om_event_trace_capable)";
     }
+}
+
+void EntitySymbol::build_body_lifecycle_event()
+{
+    if (!pp_lifecycle_attributes_requested) {
+        return;
+    }
+    assert(lifecycle_event_fn);
+    CodeBlock& c = lifecycle_event_fn->func_body;
+    c += "switch(event_id) {";
+    for (auto evt : pp_events) {
+        string evt_name = evt->event_name;
+        int event_id = evt->pp_event_id;
+        auto it = pp_lifecycle_name_map.find(evt_name);
+        if (it == pp_lifecycle_name_map.end()) {
+            assert(false);
+            pp_fatal("internal error");
+        }
+        string lvl_name = it->second;
+        c += "case " + to_string(event_id) + ": lifecycle_event = " + lvl_name + "; break;";
+    }
+    c += "default: break;";
+    c += "}";
+    c += "++lifecycle_counter;";
 }
 
 void EntitySymbol::create_ss_event()

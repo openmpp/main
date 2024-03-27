@@ -60,6 +60,7 @@ public:
         , finalize_multilinks_fn(nullptr)
         , lifecycle_enter_fn(nullptr)
         , lifecycle_exit_fn(nullptr)
+        , lifecycle_event_fn(nullptr)
         , start_trace_fn(nullptr)
         , ss_time_fn(nullptr)
         , ss_implement_fn(nullptr)
@@ -151,6 +152,11 @@ public:
      * Builds the function body of the function.
      */
     void build_body_start_trace();
+
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_lifecycle_event();
 
     /**
      * The built-in attribute for time in the entity.
@@ -273,6 +279,11 @@ public:
      * The entity function which supports lifecycle attributes on exit_simulation.
      */
     EntityFuncSymbol* lifecycle_exit_fn;
+
+    /**
+     * The entity function which supports lifecycle attributes at events.
+     */
+    EntityFuncSymbol* lifecycle_event_fn;
 
     /**
      * The entity function which implements trace messages at the start of the entity lifecycle.
@@ -454,6 +465,11 @@ public:
      * The lifecycle classification, if requested
      */
     ClassificationSymbol* pp_lifecycle_classification;
+
+    /**
+     * The lifecycle map from event name to classification level name, if requested
+     */
+    map<string, string> pp_lifecycle_name_map;
 
     /**
      * Indicates if any set of this entity kind has an order clause.
