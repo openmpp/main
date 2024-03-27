@@ -719,7 +719,10 @@ void EntitySymbol::post_parse(int pass)
                     }
                     if (auto e = dynamic_cast<EntityEventSymbol*>(it.second)) {
                         if (e->entity == this) {
-                            event_names.insert(e->event_name);
+                            if (e->event_name != "om_ss_event") {
+                                // don't think ss event has been created in this early pass, but safety first.
+                                event_names.insert(e->event_name);
+                            }
                         }
                     }
                 }
@@ -765,31 +768,6 @@ void EntitySymbol::post_parse(int pass)
 
                         // Provide a default English label.
                         lvl->builtin_english_label = "exit simulation";
-
-                        // Push the name into the post parse ignore hash for the current pass.
-                        pp_symbols_ignore.insert(lvl->unique_name);
-
-                        ++ord;
-                    }
-                    {
-                        // the lvl for self-scheduled event om_ss_event which may or may not be created later.
-                        string lvl_name = enum_prefix + "self_scheduled";
-                        auto sym = get_symbol(lvl_name);
-                        if (sym && !sym->is_base_symbol()) {
-                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
-                            assert(false); // not reached
-                        }
-                        if (!sym) {
-                            sym = new Symbol(lvl_name);
-                        }
-                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
-                        assert(lvl);
-
-                        // update the map of event name to classification level name
-                        pp_lifecycle_name_map.insert({"om_ss_event", lvl_name});
-
-                        // Provide a default English label.
-                        lvl->builtin_english_label = "self-scheduled event";
 
                         // Push the name into the post parse ignore hash for the current pass.
                         pp_symbols_ignore.insert(lvl->unique_name);
@@ -1322,6 +1300,9 @@ void EntitySymbol::build_body_lifecycle_event()
     c += "switch(event_id) {";
     for (auto evt : pp_events) {
         string evt_name = evt->event_name;
+        if (evt_name == "om_ss_event") {
+            continue;
+        }
         int event_id = evt->pp_event_id;
         auto it = pp_lifecycle_name_map.find(evt_name);
         if (it == pp_lifecycle_name_map.end()) {
