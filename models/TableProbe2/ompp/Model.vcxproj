@@ -23,7 +23,7 @@
     <PROCESSES>
     </PROCESSES>
     <DBCOPY_EXPORT_CSV>false</DBCOPY_EXPORT_CSV>
-    <OPEN_MODEL_WEB_UI>false</OPEN_MODEL_WEB_UI>
+    <OPEN_MODEL_WEB_UI>true</OPEN_MODEL_WEB_UI>
   </PropertyGroup>
   <!-- Import common early properties for model projects -->
   <Import Project="$(OM_ROOT)/props/model-ompp.0.version.props" />

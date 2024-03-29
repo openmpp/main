@@ -4,37 +4,22 @@
 //LABEL(ompp_framework, EN) OpenM++ simulation framework
 
 /* NOTE(ompp_framework, EN)
-    This module specifies the simulation framework
-    and supplies function definitions required by the framework.
+    This module specifies the simulation framework.
 */
 
 #include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-// The following modules in OM_ROOT/use will be compiled
-// after all model-specific source code modules, in this order.
-
 use "common.ompp";                              // Required
-
-// Select RNG (required)
 use "random/random_lcg41.ompp";                 // Stream RNGs use 41 linear congruential generators (Modgen-compatible)
-
-// Select RNG for case seeds (required)
 use "case_based/case_based_lcg41.ompp";         // Case seed RNGs use 41 linear congruential generators (Modgen-compatible)
-
 use "case_based/case_based_core.ompp";          // Required for case-based models
 
-// Select method to specify number of cases in a run (required)
 use "case_based/case_based_cases_per_run_exogenous.ompp"; // Specify number of cases as cases per run in parameter SimulationCases
-//use "case_based/case_based_cases_per_member_exogenous.ompp"; // Specify number of cases as cases per member in parameter CasesPerMember
- 
-// Select method for population scaling (required)
 use "case_based/case_based_scaling_none.ompp";  // No population scaling
 
-// Select method to compute entity table run-level results
-//options measures_method = average;  // Compute expression for each sub, then average over subs (recommended)
-options measures_method = aggregate; // Aggregate measures over subs, then compute expression (Modgen compatible)
+options measures_method = assemble;             // Compute run-level results by summing measures over subs, then computing expression
 
 use "common_modgen.ompp";                       // Modgen API implementation for x-compatible models (optional)
 use "case_based/case_based_modgen.ompp";        // Modgen API implementation for x-compatible case-based models (optional)

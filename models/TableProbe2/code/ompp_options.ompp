@@ -16,15 +16,7 @@
 #if 0 // Hide non-C++ syntactic island from IDE
 
 // 
-// Model Documentation options:
-//  (These have no effect if Model Documentation is disabled in build settings.)
-//
-
-//options authored_documentation = off;    // Uncomment to suppress the autonomous authored component.
-//options generated_documentation = off;   // Uncomment to suppress the generated Symbol Reference component.
-
-// 
-// Selected Symbol Reference options:
+// Symbol Reference options:
 //
 
 options symref_developer_edition = on;       // Uncomment to produce the Developer Edition instead of the User Edition.
