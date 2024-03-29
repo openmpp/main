@@ -2361,7 +2361,7 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
 }
 
 // static
-const token_type Symbol::modgen_cumulation_operator_to_acc(const token_type& e)
+const token_type Symbol::modgen_cumulation_operator_to_stat(const token_type& e)
 {
     token_type result;
     switch (e) {

@@ -203,6 +203,51 @@ public:
         return kind == table_kind::snapshot;
     }
 
+    /**
+     * The default statistic for the table kind
+     *
+     * @returns A token_type.
+     */
+    token_type default_statistic(void) const
+    {
+        switch (kind) {
+        case table_kind::classic: return token::TK_sum;
+        case table_kind::snapshot: return token::TK_sum;
+        case table_kind::duration: return token::TK_sum;
+        default: assert(false); return token::TK_unused; // not reached
+        }
+    }
+
+    /**
+     * The default increment for the table kind
+     *
+     * @returns A token_type.
+     */
+    token_type default_increment(void) const
+    {
+        switch (kind) {
+        case table_kind::classic: return token::TK_delta;
+        case table_kind::snapshot: return token::TK_value_out;
+        case table_kind::duration: return token::TK_delta;
+        default: assert(false); return token::TK_unused; // not reached
+        }
+    }
+
+    /**
+     * The default timing for the table kind
+     *
+     * @returns A token_type.
+     */
+    token_type default_timing(void) const
+    {
+        switch (kind) {
+        case table_kind::classic: return token::TK_interval;
+        case table_kind::snapshot: return token::TK_interval;
+        case table_kind::duration: return token::TK_interval;
+        default: assert(false); return token::TK_unused; // not reached
+        }
+    }
+
     const char * kind_as_string(void) const
     {
         switch (kind) {

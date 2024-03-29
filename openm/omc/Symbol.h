@@ -929,13 +929,13 @@ public:
     static const token_type optimized_storage_type( long long min_value, long long max_value );
 
     /**
-     * Extract accumulator from Modgen cumulation operator.
+     * Extract statistic from Modgen cumulation operator.
      *
      * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
      *
-     * @return The associated accumulator, e.g. token::TK_maximum.
+     * @return The associated statistic, e.g. token::TK_maximum.
      */
-    static const token_type modgen_cumulation_operator_to_acc(const token_type& e);
+    static const token_type modgen_cumulation_operator_to_stat(const token_type& e);
 
     /**
      * Extract increment from Modgen cumulation operator.

@@ -51,7 +51,7 @@ class ExprForTable;
 extern char *yytext;
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc);
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type table_op, ParseContext & pc);
 
 // Helper function to handle prohibited redeclaration
 static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, Driver &drv);
@@ -489,7 +489,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 
 %type  <val_token>      model_type
 %type  <val_token>      modgen_cumulation_operator
-%type  <val_token>      table_accumulator
+%type  <val_token>      table_statistic
 %type  <val_token>      table_increment
 %type  <val_token>      table_operator
 %type  <val_token>      parameter_modifier_opt
@@ -2563,12 +2563,13 @@ expr_for_table[result]:
                         {
                             Symbol *attribute = $symbol_in_table;
                             assert(attribute);
-                            // Defaults are accumulator=sum, increment=delta, table operator=interval
-                            token_type acc = token::TK_sum;
-                            token_type incr = token::TK_delta;
-                            token_type tabop = token::TK_interval;
+                            auto tbl = pc.get_table_context();
+                            // Use defaults for this kind of table
+                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum
+                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta
+                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. unit
     | "unit"
@@ -2603,54 +2604,54 @@ expr_for_table[result]:
                         {
                             Symbol *attribute = $symbol_in_table;
                             // Ex. token::TK_maximum
-                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
+                            token_type stat = Symbol::modgen_cumulation_operator_to_stat( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
                             token_type tabop = token::TK_interval;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. sum(delta(income))
-    | table_accumulator[acc] "(" table_increment[incr] "(" symbol_in_table ")" ")"
+    | table_statistic[stat] "(" table_increment[incr] "(" symbol_in_table ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type acc = (token_type) $acc;
+                            token_type stat = (token_type)stat;
                             token_type incr = (token_type) $incr;
                             token_type tabop = token::TK_interval;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. event(income)
     | table_operator[tabop] "(" symbol_in_table ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type acc = token::TK_sum;
+                            token_type stat = token::TK_sum;
                             token_type incr = token::TK_delta;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y (below)
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. max_value_in(event(income))
     | modgen_cumulation_operator "(" table_operator[tabop] "(" symbol_in_table ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
                             // Ex. token::TK_maximum
-                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
+                            token_type stat = Symbol::modgen_cumulation_operator_to_stat( (token_type) $modgen_cumulation_operator );
                             // Ex. token::TK_value_in
                             token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. sum(delta(event(income)))
-    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_table ")" ")" ")"
+    | table_statistic[stat] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_table ")" ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type acc = (token_type) $acc;
+                            token_type stat = (token_type)stat;
                             token_type incr = (token_type) $incr;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
     | numeric_literal
                         {
@@ -2708,7 +2709,7 @@ modgen_cumulation_operator:
     | TK_min_value_out
 	;
 
-table_accumulator:
+table_statistic:
       TK_sum
     | TK_minimum
     | TK_maximum
@@ -3490,7 +3491,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 }
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type table_op, ParseContext & pc)
 {
     Symbol *table = pc.get_table_context();
     EntityTableMeasureAttributeSymbol *analysis_attribute = nullptr;
@@ -3526,17 +3527,17 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
     }
     else {
         // if no attribute, then this is the increment counter accumulator (unit)
-        assert(acc == token::TK_unit);
+        assert(stat == token::TK_unit);
     }
     // Also create symbol for associated accumulator if not already present
     EntityTableAccumulatorSymbol *accumulator = nullptr;
-    if ( EntityTableAccumulatorSymbol::exists( table, acc, incr, table_op, attribute) ) {
-        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, attribute );
+    if ( EntityTableAccumulatorSymbol::exists( table, stat, incr, table_op, attribute) ) {
+        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, stat, incr, table_op, attribute );
         accumulator = dynamic_cast<EntityTableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
         assert( accumulator );
     }
     else {
-        accumulator = new EntityTableAccumulatorSymbol( table, acc, incr, table_op, attribute, analysis_attribute, pc.counter2);
+        accumulator = new EntityTableAccumulatorSymbol( table, stat, incr, table_op, attribute, analysis_attribute, pc.counter2);
         pc.counter2++;
     }
 	auto result = new ExprForTableAccumulator( accumulator );
