@@ -20,7 +20,7 @@ void EntityFuncSymbol::post_parse(int pass)
     case eCreateMissingSymbols:
     {
         // Process early to handle possible missing symbol creation
-        if (suppress_defn) {
+        if (suppress_defn && !suppress_decl) {
             // Is a developer-supplied entity member function.
 
             // Note the definition location
@@ -155,7 +155,7 @@ CodeBlock EntityFuncSymbol::cxx_declaration_entity()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    if (suppress_code_if_empty && empty()) {
+    if (suppress_decl || (suppress_code_if_empty && empty())) {
         // Suppress declaration
         return CodeBlock();
     }

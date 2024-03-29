@@ -138,6 +138,16 @@ void EntitySymbol::create_auxiliary_symbols()
         }
     }
 
+    // The exit_simulation member function (instantiated to permit hook in model code)
+    {
+        auto* fn = new EntityFuncSymbol("exit_simulation", this, "void", "");
+        fn->doc_block = doxygen_short("Make this entity exit the simulation.");
+        // function is declared and defined in template BaseEntity in header file Entity.h
+        fn->is_developer_supplied = false;
+        fn->suppress_defn = true;
+        fn->suppress_decl = true;
+    }
+
     // The check_time() member function
     {
         auto *fn = new EntityFuncSymbol("check_time", this, "Time", "Time t");
