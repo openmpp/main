@@ -2361,36 +2361,36 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
 }
 
 // static
-const token_type Symbol::modgen_cumulation_operator_to_stat(const token_type& e)
+const token_type Symbol::modgen_cumulation_operator_to_stat(const token_type& e, const token_type& dflt)
 {
     token_type result;
     switch (e) {
     case token::TK_delta:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_delta2:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_nz_delta:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_in:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_in2:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_nz_value_in:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_out:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_out2:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_nz_value_out:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_max_delta:
         result = token::TK_maximum;
@@ -2419,7 +2419,7 @@ const token_type Symbol::modgen_cumulation_operator_to_stat(const token_type& e)
 
 
 //static
-const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
+const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e, const token_type& dflt)
 {
     token_type result;
     switch (e) {

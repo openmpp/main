@@ -931,20 +931,22 @@ public:
     /**
      * Extract statistic from Modgen cumulation operator.
      *
-     * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   e    The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   dflt The default statistic.
      *
-     * @return The associated statistic, e.g. token::TK_maximum.
+     * @returns The associated statistic, e.g. token::TK_maximum.
      */
-    static const token_type modgen_cumulation_operator_to_stat(const token_type& e);
+    static const token_type modgen_cumulation_operator_to_stat(const token_type& e, const token_type& dflt);
 
     /**
      * Extract increment from Modgen cumulation operator.
      *
-     * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   e    The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   dflt The default increment.
      *
-     * @return The associated increment, e.g. token::TK_value_in.
+     * @returns The associated increment, e.g. token::TK_value_in.
      */
-    static const token_type modgen_cumulation_operator_to_incr(const token_type& e);
+    static const token_type modgen_cumulation_operator_to_incr(const token_type& e, const token_type& dflt);
 
     /**
      * Populate default symbols in symbol table

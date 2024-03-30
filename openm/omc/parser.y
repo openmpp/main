@@ -2564,6 +2564,7 @@ expr_for_table[result]:
                             Symbol *attribute = $symbol_in_table;
                             assert(attribute);
                             auto tbl = pc.get_table_context();
+                            assert(tbl);
                             // Use defaults for this kind of table
                             token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum
                             token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta
@@ -2603,11 +2604,16 @@ expr_for_table[result]:
     | modgen_cumulation_operator "(" symbol_in_table ")"
                         {
                             Symbol *attribute = $symbol_in_table;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
+                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
+                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval;
                             // Ex. token::TK_maximum
-                            token_type stat = Symbol::modgen_cumulation_operator_to_stat( (token_type) $modgen_cumulation_operator );
+                            stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
                             // Ex. token::TK_value_in
-                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
-                            token_type tabop = token::TK_interval;
+                            incr = Symbol::modgen_cumulation_operator_to_incr((token_type)$modgen_cumulation_operator, incr);
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2615,9 +2621,12 @@ expr_for_table[result]:
     | table_statistic[stat] "(" table_increment[incr] "(" symbol_in_table ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type stat = (token_type)stat;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = (token_type) $stat;
                             token_type incr = (token_type) $incr;
-                            token_type tabop = token::TK_interval;
+                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval;
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2625,8 +2634,11 @@ expr_for_table[result]:
     | table_operator[tabop] "(" symbol_in_table ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type stat = token::TK_sum;
-                            token_type incr = token::TK_delta;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
+                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y (below)
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
@@ -2635,11 +2647,16 @@ expr_for_table[result]:
     | modgen_cumulation_operator "(" table_operator[tabop] "(" symbol_in_table ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
+                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
+                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval;
                             // Ex. token::TK_maximum
-                            token_type stat = Symbol::modgen_cumulation_operator_to_stat( (token_type) $modgen_cumulation_operator );
+                            stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
                             // Ex. token::TK_value_in
-                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
-                            token_type tabop = (token_type) $tabop;
+                            incr = Symbol::modgen_cumulation_operator_to_incr((token_type)$modgen_cumulation_operator, incr);
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2647,7 +2664,8 @@ expr_for_table[result]:
     | table_statistic[stat] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_table ")" ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type stat = (token_type)stat;
+                            assert(attribute);
+                            token_type stat = (token_type) $stat;
                             token_type incr = (token_type) $incr;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y
