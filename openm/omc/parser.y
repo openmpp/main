@@ -2652,7 +2652,7 @@ expr_for_table[result]:
                             assert(tbl);
                             token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
                             token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
-                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval;
+                            token_type tabop = (token_type) $tabop;
                             // Ex. token::TK_maximum
                             stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
                             // Ex. token::TK_value_in
