@@ -63,7 +63,7 @@ public:
         , kind(table_kind::classic)
         , default_statistic(token::TK_sum)
         , default_increment(token::TK_delta)
-        , default_timing(token::TK_interval)
+        , default_tabop(token::TK_interval)
         , is_untransformed(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
@@ -182,8 +182,8 @@ public:
     /** The default increment */
     token_type default_increment;
 
-    /** The default timing */
-    token_type default_timing;
+    /** The default tabop */
+    token_type default_tabop;
 
     /**
      * Query if this EntityTableSymbol is classic
@@ -252,21 +252,21 @@ public:
     }
 
     /**
-     * The default timing for this table
+     * The default tabop for this table
      *
      * @returns A token_type.
      */
-    token_type get_default_timing(void) const
+    token_type get_default_tabop(void) const
     {
-        return default_timing;
+        return default_tabop;
     }
 
     /**
-     * Set the default timing for this table
+     * Set the default tabop for this table
      */
-    void set_default_timing(token_type val)
+    void set_default_tabop(token_type val)
     {
-        default_timing = val;
+        default_tabop = val;
     }
 
     const char * kind_as_string(void) const

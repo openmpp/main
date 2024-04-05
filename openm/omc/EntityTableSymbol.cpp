@@ -141,7 +141,7 @@ void EntityTableSymbol::post_parse(int pass)
                 EntityTableAccumulatorSymbol *acc_found = nullptr;
                 for (auto acc2 : pp_accumulators) {
                     if (acc2->increment == acc->increment
-                     && acc2->timing == acc->timing
+                     && acc2->tabop == acc->tabop
                      && acc2->updates_obs_collection) {
                         // Accumulator found with the same increment, and handling the collection.
                         acc_found = acc2;
@@ -796,10 +796,10 @@ void EntityTableSymbol::build_body_push_increment()
                 c += attr->pp_data_type->name + " value_out = " + attr->name + ";";
             }
             if (acc->uses_value_in()) {
-                if (acc->timing == token::TK_interval) {
+                if (acc->tabop == token::TK_interval) {
                     c += "auto& value_in = " + acc->pp_analysis_attribute->in_member_name() + ";";
                 }
-                else if (acc->timing == token::TK_event) {
+                else if (acc->tabop == token::TK_event) {
                     c += "auto& value_in = " + acc->pp_analysis_attribute->in_event_member_name() + ";";
                     assert(attr->lagged);
                     assert(attr->lagged_event_counter);

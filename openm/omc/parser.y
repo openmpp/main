@@ -2422,19 +2422,19 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                     table->kind = EntityTableSymbol::table_kind::snapshot;
                                     table->set_default_statistic(token::TK_sum);
                                     table->set_default_increment(token::TK_value_out);
-                                    table->set_default_timing(token::TK_interval);
+                                    table->set_default_tabop(token::TK_interval);
                                 }
                                 else if (duration) {
                                     table->kind = EntityTableSymbol::table_kind::duration;
                                     table->set_default_statistic(token::TK_sum);
                                     table->set_default_increment(token::TK_delta);
-                                    table->set_default_timing(token::TK_interval);
+                                    table->set_default_tabop(token::TK_interval);
                                 }
                                 else { // classic (default)
                                     table->kind = EntityTableSymbol::table_kind::classic;
                                     table->set_default_statistic(token::TK_sum);
                                     table->set_default_increment(token::TK_delta);
-                                    table->set_default_timing(token::TK_interval);
+                                    table->set_default_tabop(token::TK_interval);
                                 }
                                 $properties->clear();
                                 delete $properties;
@@ -2580,7 +2580,7 @@ expr_for_table[result]:
                             // Use defaults for this kind of table
                             token_type stat = tbl->get_default_statistic();  // Ex. for classic, is TK_sum
                             token_type incr = tbl->get_default_increment(); //Ex. for classic, is TK_delta
-                            token_type tabop = tbl->get_default_timing(); //Ex. for classic, is TK_interval
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for classic, is TK_interval
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2621,7 +2621,7 @@ expr_for_table[result]:
                             assert(tbl);
                             token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
                             token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
-                            token_type tabop = tbl->get_default_timing();   // Ex. for classic, is TK_interval
+                            token_type tabop = tbl->get_default_tabop();   // Ex. for classic, is TK_interval
                             // Ex. For token::max_value_in, result is token::TK_maximum
                             stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
                             // Ex. For token::max_value_in, result is token::TK_value_in
@@ -2638,7 +2638,7 @@ expr_for_table[result]:
                             assert(tbl);
                             token_type stat = (token_type) $stat;
                             token_type incr = (token_type) $incr;
-                            token_type tabop = tbl->get_default_timing(); //Ex. for classic, is TK_interval;
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for classic, is TK_interval;
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }

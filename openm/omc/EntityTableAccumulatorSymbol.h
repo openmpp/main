@@ -27,13 +27,13 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
-    EntityTableAccumulatorSymbol(Symbol *table, token_type statistic, token_type increment, token_type timing, Symbol *attribute, Symbol *analysis_attribute, int index)
-        : Symbol(symbol_name(table, statistic, increment, timing, attribute))
+    EntityTableAccumulatorSymbol(Symbol *table, token_type statistic, token_type increment, token_type tabop, Symbol *attribute, Symbol *analysis_attribute, int index)
+        : Symbol(symbol_name(table, statistic, increment, tabop, attribute))
         , table(table->stable_rp())
         , pp_table(nullptr)
         , statistic(statistic)
         , increment(increment)
-        , timing(timing)
+        , tabop(tabop)
         , attribute(attribute ? attribute->stable_pp() : nullptr)
         , pp_attribute(nullptr)
         , analysis_attribute(analysis_attribute ? analysis_attribute->stable_pp() : nullptr)
@@ -81,9 +81,9 @@ public:
             );
 
         // grammar guarantee
-        assert((timing == token::TK_unused && (statistic == token::TK_unit))
-            || timing == token::TK_interval
-            || timing == token::TK_event
+        assert((tabop == token::TK_unused && (statistic == token::TK_unit))
+            || tabop == token::TK_interval
+            || tabop == token::TK_event
             );
 
         // determine if there is an associated collection of observations
@@ -115,12 +115,12 @@ public:
      * @param table       The table.
      * @param statistic   The statistic, e.g. token::TK_sum.
      * @param increment   The increment, e.g. token::TK_delta.
-     * @param timing      The timing: TK_interval or TK_event.
+     * @param tabop      The tabop: TK_interval or TK_event.
      * @param attribute   The attribute.
      *
      * @return The name, e.g. om_ta_DurationOfLife_sum_delta_om_duration.
      */
-    static string symbol_name(const Symbol *table, token_type statistic, token_type increment, token_type timing, const Symbol *attribute);
+    static string symbol_name(const Symbol *table, token_type statistic, token_type increment, token_type tabop, const Symbol *attribute);
 
     /**
      * Check for existence of symbol with this unique name.
@@ -128,12 +128,12 @@ public:
      * @param table       The table.
      * @param statistic   The statistic, e.g. token::TK_sum.
      * @param increment   The increment, e.g. token::TK_delta.
-     * @param timing      The timing: TK_interval or TK_event
+     * @param tabop      The tabop: TK_interval or TK_event
      * @param attribute   The attribute.
      *
      * @return true if found, else false.
      */
-    static bool exists(const Symbol *table, token_type statistic, token_type increment, token_type timing, const Symbol *attribute);
+    static bool exists(const Symbol *table, token_type statistic, token_type increment, token_type tabop, const Symbol *attribute);
 
     void post_parse(int pass);
 
@@ -189,8 +189,8 @@ public:
                 result = a->pretty_name();
             }
             // surround attribute with table operator, increment, statistic if not defaults
-            if (full || (timing != token::TK_interval)) {
-                result = token_to_string(timing) + "(" + result + ")";
+            if (full || (tabop != token::TK_interval)) {
+                result = token_to_string(tabop) + "(" + result + ")";
             }
             if (full || (increment != token::TK_delta)) {
                 result = token_to_string(increment) + "(" + result + ")";
@@ -227,9 +227,9 @@ public:
     token_type increment;
 
     /**
-     * The increment timing: TK_interval or TK_event.
+     * The increment tabop: TK_interval or TK_event.
      */
-    token_type timing;
+    token_type tabop;
 
     /**
      * The attribute being accumulated (pointer to pointer)

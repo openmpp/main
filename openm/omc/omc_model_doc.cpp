@@ -1882,7 +1882,7 @@ void do_model_doc(
                     mdStream << " " + LTA(lang, "Name");
                     mdStream << " | " + LTA(lang, "Statistic");
                     mdStream << " | " + LTA(lang, "Increment");
-                    mdStream << " | " + LTA(lang, "Timing");
+                    mdStream << " | " + LTA(lang, "Tabop");
                     mdStream << " | " + LTA(lang, "Assembled");
                     mdStream << " | " + LTA(lang, "Attribute");
                     mdStream << " | " + LTA(lang, "Attribute Label");
@@ -1893,10 +1893,10 @@ void do_model_doc(
                         string name = "acc" + std::to_string(acc->index);
                         string stat = maddy_symbol(Symbol::token_to_string(acc->statistic));
                         string incr;
-                        string tmng;
+                        string tabop;
                         if (acc->statistic != token::TK_unit) {
                             incr = maddy_symbol(Symbol::token_to_string(acc->increment));
-                            tmng = maddy_symbol(Symbol::token_to_string(acc->timing));
+                            tabop = maddy_symbol(Symbol::token_to_string(acc->tabop));
                         }
                         string assembled = maddy_symbol(acc->declaration(false, true));
                         auto attr = acc->pp_attribute;
@@ -1915,7 +1915,7 @@ void do_model_doc(
                         mdStream << maddy_symbol(name);
                         mdStream << " | " + stat;
                         mdStream << " | " + incr;
-                        mdStream << " | " + tmng;
+                        mdStream << " | " + tabop;
                         mdStream << " | " + assembled;
                         mdStream << " | " + attr_name;
                         mdStream << " | " + attr_label;
