@@ -61,6 +61,9 @@ public:
         , filter(nullptr)
         , n_collections(0)
         , kind(table_kind::classic)
+        , default_statistic(token::TK_sum)
+        , default_increment(token::TK_delta)
+        , default_timing(token::TK_interval)
         , is_untransformed(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
@@ -173,6 +176,15 @@ public:
     /** The kind of table */
     table_kind kind;
 
+    /** The default statistic */
+    token_type default_statistic;
+
+    /** The default increment */
+    token_type default_increment;
+
+    /** The default timing */
+    token_type default_timing;
+
     /**
      * Query if this EntityTableSymbol is classic
      *
@@ -204,48 +216,57 @@ public:
     }
 
     /**
-     * The default statistic for the table kind
+     * The default statistic for this table
      *
      * @returns A token_type.
      */
-    token_type default_statistic(void) const
+    token_type get_default_statistic(void) const
     {
-        switch (kind) {
-        case table_kind::classic: return token::TK_sum;
-        case table_kind::snapshot: return token::TK_sum;
-        case table_kind::duration: return token::TK_sum;
-        default: assert(false); return token::TK_unused; // not reached
-        }
+        return default_statistic;
     }
 
     /**
-     * The default increment for the table kind
-     *
-     * @returns A token_type.
+     * Set the default statistic for this table
      */
-    token_type default_increment(void) const
+    void set_default_statistic(token_type val)
     {
-        switch (kind) {
-        case table_kind::classic: return token::TK_delta;
-        case table_kind::snapshot: return token::TK_value_out;
-        case table_kind::duration: return token::TK_delta;
-        default: assert(false); return token::TK_unused; // not reached
-        }
+        default_statistic = val;
     }
 
     /**
-     * The default timing for the table kind
+     * The default increment for this table
      *
      * @returns A token_type.
      */
-    token_type default_timing(void) const
+    token_type get_default_increment(void) const
     {
-        switch (kind) {
-        case table_kind::classic: return token::TK_interval;
-        case table_kind::snapshot: return token::TK_interval;
-        case table_kind::duration: return token::TK_interval;
-        default: assert(false); return token::TK_unused; // not reached
-        }
+        return default_increment;
+    }
+
+    /**
+     * Set the default increment for this table
+     */
+    void set_default_increment(token_type val)
+    {
+        default_increment = val;
+    }
+
+    /**
+     * The default timing for this table
+     *
+     * @returns A token_type.
+     */
+    token_type get_default_timing(void) const
+    {
+        return default_timing;
+    }
+
+    /**
+     * Set the default timing for this table
+     */
+    void set_default_timing(token_type val)
+    {
+        default_timing = val;
     }
 
     const char * kind_as_string(void) const

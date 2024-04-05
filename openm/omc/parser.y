@@ -547,8 +547,8 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %type <pval_string>      option_rhs
 %type <pval_Symbol_list> array_decl_dimension_list
 %type <pval_Symbol_list> symbol_list
-%type <val_token>        table_keyword_set_element
-%type <pval_token_set>   table_keyword_set
+%type <val_token>        table_property
+%type <pval_token_set>   table_properties
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -2388,7 +2388,7 @@ entity_set_order_opt:
  */
 
 decl_table: // Some code for decl_entity_set and decl_table is nearly identical
-      "table" table_keyword_set[keywords] SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
+      "table" table_properties[properties] SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
                         {
                             EntityTableSymbol *table = nullptr;
 
@@ -2406,12 +2406,12 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 // redeclaration not allowed
                                 error(@table, LT("error: a table named '") + $table->name + LT("' already exists"));
                             }
-                            // process table keywords if any
+                            // process table properties if any
                             {
-                                assert($keywords); // grammar creates empty instance if no keywords
-                                bool untransformed = $keywords->count(token::TK_untransformed) > 0;
-                                bool snapshot = $keywords->count(token::TK_snapshot) > 0;
-                                bool duration = $keywords->count(token::TK_duration) > 0;
+                                assert($properties); // grammar creates empty instance if no properties
+                                bool untransformed = $properties->count(token::TK_untransformed) > 0;
+                                bool snapshot = $properties->count(token::TK_snapshot) > 0;
+                                bool duration = $properties->count(token::TK_duration) > 0;
                                 if (untransformed) {
                                     table->is_untransformed = true;
                                 }
@@ -2420,12 +2420,24 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 }
                                 if (snapshot) {
                                     table->kind = EntityTableSymbol::table_kind::snapshot;
+                                    table->set_default_statistic(token::TK_sum);
+                                    table->set_default_increment(token::TK_value_out);
+                                    table->set_default_timing(token::TK_interval);
                                 }
-                                if (duration) {
+                                else if (duration) {
                                     table->kind = EntityTableSymbol::table_kind::duration;
+                                    table->set_default_statistic(token::TK_sum);
+                                    table->set_default_increment(token::TK_delta);
+                                    table->set_default_timing(token::TK_interval);
                                 }
-                                $keywords->clear();
-                                delete $keywords;
+                                else { // classic (default)
+                                    table->kind = EntityTableSymbol::table_kind::classic;
+                                    table->set_default_statistic(token::TK_sum);
+                                    table->set_default_increment(token::TK_delta);
+                                    table->set_default_timing(token::TK_interval);
+                                }
+                                $properties->clear();
+                                delete $properties;
                             }
                             // Set entity context and table context for body of table declaration
                             pc.set_entity_context( $entity);
@@ -2454,12 +2466,12 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
     ;
 
 // A possibly empty set of whitespace-separated keywords.
-table_keyword_set:
-      table_keyword_set[psi] table_keyword_set_element
+table_properties:
+      table_properties[psi] table_property
                         {
                             // insert element into existing set
                             assert($psi);
-                            $psi->insert($table_keyword_set_element);
+                            $psi->insert($table_property);
                             $$ = $psi;
                         }
     | /* nothing */
@@ -2470,8 +2482,8 @@ table_keyword_set:
                         }
 	;
 
-// Allowed keywords in a table_keyword_set.
-table_keyword_set_element:
+// Allowed keywords for a table property.
+table_property:
       "snapshot"
     | "duration"
     | "untransformed"
@@ -2566,9 +2578,9 @@ expr_for_table[result]:
                             auto tbl = pc.get_table_context();
                             assert(tbl);
                             // Use defaults for this kind of table
-                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum
-                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta
-                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval
+                            token_type stat = tbl->get_default_statistic();  // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); //Ex. for classic, is TK_delta
+                            token_type tabop = tbl->get_default_timing(); //Ex. for classic, is TK_interval
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2607,12 +2619,12 @@ expr_for_table[result]:
                             assert(attribute);
                             auto tbl = pc.get_table_context();
                             assert(tbl);
-                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
-                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
-                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval;
-                            // Ex. token::TK_maximum
+                            token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
+                            token_type tabop = tbl->get_default_timing();   // Ex. for classic, is TK_interval
+                            // Ex. For token::max_value_in, result is token::TK_maximum
                             stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
-                            // Ex. token::TK_value_in
+                            // Ex. For token::max_value_in, result is token::TK_value_in
                             incr = Symbol::modgen_cumulation_operator_to_incr((token_type)$modgen_cumulation_operator, incr);
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
@@ -2626,7 +2638,7 @@ expr_for_table[result]:
                             assert(tbl);
                             token_type stat = (token_type) $stat;
                             token_type incr = (token_type) $incr;
-                            token_type tabop = tbl->default_timing(); //Ex. for classic, is TK_interval;
+                            token_type tabop = tbl->get_default_timing(); //Ex. for classic, is TK_interval;
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2637,8 +2649,8 @@ expr_for_table[result]:
                             assert(attribute);
                             auto tbl = pc.get_table_context();
                             assert(tbl);
-                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
-                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
+                            token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y (below)
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
@@ -2650,12 +2662,12 @@ expr_for_table[result]:
                             assert(attribute);
                             auto tbl = pc.get_table_context();
                             assert(tbl);
-                            token_type stat = tbl->default_statistic();  // Ex. for classic, is TK_sum;
-                            token_type incr = tbl->default_increment(); //Ex. for classic, is TK_delta;
-                            token_type tabop = (token_type) $tabop;
-                            // Ex. token::TK_maximum
+                            token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
+                            token_type tabop = (token_type)$tabop;
+                            // Ex. For token::max_value_in, result is token::TK_maximum
                             stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
-                            // Ex. token::TK_value_in
+                            // Ex. For token::max_value_in, result is token::TK_value_in
                             incr = Symbol::modgen_cumulation_operator_to_incr((token_type)$modgen_cumulation_operator, incr);
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
