@@ -2040,6 +2040,9 @@ void do_model_doc(
                         if (s->is_generated) {
                             kindInfo += "," + LTA(lang, "generated");
                         }
+                        if (s->is_time_like) {
+                            kindInfo += "," + LTA(lang, "time-like");
+                        }
                         kindInfo += ")";
                     }
 
