@@ -190,11 +190,6 @@ public:
     virtual void om_lifecycle_enter() = 0;
 
     /**
-     * Handle lifecycle attribute maintenance on exit_simulation.
-     */
-    virtual void om_lifecycle_exit() = 0;
-
-    /**
      * Age all entities to the given time.
      * 
      * If originating_entity_id is not supplied, no check for time running backwards is performed
@@ -318,7 +313,6 @@ public:
      */
     void exit_simulation()
     {
-        om_lifecycle_exit();
         if constexpr (om_microdata_output_capable && om_microdata_write_on_exit) {
             write_microdata();
         }

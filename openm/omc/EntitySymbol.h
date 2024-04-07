@@ -59,7 +59,6 @@ public:
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
         , lifecycle_enter_fn(nullptr)
-        , lifecycle_exit_fn(nullptr)
         , lifecycle_event_fn(nullptr)
         , start_trace_fn(nullptr)
         , ss_time_fn(nullptr)
@@ -274,11 +273,6 @@ public:
      * The entity function which supports lifecycle attributes on enter_simulation.
      */
     EntityFuncSymbol* lifecycle_enter_fn;
-
-    /**
-     * The entity function which supports lifecycle attributes on exit_simulation.
-     */
-    EntityFuncSymbol* lifecycle_exit_fn;
 
     /**
      * The entity function which supports lifecycle attributes at events.
