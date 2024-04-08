@@ -244,7 +244,6 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_haz2rate, "haz2rate" },
     { token::TK_hook, "hook" },
     { token::TK_IMPLEMENT_HOOK, "IMPLEMENT_HOOK" },
-    { token::TK_increments, "increments" },
     { token::TK_index, "index" },
     { token::TK_integer, "integer" },
     { token::TK_interval, "interval" },

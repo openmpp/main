@@ -203,7 +203,6 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_haz2rate                  "haz2rate"
 %token <val_token>    TK_hook                      "hook"
 %token <val_token>    TK_IMPLEMENT_HOOK            "IMPLEMENT_HOOK"
-%token <val_token>    TK_increments                "increments"
 %token <val_token>    TK_index                     "index"
 %token <val_token>    TK_integer                   "integer"
 %token <val_token>    TK_interval                  "interval"
@@ -2586,27 +2585,6 @@ expr_for_table[result]:
                         }
       // Ex. unit
     | "unit"
-                        {
-                            // This is the special accumulator which counts increments
-                            // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
-                        }
-      // Ex. count, synonym for unit
-    | "count"
-                        {
-                            // This is the special accumulator which counts increments
-                            // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
-                        }
-      // Ex. counter, synonym for unit
-    | "counter"
-                        {
-                            // This is the special accumulator which counts increments
-                            // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(nullptr, token::TK_unit, token::TK_unused, token::TK_unused, pc);
-                        }
-      // Ex. increments, synonym for unit
-    | "increments"
                         {
                             // This is the special accumulator which counts increments
                             // The following static helper function is defined in the final section of parser.y
