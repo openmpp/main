@@ -2410,12 +2410,8 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 assert($properties); // grammar creates empty instance if no properties
                                 bool untransformed = $properties->count(token::TK_untransformed) > 0;
                                 bool snapshot = $properties->count(token::TK_snapshot) > 0;
-                                bool duration = $properties->count(token::TK_duration) > 0;
                                 if (untransformed) {
                                     table->is_untransformed = true;
-                                }
-                                if (snapshot && duration) {
-                                    error(@table, LT("error: entity table cannot be both snapshot and duration"));
                                 }
                                 if (snapshot) {
                                     table->kind = EntityTableSymbol::table_kind::snapshot;
@@ -2423,14 +2419,8 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                     table->set_default_increment(token::TK_value_out);
                                     table->set_default_tabop(token::TK_interval);
                                 }
-                                else if (duration) {
-                                    table->kind = EntityTableSymbol::table_kind::duration;
-                                    table->set_default_statistic(token::TK_sum);
-                                    table->set_default_increment(token::TK_delta);
-                                    table->set_default_tabop(token::TK_interval);
-                                }
-                                else { // classic (default)
-                                    table->kind = EntityTableSymbol::table_kind::classic;
+                                else { // general (default)
+                                    table->kind = EntityTableSymbol::table_kind::general;
                                     table->set_default_statistic(token::TK_sum);
                                     table->set_default_increment(token::TK_delta);
                                     table->set_default_tabop(token::TK_interval);
@@ -2484,7 +2474,6 @@ table_properties:
 // Allowed keywords for a table property.
 table_property:
       "snapshot"
-    | "duration"
     | "untransformed"
 	;
 

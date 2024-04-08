@@ -42,10 +42,8 @@ public:
      * Enumeration indicating the kind of entity table.
      */
     enum class table_kind {
-        ///< classic entity table.
-        classic,
-        ///< duration-style entity table.
-        duration,
+        ///< general entity table.
+        general,
         ///< snapshot-style entity table.
         snapshot,
     };
@@ -60,7 +58,7 @@ public:
         , push_increment_fn(nullptr)
         , filter(nullptr)
         , n_collections(0)
-        , kind(table_kind::classic)
+        , kind(table_kind::general)
         , default_statistic(token::TK_sum)
         , default_increment(token::TK_delta)
         , default_tabop(token::TK_interval)
@@ -186,23 +184,13 @@ public:
     token_type default_tabop;
 
     /**
-     * Query if this EntityTableSymbol is classic
+     * Query if this EntityTableSymbol is general
      *
      * @returns True if classic, false if not.
      */
-    bool is_classic(void) const
+    bool is_general(void) const
     {
-        return kind == table_kind::classic;
-    }
-
-    /**
-     * Query if this EntityTableSymbol is duration
-     *
-     * @returns True if duration, false if not.
-     */
-    bool is_duration(void) const
-    {
-        return kind == table_kind::duration;
+        return kind == table_kind::general;
     }
 
     /**
@@ -272,8 +260,7 @@ public:
     const char * kind_as_string(void) const
     {
         switch (kind) {
-        case table_kind::classic: return "classic";
-        case table_kind::duration: return "duration";
+        case table_kind::general: return "general";
         case table_kind::snapshot: return "snapshot";
         default: return ""; // not reached
         }
