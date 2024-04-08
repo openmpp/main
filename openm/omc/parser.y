@@ -2642,6 +2642,19 @@ expr_for_table[result]:
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
+      // Ex. minimum(income)
+    | table_statistic[stat] "(" symbol_in_table ")"
+                        {
+                            Symbol *attribute = $symbol_in_table;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = (token_type) $stat;
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for classic, is TK_interval;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
+                        }
       // Ex. event(income)
     | table_operator[tabop] "(" symbol_in_table ")"
                         {
