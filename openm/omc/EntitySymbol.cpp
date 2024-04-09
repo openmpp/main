@@ -1269,6 +1269,14 @@ void EntitySymbol::build_body_lifecycle_event()
     }
     assert(lifecycle_event_fn);
     CodeBlock& c = lifecycle_event_fn->func_body;
+
+    // ignore self-scheduling event
+    if (ss_event) {
+        c += "// ignore self-scheduling event";
+        c += "if (event_id == " + to_string(ss_event->pp_event_id) + ") return;";
+    }
+
+    c += "// note the event";
     c += "switch(event_id) {";
     for (auto evt : pp_events) {
         string evt_name = evt->event_name;
