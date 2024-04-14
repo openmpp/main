@@ -416,6 +416,15 @@ void EntitySymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The lifecycle_exit member function
+    {
+        assert(nullptr == lifecycle_exit_fn); // initialization guarantee
+        lifecycle_exit_fn = new EntityFuncSymbol("om_lifecycle_exit", this);
+        assert(lifecycle_exit_fn); // out of memory check
+        lifecycle_exit_fn->doc_block = doxygen_short("Maintain lifecycle attributes on exit_simulation.");
+        // function body is generated in post-parse phase
+    }
+
     // The lifecycle_event member function
     {
         assert(nullptr == lifecycle_event_fn); // initialization guarantee
@@ -753,6 +762,28 @@ void EntitySymbol::post_parse(int pass)
 
                         ++ord;
                     }
+                    {
+                        // the lvl for exit_simulation_external
+                        string lvl_name = enum_prefix + "exit_simulation_external";
+                        auto sym = get_symbol(lvl_name);
+                        if (sym && !sym->is_base_symbol()) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide a default English label.
+                        lvl->builtin_english_label = "exit simulation (external)";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
                     for (auto& evt_name : event_names) {
                         string lvl_name = enum_prefix + evt_name;
                         auto sym = get_symbol(lvl_name);
@@ -829,6 +860,15 @@ void EntitySymbol::post_parse(int pass)
                     CodeBlock& c = lifecycle_enter_fn->func_body;
                     c += "lifecycle_event = " + enum_prefix + "enter_simulation;";
                     c += "++lifecycle_counter;";
+                }
+                {
+                    // create function body for om_lifecycle_exit
+                    assert(lifecycle_exit_fn);
+                    CodeBlock& c = lifecycle_exit_fn->func_body;
+                    c += "if (entity_id != BaseEvent::current_entity_id) {";
+                    c +=   "lifecycle_event = " + enum_prefix + "exit_simulation_external;";
+                    c +=   "++lifecycle_counter;";
+					c += "}";
                 }
             }
         }
