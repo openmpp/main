@@ -161,9 +161,45 @@
   </PropertyGroup>
 
   <!--
+  ModelIniPublish: copy model ini file into model bin diretcory
+  -->
+  <Target Name="ModelIniPublish" 
+          Inputs="$(MODEL_INI_PATH)"
+          Outputs="$(MODEL_BIN_DIR)/$(MODEL_INI)"
+          BeforeTargets="ModelPublish"
+          >
+    <!--  Skip copy if $(MODEL_INI) is empty or absent. -->
+    <Message Text="Copy $(MODEL_INI) to $(MODEL_BIN_DIR)" Condition="'$(MODEL_INI)'!='' And Exists('$(MODEL_INI_PATH)')" />
+    <Copy 
+      SourceFiles="$(MODEL_INI_PATH)" 
+      DestinationFolder="$(MODEL_BIN_DIR)" 
+      SkipUnchangedFiles="true" 
+      Condition="'$(MODEL_INI)'!='' And Exists('$(MODEL_INI_PATH)')"
+    />
+  </Target>
+
+  <!--
+  ModelMessageIniPublish: copy model translated messages ini file into model bin diretcory
+  -->
+  <Target Name="ModelMessageIniPublish" 
+          Inputs="$(MODEL_MSG_INI_OMC_OUT)"
+          Outputs="$(MODEL_BIN_DIR)/$(MODEL_MSG_INI)"
+          BeforeTargets="ModelPublish"
+          >
+    <!--  Skip copy if $(MODEL_MSG_INI) is absent. -->
+    <Message Text="Copy $(MODEL_MSG_INI) to $(MODEL_BIN_DIR)" Condition="Exists('$(MODEL_MSG_INI_OMC_OUT)')" />
+    <Copy 
+      SourceFiles="$(MODEL_MSG_INI_OMC_OUT)" 
+      DestinationFolder="$(MODEL_BIN_DIR)" 
+      SkipUnchangedFiles="true" 
+      Condition="Exists('$(MODEL_MSG_INI_OMC_OUT)')"
+    />
+  </Target>
+  
+  <!--
   ModelPublish
   -->
-  
+
   <!-- The following properties help make the ModelPublish target and output more readable. -->
   <PropertyGroup>
     <PUBLISH_TICKLE>$(MODEL_BIN_DIR)/$(MODEL_NAME).publish.tickle</PUBLISH_TICKLE>
@@ -173,7 +209,7 @@
     <OM_SQL_DIR_REL>$(OM_SQL_DIR_REL.Replace(&quot;\&quot;,&quot;/&quot;))</OM_SQL_DIR_REL>
   </PropertyGroup>
 
-  <Target Name="ModelPublish" 
+  <Target Name="ModelPublish"
           Inputs="@(OMC_SQL_OUTPUTS)"
           Outputs="$(PUBLISH_TICKLE)"
           AfterTargets="link"
@@ -189,42 +225,6 @@
             />
   </Target>
 
-  <!--
-  ModelIniPublish
-  -->
-  <Target Name="ModelIniPublish" 
-          Inputs="$(MODEL_INI_PATH)"
-          Outputs="$(MODEL_BIN_DIR)/$(MODEL_INI)"
-          AfterTargets="link"
-          >
-    <!--  Skip copy if $(MODEL_INI) is empty or absent. -->
-    <Message Text="Copy $(MODEL_INI) to $(MODEL_BIN_DIR)" Condition="'$(MODEL_INI)'!='' And Exists('$(MODEL_INI_PATH)')" />
-    <Copy 
-      SourceFiles="$(MODEL_INI_PATH)" 
-      DestinationFolder="$(MODEL_BIN_DIR)" 
-      SkipUnchangedFiles="true" 
-      Condition="'$(MODEL_INI)'!='' And Exists('$(MODEL_INI_PATH)')"
-    />
-  </Target>
-
-  <!--
-  ModelMessageIniPublish
-  -->
-  <Target Name="ModelMessageIniPublish" 
-          Inputs="$(MODEL_MSG_INI_OMC_OUT)"
-          Outputs="$(MODEL_BIN_DIR)/$(MODEL_MSG_INI)"
-          AfterTargets="link"
-          >
-    <!--  Skip copy if $(MODEL_MSG_INI) is absent. -->
-    <Message Text="Copy $(MODEL_MSG_INI) to $(MODEL_BIN_DIR)" Condition="Exists('$(MODEL_MSG_INI_OMC_OUT)')" />
-    <Copy 
-      SourceFiles="$(MODEL_MSG_INI_OMC_OUT)" 
-      DestinationFolder="$(MODEL_BIN_DIR)" 
-      SkipUnchangedFiles="true" 
-      Condition="Exists('$(MODEL_MSG_INI_OMC_OUT)')"
-    />
-  </Target>
-  
   <!--
   RunModel
   -->
