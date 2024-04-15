@@ -220,6 +220,8 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_big_counter, "big_counter" },
     { token::TK_case_based, "case_based" },
     { token::TK_cell_based, "cell_based" },
+    { token::TK_cell_in, "cell_in" },
+    { token::TK_cell_out, "cell_out" },
     { token::TK_changes, "changes" },
     { token::TK_completed_spell_delta, "completed_spell_delta" },
     { token::TK_completed_spell_duration, "completed_spell_duration" },

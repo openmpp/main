@@ -51,7 +51,7 @@ class ExprForTable;
 extern char *yytext;
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type table_op, ParseContext & pc);
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type tabop, ParseContext & pc);
 
 // Helper function to handle prohibited redeclaration
 static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, Driver &drv);
@@ -179,6 +179,8 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_big_counter               "big_counter"
 %token <val_token>    TK_case_based                "case_based"
 %token <val_token>    TK_cell_based                "cell_based"
+%token <val_token>    TK_cell_in                   "cell_in"
+%token <val_token>    TK_cell_out                  "cell_out"
 %token <val_token>    TK_changes                   "changes"
 %token <val_token>    TK_completed_spell_delta     "completed_spell_delta"
 %token <val_token>    TK_completed_spell_duration  "completed_spell_duration"
@@ -2566,9 +2568,9 @@ expr_for_table[result]:
                             auto tbl = pc.get_table_context();
                             assert(tbl);
                             // Use defaults for this kind of table
-                            token_type stat = tbl->get_default_statistic();  // Ex. for classic, is TK_sum
-                            token_type incr = tbl->get_default_increment(); //Ex. for classic, is TK_delta
-                            token_type tabop = tbl->get_default_tabop(); //Ex. for classic, is TK_interval
+                            token_type stat = tbl->get_default_statistic();  // Ex. for general, is TK_sum
+                            token_type incr = tbl->get_default_increment(); //Ex. for general, is TK_delta
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for general, is TK_interval
                             // The following static helper function is defined in the final section of parser.y
                             $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
@@ -2758,6 +2760,8 @@ table_increment:
 table_operator:
       TK_interval
     | TK_event
+    | TK_cell_in
+    | TK_cell_out
     ;
 
 /*
@@ -3501,7 +3505,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 }
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type table_op, ParseContext & pc)
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type tabop, ParseContext & pc)
 {
     Symbol *table = pc.get_table_context();
     EntityTableMeasureAttributeSymbol *analysis_attribute = nullptr;
@@ -3524,14 +3528,17 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
             || incr == token::TK_value_in2
             || incr == token::TK_nz_value_in ) {
 
-            if (table_op == token::TK_interval) {
+            switch (tabop) {
+            case token::TK_cell_in:
+            case token::TK_cell_out:
+            case token::TK_interval:
                 analysis_attribute->need_value_in = true;
-            }
-            else if (table_op == token::TK_event) {
+                break;
+            case token::TK_event:
                 analysis_attribute->need_value_in_event = true;
-            }
-            else {
-                assert(false); // logic guarantee
+                break;
+            default:
+                assert(false); // not reached
             }
         }
     }
@@ -3541,13 +3548,13 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
     }
     // Also create symbol for associated accumulator if not already present
     EntityTableAccumulatorSymbol *accumulator = nullptr;
-    if ( EntityTableAccumulatorSymbol::exists( table, stat, incr, table_op, attribute) ) {
-        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, stat, incr, table_op, attribute );
+    if ( EntityTableAccumulatorSymbol::exists( table, stat, incr, tabop, attribute) ) {
+        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, stat, incr, tabop, attribute );
         accumulator = dynamic_cast<EntityTableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
         assert( accumulator );
     }
     else {
-        accumulator = new EntityTableAccumulatorSymbol( table, stat, incr, table_op, attribute, analysis_attribute, pc.counter2);
+        accumulator = new EntityTableAccumulatorSymbol( table, stat, incr, tabop, attribute, analysis_attribute, pc.counter2);
         pc.counter2++;
     }
 	auto result = new ExprForTableAccumulator( accumulator );

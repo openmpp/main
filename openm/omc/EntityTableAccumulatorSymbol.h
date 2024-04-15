@@ -84,7 +84,9 @@ public:
         assert((tabop == token::TK_unused && (statistic == token::TK_unit))
             || tabop == token::TK_interval
             || tabop == token::TK_event
-            );
+            || tabop == token::TK_cell_in
+            || tabop == token::TK_cell_out
+        );
 
         // determine if there is an associated collection of observations
         has_obs_collection = statistic == token::TK_gini
@@ -177,7 +179,7 @@ public:
     {
         string result;
         if (statistic == token::TK_unit) {
-            result = "count()";
+            result = "unit";
         }
         else {
             if (ellipses) {
@@ -185,7 +187,7 @@ public:
             }
             else {
                 auto a = pp_attribute;
-                assert(a); // all accumulators except count() have an attribute
+                assert(a); // all accumulators except unit have an attribute
                 result = a->pretty_name();
             }
             // surround attribute with table operator, increment, statistic if not defaults

@@ -796,10 +796,16 @@ void EntityTableSymbol::build_body_push_increment()
                 c += attr->pp_data_type->name + " value_out = " + attr->name + ";";
             }
             if (acc->uses_value_in()) {
-                if (acc->tabop == token::TK_interval) {
+                switch (acc->tabop) {
+                case token::TK_cell_in:
+                case token::TK_cell_out:
+                case token::TK_interval:
+                {
                     c += "auto& value_in = " + acc->pp_analysis_attribute->in_member_name() + ";";
+                    break;
                 }
-                else if (acc->tabop == token::TK_event) {
+                case token::TK_event:
+                {
                     c += "auto& value_in = " + acc->pp_analysis_attribute->in_event_member_name() + ";";
                     assert(attr->lagged);
                     assert(attr->lagged_event_counter);
@@ -809,7 +815,17 @@ void EntityTableSymbol::build_body_push_increment()
                     c += "if (pending && pending_event_counter == value_lagged_counter) {";
                     c += "value_out = value_lagged;";
                     c += "}";
+                    break;
                 }
+                case token::TK_unused:  // unit
+                {
+                    break;
+                }
+                default:
+                {
+                    assert(false); // not reached
+                }
+				}
             }
         }
         c += "";
