@@ -2481,7 +2481,7 @@ table_property:
 
 
 table_filter_opt:
-    "[" expr_for_attribute[root] "]"
+      "[" expr_for_attribute[root] "]"
                         {
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an anonymous identity attribute for the filter
@@ -2492,8 +2492,21 @@ table_filter_opt:
                             // note identity attribute in table
                             table->filter = aia;
                         }
+    | "[" "bool" SYMBOL[attribute] "=" expr_for_attribute[root] "]"
+                        {
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                TypeSymbol* type_symbol = BoolSymbol::find();
+                                assert(type_symbol);
+                                auto *ia = new IdentityAttributeSymbol( $attribute, pc.get_entity_context(), type_symbol, $root, @attribute );
+                                assert(ia);
+                                EntityTableSymbol* table = pc.get_table_context();
+                                ia->associated_table = table;
+                                // note identity attribute in table
+                                table->filter = ia;
+                            }
+                        }
     | /* nothing */
-    ;
+  ;
 
 table_dimension_list:
     table_dimension
