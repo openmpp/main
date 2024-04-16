@@ -15,6 +15,15 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
+//
+// General options
+//
+
+options lifecycle_attributes = Ticker; // Create lifecycle_event and lifecycle_counter for Ticker entity
+options lifecycle_attributes = Person; // Create lifecycle_event and lifecycle_counter for Person entities
+options lifecycle_attributes = Neighborhood; // Create lifecycle_event and lifecycle_counter for Neighborhood entities
+
+
 // 
 // Model Documentation options:
 //  (These have no effect if Model Documentation is disabled in build settings.)
