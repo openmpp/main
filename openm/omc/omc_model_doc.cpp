@@ -2416,43 +2416,52 @@ void do_model_doc(
                 if (do_module_symbols_declared) {
                     mdStream << "<strong>" + LTA(lang, "Symbols declared in") + " <code>" + s->name + "</code>:</strong>\n\n";
                     mdStream << "|table>\n"; // maddy-specific begin table
-                    mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Kind") + " | " + LTA(lang, "Entity") +  + " | " + LTA(lang, "Label") + " \n";
+                    mdStream << " " + LTA(lang, "Kind") + " | " + LTA(lang, "Name") + " | " + LTA(lang, "Entity") +  + " | " + LTA(lang, "Label") + " \n";
                     mdStream << "- | - | -\n"; // maddy-specific table header separator
+                    // struct for a single row of the table
+                    struct row {
+                        string kind;
+                        string name;
+                        string entity;
+                        string label;
+                    };
+                    std::list<row> theTable;
                     for (auto d : s->pp_symbols_declared) {
-                        string name = "";
-                        string kind = "";
-                        string entity = "";
-                        string label = d->pp_labels[lang_index];
+                        row r;
+                        r.name = "";
+                        r.kind = "";
+                        r.entity = "";
+                        r.label = d->pp_labels[lang_index];
                         if (auto p = dynamic_cast<ParameterSymbol*>(d)) {
-                            name = maddy_link(p->name);
-                            kind = LTA(lang, "parameter");
+                            r.name = maddy_link(p->name);
+                            r.kind = LTA(lang, "parameter");
                         }
                         else if (auto t = dynamic_cast<TableSymbol*>(d)) {
-                            name = maddy_link(t->name);
-                            kind = LTA(lang, "table");
+                            r.name = maddy_link(t->name);
+                            r.kind = LTA(lang, "table");
                         }
                         else if (auto c = dynamic_cast<ClassificationSymbol*>(d)) {
-                            name = maddy_link(c->name);
-                            kind = LTA(lang, "classification");
+                            r.name = maddy_link(c->name);
+                            r.kind = LTA(lang, "enumeration - classification");
                         }
-                        else if (auto r = dynamic_cast<RangeSymbol*>(d)) {
-                            name = maddy_link(r->name);
-                            kind = LTA(lang, "range");
+                        else if (auto rng = dynamic_cast<RangeSymbol*>(d)) {
+                            r.name = maddy_link(rng->name);
+                            r.kind = LTA(lang, "enumeration - range");
                         }
                         else if (auto part = dynamic_cast<PartitionSymbol*>(d)) {
-                            name = maddy_link(part->name);
-                            kind = LTA(lang, "partition");
+                            r.name = maddy_link(part->name);
+                            r.kind = LTA(lang, "enumeration - partition");
                         }
                         else if (auto ef = dynamic_cast<EntityFuncSymbol*>(d)) {
-                            name = maddy_symbol(ef->name);
-                            entity = maddy_symbol(ef->pp_entity->name);
-                            kind = LTA(lang, "entity function");
+                            r.name = maddy_symbol(ef->name);
+                            r.entity = maddy_symbol(ef->pp_entity->name);
+                            r.kind = LTA(lang, "entity function");
                             if (auto ee = ef->associated_event) {
                                 if (ef == ee->time_func_original) {
-                                    kind = LTA(lang, "event time function");
+                                    r.kind = LTA(lang, "event - time function");
                                 }
                                 else if (ef == ee->implement_func_original) {
-                                    kind = LTA(lang, "event implement function");
+                                    r.kind = LTA(lang, "event - implement function");
                                 }
                                 else {
                                     assert(false); // internal logic error
@@ -2460,37 +2469,54 @@ void do_model_doc(
                             }
                         }
                         else if (auto a = dynamic_cast<IdentityAttributeSymbol*>(d)) {
-                            name = maddy_link(a->name, a->dot_name());
-                            entity = maddy_symbol(a->pp_entity->name);
-                            kind = LTA(lang, "identity attribute");
-                            label = escape_generated_label(a, lang_index);  // replace label by escaped version
+                            r.name = maddy_link(a->name, a->dot_name());
+                            r.entity = maddy_symbol(a->pp_entity->name);
+                            r.kind = LTA(lang, "attribute - identity");
+                            r.label = escape_generated_label(a, lang_index);  // replace label by escaped version
                         }
                         else if (auto a = dynamic_cast<SimpleAttributeSymbol*>(d)) {
-                            name = maddy_link(a->name, a->dot_name());
-                            entity = maddy_symbol(a->pp_entity->name);
-                            kind = LTA(lang, "simple attribute");
+                            r.name = maddy_link(a->name, a->dot_name());
+                            r.entity = maddy_symbol(a->pp_entity->name);
+                            r.kind = LTA(lang, "attribute - simple");
                         }
                         else if (auto a = dynamic_cast<LinkAttributeSymbol*>(d)) {
-                            name = maddy_link(a->name, a->dot_name());
-                            entity = maddy_symbol(a->pp_entity->name);
-                            kind = LTA(lang, "link attribute");
+                            r.name = maddy_link(a->name, a->dot_name());
+                            r.entity = maddy_symbol(a->pp_entity->name);
+                            r.kind = LTA(lang, "attribute - link");
                         }
                         else if (auto es = dynamic_cast<EntitySetSymbol*>(d)) {
-                            name = maddy_link(es->name);
-                            kind = LTA(lang, "entity set");
+                            r.name = maddy_link(es->name);
+                            r.kind = LTA(lang, "entity set");
                         }
                         else if (auto gf = dynamic_cast<GlobalFuncSymbol*>(d)) {
-                            name = maddy_symbol(d->name);
-                            kind = LTA(lang, "global function");
+                            r.name = maddy_symbol(d->name);
+                            r.kind = LTA(lang, "global function");
                         }
                         else {
-                            continue;
+                            r.name = maddy_symbol(d->name);
+                            r.kind = ""; // odds and sods
                         }
-                        mdStream << name;
-                        mdStream << " | " + kind;
-                        mdStream << " | " + entity;
-                        mdStream << " | " + label + "\n";
+                        if (r.kind != "") {
+                            // ignore odds and sods
+                            theTable.push_back(r);
+                        }
                     }
+                    // sort the rows of theTable into the desired order, by kind and within kind by name
+                    theTable.sort([](row a, row b)
+                        { return (a.kind == b.kind) ?
+                        (a.name < b.name) :
+                        (a.kind < b.kind);
+                        }
+                    );
+                    // display the rows
+                    for (auto& r : theTable) {
+                        mdStream << r.kind;
+                        mdStream << " | " + r.name;
+                        mdStream << " | " + r.entity;
+                        mdStream << " | " + r.label + "\n";
+                    }
+                    // cleanup
+                    theTable.clear();
                     mdStream << "|<table\n"; // maddy-specific end table
                 }
 
