@@ -1209,7 +1209,7 @@ void do_model_doc(
             mdStream << "<h3 id=\"" + anchorEnumerationsAlphabetic + "\">" + LTA(lang, "Enumerations in alphabetic order") + "</h3>\n\n";
             mdStream << letterLinks + "\n\n";
             mdStream << "|table>\n"; // maddy-specific begin table
-            mdStream << " " + LTA(lang, "Name") + " | " + LTA(lang, "Label") + " \n";
+            mdStream << " " + LTA(lang, "Name") + " | " + (do_developer_edition ? (LTA(lang, "Kind") + " | ") : "") + LTA(lang, "Label") + " \n";
 
             mdStream << "- | - | -\n"; // maddy-specific table header separator
             {
@@ -1227,7 +1227,24 @@ void do_model_doc(
                     }
                     letterPrev = letterCurr;
 
-                    mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << s->pp_labels[lang_index] << "  \n";
+                    string kind;
+                    if (s->is_classification()) {
+                        kind = LTA(lang, "classification");
+                    }
+                    else if (s->is_range()) {
+                        kind = LTA(lang, "range");
+                    }
+                    else if (s->is_partition()) {
+                        kind = LTA(lang, "partition");
+                    }
+                    else if (s->is_bool()) {
+                        kind = LTA(lang, "classification");
+                    }
+                    else {
+                        kind = LTA(lang, "other");
+                    }
+
+                    mdStream << letterLink + " [`" << s->name << "`](#" << s->name << ") | " << (do_developer_edition? (kind + " | ") : "") << s->pp_labels[lang_index] << "  \n";
                 } // end enumerations table
             }
             mdStream << "|<table\n"; // maddy-specific end table
