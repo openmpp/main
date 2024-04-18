@@ -1374,20 +1374,23 @@ void do_model_doc(
                     }
                 }
 
-                // table showing aggregation if this classification is an aggregation
+                // sections showing aggregation if this classification is an aggregation of another
                 if (s->is_classification()) {
                     auto c = dynamic_cast<ClassificationSymbol*>(s);
                     assert(c);
+                    /// aggregations to this classification
+                    std::list<AggregationSymbol*> alist;
                     AggregationSymbol* aggr = nullptr;
                     for (auto a : Symbol::pp_all_aggregations) {
                         if (c == a->pp_to) {
-                            // the current classification is an aggregation of another classification
-                            aggr = a;
-                            break;
+                            alist.push_back(a);
                         }
                     }
-                    if (aggr) {
+                    // sort matching aggregations by name of 'from' classification
+                    alist.sort([](AggregationSymbol* a, AggregationSymbol* b) { return a->pp_from->name < b->pp_from->name; });
+                    for (auto& aggr : alist) { // alist is possibly empty
                         auto c_from = aggr->pp_from;
+                        assert(c_from);
                         // read the aggregation and turn it into a list of rows
                         struct row {
                             int    from_ord;
@@ -1453,6 +1456,7 @@ void do_model_doc(
                         mdStream << "|<table\n"; // maddy-specific end table
                         theTable.clear();
                     }
+                    alist.clear();
                 }
 
                 // table showing aggregations of this classification
@@ -1466,6 +1470,8 @@ void do_model_doc(
                             clist.push_back(a->pp_to);
                         }
                     }
+                    // sort classification list by name of 'to' classification
+                    clist.sort([](ClassificationSymbol* a, ClassificationSymbol* b) { return a->name < b->name; });
                     if (clist.size() > 0) {
                         mdStream << "<strong>" + LTA(lang, "Aggregations of") + " <code>" + s->name + "</code>:</strong>\n\n";
                         mdStream << "|table>\n"; // maddy-specific begin table
