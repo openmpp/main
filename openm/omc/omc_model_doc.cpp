@@ -1374,6 +1374,112 @@ void do_model_doc(
                     }
                 }
 
+                // table showing aggregation if this classification is an aggregation
+                if (s->is_classification()) {
+                    auto c = dynamic_cast<ClassificationSymbol*>(s);
+                    assert(c);
+                    AggregationSymbol* aggr = nullptr;
+                    for (auto a : Symbol::pp_all_aggregations) {
+                        if (c == a->pp_to) {
+                            // the current classification is an aggregation of another classification
+                            aggr = a;
+                            break;
+                        }
+                    }
+                    if (aggr) {
+                        auto c_from = aggr->pp_from;
+                        // read the aggregation and turn it into a list of rows
+                        struct row {
+                            int    from_ord;
+                            string from_name;
+                            string from_label;
+                            int    to_ord;
+                            string to_name;
+                            string to_label;
+                        };
+                        std::list<row> theTable;
+                        for (auto& it : aggr->pp_enumerator_map) {
+                            auto from = it.first;
+                            auto to = it.second;
+                            row r;
+                            r.from_ord   = from->ordinal;
+                            r.from_name  = from->name;
+                            r.from_label = from->pp_labels[lang_index];
+                            r.to_ord     = to->ordinal;
+                            r.to_name    = to->name;
+                            r.to_label   = to->pp_labels[lang_index];
+                            theTable.push_back(r);
+                        }
+                        theTable.sort([](row a, row b)
+                            { return (a.to_ord == b.to_ord) ?
+                            (a.from_ord < b.from_ord) :
+                            (a.to_ord < b.to_ord);
+                            }
+                        );
+                        mdStream <<
+                            "<strong>"
+                            + LTA(lang, "Aggregation from")
+                            + " <a href=\"#" + c_from->name + "\"><code>" + c_from->name + "</code></a> "
+                            + LTA(lang, "to")
+                            + " <code>" + s->name + "</code>: "
+                            "</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << 
+                            LTA(lang, "Enumerator of") + "<br>&nbsp;&nbsp;" + maddy_symbol(c->name)
+                            + " | " 
+                            + LTA(lang, "Enumerator of") + "<br>&nbsp;&nbsp;" + maddy_link(c_from->name)
+                            + " | "
+                            + LTA(lang, "Enumerator label") + "<br>&nbsp;&nbsp;" + maddy_symbol(c->name)
+                            + " | " 
+                            + LTA(lang, "Enumerator label") + "<br>&nbsp;&nbsp;" + maddy_link(c_from->name)
+                            + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        int prev = -1;
+                        for (auto& r : theTable) {
+                            /// row has same 'to' classification as previous row
+                            bool repeat = (prev == r.to_ord);
+                            string to = (prev == r.to_ord) ? "" : maddy_symbol(r.to_name);
+                            mdStream <<
+                                (repeat ? "" : maddy_symbol(r.to_name))
+                                + " | "
+                                + maddy_symbol(r.from_name)
+                                + " | "
+                                + (repeat ? "" : r.to_label)
+                                + " | "
+                                + r.from_label
+                                + "\n";
+                            prev = r.to_ord;
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                        theTable.clear();
+                    }
+                }
+
+                // table showing aggregations of this classification
+                if (s->is_classification()) {
+                    auto c = dynamic_cast<ClassificationSymbol*>(s);
+                    assert(c);
+                    /// aggregations of this classification
+                    std::list<ClassificationSymbol *> clist;
+                    for (auto a : Symbol::pp_all_aggregations) {
+                        if (c == a->pp_from) {
+                            clist.push_back(a->pp_to);
+                        }
+                    }
+                    if (clist.size() > 0) {
+                        mdStream << "<strong>" + LTA(lang, "Aggregations of") + " <code>" + s->name + "</code>:</strong>\n\n";
+                        mdStream << "|table>\n"; // maddy-specific begin table
+                        mdStream << " " + LTA(lang, "Classification") + " | " + LTA(lang, "Label") + " \n";
+                        mdStream << "- | - | -\n"; // maddy-specific table header separator
+                        for (auto sym : clist) {
+                            auto label = sym->pp_labels[lang_index];
+                            mdStream << maddy_link(sym->name) + " | " + label + "\n";
+                        }
+                        mdStream << "|<table\n"; // maddy-specific end table
+                        clist.clear();
+                    }
+                }
+
                 // table of parameters using this enumeration as type
                 {
                     set<string> parameters_used;
