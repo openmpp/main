@@ -1,6 +1,20 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-04-22:
+  c++ core: new optional lifecycle attributes to probe events
+  c++ core: new "untransformed" tables
+  c++ core: new "snapshot" tables
+  c++ core: allow explicit declaration of table filter attribute
+  c++ core: new example model TableProbe2
+  c++ core: protect model run-time code from Microsoft MPI bug
+  UI: microdata aggregation and run comparison
+  go: initial version of dbget utility to extract and transform model run results
+  go: new fair scheduling of cloud CPU resources
+  go dbcopy: add output to TSV files
+  change oms UI back-end and MSBuild to correctly handle ini-files in UI
+  Linux and MacOS: fix issues with spaces in file path
+
 2024-03-22:
   c++ core: provide implementation for default microdata key uniqueness
   c++ core: bug fix for tablle suppression check
