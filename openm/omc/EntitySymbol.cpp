@@ -1310,6 +1310,12 @@ void EntitySymbol::build_body_lifecycle_event()
     assert(lifecycle_event_fn);
     CodeBlock& c = lifecycle_event_fn->func_body;
 
+    if (pp_events.size() == 0) {
+        // This entity kind has no events, so om_lifecycle_event member function will never be called.
+        c += "// Entity " + name + " has no events";
+        return;
+    }
+
     // ignore self-scheduling event
     if (ss_event) {
         c += "// ignore self-scheduling event";
