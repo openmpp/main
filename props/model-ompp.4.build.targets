@@ -332,11 +332,11 @@
           >
     <Message Text="Using batch file to start openM++ UI:" />
     <Message
-      Text="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; $(ABS_START_UI_BAT)"
+      Text="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; (set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; $(ABS_START_UI_BAT)"
       />
     <Exec
       WorkingDirectory="$(PUBLISH_DIR)"
-      Command="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; $(ABS_START_UI_BAT)"
+      Command="(set MODEL_NAME=$(MODEL_NAME)) &amp; (set PUBLISH_DIR=$(PUBLISH_DIR)) &amp; (set OM_ROOT=$(ABS_OM_ROOT)) &amp; $(ABS_START_UI_BAT)"
       />
   </Target>
 
