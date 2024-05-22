@@ -17,7 +17,7 @@ Dr Andrew P Smith     virgesmith       A.P.Smith@leeds.ac.uk
 Wojciech Dudek        Wojciech-Dudek   wojciech_dudek@hotmail.com
 Nadeau, Claude        claude-nadeau    claude.nadeau@statcan.gc.ca       StatCan
 Williamson, Kristian  KrisWilliamson   kristian.williamson@statcan.gc.ca StatCan
-Dudek, Jacek          jacek-dudek      jacek.dudek@statcan.gc.ca         StatCan
+Dudek, Jacek          jacek-dudek / jacekzbigniewdudek  jacek.dudek@statcan.gc.ca  StatCan
 
 -----------------------------
 Intellectual property holders
