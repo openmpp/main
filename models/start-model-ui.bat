@@ -162,7 +162,7 @@ REM start oms web-service and UI
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
 IF "%OM_CFG_TYPE_MAX_LEN%" == "" (
-  set OM_CFG_TYPE_MAX_LEN=256
+  set OM_CFG_TYPE_MAX_LEN=366
 )
 
 START "oms" "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HomeDir "%PUBLISH_DIR%" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest

@@ -45,7 +45,7 @@ fi
 
 # allow to use $MODEL_NAME.ini file in UI for model run
 #
-[ -z "$OM_CFG_TYPE_MAX_LEN" ] && OM_CFG_TYPE_MAX_LEN=256
+[ -z "$OM_CFG_TYPE_MAX_LEN" ] && OM_CFG_TYPE_MAX_LEN=366
 
 export OM_CFG_INI_ALLOW=true
 export OM_CFG_INI_ANY_KEY=true

@@ -126,7 +126,7 @@ REM start oms web-service and UI
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
 IF "%OM_CFG_TYPE_MAX_LEN%" == "" (
-  set OM_CFG_TYPE_MAX_LEN=256
+  set OM_CFG_TYPE_MAX_LEN=366
 )
 
 REM set OM_ModelName=/path/to/model/dir

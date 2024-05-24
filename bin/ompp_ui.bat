@@ -21,7 +21,7 @@ if not exist "%OM_ROOT%\html" (
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
 IF "%OM_CFG_TYPE_MAX_LEN%" == "" (
-  set OM_CFG_TYPE_MAX_LEN=256
+  set OM_CFG_TYPE_MAX_LEN=366
 )
 
 START "oms" "%OM_ROOT%\bin\oms" -oms.RootDir "%OM_ROOT%" -oms.HomeDir models\home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
