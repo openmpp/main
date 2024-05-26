@@ -865,6 +865,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../include,
 					"$(BUILD_SRC_DIR)",
+					"$(SRCROOT)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-register";
@@ -881,6 +882,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../include,
 					"$(BUILD_SRC_DIR)",
+					"$(SRCROOT)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-register";
