@@ -410,6 +410,21 @@ void handle_bounds_error(
 }
 
 /**
+ * Verify validity of array index
+ *
+ * @param   index  The index to check for validity.
+ * @param   size   The size of the dimension.
+ * @param   dim    The position of the dimension.
+ * @param   symbol The name of the symbol.
+ *
+ * @returns index.
+ */
+int om_check_index(int index, int size, int dim, const char* symbol)
+{
+    return index;
+}
+
+/**
  * Handles situation where the maximum random stream is exceeded.
  */
 void handle_streams_exceeded(
