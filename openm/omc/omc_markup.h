@@ -18,4 +18,4 @@ using namespace std;
  *
  * @param   om_developer_cpp_path Full path of model code passthrough file.
  */
-extern void do_markup(const string om_developer_cpp_path);
+extern void do_markup(const string& om_developer_cpp_path);
