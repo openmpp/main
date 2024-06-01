@@ -760,6 +760,10 @@ void CodeGen::do_RunInit()
         c += "theLog->logFormatted(\"Warning : model can expose microdata at run-time with event_trace = on\");";
         c += "";
     }
+    if (Symbol::option_index_errors) {
+        c += "theLog->logFormatted(\"Warning : possible performance impact with index_errors = on\");";
+        c += "";
+    }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
     c += "extern int64_t report_parameter_read_progress(int paramNumber, int paramCount, const char * name, int64_t lastTime);";
     c += "";

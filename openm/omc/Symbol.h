@@ -1711,6 +1711,11 @@ public:
     static bool option_bounds_errors;
 
     /**
+     * true/false depending on index_errors in options statement.
+     */
+    static bool option_index_errors;
+
+    /**
      * true if case_checksum activated in options statement.
      */
     static bool option_case_checksum;

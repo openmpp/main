@@ -25,6 +25,7 @@ unordered_multimap<string, pair<string, omc::location>> Symbol::options;
 bool Symbol::option_event_trace = false;
 bool Symbol::option_event_trace_warning = true;
 bool Symbol::option_bounds_errors = true;
+bool Symbol::option_index_errors = false;
 bool Symbol::option_case_checksum = false;
 bool Symbol::option_allow_time_travel = false;
 bool Symbol::option_allow_clairvoyance = false;
@@ -1303,12 +1304,14 @@ void Symbol::do_options()
         string key = "index_errors";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            auto& opt_name = iter->first;
             auto& opt_pair = iter->second; // opt_pair is option value, option location
-            string& opt_value = opt_pair.first;
-            auto& opt_loc = opt_pair.second;
-            // Ignore this Modgen option.
-            pp_logmsg(opt_loc, LT("note : ignoring Modgen option '") + key + "'");
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_index_errors = true;
+            }
+            else if (value == "off") {
+                option_index_errors = false;
+            }
             // remove processed option
             options.erase(iter);
         }
