@@ -74,6 +74,7 @@
 #include "omc_model_metrics.h"
 #include "omc_missing_documentation.h"
 #include "omc_model_doc.h"
+#include "omc_markup.h"
 
 using namespace std;
 using namespace openm;
@@ -457,7 +458,11 @@ int main(int argc, char * argv[])
         ParseContext pc;
 
         // open & prepare pass-through / markup stream om_developer.cpp
-        ofstream om_developer_cpp(outDir + "om_developer.cpp", ios::out | ios::trunc | ios::binary);
+
+        /// Full path of model code passthrough file
+        string om_developer_cpp_path = outDir + "om_developer.cpp";
+        /// Output stream of model code passthrough file
+        ofstream om_developer_cpp(om_developer_cpp_path, ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_developer_cpp(&om_developer_cpp, &ofstream::close);   // close on exit
         if (om_developer_cpp.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_developer.cpp");
 
@@ -896,6 +901,11 @@ int main(int argc, char * argv[])
 
         // issue warnings for missing labels,notes,translations
         do_missing_documentation();
+
+        om_developer_cpp.close();
+
+        // perform markup of model code if necessary
+        do_markup(om_developer_cpp_path);
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");

@@ -138,6 +138,7 @@ NumericSymbol.cpp \
 omc.cpp \
 omc_csv.cpp \
 omc_file.cpp \
+omc_markup.cpp \
 omc_missing_documentation.cpp \
 omc_model_doc.cpp \
 omc_model_metrics.cpp \
