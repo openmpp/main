@@ -414,13 +414,46 @@ void handle_bounds_error(
  *
  * @param   index  The index to check for validity.
  * @param   size   The size of the dimension.
- * @param   dim    The position of the dimension.
+ * @param   dim    The 0-based position of the dimension.
  * @param   symbol The name of the symbol.
  *
  * @returns index.
  */
-int om_check_index(int index, int size, int dim, const char* symbol)
+int om_check_index(int index, int size, int dim, const char* name, const char* file, int line)
 {
+    if (index < 0 || index >= size) {
+        // invalid array index, exit with runtime error message
+        std::stringstream ss;
+        ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+            << std::showpoint; // show decimal point
+        ss << LT("invalid index ");
+        ss << index;
+        ss << LT(" in 0-based dimension ");
+        ss << dim;
+        ss << LT(" of ");
+        ss << name;
+        ss << LT(" with bounds [0,");
+        ss << size - 1;
+        ss << "]";
+
+        ss << LT(" when current time is ") << get_global_time();
+        if (BaseEvent::current_entity_id >= 0) {
+            ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
+        }
+        if (BaseEvent::current_event_id >= 0) {
+            ss << LT(" in or after event ") << omr::event_id_to_name(BaseEvent::current_event_id);
+        }
+        ss << LT(" in simulation member ") << get_simulation_member();
+        ss << LT(" with combined seed ") << get_combined_seed();
+        std::string fname = file;
+        auto pos = fname.find_last_of("/\\");
+        if ((pos != std::string::npos) && (pos + 1 < fname.length())) {
+            fname = fname.substr(pos + 1);
+        }
+        ss << LT(" at module ") << fname;
+        ss << "[" << line << "]";
+        ModelExit(ss.str().c_str());
+    }
     return index;
 }
 
