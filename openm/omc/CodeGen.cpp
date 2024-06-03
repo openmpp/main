@@ -64,6 +64,7 @@ void CodeGen::do_all()
     *oat1 << t1;
     *oah << h;
     *oac << c;
+    *oad << d;
     *oaz << z;
 }
 

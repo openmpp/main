@@ -681,11 +681,13 @@ int main(int argc, char * argv[])
             &om_types1_h,
             &om_declarations_h,
             &om_definitions_cpp,
+            &om_developer_cpp,
             &om_fixed_parms_cpp,
             missing_param_defs,
             builder.get(),
             Symbol::no_line_directives,
             om_definitions_cpp_fname,
+            om_developer_cpp_path,
             metaRows
             );
         cg.do_all();

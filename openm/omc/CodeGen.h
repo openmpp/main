@@ -23,18 +23,22 @@ public:
         ofstream *oat1_arg,
         ofstream *oah_arg,
         ofstream *oac_arg,
+        ofstream *oad_arg,
         ofstream *oaz_arg,
         CodeBlock & missing_dat,
         const openm::IModelBuilder * i_builder,
         bool no_line_directives,
         string c_fname,
-        openm::MetaModelHolder & io_metaRows 
+        string d_fname,
+        openm::MetaModelHolder & io_metaRows
         )
         : oat0(oat0_arg)
         , oat1(oat1_arg)
         , oah(oah_arg)
         , oac(oac_arg)
         , c_fname(c_fname)
+        , oad(oad_arg)
+        , d_fname(d_fname)
         , oaz(oaz_arg)
         , m(missing_dat)
         , no_line_directives(no_line_directives)
@@ -105,7 +109,7 @@ public:
     ofstream *oah;
 
     /**
-     * CodeBlock for om_fixed_parms.cpp.
+     * CodeBlock for for om_definitions.cpp.
      */
     CodeBlock c;
 
@@ -114,6 +118,17 @@ public:
 
     /** full name of om_definitions.cpp */
     string c_fname;
+
+    /**
+     * CodeBlock for for om_developer.cpp.
+     */
+    CodeBlock d;
+
+    /** output stream for om_developer.cpp */
+    ofstream* oad;
+
+    /** full name of om_developer.cpp */
+    string d_fname;
 
     /**
      * CodeBlock for om_initializers.cpp.
