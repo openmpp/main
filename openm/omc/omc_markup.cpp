@@ -19,7 +19,7 @@
 #include "Symbol.h"
 #include "ParameterSymbol.h"
 
-void do_markup(const string& om_developer_cpp_path)
+void do_markup(const string& om_developer_cpp_path, const string& om_definitions_cpp_path)
 {
     if (!Symbol::option_index_errors) {
         // no markup needed
@@ -31,7 +31,7 @@ void do_markup(const string& om_developer_cpp_path)
     /// vector of pattern and replacement pairs
     std::vector<std::pair<std::regex, std::string>> patterns;
     {
-        // populate regex pattern and replacement pairs
+        // populate regex pattern and replacement pairs for parameters
         for (auto p : Symbol::pp_all_parameters) {
             if (p->rank() == 0) {
                 // no index checking for scalars!
@@ -102,44 +102,51 @@ void do_markup(const string& om_developer_cpp_path)
 
     // TODO: use u8string for code_in and code_out when available on all target platforms.
 
-    /// Original model code
-    string code_in;
-
-    /// Modified model code
-    string code_out;
-
+    string path = om_developer_cpp_path;
     {
-        // Slurp om_developer.cpp to string code_in
-        // Note that om_developer_cpp is a UTF-8 file, so no conversion is needed.
-        ifstream ifs(om_developer_cpp_path, ios::in | ios::binary);
-        std::ostringstream sstr;
-        sstr << ifs.rdbuf();
-        ifs.close();
-        code_in = sstr.str();
-    }
+        theLog->logFormatted(" Marking up %s", path.c_str());
 
-    // create code_out from code_in
-    code_out = code_in;
-    int counter = 1;
-    for (auto& it : patterns) {
-        // apply all patterns to model code
-        auto srch = it.first;
-        auto repl = it.second;
-        code_out = std::regex_replace(code_out, srch, repl);
-        ++counter;
-        if (0 == counter % 100) {
-            // progress indicator if 100 or more patterns
-            theLog->logFormatted(" Pattern %d of %d", counter, patterns.size());
+        /// Original model code
+        string code_in;
+
+        /// Modified model code
+        string code_out;
+
+        {
+            // Slurp om_developer.cpp to string code_in
+            // Note that om_developer_cpp is a UTF-8 file, so no conversion is needed.
+            ifstream ifs(path, ios::in | ios::binary);
+            // TODO error checking on file open
+            std::ostringstream sstr;
+            sstr << ifs.rdbuf();
+            ifs.close();
+            code_in = sstr.str();
         }
-    }
 
-    {
-        // Dump string code_out to om_developer.cpp
-        // wait 1 second for close of om_developer_cpp to settle
-        this_thread::sleep_for(chrono::milliseconds(1000));
-        ofstream ofs(om_developer_cpp_path, ios::out | ios::trunc | ios::binary);
-        ofs << code_out;
-        ofs.close();
+        // create code_out from code_in
+        code_out = code_in;
+        int counter = 1;
+        for (auto& it : patterns) {
+            // apply all patterns to model code
+            auto srch = it.first;
+            auto repl = it.second;
+            code_out = std::regex_replace(code_out, srch, repl);
+            ++counter;
+            if (0 == counter % 100 || counter == patterns.size()) {
+                // progress indicator if 100 or more patterns
+                theLog->logFormatted("   Pattern %d of %d", counter, patterns.size());
+            }
+        }
+
+        {
+            // Dump string code_out to om_developer.cpp
+            // wait 1 second for close of om_developer_cpp to settle
+            this_thread::sleep_for(chrono::milliseconds(1000));
+            ofstream ofs(path, ios::out | ios::trunc | ios::binary);
+            // TODO error checking on file open
+            ofs << code_out;
+            ofs.close();
+        }
     }
 
     theLog->logMsg("Model code markup - finish");

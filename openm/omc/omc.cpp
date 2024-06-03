@@ -903,9 +903,10 @@ int main(int argc, char * argv[])
         do_missing_documentation();
 
         om_developer_cpp.close();
+        om_definitions_cpp.close();
 
         // perform markup of model code if necessary
-        do_markup(om_developer_cpp_path);
+        do_markup(om_developer_cpp_path, om_definitions_cpp_fname);
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
