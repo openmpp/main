@@ -37,8 +37,10 @@ public:
         , oah(oah_arg)
         , oac(oac_arg)
         , c_fname(c_fname)
+        , c_base_lines(0)
         , oad(oad_arg)
         , d_fname(d_fname)
+        , d_base_lines(0)
         , oaz(oaz_arg)
         , m(missing_dat)
         , no_line_directives(no_line_directives)
@@ -119,6 +121,9 @@ public:
     /** full name of om_definitions.cpp */
     string c_fname;
 
+    /** The number of lines in om_developer_cpp stream before code generation */
+    int c_base_lines;
+
     /**
      * CodeBlock for for om_developer.cpp.
      */
@@ -129,6 +134,9 @@ public:
 
     /** full name of om_developer.cpp */
     string d_fname;
+
+    /** The number of lines in om_definitions_cpp stream before code generation */
+    int d_base_lines;
 
     /**
      * CodeBlock for om_initializers.cpp.

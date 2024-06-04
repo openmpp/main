@@ -472,7 +472,7 @@ int main(int argc, char * argv[])
     #endif
         om_developer_cpp << "/**" << endl;
         om_developer_cpp << " * @file om_developer.cpp" << endl;
-        om_developer_cpp << " * Developer-supplied C++ functions" << endl;
+        om_developer_cpp << " * Developer-supplied C++ code" << endl;
         om_developer_cpp << " */" << endl;
         om_developer_cpp << "" << endl;
         om_developer_cpp << "#include \"omc/omPch.h\"" << endl;

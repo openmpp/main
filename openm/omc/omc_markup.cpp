@@ -16,8 +16,13 @@
 //#include "omc_file.h"
 #include "omc_markup.h"
 
+#include "libopenm/omError.h"
+
 #include "Symbol.h"
 #include "ParameterSymbol.h"
+
+using namespace std;
+using namespace openm;
 
 void do_markup(const string& om_developer_cpp_path, const string& om_definitions_cpp_path)
 {
@@ -116,7 +121,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
             // Slurp om_developer.cpp to string code_in
             // Note that om_developer_cpp is a UTF-8 file, so no conversion is needed.
             ifstream ifs(path, ios::in | ios::binary);
-            // TODO error checking on file open
+            if (ifs.fail()) throw HelperException(LT("error : unable to open %s"), path);
             std::ostringstream sstr;
             sstr << ifs.rdbuf();
             ifs.close();
@@ -125,14 +130,14 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
 
         // create code_out from code_in
         code_out = code_in;
-        int counter = 1;
+        int counter = 0;
         for (auto& it : patterns) {
             // apply all patterns to model code
             auto srch = it.first;
             auto repl = it.second;
             code_out = std::regex_replace(code_out, srch, repl);
             ++counter;
-            if (0 == counter % 100 || counter == patterns.size()) {
+            if (0 == counter % 100 || counter == 1 || counter == patterns.size()) {
                 // progress indicator if 100 or more patterns
                 theLog->logFormatted("   Pattern %d of %d", counter, patterns.size());
             }
@@ -143,7 +148,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
             // wait 1 second for close of om_developer_cpp to settle
             this_thread::sleep_for(chrono::milliseconds(1000));
             ofstream ofs(path, ios::out | ios::trunc | ios::binary);
-            // TODO error checking on file open
+            if (ofs.fail()) throw HelperException(LT("error : unable to open %s"), path);
             ofs << code_out;
             ofs.close();
         }

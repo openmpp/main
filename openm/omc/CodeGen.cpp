@@ -20,6 +20,20 @@ using namespace openm;
 
 void CodeGen::do_all()
 {
+    // count lines in om_developer.cpp for subsequent restoration of line count after #line directive
+
+    // The number of lines in om_developer_cpp stream before code generation
+    c_base_lines = 8;  // lines in boilerplate header
+    // The number of lines in om_definitions_cpp stream before code generation
+    d_base_lines = 8;  // lines in boilerplate header
+
+    for (auto& it : Symbol::source_files_line_count) {
+        // count of lines written by scanner for all scanned modules
+        d_base_lines += it.second;
+        // extra line written for each scanned module (not sure where that happens)
+        ++d_base_lines;
+    }
+
 	do_preamble();
 
 	do_types();
@@ -1302,6 +1316,13 @@ void CodeGen::do_entities()
 	    h += "";
 
         for ( auto func_member : entity->pp_functions ) {
+            // Destination of entity function definition can be either c (om_definitions.cpp) or d (om_developer.cpp)
+            /// CodeBlock destination of entity function definition
+            CodeBlock& cd = func_member->has_line_directive ? d : c;
+            /// Filename destination of entity function definition (must be consistent with reference cd above)
+            string& cd_fname = func_member->has_line_directive ? d_fname : c_fname;
+            /// Number of existing lines in stream (must be consistent with reference cd above)
+            int cd_base_lines = func_member->has_line_directive ? d_base_lines : c_base_lines;
             // MSVC in VS 2019/2022 crashes when optimization on with C1001 Internal compiler error
             // if the following functions are large.
             // Workaround is to disable optimization for these specific functions.
@@ -1310,24 +1331,25 @@ void CodeGen::do_entities()
                 || (func_member->name == "om_initialize_data_members");
             h += func_member->cxx_declaration_entity();
             if (msvc_workaround_needed) {
-                c += "#if defined (_MSC_VER)";
-                c += "\t// Workaround to MSVC internal compiler error C1001 (BEGIN)";
-                c += "\t#pragma optimize( \"\", off )";
-                c += "#endif";
+                cd += "#if defined (_MSC_VER)";
+                cd += "\t// Workaround to MSVC internal compiler error C1001 (BEGIN)";
+                cd += "\t#pragma optimize( \"\", off )";
+                cd += "#endif";
             }
-            c += func_member->cxx_definition_entity();
+            cd += func_member->cxx_definition_entity();
             if (msvc_workaround_needed) {
-                c += "#if defined (_MSC_VER)";
-                c += "\t// Workaround to MSVC internal compiler error C1001 (END)";
-                c += "\t#pragma optimize( \"\", on )";
-                c += "#endif";
+                cd += "#if defined (_MSC_VER)";
+                cd += "\t// Workaround to MSVC internal compiler error C1001 (END)";
+                cd += "\t#pragma optimize( \"\", on )";
+                cd += "#endif";
             }
             if (func_member->has_line_directive) {
-                c += 
+                // restoration of #line is a couple of lines late, but better late than never.
+                cd +=
                     (no_line_directives ? "//#line " : "#line ")
-                    + to_string(c.size() + 2 + 8) // additional 8 lines for subsequently inserted header
+                    + to_string(cd.size() + 2 + cd_base_lines) // additional 2 lines for ?
                     + " \""
-                    + c_fname
+                    + cd_fname
                     + "\"";
             }
         }
