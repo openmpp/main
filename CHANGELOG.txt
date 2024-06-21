@@ -1,6 +1,16 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-06-21: v1.17.3
+  c++ core: option index_errors validates array indices at runtime
+  go oms: add filters by value for output tables, parameters and microdata
+  UI: add filters by value for output tables and microdata
+  UI and go: allow to use any ini file to run the model
+  UI and go: user files (e.g. ini files) management on server: view, delete, upload, download.
+  UI and go oms: add bulk delete capabities
+  go dbget: first version of desktop user language detection for Windows, Linux, MacOS.
+  UI: start UI from UNC location on Windows
+
 2024-04-22: v1.17.2
   c++ core: new optional lifecycle attributes to probe events
   c++ core: new "untransformed" tables
