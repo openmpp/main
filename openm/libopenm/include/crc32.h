@@ -8,6 +8,7 @@
 #ifndef CRC32_H
 #define CRC32_H
 
+#include <cstdint>
 #include <string>
 #include <iomanip>
 #include <sstream>
