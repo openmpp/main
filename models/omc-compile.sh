@@ -38,7 +38,11 @@ fi
 #
 OMC_MODEL_DOC_OPTS=
 if [ -z "${MODEL_DOC_DISABLE}" ]; then
-  OMC_MODEL_DOC_OPTS="-Omc.ModelDoc true -Omc.ModelDevDoc true"
+
+  [ -z "${MODEL_INDOC_DIR}" ]  && MODEL_INDOC_DIR="doc"
+  [ -z "${MODEL_OUTDOC_DIR}" ] && MODEL_OUTDOC_DIR="${TARGET_BUILD_DIR}/doc"
+
+  OMC_MODEL_DOC_OPTS="-Omc.ModelDoc true -d ${MODEL_INDOC_DIR} -omc.OutDocDir ${MODEL_OUTDOC_DIR}"
 
   if [ ! -d "${MODEL_OUTDOC_DIR}" ]; then
     mkdir "${MODEL_OUTDOC_DIR}"
@@ -58,8 +62,6 @@ ${OMC_EXE} \
  ${OMC_FIXED_OPT} \
  ${OMC_NO_LINE_OPT} \
  ${OMC_CODE_PAGE_OPT} \
- ${OMC_MODEL_DOC_OPTS} \
- -d ${MODEL_INDOC_DIR} \
- -omc.OutDocDir ${MODEL_OUTDOC_DIR}
+ ${OMC_MODEL_DOC_OPTS}
 
 # done
