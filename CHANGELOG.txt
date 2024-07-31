@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-07-31: v1.17.4
+  c++ core: allow to model read parameters from TSV files
+  go dbget: export any or all model runs parameters and output tables into CSV or TSV
+  go dbget: export compatibility views model run parameters and output tables into CSV or TSV
+  UI: allow to use any CSV or TSV input parameters to run the model
+
 2024-06-21: v1.17.3
   c++ core: option index_errors validates array indices at runtime
   go oms: add filters by value for output tables, parameters and microdata
