@@ -70,7 +70,6 @@ IniFileReader::IniFileReader(const char * i_filePath, const char * i_codePageNam
 * @param[in]  i_filePath      path to ini-file.
 * @param[in]  is_noCase       if true then keys are case neutral, e.g. KEY = abc is the same as key = def
 * @param[in]  i_codePageName  name of encoding or Windows code page, ie: English_US.1252
-* @param[out] o_entryVec      return ini-file entries: (section, key, value)
 */
 const IniFileReader::IniEntryVec IniFileReader::load(const char * i_filePath, bool is_noCase, const char * i_codePageName)
 {
