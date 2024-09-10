@@ -490,17 +490,19 @@ void MetaLoader::parseParamSubOpts(void)
 
         // validate "SubFrom.", it must have value as one of: "db", "iota", "csv"
         if (isFromOpt) {
+
+            FromSub from = FromSub::defaultValue;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) from = FromSub::db;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) from = FromSub::iota;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) from = FromSub::csv;
+            if (from == FromSub::defaultValue)
+                throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
+                    optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
+
             for (const int pId : idArr) {
 
                 ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
-
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = FromSub::db;
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = FromSub::iota;
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) ps.from = FromSub::csv;
-
-                if (ps.from != FromSub::db && ps.from != FromSub::iota && ps.from != FromSub::csv)
-                    throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
-                        optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
+                ps.from = from;
             }
         }
 

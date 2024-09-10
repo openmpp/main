@@ -405,7 +405,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                     "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, value_digest)" \
                     " SELECT " + sRunId + ", parameter_hid, base_run_id, sub_count, value_digest" \
                     " FROM run_parameter"
-                    " WHERE run_id = " + to_string(nBaseRunId) +
+                    " WHERE run_id =" +
+                    " (" +
+                    " SELECT RP.base_run_id FROM run_parameter RP" +
+                    " WHERE RP.run_id = " + to_string(nBaseRunId) + " AND RP.parameter_hid = " + to_string(paramIt->paramHid) +
+                    " )" +
                     " AND parameter_hid = " + to_string(paramIt->paramHid)
                 );
             }
@@ -429,7 +433,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                     "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sColLst + " param_value)" +
                     " SELECT " + sRunId + ", " + subFlds + ", " + sColLst + " param_value" +
                     " FROM " + paramIt->dbRunTable +
-                    " WHERE run_id = " + to_string(nBaseRunId) +
+                    " WHERE run_id =" +
+                    " (" +
+                    " SELECT RP.base_run_id FROM run_parameter RP" +
+                    " WHERE RP.run_id = " + to_string(nBaseRunId) + " AND RP.parameter_hid = " + to_string(paramIt->paramHid) +
+                    " )" +
                     (!flt.empty() ? " AND " + flt : "")
                 );
                 isCheckSubCount = true;
