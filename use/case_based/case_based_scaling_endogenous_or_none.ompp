@@ -6,18 +6,24 @@
 // Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-// forward declarations of fmk variables
-namespace fmk {
-    extern long long all_cases;
-    extern thread_local long long member_cases;
-}
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
 
 parameters {
     //EN Disable population scaling
     bool DisablePopulationScaling;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
+
 //LABEL(DisablePopulationScaling,FR) Désamorcer la mise à l'échelle de la population
 
+// forward declarations of fmk variables
+namespace fmk {
+    extern long long all_cases;
+    extern thread_local long long member_cases;
+}
 
 /**
  * The population scaling factor to use for this member of the run.

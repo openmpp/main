@@ -8,7 +8,8 @@
     and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h" // For IDE
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
 #if 0 // Hide from IDE
 // The following modules will be compiled and assembled in this order
 // after all model-specific modules.
@@ -18,46 +19,3 @@ use "random/random_mt19937.ompp";
 use "time_based/time_based_common.ompp";
 use "time_based/time_based_scaling_none.ompp";
 #endif
-
-// process development model run options from model ini-file
-void ProcessDevelopmentOptions(const IRunOptions * const i_options)
-{
-/*
-Example of model ini-file with development model run options:
-
-[MyTest]
-ShowReport = yes                ; true if: "yes", "1", "true" or empty value, false if missing
-ReportStyle = readable          ; string option
-MinimumTime = 1234.56           ; double value, use as default: -inf
-LineCount = 4321                ; integer option
-EntityId = 1234567890123456789  ; long long integer
-SelectedNames = e1,e2,e3        ; comma separated list of event names
-
-Example of the code to get model run options from ini-file:
-
-    using namespace std;
-
-    bool isShowReport = i_options->boolOption("MyTest.ShowReport");
-    string rptStyle = i_options->strOption("MyTest.ReportStyle");
-    double minTime = i_options->doubleOption("MyTest.MinimumTime", -numeric_limits<double>::infinity());
-    int lineCount = i_options->intOption("MyTest.LineCount", 0);
-    long long entityId = i_options->longOption("MyTest.EntityId", 0);
-
-    // option is a list of comma separated names
-    list<string> evtList = openm::splitCsv(i_options->strOption("MyTest.SelectedNames"));
-
-    // if option is not specified at all
-    if (!i_options->isOptionExist("MyTest.ShowReport")) {
-        // do something
-    }
-
-    // get a copy of all model run options, including openM++ standard options
-    vector<pair<string, string>> allOpts = i_options->allOptions();
-
-    // each option is a pair of key and value
-    for (const auto & opt : allOpts) {
-        // string key = opt.first;
-        // string value = opt.second;
-    }
-*/
-}

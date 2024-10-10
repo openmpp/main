@@ -38,7 +38,7 @@ public:
         : Symbol(sym, decl_loc)
         , measures_position(0)
         , is_internal(false)
-        , is_suppressed(false)
+        , is_suppressed_table(false)
         , is_hidden(false)
         , measure_dimension(nullptr)
         , pp_table_id(-1)
@@ -50,7 +50,7 @@ public:
     void post_parse(int pass);
 
     /** Mark enumerations required for metadata support for this table. */
-    void post_parse_mark_enumerations(void);
+    void mark_enumerations_to_publish(void);
 
     CodeBlock cxx_declaration_global();
 
@@ -187,7 +187,7 @@ public:
      * A suppressed table is completely removed from the model, including all generated code,
      * eg injected code in call backs, any associated attributes, etc.
      */
-    bool is_suppressed;
+    bool is_suppressed_table;
 
     /**
      * True if the table is hidden

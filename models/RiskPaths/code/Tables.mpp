@@ -3,12 +3,10 @@
 ///////////////////////////////////////////////////////////////////////////
 
 /* NOTE(Tables, EN)
-	This module contains all table definitions of RiskPaths.
+    This module contains all table declarations of RiskPaths.
 */
 
-#if !defined(MODGEN) // Hide from Modgen for x-compatible models
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
-#endif
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
@@ -17,109 +15,109 @@
 
 partition AGE_FERTILEYEARS  //EN Fertile age partition
 {
-	15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 
-	33, 34, 35, 36, 37, 38,	39, 40  
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+    33, 34, 35, 36, 37, 38,    39, 40
 };
 
 ///////////////////////////////////////////////////////////////////////////
 // Tables
 
-table Person T01_LifeExpectancy				//EN Life Expectancy
+table Person T01_LifeExpectancy //EN Life Expectancy
 {
-	{
-		unit,								//EN Total simulated cases
-		duration(),							//EN Total duration
-		duration()/unit						//EN Life expectancy decimals=3
-	}
+    {
+        unit,            //EN Total simulated cases
+        duration(),      //EN Total duration
+        duration()/unit  //EN Life expectancy decimals=3
+    }
 };
 
-table Person T02_TotalPopulationByYear		//EN Life table
+table Person T02_TotalPopulationByYear //EN Life table
 {
-	//EN Age
-	integer_age *		
-	{
-		unit,								//EN Population start of year
-		duration()							//EN Average population in year
-	}
+    //EN Age
+    integer_age *
+    {
+        unit,       //EN Population start of year
+        duration()  //EN Average population in year
+    }
 };
 
 
-table Person T03_FertilityByAge	//EN Age-specific fertility  
+table Person T03_FertilityByAge //EN Age-specific fertility
 {
-	//EN Age
-	self_scheduling_split(age,AGE_FERTILEYEARS) *		
-	{
-		//EN First birth rate all women decimals=4
-		transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) / duration() ,	
+    //EN Age
+    self_scheduling_split(age,AGE_FERTILEYEARS) *
+    {
+        //EN First birth rate all women decimals=4
+        transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) / duration() ,
 
-		//EN First birth rate woman at risk decimals=4
-		transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) /duration(parity_status, PS_CHILDLESS)
-	}
+        //EN First birth rate woman at risk decimals=4
+        transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) /duration(parity_status, PS_CHILDLESS)
+    }
 };
 
 
 table Person T04_FertilityRatesByAgeGroup //EN Fertility rates by age group
 {
- 	{
-		transitions(parity_status, PS_CHILDLESS, PS_PREGNANT)
-		/ duration(parity_status, PS_CHILDLESS) 					//EN Fertility decimals=4
-	}
-	* self_scheduling_split(age, AGEINT_STATE)	//EN Age interval
-	* union_status								//EN Union Status
+    {
+        transitions(parity_status, PS_CHILDLESS, PS_PREGNANT)
+        / duration(parity_status, PS_CHILDLESS)                     //EN Fertility decimals=4
+    }
+    * self_scheduling_split(age, AGEINT_STATE) //EN Age interval
+    * union_status                             //EN Union Status
 };
 
-table Person T05_CohortFertility			//EN Cohort fertility 
+table Person T05_CohortFertility //EN Cohort fertility
 {
-	{
-		//EN Av. age at 1st pregnancy decimals=2
-		value_at_transitions(parity_status,PS_CHILDLESS,PS_PREGNANT,age)/
-			transitions(parity_status, PS_CHILDLESS, PS_PREGNANT),	
+    {
+        //EN Av. age at 1st pregnancy decimals=2
+        value_at_transitions(parity_status,PS_CHILDLESS,PS_PREGNANT,age)/
+            transitions(parity_status, PS_CHILDLESS, PS_PREGNANT),
 
-		//EN Childlessness decimals=4
-    	1 - transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) / unit,	
+        //EN Childlessness decimals=4
+        1 - transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) / unit,
 
-    	//EN Percent one child decimals=4
-		transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) / unit		
-	}
+        //EN Percent one child decimals=4
+        transitions(parity_status, PS_CHILDLESS, PS_PREGNANT) / unit
+    }
 };
 
-table Person T06_BirthsByUnion		//EN Pregnancies by union status & order
+table Person T06_BirthsByUnion //EN Pregnancies by union status & order
 [trigger_entrances(parity_status, PS_PREGNANT)]
 {
-	{
-		unit						//EN Number of pregnancies
-	}
-	*union_status+					//EN Union Status at pregnancy
+    {
+        unit       //EN Number of pregnancies
+    }
+    *union_status+ //EN Union Status at pregnancy
 };
 
-table Person T07_FirstUnionFormation		//EN First union formation 
-[parity_status == PS_CHILDLESS]				
+table Person T07_FirstUnionFormation //EN First union formation
+[parity_status == PS_CHILDLESS]
 {
-	//EN Age group 
-	self_scheduling_split(age, AGEINT_STATE) *		
-	{
-		//EN First union formation risk decimals=4
-		entrances(union_status, US_FIRST_UNION_PERIOD1) 
-		/ duration(union_status, US_NEVER_IN_UNION) 				
-	}
+    //EN Age group
+    self_scheduling_split(age, AGEINT_STATE) *
+    {
+        //EN First union formation risk decimals=4
+        entrances(union_status, US_FIRST_UNION_PERIOD1)
+        / duration(union_status, US_NEVER_IN_UNION)
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////
 // Table groups
 
-table_group TG01_Life_Tables		//EN Life tables 
+table_group TG01_Life_Tables //EN Life tables
 {
   T01_LifeExpectancy, T02_TotalPopulationByYear
 };
 
-table_group TG02_Birth_Tables		//EN Fertility 
+table_group TG02_Birth_Tables //EN Fertility
 {
-	T03_FertilityByAge, T04_FertilityRatesByAgeGroup, T05_CohortFertility 
+    T03_FertilityByAge, T04_FertilityRatesByAgeGroup, T05_CohortFertility
 };
 
-table_group TG03_Union_Tables		//EN Unions 
+table_group TG03_Union_Tables //EN Unions
 {
-	T06_BirthsByUnion, T07_FirstUnionFormation
+    T06_BirthsByUnion, T07_FirstUnionFormation
 };
 
 #endif // Hide non-C++ syntactic island from IDE

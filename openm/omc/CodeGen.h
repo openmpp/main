@@ -23,18 +23,24 @@ public:
         ofstream *oat1_arg,
         ofstream *oah_arg,
         ofstream *oac_arg,
+        ofstream *oad_arg,
         ofstream *oaz_arg,
         CodeBlock & missing_dat,
         const openm::IModelBuilder * i_builder,
         bool no_line_directives,
         string c_fname,
-        openm::MetaModelHolder & io_metaRows 
+        string d_fname,
+        openm::MetaModelHolder & io_metaRows
         )
         : oat0(oat0_arg)
         , oat1(oat1_arg)
         , oah(oah_arg)
         , oac(oac_arg)
         , c_fname(c_fname)
+        , c_base_lines(0)
+        , oad(oad_arg)
+        , d_fname(d_fname)
+        , d_base_lines(0)
         , oaz(oaz_arg)
         , m(missing_dat)
         , no_line_directives(no_line_directives)
@@ -78,6 +84,7 @@ public:
     void do_ParameterNameSize(void);
     void do_EntityNameSize(void);
     void do_EventIdName(void);
+    void do_missing_global_funcs(void);
 
     /**
      * CodeBlock for om_types0.h.
@@ -104,7 +111,7 @@ public:
     ofstream *oah;
 
     /**
-     * CodeBlock for om_fixed_parms.cpp.
+     * CodeBlock for for om_definitions.cpp.
      */
     CodeBlock c;
 
@@ -113,6 +120,23 @@ public:
 
     /** full name of om_definitions.cpp */
     string c_fname;
+
+    /** The number of lines in om_developer_cpp stream before code generation */
+    int c_base_lines;
+
+    /**
+     * CodeBlock for for om_developer.cpp.
+     */
+    CodeBlock d;
+
+    /** output stream for om_developer.cpp */
+    ofstream* oad;
+
+    /** full name of om_developer.cpp */
+    string d_fname;
+
+    /** The number of lines in om_definitions_cpp stream before code generation */
+    int d_base_lines;
 
     /**
      * CodeBlock for om_initializers.cpp.

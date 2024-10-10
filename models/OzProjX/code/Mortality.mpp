@@ -1,0 +1,90 @@
+//LABEL(Mortality, EN) Module for mortality
+
+/* NOTE(Mortality, EN)
+	This module implements all mortality-related functionality.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+range RANGE_AGE_101 //EN Age
+{ 0, 101 };
+
+parameters 
+{
+  //EN Mortality rate (qx)
+  double MortalityRate[SEX][RANGE_AGE_101][YEAR];
+
+  //EN Annual hazard of death
+	model_generated double MortalityHazard[SEX][RANGE_AGE][YEAR];
+  /* NOTE(MortalityHazard, EN)
+    The hazard of death \(h_{x}\) is calculated from the mortality rate \(q_{x}\)
+    using the formula
+    \(h_{x}=-\ln(1-q_{x})\).
+  */
+};
+
+actor Person
+{
+  event timeMortalityEvent, MortalityEvent;	//EN Mortality event
+};
+
+table Person DeathsByAgeSex //EN Deaths by age and sex
+[!alive]
+{
+  {
+    unit
+  }
+  *range_age +
+  *sex +
+};
+
+table Person PersonYearsLived //EN Person-years lived by sex, age and year
+{
+  {
+    duration()
+  }
+  *sex +
+  *range_age +
+  *mid_year
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+void Mortality_PreSimulation(void) //EN Compute derived parameters related to mortality.
+{
+  for (int nS = 0; nS < SIZE(SEX); nS++ ) {
+    for (int nA = 0; nA < SIZE(RANGE_AGE); nA++ ) {
+      for (int nY = 0; nY < SIZE(YEAR); nY++ ) {
+        double dRate = MortalityRate[nS][nA][nY];
+        double dHazard = - log( 1 - dRate );
+        MortalityHazard[nS][nA][nY] = dHazard; 
+      }
+    }
+  }
+}
+
+/*NOTE(Person.MortalityEvent, EN)
+	This event implements a constant hazard of death.
+*/
+
+// The time function of MortalityEvent
+TIME Person::timeMortalityEvent()
+{
+	TIME tEventTime = TIME_INFINITE;
+
+  int nYearIndex = RANGE_POS(YEAR, mid_year);
+  tEventTime = WAIT( - TIME( log( RandUniform(1) ) / MortalityHazard[sex][range_age][nYearIndex] ) );
+
+	return tEventTime;
+}
+
+// The implement function of MortalityEvent
+void Person::MortalityEvent()
+{
+	alive = FALSE;
+
+	// Remove the actor from the simulation.
+	Finish();
+}

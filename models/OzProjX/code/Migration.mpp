@@ -1,0 +1,139 @@
+//LABEL(Migration, EN) Module for internal migration
+
+/* NOTE(Migration, EN)
+This module implements all functionality related to internal migration
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters
+{
+  //EN Out migration rate
+  double OutMigrationRate[SEX][RANGE_AGE_85][REGION];
+  /*NOTE(OutMigrationRate, EN)
+    Out-migration rate.
+    Year dimension is mid-year.
+  */
+
+  //EN Destination distribution for internal migrants
+  cumrate[1] DestinationDist[REGION][REGION];
+};
+
+//
+// Migration clock event
+// 
+
+actor Person {
+  //EN Time of next migration clock event
+  TIME next_migration_clock_gong = { TIME_INFINITE };
+
+  //EN Initialize the migration clock
+  void StartMigrationClock();
+
+  event timeMigrationClockEvent, MigrationClockEvent; //EN Annual migration clock
+
+  hook StartMigrationClock, Start;
+};
+
+//
+// Migration event
+// 
+
+actor Person {
+  //EN Time of next migration event
+  TIME next_migration_time = { TIME_INFINITE };
+
+  //EN Schedule the migration event
+  void ScheduleMigrationEvent();
+
+  //EN Compute migration probability
+  double MigrationProbability();
+
+  event timeMigrationEvent, MigrationEvent; //EN Migration event
+};
+
+//LABEL(Person.MigrationEvent, FR) Évènement de migration
+/*NOTE(Person.MigrationEvent, EN)
+  Migration data is based on location at two moments in time,
+  one year apart.
+  So, the data does observes migration behaviour at a coarseness of one year.
+  This coarseness is deliberately reproduced in this model for consistency
+  with the source data, by restricting migration events to at most one
+  per year of calendar time.
+  Migration is implemented by two events which work together,
+  MigrationEvent and MigrationClockEvent.
+*/
+
+table Person MigrantsByOriginAndDestination //EN Migrants by origin and destination
+{
+  mid_year +
+  *region //EN Region (from)
+  * {
+    entrances(region, REG_NSW), //EN NSW
+    entrances(region, REG_VIC), //EN VIC
+    entrances(region, REG_QLD), //EN QLD
+    entrances(region, REG_SA),  //EN SA
+    entrances(region, REG_WA),  //EN WA
+    entrances(region, REG_TAS), //EN TAS
+    entrances(region, REG_NT),  //EN NT
+    entrances(region, REG_ACT)  //EN ACT
+  } //EN Region (to)
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+void Person::StartMigrationClock()
+{
+  // First occurrence of migration clock event is when Person entity enters the simulation.
+  next_migration_clock_gong = time;
+}
+
+// The time function of MigrationClockEvent
+TIME Person::timeMigrationClockEvent()
+{
+  return next_migration_clock_gong;
+}
+
+// The implement function of MigrationClockEvent
+void Person::MigrationClockEvent()
+{
+  next_migration_clock_gong += 1.0;
+  ScheduleMigrationEvent();
+}
+
+void Person::ScheduleMigrationEvent()
+{
+  double dProb = MigrationProbability();
+  double dHazard = - log( 1 - dProb );
+  double dDelta_t = - log( RandUniform(12) ) / dHazard;
+  if ( dDelta_t < 1.0 ) {
+    next_migration_time = time + dDelta_t;
+  }
+  else {
+    next_migration_time = TIME_INFINITE;
+  }
+}
+
+double Person::MigrationProbability()
+{
+  double dRate = OutMigrationRate[sex][range_age_85][region];
+  return dRate;
+}
+
+// The time function of MigrationEvent
+TIME Person::timeMigrationEvent()
+{
+  return next_migration_time;
+}
+
+// The implement function of MigrationEvent
+void Person::MigrationEvent()
+{
+  next_migration_time = TIME_INFINITE;
+
+  int nRegion = 0;
+  Lookup_DestinationDist(RandUniform(13), region, &nRegion);
+  region = (REGION) nRegion;
+}

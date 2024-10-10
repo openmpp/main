@@ -19,16 +19,8 @@ void EntityFuncSymbol::post_parse(int pass)
     switch (pass) {
     case eCreateMissingSymbols:
     {
-        // Allow model code to override generated member function body for specific member functions
-        if (name == "get_entity_key" || name == "get_microdata_key") {
-            auto search = function_defn_loc.find(unique_name);
-            if (search != function_defn_loc.end()) {
-                suppress_defn = true;
-            }
-        }
-
         // Process early to handle possible missing symbol creation
-        if (suppress_defn) {
+        if (suppress_defn && !suppress_decl) {
             // Is a developer-supplied entity member function.
 
             // Note the definition location
@@ -129,6 +121,26 @@ void EntityFuncSymbol::post_parse(int pass)
     {
         // Add this entity function to the entity's list of entity functions
         pp_entity->pp_functions.push_back(this);
+
+        // Add this entity function to xref of this identifier
+        for (auto& identifier : body_identifiers) {
+            if (auto s = get_symbol(identifier)) {
+                // identifier is a global symbol
+                s->pp_entity_funcs_using.insert(this);
+            }
+            if (identifier.find("Lookup_") == 0) {
+                // name of parameter used as lookup (discrete distribution)
+                string param_name = identifier.substr(7);
+                if (auto s = get_symbol(param_name)) {
+                    // identifier is a parameter
+                    s->pp_entity_funcs_using.insert(this);
+                }
+            }
+            if (auto s = get_symbol(identifier, pp_entity)) {
+                // identifier is an entity symbol
+                s->pp_entity_funcs_using.insert(this);
+            }
+        }
         break;
     }
     default:
@@ -143,7 +155,7 @@ CodeBlock EntityFuncSymbol::cxx_declaration_entity()
 
     // Perform operations specific to this level in the Symbol hierarchy.
 
-    if (suppress_code_if_empty && empty()) {
+    if (suppress_decl || (suppress_code_if_empty && empty())) {
         // Suppress declaration
         return CodeBlock();
     }

@@ -21,9 +21,13 @@
 #include "ConstantSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
+#include "omc_file.h" // for LTA support
+
 
 using namespace std;
 using namespace openm;
+using namespace omc; // for LTA support
+
 
 void ParameterSymbol::post_parse(int pass)
 {
@@ -39,13 +43,14 @@ void ParameterSymbol::post_parse(int pass)
             
             // construct the argument list
             string args = "double uniform";
-            int rank = enumeration_list.size();
-            int conditional_dims = rank - cumrate_dims;
-            int lookup_dims = cumrate_dims;
-            for (int j = 0; j < conditional_dims; j++) {
+            size_t rank = enumeration_list.size();
+            assert(rank >= cumrate_dims);
+            size_t conditional_dims = (rank >= cumrate_dims) ? (rank - cumrate_dims) : size_t(0);
+            size_t lookup_dims = cumrate_dims;
+            for (size_t j = 0; j < conditional_dims; j++) {
                 args += ", int cond" + to_string(j);
             }
-            for (int j = 0; j < lookup_dims; j++) {
+            for (size_t j = 0; j < lookup_dims; j++) {
                 args += ", int * draw" + to_string(j);
             }
 
@@ -59,19 +64,20 @@ void ParameterSymbol::post_parse(int pass)
     case eAssignLabel:
     {
         // Create default values for parameter value note for all languages
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             pp_value_notes.push_back("");
         }
 
         // Check for a value note specified using NOTE comment, for each language
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            string key = unique_name + "," + lang_sym->name;
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
+            string key = unique_name + "," + lang;
             auto search = notes_input.find(key);
             if (search != notes_input.end()) {
                 auto text = (search->second).first;
                 auto loc = (search->second).second;
-                pp_value_notes[j] = text;
+                pp_value_notes[lang_index] = text;
             }
         }
         break;
@@ -110,7 +116,7 @@ void ParameterSymbol::post_parse(int pass)
             // Mark derived parameter as suppressed (if published as table)
             // Those which are retained will be changed back in a subsequent pass.
             if (is_derived()) {
-                is_suppressed = true;
+                is_suppressed_table = true;
             }
         }
         if (any_show) { // model contains a show statement
@@ -122,6 +128,17 @@ void ParameterSymbol::post_parse(int pass)
     }
     case ePopulateCollections:
     {
+        // Modify content of value NOTE
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            string& note = pp_value_notes[lang_index];
+            if (note.length() > 0) {
+                if (Symbol::option_convert_modgen_note_syntax) {
+                    note = Symbol::note_modgen_to_markdown(note);
+                }
+                note = Symbol::note_expand_embeds(lang_index, note);
+            }
+        }
         // validate dimension list
         // and populate the post-parse version
         for (auto psym : enumeration_list) {
@@ -222,7 +239,7 @@ void ParameterSymbol::post_parse(int pass)
             c += "distribution_index = " + cumrate_name() + ".draw(conditioning_index, uniform);";
             c += "}";
             c += "// Calculate values of distribution dimensions";
-            int distr_index = distribution_dims() - 1;
+            int distr_index = (int)distribution_dims() - 1;
             // reverse iterate through the distribution shape
             for (auto it = pp_distribution_shape.rbegin(); it != pp_distribution_shape.rend(); ++it) {
                 if (distr_index > 0) {
@@ -247,12 +264,10 @@ void ParameterSymbol::post_parse(int pass)
 }
 
 // Mark enumerations required for metadata support for this parameter
-void ParameterSymbol::post_parse_mark_enumerations(void)
+void ParameterSymbol::mark_enumerations_to_publish(void)
 {
     // Mark enumerations required for metadata support for this parameter
-    // Note that .csv or .tsv parameters are not detected until late, so may be marked as missing_parameters
-    // so publish meta data for their enumerations.
-    if (source == scenario_parameter || source == missing_parameter || publish_as_table) {
+    if (is_published()) {
         // The storage type if an enumeration
         if (pp_datatype->is_enumeration()) {
             auto es = dynamic_cast<EnumerationSymbol *>(pp_datatype);
@@ -500,7 +515,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
         if (rank() >= 1) {
             // number of values per line is size of trailing dimension
             auto es = pp_enumeration_list.back();
-            values_per_line = es->pp_size();
+            values_per_line = (int)es->pp_size();
         }
         c += "{";
         if (haz1rate) {
@@ -539,7 +554,7 @@ CodeBlock ParameterSymbol::cxx_initializer()
             // TODO
             string s_value = "QNAN_D";
             //(pp_datatype->is_floating());
-            int unspecified_count = size() - initializer_list.size();
+            int unspecified_count = (int)size() - (int)initializer_list.size();
             for (int k = 0; k < unspecified_count; ++k) {
                 // output line if values per line limit has been reached
                 if (values_in_line == values_per_line) {
@@ -598,8 +613,8 @@ void ParameterSymbol::validate_initializer()
         }
         if (is_extendable) {
             // check that last slice of initializer is complete
-            int first_dim_size = pp_shape.front();
-            int slice_size = size() / first_dim_size;
+            size_t first_dim_size = pp_shape.front();
+            size_t slice_size = size() / first_dim_size;
             if (0 != (lst.size() % slice_size)) {
                 pp_error(redecl_loc, LT("error : initializer for extendable parameter '") + name + LT("' has size ") + to_string(lst.size()) + LT(", last slice incomplete"));
             }
@@ -638,7 +653,7 @@ pair< int, list<string> > ParameterSymbol::initializer_for_storage(int i_sub_ind
     }
     if (is_extendable) {
         // if an extendable parameter has unspecified trailing values, append NULL's
-        int unspecified_count = size() - slIt->second.size();
+        int unspecified_count = (int)size() - (int)slIt->second.size();
         for (int k = 0; k < unspecified_count; ++k) {
             values.push_back("NULL");
         }
@@ -683,9 +698,9 @@ CodeBlock ParameterSymbol::dat_definition() const
 void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 {
     // Only external (scenario) parameters, or parameters echoed as tables, have metadata
-    if (source != ParameterSymbol::parameter_source::scenario_parameter && !publish_as_table) {
+    if (!is_published()) {
         // returning before traversing possible higher levels of the hierarchical calling chain 
-        // ensures those higher levela are not called for this instance.
+        // ensures those higher levela are not called for this Symbol.
         return;
     }
 
@@ -703,7 +718,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         paramDic.paramId = pp_parameter_id;
         paramDic.paramName = name;  // must be valid database view name, if we want to use compatibility views
-        paramDic.rank = rank();
+        paramDic.rank = (int)rank();
         paramDic.typeId = pp_datatype->type_id;
         paramDic.isExtendable = is_extendable;
         paramDic.isHidden = is_hidden;
@@ -711,12 +726,13 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.paramDic.push_back(paramDic);
 
         // label and note for the parameter
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             ParamDicTxtLangRow paramTxt;
             paramTxt.paramId = pp_parameter_id;
-            paramTxt.langCode = lang->name;
-            paramTxt.descr = label(*lang);
-            paramTxt.note = note(*lang);
+            paramTxt.langCode = lang;
+            paramTxt.descr = label(*langSym);
+            paramTxt.note = note(*langSym);
             metaRows.paramTxt.push_back(paramTxt);
         }
 
@@ -740,20 +756,21 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.paramDims.push_back(paramDims);
 
             // Labels and notes for the dimensions of the parameter
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
 
                 ParamDimsTxtLangRow paramDimsTxt;
 
                 paramDimsTxt.paramId = pp_parameter_id;
                 paramDimsTxt.dimId = dim->index;
-                paramDimsTxt.langCode = lang->name;
-                paramDimsTxt.descr = dim->label(*lang);
-                paramDimsTxt.note = dim->note(*lang);
+                paramDimsTxt.langCode = lang;
+                paramDimsTxt.descr = dim->label(*langSym);
+                paramDimsTxt.note = dim->note(*langSym);
                 metaRows.paramDimsTxt.push_back(paramDimsTxt);
             }
         }
     }
-    else if (publish_as_table && !is_suppressed) {
+    else if (metadata_as_table && !is_suppressed_table) {
         // This is a derived parameter which has been marked for export as a table
         // by a parameters_to_tables statement in model code.
 
@@ -773,21 +790,22 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
 
         tableDic.tableId = pp_parameter_to_table_id;
         tableDic.tableName = name; // name of derived parameter is used for name of table
-        tableDic.rank = rank();
+        tableDic.rank = (int)rank();
         tableDic.isSparse = true;           // do not store zeroes
         tableDic.exprPos = -1;              // before all classificatory dimensions
         tableDic.isHidden = is_hidden;
         metaRows.tableDic.push_back(tableDic);
 
         // Labels and notes for the table
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
 
             TableDicTxtLangRow tableTxt;
 
             tableTxt.tableId = pp_parameter_to_table_id;
-            tableTxt.langCode = lang->name;
-            tableTxt.descr = label(*lang);
-            tableTxt.note = note(*lang);
+            tableTxt.langCode = lang;
+            tableTxt.descr = label(*langSym);
+            tableTxt.note = note(*langSym);
             tableTxt.exprDescr = "value";
             tableTxt.exprNote = "";
             metaRows.tableTxt.push_back(tableTxt);
@@ -810,19 +828,20 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             tableDims.name = dim->short_name;     // Default is dim0, dim1, but can be named in model using =>
             tableDims.typeId = es->type_id;
             tableDims.isTotal = dim->has_margin;
-            tableDims.dimSize = es->pp_size() + dim->has_margin;
+            tableDims.dimSize = (int)(es->pp_size() + dim->has_margin);
             metaRows.tableDims.push_back(tableDims);
 
             // Labels and notes for the dimensions of the table
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
 
                 TableDimsTxtLangRow tableDimsTxt;
 
                 tableDimsTxt.tableId = pp_parameter_to_table_id;
                 tableDimsTxt.dimId = dim->index;
-                tableDimsTxt.langCode = lang->name;
-                tableDimsTxt.descr = dim->label(*lang);
-                tableDimsTxt.note = dim->note(*lang);
+                tableDimsTxt.langCode = lang;
+                tableDimsTxt.descr = dim->label(*langSym);
+                tableDimsTxt.note = dim->note(*langSym);
                 metaRows.tableDimsTxt.push_back(tableDimsTxt);
             }
         }
@@ -838,11 +857,12 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.tableAcc.push_back(tableAcc);
 
             // Labels and notes for accumulators
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 TableAccTxtLangRow tableAccTxt;
                 tableAccTxt.tableId = pp_parameter_to_table_id;
                 tableAccTxt.accId = 0;
-                tableAccTxt.langCode = lang->name;
+                tableAccTxt.langCode = lang;
                 tableAccTxt.descr = "value";
                 tableAccTxt.note = "";
                 metaRows.tableAccTxt.push_back(tableAccTxt);
@@ -870,16 +890,20 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             metaRows.tableExpr.push_back(tableExpr);
 
             // Labels and notes for measures
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 TableExprTxtLangRow tableExprTxt;
                 tableExprTxt.tableId = pp_parameter_to_table_id;
                 tableExprTxt.exprId = 0;
-                tableExprTxt.langCode = lang->name;
-                tableExprTxt.descr = "value";
+                tableExprTxt.langCode = lang;
+                tableExprTxt.descr = LTA(lang,"Value");
                 tableExprTxt.note = "";
                 metaRows.tableExprTxt.push_back(tableExprTxt);
             }
         }
+    }
+    else {
+        assert(false); // logic guarantee
     }
 }
 

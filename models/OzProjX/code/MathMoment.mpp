@@ -1,0 +1,89 @@
+//LABEL(MathMoment, EN) Module for recreational math moment
+
+/* NOTE(MathMoment, EN)
+This module implements the optional MathMomentEvent whose real purpose
+is to control computational load in scalability experiments.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters 
+{
+  //EN Math Moment hazard
+  double MathMomentHazard;
+
+  //EN The number of primes to calculate in a math moment
+  int MathMomentPrimesToCalculate;
+};
+/*NOTE(MathMomentPrimesToCalculate, EN)
+The number of primes for Person to find, starting at 2, in each math moment session.
+*/
+
+actor Person
+{
+    int math_moments = { 0 }; //EN Math moments
+	int primes_found = { 0 }; //EN Number of primes found
+	event timeMathMomentEvent, MathMomentEvent; //EN Math moment event
+
+	logical is_prime(int n); //EN true if n is aprime
+};
+
+table Person MathMoments //EN Math moments
+{
+  {
+    math_moments, //EN Math moments
+	primes_found  //EN Primes found in math moments
+  }
+};
+//NAME MathMoments.Dim0 Quantities
+//NAME MathMoments.Expr0 math_moments
+//NAME MathMoments.Expr1 primes_found
+
+#endif // Hide non-C++ syntactic island from IDE
+
+logical Person::is_prime(int n)
+{
+	if (n == 1 || n == 0) {
+		return false;
+	}
+	for (int i = 2; i < n; i++) {
+		if (n % i == 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/*NOTE(Person.MathMomentEvent, EN)
+	This event implements a recreational math moment.
+*/
+
+// The time function of MathMomentEvent
+TIME Person::timeMathMomentEvent()
+{
+	TIME result = TIME_INFINITE;
+
+	if (MathMomentHazard > 0) {
+		result = WAIT(-TIME(log(RandUniform(14)) / MathMomentHazard));
+	}
+
+	return result;
+}
+
+// The implement function of MortalityEvent
+void Person::MathMomentEvent()
+{
+	math_moments++;
+
+	int current_session_primes_found = 0;
+	int current_number = 2;
+	while (current_session_primes_found < MathMomentPrimesToCalculate) {
+		if (is_prime(current_number)) {
+			current_session_primes_found++;
+		}
+		current_number++;
+	}
+	primes_found += current_session_primes_found;
+}

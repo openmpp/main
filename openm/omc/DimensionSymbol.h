@@ -125,7 +125,7 @@ public:
     /**
      * The attribute for the dimension
      * 
-     * Only valid post-parse, and only for entity tables.
+     * Only valid post-parse, and only for entity tables or entity sets.
      */
     AttributeSymbol* pp_attribute;
 

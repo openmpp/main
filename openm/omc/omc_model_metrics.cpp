@@ -66,7 +66,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
 
     {
         // block for CODE INPUT table
-        int mpp_source_files_count = Symbol::mpp_source_files.size();
+        int mpp_source_files_count = (int)Symbol::mpp_source_files.size();
         int mpp_source_files_lines = 0;
         int mpp_source_files_island_lines = 0;
         for (auto& s : Symbol::mpp_source_files) {
@@ -85,7 +85,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         }
         int mpp_source_files_cpp_lines = mpp_source_files_lines - mpp_source_files_island_lines;
 
-        int use_source_files_count = Symbol::use_source_files.size();
+        int use_source_files_count = (int)Symbol::use_source_files.size();
         int use_source_files_lines = 0;
         int use_source_files_island_lines = 0;
         for (auto& s : Symbol::use_source_files) {
@@ -133,8 +133,8 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
 
     {
         // block for CODE OUTPUT table
-        int decl_cpp_lines = cg.h.size() + cg.t0.size() + cg.t1.size();;
-        int defn_cpp_lines = cg.c.size();
+        int decl_cpp_lines = (int)(cg.h.size() + cg.t0.size() + cg.t1.size());
+        int defn_cpp_lines = (int)(cg.c.size());
         int total_cpp_lines = decl_cpp_lines + defn_cpp_lines;
 
         if (false) { // not used currnetly, but code kept in case used later
@@ -183,22 +183,22 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             if (p->source == ParameterSymbol::parameter_source::scenario_parameter) {
                 if (p->is_hidden) {
                     ++hidden_count;
-                    hidden_cells += p->size();
+                    hidden_cells += (int)p->size();
 
                 }
                 else {
                     ++visible_count;
-                    visible_cells += p->size();
+                    visible_cells += (int)p->size();
 
                 }
             }
             else if (p->is_derived()) {
                 ++derived_count;
-                derived_cells += p->size();
+                derived_cells += (int)p->size();
             }
             else {
                 ++fixed_count;
-                fixed_cells += p->size();
+                fixed_cells += (int)p->size();
             }
         }
         int all_count = visible_count + hidden_count + derived_count + fixed_count;
@@ -234,23 +234,23 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
             if (t->is_entity_table()) {
                 if (t->is_hidden) {
                     ++entity_hidden_count;
-                    entity_hidden_cells += t->cell_count() * t->measure_count();
+                    entity_hidden_cells += (int)(t->cell_count() * t->measure_count());
 
                 }
                 else {
                     ++entity_visible_count;
-                    entity_visible_cells += t->cell_count() * t->measure_count();
+                    entity_visible_cells += (int)(t->cell_count() * t->measure_count());
                 }
             }
             else { // is a derived table
                 if (t->is_hidden) {
                     ++derived_hidden_count;
-                    derived_hidden_cells += t->cell_count() * t->measure_count();
+                    derived_hidden_cells += (int)(t->cell_count() * t->measure_count());
 
                 }
                 else {
                     ++derived_visible_count;
-                    derived_visible_cells += t->cell_count() * t->measure_count();
+                    derived_visible_cells += (int)(t->cell_count() * t->measure_count());
                 }
             }
         }
@@ -291,10 +291,10 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int language_count = 0;
         int language_labels = 0;
         int language_notes = 0;
-        for (auto& s : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             ++language_count;
-            language_labels += s->is_label_supplied();
-            language_notes += s->is_note_supplied();
+            language_labels += langSym->is_label_supplied();
+            language_notes += langSym->is_note_supplied();
         }
 
         int classification_count = 0;
@@ -518,7 +518,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 entity_function_notes += f->is_note_supplied();
             }
 
-            entity_rng_count += e->pp_rng_streams.size();
+            entity_rng_count += (int)e->pp_rng_streams.size();
 
             for (auto& s : e->pp_data_members) {
                 ++entity_data_member_count;
@@ -714,10 +714,10 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int language_count = 0;
         int language_labels = 0;
         int language_notes = 0;
-        for (auto& s : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
             ++language_count;
-            language_labels += s->is_label_supplied();
-            language_notes += s->is_note_supplied();
+            language_labels += langSym->is_label_supplied();
+            language_notes += langSym->is_note_supplied();
         }
 
         int classification_count = 0;
@@ -768,7 +768,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
         int parameter_dimension_labels = 0;
         int parameter_dimension_notes = 0;
         for (auto& s : Symbol::pp_all_parameters) {
-            if (s->source != ParameterSymbol::parameter_source::scenario_parameter && !s->publish_as_table) {
+            if (s->source != ParameterSymbol::parameter_source::scenario_parameter && !s->metadata_as_table) {
                 // skip parameters which are not published
                 continue;
             }
@@ -946,7 +946,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 else if (m->is_maintained_attribute()) {
                     auto ma = dynamic_cast<MaintainedAttributeSymbol*>(m);
                     assert(ma); // logic guarantee
-                    auto deps = ma->pp_dependent_attributes.size();
+                    auto deps = (int)ma->pp_dependent_attributes.size();
                     attribute_dependency_count += deps;
                     if (ma->is_identity()) {
                         identity_attribute_dependency_count += deps;
@@ -963,13 +963,13 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
                 }
             }
             for (auto& t : e->pp_tables) {
-                table_dependency_count += t->dimension_count() + (t->filter != nullptr);
+                table_dependency_count += (int)t->dimension_count() + (t->filter != nullptr);
             }
             for (auto& s : e->pp_sets) {
-                set_dependency_count += s->dimension_count() + (s->filter != nullptr) + (s->pp_order_attribute != nullptr);
+                set_dependency_count += (int)s->dimension_count() + (s->filter != nullptr) + (s->pp_order_attribute != nullptr);
             }
             for (auto& evt : e->pp_events) {
-                event_dependency_count += evt->pp_attribute_dependencies.size() + evt->pp_linked_attribute_dependencies.size();
+                event_dependency_count += (int)evt->pp_attribute_dependencies.size() + (int)evt->pp_linked_attribute_dependencies.size();
             }
         }
         all_dependency_count = link_dependency_count + attribute_dependency_count + table_dependency_count + set_dependency_count + event_dependency_count;

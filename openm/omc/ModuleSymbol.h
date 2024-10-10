@@ -33,7 +33,49 @@ public:
     */
     ModuleSymbol(string nm)
         : Symbol(nm)
+        , provenance(unknown)
     {
     }
+
+    void post_parse(int pass);
+
+    /**
+     * Enumeration indicating provenance of module
+     */
+    enum module_provenance {
+        ///< unknown
+        unknown,
+        ///< Model source code in MODEL/code
+        from_code,
+        ///< Use source code module in OM_ROOT/use
+        from_use,
+        ///< Parameter value file in MODEL/parameters
+        from_dat
+    };
+
+    bool is_code(void) const
+    {
+        return (provenance == from_code);
+    }
+
+    bool is_use(void) const
+    {
+        return (provenance == from_use);
+    }
+
+    bool is_dat(void) const
+    {
+        return (provenance == from_dat);
+    }
+
+    /**
+     * Provenance of the module.
+     */
+    module_provenance provenance;
+
+    /**
+     * Symbols declared in this module.
+     */
+    list<Symbol *> pp_symbols_declared;
 };
 

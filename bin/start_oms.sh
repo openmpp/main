@@ -26,7 +26,7 @@ fi
 
 # set openM++ root folder 
 #
-self=$(basename $0)
+self=$(basename "$0")
 
 if [ -z "$OM_ROOT" ] ;
 then
@@ -41,20 +41,23 @@ then
 
 fi
 
-[ "$OM_ROOT" != "$PWD" ] && pushd $OM_ROOT
+[ "$OM_ROOT" != "$PWD" ] && pushd "$OM_ROOT"
 
 # allow to use $MODEL_NAME.ini file in UI for model run
 #
+[ -z "$OM_CFG_TYPE_MAX_LEN" ] && OM_CFG_TYPE_MAX_LEN=366
+
 export OM_CFG_INI_ALLOW=true
 export OM_CFG_INI_ANY_KEY=true
+export OM_CFG_TYPE_MAX_LEN
 
 # start oms web-service
 #
 [ -z "$OMS_PORT" ] && OMS_PORT=4040
 
-echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest"
+echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.DiskUsage -oms.LogRequest"
 
-OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
+OM_ROOT="$OM_ROOT" ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.DiskUsage -oms.LogRequest
 status=$?
 
 if [ $status -ne 0 ] ;

@@ -82,16 +82,16 @@ namespace openm
         /** SQLite database file is: directory/of/model/exe/ModelName.sqlite */
         static constexpr const char * dbFromBin = "OpenM.SqliteFromBin";
 
-        /** use sparse output tables */
+        /** OBSOLETE, for backward compatibility only. use sparse output tables */
         static constexpr const char * useSparse = "OpenM.SparseOutput";
 
-        /** sparse null value */
+        /** OBSOLETE, for backward compatibility only. sparse null value */
         static constexpr const char * sparseNull = "OpenM.SparseNullValue";
 
         /** convert to string format for float, double, long double */
         static constexpr const char * doubleFormat = "OpenM.DoubleFormat";
 
-        /** dir/to/read/input/parameter.csv */
+        /** dir/to/read/input/parameter.csv, it can be any of: .csv .tsv .id.csv .id.tsv file. */
         static constexpr const char * paramDir = "OpenM.ParamDir";
 
         /** if true then parameter(s) csv file(s) contain enum id's, default: enum code */
@@ -220,7 +220,7 @@ namespace openm
         /** sub-value of parameter created as integer from 0 to sub-value count */
         static constexpr const char * iotaSubValue = "iota";
 
-        /** all parameter sub-values must be in parameter.csv file */
+        /** all parameter sub-values must be in parameter csv file */
         static constexpr const char * csvSubValue = "csv";
 
         /** default value for any option */

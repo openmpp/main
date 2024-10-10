@@ -1,0 +1,27 @@
+// Copyright (c) 2013-2022 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(ompp_framework, EN) OpenM++ simulation framework
+
+/* NOTE(ompp_framework, EN)
+    This module specifies the simulation framework.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+use "common.ompp";                              // Required
+use "random/random_lcg41.ompp";                 // Stream RNGs use 41 linear congruential generators (Modgen-compatible)
+use "case_based/case_based_lcg41.ompp";         // Case seed RNGs use 41 linear congruential generators (Modgen-compatible)
+use "case_based/case_based_core.ompp";          // Required for case-based models
+
+use "case_based/case_based_cases_per_run_exogenous.ompp"; // Specify number of cases as cases per run in parameter SimulationCases
+use "case_based/case_based_scaling_none.ompp";  // No population scaling
+
+options measures_method = assemble;             // Compute run-level results by summing measures over subs, then computing expression
+
+use "common_modgen.ompp";                       // Modgen API implementation for x-compatible models (optional)
+use "case_based/case_based_modgen.ompp";        // Modgen API implementation for x-compatible case-based models (optional)
+
+#endif // Hide non-C++ syntactic island from IDE

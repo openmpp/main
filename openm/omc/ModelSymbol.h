@@ -21,7 +21,7 @@ private:
     typedef Symbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     ModelSymbol(string nm, string enm)
         : Symbol(nm)
@@ -34,11 +34,19 @@ public:
     {
     }
 
-    void post_parse(int pass);
+    string default_label(const LanguageSymbol& language) const override
+    {
+        // Use the model name to construct the default label, e.g. "RiskPaths".
+        // This is typically overridden in model code by providing a label to the 'model' symbol, e.g.
+        //     //LABEL(model,EN) The model label...
+        return external_name;
+    }
 
-    CodeBlock cxx_definition_global();
+    void post_parse(int pass) override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    CodeBlock cxx_definition_global() override;
+
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
     /**
      * The name of the model.

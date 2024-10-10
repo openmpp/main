@@ -134,7 +134,7 @@ void SingleController::init(void)
 *
 * search for input parameter value in following order: \n
 *   - use value of parameter specified as command line or ini-file argument or from profile_option table
-*   - use parameter.csv file if parameters csv directory specified
+*   - use parameter csv file if parameters csv directory specified, it can be any of: .csv .tsv .id.csv .id.tsv file
 *   - use value of parameter from working set of model parameters
 *   - if working set based on model run then search by base run id to get parameter value
 *   - else raise an exception

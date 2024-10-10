@@ -220,7 +220,7 @@ const string openm::cleanPathChars(const string & i_str, int i_maxSize)
 
     for (char nowCh : i_str) {
 
-        bool isOk = isprint(nowCh, locale::classic());
+        bool isOk = isprint(nowCh, locale(""));
         if (isOk) {
             for (char c : "\"'`$}{@><:|?*&^;/\\") {
                 if (isOk = nowCh != c; !isOk) break;
@@ -415,6 +415,25 @@ void openm::formatTo(size_t i_size, char * io_buffer, const char * i_format, va_
     // format message
     vsnprintf(io_buffer, i_size, i_format, io_args);
     io_buffer[i_size - 1] = '\0';
+}
+
+/** format message into string result using vsnprintf() */
+std::string openm::formatToString(const char * i_format, ...)
+{
+    if (i_format == NULL) return "";
+
+    const size_t i_size = 1000;
+    char io_buffer[i_size];
+    std::string result;
+
+    va_list argList;
+    va_start(argList, i_format);
+    vsnprintf(io_buffer, i_size, i_format, argList);
+    va_end(argList);
+
+    io_buffer[i_size - 1] = '\0';
+    result = io_buffer;  // copies until null terminator
+    return result;
 }
 
 /** if source string exceed max size than return ellipted copy into the buffer */

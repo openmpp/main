@@ -12,6 +12,8 @@
 #include "LinkToAttributeSymbol.h"
 #include "EntityFuncSymbol.h"
 
+class EntityTableSymbol;
+
 using namespace std;
 
 /**
@@ -40,6 +42,7 @@ public:
     IdentityAttributeSymbol(Symbol *sym, const Symbol * ent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
         : MaintainedAttributeSymbol(sym, ent, type, decl_loc)
         , root(root)
+        , associated_table(nullptr)
     {
         create_auxiliary_symbols();
 
@@ -63,6 +66,7 @@ public:
     IdentityAttributeSymbol(const string member_name, const Symbol * ent, const Symbol *type, ExprForAttribute *root, omc::location decl_loc = omc::location())
         : MaintainedAttributeSymbol(member_name, ent, type, decl_loc)
         , root(root)
+        , associated_table(nullptr)
     {
         create_auxiliary_symbols();
 
@@ -99,7 +103,7 @@ public:
      *
      * @return The expression.
      */
-    static string cxx_expression(const ExprForAttribute *node);
+    static string cxx_expression(const ExprForAttribute *node, bool use_pretty_name = false);
 
     /**
      * Creates an anonymous identity attribute for an expression tree or returns it if already created.
@@ -145,6 +149,11 @@ public:
      * The expression function.
      */
     EntityFuncSymbol *expression_fn;
+
+    /**
+     * For table filter identity attributes, points to the entity table
+     */
+    EntityTableSymbol* associated_table;
 
     /**
      * Map from key to name for anonymous identity attributes.

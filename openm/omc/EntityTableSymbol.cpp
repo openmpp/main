@@ -27,9 +27,12 @@
 #include "ModelTypeSymbol.h"
 #include "CodeBlock.h"
 #include "libopenm/db/metaModelHolder.h"
+#include "omc_file.h" // for LTA support
+
 
 using namespace std;
 using namespace openm;
+using namespace omc; // for LTA support
 
 void EntityTableSymbol::create_auxiliary_symbols()
 {
@@ -105,14 +108,31 @@ void EntityTableSymbol::post_parse(int pass)
         // Add the increment for this table to the entity's list of all callback members
         pp_entity->pp_callback_members.push_back(increment);
 
+        // Add this entity table to xref of each attribute used as a dimension
+        for (auto d : dimension_list) {
+            auto a = d->pp_attribute;
+            assert(a); // logic guarantee
+            a->pp_entity_tables_using.insert(this);
+        }
+        // Add this entity table to xref of its filter identity attribute
+        if (filter) {
+            filter->pp_entity_tables_using.insert(this);
+        }
+
         break;
     }
 
     case ePopulateDependencies:
     {
         // do not process suppressed table
-        if (is_suppressed) {
+        if (is_suppressed_table) {
             break;
+        }
+        // Add this entity table to xref of each attribute used in expressions
+        for (auto ma : pp_measure_attributes) {
+            auto a = ma->pp_attribute;
+            assert(a); // logic guarantee
+            a->pp_entity_tables_using.insert(this);
         }
         // Process collections of observations required by accumulators
         for (auto acc : pp_accumulators) {
@@ -121,7 +141,7 @@ void EntityTableSymbol::post_parse(int pass)
                 EntityTableAccumulatorSymbol *acc_found = nullptr;
                 for (auto acc2 : pp_accumulators) {
                     if (acc2->increment == acc->increment
-                     && acc2->table_op == acc->table_op
+                     && acc2->tabop == acc->tabop
                      && acc2->updates_obs_collection) {
                         // Accumulator found with the same increment, and handling the collection.
                         acc_found = acc2;
@@ -221,10 +241,10 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     CodeBlock h = super::cxx_declaration_global();
 
     // Perform operations specific to this level in the Symbol hierarchy.
-    int n_dimensions = dimension_count();
-    int n_cells = cell_count();
-    int n_measures = measure_count();
-    int n_accumulators = accumulator_count();
+    size_t n_dimensions = dimension_count();
+    size_t n_cells = cell_count();
+    size_t n_measures = measure_count();
+    size_t n_accumulators = accumulator_count();
 
     string cxx_template;
     if (n_collections == 0) {
@@ -291,7 +311,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
 
     for (auto acc : pp_accumulators) {
         string initial_value = "";
-        switch (acc->accumulator) {
+        switch (acc->statistic) {
         case token::TK_unit:
         case token::TK_sum:
             initial_value = "  0.0";
@@ -327,12 +347,12 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             assert(0);
         }
         // e.g.  sum(value_in(alive))
-        if (acc->accumulator == token::TK_unit) {
-            c += "// " + Symbol::token_to_string(acc->accumulator);
+        if (acc->statistic == token::TK_unit) {
+            c += "// " + Symbol::token_to_string(acc->statistic);
         }
         else {
             assert(acc->pp_attribute);
-            c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
+            c += "// " + Symbol::token_to_string(acc->statistic) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
         }
         // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] =   0.0;
         c += "for ( int cell = 0; cell < n_cells; cell++ ) acc[" + to_string(acc->index) + "][cell] = " + initial_value + ";";
@@ -502,7 +522,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 c += "// Assign " + acc->pretty_name();
                 string acc_index = to_string(acc->index);
                 string obs_index = to_string(acc->obs_collection_index);
-                string stat_name = token_to_string(acc->accumulator);
+                string stat_name = token_to_string(acc->statistic);
                 c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
                 c += "";
             }
@@ -523,14 +543,14 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "double scale_factor = population_scaling_factor();";
     c += "if (scale_factor != 1.0) {";
     for (auto acc : pp_accumulators) {
-        if (acc->accumulator == token::TK_sum || acc->accumulator == token::TK_unit ) {
+        if (acc->statistic == token::TK_sum || acc->statistic == token::TK_unit ) {
             // e.g.  sum(value_in(alive))
-            if (acc->accumulator == token::TK_unit) {
-                c += "// " + Symbol::token_to_string(acc->accumulator);
+            if (acc->statistic == token::TK_unit) {
+                c += "// " + Symbol::token_to_string(acc->statistic);
             }
             else {
                 assert(acc->pp_attribute);
-                c += "// " + Symbol::token_to_string(acc->accumulator) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
+                c += "// " + Symbol::token_to_string(acc->statistic) + "(" + Symbol::token_to_string(acc->increment) + "(" + acc->pp_attribute->name + "))";
             }
             // e.g. for ( int cell = 0; cell < n_cells; cell++ ) acc[0][cell] *= scale_factor;
             c += "for (int cell = 0; cell < n_cells; cell++) acc[" + to_string(acc->index) + "][cell] *= scale_factor;";
@@ -578,7 +598,7 @@ void EntityTableSymbol::build_body_current_cell()
     c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
     c += "";
 
-    int rank = dimension_list.size();
+    size_t rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0
@@ -769,17 +789,23 @@ void EntityTableSymbol::build_body_push_increment()
         c += "const int acc_index = " + to_string(acc->index) + "; // accumulator index";
         c += "";
         c += "// Compute increment";
-        if (acc->accumulator != token::TK_unit) {
+        if (acc->statistic != token::TK_unit) {
             auto attr = acc->pp_attribute;
             assert(attr);
             if (acc->uses_value_out()) {
                 c += attr->pp_data_type->name + " value_out = " + attr->name + ";";
             }
             if (acc->uses_value_in()) {
-                if (acc->table_op == token::TK_interval) {
+                switch (acc->tabop) {
+                case token::TK_cell_in:
+                case token::TK_cell_out:
+                case token::TK_interval:
+                {
                     c += "auto& value_in = " + acc->pp_analysis_attribute->in_member_name() + ";";
+                    break;
                 }
-                else if (acc->table_op == token::TK_event) {
+                case token::TK_event:
+                {
                     c += "auto& value_in = " + acc->pp_analysis_attribute->in_event_member_name() + ";";
                     assert(attr->lagged);
                     assert(attr->lagged_event_counter);
@@ -789,7 +815,17 @@ void EntityTableSymbol::build_body_push_increment()
                     c += "if (pending && pending_event_counter == value_lagged_counter) {";
                     c += "value_out = value_lagged;";
                     c += "}";
+                    break;
                 }
+                case token::TK_unused:  // unit
+                {
+                    break;
+                }
+                default:
+                {
+                    assert(false); // not reached
+                }
+				}
             }
         }
         c += "";
@@ -824,18 +860,18 @@ void EntityTableSymbol::build_body_push_increment()
             c += "dIncrement = ((double)value_out - (double)value_in) * ((double)value_out - (double)value_in);";
             break;
         case token::TK_unused:
-            assert(acc->accumulator == token::TK_unit);
+            assert(acc->statistic == token::TK_unit);
             c += "dIncrement = 1.0;";
             break;
         default:
             assert(false); // parser guarantee
         }
 
-        if (Symbol::option_verify_valid_table_increment && acc->accumulator != token::TK_unit) {
+        if (Symbol::option_verify_valid_table_increment && acc->statistic != token::TK_unit) {
             auto attr = acc->pp_attribute;
             assert(attr);
             c += "";
-            if (acc->accumulator == token::TK_sum || acc->accumulator == token::TK_gini) {
+            if (acc->statistic == token::TK_sum || acc->statistic == token::TK_gini) {
                 // runtime error if increment is Nan or inf
                 c += "// Check increment validity when accumulator is sum or gini";
                 c += "if (!std::isfinite(dIncrement)) {";
@@ -861,9 +897,9 @@ void EntityTableSymbol::build_body_push_increment()
             c += "for (size_t cell : cells_to_increment) {";
         }
         c += "auto& dAccumulator = table->acc[acc_index][cell];";
-        switch (acc->accumulator) {
+        switch (acc->statistic) {
         case token::TK_unit:
-            if (Symbol::option_weighted_tabulation) {
+            if (Symbol::option_weighted_tabulation && !is_untransformed) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }
             else {
@@ -871,7 +907,7 @@ void EntityTableSymbol::build_body_push_increment()
             }
             break;
         case token::TK_sum:
-            if (Symbol::option_weighted_tabulation) {
+            if (Symbol::option_weighted_tabulation && !is_untransformed) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }
             else {
@@ -972,13 +1008,14 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         }
 
         // Labels and notes for accumulators
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TableAccTxtLangRow tableAccTxt;
             tableAccTxt.tableId = pp_table_id;
             tableAccTxt.accId = acc->index;
-            tableAccTxt.langCode = lang->name;
-            tableAccTxt.descr = acc->label(*lang);
-            tableAccTxt.note = acc->note(*lang);
+            tableAccTxt.langCode = lang;
+            tableAccTxt.descr = acc->label(*langSym);
+            tableAccTxt.note = acc->note(*langSym);
             metaRows.tableAccTxt.push_back(tableAccTxt);
         }
     }
@@ -986,14 +1023,14 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Measures for entity table.
     for (auto mIt = pp_measures.begin(); mIt != pp_measures.end(); ++mIt) {
 
-        TableMeasureSymbol * measure = *mIt;
+        TableMeasureSymbol* measure = *mIt;
 
         // make measure db column name: it must be unique, alpanumeric and not longer than 255 chars
         TableMeasureSymbol::to_column_name(name, pp_measures, measure);
 
         TableExprRow tableExpr;
 
-        auto etm = dynamic_cast<EntityTableMeasureSymbol *>(measure);
+        auto etm = dynamic_cast<EntityTableMeasureSymbol*>(measure);
         assert(etm); // logic guarantee
 
         tableExpr.tableId = pp_table_id;
@@ -1011,31 +1048,65 @@ void EntityTableSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         string measure_expr = etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_accumulators);
 
         // Construct the expression used to compute the measure over simulation members.
-        if (measures_are_aggregated) {
-            // Aggregate accumulators across simulation members before evaluating the expression for the measure.
+        if (is_untransformed) {
+            // Assemble accumulators across simulation members before evaluating the expression for the measure.
             tableExpr.srcExpr =
                 scale_part
-                + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
+                + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_assembled_accumulators);
         }
         else {
-            // Average the measure across simulation members.
-            tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
+            switch (measures_method) {
+            case run_table_method::aggregate:
+            {
+                // Aggregate accumulators across simulation members before evaluating the expression for the measure.
+                tableExpr.srcExpr =
+                    scale_part
+                    + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_aggregated_accumulators);
+                break;
+            }
+            case run_table_method::assemble:
+            {
+                // Assemble accumulators across simulation members before evaluating the expression for the measure.
+                tableExpr.srcExpr =
+                    scale_part
+                    + etm->get_expression(etm->root, EntityTableMeasureSymbol::expression_style::sql_assembled_accumulators);
+                break;
+            }
+            case run_table_method::average:
+            {
+                // Average the measure across simulation members.
+                tableExpr.srcExpr = scale_part + "OM_AVG(" + measure_expr + ")";
+                break;
+            }
+            default:
+                assert(false); // not reached
+                break;
+            }
+        }
+
+        // override the table measure expression if a matching //EXPR was supplied
+        auto search = explicit_exprs.find(measure->unique_name);
+        if (search != explicit_exprs.end()) {
+            auto text = (search->second).first;
+            auto loc = (search->second).second;
+            tableExpr.srcExpr = text;
         }
 
         // save table measure metadata
         metaRows.tableExpr.push_back(tableExpr);
 
         // Labels and notes for measures
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TableExprTxtLangRow tableExprTxt;
             tableExprTxt.tableId = pp_table_id;
             tableExprTxt.exprId = etm->index;
 
-            tableExprTxt.langCode = lang->name;
+            tableExprTxt.langCode = lang;
 
-            tableExprTxt.descr = etm->label(*lang);
+            tableExprTxt.descr = etm->label(*langSym);
 
-            tableExprTxt.note = etm->note(*lang);
+            tableExprTxt.note = etm->note(*langSym);
             metaRows.tableExprTxt.push_back(tableExprTxt);
         }
 

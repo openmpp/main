@@ -33,6 +33,7 @@ public:
         : Symbol(name, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
+        , suppress_decl(false)
         , suppress_defn(false)
     {
     }
@@ -45,6 +46,7 @@ public:
      */
     GlobalFuncSymbol(const string name, omc::location decl_loc = omc::location())
         : Symbol(name, decl_loc)
+        , suppress_decl(true)
         , suppress_defn(true)
     {
     }
@@ -71,6 +73,11 @@ public:
     string return_decl;
 
     /**
+     * Flag to suppress generation of function declaration.
+     */
+    bool suppress_decl;
+
+    /**
      * Flag to suppress generation of function definition.
      */
     bool suppress_defn;
@@ -79,4 +86,9 @@ public:
      * The function body.
      */
     CodeBlock func_body;
+
+    /**
+     * The identifiers in the function body (if developer-supplied)
+     */
+    set<string> body_identifiers;
 };

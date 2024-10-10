@@ -13,7 +13,8 @@ version 1, 0, 1, 0;
 
 #endif // Hide non-C++ syntactic island from IDE
 
-//LABEL(model, EN) Simple time-based model
+//LABEL(model, EN) Illustration of alignment in a time-based model using event queue
 /* NOTE(model, EN)
-This model can serve as a starting point for more complex time-based models.
+The starting point of this model was NewTimeBased.
+See model documentation for more information about Align1.
 */

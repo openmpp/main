@@ -149,7 +149,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
     c += "const std::array<real, " + to_string(pp_size()) + "> om_" + name + "_upper = {";
     index = 0;
     for (auto enumerator : pp_enumerators) {
-        if (index < (pp_size() - 1)) {
+        if (index < ((int)pp_size() - 1)) {
             auto pes = dynamic_cast<PartitionEnumeratorSymbol *>(enumerator);
             assert(pes); // grammar guarantee
             c += real_literal(pes->upper_split_point, real_is_float) + ",";
@@ -170,7 +170,7 @@ CodeBlock PartitionSymbol::cxx_definition_global()
         assert(pes); // grammar guarantee
         c += "{ " + real_literal(pes->upper_split_point, real_is_float) + ", " + to_string(index) + " }," ;
         ++index;
-        if (index == (pp_size() - 1)) break;
+        if (index == ((int)pp_size() - 1)) break;
     }
     c += "};";
 
@@ -199,7 +199,7 @@ bool PartitionSymbol::is_valid_literal(const char * i_value) const
 
     // value must fall with allowed ordinal values
     long v = stol(i_value);
-    return 0 <= v && v < pp_size();
+    return (0 <= v) && (v < (long)pp_size());
 }
 
 Constant * PartitionSymbol::make_constant(const string & i_value) const

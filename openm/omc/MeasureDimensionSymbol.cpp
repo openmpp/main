@@ -8,8 +8,10 @@
 #include <cassert>
 #include "MeasureDimensionSymbol.h"
 #include "LanguageSymbol.h"
+#include "omc_file.h" // for LTA support
 
 using namespace openm;
+using namespace omc; // for LTA support
 
 // static
 string MeasureDimensionSymbol::symbol_name(const TableSymbol* table)
@@ -18,17 +20,10 @@ string MeasureDimensionSymbol::symbol_name(const TableSymbol* table)
     return table->name + "::expression_dimension";
 }
 
-string MeasureDimensionSymbol::default_label(const LanguageSymbol& lang) const
+string MeasureDimensionSymbol::default_label(const LanguageSymbol& langSym) const
 {
-    if (lang.name == "EN") {
-        return "Quantity";
-    }
-    else if (lang.name == "FR") {
-        return u8"Quantité";
-    }
-    else {
-        return "Quantity (" + lang.name + ")";
-    }
+    const string& lang = langSym.name; // e.g. "EN" or "FR"
+    return LTA(lang, "Quantity");
 }
 
 void MeasureDimensionSymbol::post_parse(int pass)

@@ -37,7 +37,7 @@ void DimensionSymbol::to_column_name(const string & i_ownerName, const list<Dime
 {
     assert(io_dim);
     size_t maxlen = std::min<size_t>(short_name_max_length, OM_NAME_DB_MAX);
-    string colName = openm::toAlphaNumeric(io_dim->short_name, maxlen);  // make dimension name alphanumeric and truncate it to 255 chars
+    string colName = openm::toAlphaNumeric(io_dim->short_name, (int)maxlen);  // make dimension name alphanumeric and truncate it to 255 chars
 
     for (auto pIt = i_dimLst.cbegin(); pIt != i_dimLst.cend() && *pIt != io_dim; ++pIt) {
         if (colName == (*pIt)->short_name) {
@@ -123,17 +123,18 @@ void DimensionSymbol::post_parse(int pass)
         }
         {
             // Create fall-back label if not given explicitly
-            for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-                if (!pp_labels_explicit[j]) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                if (!pp_labels_explicit[lang_index]) {
                     // no explicit label for this language
                     assert(pp_enumeration); // logic guarantee
-                    if (pp_enumeration->pp_labels_explicit[j]) {
+                    if (pp_enumeration->pp_labels_explicit[lang_index]) {
                         // the underlying enumeration has an explicit label for this language, use it
-                        pp_labels[j] = pp_enumeration->pp_labels[j];
+                        pp_labels[lang_index] = pp_enumeration->pp_labels[lang_index];
                     }
                     else {
                         // use Dim0, etc.
-                        pp_labels[j] = short_name_default;
+                        pp_labels[lang_index] = short_name_default;
                     }
                 }
             }
@@ -227,7 +228,7 @@ string DimensionSymbol::heuristic_short_name(void) const
     }
 
     // Make name alphanumeric and truncate it to maximum length.
-    hn = openm::toAlphaNumeric(hn, short_name_max_length);
+    hn = openm::toAlphaNumeric(hn, (int)short_name_max_length);
 
     // trim off trailing "_" if present
     //if (hn.ends_with("_")) { // c++20

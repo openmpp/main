@@ -8,6 +8,10 @@ REM MODEL_NAME:    model name, default: current directory name
 REM
 REM OM_ROOT:       openM++ root folder, default: ..\..
 REM
+REM PUBLISH_DIR:   "publish" directory where model.exe and model.sqlite resides
+REM                if PUBLISH_DIR is relative then it MUST BE relative to OM_ROOT
+REM                default: ompp\bin
+REM
 REM OM_CFG_DEFAULT_RUN_TMPL:  if defined then UI configured to use this model run template, by default
 REM                           if Release model.exe not exist and Debug modelD.exe exist then: run.Debug.template.txt
 REM
@@ -27,6 +31,12 @@ IF "%OM_ROOT%" == "" (
   EXIT 1
 )
 @echo OM_ROOT        = %OM_ROOT%
+
+IF "%PUBLISH_DIR%" == "" (
+  @echo ERROR: empty PUBLISH_DIR environment variable
+  EXIT 1
+)
+@echo PUBLISH_DIR    = %PUBLISH_DIR%
 
 if not exist "%OM_ROOT%\html" (
   @echo ERROR: missing UI html directory: %OM_ROOT%\html
@@ -91,11 +101,10 @@ REM create directories for download and upload from UI, errors are not critical 
 
 mkdir "io\download"
 mkdir "io\upload"
-cd .
 
 REM delete oms URL file if exist
 
-set OMS_URL_TICKLE=%MODEL_NAME%.oms_url.tickle
+set "OMS_URL_TICKLE=%PUBLISH_DIR%\%MODEL_NAME%.oms_url.tickle"
 
 REM @echo OMS_URL_TICKLE = %OMS_URL_TICKLE%
 
@@ -116,15 +125,20 @@ REM start oms web-service and UI
 
 set OM_CFG_INI_ALLOW=true
 set OM_CFG_INI_ANY_KEY=true
+IF "%OM_CFG_TYPE_MAX_LEN%" == "" (
+  set OM_CFG_TYPE_MAX_LEN=366
+)
 
 REM set OM_ModelName=/path/to/model/dir
 
 set model_root_name=OM_%MODEL_NAME%
-set %model_root_name%="%CD%"
+set "%model_root_name%=%PUBLISH_DIR%"
 
-REM @echo %model_root_name% = %CD%
+@echo %model_root_name% = %PUBLISH_DIR%
 
-START "oms" "%OM_ROOT%"\bin\oms.exe -l localhost:0 -oms.ModelDir ..\bin -oms.ModelLogDir ..\bin -oms.UrlSaveTo %OMS_URL_TICKLE% -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir ..\bin -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest -OpenM.LogToFile
+@echo "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest -OpenM.LogToFile
+
+START "oms" "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest -OpenM.LogToFile
 if ERRORLEVEL 1 (
   @echo FAILED to start %OM_ROOT%\bin\oms.exe
   EXIT 1

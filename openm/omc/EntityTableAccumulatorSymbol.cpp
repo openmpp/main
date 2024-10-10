@@ -39,10 +39,10 @@ bool EntityTableAccumulatorSymbol::exists(const Symbol *table, token_type accumu
 string EntityTableAccumulatorSymbol::pretty_name() const
 {
     // example:     accumulator 0: sum(delta(interval(duration)))
-    string result = " accumulator " + to_string(index) + ": " + token_to_string(accumulator);
-    if (accumulator != token::TK_unit) {
+    string result = " accumulator " + to_string(index) + ": " + token_to_string(statistic);
+    if (statistic != token::TK_unit) {
         assert(attribute); // grammar guarantee
-        result += "(" + token_to_string(increment) + "(" + token_to_string(table_op) + "(" + (*attribute)->pretty_name() + ")))";
+        result += "(" + token_to_string(increment) + "(" + token_to_string(tabop) + "(" + (*attribute)->pretty_name() + ")))";
     }
     return result;
 }
@@ -57,7 +57,7 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
     case eCreateMissingSymbols:
     {
         // If attribute is subject to event() tabulation operator create lagged version.
-        if (table_op == token::TK_event) {
+        if (tabop == token::TK_event) {
             auto av = dynamic_cast<AttributeSymbol *>(pp_symbol(attribute));
             assert(av);
             av->create_lagged();
@@ -75,7 +75,7 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
         pp_table = dynamic_cast<EntityTableSymbol *> (pp_symbol(table));
         assert(pp_table); // parser guarantee
 
-        if (accumulator != token::TK_unit) {
+        if (statistic != token::TK_unit) {
             // assign direct pointer to attribute for post-parse use
             pp_attribute = dynamic_cast<AttributeSymbol *> (pp_symbol(attribute));
             if (pp_attribute == nullptr) {
@@ -91,11 +91,12 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
             pp_analysis_attribute = nullptr;
         }
 
-        // emit warning if weighting enabled and ordinal statistic used
-        if (option_weighted_tabulation && has_obs_collection) {
-            auto ordinal_name = token_to_string(accumulator);
-            pp_warning(LT("warning : weighting is not supported for ordinal statistic '") + ordinal_name + LT("' in table '") + pp_table->name +"'");
+        // emit warning if weighting enabled and ordinal statistic used (unless table is untransformed)
+        if (option_weighted_tabulation && has_obs_collection && !pp_table->is_untransformed) {
+            auto ordinal_name = token_to_string(statistic);
+            pp_warning(LT("warning : weighting is not supported for ordinal statistic '") + ordinal_name + LT("' in table '") + pp_table->name + "'");
         }
+
         break;
     }
     case ePopulateCollections:

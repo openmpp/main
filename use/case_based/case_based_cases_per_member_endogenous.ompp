@@ -6,11 +6,31 @@
 // Copyright (c) 2013-2022 OpenM++ Contributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
 parameters {
     //EN Number of cases in each member
     derived long long CasesPerMember;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(CasesPerMember, EN)
+`CasesPerMember` is the number of cases in each member of a run.
+If a run has multiple members
+the total number of cases is the product of `CasesPerMember` 
+and the number of members.
+*/
+
 //LABEL(CasesPerMember,FR) Nombre de cas dans chaque membre
+/*NOTE(CasesPerMember, FR)
+`CasesPerMember` est le nombre de cas dans chaque membre d'une exécution.
+Si une exécution comporte plusieurs membres
+le nombre total de cas est le produit de `CasesPerMember`
+et le nombre de membres.
+*/
 
 /**
 * Called by before_presimulation.

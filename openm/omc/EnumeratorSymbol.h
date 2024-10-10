@@ -7,8 +7,7 @@
 
 #pragma once
 #include "Symbol.h"
-
-class EnumerationWithEnumeratorsSymbol;
+#include "EnumerationWithEnumeratorsSymbol.h"
 
 using namespace std;
 
@@ -45,6 +44,11 @@ public:
 	*/
 	virtual string db_name() const = 0;
 
+    bool is_published() const override
+    {
+        // enumerator is published if parent enumeration is published
+        return pp_enumeration->is_published();
+    }
 
     /**
     * Reference to pointer to enumeration.

@@ -1,7 +1,82 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
-2023-11-15:
+2024-07-31: v1.17.4
+  c++ core: allow to model read parameters from TSV files
+  go dbget: export any or all model runs parameters and output tables into CSV or TSV
+  go dbget: export compatibility views model run parameters and output tables into CSV or TSV
+  UI: allow to use any CSV or TSV input parameters to run the model
+
+2024-06-21: v1.17.3
+  c++ core: option index_errors validates array indices at runtime
+  go oms: add filters by value for output tables, parameters and microdata
+  UI: add filters by value for output tables and microdata
+  UI and go: allow to use any ini file to run the model
+  UI and go: user files (e.g. ini files) management on server: view, delete, upload, download.
+  UI and go oms: add bulk delete capabities
+  go dbget: first version of desktop user language detection for Windows, Linux, MacOS.
+  UI: start UI from UNC location on Windows
+
+2024-04-22: v1.17.2
+  c++ core: new optional lifecycle attributes to probe events
+  c++ core: new "untransformed" tables
+  c++ core: new "snapshot" tables
+  c++ core: allow explicit declaration of table filter attribute
+  c++ core: new example model TableProbe2
+  c++ core: protect model run-time code from Microsoft MPI bug
+  UI: microdata aggregation and run comparison
+  go: initial version of dbget utility to extract and transform model run results
+  go: new fair scheduling of cloud CPU resources
+  go dbcopy: add output to TSV files
+  change oms UI back-end and MSBuild to correctly handle ini-files in UI
+  Linux and MacOS: fix issues with spaces in file path
+
+2024-03-22: v1.17.1
+  c++ core: provide implementation for default microdata key uniqueness
+  c++ core: bug fix for tablle suppression check
+
+2024-03-18: v1.17.0
+  c++ core: New 'standard' model files
+  c++ core: French translations of run log messages
+  c++ core: Control the aggregation of subs to produce run-level tables
+  c++ core: Generated Model Documentation enhancements
+  c++ core: Function definition of ProcessDevelopmentOptions no longer required in model code
+  c++ core: Renamed demo models OzProj and OzProjGen – microdata removed from distribution
+  UI and back-end: set storage space limit for cloud users
+  UI and back-end: provide UI and back-end support to cleanup database, download and upload files
+  UI and back-end: fix issues related to large range types handling in back-end and UI
+  UI and back-end: do not allow to open parameter, table or microdata if dimension type size or attribute size exceeds the limit
+
+2024-02-16: v1.16.1
+  go oms: fix a read bug of microdata entity_key database column
+  c++ core: new option weighted_tabulation_allow_time_based
+  UI: notify user if microdata is empty in the model run (zero rows)
+  UI: handle errors in UI if database read return with error on server for parameter, output table or microdata
+  UI disk use: change refersh time if changed on the server
+
+2024-02-13: v1.16.0
+  create model documentation as part of model build
+  multiple changes and fixes in c++ core, UI and other projects to support bilingual models
+  c++ core: special handling for attributes with many enumerators
+  c++ core bilingual: use case sensitive search for translated messages
+  c++ Linux and MacOS makefile: for all models included in openM++ release use Windows-1252 code page
+  c++ core: fix input parameters multiple copies issue (rollback previous change to check run status at digest calculation)
+  c++ core: add -OpenM.Sqlite option for model.exe to simplify running the database connection string
+  c++ core: add -OpenM.SqliteFromBin option for model.exe to simplify running the database connection string
+  c++ core: drop support for legacy SparseTable feature
+  go: re-write delete of model, model run and workset to make it more robust
+  go oms API: compare microdata
+  go oms API: add OM_COUNT_IF function to output tables and microdata calculation
+  go oms API: allow to use scalar model parameters in output tables and microdata calculation
+  go oms: add memory resources  management to model run queue
+  go oms: allow to limit number of CPU cores available to the user model run queue
+  go oms API: fix model run queue pause bug, add API call to pause model run queue fro all users
+  go and UI: provide storage (disk space) management UI
+  go and UI: allow to delete multiple model runs or worksets in UI
+  UI: correctly detect user language (browser language) in UI
+  Docker build: allow to build c++ part from separate git branch
+
+2023-11-15: v1.15.6
   c++ core: early error detection of unmatched comment, brace, parenthesis, bracket, or syntactic island
   c++ core: new Model Metrics Report
   c++ core: disable model build steps for speedier model code syntax checking
@@ -17,7 +92,7 @@ Please note:
   R: use openM++ models in cloud from local computer RStudio
   UI: prevent user to leave parameter page if notes edited and not saved
 
-2023-10-05:
+2023-10-05: v1.15.5
   c++ core: implement suppress/retain of derived parameters exported as tables
   c++ core: new EventTrace filter SelectedEntityKinds
   c++ core: implement order by attribute in entity sets
@@ -36,7 +111,7 @@ Please note:
   UI: microdata: use boolean attributes as diemnsions
   Docker: use git version tag to build release
 
-2023-08-03:
+2023-08-03: v1.15.4
   c++ core: transforming derived (model-generated) parameters to output tables
   c++ core: raise runtime error on non-numeric table increment
   c++ core: use Markdown rendering of symbol documentation in UI
@@ -47,7 +122,7 @@ Please note:
   UI: first useful version of microdata viewer
   UI and go: calculate and download table with ad hoc measures: AVG SUM COUNT MIN MAX VAR SD SE CV
 
-2023-06-14:
+2023-06-14: v1.15.3
   c++ core: new option ascii_infinity to improve utf-8 support
   c++ core: in Windows model projects always use BOM in CSV files to improve utf-8 support
   c++ core: emit build error on attribute redeclaration
@@ -60,7 +135,7 @@ Please note:
   UI: implement page support output tables, parameters and microdata viewer
   UI: initial version of microdata viewer
 
-2023-05-02:
+2023-05-02: v1.15.2
   c++ core: MPI microdata database writing: fix memory leak
   c++ core: Windows debug model disabling Microsoft iterator debug
   c++ core: simulate only one member in a time-based model if specified in combined seed
@@ -74,11 +149,11 @@ Please note:
   UI: display storage management archiving status for model runs and worksets
   UI: add LxQt terminal to UI start script
 
-2023-03-28:
+2023-03-28: v1.15.1
   UI: fix output table decimals issues
   UI: support all accumulators in output table viewer
 
-2023-03-10:
+2023-03-10: v1.15.0
   c++ core: reduced memory size in time-based models
   Visual Studio: improved display of entity attributes in debugger
   Visual Studio: fix path with spaces issues in model projects
@@ -90,7 +165,7 @@ Please note:
   UI: fix multiple minor bugs
   Docker and MacOS build: include model run log files into the release
 
-2023-02-01:
+2023-02-01: v1.14.0
   BREAKING change in db schema: add microdata row count column
   c++ core: model_streams no longer required in model code
   c++ core: Local Random Streams
@@ -101,7 +176,7 @@ Please note:
   dbcopy: clean output folder by default, add new run option to keep it if required
   UI: initial version of microdata UI
 
-2023-01-17:
+2023-01-17: v1.13.0
   c++ core: multiple bug fixes in microdata code
   wiki: updated developer topic Microdata Output
   add script and instructions how to upgrade production databases schema
@@ -109,7 +184,7 @@ Please note:
   dbcopy: store parameters, output tables and microdata in separate sub-folders
   oms: additional filters to select microdata more precisely
 
-2022-12-10:
+2022-12-10: v1.12.0
   entity microdata output from model into csv, into trace or database
   c++ core: changes and enhancements were made to EventTrace
   c++ core: attributes visibility in model code
@@ -123,7 +198,7 @@ Please note:
   Go: initial version to handle both db schemas: old and new
   UI: minor change: open new tab at leftmost position
 
-2022-09-23:
+2022-09-23: v1.11.1
   oms: fix racing at model run jobs and servers start-stop
   oms: allow to read parameter values while run in progress
   UI: allow to re-submit model run if it was failed
@@ -132,7 +207,7 @@ Please note:
   UI: add menus as an alternative to the toolbar buttons
   Docker: build only 2 versions of Linux release and test on Debian 10, 11, Ubuntu 20.04, 22.04, RedHat 8, 9
 
-2022-08-27:
+2022-08-27: v1.11.0
   event trace: write detailed trace to probe the evolution of entities during a simulation
   warnings eliminated from non-model code
   reversion of previous change to COERCE macro
@@ -143,7 +218,7 @@ Please note:
   oms and UI: view backend service state
   UI: publish model documentation (prof of concept)
 
-2022-06-18:
+2022-06-18: v1.10.0
   c++: resource use report provide information on resource use by entities, events, sets, and tables during a model run
   c++: entity member packing can reduce the size of entities by packing their members in an efficient order.
   c++: improved entity member layout for model debugging
@@ -158,7 +233,7 @@ Please note:
   UI: automatically apply default model run settings
   UI: fix parameter default view layout: last-1 dimension on rows, last on columns
 
-2022_05_05:
+2022-05-05: v1.9.9
   c++ omc: create symbol for table measure dimension and associate label if present
   c++ models: New population scaling framework module case_based_scaling_endogenous_or_none
   c++ omc: eliminate C++ build warning for endogenous population scaling
@@ -174,7 +249,7 @@ Please note:
   oms: fix error of finding dbcopy if oms started wit -oms.HomeDir
   dbcopy: fix import from zip if zip located not in current directory
 
-2022_03_22:
+2022-03-23: v1.9.8
   support VS 2022 for Modgen build for x-compatible models
   dbcopy: validate csv file header on reading
   UI: create workset from run comparison and include different parameters from variant run
@@ -183,7 +258,7 @@ Please note:
   UI: fix issue of diaplying run if all model runs failed
   UI: fix run comparison not updated if user click on different variant run
 
-2022_03_08:
+2022-03-08: v1.9.7
   New utility create_import_set to link models via import specification in model code
   openMpp R package: support dimension names generated by omc version 2022_02_02 (previous release)
   Go: fix memory and performance issues if dbcopy or oms is used with huge db tables
@@ -194,7 +269,7 @@ Please note:
   UI: on Windows add BOM into CSV downloads to help open utf-8 files
   UI: allow less restrictive scenario names, for example allow % in the names
 
-2022_02_02:
+2022-02-02: v1.9.6
   core: support for case-based models which set the number of cases endogenously:
   omc: generate better dimension and measure labels if absent in model code
   raise run-time error if SimulationCases exceeds number of records in micro-data input file
@@ -205,7 +280,7 @@ Please note:
   docker Windows build using VS 2022
   Windows 11 supported
 
-2022_12_10:
+2022-01-11: v1.9.5
   model: add censor_event_time option to improve simulation speed
   model: enables entity weights for case-based models
   model: fix MPI racing bug if model shutdown fast
@@ -216,13 +291,13 @@ Please note:
   docker build: add desktop version of RedHat (Rocky Linux)
   UI: allow user NoAccumulatorsCsv download to increase download prepare speed
 
-2021_11_30:
+2021-11-30: v1.9.4
   support Visual Studio 2022
   make fast and small csv output by dbcopy: NoAccumulatorsCsv option
   UI: download parameter as CSV file
   UI: run comparison
 
-2021_11_01:
+2021-11-01: v1.9.3
   model code: simplified and detailed UI, hide and show statements in model code
   model code: prohibit invalid use of time-like attributes in tables and events
   c++: move to bison version 3.x
@@ -230,18 +305,18 @@ Please note:
   UI: allow to create and edit model run notes, input scenario notes, parameter notes
   UI: display messages to the user about IE is not supported
 
-2021_10_04:
+2021-10-05: v1.9.2
   add model run option to specify run notes in Markdown format
   UI: ability to create new workset
   UI: ability to edit model run notes
   build and publish Linux / Ubuntu release
 
-2021_09_03:
+2021-09-03: v1.9.1
   c++ code cleanup in order to eliminate c++ model build warnings
   UI: add model download feature to get model run results or input scenario(s)
   UI: add an ability to delete model run results, input scenario(s) or download files
 
-2021_08_02:
+2021-08-02: v1.9.0
   (breaking change) Change SimulationSeed from int to long long in Framework.odat
   Raise runtime error on out-of-bounds assignment to range, classification, partition
   Raise runtime error on invalid indices in GetTableValue or SetTableValue

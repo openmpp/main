@@ -15,26 +15,6 @@
 
 using namespace std;
 
-string BuiltinAttributeSymbol::default_label(const LanguageSymbol& lang) const
-{
-    // Retrieve label from the std::map the_default_labels for the built-in attribute.
-    // The map was initialized in EntitySymbol::create_auxiliary_symbols()
-    // using hard-coded values specific to the built-in symbol.
-    auto it = the_default_labels.find(lang.name);
-    if (it != the_default_labels.end()) {
-        return it->second;
-    }
-    else {
-        auto it_EN = the_default_labels.find("EN");
-        if (it_EN != the_default_labels.end()) {
-            return it_EN->second + " (" + lang.name + ")";
-        }
-        else {
-            return name + " (" + lang.name + ")";
-        }
-    }
-}
-
 void BuiltinAttributeSymbol::post_parse(int pass)
 {
     // Hook into the post_parse hierarchical calling chain
@@ -42,21 +22,29 @@ void BuiltinAttributeSymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
-    case ePopulateDependencies:
-        {
-            if (name == "age") {
-                // add side-effect to attribute 'time'
-                AttributeSymbol *av = pp_entity->pp_time;
-                assert(av);
-                CodeBlock& time_cxx = av->side_effects_fn->func_body;
-                time_cxx += injection_description();
-                time_cxx += "if (om_active) {";
-                time_cxx += "// Advance time for the attribute 'age'";
-                time_cxx += "age.set(age.get() + om_delta);";
-                time_cxx += "}";
-            }
+    case eAssignLabel:
+    {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            pp_labels_explicit[lang_index] = true;
         }
         break;
+    }
+    case ePopulateDependencies:
+    {
+        if (name == "age") {
+            // add side-effect to attribute 'time'
+            AttributeSymbol *av = pp_entity->pp_time;
+            assert(av);
+            CodeBlock& time_cxx = av->side_effects_fn->func_body;
+            time_cxx += injection_description();
+            time_cxx += "if (om_active) {";
+            time_cxx += "// Advance time for the attribute 'age'";
+            time_cxx += "age.set(age.get() + om_delta);";
+            time_cxx += "}";
+        }
+        break;
+    }
     default:
         break;
     }

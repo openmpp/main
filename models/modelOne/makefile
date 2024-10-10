@@ -267,6 +267,33 @@ run:
 		-Microdata.All -Microdata.ToDb \
 		-OpenM.RunName "Microdata other in database" \
 		-EN.RunDescription "Write other microdata into database"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-Microdata.All -Microdata.ToDb \
+		-Parameter.StartingSeed 2047 \
+		-OpenM.RunName "Microdata version in database" \
+		-EN.RunDescription "Write another microdata version into database"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-SubFrom.AllParameters csv -OpenM.ParamDir ../../csv \
+		-OpenM.RunName "All_4_Sub-values_from_csv" \
+		-EN.RunDescription "All parameters from csv, 4 sub-values"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-SubFrom.AllParameters csv -OpenM.ParamDir ../../tsv \
+		-OpenM.RunName "All_4_Sub-values_from_TSV" \
+		-EN.RunDescription "All parameters from TSV, 4 sub-values"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-SubFrom.AllParameters csv -OpenM.ParamDir ../../csv_id \
+		-OpenM.IdCsv \
+		-OpenM.RunName "All_4_Sub-values_from_Id_csv" \
+		-EN.RunDescription "All parameters from id.csv, 4 sub-values"
+	cd $(OUT_BIN_DIR) && $(model_root_name)=$(model_root_value) ./$(MODEL_EXE) $(RUN_OPT_INI) \
+		-OpenM.SubValues 4 -OpenM.Threads 4 \
+		-SubFrom.AllParameters csv -OpenM.ParamDir ../../tsv_id \
+		-OpenM.RunName "All_4_Sub-values_from_Id_TSV" \
+		-EN.RunDescription "All parameters from id.TSV, 4 sub-values"
 
 .PHONY: clean
 clean:

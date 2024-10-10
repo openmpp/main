@@ -1,0 +1,131 @@
+//LABEL(OzProj, EN) Core simulation functions
+
+/* NOTE(OzProj, EN)
+	This module contains core simulation functions and definitions.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+// The model version number
+version 0, 22, 0, 0;
+
+// The model type
+model_type case_based;
+
+// The data type used to represent time
+time_type double;
+
+// Supported languages
+languages {
+   EN,
+   FR
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/**
+ * Simulates a single case.
+ * 
+ * Called by code in a simulation framework module.
+ */
+void CaseSimulation(case_info &ci)
+{
+  extern void SimulateEvents(); // defined in a simulation framework module
+  long long record_to_read = 0;
+  if (MicroDataInPieces) {
+      // Read the next record
+      record_to_read = ci.in_csv.record_number();
+  }
+  else {
+      // Read the record corresponding to the case_id of the case
+      record_to_read = GetCaseID();
+  }
+  bool success = ci.in_csv.read_record(record_to_read);
+  if (!success) {
+      std::stringstream ss;
+      ss << "error : unable to read record " << record_to_read << " (zero-based)";
+      ModelExit(ss.str().c_str());
+      // not reached
+  }
+
+  // Initialize the Observation entity for the record used in the current case
+  auto oeObservation = new Observation();
+  oeObservation->Start(&ci);
+
+  // The following works for undercount rates up to 50%
+  int nAge = oeObservation->o_age_group1;
+  int nSex = oeObservation->o_sex;
+  double dUndercountRate = UndercountRate[nAge][nSex]; // (true - observed) / true
+  double dCorrectionRate = 1.0 / ( 1.0 - dUndercountRate ) - 1.0; // (true / observed) - 1
+  double dRandom = RandUniform(2);
+  int nCopies = 1;
+  if ( dCorrectionRate > 0.0 && dRandom < dCorrectionRate ) nCopies = 2; // undercount
+  else if ( dCorrectionRate < 0.0 && dRandom < -dCorrectionRate ) nCopies = 0; // overcount
+
+  for (int nCopy = 0; nCopy < nCopies; nCopy++ ) {
+    // Initialize the Person entity in the case.
+    auto pePerson = new Person();
+    pePerson->Start(oeObservation, NULL, 0);
+
+    // Simulate events until there are no more.
+    SimulateEvents();
+  }
+
+  double dSimulationScaleFactor = GetAllCases() / (double) RealWorldStartPopulation;
+  bool bDonor = !oeObservation->o_native_born
+    && oeObservation->o_years_since_arrival <= MaxYearsForImmigrantDonor;
+  if ( bDonor ) {
+    for ( int nYear = 0; nYear < SIZE(YEAR); nYear++ ) {
+      // calculate the number of clones
+      double dImmigrantsScaled = dSimulationScaleFactor * Immigrants[nYear]; 
+      double dCloneRate = (double) dImmigrantsScaled / (double)ImmigrantDonors;
+      int nClones = (int) dCloneRate;
+      double dFraction = dCloneRate - nClones;
+      if ( RandUniform(7) < dFraction ) nClones++;
+      // calculate an exact time of arrival
+      double dArrivalTime = MIN(YEAR) + nYear + 0.5 - RandUniform(8);
+      for ( int nClone = 0; nClone < nClones; nClone++ ) {
+        auto pePerson = new Person();
+        pePerson->Start(oeObservation, NULL, dArrivalTime);
+        // Simulate events until there are no more.
+        SimulateEvents();
+      }
+    }
+  }
+
+  // Finish the Observation entity
+  oeObservation->Finish();
+}
+
+// Invoked at the beginning of the simulation
+void Simulation_start(case_info &ci)
+{
+    if (MicroDataInPieces) {
+#if defined(MODGEN)
+        std_string path = CT2A(MicroDataInputFile.GetString());
+#else
+        std_string path = MicroDataInputFile;
+#endif
+        int subs = GetSubSamples();
+        int sub = GetCaseSample();
+        path = piece_it(path, subs, sub);  // appends suffix to file name if subs > 1
+        ci.in_csv.open(path);
+    }
+    else {
+        ci.in_csv.open(MicroDataInputFile);
+    }
+    if (MicroDataOutputFlag && !MicroDataInPieces) {
+        ci.out_csv.open(MicroDataOutputFile);
+    }
+}
+
+// Invoked at the end of the simulation
+void Simulation_end(case_info &ci)
+{
+  ci.in_csv.close();
+  if (MicroDataOutputFlag) {
+      ci.out_csv.close();
+  }
+}

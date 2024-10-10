@@ -1,6 +1,6 @@
 /**
 * @file    omc_file.cpp
- * omc file helper functions.
+ * omc file helper functions and translation functions.
 */
 // Copyright (c) 2013-2016 OpenM++
 // This code is licensed under the MIT license (see LICENSE.txt for details)
@@ -10,6 +10,39 @@
 using namespace std;
 using namespace openm;
 namespace fs = std::filesystem;
+
+namespace omc
+{
+    /** actual instance of translated message store: empty, loaded in main */
+    static TranslatedStore defaultTranslatedStore;
+
+    /** translated messages for all languages from omc.message.ini */
+    TranslatedStore * theAllTranslated = &defaultTranslatedStore;
+}
+
+// find language-specific message by source non-translated message and language
+const string omc::TranslatedStore::getTranslated(const char * i_lang, const char * i_source) const noexcept
+{
+    try {
+        if (i_lang == nullptr || i_source == nullptr) return "";    // empty result if language code empty or source on null
+
+        // if language exist in message.ini
+        auto msgMapIt = std::find_if(
+            allMsg.cbegin(),
+            allMsg.cend(),
+            [&i_lang](const pair<string, unordered_map<string, string>> & i_msgPair) -> bool { return equalNoCase(i_lang, i_msgPair.first.c_str()); }
+        );
+        if (msgMapIt == allMsg.cend()) return i_source;   // language not found
+
+        // if translation exist then return copy of translated message else return original message (no translation)
+        const unordered_map<string, string>::const_iterator msgIt = msgMapIt->second.find(i_source);
+        return
+            (msgIt != msgMapIt->second.cend()) ? msgIt->second.c_str() : i_source;
+    }
+    catch (...) {
+        return "";
+    }
+}
 
 // get list of files matching extension list from specified directory or current directory if source path is empty
 // each file name in result is a relative path and include source directory
@@ -40,18 +73,35 @@ list<string> omc::listSourceFiles(const string & i_srcPath, const list<string> &
     return pathLst;
 }
 
-// get extension of filename
-string omc::getFileNameExt(const string &file_name)
+// get extension of path normalized to lowercase
+string omc::getPathExtension(const string& path)
 {
-    string ext = fs::path(file_name).extension().generic_string();
+    string ext = fs::path(path).extension().generic_string();
     openm::toLower(ext);
     return ext;
 }
 
-// get stem of filename
-string omc::getFileNameStem(const string &file_name)
+// get stem of path
+string omc::getPathStem(const string& path)
 {
-    return fs::path(file_name).stem().generic_string();
+    return fs::path(path).stem().generic_string();
+}
+
+// get filename of path
+string omc::getPathFilename(const string& path)
+{
+    return fs::path(path).filename().generic_string();
+}
+
+bool omc::skipPathModule(const string& path)
+{
+    string stem = omc::getPathStem(path);
+    if (openm::equalNoCase(stem.c_str(), "modgen_", 7)) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 // create output/modelName.message.ini file by merging model messages and languages with existing code/modelName.message.ini 
@@ -65,16 +115,15 @@ void omc::buildMessageIni(
 {
     if (i_msgSet.empty()) return;   // exit: no messages to translate
 
-    map<string, NoCaseMap, LessNoCase> iniMap;  // output ini-flie as case-netral map
-    NoCaseSet langSet;
-    locale loc("");         // current user locale
-
     // cleanup line breaks
     unordered_set<string> msgSet;
     for (string msg : i_msgSet) {
         blankCrLf(msg);
         msgSet.insert(msg);
     }
+    locale loc("");         // current user locale
+
+    map<string, map<string, string>, LessNoCase> iniMap;  // output ini-file, section names are case-neutral
 
     // if exist code/modelName.message.ini then read it and 
     // for each language merge new model messages with existing message translations
@@ -82,40 +131,50 @@ void omc::buildMessageIni(
 
     if (isFileExists(srcPath.c_str())) {    // if exist code/modelName.message.ini
 
-        // read existing translation file and get languages, which are section names
-        IniFileReader rd(srcPath.c_str(), i_codePageName);
-        langSet = rd.sectionSet();
+        // read existing translation file, languages are section names
+        list<pair<string, unordered_map<string, string>>> langMsgLst = IniFileReader::loadAllMessages(srcPath.c_str(), i_codePageName);
 
-        for (const auto & sect : langSet) {
+        // for all languages from message.ini
+        for (const auto & langMsg : langMsgLst) {
 
-            auto sectIt = iniMap.insert(pair<string, NoCaseMap>(sect, NoCaseMap()));
-            NoCaseMap & ctMap = sectIt.first->second;
+            auto sectIt = iniMap.insert(pair<string, map<string, string>>(langMsg.first, map<string, string>()));
+            map<string, string> & sectMsg = sectIt.first->second;
 
             for (const string & msg : msgSet) {
-                ctMap[msg] = rd.strValue(sect.c_str(), msg.c_str());
+                const auto mIt = langMsg.second.find(msg);
+                sectMsg[msg] = (mIt != langMsg.second.cend()) ? mIt->second : "";
             }
         }
 
         // BEGIN of optional code: can be commented
-        // if required count deleted translations for each model language
+        //
+        // count deleted translations for each model language
         for (const LangLstRow & langRow : i_metaRows.langLst) {
 
-            const auto sectIt = iniMap.find(trim(langRow.code, loc));   // language section in new ini-file
-            if (sectIt == iniMap.end()) continue;                       // skip: no such model language
+            const auto lc = trim(langRow.code, loc);
+            const auto sectIt = iniMap.find(lc);        // language section in new ini-file
+            if (sectIt == iniMap.cend()) continue;      // skip: no such model language
 
-            NoCaseMap rdMap = rd.getSection(sectIt->first.c_str()); // section [language] => (code,translation)
+            const auto rdIt = find_if(
+                langMsgLst.cbegin(),
+                langMsgLst.cend(),
+                [&lc](const pair<string, unordered_map<string, string>> i_lm) -> bool { return equalNoCase(i_lm.first.c_str(), lc.c_str()); });
+
+            if (rdIt == langMsgLst.cend()) continue;    // protect from internal bug
+
             int nDel = 0;
 
-            for (const auto & rd : rdMap) {
+            for (const auto & rd : rdIt->second) {
                 if (sectIt->second.find(rd.first) == sectIt->second.end()) nDel++;
             }
-            if (nDel > 0) theLog->logFormatted("Deleted %d translated message(s) from language %s", nDel, langRow.code.c_str());
+            if (nDel > 0) theLog->logFormatted("Deleted %d translated message(s) from language %s", nDel, lc.c_str());
         }
         // END of optional code
     }
     // merge done for existing ini-file messages
 
     // BEGIN of optional code: can be commented
+    //
     // do the counts and report translation status
     // assume no translations if only one model language
     if (i_metaRows.langLst.size() > 1) {
@@ -158,14 +217,14 @@ void omc::buildMessageIni(
         for (const LangLstRow & langRow : i_metaRows.langLst) {
 
             // if language section exist in new ini-file then skip it
-            string sect = trim(langRow.code, loc);
-            if (iniMap.find(sect) != iniMap.end()) continue;
+            string lc = trim(langRow.code, loc);
+            if (iniMap.find(lc) != iniMap.end()) continue;
 
-            auto sectIt = iniMap.insert(pair<string, NoCaseMap>(sect, NoCaseMap()));
-            NoCaseMap & ctMap = sectIt.first->second;
+            auto sectIt = iniMap.insert(pair<string, map<string, string>>(lc, map<string, string>()));
+            map<string, string> & sectMsg = sectIt.first->second;
 
             for (const string & msg : msgSet) { // insert empty translation
-                ctMap[msg] = "";
+                sectMsg[msg] = "";
             }
         }
     }

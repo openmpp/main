@@ -6,16 +6,38 @@
 // Copyright (c) 2013-2023 OpenM++ COntributors (see AUTHORS.txt)
 // This code is licensed under the MIT license (see LICENSE.txt)
 
-// forward declarations of fmk variables
-namespace fmk {
-    extern thread_local long long member_cases;
-}
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
 
 parameters {
     //EN Real population size
     double SimulatedPopulation;
 };
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(SimulatedPopulation, EN)
+`SimulatedPopulation` is the size of the real-world population simulated by each member of a run. 
+Table counts and sums are scaled to give a total population count equal to `SimulatedPopulation`, 
+for each member of a run.
+Table counts and sums for a run are normally the average over members, 
+so overall run results are also scaled to `SimulatedPopulation`.
+*/
+
 //LABEL(SimulatedPopulation,FR) Vraie taille de la population
+/*NOTE(SimulatedPopulation, FR)
+`SimulatedPopulation` est la taille de la population réelle simulée par chaque membre d’une exécution.
+Les dénombrements et les sommes des tableaux sont mis à l’échelle pour donner un nombre total de population égal à `SimulatedPopulation`,
+pour chaque membre d’une exécution.
+Les dénombrements et les sommes des tableaux pour l'exécution sont normalement la moyenne des membres,
+alors les résultats globaux de l’exécution sont également mis à l’échelle selon 'SimulatedPopulation'.
+*/
+
+// forward declarations of fmk variables
+namespace fmk {
+    extern thread_local long long member_cases;
+}
 
 /**
  * The population scaling factor to use for this member of the run.

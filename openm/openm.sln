@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libopenm", "libopenm\libopenm.vcxproj", "{83D56DD7-5547-4784-BCDB-CB704B670F1A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -9,14 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libopenm", "libopenm\libope
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libopenm_omc_db", "libopenm\libopenm_omc_db.vcxproj", "{8D0AE5FC-090B-437F-800E-6B24288C23C0}"
-	ProjectSection(ProjectDependencies) = postProject
-		{9856D2F5-8410-46DC-A01E-387267E02E0D} = {9856D2F5-8410-46DC-A01E-387267E02E0D}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "omc", "omc\omc.vcxproj", "{5F4BEA41-A06D-4677-B4FE-9F1B5DE0BAB1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{8D0AE5FC-090B-437F-800E-6B24288C23C0} = {8D0AE5FC-090B-437F-800E-6B24288C23C0}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsqlite", "libsqlite\libsqlite.vcxproj", "{9856D2F5-8410-46DC-A01E-387267E02E0D}"
 EndProject
@@ -63,5 +57,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {14F20FB6-DCA4-43B8-A364-2CD45B35D4DD}
 	EndGlobalSection
 EndGlobal

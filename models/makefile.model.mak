@@ -169,6 +169,23 @@ ifndef MODEL_CODE_DIR
   MODEL_CODE_DIR = code
 endif
 
+# omc model documentation directories and options
+#
+
+# if not disabled then create model documentation
+ifndef MODEL_DOC_DISABLE
+
+  ifndef MODEL_INDOC_DIR
+    MODEL_INDOC_DIR = doc
+  endif
+
+  ifndef MODEL_OUTDOC_DIR
+    MODEL_OUTDOC_DIR = $(OUT_BIN_DIR)/doc
+  endif
+
+  OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_OUTDOC_DIR)
+endif
+
 #
 # libraries and omc: openM++ compiler
 #
@@ -265,7 +282,10 @@ $(MODEL_OMC_CPP) $(MODEL_CPP) : | prepare
 
 .PHONY : omc_compile
 $(MODEL_OMC_CPP) $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql : $(MODEL_MPP) $(MODEL_SCENARIO_DAT) $(MODEL_FIXED_DAT)
-	$(OMC_EXE) -m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) -Omc.SqlDir $(OM_SQL_DIR) $(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) \
+	$(OMC_EXE) \
+	-m $(MODEL_NAME) -s $(SCENARIO_NAME) -i $(CURDIR)/$(MODEL_CODE_DIR) -o $(OMC_OUT_DIR) -u $(OMC_USE_DIR) \
+	$(OMC_SCENARIO_OPT) $(OMC_FIXED_OPT) $(OMC_CODE_PAGE_OPT) $(OMC_NO_LINE_OPT) -Omc.SqlDir $(OM_SQL_DIR) \
+	$(OMC_MODEL_DOC_OPTS) \
 	|| { echo "error at omc compile, exit code: " $$? ; kill $$PPID ; }
 
 $(DEPS_DIR)/%.d : $(OMC_OUT_DIR)/%.cpp | omc_compile
@@ -292,7 +312,7 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 # copy model.ini and model.message.ini files into output folder
 #
 .PHONY : publish
-publish : $(MODEL_SQLITE) publish-views copy_ini
+publish : $(MODEL_SQLITE) publish-views copy_ini copy_extra_doc
 
 $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
@@ -301,6 +321,12 @@ $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 copy_ini:
 	@if [ -e $(MODEL_NAME).ini ] ; then cp -pvf $(MODEL_NAME).ini $(OUT_BIN_DIR) ; fi
 	@if [ -e $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini ] ; then cp -pvf $(OMC_OUT_DIR)/$(MODEL_NAME).message.ini $(OUT_BIN_DIR) ; fi
+
+.PHONY : copy_extra_doc
+copy_extra_doc:
+ifndef MODEL_DOC_DISABLE
+	@if [ -d $(MODEL_INDOC_DIR) ] ; then find $(MODEL_INDOC_DIR) -iname "*.pdf" -exec cp -pvf {} $(MODEL_OUTDOC_DIR) \;; fi
+endif
 
 .PHONY : publish-views
 publish-views : \
@@ -332,6 +358,8 @@ clean-all: clean
 	rm -f $(MODEL_SQLITE)
 	rm -f $(OUT_BIN_DIR)/*.ini
 	rm -f $(OUT_BIN_DIR)/*.log
+	rm -rf $(MODEL_OUTDOC_DIR)
+	rm -f $(OUT_BIN_DIR)/$(MODEL_NAME).extra.json
 
 .PHONY: prepare
 prepare:
@@ -340,6 +368,9 @@ prepare:
 	@if [ ! -d $(OBJ_DIR) ] ; then mkdir -p $(OBJ_DIR) ; fi
 	@if [ ! -d $(OUT_BIN_DIR) ] ; then mkdir -p $(OUT_BIN_DIR) ; fi
 	@if [ ! -d $(PUBLISH_DIR) ] ; then mkdir -p $(PUBLISH_DIR) ; fi
+ifndef MODEL_DOC_DISABLE
+	@if [ ! -d $(MODEL_OUTDOC_DIR) ] ; then mkdir -p $(MODEL_OUTDOC_DIR) ; fi
+endif
 ifeq ($(PLATFORM_UNAME), Darwin)
 	@sed \
 	-e "s_<string>0.0.1</string>_<string>$(BUNDLE_VERSION)</string>_" \

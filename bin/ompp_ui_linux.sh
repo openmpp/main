@@ -17,8 +17,8 @@ set -m
 
 # set openM++ root folder 
 #
-self="$(basename "$0")"
-sd="$(dirname "$0")"
+self=$(basename "$0")
+sd=$(dirname "$0")
 
 if [ -z "$OM_ROOT" ] ;
 then
@@ -47,7 +47,7 @@ then
   exit 1
 fi
 
-[ "$OM_ROOT" != "$PWD" ] && pushd $OM_ROOT
+[ "$OM_ROOT" != "$PWD" ] && pushd "$OM_ROOT"
 
 export OM_ROOT="$PWD"
 

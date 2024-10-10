@@ -52,11 +52,14 @@ public:
      */
     static int number_of_languages()
     {
+        // Use internal counter instead of Symbol::pp_all_languages.size()
+        // to return correct value before post-parse processing populates pp_all_languages.
         return next_language_id;
     }
 
     /**
-     * Identifier for the language.
+     * Numeric identifier for the language (also index)
+     * 
      */
     int language_id;
 

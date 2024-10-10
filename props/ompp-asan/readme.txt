@@ -14,7 +14,7 @@ You need to have AddressSanitizer installed to build model.exe
 You need to have AddressSanitizer DLLs avaliable to your model.exe at run time
 and options are:
 - run model.exe from Visual Studio 
-- run model.exe from Developer Command Prompt
-- set environmemnt variables for model.exe to find those. DLLs
+- run model.exe from Visual Studio Developer Command Prompt or Native Tools Command Prompt
+- set environmemnt variables for model.exe to find those DLLs
 
 amc1999: openmpp99@gmail.com

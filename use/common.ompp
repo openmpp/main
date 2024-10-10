@@ -8,7 +8,7 @@
 // Copyright (c) 2013-2017 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
@@ -16,9 +16,38 @@ parameters {
     //EN Simulation starting seed
     long long SimulationSeed;
 };
-//LABEL(SimulationSeed,FR) Graine de nombre aléatoire de la simulation
 
 #endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(SimulationSeed,EN)
+`SimulationSeed` determines the starting seeds of all random number generators in the run.
+It is an integer greater than 0 and normally less than 2147483648.
+Values larger than 2147483648 are reserved to reproduce a single selected member.
+*/
+
+//LABEL(SimulationSeed,FR) Graine de nombre aléatoire de la simulation
+
+/*NOTE(SimulationSeed,FR)
+`SimulationSeed` détermine les valeurs initiales de départ de tous les générateurs de nombres aléatoires de l'exécution.
+Il s'agit d'un entier supérieur à 0 et normalement inférieur à 2147483648.
+Les valeurs supérieures à 2147483648 sont réservées à la reproduction d'un seul membre sélectionné.
+*/
+
+//LABEL(bool,EN) boolean
+/*NOTE(bool,EN)
+A symbol of type `bool` has one of two values, `true` or `false`. 
+A `bool` can be used in a numeric context, in which case `true` is `1` and `false` is `0`. 
+A `bool` can also be used like a classification, 
+for example as a dimension of a parameter or table.
+*/
+
+//LABEL(bool,FR) booléen
+/*NOTE(bool,FR)
+Un symbole de type `bool` a l'une des deux valeurs suivantes, `true` ou `false`. 
+Un `bool` peut être utilisé dans un contexte numérique, auquel cas `true` est `1` et `false` est `0`. 
+Un `bool` peut également être utilisé comme une classification, 
+par exemple comme dimension d'un paramètre ou tableau.
+*/
 
 /**
 * Called before model PreSimulation functions.
@@ -38,6 +67,10 @@ void before_presimulation(int mem_id, int mem_count)
 
     // code block for SimulationSeed
     {
+        if (SimulationSeed <= 0) {
+            auto msg = openm::formatToString(LT("Error - SimulationSeed '%lld' must be greater than 0"), SimulationSeed);
+            ModelExit(msg.c_str());
+        }
         // Factor the combined seed SimulationSeed into its two parts
         fmk::SimulationSeed_member_part = SimulationSeed / ((long long)fmk::lcg_modulus + 1);
         fmk::SimulationSeed_seed_part = SimulationSeed - ((long long)fmk::lcg_modulus + 1) * fmk::SimulationSeed_member_part;
@@ -377,6 +410,54 @@ void handle_bounds_error(
 }
 
 /**
+ * Verify validity of array index
+ *
+ * @param   index  The index to check for validity.
+ * @param   size   The size of the dimension.
+ * @param   dim    The 0-based position of the dimension.
+ * @param   symbol The name of the symbol.
+ *
+ * @returns index.
+ */
+int om_check_index(int index, int size, int dim, const char* name, const char* file, int line)
+{
+    if (index < 0 || index >= size) {
+        // invalid array index, exit with runtime error message
+        std::stringstream ss;
+        ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) // maximum precision
+            << std::showpoint; // show decimal point
+        ss << LT("invalid index ");
+        ss << index;
+        ss << LT(" in 0-based dimension ");
+        ss << dim;
+        ss << LT(" of ");
+        ss << name;
+        ss << LT(" with bounds [0,");
+        ss << size - 1;
+        ss << "]";
+
+        ss << LT(" when current time is ") << get_global_time();
+        if (BaseEvent::current_entity_id >= 0) {
+            ss << LT(" in entity_id ") << BaseEvent::current_entity_id;
+        }
+        if (BaseEvent::current_event_id >= 0) {
+            ss << LT(" in or after event ") << omr::event_id_to_name(BaseEvent::current_event_id);
+        }
+        ss << LT(" in simulation member ") << get_simulation_member();
+        ss << LT(" with combined seed ") << get_combined_seed();
+        std::string fname = file;
+        auto pos = fname.find_last_of("/\\");
+        if ((pos != std::string::npos) && (pos + 1 < fname.length())) {
+            fname = fname.substr(pos + 1);
+        }
+        ss << LT(" at module ") << fname;
+        ss << "[" << line << "]";
+        ModelExit(ss.str().c_str());
+    }
+    return index;
+}
+
+/**
  * Handles situation where the maximum random stream is exceeded.
  */
 void handle_streams_exceeded(
@@ -691,7 +772,7 @@ void process_trace_options(IRunBase* const i_runBase)
     if (om_event_trace_capable) { // is constexpr
         // Model was compiled with event trace capability
 
-        theLog->logFormatted(LT("Warning : possible performance impact - model built with event_trace = on"));
+        theLog->logFormatted("Warning : possible performance impact - model built with event_trace = on");
 
         {
             std::string rptStyle = i_runBase->strOption("EventTrace.ReportStyle", "modgen");
@@ -706,7 +787,7 @@ void process_trace_options(IRunBase* const i_runBase)
                 BaseEntity::event_trace_report_style = BaseEntity::et_report_style::eCsv;
             }
             else {
-                theLog->logFormatted(LT("Warning : unrecognized EventTrace.ReportStyle=%s"), rptStyle.c_str());
+                theLog->logFormatted("Warning : unrecognized EventTrace.ReportStyle=%s", rptStyle.c_str());
             }
         }
 
@@ -793,7 +874,7 @@ void process_trace_options(IRunBase* const i_runBase)
         if (i_runBase->isOptionExist("EventTrace.SelectLinkedEntities")) {
             BaseEntity::event_trace_select_linked_entities = i_runBase->boolOption("EventTrace.SelectLinkedEntities");
             if (BaseEntity::event_trace_select_linked_entities && 0 == BaseEntity::event_trace_selected_entities.size()) {
-                theLog->logFormatted(LT("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.SelectLinkedEntities"));
+                theLog->logFormatted("Warning : EventTrace.SelectedEntities is empty, ignoring EventTrace.SelectLinkedEntities");
                 BaseEntity::event_trace_select_linked_entities = false;
             }
         }
@@ -807,7 +888,7 @@ void process_trace_options(IRunBase* const i_runBase)
                     BaseEntity::event_trace_selected_events.insert(id);
                 }
                 else {
-                    theLog->logFormatted(LT("Warning : unrecognized event EventTrace.SelectedEvents=%s"), str.c_str());
+                    theLog->logFormatted("Warning : unrecognized event EventTrace.SelectedEvents=%s", str.c_str());
                 }
             }
         }
@@ -821,7 +902,7 @@ void process_trace_options(IRunBase* const i_runBase)
                     BaseEntity::event_trace_selected_attributes.insert(id);
                 }
                 else {
-                    theLog->logFormatted(LT("Warning : unrecognized attribute EventTrace.SelectedAttributes=%s"), str.c_str());
+                    theLog->logFormatted("Warning : unrecognized attribute EventTrace.SelectedAttributes=%s", str.c_str());
                 }
             }
         }
@@ -839,7 +920,7 @@ void process_trace_options(IRunBase* const i_runBase)
                     BaseEntity::event_trace_selected_tables.insert(id);
                 }
                 else {
-                    theLog->logFormatted(LT("Warning : unrecognized table EventTrace.SelectedTables=%s"), str.c_str());
+                    theLog->logFormatted("Warning : unrecognized table EventTrace.SelectedTables=%s", str.c_str());
                 }
             }
         }

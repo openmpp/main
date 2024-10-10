@@ -60,15 +60,7 @@ bool EntityDataMemberSymbol::is_visible_attribute(void) const
 
 bool EntityDataMemberSymbol::is_eligible_microdata(void) const
 {
-    if (!option_microdata_output) {
-        return false;
-    }
-    if (is_visible_attribute() && !is_link_attribute()) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return pp_eligible_microdata;
 }
 
 bool EntityDataMemberSymbol::is_builtin_attribute(void) const
@@ -244,6 +236,30 @@ void EntityDataMemberSymbol::post_parse(int pass)
     {
         // Add this entity data symbol to the entity's list of all such symbols
         pp_entity->pp_data_members.push_back(this);
+
+        // Determine if eligible as microdata.
+        pp_eligible_microdata = false;
+        if (option_microdata_output) {
+            if (is_visible_attribute() && !is_link_attribute()) {
+                if (pp_data_type->is_enumeration()) {
+                    auto es = dynamic_cast<EnumerationSymbol*>(pp_data_type);
+                    assert(es); // compiler guarantee
+                    if (es->pp_size() > Symbol::option_microdata_max_enumerators) {
+                        Symbol::pp_warning(formatToString(
+                            LT("warning - attribute '%s' has %d enumerators making it ineligible as microdata - consider using int.")
+                            , name.c_str()
+                            , es->pp_size()
+                        ));
+                    }
+                    else {
+                        pp_eligible_microdata = true;
+                    }
+                }
+                else {
+                    pp_eligible_microdata = true;
+                }
+            }
+        }
         break;
     }
     default:

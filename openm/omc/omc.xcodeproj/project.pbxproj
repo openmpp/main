@@ -10,10 +10,13 @@
 		D807DC6424CBC765002E55F6 /* Literal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D807DC6224CBC765002E55F6 /* Literal.cpp */; };
 		D807DC6524CBC765002E55F6 /* omc_csv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D807DC6324CBC765002E55F6 /* omc_csv.cpp */; };
 		D81B6808262DF61400E5CD68 /* AnonGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */; };
+		D83D70132C5AAD2300182DF2 /* omc_markup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83D70112C5AAD2300182DF2 /* omc_markup.cpp */; };
+		D83D70142C5AAD2300182DF2 /* omc_model_doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83D70122C5AAD2300182DF2 /* omc_model_doc.cpp */; };
 		D893973E247EB25300D61DAA /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973D247EB20600D61DAA /* libiconv.tbd */; };
 		D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973F247EB25E00D61DAA /* liblibsqlite.a */; };
 		D8939742247EB26400D61DAA /* liblibopenm_omc_db.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */; };
 		D8AA205D29413FA5009C3D48 /* MeasureDimensionSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8AA205A29413FA5009C3D48 /* MeasureDimensionSymbol.cpp */; };
+		D8C8C5972C03B9FA00B0B41F /* ModuleSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8C8C5962C03B9FA00B0B41F /* ModuleSymbol.cpp */; };
 		D8ED3FA42AF47E2C00CFC26C /* Symbol_options.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3F9D2AF47E2C00CFC26C /* Symbol_options.cpp */; };
 		D8ED3FA62AF47E2C00CFC26C /* omc_model_metrics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3FA22AF47E2C00CFC26C /* omc_model_metrics.cpp */; };
 		D8ED3FA72AF47E2C00CFC26C /* omc_missing_documentation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D8ED3FA32AF47E2C00CFC26C /* omc_missing_documentation.cpp */; };
@@ -108,12 +111,41 @@
 		D807DC6324CBC765002E55F6 /* omc_csv.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_csv.cpp; sourceTree = "<group>"; };
 		D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnonGroupSymbol.cpp; sourceTree = "<group>"; };
 		D81B6807262DF61400E5CD68 /* AnonGroupSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnonGroupSymbol.h; sourceTree = "<group>"; };
+		D83D700F2C5AAD2300182DF2 /* omc_markup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_markup.h; sourceTree = "<group>"; };
+		D83D70102C5AAD2300182DF2 /* omc_model_doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_model_doc.h; sourceTree = "<group>"; };
+		D83D70112C5AAD2300182DF2 /* omc_markup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_markup.cpp; sourceTree = "<group>"; };
+		D83D70122C5AAD2300182DF2 /* omc_model_doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_model_doc.cpp; sourceTree = "<group>"; };
 		D893973D247EB20600D61DAA /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		D893973F247EB25E00D61DAA /* liblibsqlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibsqlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibopenm_omc_db.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8AA205A29413FA5009C3D48 /* MeasureDimensionSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeasureDimensionSymbol.cpp; sourceTree = "<group>"; };
 		D8AA205B29413FA5009C3D48 /* MeasureDimensionSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeasureDimensionSymbol.h; sourceTree = "<group>"; };
 		D8AA205E29414093009C3D48 /* omc_location.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = omc_location.hh; sourceTree = "<group>"; };
+		D8C8C57D2C03B24900B0B41F /* blockparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blockparser.h; sourceTree = "<group>"; };
+		D8C8C57E2C03B24900B0B41F /* breaklineparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = breaklineparser.h; sourceTree = "<group>"; };
+		D8C8C57F2C03B24900B0B41F /* checklistparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = checklistparser.h; sourceTree = "<group>"; };
+		D8C8C5802C03B24900B0B41F /* codeblockparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = codeblockparser.h; sourceTree = "<group>"; };
+		D8C8C5812C03B24900B0B41F /* emphasizedparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = emphasizedparser.h; sourceTree = "<group>"; };
+		D8C8C5822C03B24900B0B41F /* headlineparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = headlineparser.h; sourceTree = "<group>"; };
+		D8C8C5832C03B24900B0B41F /* horizontallineparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = horizontallineparser.h; sourceTree = "<group>"; };
+		D8C8C5842C03B24900B0B41F /* htmlparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = htmlparser.h; sourceTree = "<group>"; };
+		D8C8C5852C03B24900B0B41F /* imageparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imageparser.h; sourceTree = "<group>"; };
+		D8C8C5862C03B24900B0B41F /* inlinecodeparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = inlinecodeparser.h; sourceTree = "<group>"; };
+		D8C8C5872C03B24900B0B41F /* italicparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = italicparser.h; sourceTree = "<group>"; };
+		D8C8C5882C03B24900B0B41F /* latexblockparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = latexblockparser.h; sourceTree = "<group>"; };
+		D8C8C5892C03B24900B0B41F /* lineparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lineparser.h; sourceTree = "<group>"; };
+		D8C8C58A2C03B24900B0B41F /* linkparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = linkparser.h; sourceTree = "<group>"; };
+		D8C8C58B2C03B24900B0B41F /* orderedlistparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = orderedlistparser.h; sourceTree = "<group>"; };
+		D8C8C58C2C03B24900B0B41F /* paragraphparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = paragraphparser.h; sourceTree = "<group>"; };
+		D8C8C58D2C03B24900B0B41F /* parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parser.h; sourceTree = "<group>"; };
+		D8C8C58E2C03B24900B0B41F /* parserconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parserconfig.h; sourceTree = "<group>"; };
+		D8C8C58F2C03B24900B0B41F /* quoteparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = quoteparser.h; sourceTree = "<group>"; };
+		D8C8C5902C03B24900B0B41F /* strikethroughparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = strikethroughparser.h; sourceTree = "<group>"; };
+		D8C8C5912C03B24900B0B41F /* strongparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = strongparser.h; sourceTree = "<group>"; };
+		D8C8C5922C03B24900B0B41F /* tableparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tableparser.h; sourceTree = "<group>"; };
+		D8C8C5932C03B24900B0B41F /* unorderedlistparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unorderedlistparser.h; sourceTree = "<group>"; };
+		D8C8C5952C03B28200B0B41F /* disable_selected_warnings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = disable_selected_warnings.h; sourceTree = "<group>"; };
+		D8C8C5962C03B9FA00B0B41F /* ModuleSymbol.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModuleSymbol.cpp; sourceTree = "<group>"; };
 		D8ED3F9D2AF47E2C00CFC26C /* Symbol_options.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Symbol_options.cpp; sourceTree = "<group>"; };
 		D8ED3FA02AF47E2C00CFC26C /* omc_model_metrics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_model_metrics.h; sourceTree = "<group>"; };
 		D8ED3FA12AF47E2C00CFC26C /* omc_missing_documentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_missing_documentation.h; sourceTree = "<group>"; };
@@ -299,12 +331,45 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		D8C8C5942C03B24900B0B41F /* maddy */ = {
+			isa = PBXGroup;
+			children = (
+				D8C8C57D2C03B24900B0B41F /* blockparser.h */,
+				D8C8C57E2C03B24900B0B41F /* breaklineparser.h */,
+				D8C8C57F2C03B24900B0B41F /* checklistparser.h */,
+				D8C8C5802C03B24900B0B41F /* codeblockparser.h */,
+				D8C8C5812C03B24900B0B41F /* emphasizedparser.h */,
+				D8C8C5822C03B24900B0B41F /* headlineparser.h */,
+				D8C8C5832C03B24900B0B41F /* horizontallineparser.h */,
+				D8C8C5842C03B24900B0B41F /* htmlparser.h */,
+				D8C8C5852C03B24900B0B41F /* imageparser.h */,
+				D8C8C5862C03B24900B0B41F /* inlinecodeparser.h */,
+				D8C8C5872C03B24900B0B41F /* italicparser.h */,
+				D8C8C5882C03B24900B0B41F /* latexblockparser.h */,
+				D8C8C5892C03B24900B0B41F /* lineparser.h */,
+				D8C8C58A2C03B24900B0B41F /* linkparser.h */,
+				D8C8C58B2C03B24900B0B41F /* orderedlistparser.h */,
+				D8C8C58C2C03B24900B0B41F /* paragraphparser.h */,
+				D8C8C58D2C03B24900B0B41F /* parser.h */,
+				D8C8C58E2C03B24900B0B41F /* parserconfig.h */,
+				D8C8C58F2C03B24900B0B41F /* quoteparser.h */,
+				D8C8C5902C03B24900B0B41F /* strikethroughparser.h */,
+				D8C8C5912C03B24900B0B41F /* strongparser.h */,
+				D8C8C5922C03B24900B0B41F /* tableparser.h */,
+				D8C8C5932C03B24900B0B41F /* unorderedlistparser.h */,
+			);
+			path = maddy;
+			sourceTree = "<group>";
+		};
 		D8FD8818247D823E0006D608 = {
 			isa = PBXGroup;
 			children = (
+				D8C8C5942C03B24900B0B41F /* maddy */,
 				D8AA205E29414093009C3D48 /* omc_location.hh */,
+				D8C8C5952C03B28200B0B41F /* disable_selected_warnings.h */,
 				D8AA205A29413FA5009C3D48 /* MeasureDimensionSymbol.cpp */,
 				D8AA205B29413FA5009C3D48 /* MeasureDimensionSymbol.h */,
+				D8C8C5962C03B9FA00B0B41F /* ModuleSymbol.cpp */,
 				D8FD890B247D94BE0006D608 /* omc.xcconfig */,
 				D8ED3FA32AF47E2C00CFC26C /* omc_missing_documentation.cpp */,
 				D8ED3FA12AF47E2C00CFC26C /* omc_missing_documentation.h */,
@@ -388,6 +453,10 @@
 				D8FD88AD247D846C0006D608 /* omc.cpp */,
 				D807DC6124CBC765002E55F6 /* omc_csv.h */,
 				D807DC6324CBC765002E55F6 /* omc_csv.cpp */,
+				D83D700F2C5AAD2300182DF2 /* omc_markup.h */,
+				D83D70102C5AAD2300182DF2 /* omc_model_doc.h */,
+				D83D70122C5AAD2300182DF2 /* omc_model_doc.cpp */,
+				D83D70112C5AAD2300182DF2 /* omc_markup.cpp */,
 				D8FD88B3247D846C0006D608 /* ParameterGroupSymbol.cpp */,
 				D8FD88A4247D846B0006D608 /* ParameterGroupSymbol.h */,
 				D8FD884C247D84300006D608 /* BoolSymbol.h */,
@@ -616,11 +685,13 @@
 				D8FD8893247D84330006D608 /* ExtendParameterSymbol.cpp in Sources */,
 				D8FD888C247D84330006D608 /* EntitySymbol.cpp in Sources */,
 				D8FD88BF247D846C0006D608 /* ModelSymbol.cpp in Sources */,
+				D83D70142C5AAD2300182DF2 /* omc_model_doc.cpp in Sources */,
 				D8FD88C6247D846C0006D608 /* ImportSymbol.cpp in Sources */,
 				D8FD88C8247D846C0006D608 /* NumericSymbol.cpp in Sources */,
 				D8FD8892247D84330006D608 /* ClassificationSymbol.cpp in Sources */,
 				D8FD88F7247D84B30006D608 /* TableSymbol.cpp in Sources */,
 				D8FD88BB247D846C0006D608 /* MultilinkAttributeSymbol.cpp in Sources */,
+				D8C8C5972C03B9FA00B0B41F /* ModuleSymbol.cpp in Sources */,
 				D8FD88FC247D84B30006D608 /* UnknownTypeSymbol.cpp in Sources */,
 				D8FD887F247D84330006D608 /* EntityEventSymbol.cpp in Sources */,
 				D8FD8895247D84330006D608 /* DerivedAttributeSymbol.cpp in Sources */,
@@ -653,6 +724,7 @@
 				D8FD888B247D84330006D608 /* DerivedTableSymbol.cpp in Sources */,
 				D8FD88BA247D846C0006D608 /* GroupSymbol.cpp in Sources */,
 				D8FD8891247D84330006D608 /* EntityIncrementSymbol.cpp in Sources */,
+				D83D70132C5AAD2300182DF2 /* omc_markup.cpp in Sources */,
 				D8FD8913247DA43B0006D608 /* scanner.cpp in Sources */,
 				D8FD8832247D83D20006D608 /* BoolSymbol.cpp in Sources */,
 				D8FD88FA247D84B30006D608 /* TypeSymbol.cpp in Sources */,
@@ -714,7 +786,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -773,7 +845,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_C_LANGUAGE_STANDARD = c17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -799,6 +871,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../include,
 					"$(BUILD_SRC_DIR)",
+					"$(SRCROOT)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-register";
@@ -815,6 +888,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../include,
 					"$(BUILD_SRC_DIR)",
+					"$(SRCROOT)",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-register";

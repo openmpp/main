@@ -110,6 +110,16 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     // Instead, enumerator metadata for ranges is created directly at this level (RangeSymbol) 
     // of the hierarchical calling chain.
 
+    // resize range vectors to reduce reallocations
+    // 2024-02-09:
+    // by final memory size resize() slightly better than just push_back(), reserve() increase final memory size +20%
+    size_t nEnum = metaRows.typeEnum.size();
+    metaRows.typeEnum.resize(nEnum + pp_size());
+
+    size_t nTxt = metaRows.typeEnumTxt.size();
+    metaRows.typeEnumTxt.resize(nTxt + (pp_size() * Symbol::pp_all_languages.size()));
+    size_t tIdx = nTxt;
+
     for (int i = lower_bound, ordinal = 0; i <= upper_bound; ++i, ++ordinal) {
 		// The enumerator 'name' in the data store is set to the integer range value.
         string enumerator_name = to_string(i);
@@ -119,17 +129,18 @@ void RangeSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             typeEnum.typeId = type_id;
             typeEnum.enumId = lower_bound + ordinal;
             typeEnum.name = enumerator_name;
-            metaRows.typeEnum.push_back(typeEnum);
+            metaRows.typeEnum[nEnum + ordinal] = typeEnum;
         }
 
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
             typeEnumTxt.enumId = lower_bound + ordinal;
-            typeEnumTxt.langCode = lang->name;
+            typeEnumTxt.langCode = lang;
             typeEnumTxt.descr = to_string(lower_bound + ordinal);
             typeEnumTxt.note = "";
-            metaRows.typeEnumTxt.push_back(typeEnumTxt);
+            metaRows.typeEnumTxt[tIdx++] = typeEnumTxt;
         }
     }
 

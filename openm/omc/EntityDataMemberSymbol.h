@@ -37,6 +37,7 @@ public:
         , pp_data_type(nullptr)
         , parent(nullptr)
         , pp_parent(nullptr)
+        , pp_eligible_microdata(false)
         , pp_member_id(-1)
     {
     }
@@ -57,6 +58,7 @@ public:
         , pp_data_type(nullptr)
         , parent(nullptr)
         , pp_parent(nullptr)
+        , pp_eligible_microdata(false)
         , pp_member_id(-1)
     {
         assert(data_type);  // grammar/initialization guarantee
@@ -259,6 +261,11 @@ public:
      * Refers to a member from which this member was derived
      */
     EntityDataMemberSymbol *pp_parent;
+
+    /**
+     * Is eligible as microdata
+     */
+    bool pp_eligible_microdata;
 
     /**
      * The numeric identifier for the member.

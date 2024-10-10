@@ -1,0 +1,17 @@
+sub_id,dim0,param_value
+0, 10, false
+0, 20, false
+0, 30, false
+0, 40, true
+1, 10, false
+1, 20, false
+1, 30, false
+1, 40, true
+2, 10, false
+2, 20, false
+2, 30, false
+2, 40, true
+3, 10, false
+3, 20, false
+3, 30, false
+3, 40, true

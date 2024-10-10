@@ -15,6 +15,8 @@
 * * -Omc.UseDir         use/dir/with/ompp/files
 * * -Omc.ParamDir       input/dir/to/find/parameter/files/for/scenario (can be list of directories)
 * * -Omc.FixedDir       input/dir/to/find/fixed/parameter/files/
+* * -Omc.InDocDir       input/dir/to/find/authored/model/documentation/files/
+* * -Omc.OutDocDir      output directory to create model documentation files, e.g.: ompp/bin/doc
 * * -Omc.ModelDoc       if true then generate model documentation
 * * -Omc.SqlDir         input sql/script/dir to create SQLite database
 * * -Omc.SqliteDir      output directory to create SQLite model database
@@ -36,6 +38,7 @@
 * * -u short form of -Omc.UseDir
 * * -p short form of -Omc.ParamDir
 * * -f short form of -Omc.FixedDir
+* * -d short form of -Omc.InDocDir
 * * -ini short form of -OpenM.IniFile
 * 
 * Also common OpenM log options supported: 
@@ -46,16 +49,20 @@
 * Parameters can be specified on command line or through ini-file. 
 * Command line parameters take precedence.
 */
-// Copyright (c) 2013-2015 OpenM++
-// This code is licensed under the MIT license (see LICENSE.txt for details)
+// Copyright (c) 2013-2024 OpenM++ Contributors (see AUTHORS.txt)
+// This code is licensed under the MIT license (see LICENSE.txt)
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include "Symbol.h"
 #include "LanguageSymbol.h"
 #include "ParameterSymbol.h"
 #include "ScenarioSymbol.h"
 #include "AnonGroupSymbol.h"
+#include "ParameterSymbol.h"
+#include "TableSymbol.h"
+#include "EntitySymbol.h"
 #include "Driver.h"
 #include "ParseContext.h"
 #include "CodeGen.h"
@@ -66,10 +73,13 @@
 #include "omc_csv.h"
 #include "omc_model_metrics.h"
 #include "omc_missing_documentation.h"
+#include "omc_model_doc.h"
+#include "omc_markup.h"
 
 using namespace std;
 using namespace openm;
 using namespace omc;
+namespace fs = std::filesystem;
 
 namespace openm
 {
@@ -97,6 +107,12 @@ namespace openm
         /** omc input directory with OpenM++ fixed parameter files */
         static constexpr const char * fixedDir = "Omc.FixedDir";
 
+        /** omc input directory with openM++ authored documentation files */
+        static constexpr const char* inDocDir = "Omc.InDocDir";
+
+        /** omc output directory with openM++ authored documentation files */
+        static constexpr const char * outDocDir = "Omc.OutDocDir";
+
         /**  omc code page: input files encoding name */
         static constexpr const char * codePage = "Omc.CodePage";
 
@@ -106,7 +122,7 @@ namespace openm
         /** omc suppress metadata publishing (model cannot be run) */
         static constexpr const char* noMetadata = "Omc.NoMetadata";
 
-        /** omc generate model documentation */
+        /** omc generate model documentation (user version) */
         static constexpr const char* modelDoc = "Omc.ModelDoc";
 
         /** omc generate detailed output from parser */
@@ -157,6 +173,9 @@ namespace openm
 
         /** short name for omc fixed directory */
         static constexpr const char * fixedDir = "f";
+
+        /** short name for omc doc directory */
+        static constexpr const char* inDocDir = "d";
     };
 
     /** array of model run option keys. */
@@ -168,6 +187,8 @@ namespace openm
         OmcArgKey::useDir,
         OmcArgKey::paramDir,
         OmcArgKey::fixedDir,
+        OmcArgKey::inDocDir,
+        OmcArgKey::outDocDir,
         OmcArgKey::codePage,
         OmcArgKey::noLineDirectives,
         OmcArgKey::noMetadata,
@@ -202,6 +223,7 @@ namespace openm
         make_pair(OmcShortKey::useDir, OmcArgKey::useDir),
         make_pair(OmcShortKey::paramDir, OmcArgKey::paramDir),
         make_pair(OmcShortKey::fixedDir, OmcArgKey::fixedDir),
+        make_pair(OmcShortKey::inDocDir, OmcArgKey::inDocDir),
     };
     static const size_t shortPairSize = sizeof(shortPairArr) / sizeof(const pair<const char *, const char *>);
 }
@@ -228,12 +250,19 @@ int main(int argc, char * argv[])
             argStore.boolOption(ArgKey::logSql)
             );
 
+        string omc_exe = argv[0];   /// path of omc.exe
+
         // read language specific messages from path/to/exe/omc.message.ini
+        string msgFilePath = makeFilePath(baseDirOf(omc_exe).c_str(), "omc.message.ini");
+
         IniFileReader::loadMessages(
-            makeFilePath(baseDirOf((argc > 0 ? argv[0] : "")).c_str(), "omc.message.ini").c_str(),
+            msgFilePath.c_str(),
             argStore.strOption(OmcArgKey::messageLang)
         );
         theLog->logMsg("Start omc");
+
+        // load translated messages for all languages from path/to/exe/omc.message.ini
+        theAllTranslated->load(msgFilePath.c_str());
 
         // get model name
         string model_name = argStore.strOption(OmcArgKey::modelName);
@@ -294,8 +323,7 @@ int main(int argc, char * argv[])
         }
 
         // Obtain locations of 'use' folders to make available to parser.
-		string omc_exe = argv[0];
-		{
+        {
 			string use_folders;
 			if (argStore.isOptionExist(OmcArgKey::useDir)) {
 				use_folders = argStore.strOption(OmcArgKey::useDir);
@@ -325,6 +353,57 @@ int main(int argc, char * argv[])
 			}
 		}
 
+        // Get 'doc' folder containing authored model documentation files.
+        if (argStore.isOptionExist(OmcArgKey::inDocDir)) {
+            string docDir = argStore.strOption(OmcArgKey::inDocDir);
+            // "normalize" input doc directory: 
+            // use empty "" if it is current directory else make sure it ends with /
+            std::replace(docDir.begin(), docDir.end(), '\\', '/');
+            bool isToCurrent = ((docDir == "") || (docDir == "."));
+            if (isToCurrent) {
+                docDir = "";
+            }
+            else {
+                if (docDir.back() != '/') docDir += '/';
+            }
+
+            if (fs::is_directory(docDir)) {
+                Symbol::in_doc_dir = docDir;
+                {
+                    // find and note all *.md files in the doc directory
+                    list<string> doc_extensions = { ".md" };
+                    auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
+                    if (in_doc_paths.size() > 0) {
+                        Symbol::in_doc_active = true;
+                        for (auto s : in_doc_paths) {
+                            fs::path p(s);
+                            string stem = p.stem().u8string();
+                            Symbol::in_doc_stems_md.insert(stem);
+                        }
+                    }
+                }
+                {
+                    // find and note all *.txt files in the doc directory
+                    list<string> doc_extensions = { ".txt" };
+                    auto in_doc_paths = listSourceFiles(docDir, doc_extensions);
+                    if (in_doc_paths.size() > 0) {
+                        Symbol::in_doc_active = true;
+                        for (auto s : in_doc_paths) {
+                            fs::path p(s);
+                            string stem = p.stem().u8string();
+                            Symbol::in_doc_stems_txt.insert(stem);
+                        }
+                    }
+                }
+                if (Symbol::in_doc_active) {
+                    theLog->logFormatted("Authored input model documentation from: %s", docDir.c_str());
+                }
+            }
+            else {
+                // TODO docDir might be ill-formed, or just might not exist, especially if is default MODEL/doc
+            }
+        }
+
         // Obtain information on code page name, default: empty "" name (= system default code page)
         Symbol::code_page = argStore.strOption(OmcArgKey::codePage);
 
@@ -334,8 +413,15 @@ int main(int argc, char * argv[])
         // Obtain information on disabling metadata publishing, default: false
         Symbol::no_metadata = parseBoolOption(OmcArgKey::noMetadata, argStore);
 
-        // Obtain information on generating model documentation, default: false
+        // Obtain information on generating model documentation (user version), default: false
         Symbol::model_doc = parseBoolOption(OmcArgKey::modelDoc, argStore);
+
+        // check if output documentation directory exists, it cannot be empty
+        string outDocDir = argStore.strOption(OmcArgKey::outDocDir);
+
+        if (Symbol::model_doc) {
+            if (!isFileExists(outDocDir.c_str())) throw HelperException(LT("error : invalid output documentation directory: %s"), outDocDir.c_str());
+        }
 
         // Obtain information on detailed parsing option, default: false
         Symbol::trace_parsing = parseBoolOption(OmcArgKey::traceParsing, argStore);
@@ -372,7 +458,11 @@ int main(int argc, char * argv[])
         ParseContext pc;
 
         // open & prepare pass-through / markup stream om_developer.cpp
-        ofstream om_developer_cpp(outDir + "om_developer.cpp", ios::out | ios::trunc | ios::binary);
+
+        /// Full path of model code passthrough file
+        string om_developer_cpp_path = outDir + "om_developer.cpp";
+        /// Output stream of model code passthrough file
+        ofstream om_developer_cpp(om_developer_cpp_path, ios::out | ios::trunc | ios::binary);
         exit_guard<ofstream> onExit_om_developer_cpp(&om_developer_cpp, &ofstream::close);   // close on exit
         if (om_developer_cpp.fail()) throw HelperException(LT("error : unable to open %s for writing"), "om_developer.cpp");
 
@@ -382,7 +472,7 @@ int main(int argc, char * argv[])
     #endif
         om_developer_cpp << "/**" << endl;
         om_developer_cpp << " * @file om_developer.cpp" << endl;
-        om_developer_cpp << " * Developer-supplied C++ functions" << endl;
+        om_developer_cpp << " * Developer-supplied C++ code" << endl;
         om_developer_cpp << " */" << endl;
         om_developer_cpp << "" << endl;
         om_developer_cpp << "#include \"omc/omPch.h\"" << endl;
@@ -518,6 +608,22 @@ int main(int argc, char * argv[])
             }
         }
 
+        // Determine enumeration metadata required by published symbols
+        {
+            // Determine enumeration metadata required by published parameters
+            for (auto param : Symbol::pp_all_parameters) {
+                param->mark_enumerations_to_publish();
+            }
+            // Determine enumeration metadata required by published tables
+            for (auto tbl : Symbol::pp_all_tables) {
+                tbl->mark_enumerations_to_publish();
+            }
+            // Determine enumeration metadata required by published entity attributes
+            for (auto ent : Symbol::pp_all_entities) {
+                ent->mark_enumerations_to_publish();
+            }
+        }
+
         // validate parameter initializers
         for (auto param : Symbol::pp_all_parameters) {
             param->validate_initializer();
@@ -575,11 +681,13 @@ int main(int argc, char * argv[])
             &om_types1_h,
             &om_declarations_h,
             &om_definitions_cpp,
+            &om_developer_cpp,
             &om_fixed_parms_cpp,
             missing_param_defs,
             builder.get(),
             Symbol::no_line_directives,
             om_definitions_cpp_fname,
+            om_developer_cpp_path,
             metaRows
             );
         cg.do_all();
@@ -704,12 +812,12 @@ int main(int argc, char * argv[])
 
         MetaSetLangHolder metaSet;    // metadata for working set
         metaSet.worksetRow.name = scenario_name;
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             WorksetTxtLangRow worksetTxt;
-            auto lang_name = lang->name;
-            worksetTxt.langCode = lang_name;
-            worksetTxt.descr = scenario_symbol->label(*lang);
-            worksetTxt.note = scenario_symbol->note(*lang);
+            worksetTxt.langCode = lang;
+            worksetTxt.descr = scenario_symbol->label(*langSym);
+            worksetTxt.note = scenario_symbol->note(*langSym);
             metaSet.worksetTxt.push_back(worksetTxt);
         }
 
@@ -725,15 +833,15 @@ int main(int argc, char * argv[])
             metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
 
             // value notes for the parameter
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
                 WorksetParamTxtLangRow worksetParamTxt;
-                auto lang_id = lang->language_id;
-                auto lang_name = lang->name;
-                assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
-                string value_note = param->pp_value_notes[lang_id];
+                assert(lang_index < (int)param->pp_value_notes.size()); // logic guarantee
+                string value_note = param->pp_value_notes[lang_index];
                 if (value_note.length() > 0) {
                     worksetParamTxt.paramId = wsParam.paramId;
-                    worksetParamTxt.langCode = lang_name;
+                    worksetParamTxt.langCode = lang;
                     worksetParamTxt.note = value_note;
                     metaSet.worksetParamTxt.push_back(worksetParamTxt);
                 }
@@ -753,6 +861,14 @@ int main(int argc, char * argv[])
         if (!Symbol::no_metadata) {
             // build Modgen compatibilty views sql script
             builder->buildCompatibilityViews(metaRows);
+        }
+
+        // generate model documentation
+        if (Symbol::model_doc) {
+            theLog->logMsg("Generate model documentation - start");
+            string omrootDir = baseDirOf(baseDirOf(omc_exe));
+            do_model_doc(model_name, outDocDir, outDir, omrootDir, cg);
+            theLog->logMsg("Generate model documentation - finish");
         }
 
         // cleanup literals created from csv files
@@ -785,15 +901,14 @@ int main(int argc, char * argv[])
         // create the Model Metrics Report
         do_model_metrics_report(outDir, model_name, cg);
 
-        // generate model documentation
-        if (Symbol::model_doc) {
-            theLog->logMsg("Generating model documentation");
-            // TODO call function here
-        }
-
-        // issue wanrings for missing labels,notes,translations
+        // issue warnings for missing labels,notes,translations
         do_missing_documentation();
-        
+
+        om_developer_cpp.close();
+        om_definitions_cpp.close();
+
+        // perform markup of model code if necessary
+        do_markup(om_developer_cpp_path, om_definitions_cpp_fname);
     }
     catch(DbException & ex) {
         theLog->logErr(ex, "DB error");
@@ -828,24 +943,18 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
     using namespace openm;
     for (auto it = start_it; it != files.cend(); it++) {
 
-        string full_name = *it;
+        string path = *it;
         try {
-            string file_ext = getFileNameExt(full_name);
-            string file_stem = getFileNameStem(full_name);
-            string file_name = file_stem + file_ext;
-            // As a special case, ignore file starting with "modgen_".
-            // This mechanism allows a single model code base to support compilation
-            // by either the Modgen or OpenM++ compilers.
-            string file_name_lc = file_name;
-            openm::toLower(file_name_lc);
+            string stem = omc::getPathStem(path);
+            string filename = omc::getPathFilename(path);
 
-            if (openm::equalNoCase(file_name.c_str(), "modgen_", 7)) {
-                theLog->logFormatted("Skipping %s", full_name.c_str());
+            if (omc::skipPathModule(path)) {
+                theLog->logFormatted("Skipping %s", path.c_str());
                 continue;
             }
 
-            theLog->logFormatted("Parsing %s", full_name.c_str());
-            string normalized_full_name = replaceAll(full_name, "\\", "/");
+            theLog->logFormatted("Parsing %s", path.c_str());
+            string normalized_full_name = replaceAll(path, "\\", "/");
             *markup_stream << endl; // required in case last line of previous file had no trailing newline
             string line_start = Symbol::no_line_directives ? "//#line " : "#line ";
             *markup_stream << line_start << "1 \"" << normalized_full_name << "\"" << endl;
@@ -855,11 +964,11 @@ static void parseFiles(list<string> & files, const list<string>::iterator start_
             drv.trace_scanning = Symbol::trace_scanning;
             drv.trace_parsing = Symbol::trace_parsing;
             // must pass non-transient pointer to string as first argument to drv.parse, since used in location objects
-            drv.parse(&*it, file_name, file_stem, markup_stream);
+            drv.parse(&*it, filename, stem, markup_stream);
             // record the line count of the parsed file
-            Symbol::source_files_line_count.insert({ full_name, pc.all_line_count });
+            Symbol::source_files_line_count.insert({ path, pc.all_line_count });
             // record the syntactic island line count of the parsed file
-            Symbol::source_files_island_line_count.insert({ full_name, pc.island_line_count });
+            Symbol::source_files_island_line_count.insert({ path, pc.island_line_count });
         }
         catch(exception & ex) {
             theLog->logErr(ex);
@@ -907,7 +1016,7 @@ static void processExtraParamDir(const string & i_paramDir, const string & i_sce
 
     // Create working set for published scenario
     MetaSetLangHolder metaSet;
-    metaSet.worksetRow.name = !i_scenarioName.empty() ? i_scenarioName : getFileNameStem(i_paramDir);
+    metaSet.worksetRow.name = !i_scenarioName.empty() ? i_scenarioName : getPathStem(i_paramDir);
 
     for (auto param : Symbol::pp_all_parameters) {
         if (param->source != ParameterSymbol::scenario_parameter) continue; // write into db only scenario parameters
@@ -919,15 +1028,15 @@ static void processExtraParamDir(const string & i_paramDir, const string & i_sce
         metaSet.worksetParam.push_back(wsParam);        // add parameter to workset
 
         // value notes for the parameter
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             WorksetParamTxtLangRow worksetParamTxt;
-            auto lang_id = lang->language_id;
-            auto lang_name = lang->name;
-            assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
-            string value_note = param->pp_value_notes[lang_id];
+            assert(lang_index < (int)param->pp_value_notes.size()); // logic guarantee
+            string value_note = param->pp_value_notes[lang_index];
             if (value_note.length() > 0) {
                 worksetParamTxt.paramId = wsParam.paramId;
-                worksetParamTxt.langCode = lang_name;
+                worksetParamTxt.langCode = lang;
                 worksetParamTxt.note = value_note;
                 metaSet.worksetParamTxt.push_back(worksetParamTxt);
             }

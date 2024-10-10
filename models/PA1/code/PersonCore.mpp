@@ -4,7 +4,7 @@
 	This module contains the basic information which defines the Person case.
 */
 
-#include "omc/omSimulation.h" // For IDE
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide from IDE
 actor Person //EN Individual

@@ -1,0 +1,37 @@
+//LABEL(ThingCore, EN) Core functionality of the Thing entity
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+range AGE //EN Integer age
+{ 0, 5 };
+
+entity Thing
+{
+    //EN Integer age
+    AGE integer_age = AGE_t(self_scheduling_int(age));
+
+    // exit the simulation at age 5
+    hook exit_simulation, trigger_entrances(integer_age,5);
+};
+
+table snapshot Thing Table1
+{
+    {
+        unit,      //EN entities
+        duration() //EN elapsed time
+    }
+};
+
+table snapshot Thing Table2
+{
+    integer_age +
+    * {
+        unit,      //EN entities
+        duration() //EN elapsed time
+    }
+};
+
+
+#endif // Hide non-C++ syntactic island from IDE

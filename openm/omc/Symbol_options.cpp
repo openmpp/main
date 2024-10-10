@@ -25,6 +25,7 @@ unordered_multimap<string, pair<string, omc::location>> Symbol::options;
 bool Symbol::option_event_trace = false;
 bool Symbol::option_event_trace_warning = true;
 bool Symbol::option_bounds_errors = true;
+bool Symbol::option_index_errors = false;
 bool Symbol::option_case_checksum = false;
 bool Symbol::option_allow_time_travel = false;
 bool Symbol::option_allow_clairvoyance = false;
@@ -33,6 +34,7 @@ bool Symbol::option_time_undef_is_minus_one = false;
 bool Symbol::option_verify_attribute_modification = true;
 bool Symbol::option_verify_timelike_attribute_access = true;
 bool Symbol::option_verify_valid_table_increment = true;
+bool Symbol::option_weighted_tabulation_allow_time_based = false;
 bool Symbol::option_weighted_tabulation = false;
 bool Symbol::option_resource_use = false;
 bool Symbol::option_entity_member_packing = false;
@@ -41,6 +43,7 @@ bool Symbol::option_microdata_output_warning = true;
 bool Symbol::option_microdata_write_on_enter = false;
 bool Symbol::option_microdata_write_on_exit = false;
 bool Symbol::option_microdata_write_on_event = false;
+size_t Symbol::option_microdata_max_enumerators = 1000;
 bool Symbol::option_all_attributes_visible = false;
 bool Symbol::option_use_heuristic_short_names = false;
 bool Symbol::option_enable_heuristic_names_for_enumerators = true;
@@ -69,6 +72,32 @@ bool Symbol::option_missing_name_warning_table = false;
 bool Symbol::option_missing_name_warning_published_classification = false;
 bool Symbol::option_missing_name_warning_published_parameter = false;
 bool Symbol::option_missing_name_warning_published_table = false;
+bool Symbol::option_generated_documentation = true;
+bool Symbol::option_authored_documentation = true;
+bool Symbol::option_symref_developer_edition = false;
+bool Symbol::option_symref_unpublished_symbols = true;
+bool Symbol::option_symref_main_topic = true;
+bool Symbol::option_symref_model_symbol = true;
+bool Symbol::option_symref_parameter_major_groups = true;
+bool Symbol::option_symref_table_major_groups = true;
+bool Symbol::option_symref_parameter_hierarchy = true;
+bool Symbol::option_symref_table_hierarchy = true;
+bool Symbol::option_symref_parameters_alphabetic = true;
+bool Symbol::option_symref_tables_alphabetic = true;
+bool Symbol::option_symref_enumerations_alphabetic = true;
+bool Symbol::option_symref_attributes_alphabetic = true;
+bool Symbol::option_symref_topic_parameters = true;
+bool Symbol::option_symref_topic_tables = true;
+bool Symbol::option_symref_topic_attributes = true;
+bool Symbol::option_symref_topic_attributes_internal = true;
+bool Symbol::option_symref_topic_enumerations = true;
+bool Symbol::option_symref_topic_modules = true;
+bool Symbol::option_symref_topic_modules_use = false;
+bool Symbol::option_symref_topic_entity_sets = true;
+bool Symbol::option_symref_topic_modules_symbols_declared = true;
+bool Symbol::option_symref_topic_notes = true;
+bool Symbol::option_symref_topic_notes_early = true;
+bool Symbol::option_symref_topic_note_heading = true;
 bool Symbol::option_alternate_attribute_dependency_implementation = false;
 string Symbol::option_memory_popsize_parameter;
 
@@ -270,6 +299,23 @@ void Symbol::do_options()
     }
 
     {
+        string key = "weighted_tabulation_allow_time_based";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_weighted_tabulation_allow_time_based = true;
+            }
+            else if (value == "off") {
+                option_weighted_tabulation_allow_time_based = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
         string key = "weighted_tabulation";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -288,7 +334,7 @@ void Symbol::do_options()
         auto mts = ModelTypeSymbol::find();
         assert(mts);
         bool is_time_based = !mts->is_case_based();
-        if (is_time_based && option_weighted_tabulation) {
+        if (!option_weighted_tabulation_allow_time_based && is_time_based && option_weighted_tabulation) {
             pp_error(mts->decl_loc, LT("error : weighted tabulation is not allowed with a time-based model, use population scaling instead."));
         }
     }
@@ -406,6 +452,21 @@ void Symbol::do_options()
             }
             else if (value == "off") {
                 option_microdata_write_on_event = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "microdata_max_enumerators";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            auto ivalue = stoi(value);
+            if (ivalue > 0) {
+                option_microdata_max_enumerators = (size_t)ivalue;
             }
             // remove processed option
             options.erase(iter);
@@ -824,6 +885,318 @@ void Symbol::do_options()
     }
 
     {
+        string key = "generated_documentation";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_generated_documentation = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "authored_documentation";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_authored_documentation = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_developer_edition";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_developer_edition = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_unpublished_symbols";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_unpublished_symbols = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_main_topic";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_main_topic = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_model_symbol";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_model_symbol = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_parameter_hierarchy";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_parameter_hierarchy = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_table_hierarchy";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_table_hierarchy = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_parameter_major_groups";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_parameter_major_groups = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_table_major_groups";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_table_major_groups = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_parameters_alphabetic";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_parameters_alphabetic = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_tables_alphabetic";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_tables_alphabetic = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_enumerations_alphabetic";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_enumerations_alphabetic = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_attributes_alphabetic";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_attributes_alphabetic = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_parameters";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_parameters = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_tables";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_tables = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_enumerations";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_enumerations = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_modules";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_modules = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_modules_use";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_modules_use = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_entity_sets";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_entity_sets = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_modules_symbols_declared";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_modules_symbols_declared = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_attributes";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_attributes = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_attributes_internal";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_attributes_internal = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_notes";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_notes = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_notes_early";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_notes_early = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "symref_topic_note_heading";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            option_symref_topic_note_heading = (value == "on");
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
         string key = "alternate_attribute_dependency_implementation";
         auto iter = options.find(key);
         if (iter != options.end()) {
@@ -931,12 +1304,14 @@ void Symbol::do_options()
         string key = "index_errors";
         auto iter = options.find(key);
         if (iter != options.end()) {
-            auto& opt_name = iter->first;
             auto& opt_pair = iter->second; // opt_pair is option value, option location
-            string& opt_value = opt_pair.first;
-            auto& opt_loc = opt_pair.second;
-            // Ignore this Modgen option.
-            pp_logmsg(opt_loc, LT("note : ignoring Modgen option '") + key + "'");
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_index_errors = true;
+            }
+            else if (value == "off") {
+                option_index_errors = false;
+            }
             // remove processed option
             options.erase(iter);
         }
@@ -979,11 +1354,11 @@ void Symbol::do_options()
 
         if (is_case_based) {
             // case-based models, by default, aggregate accumulators across simulation members before evaluating the expression
-            measures_are_aggregated = true;
+            measures_method = aggregate;
         }
         else {
             // time-based models, by default, compute the average of the expression across simulation members
-            measures_are_aggregated = false;
+            measures_method = average;
         }
 
         // Override default aggregation method if measures_method option was specified.
@@ -994,13 +1369,16 @@ void Symbol::do_options()
             string& value = opt_pair.first;
             auto& loc = opt_pair.second;
             if (value == "aggregate") {
-                measures_are_aggregated = true;
+                measures_method = aggregate;
             }
             else if (value == "average") {
-                measures_are_aggregated = false;
+                measures_method = average;
+            }
+            else if (value == "assemble") {
+                measures_method = assemble;
             }
             else {
-                pp_error(loc, LT("error : '") + value + LT("' is invalid - measures_method must be either aggregate or average"));
+                pp_error(loc, LT("error : '") + value + LT("' is invalid - measures_method must be average, aggregate, or assemble"));
             }
             // remove processed option
             options.erase(iter);

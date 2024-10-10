@@ -1,4 +1,4 @@
-(FR) Model run notes.
----------------------
+Notes d'exécution du modèle.
+---------------------------
 
-Je suis désolé je ne parle pas français
+Ceci est un modèle de notes d'exécution en français

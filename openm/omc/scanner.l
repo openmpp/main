@@ -11,6 +11,7 @@
 #include "Driver.h"
 #include "ParseContext.h"
 #include "ast.h"
+#include "disable_selected_warnings.h"
 
 /* Copyright (c) 2013-2023 OpenM++ Contributors (see AUTHORS.txt)
 * This code is licensed under MIT license (see LICENSE.txt)

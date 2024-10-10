@@ -1,0 +1,53 @@
+//LABEL(Info, EN) Auxiliary information on the model
+
+/* NOTE(Info, EN)
+	This module contains the model label and the model note.
+*/
+
+//LABEL(model, EN) Demonstration Demographic Projection Model
+
+/*NOTE(model, EN)
+  A series of OzProj model versions accompany the on-line course "Practical Microsimulation".
+  That course presents how to use Modgen to construct a microsimulation model
+  to produce detailed demographic projections from a large heterogenous microdata population.
+
+  The course content also teaches how to use Modgen through concrete self-contained examples.
+
+  The model is based on data from the web site of the Australian Bureau of Statistics.
+*/
+
+
+/*NOTE(model, FR)
+
+  Regardez le paramètre [MortalityRate](#MortalityRate)
+  dont l'étiquette est "GetLabel(MortalityRate)".
+
+  La description peut être également rejoint par le lien
+  [GetLabel(MortalityRate)](#MortalityRate)
+
+*/
+
+//LABEL(MortalityRate, FR) Taux de mortalité
+
+
+//void PreSimulation()
+//{
+//	EmigrationHazard;
+//	SexRatioAtBirth;
+//	MALE;
+//}
+//
+//
+//void UserTables()
+//{
+//	EmigrationHazard;
+//	SexRatioAtBirth;
+//	MALE;
+//}
+//
+//void SomeOtherGlobalFunction()
+//{
+//	EmigrationHazard;
+//	SexRatioAtBirth;
+//	MALE;
+//}

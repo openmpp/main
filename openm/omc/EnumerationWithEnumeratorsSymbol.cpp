@@ -66,19 +66,20 @@ void EnumerationWithEnumeratorsSymbol::populate_metadata(openm::MetaModelHolder 
             metaRows.typeEnum.push_back(typeEnum);
         }
 
-        for (auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
             TypeEnumTxtLangRow typeEnumTxt;
             typeEnumTxt.typeId = type_id;
             typeEnumTxt.enumId = enumerator->ordinal;
-            typeEnumTxt.langCode = lang->name;
-            typeEnumTxt.descr = enumerator->label(*lang);
-            typeEnumTxt.note = enumerator->note(*lang);
+            typeEnumTxt.langCode = lang;
+            typeEnumTxt.descr = enumerator->label(*langSym);
+            typeEnumTxt.note = enumerator->note(*langSym);
             metaRows.typeEnumTxt.push_back(typeEnumTxt);
         }
     }
 }
 
-int EnumerationWithEnumeratorsSymbol::pp_size() const
+size_t EnumerationWithEnumeratorsSymbol::pp_size() const
 {
     return pp_enumerators.size();
 }

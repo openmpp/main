@@ -16,7 +16,7 @@ using namespace openm;
 // copy input parameters from working set and "base" run into new run id
 // search for input parameter value in following order:
 //   use value of parameter specified in run options: (command-line, ini-file, profile_option table)
-//   use parameter.csv file if SubFrom.Parameter == csv or by default if parameters csv directory specified
+//   use parameter csv file if SubFrom.Parameter == csv or by default if parameters csv directory specified, it can be any of: .csv .tsv .id.csv .id.tsv file.
 //   import parameter from upstream model run if any of Import.* specified
 //   get parameter value from workset or base run in following order:
 //     explicitly specified workset (not a default workset)
@@ -99,7 +99,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
 
     // copy parameters into destination run, searching it by following order:
     //   from run options (command-line, ini-file, profile_option table)
-    //   from parameter.csv file if exist
+    //   from parameter csv file if exist, it can be any of: .csv .tsv .id.csv .id.tsv file
     //   import parameter from upstream model run if any of Import.* specified
     //   form workset and base run:
     //     non-default workset, base run if explicitly specified or (if not) base run of workset
@@ -150,7 +150,7 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
         bool isFromIota = subOpts.from == FromSub::iota;
         bool isFromDefault = !isFromDb && !isFromCsv && !isFromIota;
 
-        if (!isParamDir && isFromCsv) throw DbException("invalid (empty) parameter.csv file path for parameter: %s", paramIt->paramName.c_str());
+        if (!isParamDir && isFromCsv) throw DbException("invalid (empty) parameter csv file path for parameter: %s", paramIt->paramName.c_str());
 
         // get parameter type
         const TypeDicRow * typeRow = metaStore->typeDic->byKey(modelId, paramIt->typeId);
@@ -236,14 +236,31 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
             isInserted = true;
         }
 
-        // insert from parameter.csv file if sub-value from option either "csv" or "default" and csv directory specified
-        // if parameter.csv loaded then check load value notes form parameter.LANG.md file(s)
+        // insert from parameter csv file if sub-value from option either "csv" or "default" and csv directory specified
+        // "csv" can be any of: .csv .tsv .id.csv .id.tsv file
+        // if parameter csv loaded then check load value notes form parameter.LANG.md file(s)
         if (!isInserted && (isFromCsv || (isFromDefault && isParamDir))) {
 
-            // if parameter.csv exist then copy it into parameter value table
+            // if parameter csv exist then copy it into parameter value table
             string csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".csv");
-            
-            if (isFileExists(csvPath.c_str())) {
+            if (!isFileExists(csvPath.c_str())) {
+                csvPath = "";
+            }
+            if (csvPath.empty()) {
+                csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".tsv");
+                if (!isFileExists(csvPath.c_str())) csvPath = "";
+            }
+            if (csvPath.empty()) {
+                csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".id.csv");
+                if (!isFileExists(csvPath.c_str())) csvPath = "";
+            }
+            if (csvPath.empty()) {
+                csvPath = makeFilePath(paramDir.c_str(), paramIt->paramName.c_str(), ".id.tsv");
+                if (!isFileExists(csvPath.c_str())) csvPath = "";
+            }
+            if (isFromCsv && csvPath.empty()) throw DbException("parameter csv file not found: %s", paramIt->paramName.c_str());
+
+            if (!csvPath.empty()) {
                 theLog->logMsg("Read", csvPath.c_str());
 
                 // read from csv file, parse csv lines and insert values into parameter run table
@@ -277,9 +294,6 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                         );
                     }
                 }
-            }
-            else {
-                if (isFromCsv) throw DbException("parameter csv file not found: %s", csvPath.c_str());
             }
         }
 
@@ -391,7 +405,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                     "INSERT INTO run_parameter (run_id, parameter_hid, base_run_id, sub_count, value_digest)" \
                     " SELECT " + sRunId + ", parameter_hid, base_run_id, sub_count, value_digest" \
                     " FROM run_parameter"
-                    " WHERE run_id = " + to_string(nBaseRunId) +
+                    " WHERE run_id =" +
+                    " (" +
+                    " SELECT RP.base_run_id FROM run_parameter RP" +
+                    " WHERE RP.run_id = " + to_string(nBaseRunId) + " AND RP.parameter_hid = " + to_string(paramIt->paramHid) +
+                    " )" +
                     " AND parameter_hid = " + to_string(paramIt->paramHid)
                 );
             }
@@ -415,7 +433,11 @@ void RunController::createRunParameters(int i_runId, int i_setId, bool i_isWsDef
                     "INSERT INTO " + paramIt->dbRunTable + " (run_id, sub_id, " + sColLst + " param_value)" +
                     " SELECT " + sRunId + ", " + subFlds + ", " + sColLst + " param_value" +
                     " FROM " + paramIt->dbRunTable +
-                    " WHERE run_id = " + to_string(nBaseRunId) +
+                    " WHERE run_id =" +
+                    " (" +
+                    " SELECT RP.base_run_id FROM run_parameter RP" +
+                    " WHERE RP.run_id = " + to_string(nBaseRunId) + " AND RP.parameter_hid = " + to_string(paramIt->paramHid) +
+                    " )" +
                     (!flt.empty() ? " AND " + flt : "")
                 );
                 isCheckSubCount = true;

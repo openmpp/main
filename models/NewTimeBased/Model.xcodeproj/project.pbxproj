@@ -245,7 +245,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${SRCROOT}/../stop-ompp-ui-mac.sh\n";
+			shellScript = "${SRCROOT}/stop-ompp-ui-mac.sh\n";
 		};
 		D8ECB9062493EBE100713545 /* Start UI */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -263,7 +263,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$START_OMPP_UI\" = \"1\" ] || [ \"$START_OMPP_UI\" = \"true\" ] || [ \"$START_OMPP_UI\" = \"yes\" ] ; then ${SRCROOT}/../start-ompp-ui-mac.sh; fi\n";
+			shellScript = "if [ \"$START_OMPP_UI\" = \"1\" ] || [ \"$START_OMPP_UI\" = \"true\" ] || [ \"$START_OMPP_UI\" = \"yes\" ] ; then ${SRCROOT}/start-ompp-ui-mac.sh; fi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

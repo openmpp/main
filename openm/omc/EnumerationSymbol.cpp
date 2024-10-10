@@ -52,16 +52,17 @@ void EnumerationSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         typeDic.typeId = type_id;
         typeDic.name = name;
         typeDic.dicId = dicId;          // see enum kind_of_type for possible values
-        typeDic.totalEnumId = pp_size();
+        typeDic.totalEnumId = (int)pp_size();
         metaRows.typeDic.push_back(typeDic);
     }
 
-    for (auto lang : Symbol::pp_all_languages) {
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
         TypeDicTxtLangRow typeTxt;
         typeTxt.typeId = type_id;
-        typeTxt.langCode = lang->name;
-        typeTxt.descr = label(*lang);
-        typeTxt.note = note(*lang);
+        typeTxt.langCode = lang;
+        typeTxt.descr = label(*langSym);
+        typeTxt.note = note(*langSym);
         metaRows.typeTxt.push_back(typeTxt);
     }
 }

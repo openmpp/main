@@ -4,6 +4,7 @@ local_PLATFORM_UNAME := $(shell uname -s)
 local_BIN_DIR = bin
 local_SQL_DIR = sql
 local_LOG_DIR = log
+local_DOC_DIR = doc
 
 ifdef OUT_PREFIX
   model_OUT_PREFIX = OUT_PREFIX
@@ -21,12 +22,13 @@ else
 endif
 
 model_BIN_DIR = $(model_OUT_PREFIX)/bin
+model_DOC_DIR = $(model_OUT_PREFIX)/bin/doc
 
 #
 # models to build
 #
 ifndef MODEL_DIRS
-  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths OzProj OzProjGen Alpha2
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths OzProjGenX OzProjX Alpha2
 endif
 
 #
@@ -69,9 +71,9 @@ publish :
 run :
 	$(foreach d,$(MODEL_DIRS),$(MAKE) -C $(d) run || { exit $$?; };)
 
-# OzProj models reading microdata from ../../microdata/some.file.csv
+# OzProjX models reading microdata from ../../../OzProjGenX/microdata/OzProj22_5K.csv
 #
-OZ_PROJ_MODELS = OzProj OzProjGen
+OZ_PROJ_MODELS = OzProjGenX OzProjX
 
 .PHONY : publish-all
 publish-all : prepare publish
@@ -82,6 +84,10 @@ publish-all : prepare publish
 	$(foreach d,$(filter $(OZ_PROJ_MODELS),$(MODEL_DIRS)),cp -prf $(d)/microdata $(local_BIN_DIR)/$d/;)
 	$(foreach d,$(filter modelOne,$(MODEL_DIRS)),cp -pf modelOne/*.sql $(local_SQL_DIR);)
 	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_BUILD_SRC_DIR)/*.sql $(local_SQL_DIR);)
+ifndef MODEL_DOC_DISABLE
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),cp -pf $(d)/$(model_DOC_DIR)/*.html $(local_DOC_DIR);)
+	$(foreach d,$(filter-out modelOne,$(MODEL_DIRS)),if [ -d $(d)/doc ]; then find $(d)/doc -iname "*.pdf" -exec cp -pf {} $(local_DOC_DIR) \;; fi;)
+endif
 
 .PHONY : prepare
 prepare:
@@ -96,5 +102,6 @@ clean-all: clean
 .PHONY : clean
 clean:
 	rm -rf $(local_BIN_DIR)
-	@if [ -d $(local_SQL_DIR) ] ;  then rm -rf $(local_SQL_DIR) ; fi
-	@if [ -d $(local_LOG_DIR) ] ;  then rm -rf $(local_LOG_DIR) ; fi
+	@if [ -d $(local_SQL_DIR) ] ;  then rm -rf $(local_SQL_DIR)   ; fi
+	@if [ -d $(local_LOG_DIR) ] ;  then rm -rf $(local_LOG_DIR)/* ; fi
+	@if [ -d $(local_DOC_DIR) ] ;  then rm -rf $(local_DOC_DIR)/* ; fi

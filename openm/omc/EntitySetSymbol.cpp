@@ -108,6 +108,21 @@ void EntitySetSymbol::post_parse(int pass)
         // Add this entity set to the entity's list of entity sets
         pp_entity->pp_sets.push_back(this);
 
+        // Add this entity set to xref of each attribute used as a dimension
+        for (auto d : dimension_list) {
+            auto a = d->pp_attribute;
+            assert(a); // logic guarantee
+            a->pp_entity_sets_using.insert(this);
+        }
+        // Add this entity set to xref of the attribute of its filter
+        if (filter) {
+            filter->pp_entity_sets_using.insert(this);
+        }
+        // Add this entity set to xref of the attribute used in its order clause
+        if (pp_order_attribute) {
+            pp_order_attribute->pp_entity_sets_using.insert(this);
+        }
+
         break;
     }
     case ePopulateDependencies:
@@ -214,6 +229,7 @@ void EntitySetSymbol::post_parse(int pass)
         }
         break;
     }
+
     default:
         break;
     }
@@ -276,7 +292,7 @@ void EntitySetSymbol::build_body_update_cell()
 {
     CodeBlock& c = update_cell_fn->func_body;
 
-    int rank = dimension_list.size();
+    size_t rank = dimension_list.size();
 
     if (rank == 0) {
         // short version for rank 0

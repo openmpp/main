@@ -41,5 +41,7 @@ void handle_derived_table_API_invalid_index(const char* name, size_t index_posit
 void handle_bounds_error(const std::string name, int min_value, int max_value, int value);
 
 // defined in use/common.ompp
-double get_global_time();
+int om_check_index(int index, int size, int dim, const char* name, const char *file, int line);
 
+// defined in use/common.ompp
+double get_global_time();

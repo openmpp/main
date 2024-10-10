@@ -37,6 +37,10 @@ void ParameterGroupSymbol::post_parse(int pass)
     {
         // add this to the complete list of parameter groups
         pp_all_parameter_groups.push_back(this);
+        // assign reverse link from each member of group to this group
+        for (auto child : pp_symbol_list) {
+            child->pp_parent_groups.insert(this);
+        }
         break;
     }
     default:
@@ -68,12 +72,13 @@ void ParameterGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
     metaRows.groupLst.push_back(groupRow);
 
     // labels and notes for the group
-    for (auto lang : Symbol::pp_all_languages) {
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
         GroupTxtLangRow groupTxt;
         groupTxt.groupId = pp_group_id;
-        groupTxt.langCode = lang->name;
-        groupTxt.descr = label(*lang);
-        groupTxt.note = note(*lang);
+        groupTxt.langCode = lang;
+        groupTxt.descr = label(*langSym);
+        groupTxt.note = note(*langSym);
         metaRows.groupTxt.push_back(groupTxt);
     }
 

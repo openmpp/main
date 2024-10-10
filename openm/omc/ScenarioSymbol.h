@@ -20,7 +20,7 @@ private:
     typedef Symbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     ScenarioSymbol(string nm, string enm)
         : Symbol(nm)
@@ -28,7 +28,14 @@ public:
     {
     }
 
-    void post_parse(int pass);
+    string default_label(const LanguageSymbol& language) const override
+    {
+        // Use the name of the scenario used to build the model to construct the default label.
+        // This is normally "Default".
+        return external_name;
+    }
+
+    void post_parse(int pass) override;
 
     /**
      * The external name of the published scenario.

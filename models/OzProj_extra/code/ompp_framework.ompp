@@ -5,7 +5,7 @@
     and supplies function definitions required by the framework.
 */
 
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
@@ -25,9 +25,3 @@ use "common_modgen.ompp";
 use "case_based/case_based_modgen.ompp";
 
 #endif // Hide non-C++ syntactic island from IDE
-
-// process development model run options from model ini-file
-void ProcessDevelopmentOptions(const IRunOptions * const i_options)
-{
-    // see wiki for more information on development model run options
-}

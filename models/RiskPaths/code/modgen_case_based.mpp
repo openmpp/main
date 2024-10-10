@@ -5,9 +5,9 @@
 
 /* NOTE(modgen_case_based, EN)
     This module implements Modgen versions of core global functions for case-based models
-    
+
     This module is ignored by the OpenM++ compiler.
-    
+
     It should not be necessary to modify any code in this module.
 */
 
@@ -118,10 +118,10 @@ void SimulateEvents()
             // Terminate the case.
             gpoEventQueue->FinishAllActors();
         }
-        else 
+        else
         {
             // Age actor to the time of the next event.
-            gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent()); 
+            gpoEventQueue->WaitUntil(gpoEventQueue->NextEvent());
 
             // Implement the next event.
             gpoEventQueue->Implement();
@@ -151,26 +151,26 @@ void Simulation()
     long  lCase = 0;     // counter for cases simulated
 
     // Loop through all cases.
-    for ( lCase = 0; lCase < CASES() && !gbInterrupted 
+    for ( lCase = 0; lCase < CASES() && !gbInterrupted
           && !gbCancelled && !gbErrors; lCase++ )
     {
         // Tell the Modgen run-time to prepare to simulate a new case.
-        StartCase(); 
+        StartCase();
 
         // Call the CaseSimulation function defined elsewhere
-        CaseSimulation(ci); 
+        CaseSimulation(ci);
 
         // Tell the Modgen run-time that the case has been completed.
         SignalCase();
     }
-    
+
     // Perform operations at the end of Simulation
     Simulation_end(ci);
 
     // Reset CaseInfo API
     CaseInfo(nullptr, true);
 }
-                            
+
 case_info* CaseInfo(case_info* ci, bool reset)
 {
     static thread_local case_info* ci_stored = nullptr;

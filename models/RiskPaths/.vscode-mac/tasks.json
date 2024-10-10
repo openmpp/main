@@ -1,0 +1,79 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-RiskPaths",
+            "type": "shell",
+            "command": "make all publish",
+            "problemMatcher": "$gcc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-libopenm",
+                "stop-ui-RiskPaths"
+            ]
+        },
+        {
+            "label": "build-RiskPaths-release",
+            "type": "shell",
+            "command": "make RELEASE=1 all publish",
+            "problemMatcher": "$gcc",
+            "group": "build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-libopenm-release",
+                "stop-ui-RiskPaths"
+            ]
+        },
+        {
+            "label": "start-ui-RiskPaths",
+            "type": "shell",
+            "command": "../start-model-ui-mac.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "start-ui-RiskPaths-release",
+            "type": "shell",
+            "command": "RELEASE=1 ../start-model-ui-mac.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "stop-ui-RiskPaths",
+            "type": "shell",
+            "command": "../stop-model-ui-mac.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "clean-RiskPaths",
+            "type": "shell",
+            "command": "make clean-all && make RELEASE=1 clean-all",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-libopenm",
+            "type": "shell",
+            "command": "make libopenm",
+            "options": {
+                "cwd": "../../openm"
+            },
+            "problemMatcher": "$gcc",
+            "group": "build"
+        },
+        {
+            "label": "build-libopenm-release",
+            "type": "shell",
+            "command": "make RELEASE=1 libopenm",
+            "options": {
+                "cwd": "../../openm"
+            },
+            "problemMatcher": "$gcc",
+            "group": "build"
+        }
+    ]
+}

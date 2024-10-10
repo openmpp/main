@@ -67,9 +67,10 @@ public:
      *
      * @return An int.
      */
-    int pp_size() const override
+    size_t pp_size() const override
     {
-        return upper_bound - lower_bound + 1;
+        assert(upper_bound >= lower_bound);
+        return (upper_bound >= lower_bound) ? size_t(upper_bound - lower_bound + 1) : size_t(0);
     }
 
     /**

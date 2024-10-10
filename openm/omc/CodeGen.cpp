@@ -20,6 +20,20 @@ using namespace openm;
 
 void CodeGen::do_all()
 {
+    // count lines in om_developer.cpp for subsequent restoration of line count after #line directive
+
+    // The number of lines in om_developer_cpp stream before code generation
+    c_base_lines = 8;  // lines in boilerplate header
+    // The number of lines in om_definitions_cpp stream before code generation
+    d_base_lines = 8;  // lines in boilerplate header
+
+    for (auto& it : Symbol::source_files_line_count) {
+        // count of lines written by scanner for all scanned modules
+        d_base_lines += it.second;
+        // extra line written for each scanned module (not sure where that happens)
+        ++d_base_lines;
+    }
+
 	do_preamble();
 
 	do_types();
@@ -52,6 +66,7 @@ void CodeGen::do_all()
     do_ParameterNameSize();
     do_EntityNameSize();
     do_EventIdName();
+    do_missing_global_funcs();
     if (!Symbol::pp_all_strings.empty()) do_model_strings();
 
     // set meta row values and calculate metadata digests: model, types, parameters, output tables
@@ -63,6 +78,7 @@ void CodeGen::do_all()
     *oat1 << t1;
     *oah << h;
     *oac << c;
+    *oad << d;
     *oaz << z;
 }
 
@@ -84,8 +100,8 @@ void CodeGen::do_preamble()
     version_symbol->populate_metadata(metaRows);
 
     // populate metadata for model languages
-    for (auto lang : Symbol::pp_all_languages) {
-        lang->populate_metadata(metaRows);
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        langSym->populate_metadata(metaRows);
     }
 
     // om_types0.h
@@ -450,16 +466,16 @@ void CodeGen::do_model_strings()
     c += "const char * ModelString(const char * string_name)";
     c += "{";
     c += "static std::map<std::string, std::string> string_map {";
-    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-        auto lang_sym = LanguageSymbol::id_to_sym[j];
-        auto lang_name = lang_sym->name;
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        int lang_index = langSym->language_id; // 0-based
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
         c += "";
-        c += "// strings for " + lang_name;
+        c += "// strings for " + lang;
         for (auto modgen_string : Symbol::pp_all_strings) {
             c += "{"
-                  "\"" + normalizeLanguageName(lang_name) + "@" + modgen_string->name + "\""
+                  "\"" + normalizeLanguageName(lang) + "@" + modgen_string->name + "\""
                   ", "
-                  "\"" + modgen_string->pp_labels[j] + "\""
+                  "\"" + modgen_string->pp_labels[lang_index] + "\""
                   "},";
         }
     }
@@ -703,7 +719,7 @@ void CodeGen::do_RunOnce()
             }
             m += parameter->dat_definition();
             // create warning message which the model will output whenever it is run
-            c += "theLog->logFormatted(\"warning : parameter '" + parameter->name + "' was missing when the model was built\");";
+            c += "theLog->logFormatted(\"Warning : parameter '%s' was missing when the model was built\", \"" + parameter->name + "\");";
         }
 
         if (parameter->cumrate) {
@@ -731,32 +747,36 @@ void CodeGen::do_RunInit()
 	c += "{";
     {
         c += "#if defined(_MSC_VER) && defined(_DEBUG) && defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL < 2";
-        c += "    theLog->logFormatted(LT(\"Note : this Debug model was built with Microsoft iterator debug disabled\"));";
+        c += "    theLog->logFormatted(\"Note : this Debug model was built with Microsoft iterator debug disabled\");";
         c += "#endif";
         c += "";
     }
     if (!Symbol::option_verify_attribute_modification) {
-        c += "theLog->logFormatted(LT(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\"));";
+        c += "theLog->logFormatted(\"Warning : prohibited attribute assignment not detected with verify_attribute_modification = off\");";
         c += "";
     }
     if (!Symbol::option_verify_timelike_attribute_access) {
-        c += "theLog->logFormatted(LT(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\"));";
+        c += "theLog->logFormatted(\"Warning : prohibited time-like attribute access is not detected with verify_timelike_attribute_access = off\");";
         c += "";
     }
     if (!Symbol::option_verify_valid_table_increment) {
-        c += "theLog->logFormatted(LT(\"Warning : invalid table increment is not detected with verify_valid_table_increment = off\"));";
+        c += "theLog->logFormatted(\"Warning : invalid table increment is not detected with verify_valid_table_increment = off\");";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_microdata_output_warning) {
-        c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with output_microdata = on\"));";
+        c += "theLog->logFormatted(\"Warning : model can expose microdata at run-time with output_microdata = on\");";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_weighted_tabulation) {
-        c += "theLog->logFormatted(LT(\"Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations\"));";
+        c += "theLog->logFormatted(\"Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations\");";
         c += "";
     }
     if (Symbol::option_event_trace && Symbol::option_event_trace_warning) {
-        c += "theLog->logFormatted(LT(\"Warning : model can expose microdata at run-time with event_trace = on\"));";
+        c += "theLog->logFormatted(\"Warning : model can expose microdata at run-time with event_trace = on\");";
+        c += "";
+    }
+    if (Symbol::option_index_errors) {
+        c += "theLog->logFormatted(\"Warning : possible performance impact with index_errors = on\");";
         c += "";
     }
     c += "extern void process_trace_options(IRunBase* const i_runBase);";
@@ -869,7 +889,7 @@ void CodeGen::do_ModelStartup()
             c += "memory_sub += omr::memory_MB_popsize_coefficient * " + popsize_param->name + ";";
         }
         c += "memory_sub *= omr::memory_safety_factor;";
-        c += "theLog->logFormatted(LT(\"member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance\"), simulation_member, (int)memory_sub, (int)memory_shared);";
+        c += "theLog->logFormatted(\"member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance\", simulation_member, (int)memory_sub, (int)memory_shared);";
         c += "}";
     }
 
@@ -1049,7 +1069,9 @@ void CodeGen::do_ModelShutdown()
 
     for ( auto table : Symbol::pp_all_entity_tables ) {
 	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
-	    c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";
+        if (!table->is_untransformed) {
+            c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";
+        }
     }
 	c += "";
 
@@ -1128,7 +1150,7 @@ void CodeGen::do_ModelShutdown()
         c += "";
         c += "theLog->logFormatted(\"member=%d Write derived parameters - start\", simulation_member);";
         for (auto param : Symbol::pp_all_parameters) {
-            if (param->publish_as_table && !param->is_suppressed) {
+            if (param->metadata_as_table && !param->is_suppressed_table) {
                 // Write this derived parameter as a table
                 c += "{ // " + param->name;
                 c +=     "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + param->name + "\", last_progress_ms);";
@@ -1208,7 +1230,7 @@ void CodeGen::do_RunShutdown()
     c += "// max memory usage";
     c += "auto [nMem, nMax] = getProcessMemorySize();";
     c += "";
-    c += "if (nMax > 0) theLog->logFormatted(LT(\"Process peak memory usage: %.2f MB\"), ((double)nMax / (1024.0 * 1024.0)));";
+    c += "if (nMax > 0) theLog->logFormatted(\"Process peak memory usage: %.2f MB\", ((double)nMax / (1024.0 * 1024.0)));";
     c += "}";
     c += "";
 }
@@ -1294,6 +1316,13 @@ void CodeGen::do_entities()
 	    h += "";
 
         for ( auto func_member : entity->pp_functions ) {
+            // Destination of entity function definition can be either c (om_definitions.cpp) or d (om_developer.cpp)
+            /// CodeBlock destination of entity function definition
+            CodeBlock& cd = func_member->has_line_directive ? d : c;
+            /// Filename destination of entity function definition (must be consistent with reference cd above)
+            string& cd_fname = func_member->has_line_directive ? d_fname : c_fname;
+            /// Number of existing lines in stream (must be consistent with reference cd above)
+            int cd_base_lines = func_member->has_line_directive ? d_base_lines : c_base_lines;
             // MSVC in VS 2019/2022 crashes when optimization on with C1001 Internal compiler error
             // if the following functions are large.
             // Workaround is to disable optimization for these specific functions.
@@ -1302,24 +1331,25 @@ void CodeGen::do_entities()
                 || (func_member->name == "om_initialize_data_members");
             h += func_member->cxx_declaration_entity();
             if (msvc_workaround_needed) {
-                c += "#if defined (_MSC_VER)";
-                c += "\t// Workaround to MSVC internal compiler error C1001 (BEGIN)";
-                c += "\t#pragma optimize( \"\", off )";
-                c += "#endif";
+                cd += "#if defined (_MSC_VER)";
+                cd += "\t// Workaround to MSVC internal compiler error C1001 (BEGIN)";
+                cd += "\t#pragma optimize( \"\", off )";
+                cd += "#endif";
             }
-            c += func_member->cxx_definition_entity();
+            cd += func_member->cxx_definition_entity();
             if (msvc_workaround_needed) {
-                c += "#if defined (_MSC_VER)";
-                c += "\t// Workaround to MSVC internal compiler error C1001 (END)";
-                c += "\t#pragma optimize( \"\", on )";
-                c += "#endif";
+                cd += "#if defined (_MSC_VER)";
+                cd += "\t// Workaround to MSVC internal compiler error C1001 (END)";
+                cd += "\t#pragma optimize( \"\", on )";
+                cd += "#endif";
             }
             if (func_member->has_line_directive) {
-                c += 
+                // restoration of #line is a couple of lines late, but better late than never.
+                cd +=
                     (no_line_directives ? "//#line " : "#line ")
-                    + to_string(c.size() + 2 + 8) // additional 8 lines for subsequently inserted header
+                    + to_string(cd.size() + 2 + cd_base_lines) // additional 2 lines for ?
                     + " \""
-                    + c_fname
+                    + cd_fname
                     + "\"";
             }
         }
@@ -2001,7 +2031,7 @@ void CodeGen::do_RunModel()
         c += "auto stars = stars_str.c_str();";
         c += "int set_node_bytes = 4 * sizeof(void *); // assume 3 words for b-tree, plus 1 word for payload (pointer)";
         c += "int rb_node_bytes = sizeof(rb_node<void *>);";
-        c += "theLog->logFormatted(LT(\"Warning : Model built with resource_use = on\"));";
+        c += "theLog->logFormatted(\"Warning : Model built with resource_use = on\");";
         c += "theLog->logFormatted(\"%sResource Use Report - Begin (for sub/member/replicate %d)\", prefix0, sub_id);";
         c += "theLog->logFormatted(\"%s\", prefix0);";
         c += "";
@@ -2318,8 +2348,8 @@ void CodeGen::do_RunModel()
                 c += "{ // multilinks";
                 c += "auto table_title = \"    " + ent->name + " Multilink elements\";";
                 std::string col1header = "multilink";
-                int col1width = col1header.length();
-                for (auto ml : ent->pp_multilink_members) { col1width = std::max<int>(col1width, ml->name.length()); };
+                size_t col1width = col1header.length();
+                for (auto ml : ent->pp_multilink_members) { col1width = std::max<size_t>(col1width, ml->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2358,8 +2388,8 @@ void CodeGen::do_RunModel()
                 c += "{ // events";
                 c += "auto table_title = \"    " + ent->name + " Events\";";
                 std::string col1header = "event";
-                int col1width = col1header.length();
-                for (auto evt : ent->pp_events) { col1width = std::max<int>(col1width, evt->event_name.length()); };
+                size_t col1width = col1header.length();
+                for (auto evt : ent->pp_events) { col1width = std::max<size_t>(col1width, evt->event_name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2398,8 +2428,8 @@ void CodeGen::do_RunModel()
                 c += "{ // sets";
                 c += "auto table_title = \"    " + ent->name + " Sets\";";
                 std::string col1header = "set";
-                int col1width = col1header.length();
-                for (auto entset : ent->pp_sets) { col1width = std::max<int>(col1width, entset->name.length()); };
+                size_t col1width = col1header.length();
+                for (auto entset : ent->pp_sets) { col1width = std::max<size_t>(col1width, entset->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2442,8 +2472,8 @@ void CodeGen::do_RunModel()
                 c += "{ // tables";
                 c += "auto table_title = \"    " + ent->name + " Tables\";";
                 std::string col1header = "table";
-                int col1width = col1header.length();
-                for (auto tbl : ent->pp_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+                size_t col1width = col1header.length();
+                for (auto tbl : ent->pp_tables) { col1width = std::max<size_t>(col1width, tbl->name.length()); };
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "int suppressed_count = 0; // number of tables suppressed at runtime";
                 c += "const char * col1header = \"" + col1header + "\";";
@@ -2495,9 +2525,9 @@ void CodeGen::do_RunModel()
                 c += "{ // entity members (detail)";
                 c += "auto table_title = \"    " + ent->name + " Members (detail)\";";
                 std::string col1header = "member                 "; // extra padding to force a minimum width for total block at bottom of table
-                int col1width = col1header.length();
-                for (auto dm : dml) { col1width = std::max<int>(col1width, 4 + dm->pretty_name().length()); }; // add +4 in case indented twice
-                col1width = std::min<int>(80, col1width); // impose a maximum to the computed col1width
+                size_t col1width = col1header.length();
+                for (auto dm : dml) { col1width = std::max<size_t>(col1width, 4 + dm->pretty_name().length()); }; // add +4 in case indented twice
+                col1width = std::min<size_t>(80, col1width); // impose a maximum to the computed col1width
                 c += "int col1width = " + to_string(col1width) + ";";
                 c += "const char * col1header = \"" + col1header + "\";";
                 std::string row_sep = "+-" + std::string(col1width, '-') +
@@ -2642,8 +2672,8 @@ void CodeGen::do_RunModel()
             c += "{ // derived tables";
             c += "auto table_title = \"     Derived Tables\";";
             std::string col1header = "derived table";
-            int col1width = col1header.length();
-            for (auto tbl : Symbol::pp_all_derived_tables) { col1width = std::max<int>(col1width, tbl->name.length()); };
+            size_t col1width = col1header.length();
+            for (auto tbl : Symbol::pp_all_derived_tables) { col1width = std::max<size_t>(col1width, tbl->name.length()); };
             c += "int col1width = " + to_string(col1width) + ";";
             c += "int suppressed_count = 0; // number of tables suppressed at runtime";
             c += "const char * col1header = \"" + col1header + "\";";
@@ -2855,4 +2885,14 @@ void CodeGen::do_EventIdName(void)
     c += "};";
     c += "}";
     c += "";
+}
+
+void CodeGen::do_missing_global_funcs(void)
+{
+    for (auto gfs : Symbol::pp_missing_global_funcs) {
+        h += gfs->cxx_declaration_global();
+        h += "";
+        c += gfs->cxx_definition_global();
+        c += "";
+    }
 }

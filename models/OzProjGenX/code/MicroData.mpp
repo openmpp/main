@@ -1,0 +1,66 @@
+//LABEL(MicroData, EN) Common functionality associated with microdata
+
+/* NOTE(MicroData, EN)
+	This module is identical in OzProjGen and OzProj.
+    This helps ensure that field order and contents
+    of the microdata file are identical in the two models.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+classification PERSON_MICRODATA_COLUMNS	 //EN fields in the microdata file 
+{
+  PMC_SEX,
+  PMC_AGE,
+  PMC_REGION,
+  PMC_NATIVE_BORN,
+  PMC_RECENT_ARRIVAL,
+  PMC_YEARS_SINCE_ARRIVAL,
+  PMC_INDIGENOUS
+};
+
+actor Person //EN Individual
+{
+  //EN Write unit record
+  void WriteUnitRecord(case_info *ci);
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+void Person::WriteUnitRecord(case_info *ci)
+{
+  // Push the fields into the output record.
+  for (int nJ = 0; nJ < SIZE(PERSON_MICRODATA_COLUMNS); nJ++ ) {
+  // Fields:
+  switch (nJ) {
+  case PMC_SEX:
+    ci->out_csv << (int) sex;
+    break;
+  case PMC_AGE:
+    ci->out_csv << (int) integer_age;
+    break;
+  case PMC_REGION:
+    ci->out_csv << (int) region;
+    break;
+  case PMC_NATIVE_BORN:
+    ci->out_csv << (int) native_born;
+    break;
+  case PMC_RECENT_ARRIVAL:
+    ci->out_csv << (int) recent_arrival;
+    break;
+  case PMC_YEARS_SINCE_ARRIVAL:
+    ci->out_csv << (int) years_since_arrival;
+    break;
+  case PMC_INDIGENOUS:
+    ci->out_csv << (int) indigenous;
+    break;
+  default:
+      assert(false); // Error
+    }
+  }
+  // All fields have been pushed, now write the record.
+  ci->out_csv.write_record();
+}
+

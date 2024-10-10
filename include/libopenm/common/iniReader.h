@@ -35,10 +35,10 @@ namespace openm
          */
         IniEntry(const string & i_section, const string & i_key, const string & i_value);
 
-        /** ini-file entry section.key case neutral equal comparison. */
+        /** ini-file entry section.key using case neutral equal comparison. */
         bool bySectionKey(const char * i_sectionKey) const;
 
-        /** ini-file entry section and key case neutral equal comparison. */
+        /** ini-file entry section and key using case neutral equal comparison. */
         bool equalTo(const char * i_section, const char * i_key) const;
 
     private:
@@ -66,16 +66,16 @@ namespace openm
         /** return true if ini-file loaded correctly or false on error */
         bool isLoaded(void) const noexcept { return is_loaded; }
 
-        /** return true if section and key exist in ini-file. */
+        /** return true if section and key found in ini-file using case-neutral search. */
         bool isExist(const char * i_section, const char * i_key) const noexcept;
 
-        /** return true if section.key exist in ini-file. */
+        /** return true if section.key found in ini-file using case-neutral search. */
         bool isExist(const char * i_sectionKey) const noexcept;
 
-        /** return string value by section and key or deafult value if not found. */
+        /** return string value by section and key using case-neutral search, or default value if not found. */
         const string strValue(const char * i_section, const char * i_key, const string & i_default = "") const noexcept;
 
-        /** return string value by section.key or deafult value if not found. */
+        /** return string value by section.key using case-neutral search, or default value if not found. */
         const string strValue(const char * i_sectionKey, const string & i_default = "") const noexcept;
 
         /** return const reference to ini-file entries. */
@@ -88,11 +88,25 @@ namespace openm
         const NoCaseMap getSection(const char * i_section) const noexcept;
 
         /** read language specific messages from path/to/theExe.message.ini and pass it to the log */
-        static void loadMessages(const char * i_iniMsgPath, const string & i_language = "") noexcept;
+        static void loadMessages(const char * i_iniMsgPath, const string & i_language = "", const char * i_codePageName = nullptr) noexcept;
+
+        /** read language specific messages from path/to/theExe.message.ini for all languages
+        *
+        * @param[in] i_iniMsgPath path to message ini-file, usually: path/to/theExe.message.ini
+        */
+        static list<pair<string, unordered_map<string, string>>> loadAllMessages(const char * i_iniMsgPath, const char * i_codePageName = nullptr) noexcept;
 
     private:
         bool is_loaded;         // if true then ini-file loaded OK else error
         IniEntryVec entryVec;   // ini-file entries: (section, key, value)
+
+        /** load all ini-file entries in memory and convert into UTF-8, raise exception if read of ini-file failed.
+        *
+        * @param[in]  i_filePath      path to ini-file.
+        * @param[in]  is_noCase       if true then keys are case neutral, e.g. KEY = abc is the same as key = def
+        * @param[in]  i_codePageName  name of encoding or Windows code page, ie: English_US.1252
+        */
+        static const IniEntryVec load(const char * i_filePath, bool is_noCase, const char * i_codePageName);
 
         // find index of section and key or -1 if not found
         ptrdiff_t findIndex(const char * i_section, const char * i_key) const;
@@ -103,7 +117,9 @@ namespace openm
         // insert new or update existing ini-file entry:
         //  unquote key and value if "quoted" or 'single quoted'
         //  return false on error: if section or key is empty
-        bool addIniEntry(const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value);
+        static bool addIniEntry(
+            bool is_noCase, const string & i_src, int i_nLine, const string & i_section, const string & i_key, const string & i_value, IniEntryVec & o_entryVec
+        );
     };
 }
 

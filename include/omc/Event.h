@@ -646,6 +646,8 @@ public:
 
     void call_implement_func()
     {
+        // maintain lifecycle attributes (function body is empty if not on)
+        (entity()->om_lifecycle_event)(get_event_id());
         // Note that implement_function is not a class member.
         // It is a compile-time constant supplied as a template argument.
         (entity()->*implement_function)();

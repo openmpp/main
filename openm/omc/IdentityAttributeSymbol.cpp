@@ -16,6 +16,7 @@
 #include "UnknownTypeSymbol.h"
 #include "GlobalFuncSymbol.h"
 #include "ConstantSymbol.h"
+#include "LanguageSymbol.h"
 #include "CodeBlock.h"
 #include "Literal.h"
 
@@ -101,6 +102,16 @@ void IdentityAttributeSymbol::post_parse(int pass)
     }
     case ePopulateDependencies:
     {
+        // if a generated identity attribute has no label, create one using the expression
+        if (is_generated) {
+            string expr = cxx_expression(root, true); // true means use pretty names
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                if (!pp_labels_explicit[lang_index]) {
+                    pp_labels[lang_index] = expr;
+                }
+            }
+        }
         // construct function body which evaluates the expression
         build_body_expression();
 
@@ -195,8 +206,8 @@ void IdentityAttributeSymbol::post_parse_traverse1(ExprForAttribute *node)
                 auto sym = efavs->symbol;
                 if (sym->is_base_symbol() && !Symbol::exists(sym->name)) {
                     // an undeclared SYMBOL followed by a '('
-                    // create a GlobalFuncSymbol with that name
-                    auto gfs = new GlobalFuncSymbol(sym->name, sym->decl_loc);
+                    // create a GlobalFuncSymbol with that name (no decl_loc because this is a use, not a declaration)
+                    auto gfs = new GlobalFuncSymbol(sym->name);
 					// Push the name into the post parse ignore hash for the current pass.
 					pp_symbols_ignore.insert(gfs->unique_name);
                 }
@@ -258,6 +269,10 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
                 pp_links_used.insert(la);
             }
         }
+        {
+            // xref from symbol to this identity attribute symbol
+            sym->pp_symbol->pp_identity_attributes_using.insert(this);
+        }
     }
     else if (lit != nullptr) {
         // Nothing needs to be done with Literals in the post-parse processing phase.
@@ -286,7 +301,7 @@ void IdentityAttributeSymbol::post_parse_traverse2(ExprForAttribute *node)
 }
 
 //static
-string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
+string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node, bool use_pretty_name)
 {
     string result;
 
@@ -297,7 +312,12 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
     auto ternary_op = dynamic_cast<const ExprForAttributeTernaryOp *>(node);
 
     if (sym != nullptr) {
-        result = sym->symbol->name;
+        if (use_pretty_name) {
+            result = sym->symbol->pretty_name();
+        }
+        else {
+            result = sym->symbol->name;
+        }
     }
     else if (lit != nullptr) {
         result = lit->constant->value();
@@ -306,39 +326,39 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
         assert(unary_op->right); // grammar guarantee
         result =
             token_to_string(unary_op->op)
-            + cxx_expression(unary_op->right);
+            + cxx_expression(unary_op->right, use_pretty_name);
     }
     else if (binary_op != nullptr) {
         assert(binary_op->left); // grammar guarantee
         assert(binary_op->right); // grammar guarantee
         if (binary_op->op == token::TK_LEFT_PAREN) {
             // function-style cast or call
-            result = cxx_expression(binary_op->left)
+            result = cxx_expression(binary_op->left, use_pretty_name)
                 + "("
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 + ")";
         }
         else if (binary_op->op == token::TK_LEFT_BRACKET) {
             // array indexing
-            result = cxx_expression(binary_op->left)
+            result = cxx_expression(binary_op->left, use_pretty_name)
                 + "["
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 + "]";
         }
         else if (binary_op->op == token::TK_COMMA) {
             // infix "," binary operator - do not enclose in parentheses 
             result = 
-                  cxx_expression(binary_op->left)
+                  cxx_expression(binary_op->left, use_pretty_name)
                 + ", "
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 ;
         }
         else {
             // infix binary operator
             result = "("
-                + cxx_expression(binary_op->left)
+                + cxx_expression(binary_op->left, use_pretty_name)
                 + " " + token_to_string(binary_op->op) + " "
-                + cxx_expression(binary_op->right)
+                + cxx_expression(binary_op->right, use_pretty_name)
                 + ")";
         }
     }
@@ -347,9 +367,9 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node)
         assert(ternary_op->first); // grammar guarantee
         assert(ternary_op->second); // grammar guarantee
         result = "("
-            + cxx_expression(ternary_op->cond) + " ? "
-            + cxx_expression(ternary_op->first) + " : "
-            + cxx_expression(ternary_op->second)
+            + cxx_expression(ternary_op->cond, use_pretty_name) + " ? "
+            + cxx_expression(ternary_op->first, use_pretty_name) + " : "
+            + cxx_expression(ternary_op->second, use_pretty_name)
             + ")";
     }
     else {

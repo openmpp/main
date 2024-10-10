@@ -23,13 +23,15 @@
 #include "BoolSymbol.h"
 #include "ModelTypeSymbol.h"
 #include "LanguageSymbol.h"
+#include "ClassificationSymbol.h"
+#include "ClassificationEnumeratorSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
 
 using namespace std;
 
 void EntitySymbol::create_auxiliary_symbols()
 {
-    // Create builtin attributes for this entity: time, age, events, entity_id.
+    // Create built-in attributes for this entity: time, age, events, entity_id.
     // Need to handle situation where the symbol exists but requires morphing.
     // This can occur if the symbol has been used in a table before the entity was declared.
 
@@ -49,12 +51,8 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Time"},
-                {"FR", "Temps"}
-            };
+            // Provide the default English label.
+            biav->builtin_english_label = "Time";
 
             // initialize it
             biav->is_time_like = true; // can change between events
@@ -85,43 +83,14 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Age"},
-                {"FR", u8"Âge"}
-            };
+            // Provide the default English label.
+            biav->builtin_english_label = "Age";
 
             // initialize it
             biav->is_time_like = true; // can change between events, like time
             biav->sorting_group = 2; // age is continuously-updated
         }
     }
-
-    //{
-    //    string nm = "events";
-    //    auto sym = Symbol::get_symbol(nm, this);
-    //    if (!sym || sym->is_base_symbol()) {
-    //        NumericSymbol *typ = NumericSymbol::find(token::TK_counter);
-    //        BuiltinAttributeSymbol *biav = nullptr;
-    //        if (!sym) {
-    //            // create it
-    //            biav = new BuiltinAttributeSymbol(nm, this, typ);
-    //        }
-    //        else {
-    //            // morph it
-    //            biav = new BuiltinAttributeSymbol(sym, this, typ);
-    //        }
-    //        assert(biav);
-    //        // Provide the default labels for selected language codes.
-    //        biav->the_default_labels =
-    //        {
-    //            {"EN", "Events"},
-    //            {"FR", u8"Événements"}
-    //        };
-    //        // initialize it
-    //    }
-    //}
 
     {
         string nm = "entity_id";
@@ -139,12 +108,8 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Entity identifier"},
-                {"FR", u8"Identifiant d'entité"}
-            };
+            // Provide the default English label.
+            biav->builtin_english_label = "Entity identifier";
 
             // initialize it
         }
@@ -166,15 +131,21 @@ void EntitySymbol::create_auxiliary_symbols()
             }
             assert(biav);
 
-            // Provide the default labels for selected language codes.
-            biav->the_default_labels =
-            {
-                {"EN", "Case seed for random number generators"},
-                {"FR", u8"Graine de cas de nombres aléatoires"}
-            };
+            // Provide the default English label.
+            biav->builtin_english_label = "Case seed for random number generators";
 
             // initialize it
         }
+    }
+
+    // The exit_simulation member function (instantiated to permit hook in model code)
+    {
+        auto* fn = new EntityFuncSymbol("exit_simulation", this, "void", "");
+        fn->doc_block = doxygen_short("Make this entity exit the simulation.");
+        // function is declared and defined in template BaseEntity in header file Entity.h
+        fn->is_developer_supplied = false;
+        fn->suppress_defn = true;
+        fn->suppress_decl = true;
     }
 
     // The check_time() member function
@@ -268,48 +239,13 @@ void EntitySymbol::create_auxiliary_symbols()
     {
         auto* fn = new EntityFuncSymbol("write_microdata", this, "void", "");
         fn->doc_block = doxygen_short("Handle microdata output.");
-        CodeBlock& c = fn->func_body;
-        c += "if constexpr(om_microdata_output_capable) {";
-        c += "uint64_t microdata_key = get_microdata_key();";
-        c += "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
-        c += "int event_id = BaseEvent::current_event_id;";
-        c += "bool is_same_entity = (event_id == -1) || (BaseEvent::current_entity_id == entity_id);";
-        c += "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
-        c += "}";
-        /*
-        * it is also possible to check microdata run-time options:
-        *
-        *   i_model->runOptions()->isMicrodata()     : microdata output enabled at run time
-        *   i_model->runOptions()->isTextMicrodata() : microdata text output enabled: output to CSV or to trace
-        *   i_model->runOptions()->isDbMicrodata     : write into database
-        *   i_model->runOptions()->isCsvMicrodata    : write into EntityName.csv file(s)
-        *   i_model->runOptions()->isTraceMicrodata  : write into the trace
-        *
-        * For example:
-        *
-        c += "if constexpr(om_microdata_output_capable) {";
-        c += "uint64_t microdata_key = get_microdata_key();";
-        c += "if (i_model->runOptions()->isDbMicrodata) {";
-        c +=     "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
-        c += "}";
-        c += "if (i_model->runOptions()->isTextMicrodata()) {";
-        c +=     "int event_id = BaseEvent::current_event_id;";
-        c +=     "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
-        c +=     "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
-        c += "}";
-        c += "}";
-        */
+        write_microdata_fn = fn;
     }
 
     // The get_entity_key() member function
     {
         auto* fn = new EntityFuncSymbol("get_entity_key", this, "uint64_t", "");
         fn->doc_block = doxygen_short("Get entity key.");
-        CodeBlock& c = fn->func_body;
-        c += "// This function definition was generated by omc because none was supplied in model code.";
-        c += "// It returns the value of the built-in attribute entity_id.";
-        c += "uint64_t entity_key = entity_id;";
-        c += "return entity_key;";
         get_entity_key_fn = fn;
     }
 
@@ -317,10 +253,6 @@ void EntitySymbol::create_auxiliary_symbols()
     {
         auto* fn = new EntityFuncSymbol("get_microdata_key", this, "uint64_t", "");
         fn->doc_block = doxygen_short("Get microdata key.");
-        CodeBlock& c = fn->func_body;
-        c += "// The following default function body was generated because none was supplied in model code.";
-        c += "uint64_t microdata_key = get_entity_key();";
-        c += "return microdata_key;";
         get_microdata_key_fn = fn;
     }
 
@@ -475,6 +407,33 @@ void EntitySymbol::create_auxiliary_symbols()
         // function body is generated in post-parse phase
     }
 
+    // The lifecycle_enter member function
+    {
+        assert(nullptr == lifecycle_enter_fn); // initialization guarantee
+        lifecycle_enter_fn = new EntityFuncSymbol("om_lifecycle_enter", this);
+        assert(lifecycle_enter_fn); // out of memory check
+        lifecycle_enter_fn->doc_block = doxygen_short("Maintain lifecycle attributes on enter_simulation.");
+        // function body is generated in post-parse phase
+    }
+
+    // The lifecycle_exit member function
+    {
+        assert(nullptr == lifecycle_exit_fn); // initialization guarantee
+        lifecycle_exit_fn = new EntityFuncSymbol("om_lifecycle_exit", this);
+        assert(lifecycle_exit_fn); // out of memory check
+        lifecycle_exit_fn->doc_block = doxygen_short("Maintain lifecycle attributes on exit_simulation.");
+        // function body is generated in post-parse phase
+    }
+
+    // The lifecycle_event member function
+    {
+        assert(nullptr == lifecycle_event_fn); // initialization guarantee
+        lifecycle_event_fn = new EntityFuncSymbol("om_lifecycle_event", this, "void", "int event_id");
+        assert(lifecycle_event_fn); // out of memory check
+        lifecycle_event_fn->doc_block = doxygen_short("Maintain lifecycle attributes at events.");
+        // function body is generated in post-parse phase
+    }
+
     // The start_trace member function
     {
         assert(nullptr == start_trace_fn); // initialization guarantee
@@ -492,6 +451,87 @@ void EntitySymbol::post_parse(int pass)
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
+    case eCreateForeignTypes:
+    {
+        {
+            assert(get_entity_key_fn); // assigned during instantiation
+            auto search = function_defn_loc.find(get_entity_key_fn->unique_name);
+            if (search != function_defn_loc.end()) {
+                // A definition for get_entity_key is supplied in model code, so don't generate one.
+                get_entity_key_fn->suppress_defn = true;
+            }
+            else {
+                // A definition for get_entity_key not supplied in model code, so generate one.
+                get_entity_key_fn->suppress_defn = false;
+                CodeBlock& c = get_entity_key_fn->func_body;
+                c += "// This function definition was generated by omc because none was supplied in model code.";
+                c += "// It returns the value of the built-in attribute entity_id.";
+                c += "uint64_t entity_key = entity_id;";
+                c += "return entity_key;";
+            }
+        }
+        {
+            assert(get_microdata_key_fn); // assigned during instantiation
+            auto search = function_defn_loc.find(get_microdata_key_fn->unique_name);
+            if (search != function_defn_loc.end()) {
+                // A definition for get_microdata_key is supplied in model code, so don't generate one.
+                get_microdata_key_fn->suppress_defn = true;
+            }
+            else {
+                // A definition for get_microdata_key not supplied in model code, so generate one.
+                get_microdata_key_fn->suppress_defn = false;
+                CodeBlock& c = get_microdata_key_fn->func_body;
+                if (option_microdata_output) {
+                    c += "// The following default function body was generated because none was supplied in model code.";
+                    c += "uint64_t microdata_key = 10000 * get_entity_key() + om_microdata_counter;";
+                    c += "return microdata_key;";
+                }
+                else {
+                    c += "// Do-nothing generated body because options microdata_output = off";
+                    c += "return 0;";
+                }
+            }
+        }
+        {
+            assert(write_microdata_fn); // assigned during instantiation
+            CodeBlock& c = write_microdata_fn->func_body;
+            c += "if constexpr(om_microdata_output_capable) {";
+            if (option_microdata_output && !get_microdata_key_fn->suppress_defn) {
+                // see generated function body for get_microdata_key immediately above
+                c += "++om_microdata_counter; // maintain counter for use in get_microdata_key()";
+            }
+            c +=     "uint64_t microdata_key = get_microdata_key();";
+            c +=     "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
+            c +=     "int event_id = BaseEvent::current_event_id;";
+            c +=     "bool is_same_entity = (event_id == -1) || (BaseEvent::current_entity_id == entity_id);";
+            c +=     "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
+            c += "}";
+            /*
+            * it is also possible to check microdata run-time options:
+            *
+            *   i_model->runOptions()->isMicrodata()     : microdata output enabled at run time
+            *   i_model->runOptions()->isTextMicrodata() : microdata text output enabled: output to CSV or to trace
+            *   i_model->runOptions()->isDbMicrodata     : write into database
+            *   i_model->runOptions()->isCsvMicrodata    : write into EntityName.csv file(s)
+            *   i_model->runOptions()->isTraceMicrodata  : write into the trace
+            *
+            * For example:
+            *
+            c += "if constexpr(om_microdata_output_capable) {";
+            c += "uint64_t microdata_key = get_microdata_key();";
+            c += "if (i_model->runOptions()->isDbMicrodata) {";
+            c +=     "i_model->writeDbMicrodata(entity_kind, microdata_key, this);";
+            c += "}";
+            c += "if (i_model->runOptions()->isTextMicrodata()) {";
+            c +=     "int event_id = BaseEvent::current_event_id;";
+            c +=     "bool is_same_entity = (BaseEvent::current_entity_id == entity_id);";
+            c +=     "i_model->writeCsvMicrodata(entity_kind, microdata_key, event_id, is_same_entity, this);";
+            c += "}";
+            c += "}";
+            */
+        }
+        break;
+    }
     case eCreateMissingSymbols:
     {
 		// Create attribute case_id (for case-based models only)
@@ -519,6 +559,11 @@ void EntitySymbol::post_parse(int pass)
                         // morph it
                         biav = new BuiltinAttributeSymbol(sym, this, typ);
                     }
+                    assert(biav);
+
+                    // Provide the default English label.
+                    biav->builtin_english_label = "Case identifier";
+
                     // Push the name into the post parse ignore hash for the current pass.
                     pp_symbols_ignore.insert(biav->unique_name);
                 }
@@ -587,10 +632,27 @@ void EntitySymbol::post_parse(int pass)
                     // morph it
                     biav = new BuiltinAttributeSymbol(sym, this, typ);
                 }
-                // Initialized to 1.0 by generated code in function om_initialize_data_members.
+                assert(biav);
+
+                // Provide a default English label.
+                biav->builtin_english_label = "Weight";
+
+                // The entity_weight attribute is initialized to 1.0 by generated code in function om_initialize_data_members.
+
                 // Push the name into the post parse ignore hash for the current pass.
                 pp_symbols_ignore.insert(biav->unique_name);
             }
+        }
+
+        if (option_microdata_output && !get_microdata_key_fn->suppress_defn) {
+            // create om_microdata_counter EntityInternalSymbol to support
+            // the default generated get_microdata_key implementation code.
+            string nm = "om_microdata_counter";
+            auto* typ = NumericSymbol::find(token::TK_short);
+            auto mem = new EntityInternalSymbol(nm, this, typ, "0");
+            assert(mem);
+            auto sym = new EntityInternalSymbol(nm, this, typ);
+            sym->provenance = name + " microdata record counter";
         }
 
         {
@@ -604,11 +666,11 @@ void EntitySymbol::post_parse(int pass)
                 if (name == opt_pair.first) {
                     // found local_random_streams = name of this entity
                     pp_local_rng_streams_requested = true;
+                    // remove processed option
+                    options.erase(it);
                     break;
                 }
             }
-            // remove processed options
-            options.erase(range.first, range.second);
 
             if (pp_local_rng_streams_requested) {
                 string nm = "om_local_rng_streams_initialized";
@@ -619,6 +681,197 @@ void EntitySymbol::post_parse(int pass)
             }
         }
 
+        {
+            // determine if lifecycle attributes are requested for this entity kind
+            // examine options multimap for lifecycle_attributes = name of this entity
+            string key = "lifecycle_attributes";
+            pp_lifecycle_attributes_requested = false;
+            auto range = options.equal_range(key);
+            for (auto it = range.first; it != range.second; ++it) {
+                auto& opt_pair = it->second; // opt_pair is option value, option location
+                if (name == opt_pair.first) {
+                    // found lifecycle_attributes = name of this entity
+                    pp_lifecycle_attributes_requested = true;
+                    // remove processed option
+                    options.erase(it);
+                    break;
+                }
+            }
+
+            if (pp_lifecycle_attributes_requested) {
+                string cl_name = "LIFECYCLE_" + name;
+                string enum_prefix = "LC_" + name + "_";
+                auto sym = get_symbol(cl_name);
+                if (sym && !sym->is_base_symbol()) {
+                    sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                    assert(false); // not reached
+                }
+                if (!sym) {
+                    sym = new Symbol(cl_name);
+                }
+                assert(sym);
+                auto cl = new ClassificationSymbol(sym); // morph it
+                assert(cl);
+                // record it
+                pp_lifecycle_classification = cl;
+                // Push the name into the post parse ignore hash for the current pass.
+                pp_symbols_ignore.insert(cl->unique_name);
+
+                // Provide a default English label.
+                cl->builtin_english_label = "Lifecycle";
+
+                // Find all events of this entity (except self-scheduling which are out of scope)
+                // note that pp_events is not available in this early pass
+                set<string> event_names;
+                for (auto& it : pp_symbols) {
+                    if (pp_symbols_ignore.count(it.first) > 0) {
+                        continue;  // skip orphaned entries which were morphed earlier in this pass
+                    }
+                    if (auto e = dynamic_cast<EntityEventSymbol*>(it.second)) {
+                        if (e->entity == this) {
+                            if (e->event_name != "om_ss_event") {
+                                // don't think ss event has been created in this early pass, but safety first.
+                                event_names.insert(e->event_name);
+                            }
+                        }
+                    }
+                }
+                // create enumerators for the classification
+                {
+                    /// The numeric id of the classification level (enum)
+                    int ord = 0;
+                    {
+                        // the lvl for enter_simulation
+                        string lvl_name = enum_prefix + "enter_simulation";
+                        auto sym = get_symbol(lvl_name);
+                        if (sym) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide a default English label.
+                        lvl->builtin_english_label = "enter simulation";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
+                    {
+                        // the lvl for exit_simulation_external
+                        string lvl_name = enum_prefix + "exit_simulation_external";
+                        auto sym = get_symbol(lvl_name);
+                        if (sym && !sym->is_base_symbol()) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // Provide a default English label.
+                        lvl->builtin_english_label = "exit simulation (external)";
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
+                    for (auto& evt_name : event_names) {
+                        string lvl_name = enum_prefix + evt_name;
+                        auto sym = get_symbol(lvl_name);
+                        if (sym && !sym->is_base_symbol()) {
+                            sym->pp_fatal("error : Declaration in model code not allowed with option lifecycle_attributes");
+                            assert(false); // not reached
+                        }
+                        if (!sym) {
+                            sym = new Symbol(lvl_name);
+                        }
+                        assert(sym);
+                        auto lvl = new ClassificationEnumeratorSymbol(sym, nullptr, cl, ord); // morph it
+                        assert(lvl);
+
+                        // update the map of event name to classification level name
+                        pp_lifecycle_name_map.insert({ evt_name, lvl_name });
+
+                        // Provide a default alingual label.
+                        lvl->builtin_alingual_label = evt_name;
+
+                        // Push the name into the post parse ignore hash for the current pass.
+                        pp_symbols_ignore.insert(lvl->unique_name);
+
+                        ++ord;
+                    }
+                }
+                {
+                    // create attribute lifecycle_counter
+                    string nm = "lifecycle_counter";
+                    auto sym = Symbol::get_symbol(nm, this);
+                    NumericSymbol* typ = NumericSymbol::find(token::TK_short);
+                    BuiltinAttributeSymbol* biav = nullptr;
+                    if (!sym) {
+                        // create it
+                        biav = new BuiltinAttributeSymbol(nm, this, typ);
+                    }
+                    else {
+                        // morph it
+                        biav = new BuiltinAttributeSymbol(sym, this, typ);
+                    }
+                    assert(biav);
+
+                    // Provide the default English label.
+                    biav->builtin_english_label = "Lifecycle counter";
+
+                    // Push the name into the post parse ignore hash for the current pass.
+                    pp_symbols_ignore.insert(biav->unique_name);
+                }
+                {
+                    // create attribute lifecycle_event
+                    string nm = "lifecycle_event";
+                    auto sym = Symbol::get_symbol(nm, this);
+                    auto typ = pp_lifecycle_classification;
+                    BuiltinAttributeSymbol* biav = nullptr;
+                    if (!sym) {
+                        // create it
+                        biav = new BuiltinAttributeSymbol(nm, this, typ);
+                    }
+                    else {
+                        // morph it
+                        biav = new BuiltinAttributeSymbol(sym, this, typ);
+                    }
+                    assert(biav);
+
+                    // Provide the default English label.
+                    biav->builtin_english_label = "Lifecycle event";
+
+                    // Push the name into the post parse ignore hash for the current pass.
+                    pp_symbols_ignore.insert(biav->unique_name);
+                }
+                {
+                    // create function body for om_lifecycle_enter
+                    assert(lifecycle_enter_fn);
+                    CodeBlock& c = lifecycle_enter_fn->func_body;
+                    c += "lifecycle_event = " + enum_prefix + "enter_simulation;";
+                    c += "++lifecycle_counter;";
+                }
+                {
+                    // create function body for om_lifecycle_exit
+                    assert(lifecycle_exit_fn);
+                    CodeBlock& c = lifecycle_exit_fn->func_body;
+                    c += "if (entity_id != BaseEvent::current_entity_id) {";
+                    c +=   "lifecycle_event = " + enum_prefix + "exit_simulation_external;";
+                    c +=   "++lifecycle_counter;";
+					c += "}";
+                }
+            }
+        }
         break;
     }
 
@@ -666,6 +919,7 @@ void EntitySymbol::post_parse(int pass)
         build_body_finalize_links();
         build_body_finalize_multilinks();
         build_body_start_trace();
+        build_body_lifecycle_event();
 
         break;
     }
@@ -675,7 +929,7 @@ void EntitySymbol::post_parse(int pass)
 }
 
 // Mark enumerations required for metadata support for this entity
-void EntitySymbol::post_parse_mark_enumerations(void)
+void EntitySymbol::mark_enumerations_to_publish(void)
 {
     // Mark enumerations required for metadata support for this entity's eligible attributes
     for (auto dm : pp_data_members) {
@@ -1048,6 +1302,47 @@ void EntitySymbol::build_body_start_trace()
     }
 }
 
+void EntitySymbol::build_body_lifecycle_event()
+{
+    if (!pp_lifecycle_attributes_requested) {
+        return;
+    }
+    assert(lifecycle_event_fn);
+    CodeBlock& c = lifecycle_event_fn->func_body;
+
+    if (pp_events.size() == 0) {
+        // This entity kind has no events, so om_lifecycle_event member function will never be called.
+        c += "// Entity " + name + " has no events";
+        return;
+    }
+
+    // ignore self-scheduling event
+    if (ss_event) {
+        c += "// ignore self-scheduling event";
+        c += "if (event_id == " + to_string(ss_event->pp_event_id) + ") return;";
+    }
+
+    c += "// note the event";
+    c += "switch(event_id) {";
+    for (auto evt : pp_events) {
+        string evt_name = evt->event_name;
+        if (evt_name == "om_ss_event") {
+            continue;
+        }
+        int event_id = evt->pp_event_id;
+        auto it = pp_lifecycle_name_map.find(evt_name);
+        if (it == pp_lifecycle_name_map.end()) {
+            assert(false);
+            pp_fatal("internal error");
+        }
+        string lvl_name = it->second;
+        c += "case " + to_string(event_id) + ": lifecycle_event = " + lvl_name + "; break;";
+    }
+    c += "default: break;";
+    c += "}";
+    c += "++lifecycle_counter;";
+}
+
 void EntitySymbol::create_ss_event()
 {
     // check if the self-scheduling event has already been created
@@ -1112,14 +1407,15 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     metaRows.entityDic.push_back(entityDic);
 
     // Labels and notes for the entity
-    for (const auto lang : Symbol::pp_all_languages) {
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
 
         EntityDicTxtLangRow entityTxt;
 
         entityTxt.entityId = pp_entity_id;
-        entityTxt.langCode = lang->name;
-        entityTxt.descr = label(*lang);
-        entityTxt.note = note(*lang);
+        entityTxt.langCode = lang;
+        entityTxt.descr = label(*langSym);
+        entityTxt.note = note(*langSym);
 
         metaRows.entityTxt.push_back(entityTxt);
     }
@@ -1139,15 +1435,16 @@ void EntitySymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.entityAttr.push_back(entityAttr);
 
         // Labels and notes
-        for (const auto lang : Symbol::pp_all_languages) {
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            const string& lang = langSym->name; // e.g. "EN" or "FR"
 
             EntityAttrTxtLangRow entityAttrTxt;
 
             entityAttrTxt.entityId = pp_entity_id;
             entityAttrTxt.attrId = dm->pp_member_id;
-            entityAttrTxt.langCode = lang->name;
-            entityAttrTxt.descr = dm->label(*lang);
-            entityAttrTxt.note = dm->note(*lang);
+            entityAttrTxt.langCode = lang;
+            entityAttrTxt.descr = dm->label(*langSym);
+            entityAttrTxt.note = dm->note(*langSym);
             metaRows.entityAttrTxt.push_back(entityAttrTxt);
         }
     }

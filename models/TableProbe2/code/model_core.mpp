@@ -1,0 +1,47 @@
+// Copyright (c) 2013-2022 OpenM++ Contributors
+// This code is licensed under the MIT license (see LICENSE.txt for details)
+
+//LABEL(model_core, EN) Core simulation functionality
+/* NOTE(model_core, EN)
+	This module contains model settings and the central simulation function.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+model_type case_based;
+time_type double;
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/**
+ * Simulates a single case.
+ */
+void CaseSimulation(case_info &ci)
+{
+    extern void SimulateEvents(); // defined in a 'use' module.
+
+    // Create the single entity in the case
+    auto ent = new Thing();
+	ent->initialize_attributes();
+    ent->time = 0;
+    ent->age = 0;
+    ent->enter_simulation();
+
+	SimulateEvents();
+}
+
+/**
+ * This definition is required but is empty for this model.
+ */
+void Simulation_start(case_info &ci)
+{
+}
+
+/**
+ * This definition is required but is empty for this model.
+ */
+void Simulation_end(case_info &ci)
+{
+}

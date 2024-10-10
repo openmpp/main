@@ -21,6 +21,7 @@
 #include "RealSymbol.h"
 #include "BoolSymbol.h"
 #include "AggregationSymbol.h"
+#include "LanguageSymbol.h"
 #include "ExprForAttribute.h"
 #include "Literal.h"
 #include "CodeBlock.h"
@@ -849,16 +850,34 @@ void DerivedAttributeSymbol::record_dependencies()
     // dependency on explicitly named attribute (first)
     if (pp_av1) {
         pp_dependent_attributes.emplace(pp_av1);
+        pp_av1->pp_derived_attributes_using.insert(this);
     }
 
     // dependency on explicitly named attribute (second)
     if (pp_av2) {
         pp_dependent_attributes.emplace(pp_av2);
+        pp_av2->pp_derived_attributes_using.insert(this);
     }
 
     // dependency on explicit condition (identity attribute)
     if (iav) {
         pp_dependent_attributes.emplace(iav);
+        iav->pp_derived_attributes_using.insert(this);
+    }
+
+    // Dependency on constant k1
+    if (k1 && k1->is_enumerator) {
+        k1->pp_enumerator->pp_derived_attributes_using.insert(this);
+    }
+
+    // Dependency on constant k2
+    if (k2 && k2->is_enumerator) {
+        k2->pp_enumerator->pp_derived_attributes_using.insert(this);
+    }
+
+    // Dependency on constant k3
+    if (k3 && k3->is_enumerator) {
+        k3->pp_enumerator->pp_derived_attributes_using.insert(this);
     }
 
     // implicit dependencies on non-argument attributes
@@ -873,6 +892,7 @@ void DerivedAttributeSymbol::record_dependencies()
         auto *sym = pp_entity->pp_time;
         assert(sym);
         pp_dependent_attributes.emplace(sym);
+        sym->pp_derived_attributes_using.insert(this);
         break;
     }
 
@@ -898,6 +918,8 @@ void DerivedAttributeSymbol::record_dependencies()
         // to record only the first change.
         assert(dav);
         dav->pp_dependent_attributes.emplace(this);
+        dav->pp_derived_attributes_using.insert(this);
+        break;
     }
 
     case token::TK_completed_spell_duration:
@@ -911,6 +933,8 @@ void DerivedAttributeSymbol::record_dependencies()
         // to record its value before the spell becomes false.
         assert(dav);
         dav->pp_dependent_attributes.emplace(this);
+        dav->pp_derived_attributes_using.insert(this);
+        break;
     }
 
     case token::TK_weighted_cumulation:
@@ -2543,6 +2567,10 @@ void DerivedAttributeSymbol::create_side_effects()
 string DerivedAttributeSymbol::pretty_name() const
 {
     string result;
+    
+    // initialise to fall-back: the keyword of the derived attribute, with arguments unspecified
+    result = token_to_string(tok) + "( ... )";
+
     constexpr const char* arg_sep = ","; // could be "," or ", "
 
     switch (tok) {
@@ -2558,12 +2586,13 @@ string DerivedAttributeSymbol::pretty_name() const
     }
     case token::TK_weighted_duration:
     {
-        assert(pp_av2);
-        if (!pp_av1) {
-            result = token_to_string(tok) + "(" + pp_av2->pretty_name() + ")";
-        }
-        else {
-            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + pp_av2->pretty_name() + ")";
+        if (pp_av2) {
+            if (!pp_av1) {
+                result = token_to_string(tok) + "(" + pp_av2->pretty_name() + ")";
+            }
+            else {
+                result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + pp_av2->pretty_name() + ")";
+            }
         }
         break;
     }
@@ -2576,9 +2605,9 @@ string DerivedAttributeSymbol::pretty_name() const
     case token::TK_trigger_entrances:
     case token::TK_trigger_exits:
     {
-        assert(pp_av1);
-        assert(k1);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + ")";
+        if (pp_av1 && k1) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + ")";
+        }
         break;
     }
     case token::TK_active_spell_weighted_duration:
@@ -2592,10 +2621,9 @@ string DerivedAttributeSymbol::pretty_name() const
     case token::TK_value_at_entrances:
     case token::TK_value_at_exits:
     {
-        assert(pp_av1);
-        assert(k1);
-        assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + pp_av2->pretty_name() + ")";
+        if (pp_av1 && k1 && pp_av2) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + pp_av2->pretty_name() + ")";
+        }
         break;
     }
     case token::TK_undergone_transition:
@@ -2603,29 +2631,27 @@ string DerivedAttributeSymbol::pretty_name() const
     case token::TK_trigger_transitions:
     case token::TK_duration_trigger:
     {
-        assert(pp_av1);
-        assert(k1);
-        assert(k2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + ")";
+        if (pp_av1 && k1 && k2) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + ")";
+        }
         break;
     }
     case token::TK_value_at_first_transition:
     case token::TK_value_at_latest_transition:
     case token::TK_value_at_transitions:
     {
-        assert(pp_av1);
-        assert(k1);
-        assert(k2);
-        assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + arg_sep + pp_av2->pretty_name() + ")";
+        if (pp_av1 && k1 && k2 && pp_av2) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + arg_sep + pp_av2->pretty_name() + ")";
+        }
         break;
     }
     case token::TK_undergone_change:
     case token::TK_changes:
     case token::TK_trigger_changes:
     {
-        assert(pp_av1);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
+        if (pp_av1) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
+        }
         break;
     }
     case token::TK_weighted_cumulation:
@@ -2633,46 +2659,43 @@ string DerivedAttributeSymbol::pretty_name() const
     case token::TK_value_at_latest_change:
     case token::TK_value_at_changes:
     {
-        assert(pp_av1);
-        assert(pp_av2);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_av2->pretty_name() + ")";
+        if (pp_av1 && pp_av2) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_av2->pretty_name() + ")";
+        }
         break;
     }
     case token::TK_split:
     case token::TK_self_scheduling_split:
     {
-        assert(pp_av1);
-        assert(pp_prt);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_prt->name + ")";
+        if (pp_av1 && pp_prt) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_prt->name + ")";
+        }
         break;
     }
     case token::TK_aggregate:
     {
-        assert(pp_av1);
-        assert(pp_cls);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_cls->name + ")";
+        if (pp_av1 && pp_cls) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + pp_cls->name + ")";
+        }
         break;
     }
     case token::TK_duration_counter:
     {
-        assert(pp_av1);
-        assert(k1);
-        assert(k2);
-        assert(k3 || !k3); // optional
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + (k3 ? (arg_sep + k3->value()) : "") + ")";
+        if (pp_av1 && k1 && k2 && (k3 || !k3)) { // k3 is optional
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + arg_sep + k1->value() + arg_sep + k2->value() + (k3 ? (arg_sep + k3->value()) : "") + ")";
+        }
         break;
     }
     case token::TK_self_scheduling_int:
     {
-        assert(pp_av1);
-        result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
+        if (pp_av1) {
+            result = token_to_string(tok) + "(" + pp_av1->pretty_name() + ")";
+        }
         break;
     }
     default:
     {
-        //TODO raise error once list is complete
-        // assert(false);
-        result = token_to_string(tok) + "( ... )";
+        assert(false); // not reached - cases should be exhaustive
         break;
     }
 
@@ -2869,6 +2892,15 @@ void DerivedAttributeSymbol::post_parse(int pass)
     case ePopulateDependencies:
     {
         create_side_effects();
+        // Replace default label created earlier by pretty_name
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            auto new_lab = pretty_name();
+            pp_labels[lang_index] = new_lab;
+            pp_labels_explicit[lang_index] = false;
+            pp_labels_pos[lang_index] = omc::position();
+        }
+
         break;
     }
     default:

@@ -13,6 +13,8 @@
 #include "EntityMemberSymbol.h"
 #include "CodeBlock.h"
 
+class EntityEventSymbol;
+
 using namespace std;
 
 /**
@@ -40,8 +42,10 @@ public:
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
         , suppress_defn(suppress_defn)
+        , suppress_decl(false)
         , suppress_code_if_empty(false)
         , has_line_directive(false)
+        , associated_event(nullptr)
     {
     }
 
@@ -61,8 +65,10 @@ public:
         , return_decl(return_decl)
         , is_developer_supplied(false)
         , suppress_defn(suppress_defn)
+        , suppress_decl(false)
         , suppress_code_if_empty(false)
         , has_line_directive(false)
+        , associated_event(nullptr)
     {
     }
 
@@ -135,10 +141,13 @@ public:
 
     /**
      * Flag to suppress generation of function definition.
-     * 
-     * True if developer-supplied, false if generated
      */
     bool suppress_defn;
+
+    /**
+     * Flag to suppress generation of function declaration.
+     */
+    bool suppress_decl;
 
     /**
      * Flag to suppress declaration and definition if function body is empty.
@@ -155,6 +164,11 @@ public:
      * Default is false.
      */
     bool has_line_directive;
+
+    /**
+     * For event time and implement functions, points to the event
+     */
+    EntityEventSymbol* associated_event;
 
     /**
      * The function body (if generated)

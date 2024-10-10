@@ -19,7 +19,7 @@ private:
     typedef AttributeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor by name.
@@ -45,23 +45,8 @@ public:
     {
     }
 
-    /**
-     * Get the default symbol label for the given language.
-     *
-     * @param language The language.
-     *
-     * Overrides the default behaviour implemented in Symbol::default_label
-     *
-     * @return A string.
-     */
-    string default_label(const LanguageSymbol& language) const;
+    void post_parse(int pass) override;
 
-    void post_parse(int pass);
-
-    CodeBlock cxx_declaration_entity();
-
-     /** @brief   The default label for selected language codes */
-    std::map<std::string, std::string> the_default_labels;
-
+    CodeBlock cxx_declaration_entity() override;
 };
 

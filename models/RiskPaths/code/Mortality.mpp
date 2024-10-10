@@ -3,15 +3,13 @@
 ///////////////////////////////////////////////////////////////////////////
 
 /* NOTE(Mortality, EN)
-	This module simulates the death event. Mortality can be switched off
-	by the user in which case all actors reach the maximum age. This
-	is useful in fertility analysis as e.g. TFR is calculated assuming
-	survival over the whole fertile period.
+    This module simulates the death event. Mortality can be switched off
+    by the user in which case all actors reach the maximum age. This
+    is useful in fertility analysis as e.g. TFR is calculated assuming
+    survival over the whole fertile period.
 */
 
-#if !defined(MODGEN) // Hide from Modgen for x-compatible models
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
-#endif
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
@@ -20,31 +18,31 @@
 
 ///////////////////////////////////////////////////////////////////////////
 // Actor states and event definitions
-parameters 									
+parameters
 {
-	logical CanDie;							//EN Switch mortality on/off
-	double  ProbMort[LIFE];					//EN Death probabilities  
+    logical CanDie;         //EN Switch mortality on/off
+    double  ProbMort[LIFE]; //EN Death probabilities
 };
 
-parameter_group P01_Mortality 				//EN Mortality
+parameter_group P01_Mortality //EN Mortality
 {
-	CanDie, ProbMort
+    CanDie, ProbMort
 };
 
 ///////////////////////////////////////////////////////////////////////////
 // Actor states and event definitions
 
-classification LIFE_STATE 					//EN Life status
+classification LIFE_STATE //EN Life status
 {
-	LS_ALIVE,								//EN Alive 
-	LS_NOT_ALIVE							//EN Dead
+    LS_ALIVE,     //EN Alive
+    LS_NOT_ALIVE  //EN Dead
 };
 
-actor Person																																		
+actor Person
 {
-	LIFE_STATE life_status = {LS_ALIVE};	//EN Life Status
-	event timeDeathEvent, DeathEvent;		//EN Death Event 
-};  
+    LIFE_STATE life_status = {LS_ALIVE};  //EN Life Status
+    event timeDeathEvent, DeathEvent;     //EN Death Event
+};
 
 #endif // Hide non-C++ syntactic island from IDE
 
@@ -52,37 +50,35 @@ actor Person
 // Events implementation
 
 /*NOTE(Person.DeathEvent, EN)
-	The death event. Death occurs either according to a life table or - if
-	the parameter CanDie is set false, at the maximum possible age.
+    The death event. Death occurs either according to a life table or - if
+    the parameter CanDie is set false, at the maximum possible age.
 */
 
-TIME Person::timeDeathEvent()				
+TIME Person::timeDeathEvent()
 {
-	TIME event_time = TIME_INFINITE;
-	if (CanDie)										
-	{
-		if (ProbMort[integer_age] >= 1) 			
-		{
-	  		event_time = WAIT(0);
-		}
-		else 								
-		{
-			event_time = WAIT(-log(RandUniform(3)) / 
-				              -log(1 - ProbMort[integer_age]));
-		}
-	}
-	// Death event can not occur after the maximum duration of life
-	if (event_time > MAX(LIFE)) 						
-	{
-		event_time = MAX(LIFE);
-	}
-	return event_time;
-}
-	  
-void Person::DeathEvent()					
-{
-	life_status = LS_NOT_ALIVE; 
-	Finish();
+    TIME event_time = TIME_INFINITE;
+    if (CanDie)
+    {
+        if (ProbMort[integer_age] >= 1)
+        {
+              event_time = WAIT(0);
+        }
+        else
+        {
+            event_time = WAIT(-log(RandUniform(3)) /
+                              -log(1 - ProbMort[integer_age]));
+        }
+    }
+    // Death event cannot occur after the maximum duration of life
+    if (event_time > MAX(LIFE))
+    {
+        event_time = MAX(LIFE);
+    }
+    return event_time;
 }
 
-
+void Person::DeathEvent()
+{
+    life_status = LS_NOT_ALIVE;
+    Finish();
+}

@@ -21,6 +21,7 @@ class LinkAttributeSymbol;
 class EntityMultilinkSymbol;
 class EntityInternalSymbol;
 class BuiltinAttributeSymbol;
+class ClassificationSymbol;
 
 using namespace std;
 
@@ -57,6 +58,9 @@ public:
         , reset_derived_attributes_fn(nullptr)
         , finalize_links_fn(nullptr)
         , finalize_multilinks_fn(nullptr)
+        , lifecycle_enter_fn(nullptr)
+        , lifecycle_exit_fn(nullptr)
+        , lifecycle_event_fn(nullptr)
         , start_trace_fn(nullptr)
         , ss_time_fn(nullptr)
         , ss_implement_fn(nullptr)
@@ -67,6 +71,8 @@ public:
         , pp_entity_id(-1)
         , pp_local_rng_streams_requested(false)
         , pp_local_rng_streams_present(false)
+        , pp_lifecycle_attributes_requested(false)
+        , pp_lifecycle_classification(nullptr)
         , any_set_has_order_clause(false)
     {
         create_auxiliary_symbols();
@@ -83,7 +89,7 @@ public:
     void post_parse(int pass);
 
     /** Mark enumerations required for metadata support for this entity. */
-    void post_parse_mark_enumerations(void);
+    void mark_enumerations_to_publish(void);
 
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
@@ -146,6 +152,11 @@ public:
      * Builds the function body of the function.
      */
     void build_body_start_trace();
+
+    /**
+     * Builds the function body of the function.
+     */
+    void build_body_lifecycle_event();
 
     /**
      * The built-in attribute for time in the entity.
@@ -258,6 +269,21 @@ public:
      * The entity function which empties all multilinks when the entity finishes.
      */
     EntityFuncSymbol *finalize_multilinks_fn;
+
+    /**
+     * The entity function which supports lifecycle attributes on enter_simulation.
+     */
+    EntityFuncSymbol* lifecycle_enter_fn;
+
+    /**
+     * The entity function which supports lifecycle attributes on exit_simulation.
+     */
+    EntityFuncSymbol* lifecycle_exit_fn;
+
+    /**
+     * The entity function which supports lifecycle attributes at events.
+     */
+    EntityFuncSymbol* lifecycle_event_fn;
 
     /**
      * The entity function which implements trace messages at the start of the entity lifecycle.
@@ -391,7 +417,7 @@ public:
     EntityFuncSymbol *ss_implement_fn;
 
     /**
-     * The get_entity_ley function.
+     * The get_entity_key function.
      */
     EntityFuncSymbol* get_entity_key_fn;
 
@@ -399,6 +425,11 @@ public:
      * The get_microdata_key() function.
      */
     EntityFuncSymbol* get_microdata_key_fn;
+
+    /**
+     * The write_microdata() function.
+     */
+    EntityFuncSymbol* write_microdata_fn;
 
     /**
      * The self-scheduling event.
@@ -424,6 +455,21 @@ public:
      * Indicates if local RNG streams are present in this entity kind.
      */
     bool pp_local_rng_streams_present;
+
+    /**
+     * Indicates if lifecycle attributes were requested for this entity kind.
+     */
+    bool pp_lifecycle_attributes_requested;
+
+    /**
+     * The lifecycle classification, if requested
+     */
+    ClassificationSymbol* pp_lifecycle_classification;
+
+    /**
+     * The lifecycle map from event name to classification level name, if requested
+     */
+    map<string, string> pp_lifecycle_name_map;
 
     /**
      * Indicates if any set of this entity kind has an order clause.

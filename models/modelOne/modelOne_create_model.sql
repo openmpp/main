@@ -100,13 +100,13 @@ INSERT INTO type_enum_txt (type_hid, enum_id, lang_id, descr, note) VALUES (104,
 -- 
 -- modelOne input parameters
 -- parameter digest: not a real digest (32 digits hex)
---   ageSex rank 2, float and parameter value can be null
---   salaryAge rank 2, int
---   StartingSeed rank 0 scalar (no dimensions), int
---   salaryFull rank 1, enum-based
---   baseSalary rank 0 scalar enum-based
---   filePath rank 0 of string type
---   isOldAge rank 0 logical type
+--   101 ageSex rank 2, float and parameter value can be null
+--   102 salaryAge rank 2, int
+--   103 StartingSeed rank 0 scalar (no dimensions), int
+--   104 salaryFull rank 1, enum-based
+--   105 baseSalary rank 0 scalar enum-based
+--   106 filePath rank 0 of string type
+--   107 isOldAge rank 0 logical type
 --
 INSERT INTO parameter_dic
   (parameter_hid, parameter_name, parameter_digest, parameter_rank, type_hid, is_extendable, num_cumulated, db_run_table, db_set_table, import_digest)
@@ -188,9 +188,13 @@ INSERT INTO parameter_dims_txt (parameter_hid, dim_id, lang_id, descr, note) VAL
 -- modelOne output tables
 -- output table digest: not a real digest (32 digits hex)
 --
+-- 101 salarySex output table
+-- 103 ageSexIncome output table
+-- 104 seedOldAge output table
+-- 102 fullAgeSalary output table
 
 --
--- salarySex output table
+-- 101 salarySex output table
 -- salary by sex output table
 --
 INSERT INTO table_dic 
@@ -273,7 +277,7 @@ INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (10
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (101, 3, 0, 'Average acc0 * acc1', NULL);
 
 --
--- fullAgeSalary output table
+-- 102 fullAgeSalary output table
 -- full time by age by salary output table
 --
 INSERT INTO table_dic 
@@ -324,7 +328,7 @@ VALUES
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (102, 0, 0, 'Average acc0', 'Average on acc0 notes');
 
 --
--- ageSexIncome output table
+-- 103 ageSexIncome output table
 -- age by sex income output table
 -- import digest same as ageSex parameter import digest
 --
@@ -404,7 +408,7 @@ INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (10
 INSERT INTO table_expr_txt (table_hid, expr_id, lang_id, descr, note) VALUES (103, 2, 0, 'Average of acc0 - acc1', 'Notes on average of acc0 - acc1');
 
 --
--- seedOldAge output table
+-- 104 seedOldAge output table
 --
 INSERT INTO table_dic 
   (table_hid, table_name, table_digest, table_rank, is_sparse, db_expr_table, db_acc_table, db_acc_all_view, import_digest) 

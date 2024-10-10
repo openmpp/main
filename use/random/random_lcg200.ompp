@@ -32,7 +32,7 @@
 // Copyright (c) 2013-2022 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
-#include "omc/omSimulation.h" // For IDE to recognize symbols in C++ code
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 namespace fmk {
 

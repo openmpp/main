@@ -77,8 +77,12 @@
 
     <BUILD_DIR>$(ProjectDir)build</BUILD_DIR>
 
-    <PLATFORM_SUFFIX Condition="'$(Platform)'=='Win32'"></PLATFORM_SUFFIX>
-    <PLATFORM_SUFFIX Condition="'$(Platform)'=='x64'">64</PLATFORM_SUFFIX>
+    <!--  Default values for model documnetation directories -->
+    <IN_DOC_DIR Condition="'$(IN_DOC_DIR)'==''">../doc</IN_DOC_DIR>
+    <OUT_DOC_DIR Condition="'$(OUT_DOC_DIR)'==''">$(PUBLISH_DIR)/doc</OUT_DOC_DIR>
+
+    <PLATFORM_SUFFIX Condition="'$(Platform)'=='Win32'">32</PLATFORM_SUFFIX>
+    <PLATFORM_SUFFIX Condition="'$(Platform)'=='x64'"></PLATFORM_SUFFIX>
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Release'"></CONFIG_SUFFIX>
     <CONFIG_SUFFIX Condition="'$(Configuration)'=='Debug'">D</CONFIG_SUFFIX>
 
@@ -114,6 +118,8 @@
     <OMC_NO_METADATA_OPT Condition="'$(NO_METADATA)'=='true'">-Omc.noMetadata 1</OMC_NO_METADATA_OPT>
     <!-- omc -modelDoc option -->
     <OMC_MODEL_DOC_OPT Condition="'$(MODEL_DOC)'=='true'">-Omc.ModelDoc 1</OMC_MODEL_DOC_OPT>
+    <!-- omc -OutDocDir option -->
+    <OMC_OUT_DOC_OPT Condition="'$(MODEL_DOC)'=='true'">-Omc.OutDocDir &quot;$(OUT_DOC_DIR)&quot;</OMC_OUT_DOC_OPT>
     <!-- omc -noLineDirectives option -->
     <OMC_NO_LINE_DIRECTIVES_OPT Condition="'$(NO_LINE_DIRECTIVES)'=='true'">-Omc.noLineDirectives 1</OMC_NO_LINE_DIRECTIVES_OPT>
   </PropertyGroup>

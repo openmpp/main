@@ -38,8 +38,14 @@ class DependencyGroupSymbol;
 class GlobalFuncSymbol;
 class AggregationSymbol;
 class ImportSymbol;
+class ModuleSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
+class GroupSymbol;
+class EntityFuncSymbol;
+class GlobalFuncSymbol;
+class IdentityAttributeSymbol;
+class DerivedAttributeSymbol;
 
 namespace openm {
     struct MetaModelHolder;
@@ -174,6 +180,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_module(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -218,6 +225,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_module(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         auto it = symbols.find( unique_name );
@@ -256,6 +264,7 @@ public:
         , sorting_group(10)
         , code_order(0)
         , code_label_allowed(true)
+        , pp_module(nullptr)
     {
         modgen_unique_name = unique_name;  // is overridden if necessary
         // find symbol table entry for the existing symbol
@@ -326,7 +335,7 @@ public:
 
     enum post_parse_pass {
 
-		///< post-parse pass to identify foreign types
+		///< post-parse pass to identify foreign types and process languages
 		eCreateForeignTypes,
 
 		///< post-parse pass to create/morph missing symbols
@@ -450,6 +459,22 @@ public:
     virtual bool is_published() const { return false; }
 
     /**
+     * Returns unique_name with "::" replaced by "."
+     *
+     * @return The string result.
+     */
+    string dot_name() const
+    {
+        auto n = unique_name.find("::");
+        if ((n != unique_name.npos) && (unique_name.length() > n + 2)) {
+            return unique_name.substr(0, n) + "." + unique_name.substr(n + 2);
+        }
+        else {
+            return unique_name;
+        }
+    }
+
+    /**
      * Description of code injection into side-effect function.
      * 
      * Used to insert a comment in generated code.
@@ -465,7 +490,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_error(const string& msg);
+    void pp_error(const string& msg) const;
 
     /**
      * Process a fatal semantic error encountered during the post-parse phase.
@@ -475,7 +500,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_fatal(const string& msg);
+    void pp_fatal(const string& msg) const;
 
     /**
      * Process a semantic warning encountered during the post-parse phase.
@@ -484,7 +509,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_warning(const string& msg);
+    void pp_warning(const string& msg) const;
 
     /**
      * Process a semantic warning encountered during the post-parse phase.
@@ -493,7 +518,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_warning(const string& msg, omc::position& pos);
+    void pp_warning(const string& msg, const omc::position& pos) const;
 
     /**
      * Process a semantic message during the post-parse phase.
@@ -511,7 +536,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_log_message(const string& msg);
+    void pp_log_message(const string& msg) const;
 
     /**
      * Output a warning or error message to the log.
@@ -520,7 +545,7 @@ public:
      *
      * @param msg The message.
      */
-    void pp_log_message(const string& msg, omc::position &pos);
+    void pp_log_message(const string& msg, const omc::position &pos) const;
 
     /**
      * Get the symbol label in the given language.
@@ -542,6 +567,12 @@ public:
      * @return A string.
      */
     virtual string default_label(const LanguageSymbol& language) const;
+
+    /** English label provided for built-in symbols (optional) */
+    string builtin_english_label;
+
+    /** alingual label provided for built-in symbols (optional) */
+    string builtin_alingual_label;
 
     /**
      * Gets the symbol label in the default language.
@@ -566,10 +597,13 @@ public:
      *
      * An explicit label is a C++ one-line comment like LABEL(key,EN) text
      * A note is a C-style comment like NOTE(key,EN) text
+     * Alternatively, explicit labels and notes can be supplied
+     * by files in the authored input doc directory, with names like
+     * LABEL.TheSymbol.EN.md or NOTE.TheSymbol.EN.md.
      * 
-     * @param key The key used to search comments, e.g. MyTable::Dim0
+     * @param key The key used for searching, e.g. MyTable::Dim0
      */
-    void associate_explicit_label_or_note(string key);
+    void associate_explicit_label_or_note(const string& key);
 
     /**
      * The unique identifier for the symbol
@@ -718,6 +752,51 @@ public:
     bool code_label_allowed;
 
     /**
+     * If non-null, the module where this symbol was declared.
+     */
+    ModuleSymbol *pp_module;
+
+    /**
+     * Parent groups of this symbol.
+     */
+    set <GroupSymbol*> pp_parent_groups;
+
+    bool has_parent_group(void) const
+    {
+        return (pp_parent_groups.size() > 0);
+    }
+
+    /**
+     * All EntityFuncSymbol which use this Symbol
+     */
+    set<EntityFuncSymbol *> pp_entity_funcs_using;
+
+    /**
+     * All GlobalFuncSymbol which use this Symbol
+     */
+    set<GlobalFuncSymbol *> pp_global_funcs_using;
+
+    /**
+     * All IdentityAttributeSymbol which use this Symbol
+     */
+    set<IdentityAttributeSymbol*> pp_identity_attributes_using;
+
+    /**
+     * All DerivedAttributeSymbol which use this Symbol
+     */
+    set<DerivedAttributeSymbol*> pp_derived_attributes_using;
+
+    /**
+     * All EntityTableSymbol which use this Symbol
+     */
+    set<EntityTableSymbol*> pp_entity_tables_using;
+
+    /**
+     * All EntitySetSymbol which use this Symbol
+     */
+    set<EntitySetSymbol*> pp_entity_sets_using;
+
+    /**
      * Check for existence of symbol with this unique name.
      *
      * @param unm The unique name.
@@ -850,22 +929,24 @@ public:
     static const token_type optimized_storage_type( long long min_value, long long max_value );
 
     /**
-     * Extract accumulator from Modgen cumulation operator.
+     * Extract statistic from Modgen cumulation operator.
      *
-     * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   e    The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   dflt The default statistic.
      *
-     * @return The associated accumulator, e.g. token::TK_maximum.
+     * @returns The associated statistic, e.g. token::TK_maximum.
      */
-    static const token_type modgen_cumulation_operator_to_acc(const token_type& e);
+    static const token_type modgen_cumulation_operator_to_stat(const token_type& e, const token_type& dflt);
 
     /**
      * Extract increment from Modgen cumulation operator.
      *
-     * @param e The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   e    The Modgen cumulation operator, e.g. token::TK_max_value_in.
+     * @param   dflt The default increment.
      *
-     * @return The associated increment, e.g. token::TK_value_in.
+     * @returns The associated increment, e.g. token::TK_value_in.
      */
-    static const token_type modgen_cumulation_operator_to_incr(const token_type& e);
+    static const token_type modgen_cumulation_operator_to_incr(const token_type& e, const token_type& dflt);
 
     /**
      * Populate default symbols in symbol table
@@ -956,9 +1037,19 @@ public:
      * All key-value pairs in options statements are placed in the map Symbol::options during model
      * code parsing for subsequent processing by this function.
      * This function removes options from the map if recognized and processed.
-     * Some options require delayed processing elsewhere, e.g. local_random_streams.
+     * Some options require delayed processing elsewhere, e.g. local_random_streams, lifecycle_attributes
      */
     static void do_options();
+
+    /**
+     * Assign provenance of ModuleSymbols
+     */
+    static void do_module_provenance(void);
+
+    /**
+     * Create missing global functions
+     */
+    static void create_missing_global_funcs(void);
 
     /**
      * Look for and handle unrecognized options after post-parse phases
@@ -1017,9 +1108,35 @@ public:
     /**
      * Replace Modgen syntax in a NOTE by equivalent markdown.
      *
-     * @param cmt The comment.
+     * @param note The note.
      */
-    static std::string normalize_note(const std::string& txt);
+    static std::string note_modgen_to_markdown(const std::string& note);
+
+    /**
+     * Expand embedded constructs in a NOTE.
+     *          
+     * Example: "GetLabel(SymbolName)" is expanded to the label of the Symbol
+     *
+     * @param   lang_index  Zero-based index of the language.
+     * @param   note        The note contents.
+     *
+     * @returns A std::string.
+     */
+    std::string note_expand_embeds(int lang_index, const std::string& note);
+
+    /**
+     * Slurp a developer-supplied .md documentation file.
+     *
+     * @returns A std::string.
+     */
+    static std::string slurp_doc_file_md(const std::string& stem);
+
+    /**
+     * Slurp a developer-supplied .txt documentation file.
+     *
+     * @returns A std::string.
+     */
+    static std::string slurp_doc_file_txt(const std::string& stem);
 
     /**
      * Pathnames of use folders.
@@ -1043,8 +1160,8 @@ public:
     /**
      * 'mpp' source files for the model.
      *
-     * A subset of all_source_files, consisting just of those which
-     * were found in the model code directory.
+     * A subset of all_source_files, just those 
+     * in the model code directory.
      * It includes both mpp and ompp files.
      */
     static list<string> mpp_source_files;
@@ -1052,17 +1169,17 @@ public:
 	/**
      * 'use' source files for the model.
      * 
-     * A subset of all_source_files, consisting just of those which 
-     * were included in compilation through a 'use' statement.
+     * A subset of all_source_files, just those 
+     * included during compilation through a 'use' statement.
      */
     static list<string> use_source_files;
 
     /**
      * 'dat' source files for the model.
      *
-     * A subset of all_source_files, consisting just of those which
-     * specified were found in the model code directory.
-     * It includes both mpp and ompp files.
+     * A subset of all_source_files, just those
+     * in the model parameters/Default directory.
+     * It includes both dat and odat files.
      */
     static list<string> dat_source_files;
 
@@ -1252,6 +1369,13 @@ public:
     static list<ImportSymbol*> pp_all_imports;
 
     /**
+    * The modules in the model
+    *
+    * Populated after parsing is complete.
+    */
+    static list<ModuleSymbol*> pp_all_modules;
+
+    /**
     * The event names in the model
     *
     * Note that the set contains no duplicates, but event names can be duplicates in different entities.
@@ -1268,7 +1392,7 @@ public:
     static set<string> pp_visible_member_names;
 
     /**
-     * Map of member function qualified names to all identifiers used in the body of the function.
+     * Map of names of all identifiers used in the body of a function defined in model code.
      * 
      * An example entry might be "Person::MortalityEvent" ==> "alive".
      */
@@ -1321,6 +1445,11 @@ public:
     static multimap<int, string> rng_stream_calls;
 
     /**
+     * Set of global funcs which need a declaration or definition.
+     */
+    static set<GlobalFuncSymbol*> pp_missing_global_funcs;
+
+    /**
      * A map of all the C++ style single line comments in the model source code, indexed by location
      * 
      * This map is used with other collections to retrieve a comment based on its location.
@@ -1351,6 +1480,15 @@ public:
      *   //NAME MyTable.Expr2 avg_income
      */
     static unordered_map<string, pair<string, omc::location>> explicit_names;
+
+    /**
+     * Map of EXPR from symbol name to expression (for derived tables).
+     *
+     * This maps "symbol" as a key to an override SQL expression {expr,location} specified
+     * explicitly by a //EXPR statement in the model source code, eg.
+     *   //EXPR MyTable.Expr2 OM_AVG(acc2)
+     */
+    static unordered_map<string, pair<string, omc::location>> explicit_exprs;
 
     /**
      * Map of NOTE from symbol name to note (model source)
@@ -1475,6 +1613,11 @@ public:
     static token_type Time_ctype;
 
     /**
+     * If true, parser has encountered a languages statement
+     */
+    static bool languages_statement_encountered;
+
+    /**
      * If true, model contains one or more hide statements
      */
     static bool any_hide;
@@ -1509,11 +1652,23 @@ public:
      */
     static bool any_parameters_to_tables;
 
+    ///  Method to compute run results from subs
+    enum run_table_method {
+
+        /// average measures across subs expression_style = sql_accumulators
+        average,
+
+        /// aggregate measures across subs expression_style = sql_aggregated_accumulators
+        aggregate,
+
+        /// ossemble measures across subs expression_style = sql_assembled_accumulators
+        assemble,
+    };
+
     /**
-     * If true, table measures are aggregated across simulation members.
-     * If false, table measures are averaged across simulation members.
+     * The method used to compute run level results from subs.
      */
-    static bool measures_are_aggregated;
+    static run_table_method measures_method;
 
     /**
      * A count of type changes made in a single post-parse pass.
@@ -1556,6 +1711,11 @@ public:
     static bool option_bounds_errors;
 
     /**
+     * true/false depending on index_errors in options statement.
+     */
+    static bool option_index_errors;
+
+    /**
      * true if case_checksum activated in options statement.
      */
     static bool option_case_checksum;
@@ -1594,6 +1754,11 @@ public:
      * true or false depending on verify_valid_table_increment value in options statement.
      */
     static bool option_verify_valid_table_increment;
+
+    /**
+     * true or false depending on weighted_tabulation_allow_time_based value in options statement.
+     */
+    static bool option_weighted_tabulation_allow_time_based;
 
     /**
      * true or false depending on weighted_tabulation value in options statement.
@@ -1639,6 +1804,11 @@ public:
      * true or false depending on whether microdata is written after any event.
      */
     static bool option_microdata_write_on_event;
+
+    /**
+     * enumeration size above which microdata attribute is not published.
+     */
+    static size_t option_microdata_max_enumerators;
 
     /**
      * true or false depending on use_heuristic_short_names in options statement.
@@ -1776,6 +1946,136 @@ public:
     static bool option_missing_name_warning_published_table;
 
     /**
+     * true to turn on generated symbol reference content in model documentation.
+     */
+    static bool option_generated_documentation;
+
+    /**
+     * true to turn on authored stand-alone content in model documentation.
+     */
+    static bool option_authored_documentation;
+
+    /**
+     * true to turn on most other option_symref_* options.
+     */
+    static bool option_symref_developer_edition;
+
+    /**
+     * false to exclude unpublished symbols in symbol reference.
+     */
+    static bool option_symref_unpublished_symbols;
+
+    /**
+     * true to include in symbol reference the main topic including navigation aid links.
+     */
+    static bool option_symref_main_topic;
+
+    /**
+     * true to include in symbol reference the unique symbol named "model".
+     */
+    static bool option_symref_model_symbol;
+
+    /**
+     * true to include in symbol reference the parameter hierarchy.
+     */
+    static bool option_symref_parameter_hierarchy;
+
+    /**
+     * true to include in symbol reference the table hierarchy.
+     */
+    static bool option_symref_table_hierarchy;
+
+    /**
+     * true to include in symbol reference the parameter major group section.
+     */
+    static bool option_symref_parameter_major_groups;
+
+    /**
+     * true to include in symbol reference the table major group section.
+     */
+    static bool option_symref_table_major_groups;
+
+    /**
+     * true to include in symbol reference the parameter alphabetic list topic.
+     */
+    static bool option_symref_parameters_alphabetic;
+
+    /**
+     * true to include in symbol reference the table alphabetic list topic.
+     */
+    static bool option_symref_tables_alphabetic;
+
+    /**
+     * true to include in symbol reference the enumerations alphabetic list topic.
+     */
+    static bool option_symref_enumerations_alphabetic;
+
+    /**
+     * true to include in symbol reference the attributes alphabetic list topic.
+     */
+    static bool option_symref_attributes_alphabetic;
+
+    /**
+     * true to include in symbol reference individual parameter topics.
+     */
+    static bool option_symref_topic_parameters;
+
+    /**
+     * true to include in symbol reference individual table topics.
+     */
+    static bool option_symref_topic_tables;
+
+    /**
+     * true to include in symbol reference individual attribute topics.
+     */
+    static bool option_symref_topic_attributes;
+
+    /**
+     * true to include in symbol reference individual internal attribute topics.
+     */
+    static bool option_symref_topic_attributes_internal;
+
+    /**
+     * true to include in symbol reference individual enumeration topics.
+     */
+    static bool option_symref_topic_enumerations;
+
+    /**
+     * true to include in symbol reference individual mentity set topics.
+     */
+    static bool option_symref_topic_entity_sets;
+
+    /**
+     * true to include in symbol reference individual module topics.
+     */
+    static bool option_symref_topic_modules;
+
+    /**
+     * true to include in symbol reference individual module topics for use modules.
+     */
+    static bool option_symref_topic_modules_use;
+
+    /**
+     * true to include symbols declared table in individual module topics.
+     */
+    static bool option_symref_topic_modules_symbols_declared;
+
+    /**
+     * true to include in symbol reference any authored NOTEs.
+     */
+    static bool option_symref_topic_notes;
+
+    /**
+     * true to place notes early in an individual symbol topic.
+     */
+    static bool option_symref_topic_notes_early;
+
+    /**
+     * true to show the Note heading in an individual symbol topic
+     */
+    static bool option_symref_topic_note_heading;
+
+    /**
      * true or false depending on alternate_attribute_dependency_implementation in options statement.
      */
     static bool option_alternate_attribute_dependency_implementation;
@@ -1801,9 +2101,31 @@ public:
     static bool no_metadata;
 
     /**
-     * True to generate model documentation
+     * True to generate model documentation (end user version)
      */
     static bool model_doc;
+
+    /**
+     * The directory containing input authored documentation is used.
+     */
+    static bool in_doc_active;
+
+    /**
+     * The directory containing input authored documentation
+     * 
+     * Normalized with forward slashes and trailing / if not current directory.
+     */
+    static string in_doc_dir;
+
+    /**
+     * List of stems of .md files in the input authored documentation directory
+     */
+    static set<string> in_doc_stems_md;
+
+    /**
+     * List of stems of .txt files in the input authored documentation directory
+     */
+    static set<string> in_doc_stems_txt;
 
     /**
      * True to enable detailed output from parser

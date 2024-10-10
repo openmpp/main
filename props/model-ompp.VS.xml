@@ -48,7 +48,7 @@
   <BoolProperty Category="BuildOptions"
                 Name="MODEL_DOC"
                 DisplayName="Generate model documentation"
-                Description="Produce human readable reference documentation for the model."
+                Description="Produce human-readable documentation for the model."
                 />
   <BoolProperty Category="BuildOptions"
                 Name="NO_METADATA"

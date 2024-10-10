@@ -48,7 +48,7 @@
 //==============================/
 
 
-//LABEL ( UNION_STATE, FR ) Situation d’union
+//LABEL ( UNION_STATE, FR ) Situation d'union
 
      //LABEL ( US_NEVER_IN_UNION, FR ) Jamais dans une union
      //LABEL ( US_FIRST_UNION_PERIOD1, FR ) Première union << 3 années
@@ -64,7 +64,7 @@
 //                              /
 //==============================/
 
-//LABEL ( LIFE, FR ) Tranche d’âge simulée
+//LABEL ( LIFE, FR ) Tranche d'âge simulée
 
 
 //==============================/
@@ -73,10 +73,10 @@
 //                              /
 //==============================/
 
-//LABEL ( AGE_FERTILEYEARS, FR ) Partition de la tranche d’âge de fécondité
-//LABEL ( AGEINT_STATE, FR ) Intervalles d’âge de 2,5 ans
-//LABEL ( DISSOLUTION_DURATION, FR ) Temps écoulé depuis la dissolution de l’union
-//LABEL ( UNION_DURATION, FR ) Durée de l’union courante
+//LABEL ( AGE_FERTILEYEARS, FR ) Partition de la tranche d'âge de fécondité
+//LABEL ( AGEINT_STATE, FR ) Intervalles d'âge de 2,5 ans
+//LABEL ( DISSOLUTION_DURATION, FR ) Temps écoulé depuis la dissolution de l'union
+//LABEL ( UNION_DURATION, FR ) Durée de l'union courante
 
 
 //==============================/
@@ -87,7 +87,7 @@
 
 //LABEL ( P01_Mortality, FR ) Mortalité
 //LABEL ( P02_Ferility, FR ) Fécondité
-//LABEL ( P03_Unions, FR ) Paramètres d’union
+//LABEL ( P03_Unions, FR ) Paramètres d'union
 
 
 //==============================/
@@ -100,9 +100,9 @@
 //LABEL ( AgeBaselinePreg1, FR ) Âge de référence pour la première grossesse
 //LABEL ( CanDie, FR ) Activation/désactivation de la mortalité
 //LABEL ( ProbMort, FR ) Probabilités de décès
-//LABEL ( SeparationDurationBaseline, FR ) Durée de référence de la séparation pour la deuxième formation d’une union
-//LABEL ( UnionDurationBaseline, FR ) Durée de référence de l’union pour la dissolution
-//LABEL ( UnionStatusPreg1, FR ) Risques relatifs de la situation d’union à la première grossesse
+//LABEL ( SeparationDurationBaseline, FR ) Durée de référence de la séparation pour la deuxième formation d'une union
+//LABEL ( UnionDurationBaseline, FR ) Durée de référence de l'union pour la dissolution
+//LABEL ( UnionStatusPreg1, FR ) Risques relatifs de la situation d'union à la première grossesse
 
 
 //==============================/
@@ -127,19 +127,19 @@
      //==============================/
 
 
-     //LABEL ( Person.age_status, FR ) Intervalle d’âge courant
-     //LABEL ( Person.dissolution_duration, FR ) Intervalle de temps depuis la dissolution de l’union
-     //LABEL ( Person.dissolution_hazard, FR ) Risque de dissolution de l’union
-     //LABEL ( Person.formation_hazard, FR ) Risque de formation d’une union
-     //LABEL ( Person.in_union, FR ) Dans une union à l’heure actuelle
+     //LABEL ( Person.age_status, FR ) Intervalle d'âge courant
+     //LABEL ( Person.dissolution_duration, FR ) Intervalle de temps depuis la dissolution de l'union
+     //LABEL ( Person.dissolution_hazard, FR ) Risque de dissolution de l'union
+     //LABEL ( Person.formation_hazard, FR ) Risque de formation d'une union
+     //LABEL ( Person.in_union, FR ) Dans une union à l'heure actuelle
      //LABEL ( Person.integer_age, FR ) Âge courant en nombre entier
      //LABEL ( Person.life_status, FR ) Situation vitale
-     //LABEL ( Person.parity_status, FR ) Situation de parité déterminée d’après l’état de parité
+     //LABEL ( Person.parity_status, FR ) Situation de parité déterminée d'après l'état de parité
      //LABEL ( Person.preg_hazard, FR ) Risque de grossesse
-     //LABEL ( Person.union_duration, FR ) Intervalle de temps depuis la formation de l’union
-     //LABEL ( Person.union_period2_change, FR ) Moment du changement de période d’union
-     //LABEL ( Person.union_status, FR ) Situation d’union
-     //LABEL ( Person.unions, FR ) Compteur d’unions
+     //LABEL ( Person.union_duration, FR ) Intervalle de temps depuis la formation de l'union
+     //LABEL ( Person.union_period2_change, FR ) Moment du changement de période d'union
+     //LABEL ( Person.union_status, FR ) Situation d'union
+     //LABEL ( Person.unions, FR ) Compteur d'unions
 
 
      //==============================/
@@ -149,49 +149,49 @@
 
      //LABEL ( Person.DeathEvent, FR ) Événement de décès
 
-/* NOTE ( Person.DeathEvent, FR )	L’événement de décès. Le décès survient conformément à une table de 
-mortalité ou, si la valeur du paramètre CanDie (peut mourir) est Faux, à l’âge maximal possible. 
+/* NOTE ( Person.DeathEvent, FR )	L'événement de décès. Le décès survient conformément à une table de 
+mortalité ou, si la valeur du paramètre CanDie (peut mourir) est Faux, à l'âge maximal possible. 
 */
 
      //LABEL ( Person.FirstPregEvent, FR ) Événement de première grossesse
 
-/* NOTE ( Person.FirstPregEvent, FR )	Le premier événement de grossesse. Il s’agit de l’événement 
-principal de l’analyse et il censure tous les futurs événements d’union. 
+/* NOTE ( Person.FirstPregEvent, FR )	Le premier événement de grossesse. Il s'agit de l'événement 
+principal de l'analyse et il censure tous les futurs événements d'union. 
 */
 
-     //LABEL ( Person.Union1DissolutionEvent, FR ) Événement de dissolution de l’union 1
+     //LABEL ( Person.Union1DissolutionEvent, FR ) Événement de dissolution de l'union 1
 
-/* NOTE ( Person.Union1DissolutionEvent, FR )	Le premier évènement de dissolution d’union. 
-Les événements d’union ne sont simulés que pour les femmes sans enfants, car la grossesse 
+/* NOTE ( Person.Union1DissolutionEvent, FR )	Le premier évènement de dissolution d'union. 
+Les événements d'union ne sont simulés que pour les femmes sans enfants, car la grossesse 
 censure la trajectoire des unions.
 */
 
-     //LABEL ( Person.Union1FormationEvent, FR ) Événement de formation de l’union 1
+     //LABEL ( Person.Union1FormationEvent, FR ) Événement de formation de l'union 1
 
-/* NOTE ( Person.Union1FormationEvent, FR )	Le premier évènement de formation d’union. 
-Les événements d’union ne sont simulés que pour les femmes sans enfants, car la grossesse censure 
+/* NOTE ( Person.Union1FormationEvent, FR )	Le premier évènement de formation d'union. 
+Les événements d'union ne sont simulés que pour les femmes sans enfants, car la grossesse censure 
 la trajectoire des unions.
 */
 
-     //LABEL ( Person.Union2DissolutionEvent, FR ) Événement de dissolution de l’union 2
+     //LABEL ( Person.Union2DissolutionEvent, FR ) Événement de dissolution de l'union 2
 
-/* NOTE ( Person.Union2DissolutionEvent, FR )	Le deuxième évènement de dissolution d’union. 
-Les événements d’union ne sont simulés que pour les femmes sans enfants, car la grossesse 
+/* NOTE ( Person.Union2DissolutionEvent, FR )	Le deuxième évènement de dissolution d'union. 
+Les événements d'union ne sont simulés que pour les femmes sans enfants, car la grossesse 
 censure la trajectoire des unions.
 */
 
-     //LABEL ( Person.Union2FormationEvent, FR ) Événement de formation de l’union 2
+     //LABEL ( Person.Union2FormationEvent, FR ) Événement de formation de l'union 2
 
-/* NOTE ( Person.Union2FormationEvent, FR )	Le deuxième évènement de formation d’union. 
-Les événements d’union ne sont simulés que pour les femmes sans enfants, car la grossesse 
+/* NOTE ( Person.Union2FormationEvent, FR )	Le deuxième évènement de formation d'union. 
+Les événements d'union ne sont simulés que pour les femmes sans enfants, car la grossesse 
 censure la trajectoire des unions.
 */
 
-     //LABEL ( Person.UnionPeriod2Event, FR ) Événement de période d’union 2
+     //LABEL ( Person.UnionPeriod2Event, FR ) Événement de période d'union 2
 
-/* NOTE ( Person.UnionPeriod2Event, FR )	Événement horloge qui modifie l’état de durée 
-de l’union union_status de US_FIRST_UNION_PERIOD1 à US_FIRST_UNION_PERIOD2. Cet évènement 
-survient après trois années dans la première union. L’horloge est réglée à formation de 
+/* NOTE ( Person.UnionPeriod2Event, FR )	Événement horloge qui modifie l'état de durée 
+de l'union union_status de US_FIRST_UNION_PERIOD1 à US_FIRST_UNION_PERIOD2. Cet évènement 
+survient après trois années dans la première union. L'horloge est réglée à formation de 
 la première union. 
 */
 
@@ -202,14 +202,14 @@ la première union.
      //==============================/
 
 
-     //LABEL ( Person.Finish, FR ) Fonction mettant fin à la vie d’un acteur
+     //LABEL ( Person.Finish, FR ) Fonction mettant fin à la vie d'un acteur
 
-/* NOTE ( Person.Finish, FR )	La fonction Finish termine la simulation d’un acteur. 
+/* NOTE ( Person.Finish, FR )	La fonction Finish termine la simulation d'un acteur. 
 */
 
-     //LABEL ( Person.Start, FR ) Fonction faisant commencer la vie d’un acteur
+     //LABEL ( Person.Start, FR ) Fonction faisant commencer la vie d'un acteur
 
-/* NOTE ( Person.Start, FR )	La fonction Start initialise les variables d’un acteur 
+/* NOTE ( Person.Start, FR )	La fonction Start initialise les variables d'un acteur 
 avant que la simulation de cet acteur commence. 
 */
 
@@ -260,8 +260,8 @@ avant que la simulation de cet acteur commence.
 
      //LABEL ( T02_TotalPopulationByYear.Dim0, FR ) Âge
 
-     //LABEL ( T02_TotalPopulationByYear.Expr0, FR ) Population au début de l’année
-     //LABEL ( T02_TotalPopulationByYear.Expr1, FR ) Population moyenne durant l’année
+     //LABEL ( T02_TotalPopulationByYear.Expr0, FR ) Population au début de l'année
+     //LABEL ( T02_TotalPopulationByYear.Expr1, FR ) Population moyenne durant l'année
 
 
 //==============================/
@@ -284,12 +284,12 @@ avant que la simulation de cet acteur commence.
 //====================================/
 
 
-//LABEL ( T04_FertilityRatesByAgeGroup, FR ) Taux de fécondité par groupe d’âge
+//LABEL ( T04_FertilityRatesByAgeGroup, FR ) Taux de fécondité par groupe d'âge
 
      //LABEL ( T04_FertilityRatesByAgeGroup.Dim0, FR ) Fécondité
 
-     //LABEL ( T04_FertilityRatesByAgeGroup.Dim1, FR ) Intervalle d’âge
-     //LABEL ( T04_FertilityRatesByAgeGroup.Dim2, FR ) Situation d’union
+     //LABEL ( T04_FertilityRatesByAgeGroup.Dim1, FR ) Intervalle d'âge
+     //LABEL ( T04_FertilityRatesByAgeGroup.Dim2, FR ) Situation d'union
 
      //LABEL ( T04_FertilityRatesByAgeGroup.Expr0, FR ) Fécondité
 
@@ -314,11 +314,11 @@ avant que la simulation de cet acteur commence.
 //==============================/
 
 
-//LABEL ( T06_BirthsByUnion, FR ) Grossesses selon la situation d’union et l’ordre de l’union
+//LABEL ( T06_BirthsByUnion, FR ) Grossesses selon la situation d'union et l'ordre de l'union
 
      //LABEL ( T06_BirthsByUnion.Dim0, FR ) Nombre de grossesses
 
-     //LABEL ( T06_BirthsByUnion.Dim1, FR ) Situation d’union au moment de la grossesse
+     //LABEL ( T06_BirthsByUnion.Dim1, FR ) Situation d'union au moment de la grossesse
 
      //LABEL ( T06_BirthsByUnion.Expr0, FR ) Nombre de grossesses
 
@@ -332,7 +332,7 @@ avant que la simulation de cet acteur commence.
 
      //LABEL ( T07_FirstUnionFormation.Dim1, FR ) Risque de formation de la première union
 
-     //LABEL ( T07_FirstUnionFormation.Dim0, FR ) Groupe d’âge
+     //LABEL ( T07_FirstUnionFormation.Dim0, FR ) Groupe d'âge
 
      //LABEL ( T07_FirstUnionFormation.Expr0, FR ) Risque de formation de la première union
 
@@ -358,15 +358,15 @@ avant que la simulation de cet acteur commence.
 
 //LABEL ( Mortality, FR ) 
 
-/* NOTE ( Mortality, FR )	Ce module simule l’événement de décès. La mortalité peut être 
-désactivée par l’utilisateur, auquel cas les acteurs atteignent l’âge maximal. Cette fonction 
-est utile dans l’analyse de la fécondité, car par exemple, l’indice synthétique de fécondité 
+/* NOTE ( Mortality, FR )	Ce module simule l'événement de décès. La mortalité peut être 
+désactivée par l'utilisateur, auquel cas les acteurs atteignent l'âge maximal. Cette fonction 
+est utile dans l'analyse de la fécondité, car par exemple, l'indice synthétique de fécondité 
 est calculé en supposant la survie pendant toute la période de fécondité.
 */
 
 //LABEL ( PersonCore, FR ) 
 
-/* NOTE ( PersonCore, FR )	Ce module contient les fonctions de base et les états d’acteur non 
+/* NOTE ( PersonCore, FR )	Ce module contient les fonctions de base et les états d'acteur non 
 spécifiques aux comportements individuels classés dans des modules distincts.
 */
 
@@ -374,7 +374,7 @@ spécifiques aux comportements individuels classés dans des modules distincts.
 
 /* NOTE ( RiskPaths, FR )	Ce module portant le même nom que le modèle (RiskPaths) contient certains 
 paramètres de modélisation de base et le moteur de simulation du modèle. 
-Lors de la création d’un nouveau modèle, ce fichier est créé automatiquement par le guide intelligent 
+Lors de la création d'un nouveau modèle, ce fichier est créé automatiquement par le guide intelligent 
 du modèle Modgen. Habituellement, aucun changement ne doit être apporté à son code.
 */
 
@@ -393,7 +393,7 @@ pour les besoins du dépistage.
 
 //LABEL ( Unions, FR ) 
 
-/* NOTE ( Unions, FR )	Ce module simule les première et deuxième formations d’union et les 
-première et deuxième dissolutions d’union.
+/* NOTE ( Unions, FR )	Ce module simule les première et deuxième formations d'union et les 
+première et deuxième dissolutions d'union.
 */
 

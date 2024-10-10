@@ -212,7 +212,7 @@ void MetaLoader::loadMessages(IDbExec * i_dbExec)
     list<string> langLst = theLog->getLanguages();
     if (langLst.empty()) langLst = splitLanguageName(getDefaultLocaleName());
 
-    // make list of language id's by srorten user language: en-ca, en
+    // make list of language id's by shorten user language: en-ca, en
     vector<int> langIdArr;
     bool isDef = false;     // if true then it is model default language
 
@@ -490,17 +490,19 @@ void MetaLoader::parseParamSubOpts(void)
 
         // validate "SubFrom.", it must have value as one of: "db", "iota", "csv"
         if (isFromOpt) {
+
+            FromSub from = FromSub::defaultValue;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) from = FromSub::db;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) from = FromSub::iota;
+            if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) from = FromSub::csv;
+            if (from == FromSub::defaultValue)
+                throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
+                    optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
+
             for (const int pId : idArr) {
 
                 ParamSubOpts & ps = subOptsMap[pId];    // insert new or get existing options
-
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::dbSubValue)) ps.from = FromSub::db;
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::iotaSubValue)) ps.from = FromSub::iota;
-                if (equalNoCase(optIt->second.c_str(), RunOptionsKey::csvSubValue)) ps.from = FromSub::csv;
-
-                if (ps.from != FromSub::db && ps.from != FromSub::iota && ps.from != FromSub::csv)
-                    throw ModelException("invalid value specified for %s, expected one of: %s %s %s",
-                        optIt->first.c_str(), RunOptionsKey::dbSubValue, RunOptionsKey::iotaSubValue, RunOptionsKey::csvSubValue);
+                ps.from = from;
             }
         }
 
@@ -825,15 +827,15 @@ void MetaLoader::parseImportOptions(void)
 /** parse suppress options to build list of tables to exclude from calculation and run output results.
 *
 * There are two ways to specify tables suppression:             \n
-*   Suppress.AgeTable,IncomeGroup           \n
+*   -Tables.Suppress AgeTable,IncomeGroup           \n
 * this means suppress only AgeTable and IncomeGroup of tables.  \n
 * Or:                                       \n
-*   Retain.AgeTable,IncomeGroup             \n
+*   -Tables.Retain AgeTable,IncomeGroup             \n
 * result in suppression of all output tables except of AgeTable and IncomeGroup of tables.
 *
 * Suppress true and false values are mutually exclusive and cannot be mixed.
 * For example, this model run will fail:    \n
-*   model.exe -Suppress A -Retain B
+*   model.exe -Tables.Suppress A -Tables.Retain B
 */
 void MetaLoader::parseSuppressOptions(void)
 {

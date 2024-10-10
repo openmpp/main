@@ -7,6 +7,7 @@
 
 #pragma once
 #include "MaintainedAttributeSymbol.h"
+#include "EntityMultilinkSymbol.h"
 #include "NumericSymbol.h"
 #include "UnknownTypeSymbol.h"
 
@@ -26,7 +27,7 @@ private:
     typedef MaintainedAttributeSymbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
      * Constructor.
@@ -78,9 +79,36 @@ public:
      */
     void create_auxiliary_symbols();
 
-    void post_parse(int pass);
+    void post_parse(int pass) override;
 
-    CodeBlock cxx_declaration_entity();
+    CodeBlock cxx_declaration_entity() override;
+
+    string pretty_name() const override
+    {
+        string result = token_to_string(func);
+        result += "(";
+        result += pp_multilink->name;
+        if (func != token::TK_count) {
+            result += ",";
+            result += pp_attribute->pretty_name();
+        }
+        result += ")";
+        return result;
+    }
+
+    /**
+     * Gets the fixed label for the multilink aggregate attribute
+     * The specialization is language independent.
+     *
+     * @param language The language.
+     *
+     * @return A string.
+     */
+    string label(const LanguageSymbol& language) const override
+    {
+        return pretty_name();
+    }
+
 
     /** The function which computes the current value of the attribute from the multilink */
     EntityFuncSymbol *evaluate_fn;

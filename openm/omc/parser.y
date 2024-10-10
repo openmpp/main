@@ -8,14 +8,16 @@
 // The following code is written to the header file, not the implementation file
 %code requires {
 
-// Copyright (c) 2013-2022 OpenM++ Contributors
+// Copyright (c) 2013-2024 OpenM++ Contributors
 // This code is licensed under the MIT license (see LICENSE.txt for details)
 
 #pragma once
 #include <string>
 #include <sstream>
 #include <list>
+#include <set>
 #include <typeinfo>
+#include "disable_selected_warnings.h"
 
 using namespace std;
 
@@ -49,7 +51,7 @@ class ExprForTable;
 extern char *yytext;
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc);
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type tabop, ParseContext & pc);
 
 // Helper function to handle prohibited redeclaration
 static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, Driver &drv);
@@ -106,6 +108,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
     string               *pval_string;
     list<string *>       *pval_string_list;
     list<Symbol *>       *pval_Symbol_list;
+    set<int>             *pval_token_set;
 };
 
 %printer { yyoutput << "token " << Symbol::token_to_string((token_type)$$); } <val_token>
@@ -176,6 +179,8 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_big_counter               "big_counter"
 %token <val_token>    TK_case_based                "case_based"
 %token <val_token>    TK_cell_based                "cell_based"
+%token <val_token>    TK_cell_in                   "cell_in"
+%token <val_token>    TK_cell_out                  "cell_out"
 %token <val_token>    TK_changes                   "changes"
 %token <val_token>    TK_completed_spell_delta     "completed_spell_delta"
 %token <val_token>    TK_completed_spell_duration  "completed_spell_duration"
@@ -245,6 +250,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_schar                     "schar"
 %token <val_token>    TK_self_scheduling_int       "self_scheduling_int"
 %token <val_token>    TK_self_scheduling_split     "self_scheduling_split"
+%token <val_token>    TK_snapshot                  "snapshot"
 %token <val_token>    TK_sparse                    "sparse"
 %token <val_token>    TK_split                     "split"
 %token <val_token>    TK_sqrt                      "sqrt"
@@ -269,6 +275,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_undergone_exit            "undergone_exit"
 %token <val_token>    TK_undergone_transition      "undergone_transition"
 %token <val_token>    TK_unit                      "unit"
+%token <val_token>    TK_untransformed             "untransformed"
 %token <val_token>    TK_ushort                    "ushort"
 %token <val_token>    TK_value_at_changes          "value_at_changes"
 %token <val_token>    TK_value_at_entrances        "value_at_entrances"
@@ -483,7 +490,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 
 %type  <val_token>      model_type
 %type  <val_token>      modgen_cumulation_operator
-%type  <val_token>      table_accumulator
+%type  <val_token>      table_statistic
 %type  <val_token>      table_increment
 %type  <val_token>      table_operator
 %type  <val_token>      parameter_modifier_opt
@@ -541,6 +548,8 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %type <pval_string>      option_rhs
 %type <pval_Symbol_list> array_decl_dimension_list
 %type <pval_Symbol_list> symbol_list
+%type <val_token>        table_property
+%type <pval_token_set>   table_properties
 
 %type  <val_token>      uchar_synonym
 %type  <val_token>      schar_synonym
@@ -640,7 +649,15 @@ decl_use:
  */
 
 decl_languages:
-          "languages" "{" language_list "}" ";"
+          "languages"[keyword] "{" language_list "}" ";"
+                        {
+                            if (Symbol::languages_statement_encountered) {
+                                error(@keyword, LT("error: 'languages' statement already specified"));
+                            }
+                            else {
+                                Symbol::languages_statement_encountered = true;
+                            }
+                        }
         | "languages" "{" error "}" ";"
         | "languages" error ";"
         ;
@@ -733,8 +750,8 @@ option:
                                 auto& opt_pair = srch->second; // opt_pair is option value, option location
                                 if (opt_pair.first != *$value) {
                                     // key already specified in model source with different value
-                                    if (*$key == "local_random_streams") {
-                                        // special case, allow multiple options statements
+                                    if ((*$key == "local_random_streams") || (*$key == "lifecycle_attributes")) {
+                                        // special cases, allow multiple options statements
                                     }
                                     else {
                                         error(@value, LT("error: option '") + (*$key) + LT("' specified elsewhere as '") + (opt_pair.first) + LT("'"));
@@ -1153,7 +1170,6 @@ symbol_list:
                         }
 	;
 
-
 /*
  * table_group
  */
@@ -1200,7 +1216,7 @@ decl_anon_group:
     anon_group_kw[tok] symbol_list ";"
                         {
                             // the originating anonymous group statement, eg parameters_suppress
-                            AnonGroupSymbol::eKind anon_kind;
+                            AnonGroupSymbol::eKind anon_kind = AnonGroupSymbol::eKind::hide; // initialized arbitrarily to avoid warning
 
                             // assign anon_kind by translating token to enum
                             switch ($tok) {
@@ -1456,7 +1472,11 @@ decl_parameter:
                             parm->cumrate = true;
                             // record number of non-conditioning trailing dimensions
                             if ($cumrate_dims) {
-                                parm->cumrate_dims = stoi($cumrate_dims->value());
+                                int val = stoi($cumrate_dims->value());
+                                if (val < 0) {
+                                    error(@cumrate_dims, LT("error: number of non-conditioning trailing dimensions cannot be negative"));
+                                }
+                                parm->cumrate_dims = (size_t) val;
                                 delete $cumrate_dims;
                                 $cumrate_dims = nullptr;
                             }
@@ -2369,7 +2389,7 @@ entity_set_order_opt:
  */
 
 decl_table: // Some code for decl_entity_set and decl_table is nearly identical
-      "table" SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
+      "table" table_properties[properties] SYMBOL[entity] SYMBOL[table] // Note that the symbol 'table' is not created in entity context
                         {
                             EntityTableSymbol *table = nullptr;
 
@@ -2386,6 +2406,29 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                 assert(table); // grammar/logic guarantee
                                 // redeclaration not allowed
                                 error(@table, LT("error: a table named '") + $table->name + LT("' already exists"));
+                            }
+                            // process table properties if any
+                            {
+                                assert($properties); // grammar creates empty instance if no properties
+                                bool untransformed = $properties->count(token::TK_untransformed) > 0;
+                                bool snapshot = $properties->count(token::TK_snapshot) > 0;
+                                if (untransformed) {
+                                    table->is_untransformed = true;
+                                }
+                                if (snapshot) {
+                                    table->kind = EntityTableSymbol::table_kind::snapshot;
+                                    table->set_default_statistic(token::TK_sum);
+                                    table->set_default_increment(token::TK_value_out);
+                                    table->set_default_tabop(token::TK_interval);
+                                }
+                                else { // general (default)
+                                    table->kind = EntityTableSymbol::table_kind::general;
+                                    table->set_default_statistic(token::TK_sum);
+                                    table->set_default_increment(token::TK_delta);
+                                    table->set_default_tabop(token::TK_interval);
+                                }
+                                $properties->clear();
+                                delete $properties;
                             }
                             // Set entity context and table context for body of table declaration
                             pc.set_entity_context( $entity);
@@ -2413,19 +2456,57 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                         }
     ;
 
+// A possibly empty set of whitespace-separated keywords.
+table_properties:
+      table_properties[psi] table_property
+                        {
+                            // insert element into existing set
+                            assert($psi);
+                            $psi->insert($table_property);
+                            $$ = $psi;
+                        }
+    | /* nothing */
+                        {
+                            // start a new keyword set
+                            auto* psi = new set<int>;
+                            $$ = psi;
+                        }
+	;
+
+// Allowed keywords for a table property.
+table_property:
+      "snapshot"
+    | "untransformed"
+	;
+
+
 table_filter_opt:
-    "[" expr_for_attribute[root] "]"
+      "[" expr_for_attribute[root] "]"
                         {
                             EntityTableSymbol *table = pc.get_table_context();
                             // create an anonymous identity attribute for the filter
                             auto aia = IdentityAttributeSymbol::anonymous_identity_attribute(table->entity, BoolSymbol::find(), $root, @root);
                             aia->is_generated = true;
+                            aia->associated_table = table;
                             assert(aia);
                             // note identity attribute in table
                             table->filter = aia;
                         }
+    | "[" "bool" SYMBOL[attribute] "=" expr_for_attribute[root] "]"
+                        {
+                            if (check_undeclared($attribute, @attribute, drv)) {
+                                TypeSymbol* type_symbol = BoolSymbol::find();
+                                assert(type_symbol);
+                                auto *ia = new IdentityAttributeSymbol( $attribute, pc.get_entity_context(), type_symbol, $root, @attribute );
+                                assert(ia);
+                                EntityTableSymbol* table = pc.get_table_context();
+                                ia->associated_table = table;
+                                // note identity attribute in table
+                                table->filter = ia;
+                            }
+                        }
     | /* nothing */
-    ;
+  ;
 
 table_dimension_list:
     table_dimension
@@ -2497,12 +2578,14 @@ expr_for_table[result]:
                         {
                             Symbol *attribute = $symbol_in_table;
                             assert(attribute);
-                            // Defaults are accumulator=sum, increment=delta, table operator=interval
-                            token_type acc = token::TK_sum;
-                            token_type incr = token::TK_delta;
-                            token_type tabop = token::TK_interval;
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            // Use defaults for this kind of table
+                            token_type stat = tbl->get_default_statistic();  // Ex. for general, is TK_sum
+                            token_type incr = tbl->get_default_increment(); //Ex. for general, is TK_delta
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for general, is TK_interval
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. unit
     | "unit"
@@ -2515,55 +2598,85 @@ expr_for_table[result]:
     | modgen_cumulation_operator "(" symbol_in_table ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            // Ex. token::TK_maximum
-                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
-                            // Ex. token::TK_value_in
-                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
-                            token_type tabop = token::TK_interval;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
+                            token_type tabop = tbl->get_default_tabop();   // Ex. for classic, is TK_interval
+                            // Ex. For token::max_value_in, result is token::TK_maximum
+                            stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
+                            // Ex. For token::max_value_in, result is token::TK_value_in
+                            incr = Symbol::modgen_cumulation_operator_to_incr((token_type)$modgen_cumulation_operator, incr);
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. sum(delta(income))
-    | table_accumulator[acc] "(" table_increment[incr] "(" symbol_in_table ")" ")"
+    | table_statistic[stat] "(" table_increment[incr] "(" symbol_in_table ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type acc = (token_type) $acc;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = (token_type) $stat;
                             token_type incr = (token_type) $incr;
-                            token_type tabop = token::TK_interval;
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for classic, is TK_interval;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
+                        }
+      // Ex. minimum(income)
+    | table_statistic[stat] "(" symbol_in_table ")"
+                        {
+                            Symbol *attribute = $symbol_in_table;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = (token_type) $stat;
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
+                            token_type tabop = tbl->get_default_tabop(); //Ex. for classic, is TK_interval;
+                            // The following static helper function is defined in the final section of parser.y
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. event(income)
     | table_operator[tabop] "(" symbol_in_table ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type acc = token::TK_sum;
-                            token_type incr = token::TK_delta;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y (below)
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. max_value_in(event(income))
     | modgen_cumulation_operator "(" table_operator[tabop] "(" symbol_in_table ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            // Ex. token::TK_maximum
-                            token_type acc = Symbol::modgen_cumulation_operator_to_acc( (token_type) $modgen_cumulation_operator );
-                            // Ex. token::TK_value_in
-                            token_type incr = Symbol::modgen_cumulation_operator_to_incr( (token_type) $modgen_cumulation_operator );
-                            token_type tabop = (token_type) $tabop;
+                            assert(attribute);
+                            auto tbl = pc.get_table_context();
+                            assert(tbl);
+                            token_type stat = tbl->get_default_statistic(); // Ex. for classic, is TK_sum
+                            token_type incr = tbl->get_default_increment(); // Ex. for classic, is TK_delta
+                            token_type tabop = (token_type)$tabop;
+                            // Ex. For token::max_value_in, result is token::TK_maximum
+                            stat = Symbol::modgen_cumulation_operator_to_stat((token_type)$modgen_cumulation_operator, stat);
+                            // Ex. For token::max_value_in, result is token::TK_value_in
+                            incr = Symbol::modgen_cumulation_operator_to_incr((token_type)$modgen_cumulation_operator, incr);
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
       // Ex. sum(delta(event(income)))
-    | table_accumulator[acc] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_table ")" ")" ")"
+    | table_statistic[stat] "(" table_increment[incr] "(" table_operator[tabop] "(" symbol_in_table ")" ")" ")"
                         {
                             Symbol *attribute = $symbol_in_table;
-                            token_type acc = (token_type) $acc;
+                            assert(attribute);
+                            token_type stat = (token_type) $stat;
                             token_type incr = (token_type) $incr;
                             token_type tabop = (token_type) $tabop;
                             // The following static helper function is defined in the final section of parser.y
-                            $result = table_expr_terminal(attribute, acc, incr, tabop, pc);
+                            $result = table_expr_terminal(attribute, stat, incr, tabop, pc);
                         }
     | numeric_literal
                         {
@@ -2621,7 +2734,7 @@ modgen_cumulation_operator:
     | TK_min_value_out
 	;
 
-table_accumulator:
+table_statistic:
       TK_sum
     | TK_minimum
     | TK_maximum
@@ -2660,6 +2773,8 @@ table_increment:
 table_operator:
       TK_interval
     | TK_event
+    | TK_cell_in
+    | TK_cell_out
     ;
 
 /*
@@ -3403,7 +3518,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 }
 
 // Helper function to process terminal in table expressions
-static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type acc, token_type incr, token_type table_op, ParseContext & pc)
+static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_type stat, token_type incr, token_type tabop, ParseContext & pc)
 {
     Symbol *table = pc.get_table_context();
     EntityTableMeasureAttributeSymbol *analysis_attribute = nullptr;
@@ -3426,30 +3541,33 @@ static ExprForTableAccumulator * table_expr_terminal(Symbol *attribute, token_ty
             || incr == token::TK_value_in2
             || incr == token::TK_nz_value_in ) {
 
-            if (table_op == token::TK_interval) {
+            switch (tabop) {
+            case token::TK_cell_in:
+            case token::TK_cell_out:
+            case token::TK_interval:
                 analysis_attribute->need_value_in = true;
-            }
-            else if (table_op == token::TK_event) {
+                break;
+            case token::TK_event:
                 analysis_attribute->need_value_in_event = true;
-            }
-            else {
-                assert(false); // logic guarantee
+                break;
+            default:
+                assert(false); // not reached
             }
         }
     }
     else {
         // if no attribute, then this is the increment counter accumulator (unit)
-        assert(acc == token::TK_unit);
+        assert(stat == token::TK_unit);
     }
     // Also create symbol for associated accumulator if not already present
     EntityTableAccumulatorSymbol *accumulator = nullptr;
-    if ( EntityTableAccumulatorSymbol::exists( table, acc, incr, table_op, attribute) ) {
-        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, acc, incr, table_op, attribute );
+    if ( EntityTableAccumulatorSymbol::exists( table, stat, incr, tabop, attribute) ) {
+        string unique_name = EntityTableAccumulatorSymbol::symbol_name( table, stat, incr, tabop, attribute );
         accumulator = dynamic_cast<EntityTableAccumulatorSymbol *>(Symbol::get_symbol( unique_name ));
         assert( accumulator );
     }
     else {
-        accumulator = new EntityTableAccumulatorSymbol( table, acc, incr, table_op, attribute, analysis_attribute, pc.counter2);
+        accumulator = new EntityTableAccumulatorSymbol( table, stat, incr, tabop, attribute, analysis_attribute, pc.counter2);
         pc.counter2++;
     }
 	auto result = new ExprForTableAccumulator( accumulator );

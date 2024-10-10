@@ -12,7 +12,9 @@
 #include <unordered_map>
 #include <set>
 #include <map>
+#include <regex>
 #include "omc_location.hh"
+#include "omc_file.h"
 #include "libopenm/omLog.h"
 #include "CodeBlock.h"
 #include "Symbol.h"
@@ -61,11 +63,15 @@
 #include "ModelSymbol.h"
 #include "ScenarioSymbol.h"
 #include "ImportSymbol.h"
+#include "ModuleSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
+#include "libopenm/common/omFile.h"
+#include "omc_file.h" // for LTA support
 
 using namespace std;
 using namespace openm;
+using namespace omc; // for LTA support
 
 vector<string> Symbol::use_folders;
 
@@ -123,6 +129,8 @@ list<DependencyGroupSymbol *> Symbol::pp_all_dependency_groups;
 
 list<ImportSymbol *> Symbol::pp_all_imports;
 
+list<ModuleSymbol*> Symbol::pp_all_modules;
+
 set<string> Symbol::pp_all_event_names;
 
 set<string> Symbol::pp_visible_member_names;
@@ -146,6 +154,8 @@ map<string, vector<string> > Symbol::function_parmlist;
 map<string, omc::location> Symbol::function_defn_loc;
 
 multimap<int, string> Symbol::rng_stream_calls;
+
+set<GlobalFuncSymbol*> Symbol::pp_missing_global_funcs;
 
 /**
 * Map from a token to the preferred string representation of that token.
@@ -210,6 +220,8 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_big_counter, "big_counter" },
     { token::TK_case_based, "case_based" },
     { token::TK_cell_based, "cell_based" },
+    { token::TK_cell_in, "cell_in" },
+    { token::TK_cell_out, "cell_out" },
     { token::TK_changes, "changes" },
     { token::TK_completed_spell_delta, "completed_spell_delta" },
     { token::TK_completed_spell_duration, "completed_spell_duration" },
@@ -279,6 +291,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_schar, "schar" },
     { token::TK_self_scheduling_int, "self_scheduling_int" },
     { token::TK_self_scheduling_split, "self_scheduling_split" },
+    { token::TK_snapshot, "snapshot" },
     { token::TK_sparse, "sparse" },
     { token::TK_split, "split" },
     { token::TK_sqrt, "sqrt" },
@@ -303,6 +316,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_undergone_exit, "undergone_exit" },
     { token::TK_undergone_transition, "undergone_transition" },
     { token::TK_unit, "unit" },
+    { token::TK_untransformed, "untransformed" },
     { token::TK_ushort, "ushort" },
     { token::TK_value_at_changes, "value_at_changes" },
     { token::TK_value_at_entrances, "value_at_entrances" },
@@ -573,6 +587,8 @@ unordered_map<string, pair<string, omc::location>> Symbol::explicit_labels;
 
 unordered_map<string, pair<string, omc::location>> Symbol::explicit_names;
 
+unordered_map<string, pair<string, omc::location>> Symbol::explicit_exprs;
+
 unordered_map<string, pair<string, omc::location>> Symbol::notes_source;
 
 unordered_map<string, pair<string, omc::location>> Symbol::notes_input;
@@ -597,6 +613,8 @@ token_type Symbol::real_ctype = token::TK_double;
 
 token_type Symbol::Time_ctype = token::TK_double;
 
+bool Symbol::languages_statement_encountered = false;
+
 bool Symbol::any_hide = false;
 
 bool Symbol::any_show = false;
@@ -611,7 +629,7 @@ bool Symbol::any_tables_retain = false;
 
 bool Symbol::any_parameters_to_tables = false;
 
-bool Symbol::measures_are_aggregated = true;
+Symbol::run_table_method Symbol::measures_method = run_table_method::average;
 
 int Symbol::type_changes = 0;
 
@@ -626,6 +644,14 @@ bool Symbol::no_line_directives = false;
 bool Symbol::no_metadata = true;
 
 bool Symbol::model_doc = false;
+
+bool Symbol::in_doc_active = false;
+
+string Symbol::in_doc_dir;
+
+set<string> Symbol::in_doc_stems_md;
+
+set<string> Symbol::in_doc_stems_txt;
 
 bool Symbol::trace_parsing = false;
 
@@ -643,9 +669,8 @@ void Symbol::post_parse(int pass)
     case eAssignLabel:
     {
         // Create default values of symbol labels and notes for all languages
-        for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-            auto lang_sym = LanguageSymbol::id_to_sym[j];
-            auto def_lab = default_label(*lang_sym);
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            auto def_lab = default_label(*langSym);
             assert(def_lab.length() > 0);
             pp_labels.push_back(def_lab);
             pp_labels_explicit.push_back(false);
@@ -672,6 +697,7 @@ void Symbol::post_parse(int pass)
             }
         }
 
+        // Check for explicit labels and notes in authored input documentation directory, if supplied.
         // Check for an explicit label specified using //LABEL, for each language.
         // Check for a note specified using NOTE comment, for each language.
         // modgen_unique_name follows Modgen-style conventions for dimension numbering in tables,
@@ -727,24 +753,59 @@ void Symbol::post_parse(int pass)
             omc::position pos(decl_loc.begin.filename, decl_loc.begin.line - 1, 0);
             process_symbol_label(pos);
         }
+
+        // record module of declaration, if any
+        if (decl_loc.begin.filename != nullptr) {
+            string filename = omc::getPathFilename(*(decl_loc.begin.filename));
+            auto s = get_symbol(filename);
+            assert(s); // a ModuleSymbol exists for each parsed input file
+            auto ms = dynamic_cast<ModuleSymbol*>(s);
+            assert(ms); // a ModuleSymbol exists for each parsed input file
+            pp_module = ms;
+        }
         break;
     }
     case eResolveDataTypes:
     {
-        // propagate explicit label in default language to other languages if missing
-        if (pp_labels_explicit[0]) { // default language of model is always at position 0
+        /// Index of the model's default language, which is always 0
+        const int lang_index_default_language = 0;
+        // Propagate explicit label in default language
+        // to other languages which do not have an explicit label.
+        if (pp_labels_explicit[lang_index_default_language]) {
             // symbol has an explicit label in the default language
-            for (int j = 1; j < LanguageSymbol::number_of_languages(); j++) {
-                // iterate other languages
-                if (!pp_labels_explicit[j]) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
+                if (lang_index == lang_index_default_language) {
+                    continue;
+                }
+                if (!pp_labels_explicit[lang_index]) {
                     // no explicit label for this language
-                    // create a label using the explicit label of the default language
-                    auto lang_sym = LanguageSymbol::id_to_sym[j];
-                    string lbl = pp_labels[0] + " (" + lang_sym->name + ")";
-                    pp_labels[j] = lbl;
+                    // create a label using the explicit label in the default language
+                    string lbl = pp_labels[lang_index_default_language] + " (" + lang + ")";
+                    pp_labels[lang_index] = lbl;
                     // note that pp_labels_explicit[j] is left at false
                 }
             }
+        }
+        break;
+    }
+    case ePopulateCollections:
+    {
+        // Modify content of symbol NOTE
+        for (const auto& langSym : Symbol::pp_all_languages) {
+            int lang_index = langSym->language_id; // 0-based
+            string& note = pp_notes[lang_index];
+            if (note.length() > 0) {
+                // For note_expand_embeds to work as intended, all labels must have their definitive value.
+                // That occurs in previous post-parse passes.
+                note = Symbol::note_expand_embeds(lang_index, note);
+            }
+        }
+
+        // Populate ModuleSymbol's collection of declarations
+        if (decl_loc.begin.filename != nullptr) {
+            pp_module->pp_symbols_declared.push_back(this);
         }
         break;
     }
@@ -794,7 +855,7 @@ CodeBlock Symbol::injection_description()
     return c;
 }
 
-void Symbol::pp_error(const string& msg)
+void Symbol::pp_error(const string& msg) const
 {
     post_parse_errors++;
     pp_log_message(msg);
@@ -805,20 +866,20 @@ void Symbol::pp_error(const string& msg)
     }
 }
 
-void Symbol::pp_fatal(const string& msg)
+void Symbol::pp_fatal(const string& msg) const
 {
     post_parse_errors++;
     pp_log_message(msg);
     throw HelperException(LT("error : unsafe to continue, stopping post parse processing"));
 }
 
-void Symbol::pp_warning(const string& msg)
+void Symbol::pp_warning(const string& msg) const
 {
     post_parse_warnings++;
     pp_log_message(msg);
 }
 
-void Symbol::pp_warning(const string& msg, omc::position& pos)
+void Symbol::pp_warning(const string& msg, const omc::position& pos) const
 {
     post_parse_warnings++;
     pp_log_message(msg, pos);
@@ -829,12 +890,12 @@ void Symbol::pp_message(const string& msg)
     pp_log_message(msg);
 }
 
-void Symbol::pp_log_message(const string& msg)
+void Symbol::pp_log_message(const string& msg) const
 {
     pp_log_message(msg, decl_loc.begin);
 }
 
-void Symbol::pp_log_message(const string& msg, omc::position& pos)
+void Symbol::pp_log_message(const string& msg, const omc::position& pos) const
 {
     if (pos.filename) {
         // The symbol has a declaration position
@@ -883,9 +944,20 @@ bool Symbol::process_symbol_label(const omc::position& pos)
     return false;
 }
 
-string Symbol::default_label(const LanguageSymbol& language) const
+string Symbol::default_label(const LanguageSymbol& langSym) const
 {
-    return name;
+    const string& lang = langSym.name; // e.g. "EN" or "FR"
+    if (builtin_alingual_label.length() > 0) {
+        return builtin_alingual_label;
+    }
+    else if (builtin_english_label.length() > 0) {
+        // will pass through the label for EN
+        return LTA(lang, builtin_english_label.c_str());
+    }
+    else {
+        // use the symbol name as label
+        return name;
+    }
 }
 
 
@@ -904,33 +976,78 @@ string Symbol::note(const LanguageSymbol & language) const
     return pp_notes[language.language_id];
 }
 
-void Symbol::associate_explicit_label_or_note(string key)
+void Symbol::associate_explicit_label_or_note(const string& key)
 {
-    // Check for an explicit label specified using //LABEL, for each language
-    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-        auto lang_sym = LanguageSymbol::id_to_sym[j];
-        string key_and_lang = key + "," + lang_sym->name;
-        auto search = explicit_labels.find(key_and_lang);
-        if (search != explicit_labels.end()) {
-            auto text = (search->second).first;
-            auto loc = (search->second).second;
-            pp_labels[j] = trim(text);
-            pp_labels_explicit[j] = true;
-            pp_labels_pos[j] = loc.begin;
+    /// key modified to replace :: with .
+    string key_with_dot; // is deliberately left empty if model/doc is not active
+    if (in_doc_active) {
+        key_with_dot = key;
+        // replace :: by . for two-part keys, e.g. unique names
+        {
+            auto p = key_with_dot.find("::");
+            if ((p != key_with_dot.npos) && (key_with_dot.length() > p + 2)) {
+                key_with_dot = key_with_dot.substr(0, p) + "." + key_with_dot.substr(p + 2);
+            }
         }
     }
-
-    // Check for a note specified using NOTE comment, for each language
-    for (int j = 0; j < LanguageSymbol::number_of_languages(); j++) {
-        auto lang_sym = LanguageSymbol::id_to_sym[j];
-        string key_and_lang = key + "," + lang_sym->name;
-        // search in model source (ignore parameter value NOTEs)
-        auto search = notes_source.find(key_and_lang);
-        if (search != notes_source.end()) {
-            auto text = (search->second).first;
-            auto loc = (search->second).second;
-            pp_notes[j] = text;
-            pp_notes_pos[j] = loc.begin;
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        int lang_index = langSym->language_id; // 0-based
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
+        // Look for explicit LABEL
+        {
+            bool found_txt = false;
+            if (in_doc_active) {
+                string file_stem = "LABEL." + key_with_dot + "." + lang;
+                // Example: LABEL.SymbolName.FR
+                if (in_doc_stems_txt.count(file_stem) > 0) {
+                    // The file is there, so slurp it
+                    found_txt = true;
+                    pp_labels[lang_index] = slurp_doc_file_txt(file_stem);
+                    pp_labels_explicit[lang_index] = true;
+                    pp_labels_pos[lang_index] = omc::position();  // no associated code position
+                }
+            }
+            if (!found_txt) {
+                // Look for a matching //LABEL from model source
+                string key_and_lang = key + "," + lang;
+                auto search = explicit_labels.find(key_and_lang);
+                if (search != explicit_labels.end()) {
+                    auto& text = (search->second).first;
+                    auto& loc = (search->second).second;
+                    pp_labels[lang_index] = trim(text);
+                    pp_labels_explicit[lang_index] = true;
+                    pp_labels_pos[lang_index] = loc.begin;
+                }
+            }
+        }
+        // Look for explicit NOTE
+        {
+            bool found_md = false;
+            if (in_doc_active) {
+                string file_stem = "NOTE." + key_with_dot + "." + lang;
+                // Example: NOTE.SymbolName.FR
+                if (in_doc_stems_md.count(file_stem) > 0) {
+                    // The file is there, so slurp it
+                    found_md = true;
+                    pp_notes[lang_index] = slurp_doc_file_md(file_stem);
+                    pp_notes_pos[lang_index] = omc::position();  // no associated code position
+                }
+            }
+            if (!found_md) {
+                // Look for a matching /*NOTE*/ in model source
+                string key_and_lang = key + "," + lang;
+                // search in model source (ignore parameter value NOTEs)
+                auto search = notes_source.find(key_and_lang);
+                if (search != notes_source.end()) {
+                    auto text = (search->second).first;
+                    auto& loc = (search->second).second;
+                    if (Symbol::option_convert_modgen_note_syntax) {
+                        text = Symbol::note_modgen_to_markdown(text);
+                    }
+                    pp_notes[lang_index] = text;
+                    pp_notes_pos[lang_index] = loc.begin;
+                }
+            }
         }
     }
 }
@@ -1167,6 +1284,59 @@ void Symbol::populate_pp_symbols()
     }
 }
 
+void Symbol::do_module_provenance(void)
+{
+    for (auto p : mpp_source_files) {
+        if (omc::skipPathModule(p)) {
+            continue;
+        }
+        auto symbol_name = omc::getPathFilename(p);
+        auto s = get_symbol(symbol_name);
+        assert(s); // every parsed module has an associated Symbol
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        assert(ms); // every parsed module has an associated ModuleSysmbol
+        ms->provenance = ModuleSymbol::module_provenance::from_code;
+    }
+    for (auto p : use_source_files) {
+        if (omc::skipPathModule(p)) {
+            continue;
+        }
+        auto symbol_name = omc::getPathFilename(p);
+        auto s = get_symbol(symbol_name);
+        assert(s); // every parsed module has an associated Symbol
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        assert(ms); // every parsed module has an associated ModuleSysmbol
+        ms->provenance = ModuleSymbol::module_provenance::from_use;
+    }
+    for (auto p : dat_source_files) {
+        if (omc::skipPathModule(p)) {
+            continue;
+        }
+        auto symbol_name = omc::getPathFilename(p);
+        auto s = get_symbol(symbol_name);
+        assert(s); // every parsed module has an associated Symbol
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        assert(ms); // every parsed module has an associated ModuleSysmbol
+        ms->provenance = ModuleSymbol::module_provenance::from_dat;
+    }
+}
+
+void Symbol::create_missing_global_funcs(void)
+{
+    {
+        // create a definition of ProcessDevelopmentOptions if not supplied in model code.
+        string name = "ProcessDevelopmentOptions";
+        string return_decl = "void";
+        string arg_list_decl = "const IRunOptions * const i_options";
+        if (!exists(name)) {
+            auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
+            s->suppress_decl = true;  // already declared elsewhere
+            s->suppress_defn = false; // have omc emit the (empty) definition
+            pp_missing_global_funcs.insert(s);
+        }
+    }
+}
+
 void Symbol::default_sort_pp_symbols()
 {
     // The default order of pp_symbols is sorting_group, followed by unique_name.
@@ -1281,30 +1451,18 @@ void Symbol::post_parse_all()
         pp_error(omc::location(), LT("error : no languages specified"));
     }
 
-    // convert Modgen NOTE syntax to markdown
-    if (Symbol::option_convert_modgen_note_syntax) {
-        // iterate collection of NOTES in model source code notes
-        for (const auto& [key, value] : Symbol::notes_source) {
-            auto text = value.first;
-            auto loc = value.second;
-            auto new_note = Symbol::normalize_note(text);
-            Symbol::notes_source[key] = make_pair(new_note,loc);
-        }
-        // iterate collection of NOTES in parameter value notes
-        for (const auto& [key, value] : Symbol::notes_input) {
-            auto text = value.first;
-            auto loc = value.second;
-            auto new_note = Symbol::normalize_note(text);
-            Symbol::notes_input[key] = make_pair(new_note, loc);
-        }
-    }
-
     // Create pp_symbols now to easily find Symbols while debugging.
     populate_pp_symbols();
     default_sort_pp_symbols();
 
+    // Assign provenance of ModuleSymbols
+    do_module_provenance();
+
+    // Create missing global functions if not supplied, e.g. ProcessDevelopmentOptions
+    create_missing_global_funcs();
+
 	//
-    // Pass 1: create additional symbols for foreign types
+    // Pass 1: create additional symbols for foreign types and process languages
     // 
 	// symbols will be processed in lexicographical order within sorting group
 	pp_symbols_ignore.clear();
@@ -1317,6 +1475,9 @@ void Symbol::post_parse_all()
 		//theLog->logFormatted("pass #1 %d %s", pr.second->sorting_group, pr.second->unique_name.c_str());
 		pr.second->post_parse(eCreateForeignTypes);
 	}
+
+    // Sort global language collection in order given in languages statement
+    pp_all_languages.sort([](LanguageSymbol* a, LanguageSymbol* b) { return a->language_id < b->language_id; });
 
 	// Recreate pp_symbols because symbols may have changed or been added.
 	populate_pp_symbols();
@@ -1401,11 +1562,11 @@ void Symbol::post_parse_all()
     if (any_tables_retain || any_tables_suppress) {
         // retain tables on which non-suppressed or internal tables depend.
         for (auto tbl : pp_all_tables) {
-            if (!tbl->is_suppressed) {
+            if (!tbl->is_suppressed_table) {
                 for (auto tbl_req : tbl->pp_tables_required) {
-                    if (tbl_req->is_suppressed) {
+                    if (tbl_req->is_suppressed_table) {
                         // do not suppress, make it internal instead
-                        tbl_req->is_suppressed = false;
+                        tbl_req->is_suppressed_table = false;
                         tbl_req->is_internal = true;
                     }
                 }
@@ -1413,7 +1574,7 @@ void Symbol::post_parse_all()
         }
 
         for (auto et : pp_all_entity_tables) {
-            if (et->is_suppressed) {
+            if (et->is_suppressed_table) {
                 // Remove the 3 auxiliary entity member functions from the table's entity
                 auto& ccf = et->current_cell_fn;
                 auto& iif = et->init_increment_fn;
@@ -1429,20 +1590,33 @@ void Symbol::post_parse_all()
                 ent->pp_callback_members.remove_if([incr_as_ems](EntityMemberSymbol* x) { return x == incr_as_ems; });
                 // Remove the table's increment from the entity's list of data members (used to declare/define members)
                 auto incr_as_dms = dynamic_cast<EntityDataMemberSymbol*>(incr);
-                assert(incr_as_dms); // is upcast in hirrarchy to a more base type
+                assert(incr_as_dms); // is upcast in hierarchy to a more base type
                 ent->pp_data_members.remove_if([incr_as_dms](EntityDataMemberSymbol* x) { return x == incr_as_dms; });
             }
         }
         // remove all suppressed entity tables from the master list of entity tables
-        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed; });
+        pp_all_entity_tables.remove_if([](EntityTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed derived tables from the master list of derived tables
-        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed; });
+        pp_all_derived_tables.remove_if([](DerivedTableSymbol* x) { return x->is_suppressed_table; });
         // remove all suppressed tables from the master list of tables
-        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed; });
+        pp_all_tables.remove_if([](TableSymbol* x) { return x->is_suppressed_table; });
+
+        // for the tables which remain, remove any dependencies to suppressed tables
+        for (auto tbl : pp_all_tables) {
+            auto& requiring = tbl->pp_tables_requiring;
+            // standard C++ paradigm to remove elements from a set while iterating it
+            for (auto iter = requiring.begin(); iter != requiring.end();) {
+                if ((*iter)->is_suppressed_table) {
+                    iter = requiring.erase(iter);
+                }
+                else {
+                    ++iter;
+                }
+            }
+        }
     }
 
     // Sort all global collections
-    pp_all_languages.sort([](LanguageSymbol *a, LanguageSymbol *b) { return a->language_id < b->language_id; });
     pp_all_strings.sort([](StringSymbol *a, StringSymbol *b) { return a->name < b->name; });
     pp_all_types0.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
     pp_all_types1.sort([](TypeSymbol *a, TypeSymbol *b) { return a->type_id < b->type_id; });
@@ -1457,6 +1631,7 @@ void Symbol::post_parse_all()
     pp_all_anon_groups.sort( [] (AnonGroupSymbol *a, AnonGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_imports.sort( [] (ImportSymbol* a, ImportSymbol* b) { return a->pp_target_param->name < b->pp_target_param->name; } );
+    pp_all_modules.sort([](ModuleSymbol* a, ModuleSymbol* b) { return a->name < b->name; });
     // pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     // pp_all_table_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
@@ -1557,6 +1732,12 @@ void Symbol::post_parse_all()
         table->pp_measure_attributes.sort( [] (EntityTableMeasureAttributeSymbol *a, EntityTableMeasureAttributeSymbol *b) { return a->index < b->index; } );
     }
 
+    // Sort collections in modules
+    for (auto module : pp_all_modules) {
+        // Sort symbols in lexicographic order by name
+        module->pp_symbols_declared.sort([](Symbol* a, Symbol* b) { return a->name < b->name; });
+    }
+
     {
         // Create the amalgamated set of event names, in all entities, sorted lexicographically.
         for (auto * ent : pp_all_entities) {
@@ -1571,7 +1752,7 @@ void Symbol::post_parse_all()
             for (auto *event : ent->pp_events) {
                 string str = event->event_name;
                 auto iter = pp_all_event_names.find(str);
-                event->pp_event_id = distance(pp_all_event_names.begin(), iter);
+                event->pp_event_id = (int)distance(pp_all_event_names.begin(), iter);
             }
         }
     }
@@ -1591,7 +1772,7 @@ void Symbol::post_parse_all()
             for (auto* dm : entity->pp_data_members) {
                 if (dm->is_visible_attribute() || dm->is_multilink()) {
                     auto iter = pp_visible_member_names.find(dm->name);
-                    dm->pp_member_id = distance(pp_visible_member_names.begin(), iter);
+                    dm->pp_member_id = (int)distance(pp_visible_member_names.begin(), iter);
                 }
             }
         }
@@ -1615,12 +1796,12 @@ void Symbol::post_parse_all()
             if (event == ent->ss_event) {
                 // special case for self-scheduling event: assign 1 greater
                 // than the highest numbered event
-                event->pp_modgen_event_num = entity_event_names.size();
+                event->pp_modgen_event_num = (int)entity_event_names.size();
                 continue;
             }
             string str = event->pp_modgen_name();
             auto iter = entity_event_names.find(str);
-            event->pp_modgen_event_num = distance(entity_event_names.begin(), iter);
+            event->pp_modgen_event_num = (int)distance(entity_event_names.begin(), iter);
         }
     }
 
@@ -1932,24 +2113,9 @@ void Symbol::post_parse_all()
     // Generate and apply heuristic short names as needed
     heuristic_short_names();
 
-    // Determine enumeration metadata required by published parameters
-    for (auto param : pp_all_parameters) {
-        param->post_parse_mark_enumerations();
-    }
-
-    // Determine enumeration metadata required by published tables
-    for (auto tbl : pp_all_tables) {
-        tbl->post_parse_mark_enumerations();
-    }
-
     // Terminate the event time function body for the self-scheduling event (if present)
     for (auto * ent : pp_all_entities) {
         ent->finish_ss_event();
-    }
-
-    // Determine enumeration metadata required by published entity attributes
-    for (auto * ent : pp_all_entities) {
-        ent->post_parse_mark_enumerations();
     }
 
     // Process PreSimulation, PostSimulation, UserTables
@@ -2007,6 +2173,38 @@ void Symbol::post_parse_all()
                 }
                 string msg = LT("List of ") + sg->prefix + LT(" suffixes used in model:") + used;
                 theLog->logMsg(msg.c_str());
+            }
+        }
+    }
+
+    // issue warning for //EXPR with invalid target
+    {
+        string prev_target;
+        for (auto& it : explicit_exprs) {
+            /// The target of //EXPR, e.g. T00_Test.E0
+            string target = it.first;
+            /// The SQL for the expression, e.g. OM_SUM(acc1) / OM_DIV_BY(acc2)
+            auto& text = it.second.first;
+            /// The code location of the //EXPR comment
+            auto loc = it.second.second;
+
+            auto s = get_symbol(target);
+            if (!s) {
+                post_parse_warnings++;
+                /// The target with . instead of :: in two-part name
+                string dot_target = std::regex_replace(target, std::regex("::"), ".");
+                string msg = formatToString(LT("warning : //EXPR ignored - target '%s' not found"), dot_target.c_str());
+                pp_logmsg(loc, msg);
+            }
+            else {
+                auto t = dynamic_cast<TableMeasureSymbol*>(s);
+                if (!t) {
+                    post_parse_warnings++;
+                    /// The target with . instead of :: in two-part name
+                    string dot_target = std::regex_replace(target, std::regex("::"), ".");
+                    string msg = formatToString(LT("warning : //EXPR ignored - target '%s' is not a table measure"), dot_target.c_str());
+                    pp_logmsg(loc, msg);
+                }
             }
         }
     }
@@ -2164,36 +2362,36 @@ const token_type Symbol::optimized_storage_type(long long min_value, long long m
 }
 
 // static
-const token_type Symbol::modgen_cumulation_operator_to_acc(const token_type& e)
+const token_type Symbol::modgen_cumulation_operator_to_stat(const token_type& e, const token_type& dflt)
 {
     token_type result;
     switch (e) {
     case token::TK_delta:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_delta2:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_nz_delta:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_in:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_in2:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_nz_value_in:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_out:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_value_out2:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_nz_value_out:
-        result = token::TK_sum;
+        result = dflt;
         break;
     case token::TK_max_delta:
         result = token::TK_maximum;
@@ -2222,7 +2420,7 @@ const token_type Symbol::modgen_cumulation_operator_to_acc(const token_type& e)
 
 
 //static
-const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e)
+const token_type Symbol::modgen_cumulation_operator_to_incr(const token_type& e, const token_type& dflt)
 {
     token_type result;
     switch (e) {
@@ -2559,7 +2757,7 @@ std::string Symbol::build_imports_csv(void)
     return csv;
 }
 
-std::string Symbol::normalize_note(const std::string& txt)
+std::string Symbol::note_modgen_to_markdown(const std::string& txt)
 {
     string result;
     result.reserve(txt.length());
@@ -2609,4 +2807,53 @@ std::string Symbol::normalize_note(const std::string& txt)
     result += "\n"; // trailing \n of final line
 
     return result;
+}
+
+std::string Symbol::note_expand_embeds(int lang_index, const std::string& note)
+{
+    string result = note;
+
+    std::smatch match;
+    // The following regex matches GetLabel() and the interior of the parentheses with (), e.g. \1
+    while (std::regex_search(result, match, std::regex("GetLabel\\(([A-Za-z0-9_:.]+)\\)"))) {
+        assert(match.size() >= 2); // guaranteed by above egex
+        string symbol_name = match[1];
+        auto symbol = Symbol::get_symbol(symbol_name);
+        if (symbol) {
+            string symbol_label = symbol->pp_labels[lang_index];
+            result = match.prefix().str()
+                + symbol_label
+                + match.suffix().str();
+        }
+        else {
+            // a symbol with that name does not exist, so 'expand' GetLabel(Name) to the invalid Name and emit a warning
+            pp_warning(formatToString(LT("The argument of 'GetLabel(%s)' in Note for '%s' is invalid"), symbol_name.c_str(), unique_name.c_str()));
+            result = match.prefix().str()
+                + symbol_name // invalid symbol name which could not be expanded to its label
+                + match.suffix().str();
+        }
+    }
+
+    return result;
+}
+
+std::string Symbol::slurp_doc_file_md(const std::string& file_stem)
+{
+    if (!in_doc_active) {
+        return string(); // empty string
+    }
+    string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "md");
+    string step1 = openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
+    // normalize line endings
+    string step2 = std::regex_replace(step1, std::regex("\\r\\n"), "\n");
+    return step2;
+}
+
+std::string Symbol::slurp_doc_file_txt(const std::string& file_stem)
+{
+    if (!in_doc_active) {
+        return string(); // empty string
+    }
+    string file_name = openm::makeFilePath(in_doc_dir.c_str(), file_stem.c_str(), "txt");
+    return openm::fileToUtf8(file_name.c_str(), Symbol::code_page.c_str());
 }

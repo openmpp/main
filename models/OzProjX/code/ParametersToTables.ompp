@@ -1,0 +1,31 @@
+//LABEL(ParametersToTables, EN) Make derived parameters visible as tables
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters_to_tables
+    EmigrationHazard,
+    FertilityHazard,
+    MortalityHazard,
+    ImmigrantDonors,
+    EmigrationHazard,
+    FertilityHazard,
+    MortalityHazard
+;
+
+table_group DerivedParameters //EN Derived Parameters
+{
+    EmigrationHazard,
+    FertilityHazard,
+    MortalityHazard,
+    ImmigrantDonors,
+    EmigrationHazard,
+    FertilityHazard,
+    MortalityHazard
+};
+
+parameter_group ATest
+{
+    MortalityHazard
+};
+
+#endif // Hide non-C++ syntactic island from IDE

@@ -55,13 +55,13 @@ extern void omc::readParameterCsvFiles(
         // get parameter name from file path
         // parameter values separator: comma .csv or tab .tsv
         // file content: dimensions and values or parameter values only
-        string nameLc = getFileNameStem(pathCsv);
+        string nameLc = getPathStem(pathCsv);
         toLower(nameLc);
-        const char * separator = equalNoCase(getFileNameExt(pathCsv).c_str(), ".csv") ? "," : "\t";
+        const char * separator = equalNoCase(getPathExtension(pathCsv).c_str(), ".csv") ? "," : "\t";
 
         bool isValueOnly = endWithNoCase(nameLc, ".value");
         bool isIdCsv = endWithNoCase(nameLc, ".id");
-        if (isValueOnly || isIdCsv) nameLc = getFileNameStem(nameLc);
+        if (isValueOnly || isIdCsv) nameLc = getPathStem(nameLc);
 
         // find parameter name in lower case
         auto paramIt = paramNameMap.find(nameLc);
@@ -171,9 +171,11 @@ extern void omc::readParameterCsvFiles(
 
         // if csv data correct then check for parameter value notes in paramName.LANG.md file(s) for each language
         if (isValid && !i_isFixed) {
-            for (auto lang : Symbol::pp_all_languages) {
+            for (const auto& langSym : Symbol::pp_all_languages) {
+                int lang_index = langSym->language_id; // 0-based
+                const string& lang = langSym->name; // e.g. "EN" or "FR"
 
-                string mdPath = makeFilePath(i_srcDir.c_str(), (param->name + "." + lang->name).c_str(), ".md");
+                string mdPath = makeFilePath(i_srcDir.c_str(), (param->name + "." + lang).c_str(), ".md");
 
                 if (isFileExists(mdPath.c_str())) {
                     theLog->logFormatted("Reading %s", mdPath.c_str());
@@ -182,10 +184,9 @@ extern void omc::readParameterCsvFiles(
                     value_note = trim(value_note, mdLocale);
                     if (value_note.empty()) continue;    // skip empty notes
 
-                    auto lang_id = lang->language_id;
-                    assert(lang_id < (int)param->pp_value_notes.size()); // logic guarantee
+                    assert(lang_index < (int)param->pp_value_notes.size()); // logic guarantee
 
-                    param->pp_value_notes[lang_id] = value_note;
+                    param->pp_value_notes[lang_index] = value_note;
                     Symbol::all_source_files.push_back(mdPath);    // add md file path to list of source files
                 }
             }
@@ -481,7 +482,7 @@ const vector<PDim> getDims(bool i_isIdCsv, const ParameterSymbol * i_param)
         PDim d = {
             dim->short_name,
             et,
-            et->pp_size(),
+            (int)et->pp_size(),
             1
         };
 

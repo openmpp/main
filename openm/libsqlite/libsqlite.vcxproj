@@ -134,7 +134,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="extension_functions.h" />
     <ClInclude Include="sqlite3.h" />
   </ItemGroup>
   <ItemGroup>

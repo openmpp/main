@@ -134,12 +134,15 @@ namespace openm
             IDbExec * i_dbExec, const type_info & i_type, int i_subCount, size_t i_size, void * i_valueArr
         ) = 0;
 
-        /** load parameter values from csv file into run table.
+        /** load parameter values from csv file into run table, it can be any of: .csv .tsv .id.csv .id.tsv file.
         *
         * @param[in] i_dbExec   database connection
         * @param[in] i_subIdArr sub-value id's to select from csv
-        * @param[in] i_filePath path to parameter.csv file
+        * @param[in] i_filePath path to parameter.csv file, it can be any of: .csv .tsv .id.csv .id.tsv file.
         * @param[in] i_isIdCsv  if true then create csv file contains enum id's, default: enum code
+        * 
+        * if file extension .tsv then it is a tab separated file, by default comma separated file expected.
+        * if i_isIdCsv is true or file extension is .id.csv or .id.tsv then file contains enum id's, by default enum codes expected
         */
         virtual void loadCsvParameter(IDbExec * i_dbExec, const vector<int> & i_subIdArr, const char * i_filePath, bool i_isIdCsv = false) = 0;
 

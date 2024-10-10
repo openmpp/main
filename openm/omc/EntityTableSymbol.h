@@ -38,6 +38,16 @@ private:
 public:
     bool is_base_symbol() const { return false; }
 
+    /**
+     * Enumeration indicating the kind of entity table.
+     */
+    enum class table_kind {
+        ///< general entity table.
+        general,
+        ///< snapshot-style entity table.
+        snapshot,
+    };
+
     EntityTableSymbol(Symbol *sym, const Symbol * ent, omc::location decl_loc = omc::location())
         : TableSymbol(sym, decl_loc)
         , entity(ent->stable_rp())
@@ -48,6 +58,11 @@ public:
         , push_increment_fn(nullptr)
         , filter(nullptr)
         , n_collections(0)
+        , kind(table_kind::general)
+        , default_statistic(token::TK_sum)
+        , default_increment(token::TK_delta)
+        , default_tabop(token::TK_interval)
+        , is_untransformed(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -155,6 +170,106 @@ public:
      * for each cell of the table.  This is the count of the number of such collections in each table cell.
      */
     int n_collections;
+
+    /** The kind of table */
+    table_kind kind;
+
+    /** The default statistic */
+    token_type default_statistic;
+
+    /** The default increment */
+    token_type default_increment;
+
+    /** The default tabop */
+    token_type default_tabop;
+
+    /**
+     * Query if this EntityTableSymbol is general
+     *
+     * @returns True if classic, false if not.
+     */
+    bool is_general(void) const
+    {
+        return kind == table_kind::general;
+    }
+
+    /**
+     * Query if this EntityTableSymbol is snapshot
+     *
+     * @returns True if snapshot, false if not.
+     */
+    bool is_snapshot(void) const
+    {
+        return kind == table_kind::snapshot;
+    }
+
+    /**
+     * The default statistic for this table
+     *
+     * @returns A token_type.
+     */
+    token_type get_default_statistic(void) const
+    {
+        return default_statistic;
+    }
+
+    /**
+     * Set the default statistic for this table
+     */
+    void set_default_statistic(token_type val)
+    {
+        default_statistic = val;
+    }
+
+    /**
+     * The default increment for this table
+     *
+     * @returns A token_type.
+     */
+    token_type get_default_increment(void) const
+    {
+        return default_increment;
+    }
+
+    /**
+     * Set the default increment for this table
+     */
+    void set_default_increment(token_type val)
+    {
+        default_increment = val;
+    }
+
+    /**
+     * The default tabop for this table
+     *
+     * @returns A token_type.
+     */
+    token_type get_default_tabop(void) const
+    {
+        return default_tabop;
+    }
+
+    /**
+     * Set the default tabop for this table
+     */
+    void set_default_tabop(token_type val)
+    {
+        default_tabop = val;
+    }
+
+    const char * kind_as_string(void) const
+    {
+        switch (kind) {
+        case table_kind::general: return "general";
+        case table_kind::snapshot: return "snapshot";
+        default: return ""; // not reached
+        }
+    }
+
+    /**
+     * True if the table is unweighted, unscaled, and aggregated across subs.
+     */
+    bool is_untransformed;
 
     /**
      * Class name used to declare the entity table.
