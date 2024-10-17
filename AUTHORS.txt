@@ -18,6 +18,8 @@ Wojciech Dudek        Wojciech-Dudek   wojciech_dudek@hotmail.com
 Nadeau, Claude        claude-nadeau    claude.nadeau@statcan.gc.ca       StatCan
 Williamson, Kristian  KrisWilliamson   kristian.williamson@statcan.gc.ca StatCan
 Dudek, Jacek          jacek-dudek / jacekzbigniewdudek  jacek.dudek@statcan.gc.ca  StatCan
+Scott Yun Ho          @scottyunho      scott.ho@statcan.gc.ca            StatCan
+Abadi, Parsa          parsaabadi       abadi.parsa@statcan.gc.ca         StatCan
 
 -----------------------------
 Intellectual property holders
