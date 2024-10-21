@@ -1,6 +1,16 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-10-21: v1.17.5
+  c++ core: fix incorrect select of parameters by base run id
+  go oms: enable storage control without job control
+  go oms: suspend job queue if storage quota exceeded
+  go oms: add Windows version of database cleanup script
+  UI: upgrade to vue3 and quasar2
+  UI: add delete all downloads and uploads buttons to Downloads page
+  UI: update markdown notes editor
+  UI: add custom links to "more" menu
+
 2024-07-31: v1.17.4
   c++ core: allow to model read parameters from TSV files
   go dbget: export any or all model runs parameters and output tables into CSV or TSV
