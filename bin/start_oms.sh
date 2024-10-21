@@ -55,9 +55,9 @@ export OM_CFG_TYPE_MAX_LEN
 #
 [ -z "$OMS_PORT" ] && OMS_PORT=4040
 
-echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.DiskUsage -oms.LogRequest"
+echo "OM_ROOT=$OM_ROOT ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest"
 
-OM_ROOT="$OM_ROOT" ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.DiskUsage -oms.LogRequest
+OM_ROOT="$OM_ROOT" ./bin/oms -l localhost:${OMS_PORT} -oms.HomeDir models/home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
 status=$?
 
 if [ $status -ne 0 ] ;
