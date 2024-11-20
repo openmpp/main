@@ -174,6 +174,20 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Wri
                                                                   'membre=%d Ecrire les paramètres dérivés - début');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Write derived parameters - finish',
                                                                   'membre=%d Ecrire les paramètres dérivés - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Cleanup entity tables - start',
+                                                                  'membre=%d Nettoyage des tableaux d''entité - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Cleanup entity tables - finish',
+                                                                  'membre=%d Nettoyage des tableaux d''entité - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Cleanup derived tables - start',
+                                                                  'membre=%d Nettoyage des tableaux dérivés - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d member=%d Cleanup derived tables - finish',
+                                                                  'membre=%d Nettoyage des tableaux dérivés - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Cleanup entity sets - start',
+                                                                  'membre=%d Nettoyage des collections d''entités - début');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Cleanup entity sets - finish',
+                                                                  'membre=%d Nettoyage des collections d''entités - fin');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'member=%d Completed.',
+                                                                  'membre=%d Terminé.');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Process peak memory usage: %.2f MB',
                                                                   'Utilisation maximale de la mémoire du processus : %.2f Mo');
 

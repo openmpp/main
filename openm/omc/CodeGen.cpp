@@ -1177,45 +1177,58 @@ void CodeGen::do_ModelShutdown()
         c += "theLog->logFormatted(\"member=%d Write derived parameters - finish\", simulation_member);";
     }
 
-    c += "// Entity table destruction";
-    for (auto table : Symbol::pp_all_entity_tables) {
-        c += "if (" + table->cxx_instance + ") {";
-        c += "delete " + table->cxx_instance + ";";
-        c += table->cxx_instance + " = nullptr;";
-        c += "}";
-    }
-    c += "";
-
-    c += "// Derived table destruction";
-    for (auto derived_table : Symbol::pp_all_derived_tables) {
-        c += "if (" + derived_table->cxx_instance + ") {";
-        c += "delete " + derived_table->cxx_instance + ";";
-        c += derived_table->cxx_instance + " = nullptr;";
-        c += "}";
-    }
-    c += "";
-
-    c += "// Entity set destruction";
-    for (auto es : Symbol::pp_all_entity_sets) {
-        c += "{";
-        if (es->dimension_count() == 0) {
-            c += "assert(" + es->name + ");";
-            c += "delete(" + es->name + ");";
-			c += es->name + " = nullptr;";
-		}
-        else {
-            c += "EntitySet<" + es->pp_entity->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_entity->name + "> **>(" + es->name + ");";
-            c += "const size_t cells = " + to_string(es->cell_count()) + ";";
-            c += "for (size_t cell = 0; cell < cells; ++cell) {";
-            c += "assert(flattened_array[cell]);";
-            c += "delete flattened_array[cell];";
-            c += "flattened_array[cell] = nullptr;";
+    if (Symbol::pp_all_entity_tables.size()) {
+        c += "// Entity table destruction";
+        c += "theLog->logFormatted(\"member=%d Cleanup entity tables - start\", simulation_member);";
+        for (auto table : Symbol::pp_all_entity_tables) {
+            c += "if (" + table->cxx_instance + ") {";
+            c += "delete " + table->cxx_instance + ";";
+            c += table->cxx_instance + " = nullptr;";
             c += "}";
         }
-        c += "}";
+        c += "theLog->logFormatted(\"member=%d Cleanup entity tables - finish\", simulation_member);";
+        c += "";
     }
-    c += "";
 
+    if (Symbol::pp_all_derived_tables.size()) {
+        c += "// Derived table destruction";
+        c += "theLog->logFormatted(\"member=%d Cleanup derived tables - start\", simulation_member);";
+        for (auto derived_table : Symbol::pp_all_derived_tables) {
+            c += "if (" + derived_table->cxx_instance + ") {";
+            c += "delete " + derived_table->cxx_instance + ";";
+            c += derived_table->cxx_instance + " = nullptr;";
+            c += "}";
+        }
+        c += "theLog->logFormatted(\"member=%d Cleanup derived tables - finish\", simulation_member);";
+        c += "";
+    }
+
+    if (Symbol::pp_all_entity_sets.size()) {
+        c += "// Entity set destruction";
+        c += "theLog->logFormatted(\"member=%d Cleanup entity sets - start\", simulation_member);";
+        for (auto es : Symbol::pp_all_entity_sets) {
+            c += "{";
+            if (es->dimension_count() == 0) {
+                c += "assert(" + es->name + ");";
+                c += "delete(" + es->name + ");";
+                c += es->name + " = nullptr;";
+            }
+            else {
+                c += "EntitySet<" + es->pp_entity->name + "> ** flattened_array = reinterpret_cast<EntitySet<" + es->pp_entity->name + "> **>(" + es->name + ");";
+                c += "const size_t cells = " + to_string(es->cell_count()) + ";";
+                c += "for (size_t cell = 0; cell < cells; ++cell) {";
+                c += "assert(flattened_array[cell]);";
+                c += "delete flattened_array[cell];";
+                c += "flattened_array[cell] = nullptr;";
+                c += "}";
+            }
+            c += "}";
+        }
+        c += "theLog->logFormatted(\"member=%d Cleanup entity sets - finish\", simulation_member);";
+        c += "";
+    }
+
+    c += "theLog->logFormatted(\"member=%d Completed.\", simulation_member);";
     c += "}";
 	c += "";
 }
