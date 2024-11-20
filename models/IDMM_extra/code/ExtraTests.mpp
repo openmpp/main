@@ -74,6 +74,43 @@ aggregation APPEARANCE, DISEASE_PHASE
 	A_SICK, DP_INFECTIOUS
 };
 
+classification PSYCHOSOMATIC_STATUS //EN Psychosomatic status
+{
+    //EN Normal
+    PS_NORMAL,
+
+    //EN Worrier
+    PS_WORRIER,
+
+    //EN Hypochodriac
+    PS_HYPOCHONDRIAC
+};
+
+aggregation APPEARANCE, PSYCHOSOMATIC_STATUS
+{
+    A_FINE, PS_NORMAL,
+    A_FINE, PS_WORRIER,
+    A_SICK, PS_HYPOCHONDRIAC
+};
+
+classification PUBLIC_HEALTH_STATUS //EN Public health status
+{
+    //EN Unconstrained
+    PH_UNCONSTRAINED,
+
+    //EN Target for isolation
+    PH_TARGET_FOR_ISOLATION
+};
+
+aggregation PUBLIC_HEALTH_STATUS, DISEASE_PHASE
+{
+    PH_UNCONSTRAINED, DP_SUSCEPTIBLE,
+    PH_UNCONSTRAINED, DP_LATENT,
+    PH_UNCONSTRAINED, DP_IMMUNE,
+    PH_TARGET_FOR_ISOLATION, DP_INFECTIOUS
+};
+
+
 actor Host
 {
     real hui = (disease_phase == DP_INFECTIOUS) ? 0.8 : 1.0;
