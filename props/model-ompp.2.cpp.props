@@ -60,6 +60,7 @@
       <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -83,6 +84,7 @@
       <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +109,7 @@
       <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,6 +137,7 @@
       <AdditionalIncludeDirectories>$(OMC_IN_DIR);$(OM_INC_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,5 +156,5 @@
       <PrecompiledHeaderFile>omc/omPch.h</PrecompiledHeaderFile>
     </ClCompile>
   </ItemDefinitionGroup>
-  
+
 </Project>

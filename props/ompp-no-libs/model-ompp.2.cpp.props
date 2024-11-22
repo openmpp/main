@@ -43,6 +43,7 @@
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -66,6 +67,7 @@
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,6 +92,7 @@
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,6 +120,7 @@
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
       <AdditionalOptions>/bigobj</AdditionalOptions>
+      <BrowseInformation>false</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
