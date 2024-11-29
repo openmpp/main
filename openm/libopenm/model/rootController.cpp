@@ -207,6 +207,14 @@ void RootController::broadcastRunOptions(void)
         msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
     }
 
+    // broadcast suppressed tables: number of tables and tables id
+    n = (int)tableIdSuppressArr.size();
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+
+    if (n > 0) {
+        msgExec->bcastSend(ProcessGroupDef::all, typeid(int), n, tableIdSuppressArr.data());
+    }
+
     // broadcast number of microdata attributes and attribute indices in entity array
     n = (int)entityIdxArr.size();
     msgExec->bcastInt(ProcessGroupDef::all, &n);
@@ -657,13 +665,14 @@ void RootController::appendAccReceiveList(int i_runId, const RunGroup & i_runGro
             tblId = accVec[nAcc].tableId;
             valSize = IOutputTableWriter::sizeOf(meta(), tblId);
         }
+        const bool isTblSup = isSuppressed(tblId);
 
         for (int nSub = 0; nSub < subValueCount; nSub++) {
 
             int nRank = i_runGroup.rankBySubValueId(nSub);
             if (nRank == msgExec->rootRank) continue;
 
-            accRecvLst.push_back(
+            if (!isTblSup) accRecvLst.push_back(
                 AccReceive(i_runId, nSub, subValueCount, nRank, tblId, accVec[nAcc].accId, nAcc, valSize)
             );
 

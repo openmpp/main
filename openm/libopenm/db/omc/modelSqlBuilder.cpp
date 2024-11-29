@@ -189,6 +189,15 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     for (GroupPcRow & row : io_metaRows.groupPc) {
         row.modelId = io_metaRows.modelDic.modelId;
     }
+    for (EntityGroupLstRow & row : io_metaRows.entityGroupLst) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (EntityGroupTxtLangRow & row : io_metaRows.entityGroupTxt) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
+    for (EntityGroupPcRow & row : io_metaRows.entityGroupPc) {
+        row.modelId = io_metaRows.modelDic.modelId;
+    }
 
     // model text rows: model_dic_txt
     for (ModelDicTxtLangRow & row : io_metaRows.modelTxt) {
@@ -348,6 +357,21 @@ void ModelSqlBuilder::createModel(IDbExec * i_dbExec, MetaModelHolder & io_metaR
     // groups parent-child relationships: group_pc
     for (const GroupPcRow & row : io_metaRows.groupPc) {
         ModelInsertSql::insertGroupPc(i_dbExec, row);
+    }
+
+    // group of entity attributes: entity_group_lst
+    for (const EntityGroupLstRow & row : io_metaRows.entityGroupLst) {
+        ModelInsertSql::insertEntityGroupLst(i_dbExec, row);
+    }
+
+    // groups text: entity_group_txt
+    for (EntityGroupTxtLangRow & row : io_metaRows.entityGroupTxt) {
+        ModelInsertSql::insertEntityGroupText(i_dbExec, langMap, row);
+    }
+
+    // groups parent-child relationships: entity_group_pc
+    for (const EntityGroupPcRow & row : io_metaRows.entityGroupPc) {
+        ModelInsertSql::insertEntityGroupPc(i_dbExec, row);
     }
 
     // if default model profile not empty then insert rows into profile_lst and profile_option tables

@@ -189,6 +189,8 @@ int MetaLoader::readMetaTables(IDbExec * i_dbExec, MetaHolder * io_metaStore, co
     io_metaStore->langLst.reset(ILangLstTable::create(i_dbExec));
     io_metaStore->groupLst.reset(IGroupLstTable::create(i_dbExec, mId));
     io_metaStore->groupPc.reset(IGroupPcTable::create(i_dbExec, mId));
+    io_metaStore->entityGroupLst.reset(IEntityGroupLstTable::create(i_dbExec, mId));
+    io_metaStore->entityGroupPc.reset(IEntityGroupPcTable::create(i_dbExec, mId));
 
     return mId;
 }
@@ -971,11 +973,14 @@ void MetaLoader::parseEntityOptions(void)
     if (isDisabled && isToCsv) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToCsv);
     if (isDisabled && isToTrace) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataToTrace);
 
-    // validate mcirodata options: it must be common options or entity name
+    // validate all mcirodata options: it must be common options or entity name
     string microdataPrefix = string(RunOptionsKey::microdataPrefix) + ".";
 
     for (NoCaseMap::const_iterator optIt = argOpts().args.cbegin(); optIt != argOpts().args.cend(); optIt++) {
-        parseEntityNameOption(optIt->first, microdataPrefix);
+
+        auto [isMdOpt, entName, e] = parseEntityNameOption(optIt->first, microdataPrefix);
+        if (isMdOpt && isDisabled)
+            throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataAll);
     }
 
     // apply entity event filter: -Microdata.Events Birth,Union
@@ -1016,8 +1021,6 @@ void MetaLoader::parseEntityOptions(void)
     // if all entities and all attributes included
     if (argOpts().boolOption(RunOptionsKey::microdataAll)) {
 
-        if (isDisabled) throw ModelException("Microdata output disabled, invalid model run option: %s", RunOptionsKey::microdataAll);
-
         for (const EntityDicRow & ent : metaStore->entityDic->rows())
         {
             vector<EntityAttrRow> attrs = metaStore->entityAttr->findAll([&](const EntityAttrRow & i_row) -> bool {
@@ -1037,8 +1040,6 @@ void MetaLoader::parseEntityOptions(void)
 
             if (!isMdOpt || entName.empty()) continue;  // this is not microdata entity name option
 
-            if (isDisabled) throw ModelException("Microdata output disabled, invalid model run option: %s", optIt->first.c_str());
-
             // check names of attributes
             list<string> aLst = splitCsv(optIt->second);
 
@@ -1051,22 +1052,59 @@ void MetaLoader::parseEntityOptions(void)
                     });
                 if (attrs.size() > 0) entVec.push_back({ ent->entityId, entName, attrs });
             }
-            else    // use only attributes specified in the list: -Microdata.Person age,income
+            else    // use only attributes specified in the list: -Microdata.Person age,incomeGroup
             {
                 vector<EntityAttrRow> attrs;
+                set<string> aNames;
+
                 for (const string & name : aLst)
                 {
-                    const EntityAttrRow * aRow = metaStore->entityAttr->findFirst(
-                        [&](const EntityAttrRow & i_row) -> bool {
-                            return i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr) && i_row.name == name;
+                    // check if the name is an attribute name
+                    {
+                        const EntityAttrRow * aRow = metaStore->entityAttr->findFirst(
+                            [&](const EntityAttrRow & i_row) -> bool {
+                                return i_row.modelId == modelId && i_row.entityId == ent->entityId && (!i_row.isInternal || isOmAttr) && i_row.name == name;
+                            }
+                        );
+                        // if attribute name found then include it into entity attributes list
+                        if (aRow != nullptr)
+                        {
+                            if (aNames.count(name) > 0) continue;   // attribute is already included
+                            aNames.insert(name);
+                            attrs.push_back(*aRow);
+                            continue;
+                        }
+                    }
+                    // else: check if the name is an attributes group name
+
+                    const EntityGroupLstRow * gRow = metaStore->entityGroupLst->findFirst(
+                        [&](const EntityGroupLstRow & i_row) -> bool {
+                            return i_row.modelId == modelId && i_row.entityId == ent->entityId && i_row.name == name;
                         }
                     );
-                    if (aRow == nullptr) throw ModelException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
+                    if (gRow == nullptr) throw ModelException("Microdata attributes invalid (or empty): %s %s", entName.c_str(), optIt->second.c_str());
 
-                    attrs.push_back(*aRow);
+                    // include all attributes from that group
+                    const vector<int> ids = metaStore->entityGroupPc->groupAttrs(modelId, gRow->groupId);
+
+                    for (const int i : ids)
+                    {
+                        const EntityAttrRow * aRow = metaStore->entityAttr->byKey(modelId, ent->entityId, i);
+                        if (aRow == nullptr) throw ModelException("Microdata attribute %d not found in group: %s: %s %s", i, name.c_str(), entName.c_str(), optIt->second.c_str());
+
+                        if (!isOmAttr && aRow->isInternal) continue;    // skip: internal attributes are disabled
+                        if (aNames.count(aRow->name) > 0) continue;     // attribute is already included
+
+                        aNames.insert(aRow->name);
+                        attrs.push_back(*aRow);
+                    }
                 }
 
-                entVec.push_back({ ent->entityId, entName, attrs });
+                // append entity with selected attributes
+                if (attrs.size() > 0) {
+                    sort(attrs.begin(), attrs.end(), EntityAttrRow::isKeyLess);
+                    entVec.push_back({ ent->entityId, entName, attrs });
+                }
             }
         }
     }

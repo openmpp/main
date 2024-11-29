@@ -597,6 +597,87 @@ namespace openm
             MpiPacked::packedSize(typeid(val->leafId));
     }
 
+    // entity_group_lst: pack db row into MPI message
+    template<>
+    void RowMpiPackedAdapter<EntityGroupLstRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
+    {
+        const EntityGroupLstRow * val = dynamic_cast<const EntityGroupLstRow *>(i_row.get());
+
+        MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->entityId)>(val->entityId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->groupId)>(val->groupId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack(val->name, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->isHidden)>(val->isHidden, i_packedSize, io_packedData, io_packPos);
+    }
+
+    // entity_group_lst: unpack MPI message into db row
+    template<>
+    void RowMpiPackedAdapter<EntityGroupLstRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
+    {
+        EntityGroupLstRow * val = static_cast<EntityGroupLstRow *>(io_row.get());
+
+        val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
+        val->entityId = MpiPacked::unpack<decltype(val->entityId)>(i_packedSize, i_packedData, io_packPos);
+        val->groupId = MpiPacked::unpack<decltype(val->groupId)>(i_packedSize, i_packedData, io_packPos);
+        val->name = MpiPacked::unpackStr(i_packedSize, i_packedData, io_packPos);
+        val->isHidden = MpiPacked::unpack<decltype(val->isHidden)>(i_packedSize, i_packedData, io_packPos);
+    }
+
+    // entity_group_lst: return byte size to pack db row into MPI message
+    template<>
+    int RowMpiPackedAdapter<EntityGroupLstRow>::packedSize(const IRowBaseUptr & i_row)
+    {
+        const EntityGroupLstRow * val = dynamic_cast<const EntityGroupLstRow *>(i_row.get());
+        return
+            MpiPacked::packedSize(typeid(val->modelId)) +
+            MpiPacked::packedSize(typeid(val->entityId)) +
+            MpiPacked::packedSize(typeid(val->groupId)) +
+            MpiPacked::packedSize(val->name) +
+            MpiPacked::packedSize(typeid(val->isHidden));
+    }
+
+    // entity_group_pc: pack db row into MPI message
+    template<>
+    void RowMpiPackedAdapter<EntityGroupPcRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)
+    {
+        const EntityGroupPcRow * val = dynamic_cast<const EntityGroupPcRow *>(i_row.get());
+
+        MpiPacked::pack<decltype(val->modelId)>(val->modelId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->entityId)>(val->entityId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->groupId)>(val->groupId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->childPos)>(val->childPos, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->childGroupId)>(val->childGroupId, i_packedSize, io_packedData, io_packPos);
+        MpiPacked::pack<decltype(val->attrId)>(val->attrId, i_packedSize, io_packedData, io_packPos);
+    }
+
+    // entity_group_pc: unpack MPI message into db row
+    template<>
+    void RowMpiPackedAdapter<EntityGroupPcRow>::unpackTo(const IRowBaseUptr & io_row, int i_packedSize, void * i_packedData, int & io_packPos)
+    {
+        EntityGroupPcRow * val = static_cast<EntityGroupPcRow *>(io_row.get());
+
+        val->modelId = MpiPacked::unpack<decltype(val->modelId)>(i_packedSize, i_packedData, io_packPos);
+        val->entityId = MpiPacked::unpack<decltype(val->entityId)>(i_packedSize, i_packedData, io_packPos);
+        val->groupId = MpiPacked::unpack<decltype(val->groupId)>(i_packedSize, i_packedData, io_packPos);
+        val->childPos = MpiPacked::unpack<decltype(val->childPos)>(i_packedSize, i_packedData, io_packPos);
+        val->childGroupId = MpiPacked::unpack<decltype(val->childGroupId)>(i_packedSize, i_packedData, io_packPos);
+        val->attrId = MpiPacked::unpack<decltype(val->attrId)>(i_packedSize, i_packedData, io_packPos);
+    }
+
+    // entity_group_pc: return byte size to pack db row into MPI message
+    template<>
+    int RowMpiPackedAdapter<EntityGroupPcRow>::packedSize(const IRowBaseUptr & i_row)
+    {
+        const EntityGroupPcRow * val = dynamic_cast<const EntityGroupPcRow *>(i_row.get());
+        return
+            MpiPacked::packedSize(typeid(val->modelId)) +
+            MpiPacked::packedSize(typeid(val->entityId)) +
+            MpiPacked::packedSize(typeid(val->groupId)) +
+            MpiPacked::packedSize(typeid(val->childPos)) +
+            MpiPacked::packedSize(typeid(val->childGroupId)) +
+            MpiPacked::packedSize(typeid(val->attrId));
+    }
+
     // run_option: pack db row into MPI message
     template<>
     void RowMpiPackedAdapter<RunOptionRow>::pack(const IRowBaseUptr & i_row, int i_packedSize, void * io_packedData, int & io_packPos)

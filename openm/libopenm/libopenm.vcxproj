@@ -209,6 +209,9 @@
     <ClCompile Include="db\entityAttrTxtTable.cpp" />
     <ClCompile Include="db\entityDicTable.cpp" />
     <ClCompile Include="db\entityDicTxtTable.cpp" />
+    <ClCompile Include="db\entityGroupLstTable.cpp" />
+    <ClCompile Include="db\entityGroupPcTable.cpp" />
+    <ClCompile Include="db\entityGroupTxtTable.cpp" />
     <ClCompile Include="db\groupLstTable.cpp" />
     <ClCompile Include="db\groupPcTable.cpp" />
     <ClCompile Include="db\groupTxtTable.cpp" />

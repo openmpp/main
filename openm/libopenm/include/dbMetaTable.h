@@ -834,11 +834,87 @@ namespace openm
         /** get list of rows by model id. */
         virtual vector<GroupPcRow> byModelId(int i_modelId) const = 0;
 
-        /** get list of parameter id's or table id's for the group: list of bottom level group members. */
+        /** get list of parameter or table id's or table id's for the group: list of bottom level group members. */
         virtual vector<int> groupLeafs(int i_modelId, int i_groupId) const = 0;
 
         /** create new table rows by swap with supplied vector of rows. */
         static IGroupPcTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** entity_group_lst table public interface. */
+    struct IEntityGroupLstTable : public IMetaLoadedTable<EntityGroupLstRow>
+    {
+        virtual ~IEntityGroupLstTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by primary key: model id, entity id, group id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static IEntityGroupLstTable * create(IDbExec * i_dbExec, int i_modelId = 0);
+
+        /** binary search row by primary key: model id, entity id, group id, return NULL if not found. */
+        virtual const EntityGroupLstRow * byKey(int i_modelId, int i_entity, int i_groupId) const = 0;
+
+        /** get list of rows by model id. */
+        virtual vector<EntityGroupLstRow> byModelId(int i_modelId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityGroupLstTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** entity_group_txt table public interface. */
+    struct IEntityGroupTxtTable : public IMetaLoadedTable<EntityGroupTxtRow>
+    {
+        virtual ~IEntityGroupTxtTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by primary key: model id, entity id, group id, language id.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        * if i_langId >= 0 then select only rows where lang_id = i_langId
+        */
+        static IEntityGroupTxtTable * create(IDbExec * i_dbExec, int i_modelId = 0, int i_langId = -1);
+
+        /** binary search row by primary key: model id, entity id, group id, language id; return NULL if not found. */
+        virtual const EntityGroupTxtRow * byKey(int i_modelId, int i_entityId, int i_groupId, int i_langId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityGroupTxtTable * create(IRowBaseVec & io_rowVec);
+
+        /** get reference to list of all table rows. */
+        virtual IRowBaseVec & rowsRef(void) = 0;
+    };
+
+    /** entity_group_pc table public interface. */
+    struct IEntityGroupPcTable : public IMetaLoadedTable<EntityGroupPcRow>
+    {
+        virtual ~IEntityGroupPcTable() noexcept = 0;
+
+        /**
+        * create new table object and load table rows sorted by primary key: model id, entity id, group id, child position.
+        *
+        * if i_modelId > 0 then select only rows where model_id = i_modelId
+        */
+        static IEntityGroupPcTable * create(IDbExec * i_dbExec, int i_modelId = 0);
+
+        /** binary search row by primary key: model id, entity id, group id, child position; return NULL if not found. */
+        virtual const EntityGroupPcRow * byKey(int i_modelId, int i_entityId, int i_groupId, int i_chidPos) const = 0;
+
+        /** get list of rows by model id. */
+        virtual vector<EntityGroupPcRow> byModelId(int i_modelId) const = 0;
+
+        /** get list of attribute id's for the group: list of bottom level group members. */
+        virtual vector<int> groupAttrs(int i_modelId, int i_groupId) const = 0;
+
+        /** create new table rows by swap with supplied vector of rows. */
+        static IEntityGroupPcTable * create(IRowBaseVec & io_rowVec);
 
         /** get reference to list of all table rows. */
         virtual IRowBaseVec & rowsRef(void) = 0;

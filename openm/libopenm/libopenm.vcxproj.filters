@@ -413,5 +413,14 @@
     <ClCompile Include="common\os.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="db\entityGroupLstTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityGroupTxtTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
+    <ClCompile Include="db\entityGroupPcTable.cpp">
+      <Filter>Source Files\db</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

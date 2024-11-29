@@ -98,6 +98,9 @@ LIBOPENM_CPPLIST = \
   db/entityAttrTxtTable.cpp \
   db/entityDicTable.cpp \
   db/entityDicTxtTable.cpp \
+  db/entityGroupLstTable.cpp \
+  db/entityGroupPcTable.cpp \
+  db/entityGroupTxtTable.cpp \
   db/langLstTable.cpp \
   db/langWordTable.cpp \
   db/modelDicTable.cpp \

@@ -80,7 +80,7 @@ CREATE TABLE model_word
   model_id   INT          NOT NULL, -- master key
   lang_id    INT          NOT NULL, -- language id
   word_code  VARCHAR(255) NOT NULL, -- word key: all, min, max
-  word_value VARCHAR(255) NULL,     -- if not NULL then actual word in that language
+  word_value VARCHAR(255),          -- if not NULL then actual word in that language
   PRIMARY KEY (model_id, lang_id, word_code),
   CONSTRAINT model_word_mk
              FOREIGN KEY (model_id) REFERENCES model_dic (model_id),
@@ -532,7 +532,7 @@ CREATE TABLE group_txt
   PRIMARY KEY (model_id, group_id, lang_id),
   CONSTRAINT group_txt_mk
              FOREIGN KEY (model_id, group_id) REFERENCES group_lst (model_id, group_id),
-  CONSTRAINT parameter_group_txt_lang_fk
+  CONSTRAINT group_txt_lang_fk
              FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
 );
 
@@ -544,11 +544,61 @@ CREATE TABLE group_pc
   model_id       INT NOT NULL, -- master key
   group_id       INT NOT NULL, -- master key
   child_pos      INT NOT NULL, -- child position in group
-  child_group_id INT NULL,     -- if not IS NULL then child group
-  leaf_id        INT NULL,     -- if not IS NULL then parameter id or table id
+  child_group_id INT,          -- if not IS NULL then child group
+  leaf_id        INT,          -- if not IS NULL then parameter id or table id
   PRIMARY KEY (model_id, group_id, child_pos),
   CONSTRAINT group_pc_mk
              FOREIGN KEY (model_id, group_id) REFERENCES group_lst (model_id, group_id)
+);
+
+--
+-- Groups of entity attributes
+--
+CREATE TABLE entity_group_lst
+(
+  model_id        INT          NOT NULL, -- master key
+  model_entity_id INT          NOT NULL, -- model entity id
+  group_id        INT          NOT NULL, -- unique model group id
+  group_name      VARCHAR(255) NOT NULL, -- group name
+  is_hidden       SMALLINT     NOT NULL, -- if non-zero then group is hidden
+  PRIMARY KEY (model_id, model_entity_id, group_id),
+  CONSTRAINT entity_group_lst_un UNIQUE (model_id, model_entity_id, group_name),
+  CONSTRAINT entity_group_lst_mk
+             FOREIGN KEY (model_id, model_entity_id) REFERENCES model_entity_dic (model_id, model_entity_id)
+);
+
+--
+-- Group text info for entity attribute groups
+--
+CREATE TABLE entity_group_txt
+(
+  model_id        INT             NOT NULL, -- master key
+  model_entity_id INT             NOT NULL, -- master key
+  group_id        INT             NOT NULL, -- master key
+  lang_id         INT             NOT NULL, -- language id
+  descr           VARCHAR(255)    NOT NULL, -- group description
+  note            TEXT,                     -- group notes
+  PRIMARY KEY (model_id, model_entity_id, group_id, lang_id),
+  CONSTRAINT entity_group_txt_mk
+             FOREIGN KEY (model_id, model_entity_id, group_id) REFERENCES entity_group_lst (model_id, model_entity_id, group_id),
+  CONSTRAINT entity_group_txt_lang_fk
+             FOREIGN KEY (lang_id) REFERENCES lang_lst (lang_id)
+);
+
+--
+-- Entity attribute groups parent-child: subgroup or entity attribute
+--
+CREATE TABLE entity_group_pc
+(
+  model_id        INT NOT NULL, -- master key
+  model_entity_id INT NOT NULL, -- master key
+  group_id        INT NOT NULL, -- master key
+  child_pos       INT NOT NULL, -- child position in group
+  child_group_id  INT,          -- if not IS NULL then child group
+  attr_id         INT,          -- if not IS NULL then entity attribute index
+  PRIMARY KEY (model_id, model_entity_id, group_id, child_pos),
+  CONSTRAINT entity_group_pc_mk
+             FOREIGN KEY (model_id, model_entity_id, group_id) REFERENCES entity_group_lst (model_id, model_entity_id, group_id)
 );
 
 --

@@ -129,6 +129,15 @@ namespace openm
         /** insert row into group_pc table. */
         static void insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row);
 
+        /** insert row into entity_group_lst table. */
+        static void insertEntityGroupLst(IDbExec * i_dbExec, const EntityGroupLstRow & i_row);
+
+        /** insert row into entity_group_txt table. */
+        static void insertEntityGroupText(IDbExec * i_dbExec, const map<string, int> & i_langMap, EntityGroupTxtLangRow & io_row);
+
+        /** insert row into entity_group_pc table. */
+        static void insertEntityGroupPc(IDbExec * i_dbExec, const EntityGroupPcRow & i_row);
+
         /** insert default model profile rows into profile_lst and profile_option tables. */
         static void insertModelProfile(IDbExec * i_dbExec, const string & i_profileName, const NoCaseMap & i_profileRows);
 

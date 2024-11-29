@@ -736,6 +736,73 @@ bool GroupPcRow::isKeyEqual(const GroupPcRow & i_left, const GroupPcRow & i_righ
         i_left.modelId == i_right.modelId && i_left.groupId == i_right.groupId && i_left.childPos == i_right.childPos;
 }
 
+// entity_group_lst row less comparator by primary key: model id, entity id, group id.
+bool EntityGroupLstRow::isKeyLess(const EntityGroupLstRow & i_left, const EntityGroupLstRow & i_right)
+{
+    return
+        (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId < i_right.entityId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId < i_right.groupId);
+}
+
+// entity_group_lst row equal comparator by primary key: model id, entity id, group id.
+bool EntityGroupLstRow::isKeyEqual(const EntityGroupLstRow & i_left, const EntityGroupLstRow & i_right)
+{
+    return
+        i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId;
+}
+
+// entity_group_txt row less comparator by primary key: model id, entity id, group id, language id.
+bool EntityGroupTxtRow::isKeyLess(const EntityGroupTxtRow & i_left, const EntityGroupTxtRow & i_right)
+{
+    return
+        (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId < i_right.entityId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId < i_right.groupId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId && i_left.langId < i_right.langId);
+}
+
+// entity_group_txt row equal comparator by primary key: model id, entity id, group id, language id.
+bool EntityGroupTxtRow::isKeyEqual(const EntityGroupTxtRow & i_left, const EntityGroupTxtRow & i_right)
+{
+    return
+        i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId && i_left.langId == i_right.langId;
+}
+
+// entity_group_txt row less comparator by unique key: model id, entity id, group id, language code.
+bool EntityGroupTxtLangRow::uniqueLangKeyLess(const EntityGroupTxtLangRow & i_left, const EntityGroupTxtLangRow & i_right)
+{
+    return
+        (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId < i_right.entityId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId < i_right.groupId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId && i_left.langCode < i_right.langCode);
+}
+
+// entity_group_txt row equal comparator by unique key: model id, entity id, group id, language code.
+bool EntityGroupTxtLangRow::uniqueLangKeyEqual(const EntityGroupTxtLangRow & i_left, const EntityGroupTxtLangRow & i_right)
+{
+    return
+        i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId && i_left.langCode == i_right.langCode;
+}
+
+// entity_group_pc row less comparator by primary key: model id, entity id, group id, child position.
+bool EntityGroupPcRow::isKeyLess(const EntityGroupPcRow & i_left, const EntityGroupPcRow & i_right)
+{
+    return
+        (i_left.modelId < i_right.modelId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId < i_right.entityId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId < i_right.groupId) ||
+        (i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId && i_left.childPos < i_right.childPos);
+}
+
+// entity_group_pc row equal comparator by primary key: model id, entity id, group id, child position.
+bool EntityGroupPcRow::isKeyEqual(const EntityGroupPcRow & i_left, const EntityGroupPcRow & i_right)
+{
+    return
+        i_left.modelId == i_right.modelId && i_left.entityId == i_right.entityId && i_left.groupId == i_right.groupId && i_left.childPos == i_right.childPos;
+}
+
 // profile_lst row less comparator by primary key: profile name.
 bool ProfileLstRow::isKeyLess(const ProfileLstRow & i_left, const ProfileLstRow & i_right)
 {

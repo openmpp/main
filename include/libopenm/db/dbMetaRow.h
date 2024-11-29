@@ -1521,6 +1521,147 @@ namespace openm
         static bool isKeyEqual(const GroupPcRow & i_left, const GroupPcRow & i_right);
     };
 
+    /** entity_group_lst table row. */
+    struct EntityGroupLstRow : public IMetaRow<EntityGroupLstRow>
+    {
+        /** model_id        INT          NOT NULL */
+        int modelId;
+
+        /** model_entity_id INT          NOT NULL */
+        int entityId;
+
+        /** group_id        INT          NOT NULL */
+        int groupId;
+
+        /** group_name      VARCHAR(255) NOT NULL */
+        string name;
+
+        /** is_hidden       SMALLINT     NOT NULL */
+        bool isHidden;
+
+        /** create row with supplied primary key field values. */
+        EntityGroupLstRow(int i_modelId, int i_entityId, int i_groupId) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            groupId(i_groupId),
+            name(""),
+            isHidden(false)
+        {
+        }
+
+        /** create row with default empty field values. */
+        EntityGroupLstRow(void) : EntityGroupLstRow(0, 0, 0) {}
+
+        ~EntityGroupLstRow(void) noexcept {}
+
+        /** less comparator by primary key: model id, group id. */
+        static bool isKeyLess(const EntityGroupLstRow & i_left, const EntityGroupLstRow & i_right);
+
+        /** equal comparator by primary key: model id, group id. */
+        static bool isKeyEqual(const EntityGroupLstRow & i_left, const EntityGroupLstRow & i_right);
+    };
+
+    /** entity_group_txt table row. */
+    struct EntityGroupTxtRow : public IMetaRow<EntityGroupTxtRow>
+    {
+        /** model_id        INT             NOT NULL */
+        int modelId;
+
+        /** model_entity_id INT             NOT NULL */
+        int entityId;
+
+        /** group_id        INT             NOT NULL */
+        int groupId;
+
+        /** lang_id         INT             NOT NULL */
+        int langId;
+
+        /** descr           VARCHAR(255)    NOT NULL */
+        string descr;
+
+        /** note            VARCHAR(32000) */
+        string note;
+
+        /** create row with supplied primary key field values. */
+        EntityGroupTxtRow(int i_modelId, int i_entityId, int i_groupId, int i_langId) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            groupId(i_groupId),
+            langId(i_langId),
+            descr(""),
+            note("")
+        {
+        }
+
+        /** create row with default empty field values. */
+        EntityGroupTxtRow(void) : EntityGroupTxtRow(0, 0, 0, 0) {}
+
+        ~EntityGroupTxtRow(void) noexcept {}
+
+        /** less comparator by primary key: model id, entity id, group id, language id. */
+        static bool isKeyLess(const EntityGroupTxtRow & i_left, const EntityGroupTxtRow & i_right);
+
+        /** equal comparator by primary key: model id, entity id, group id, language id. */
+        static bool isKeyEqual(const EntityGroupTxtRow & i_left, const EntityGroupTxtRow & i_right);
+    };
+
+    /** entity_group_txt table row and language code. */
+    struct EntityGroupTxtLangRow : public EntityGroupTxtRow
+    {
+        /** language code */
+        string langCode;
+
+        /** less comparator by unique key: model id, entity id, group id, language code. */
+        static bool uniqueLangKeyLess(const EntityGroupTxtLangRow & i_left, const EntityGroupTxtLangRow & i_right);
+
+        /** equal comparator by unique key: model id, entity id, group id, language code. */
+        static bool uniqueLangKeyEqual(const EntityGroupTxtLangRow & i_left, const EntityGroupTxtLangRow & i_right);
+    };
+
+    /** entity_group_pc table row. */
+    struct EntityGroupPcRow : public IMetaRow<EntityGroupPcRow>
+    {
+        /** model_id        INT NOT NULL */
+        int modelId;
+
+        /** model_entity_id INT NOT NULL */
+        int entityId;
+
+        /** group_id        INT NOT NULL */
+        int groupId;
+
+        /** child_pos       INT NOT NULL */
+        int childPos;
+
+        /** child_group_id  INT */
+        int childGroupId;
+
+        /** attr_id         INT */
+        int attrId;
+
+        /** create row with supplied primary key field values. */
+        EntityGroupPcRow(int i_modelId, int i_entityId, int i_groupId, int i_childPos) :
+            modelId(i_modelId),
+            entityId(i_entityId),
+            groupId(i_groupId),
+            childPos(i_childPos),
+            childGroupId(-1),
+            attrId(-1)
+        {
+        }
+
+        /** create row with default empty field values. */
+        EntityGroupPcRow(void) : EntityGroupPcRow(0, 0, 0, 0) {}
+
+        ~EntityGroupPcRow(void) noexcept {}
+
+        /** less comparator by primary key: model id, entity id, group id, child position. */
+        static bool isKeyLess(const EntityGroupPcRow & i_left, const EntityGroupPcRow & i_right);
+
+        /** equal comparator by primary key: model id, entity id, group id, child position. */
+        static bool isKeyEqual(const EntityGroupPcRow & i_left, const EntityGroupPcRow & i_right);
+    };
+
     /** profile_lst table row. */
     struct ProfileLstRow : public IMetaRow<ProfileLstRow>
     {

@@ -865,7 +865,7 @@ void ModelInsertSql::insertEntityAttrText(
 {
     // validate field values
     MessageEllipter me;
-    if (io_row.attrId < 0) throw DbException(LT("invalid (negative) entityentity attribute id: %d"), io_row.attrId);
+    if (io_row.attrId < 0) throw DbException(LT("invalid (negative) entity attribute id: %d"), io_row.attrId);
     if (io_row.langCode.empty()) throw DbException(LT("invalid (empty) language code, entity: %s, attribute id: %d"), i_entityRow.entityName.c_str(), io_row.attrId);
     if (io_row.descr.empty()) throw DbException(LT("invalid (empty) description, entity: %s, attribute id: %d"), i_entityRow.entityName.c_str(), io_row.attrId);
     if (io_row.descr.length() > OM_DESCR_DB_MAX)
@@ -956,6 +956,78 @@ void ModelInsertSql::insertGroupPc(IDbExec * i_dbExec, const GroupPcRow & i_row)
         to_string(i_row.childPos) + ", " +
         (i_row.childGroupId < 0 ? "NULL" : to_string(i_row.childGroupId)) + ", " +
         (i_row.leafId < 0 ? "NULL" : to_string(i_row.leafId)) +
+        ")");
+}
+
+// insert row into entity_group_lst table.
+void ModelInsertSql::insertEntityGroupLst(IDbExec * i_dbExec, const EntityGroupLstRow & i_row)
+{
+    // validate field values
+    MessageEllipter me;
+    if (i_row.entityId < 0) throw DbException(LT("invalid (negative) entity id: %d"), i_row.entityId);
+    if (i_row.groupId < 0) throw DbException(LT("invalid (negative) group id: %d"), i_row.groupId);
+
+    if (i_row.name.empty()) throw DbException(LT("invalid (empty) group name, entity id: %d, group id: %d"), i_row.entityId, i_row.groupId);
+    if (i_row.name.length() > OM_NAME_DB_MAX) throw DbException(LT("invalid (longer than %d) group name: %s"), OM_NAME_DB_MAX, me.ellipt(i_row.name));
+
+    // INSERT INTO entity_group_lst (model_id, model_entity_id, group_id, group_name, is_hidden) VALUES (1234, 0, 0, 'AttributeGroup', 0)
+    i_dbExec->update(
+        "INSERT INTO entity_group_lst (model_id, model_entity_id, group_id, group_name, is_hidden) VALUES (" +
+        to_string(i_row.modelId) + ", " +
+        to_string(i_row.entityId) + ", " +
+        to_string(i_row.groupId) + ", " +
+        toQuoted(i_row.name) + ", " +
+        (i_row.isHidden ? "1" : "0") +
+        ")");
+}
+
+// insert row into entity_group_txt table.
+void ModelInsertSql::insertEntityGroupText(IDbExec * i_dbExec, const map<string, int> & i_langMap, EntityGroupTxtLangRow & io_row)
+{
+    // validate field values
+    MessageEllipter me;
+    if (io_row.entityId < 0) throw DbException(LT("invalid (negative) entity id: %d"), io_row.entityId);
+    if (io_row.groupId < 0) throw DbException(LT("invalid (negative) group id: %d"), io_row.groupId);
+    if (io_row.langCode.empty()) throw DbException(LT("invalid (empty) language code, entity id: %d, group id: %d"), io_row.entityId, io_row.groupId);
+    if (io_row.descr.empty()) throw DbException(LT("invalid (empty) description, entity id: %d, group id: %d"), io_row.entityId, io_row.groupId);
+    if (io_row.descr.length() > OM_DESCR_DB_MAX) throw DbException(LT("invalid (longer than %d) entity id: %d, group %d description: %s"), OM_DESCR_DB_MAX, io_row.entityId, io_row.groupId, me.ellipt(io_row.descr));
+    if (io_row.note.length() > OM_STR_DB_MAX) throw DbException(LT("invalid (longer than %d) entity id: %d, group %d notes: %s"), OM_STR_DB_MAX, io_row.entityId, io_row.groupId, me.ellipt(io_row.note));
+
+    // update language id with actual database value
+    map<string, int>::const_iterator langIt = i_langMap.find(io_row.langCode);
+    if (langIt == i_langMap.cend()) throw DbException(LT("invalid language code: %s"), io_row.langCode.c_str());
+    io_row.langId = langIt->second;
+
+    // INSERT INTO entity_group_txt (model_id, model_entity_id, group_id, lang_id, descr, note)
+    // VALUES (1234, 0, 101, 1, 'Table group', 'Table group notes')
+    i_dbExec->update(
+        "INSERT INTO group_txt (model_id, model_entity_id, group_id, lang_id, descr, note) VALUES (" +
+        to_string(io_row.modelId) + ", " +
+        to_string(io_row.entityId) + ", " +
+        to_string(io_row.groupId) + ", " +
+        to_string(langIt->second) + ", " +
+        toQuoted(io_row.descr) + ", " +
+        (io_row.note.empty() ? "NULL" : toQuoted(io_row.note)) +
+        ")");
+}
+
+// insert row into entity_group_pc table.
+// negative value of i_row.childGroupId or i_row.attrId treated as db-NULL
+void ModelInsertSql::insertEntityGroupPc(IDbExec * i_dbExec, const EntityGroupPcRow & i_row)
+{
+    // validate field values
+    if (i_row.entityId < 0) throw DbException(LT("invalid (negative) entity id: %d"), i_row.entityId);
+    if (i_row.groupId < 0) throw DbException(LT("invalid (negative) group id: %d"), i_row.groupId);
+
+    // INSERT INTO entity_group_pc (model_id, model_entity_id, group_id, child_pos, child_group_id, attr_id) VALUES (1234, 0, 1, 2, NULL, 22)
+    i_dbExec->update(
+        "INSERT INTO group_pc (model_id, model_entity_id, group_id, child_pos, child_group_id, attr_id) VALUES (" +
+        to_string(i_row.modelId) + ", " +
+        to_string(i_row.entityId) + ", " +
+        to_string(i_row.groupId) + ", " +
+        to_string(i_row.childPos) + ", " +
+        (i_row.childGroupId < 0 ? "NULL" : to_string(i_row.childGroupId)) + ", " +
+        (i_row.attrId < 0 ? "NULL" : to_string(i_row.attrId)) +
         ")");
 }
 

@@ -105,6 +105,9 @@ void ModelSqlBuilder::sortModelRows(MetaModelHolder & io_metaRows)
     sort(io_metaRows.groupLst.begin(), io_metaRows.groupLst.end(), GroupLstRow::isKeyLess);
     sort(io_metaRows.groupTxt.begin(), io_metaRows.groupTxt.end(), GroupTxtLangRow::uniqueLangKeyLess);
     sort(io_metaRows.groupPc.begin(), io_metaRows.groupPc.end(), GroupPcRow::isKeyLess);
+    sort(io_metaRows.entityGroupLst.begin(), io_metaRows.entityGroupLst.end(), EntityGroupLstRow::isKeyLess);
+    sort(io_metaRows.entityGroupTxt.begin(), io_metaRows.entityGroupTxt.end(), EntityGroupTxtLangRow::uniqueLangKeyLess);
+    sort(io_metaRows.entityGroupPc.begin(), io_metaRows.entityGroupPc.end(), EntityGroupPcRow::isKeyLess);
 }
 
 // sort workset metadata rows
@@ -261,8 +264,15 @@ void ModelSqlBuilder::trimModelRows(MetaModelHolder & io_metaRows)
         row.note = trim(row.note, loc);
     }
 
-    // no string fields
-    // for (auto & row : io_metaRows.groupPc) { }
+    for (auto & row : io_metaRows.entityGroupLst) {
+        row.name = trim(row.name, loc);
+    }
+
+    for (auto & row : io_metaRows.entityGroupTxt) {
+        row.langCode = trim(row.langCode, loc);
+        row.descr = trim(row.descr, loc);
+        row.note = trim(row.note, loc);
+    }
 }
 
 // sort and validate metadata rows for uniqueness and referential integrity
@@ -933,6 +943,82 @@ void ModelSqlBuilder::prepare(MetaModelHolder & io_metaRows) const
 
         if (nextIt != io_metaRows.groupPc.cend() && GroupPcRow::isKeyEqual(*rowIt, *nextIt))
             throw DbException(LT("in group_pc not unique model id: %d, group id: %d and child position: %d"), rowIt->modelId, rowIt->groupId, rowIt->childPos);
+    }
+
+    // entity_group_lst table
+    // unique: model id, entity id, group id; master key: model id, entity id
+    for (vector<EntityGroupLstRow>::const_iterator rowIt = io_metaRows.entityGroupLst.cbegin(); rowIt != io_metaRows.entityGroupLst.cend(); ++rowIt) {
+
+        EntityDicRow mkRow(rowIt->modelId, rowIt->entityId);
+        if (!std::binary_search(
+            io_metaRows.entityDic.cbegin(),
+            io_metaRows.entityDic.cend(),
+            mkRow,
+            EntityDicRow::isKeyLess
+        )) throw DbException(LT("in entity_group_lst invalid model id: %d and entity id: %d: not found in entity_dic"), rowIt->modelId, rowIt->entityId);
+
+
+        vector<EntityGroupLstRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityGroupLst.cend() && EntityGroupLstRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException(LT("in entity_group_lst not unique model id: %d, entity id, group id: %d"), rowIt->modelId, rowIt->entityId, rowIt->groupId);
+    }
+
+    // entity_group_txt table
+    // unique: model id, entity id, group id, language; master key: model id, entity id, group id; foreign key: language code;
+    // cleanup cr or lf in description and notes
+    for (vector<EntityGroupTxtLangRow>::iterator rowIt = io_metaRows.entityGroupTxt.begin(); rowIt != io_metaRows.entityGroupTxt.end(); ++rowIt) {
+
+        EntityGroupLstRow mkRow(rowIt->modelId, rowIt->entityId, rowIt->groupId);
+        if (!std::binary_search(
+            io_metaRows.entityGroupLst.cbegin(),
+            io_metaRows.entityGroupLst.cend(),
+            mkRow,
+            EntityGroupLstRow::isKeyLess
+        )) throw DbException(
+            LT("in entity_group_txt invalid model id: %d, entity id: %d, group id: %d: not found in entity_group_lst"),
+            rowIt->modelId, rowIt->entityId, rowIt->groupId
+        );
+
+        vector<EntityGroupTxtLangRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityGroupTxt.cend() && EntityGroupTxtLangRow::uniqueLangKeyEqual(*rowIt, *nextIt))
+            throw DbException(
+                LT("in entity_group_txt not unique model id: %d, entity id: %d, group id: %d, language: %s"),
+                rowIt->modelId, rowIt->entityId, rowIt->groupId, rowIt->langCode.c_str()
+            );
+
+        LangLstRow langRow(rowIt->langCode);
+        if (!std::binary_search(
+            io_metaRows.langLst.cbegin(),
+            io_metaRows.langLst.cend(),
+            langRow,
+            LangLstRow::isCodeLess
+        )) throw DbException(
+            LT("in entity_group_txt invalid model id: %d, entity id: %d, group id: %d and language: %s: not found in lang_lst"),
+            rowIt->modelId, rowIt->entityId, rowIt->groupId, rowIt->langCode.c_str()
+        );
+    }
+
+    // entity_group_pc table
+    // unique: model id, group id, entity id, child position; master key: model id, entity id, group id
+    for (vector<EntityGroupPcRow>::const_iterator rowIt = io_metaRows.entityGroupPc.cbegin(); rowIt != io_metaRows.entityGroupPc.cend(); ++rowIt) {
+
+        EntityGroupLstRow mkRow(rowIt->modelId, rowIt->entityId, rowIt->groupId);
+        if (!std::binary_search(
+            io_metaRows.entityGroupLst.cbegin(),
+            io_metaRows.entityGroupLst.cend(),
+            mkRow,
+            EntityGroupLstRow::isKeyLess
+        )) throw DbException(LT("in entity_group_pc invalid model id: %d, entity id: %d, group id: %d: not found in group_lst"), rowIt->modelId, rowIt->entityId, rowIt->groupId);
+
+        vector<EntityGroupPcRow>::const_iterator nextIt = rowIt + 1;
+
+        if (nextIt != io_metaRows.entityGroupPc.cend() && EntityGroupPcRow::isKeyEqual(*rowIt, *nextIt))
+            throw DbException(
+                LT("in entity_group_pc not unique model id: %d, entity id: %d, group id: %d, child position: %d"),
+                rowIt->modelId, rowIt->entityId, rowIt->groupId, rowIt->childPos
+            );
     }
 }
 

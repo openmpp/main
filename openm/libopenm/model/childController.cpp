@@ -141,6 +141,14 @@ void ChildController::broadcastRunOptions(void)
         msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, paramIdSubArr.data());
     }
 
+    // broadcast suppressed tables: number of tables and tables id
+    n = 0;
+    msgExec->bcastInt(ProcessGroupDef::all, &n);
+    if (n > 0) {
+        tableIdSuppressArr.resize(n);
+        msgExec->bcastReceive(ProcessGroupDef::all, typeid(int), n, tableIdSuppressArr.data());
+    }
+
     // broadcast number of microdata attributes and attribute indices in entity array
     msgExec->bcastInt(ProcessGroupDef::all, &n);
     if (n > 0) {

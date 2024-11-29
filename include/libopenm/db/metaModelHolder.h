@@ -99,6 +99,15 @@ namespace openm
         /** group_pc table rows */
         vector<GroupPcRow> groupPc;
 
+        /** entity_group_lst table rows */
+        vector<EntityGroupLstRow> entityGroupLst;
+
+        /** entity_group_txt table rows and language code */
+        vector<EntityGroupTxtLangRow> entityGroupTxt;
+
+        /** entity_group_pc table rows */
+        vector<EntityGroupPcRow> entityGroupPc;
+
         /** default model profile name */
         string profileName;
 

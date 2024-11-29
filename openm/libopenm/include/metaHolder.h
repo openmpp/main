@@ -67,6 +67,12 @@ namespace openm
         /** group_pc table rows */
         unique_ptr<IGroupPcTable> groupPc;
 
+        /** entity_group_lst table rows */
+        unique_ptr<IEntityGroupLstTable> entityGroupLst;
+
+        /** entity_group_pc table rows */
+        unique_ptr<IEntityGroupPcTable> entityGroupPc;
+
         /** run_option table rows */
         unique_ptr<IRunOptionTable> runOptionTable;
 
