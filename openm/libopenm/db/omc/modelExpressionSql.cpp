@@ -451,9 +451,9 @@ const string ModelBaseExpressionSql::translateSimpleFnc(const string & i_srcMsg,
 // or:
 //  OM_VAR(acc0)
 //  =>
-//  OM_SUM((acc0 - OM_AVG(acc0)) * (acc0 - OM_AVG(acc0))) / (OM_COUNT(acc0) – 1)
+//  OM_SUM((acc0 - OM_AVG(acc0)) * (acc0 - OM_AVG(acc0))) / (OM_COUNT(acc0) - 1)
 //  =>
-//  SUM((M1.acc0 - T2.ex2) * (M1.acc0 - T2.ex2)) / (COUNT(M1.acc0) – 1)
+//  SUM((M1.acc0 - T2.ex2) * (M1.acc0 - T2.ex2)) / (COUNT(M1.acc0) - 1)
 //
 /** translate aggregation or non - aggregation function into sql */
 const string ModelAggregationSql::translateAggregationFnc(
