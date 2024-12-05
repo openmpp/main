@@ -85,6 +85,7 @@ OMC_EXE = omc$(BIN_POSTFIX)
 
 OMC_CPPLIST = \
 AggregationSymbol.cpp \
+AttributeGroupSymbol.cpp \
 AnonGroupSymbol.cpp \
 AttributeSymbol.cpp \
 BoolSymbol.cpp \

@@ -77,4 +77,5 @@
 #include "ExprForAttribute.h"
 #include "ExtendParameterSymbol.h"
 #include "ImportSymbol.h"
+#include "AttributeGroupSymbol.h"
 

@@ -180,6 +180,7 @@
     <ClInclude Include="AggregationSymbol.h" />
     <ClInclude Include="AnonGroupSymbol.h" />
     <ClInclude Include="ast.h" />
+    <ClInclude Include="AttributeGroupSymbol.h" />
     <ClInclude Include="AttributeSymbol.h" />
     <ClInclude Include="BoolEnumeratorSymbol.h" />
     <ClInclude Include="BoolSymbol.h" />
@@ -275,6 +276,7 @@
   <ItemGroup>
     <ClCompile Include="AggregationSymbol.cpp" />
     <ClCompile Include="AnonGroupSymbol.cpp" />
+    <ClCompile Include="AttributeGroupSymbol.cpp" />
     <ClCompile Include="AttributeSymbol.cpp" />
     <ClCompile Include="BoolSymbol.cpp" />
     <ClCompile Include="BuiltinAttributeSymbol.cpp" />
