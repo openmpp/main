@@ -6,5 +6,19 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
+attribute_group Person A02_Fertility
+{
+	parity_status
+};
+
+attribute_group Person A03_Unions
+{
+	unions,
+	union_status,
+	in_union,
+	union_duration,
+	dissolution_duration,
+	union_period2_change
+};
 
 #endif // Hide non-C++ syntactic island from IDE

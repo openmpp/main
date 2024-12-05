@@ -602,6 +602,7 @@ ompp_declarative_island:
     | decl_range            { pc.InitializeForCxx(); }
     | decl_parameter_group  { pc.InitializeForCxx(); }
     | decl_table_group      { pc.InitializeForCxx(); }
+    | decl_attribute_group  { pc.InitializeForCxx(); }
     | decl_hide             { pc.InitializeForCxx(); }
     | decl_anon_group       { pc.InitializeForCxx(); }
     | decl_dependency       { pc.InitializeForCxx(); }
@@ -1192,6 +1193,27 @@ decl_table_group:
 	| "table_group" error ";"
       ;
 
+/*
+ * attribute_group
+ */
+
+decl_attribute_group:
+	  "attribute_group" SYMBOL[entity] SYMBOL[group] "{" symbol_list "}" ";"
+                        {
+                            // morph existing symbol to AttributeGroupSymbol
+                            auto *grp = new AttributeGroupSymbol( $group, @group );
+                            assert(grp);
+                            // TODO - handle entity
+                            list<Symbol *> *pls = $symbol_list;
+                            // move symbol list to group (transform elements to stable **)
+                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            pls->clear();
+                            delete pls;
+                            $symbol_list = nullptr;
+                        }
+	| "attribute_group" "{" error "}" ";"
+	| "attribute_group" error ";"
+      ;
 
 /*
  * hide, show, parameters_suppress, parameters_retain, tables_suppress, tables_retain
