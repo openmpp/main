@@ -129,6 +129,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 
 // top level om keywords, in alphabetic order
 %token <val_token>    TK_aggregation    "aggregation"
+%token <val_token>    TK_attribute_group "attribute_group"
 %token <val_token>    TK_big_counter_type "big_counter_type"
 %token <val_token>    TK_classification "classification"
 %token <val_token>    TK_counter_type   "counter_type"

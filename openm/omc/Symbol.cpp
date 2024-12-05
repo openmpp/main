@@ -170,6 +170,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 {
     // top level om keywords, in alphabetic order, NB corresponding entry required below in Symbol::om_outer_keywords
     { token::TK_aggregation, "aggregation" },
+    { token::TK_attribute_group, "attribute_group" },
     { token::TK_big_counter_type, "big_counter_type" },
     { token::TK_classification, "classification" },
     { token::TK_counter_type, "counter_type" },
@@ -507,6 +508,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
 unordered_set<token_type, std::hash<int> > Symbol::om_outer_keywords =
 {
     token::TK_aggregation,
+    token::TK_attribute_group,
     token::TK_big_counter_type,
     token::TK_classification,
     token::TK_counter_type,
