@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "AttributeGroupSymbol.h"
+#include "EntitySymbol.h"
 #include "LanguageSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -18,6 +19,22 @@ void AttributeGroupSymbol::post_parse(int pass)
     super::post_parse(pass);
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    switch (pass) {
+    case eAssignMembers:
+    {
+        // assign direct pointer to entity for use post-parse
+        pp_entity = dynamic_cast<EntitySymbol*> (pp_symbol(entity));
+        if (!pp_entity) {
+            pp_error(LT("error : '") + entity->name + LT("' is not an entity"));
+        }
+
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void AttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)

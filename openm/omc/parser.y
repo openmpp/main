@@ -1201,9 +1201,8 @@ decl_attribute_group:
 	  "attribute_group" SYMBOL[entity] SYMBOL[group] "{" symbol_list "}" ";"
                         {
                             // morph existing symbol to AttributeGroupSymbol
-                            auto *grp = new AttributeGroupSymbol( $group, @group );
+                            auto *grp = new AttributeGroupSymbol( $group, $entity, @group );
                             assert(grp);
-                            // TODO - handle entity
                             list<Symbol *> *pls = $symbol_list;
                             // move symbol list to group (transform elements to stable **)
                             for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());

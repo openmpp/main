@@ -25,12 +25,28 @@ public:
     *
     * @param [in,out]  sym The symbol to be morphed.
     */
-    AttributeGroupSymbol(Symbol *sym, omc::location decl_loc = omc::location())
+    AttributeGroupSymbol(Symbol *sym, const Symbol* ent, omc::location decl_loc = omc::location())
         : GroupSymbol(sym, decl_loc)
+        , entity(ent->stable_rp())
+        , pp_entity(nullptr)
     {
     }
 
     void post_parse(int pass);
 
     void populate_metadata(openm::MetaModelHolder& metaRows);
+
+    /**
+     * Reference to pointer to entity.
+     * 
+     * Stable to symbol morphing during parse phase.
+     */
+    Symbol*& entity;
+
+    /**
+     * Direct pointer to entity.
+     * 
+     * For use post-parse.
+     */
+    EntitySymbol *pp_entity;
 };
