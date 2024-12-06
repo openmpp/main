@@ -1198,17 +1198,28 @@ decl_table_group:
  */
 
 decl_attribute_group:
-	  "attribute_group" SYMBOL[entity] SYMBOL[group] "{" symbol_list "}" ";"
+	  "attribute_group" SYMBOL[entity] SYMBOL[group]  // Note that the symbol 'group' is not created in entity context
                         {
                             // morph existing symbol to AttributeGroupSymbol
-                            auto *grp = new AttributeGroupSymbol( $group, $entity, @group );
-                            assert(grp);
+                            AttributeGroupSymbol *group = new AttributeGroupSymbol( $group, $entity, @group );
+                            assert(group);
+                            $group = group;  // save updated morphed symbol for retrieval below
+                            // Set entity context for body of attribute group declaration
+                            pc.set_entity_context( $entity);
+                        }
+          "{" symbol_list "}" ";"
+                        {
+                            // retrieve attribute group symbol
+                            AttributeGroupSymbol* group = dynamic_cast<AttributeGroupSymbol*>($group);
+                            assert(group);
                             list<Symbol *> *pls = $symbol_list;
                             // move symbol list to group (transform elements to stable **)
-                            for (auto sym : *pls) grp->symbol_list.push_back(sym->stable_pp());
+                            for (auto sym : *pls) group->symbol_list.push_back(sym->stable_pp());
                             pls->clear();
                             delete pls;
                             $symbol_list = nullptr;
+                            // Leaving entity context
+                            pc.set_entity_context(nullptr);
                         }
 	| "attribute_group" "{" error "}" ";"
 	| "attribute_group" error ";"

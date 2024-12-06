@@ -19,16 +19,28 @@ void AttributeGroupSymbol::post_parse(int pass)
     super::post_parse(pass);
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
-    // Perform post-parse operations specific to this level in the Symbol hierarchy.
     switch (pass) {
     case eAssignMembers:
     {
         // assign direct pointer to entity for use post-parse
         pp_entity = dynamic_cast<EntitySymbol*> (pp_symbol(entity));
         if (!pp_entity) {
-            pp_error(LT("error : '") + entity->name + LT("' is not an entity"));
+            pp_fatal(LT("error : '") + entity->name + LT("' is not an entity"));
         }
-
+        break;
+    }
+    case ePopulateCollections:
+    {
+        // Verify validity of attribute group members.
+        // Can't be done in previous pass, because entity of all attribute groups is needed to check member validity.
+        for (auto sym : pp_symbol_list) {
+            auto symbol_name = sym->name;
+            bool is_attribute_group = dynamic_cast<AttributeGroupSymbol*>(sym);
+            bool is_attribute = dynamic_cast<AttributeSymbol*>(sym);
+            if (!(is_attribute_group || is_attribute)) {
+                pp_error(LT("error : invalid member '") + symbol_name + LT("' of attribute group '") + name + LT("'"));
+            }
+        }
         break;
     }
 

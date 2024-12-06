@@ -21,4 +21,11 @@ attribute_group Person A03_Unions
 	union_period2_change
 };
 
+attribute_group Person A00_CompoundTest
+{
+	A02_Fertility,
+	A03_Unions,
+	entity_id
+};
+
 #endif // Hide non-C++ syntactic island from IDE

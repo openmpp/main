@@ -7,6 +7,7 @@
 
 #pragma once
 #include "GroupSymbol.h"
+#include "AttributeSymbol.h"
 
 /**
 * AttributeGroupSymbol.
