@@ -22,7 +22,15 @@
 options lifecycle_attributes = Person; // Create lifecycle_event and lifecycle_counter for Person entities
 
 
+// 
+// Microdata options:
+//
+
 options microdata_output = on;
+
+options microdata_write_on_enter = on;
+options microdata_write_on_exit = on;
+options microdata_write_on_event = on;
 
 // 
 // Model Documentation options:
