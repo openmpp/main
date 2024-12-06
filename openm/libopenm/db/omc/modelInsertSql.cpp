@@ -1001,7 +1001,7 @@ void ModelInsertSql::insertEntityGroupText(IDbExec * i_dbExec, const map<string,
     // INSERT INTO entity_group_txt (model_id, model_entity_id, group_id, lang_id, descr, note)
     // VALUES (1234, 0, 101, 1, 'Table group', 'Table group notes')
     i_dbExec->update(
-        "INSERT INTO group_txt (model_id, model_entity_id, group_id, lang_id, descr, note) VALUES (" +
+        "INSERT INTO entity_group_txt (model_id, model_entity_id, group_id, lang_id, descr, note) VALUES (" +
         to_string(io_row.modelId) + ", " +
         to_string(io_row.entityId) + ", " +
         to_string(io_row.groupId) + ", " +
@@ -1021,7 +1021,7 @@ void ModelInsertSql::insertEntityGroupPc(IDbExec * i_dbExec, const EntityGroupPc
 
     // INSERT INTO entity_group_pc (model_id, model_entity_id, group_id, child_pos, child_group_id, attr_id) VALUES (1234, 0, 1, 2, NULL, 22)
     i_dbExec->update(
-        "INSERT INTO group_pc (model_id, model_entity_id, group_id, child_pos, child_group_id, attr_id) VALUES (" +
+        "INSERT INTO entity_group_pc (model_id, model_entity_id, group_id, child_pos, child_group_id, attr_id) VALUES (" +
         to_string(i_row.modelId) + ", " +
         to_string(i_row.entityId) + ", " +
         to_string(i_row.groupId) + ", " +
