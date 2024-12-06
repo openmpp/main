@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D820F2852CFE1D4300E582D4 /* entityGroupPcTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D820F2832CFE1D4300E582D4 /* entityGroupPcTable.cpp */; };
+		D820F2862CFE1D4300E582D4 /* entityGroupLstTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D820F2822CFE1D4300E582D4 /* entityGroupLstTable.cpp */; };
+		D820F2872CFE1D4300E582D4 /* entityGroupTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D820F2842CFE1D4300E582D4 /* entityGroupTxtTable.cpp */; };
 		D83E374B29F4F10500A0ABEE /* os.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83E374A29F4F10500A0ABEE /* os.cpp */; };
 		D83F4E1B28FA85240026F89F /* entityAttrTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83F4E1A28FA85240026F89F /* entityAttrTable.cpp */; };
 		D83F4E1D28FA853E0026F89F /* entityAttrTxtTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83F4E1C28FA853E0026F89F /* entityAttrTxtTable.cpp */; };
@@ -121,6 +124,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D820F2822CFE1D4300E582D4 /* entityGroupLstTable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = entityGroupLstTable.cpp; sourceTree = "<group>"; };
+		D820F2832CFE1D4300E582D4 /* entityGroupPcTable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = entityGroupPcTable.cpp; sourceTree = "<group>"; };
+		D820F2842CFE1D4300E582D4 /* entityGroupTxtTable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = entityGroupTxtTable.cpp; sourceTree = "<group>"; };
 		D83E374A29F4F10500A0ABEE /* os.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = os.cpp; sourceTree = "<group>"; };
 		D83F4E1A28FA85240026F89F /* entityAttrTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = entityAttrTable.cpp; sourceTree = "<group>"; };
 		D83F4E1C28FA853E0026F89F /* entityAttrTxtTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = entityAttrTxtTable.cpp; sourceTree = "<group>"; };
@@ -271,6 +277,9 @@
 		D88DBE45234D677800EFFC85 /* db */ = {
 			isa = PBXGroup;
 			children = (
+				D820F2822CFE1D4300E582D4 /* entityGroupLstTable.cpp */,
+				D820F2832CFE1D4300E582D4 /* entityGroupPcTable.cpp */,
+				D820F2842CFE1D4300E582D4 /* entityGroupTxtTable.cpp */,
 				D83F4E2028FA855B0026F89F /* entityDicTxtTable.cpp */,
 				D83F4E1E28FA85500026F89F /* entityDicTable.cpp */,
 				D83F4E1C28FA853E0026F89F /* entityAttrTxtTable.cpp */,
@@ -528,6 +537,9 @@
 				D83F4E1F28FA85500026F89F /* entityDicTable.cpp in Sources */,
 				D87BC4942478537200EDF729 /* paramImportTable.cpp in Sources */,
 				D88DBEB6234D677900EFFC85 /* msgMpiSend.cpp in Sources */,
+				D820F2852CFE1D4300E582D4 /* entityGroupPcTable.cpp in Sources */,
+				D820F2862CFE1D4300E582D4 /* entityGroupLstTable.cpp in Sources */,
+				D820F2872CFE1D4300E582D4 /* entityGroupTxtTable.cpp in Sources */,
 				D88DBEE7234D677900EFFC85 /* modelDicTable.cpp in Sources */,
 				D88DBF0B234D677900EFFC85 /* main.cpp in Sources */,
 				D88DBF0D234D677900EFFC85 /* modelRunState.cpp in Sources */,
