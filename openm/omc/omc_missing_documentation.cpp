@@ -16,6 +16,7 @@
 #include "TableSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
+#include "AttributeGroupSymbol.h"
 #include "EntitySymbol.h"
 #include "EntityDataMemberSymbol.h"
 #include "EnumerationSymbol.h"
@@ -122,6 +123,16 @@ void do_missing_documentation(void)
             }
             if (Symbol::option_missing_label_warning_published_table && s->is_published()) {
                 s->pp_warning(LT("warning : missing label for published table group '") + s->name + "'");
+            }
+        }
+    }
+    for (auto& s : Symbol::pp_all_attribute_groups) {
+        if (!s->is_label_supplied()) {
+            if (Symbol::option_missing_label_warning_table) {
+                s->pp_warning(LT("warning : missing label for attribute group '") + s->name + "'");
+            }
+            if (Symbol::option_missing_label_warning_published_table && s->is_published()) {
+                s->pp_warning(LT("warning : missing label for published attribute group '") + s->name + "'");
             }
         }
     }

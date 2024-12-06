@@ -22,6 +22,8 @@
 options lifecycle_attributes = Person; // Create lifecycle_event and lifecycle_counter for Person entities
 
 
+options microdata_output = on;
+
 // 
 // Model Documentation options:
 //  (These have no effect if Model Documentation is disabled in build settings.)

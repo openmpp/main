@@ -32,14 +32,29 @@ void AttributeGroupSymbol::post_parse(int pass)
     case ePopulateCollections:
     {
         // Verify validity of attribute group members.
-        // Can't be done in previous pass, because entity of all attribute groups is needed to check member validity.
+        // Can't be done in eAssignMembers pass, because entity of all attribute groups is needed to check member validity.
         for (auto sym : pp_symbol_list) {
             auto symbol_name = sym->name;
-            bool is_attribute_group = dynamic_cast<AttributeGroupSymbol*>(sym);
+            AttributeGroupSymbol* sym_attribute_group = dynamic_cast<AttributeGroupSymbol*>(sym);
+            bool is_attribute_group = sym_attribute_group;
+            if (is_attribute_group) {
+                // verify that group member has same entity as group
+                if (pp_entity != sym_attribute_group->pp_entity) {
+                    // entity does not match
+                    is_attribute_group = false;
+                }
+            }
             bool is_attribute = dynamic_cast<AttributeSymbol*>(sym);
             if (!(is_attribute_group || is_attribute)) {
                 pp_error(LT("error : invalid member '") + symbol_name + LT("' of attribute group '") + name + LT("'"));
             }
+        }
+
+        // add this to the complete list of attribute groups
+        pp_all_attribute_groups.push_back(this);
+        // assign reverse link from each member of group to this group
+        for (auto child : pp_symbol_list) {
+            child->pp_parent_groups.insert(this);
         }
         break;
     }
@@ -57,40 +72,24 @@ void AttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
     super::populate_metadata(metaRows);
 
     // Perform operations specific to this level in the Symbol hierarchy.
-
-}
-
-/*
-* Prototype of
-*   populate_metadata()
-* for entity attribute groups
-*
-* Entity attribute groups are similar to parameters and output tables groups
-*
-void EntityAttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
-{
-    using namespace openm;
-
-    // Hook into the hierarchical calling chain
-    super::populate_metadata(metaRows);
-
-    // Perform operations specific to this level in the Symbol hierarchy.
+ 
+    auto theEntityId = pp_entity->pp_entity_id;
 
     // groups of entity attributes
     EntityGroupLstRow groupRow;
 
     // basic information about the group
-    groupRow.entityId = pp_entity_id;
+    groupRow.entityId = theEntityId;
     groupRow.groupId = pp_group_id;
     groupRow.name = name;
     groupRow.isHidden = is_hidden;
     metaRows.entityGroupLst.push_back(groupRow);
 
     // labels and notes for the group
-    for (const auto & langSym : Symbol::pp_all_languages) {
-        const string & lang = langSym->name; // e.g. "EN" or "FR"
+    for (const auto& langSym : Symbol::pp_all_languages) {
+        const string& lang = langSym->name; // e.g. "EN" or "FR"
         EntityGroupTxtLangRow groupTxt;
-        groupTxt.entityId = pp_entity_id;
+        groupTxt.entityId = theEntityId;
         groupTxt.groupId = pp_group_id;
         groupTxt.langCode = lang;
         groupTxt.descr = label(*langSym);
@@ -102,10 +101,10 @@ void EntityAttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaR
     int childPos = 1;   // child position in the group, must be unique
 
     for (auto sym : pp_symbol_list) {
-        auto ags = dynamic_cast<EntityAttributeGroupSymbol *>(sym);
+        auto ags = dynamic_cast<AttributeGroupSymbol*>(sym);
         if (ags) {
             EntityGroupPcRow groupPc;
-            groupPc.entityId = pp_entity_id;
+            groupPc.entityId = theEntityId;
             groupPc.groupId = pp_group_id;
             groupPc.childPos = childPos++;
             groupPc.childGroupId = ags->pp_group_id;
@@ -115,24 +114,22 @@ void EntityAttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaR
             continue;   // done with this child group
         }
         // else symbol is an entity attribute
-        auto attr = dynamic_cast<AttributeSymbol *>(sym);
+        auto attr = dynamic_cast<AttributeSymbol*>(sym);
         if (attr) {
             EntityGroupPcRow groupPc;
-            groupPc.entityId = pp_entity_id;
+            groupPc.entityId = theEntityId;
             groupPc.groupId = pp_group_id;
             groupPc.childPos = childPos++;
             groupPc.childGroupId = -1;      // negative value treated as db-NULL
-            groupPc.attrId = attr->pp_attribute_id;
+            groupPc.attrId = attr->pp_member_id;
             metaRows.entityGroupPc.push_back(groupPc);
 
             continue;   // done with this child attribute
         }
         else {
+            assert(false);
             // invalid entity attribute group member
             // (previously detected error condition)
         }
     }
 }
-
-*/
-

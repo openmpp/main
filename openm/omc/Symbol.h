@@ -33,6 +33,7 @@ class EntityTableSymbol;
 class DerivedTableSymbol;
 class ParameterGroupSymbol;
 class TableGroupSymbol;
+class AttributeGroupSymbol;
 class AnonGroupSymbol;
 class DependencyGroupSymbol;
 class GlobalFuncSymbol;
@@ -1332,6 +1333,13 @@ public:
      * Populated after parsing is complete.
      */
     static list<TableGroupSymbol *> pp_all_table_groups;
+
+    /**
+     * The attribute groups in the model
+     *
+     * Populated after parsing is complete.
+     */
+    static list<AttributeGroupSymbol*> pp_all_attribute_groups;
 
     /**
      * The anon groups in the model

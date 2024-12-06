@@ -1757,6 +1757,12 @@ void CodeGen::do_groups()
             grp->populate_metadata(metaRows);
         }
     }
+
+    if (Symbol::option_microdata_output && Symbol::pp_all_attribute_groups.size()) {
+        for (auto grp : Symbol::pp_all_attribute_groups) {
+            grp->populate_metadata(metaRows);
+        }
+    }
 }
 
 void CodeGen::do_table_interface()

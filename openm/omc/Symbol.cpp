@@ -56,6 +56,7 @@
 #include "GroupSymbol.h"
 #include "ParameterGroupSymbol.h"
 #include "TableGroupSymbol.h"
+#include "AttributeGroupSymbol.h"
 #include "AnonGroupSymbol.h"
 #include "DependencyGroupSymbol.h"
 #include "GlobalFuncSymbol.h"
@@ -122,6 +123,8 @@ list<ParameterSymbol *> Symbol::pp_all_parameters;
 list<ParameterGroupSymbol *> Symbol::pp_all_parameter_groups;
 
 list<TableGroupSymbol *> Symbol::pp_all_table_groups;
+
+list<AttributeGroupSymbol*> Symbol::pp_all_attribute_groups;
 
 list<AnonGroupSymbol *> Symbol::pp_all_anon_groups;
 
@@ -1630,12 +1633,11 @@ void Symbol::post_parse_all()
     pp_all_derived_tables.sort( [] (DerivedTableSymbol *a, DerivedTableSymbol *b) { return a->name < b->name ; } );
     pp_all_parameter_groups.sort( [] (ParameterGroupSymbol *a, ParameterGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_table_groups.sort( [] (TableGroupSymbol *a, TableGroupSymbol *b) { return a->name < b->name ; } );
+    pp_all_attribute_groups.sort([](AttributeGroupSymbol* a, AttributeGroupSymbol* b) { return a->name < b->name; });
     pp_all_anon_groups.sort( [] (AnonGroupSymbol *a, AnonGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_dependency_groups.sort( [] (DependencyGroupSymbol *a, DependencyGroupSymbol *b) { return a->name < b->name ; } );
     pp_all_imports.sort( [] (ImportSymbol* a, ImportSymbol* b) { return a->pp_target_param->name < b->pp_target_param->name; } );
     pp_all_modules.sort([](ModuleSymbol* a, ModuleSymbol* b) { return a->name < b->name; });
-    // pp_all_parameter_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
-    // pp_all_table_groups.sort([](GroupSymbol* a, GroupSymbol* b) { return a->name < b->name; });
     pp_all_global_funcs.sort( [] (GlobalFuncSymbol *a, GlobalFuncSymbol *b) { return a->name < b->name ; } );
     pp_all_aggregations.sort([](AggregationSymbol *a, AggregationSymbol *b) { return a->name < b->name; });
 
@@ -1679,6 +1681,10 @@ void Symbol::post_parse_all()
             ++id;
         }
         for (auto tg : pp_all_table_groups) {
+            tg->pp_group_id = id;
+            ++id;
+        }
+        for (auto tg : pp_all_attribute_groups) {
             tg->pp_group_id = id;
             ++id;
         }
