@@ -521,6 +521,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %type  <pval_Symbol>    link_to_attribute
 %type  <pval_Symbol>    link_to_attribute_shadowed
 %type  <pval_Symbol>    hook_to_symbol
+%type  <pval_Symbol>    symbol_or_quoted
 %type  <pval_Literal>   event_priority_opt
 %type  <pval_Literal>   hook_order_opt
 %type  <pval_ConstantSymbol>  constant
@@ -1155,19 +1156,46 @@ decl_parameter_group:
 	| parameter_group_token error ";"
       ;
 
-// A non-empty list of comma-separated symbols.
+// A symbol or a quoted symbol
+symbol_or_quoted:
+      SYMBOL[symbol]
+                        {
+                            $$ = $symbol;
+                        }
+    | STRING_LITERAL[quoted_symbol]
+                        {
+                            // dequote the quoted symbol (and create if new symbol)
+                            
+                            string symbol_name = $quoted_symbol->value();
+                            // remove leading and trailing double quote characters
+                            symbol_name = symbol_name.substr(1, symbol_name.length() - 2);
+                            // look for the name in the symbol table
+                            Symbol *sym = Symbol::get_symbol(symbol_name);
+                            if (!sym) {
+                                // not found, create new symbol
+                                sym = new Symbol(symbol_name, @quoted_symbol);
+                            }
+                            // cleanup the quoted string
+                            delete $quoted_symbol;
+                            $quoted_symbol = nullptr;
+                            // result is pointer to the Symbol
+                            $$ = sym;
+                        }
+	;
+
+// A non-empty list of comma-separated symbols (possibly quoted)
 symbol_list:
-      SYMBOL
+      symbol_or_quoted
                         {
                             // start a new symbol list
                             auto * pls = new list<Symbol *>;
-                            pls->push_back($SYMBOL);
+                            pls->push_back($symbol_or_quoted);
                             $$ = pls;
                         }
-    | symbol_list[pls] "," SYMBOL
+    | symbol_list[pls] "," symbol_or_quoted
                         {
                             // append to existing symbol list
-                            $pls->push_back($SYMBOL);
+                            $pls->push_back($symbol_or_quoted);
                             $$ = $pls;
                         }
 	;
