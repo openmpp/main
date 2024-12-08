@@ -25,7 +25,14 @@ attribute_group Person A00_CompoundTest
 {
 	A02_Fertility,
 	A03_Unions,
-	entity_id
+	entity_id,
+	"Fertility.mpp"
 };
+
+table_group TheTables { "Tables.mpp" }; //EN all tables in Tables.mpp
+
+parameter_group TheParameters { "Fertility.mpp", "Mortality.mpp", "Unions.mpp" }; //EN Most parameters
+
+attribute_group Person TheAttributes { "Fertility.mpp", "Unions.mpp" }; //EN Fertility and Unions attributes
 
 #endif // Hide non-C++ syntactic island from IDE
