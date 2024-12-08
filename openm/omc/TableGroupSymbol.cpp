@@ -9,6 +9,7 @@
 #include "TableGroupSymbol.h"
 #include "TableSymbol.h"
 #include "ParameterSymbol.h"
+#include "ModuleSymbol.h"
 #include "LanguageSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -28,9 +29,10 @@ void TableGroupSymbol::post_parse(int pass)
             auto symbol_name = sym->name;
             bool is_table = dynamic_cast<TableSymbol*>(sym);
             bool is_table_group = dynamic_cast<TableGroupSymbol*>(sym);
+            bool is_module = dynamic_cast<ModuleSymbol*>(sym);;
             auto ps = dynamic_cast<ParameterSymbol*>(sym);
             bool is_derived_parameter = (ps && ps->is_derived());
-            if (!(is_table || is_table_group || is_derived_parameter)) {
+            if (!(is_table || is_table_group || is_derived_parameter || is_module)) {
                 pp_error(LT("error : invalid member '") + symbol_name + LT("' of table group '") + name + LT("'"));
             }
         }
@@ -85,10 +87,28 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.groupTxt.push_back(groupTxt);
     }
 
+    // expanded list of group elements
+    std::list<Symbol *> elements;
+    for (auto sym : pp_symbol_list) {
+        auto mod = dynamic_cast<ModuleSymbol*>(sym);
+        if (mod) {
+            // push all tables in the module
+            for (auto mod_sym : mod->pp_symbols_declared) {
+                bool is_table = dynamic_cast<TableSymbol*>(mod_sym);
+                if (is_table) {
+                    elements.push_back(mod_sym);
+                }
+            }
+        }
+        else {
+            elements.push_back(sym);
+        }
+    }
+
     // group children
     int childPos = 1;   // child position in the group, must be unique
 
-    for (auto sym : pp_symbol_list) {
+    for (auto sym : elements) {
         auto tgs = dynamic_cast<TableGroupSymbol *>(sym);
         if (tgs) {
             // element is a table group
@@ -133,6 +153,7 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             // (previously detected error condition)
         }
     }
+    elements.clear();
 }
 
 bool TableGroupSymbol::contains_published_table() const

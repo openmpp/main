@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include "AttributeGroupSymbol.h"
+#include "ModuleSymbol.h"
 #include "EntitySymbol.h"
 #include "LanguageSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
@@ -45,7 +46,8 @@ void AttributeGroupSymbol::post_parse(int pass)
                 }
             }
             bool is_attribute = dynamic_cast<AttributeSymbol*>(sym);
-            if (!(is_attribute_group || is_attribute)) {
+            bool is_module = dynamic_cast<ModuleSymbol*>(sym);;
+            if (!(is_attribute_group || is_attribute || is_module)) {
                 pp_error(LT("error : invalid member '") + symbol_name + LT("' of attribute group '") + name + LT("'"));
             }
         }
@@ -97,10 +99,28 @@ void AttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
         metaRows.entityGroupTxt.push_back(groupTxt);
     }
 
+    // expanded list of group elements
+    std::list<Symbol*> elements;
+    for (auto sym : pp_symbol_list) {
+        auto mod = dynamic_cast<ModuleSymbol*>(sym);
+        if (mod) {
+            // push all attributes (with correct entity) in module
+            for (auto mod_sym : mod->pp_symbols_declared) {
+                auto attr_sym = dynamic_cast<AttributeSymbol*>(mod_sym);
+                if (attr_sym && (attr_sym->pp_entity == pp_entity)) {
+                    elements.push_back(mod_sym);
+                }
+            }
+        }
+        else {
+            elements.push_back(sym);
+        }
+    }
+
     // group children
     int childPos = 1;   // child position in the group, must be unique
 
-    for (auto sym : pp_symbol_list) {
+    for (auto sym : elements) {
         auto ags = dynamic_cast<AttributeGroupSymbol*>(sym);
         if (ags) {
             EntityGroupPcRow groupPc;
@@ -132,4 +152,5 @@ void AttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
             // (previously detected error condition)
         }
     }
+    elements.clear();
 }

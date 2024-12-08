@@ -8,6 +8,7 @@
 #include <cassert>
 #include "ParameterGroupSymbol.h"
 #include "ParameterSymbol.h"
+#include "ModuleSymbol.h"
 #include "LanguageSymbol.h"
 #include "libopenm/db/metaModelHolder.h"
 
@@ -27,7 +28,8 @@ void ParameterGroupSymbol::post_parse(int pass)
         for (auto sym : pp_symbol_list) {
             bool is_parameter = dynamic_cast<ParameterSymbol*>(sym);
             bool is_parameter_group = dynamic_cast<ParameterGroupSymbol*>(sym);
-            if (!(is_parameter || is_parameter_group)) {
+            bool is_module = dynamic_cast<ModuleSymbol*>(sym);;
+            if (!(is_parameter || is_parameter_group || is_module)) {
                 pp_error(LT("error : invalid member '") + sym->name + LT("' of parameter group '") + name + LT("'"));
             }
         }
@@ -82,10 +84,29 @@ void ParameterGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
         metaRows.groupTxt.push_back(groupTxt);
     }
 
+    // expanded list of group elements
+    std::list<Symbol *> elements;
+    for (auto sym : pp_symbol_list) {
+        auto mod = dynamic_cast<ModuleSymbol*>(sym);
+        if (mod) {
+            // push all parameters in the module
+            for (auto mod_sym : mod->pp_symbols_declared) {
+                bool is_parameter = dynamic_cast<ParameterSymbol*>(mod_sym);
+                if (is_parameter) {
+                    // non-scenario parameters will be silently rejected below
+                    elements.push_back(mod_sym);
+                }
+            }
+        }
+        else {
+            elements.push_back(sym);
+        }
+    }
+
     // group children
     int childPos = 1;   // child position in the group, must be unique
 
-    for (auto sym : pp_symbol_list) {
+    for (auto sym : elements) {
         auto pgs = dynamic_cast<ParameterGroupSymbol *>(sym);
         if (pgs) {
             // element is a parameter group
@@ -123,6 +144,7 @@ void ParameterGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
             // (previously detected error condition)
         }
     }
+    elements.clear();
 }
 
 bool ParameterGroupSymbol::contains_scenario_parameter() const
