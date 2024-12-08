@@ -293,6 +293,7 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_rate, "rate" },
     { token::TK_real, "real" },
     { token::TK_schar, "schar" },
+    { token::TK_screened1, "screened1" },
     { token::TK_self_scheduling_int, "self_scheduling_int" },
     { token::TK_self_scheduling_split, "self_scheduling_split" },
     { token::TK_snapshot, "snapshot" },

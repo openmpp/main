@@ -63,6 +63,7 @@ public:
         , default_increment(token::TK_delta)
         , default_tabop(token::TK_interval)
         , is_untransformed(false)
+        , is_screened1(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -270,6 +271,11 @@ public:
      * True if the table is unweighted, unscaled, and aggregated across subs.
      */
     bool is_untransformed;
+
+    /**
+     * True if the table is confidentiality screened, using method 1
+     */
+    bool is_screened1;
 
     /**
      * Class name used to declare the entity table.

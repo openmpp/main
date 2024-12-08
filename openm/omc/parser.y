@@ -249,6 +249,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_rate                      "rate"
 %token <val_token>    TK_real                      "real"
 %token <val_token>    TK_schar                     "schar"
+%token <val_token>    TK_screened1                 "screened1"
 %token <val_token>    TK_self_scheduling_int       "self_scheduling_int"
 %token <val_token>    TK_self_scheduling_split     "self_scheduling_split"
 %token <val_token>    TK_snapshot                  "snapshot"
@@ -2471,22 +2472,35 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                             // process table properties if any
                             {
                                 assert($properties); // grammar creates empty instance if no properties
-                                bool untransformed = $properties->count(token::TK_untransformed) > 0;
-                                bool snapshot = $properties->count(token::TK_snapshot) > 0;
-                                if (untransformed) {
-                                    table->is_untransformed = true;
+                                {
+                                    // handle untransformed
+                                    bool untransformed = $properties->count(token::TK_untransformed) > 0;
+                                    if (untransformed) {
+                                        table->is_untransformed = true;
+                                    }
                                 }
-                                if (snapshot) {
-                                    table->kind = EntityTableSymbol::table_kind::snapshot;
-                                    table->set_default_statistic(token::TK_sum);
-                                    table->set_default_increment(token::TK_value_out);
-                                    table->set_default_tabop(token::TK_interval);
+                                {
+                                    // handle snapshot (or not)
+                                    bool snapshot = $properties->count(token::TK_snapshot) > 0;
+                                    if (snapshot) {
+                                        table->kind = EntityTableSymbol::table_kind::snapshot;
+                                        table->set_default_statistic(token::TK_sum);
+                                        table->set_default_increment(token::TK_value_out);
+                                        table->set_default_tabop(token::TK_interval);
+                                    }
+                                    else { // general (default)
+                                        table->kind = EntityTableSymbol::table_kind::general;
+                                        table->set_default_statistic(token::TK_sum);
+                                        table->set_default_increment(token::TK_delta);
+                                        table->set_default_tabop(token::TK_interval);
+                                    }
                                 }
-                                else { // general (default)
-                                    table->kind = EntityTableSymbol::table_kind::general;
-                                    table->set_default_statistic(token::TK_sum);
-                                    table->set_default_increment(token::TK_delta);
-                                    table->set_default_tabop(token::TK_interval);
+                                {
+                                    // handle screened (method 1)
+                                    bool screened1 = $properties->count(token::TK_screened1) > 0;
+                                    if (screened1) {
+                                        table->is_screened1 = true;
+                                    }
                                 }
                                 $properties->clear();
                                 delete $properties;
@@ -2538,6 +2552,7 @@ table_properties:
 table_property:
       "snapshot"
     | "untransformed"
+    | "screened1"
 	;
 
 
