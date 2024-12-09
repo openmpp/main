@@ -576,6 +576,7 @@ unordered_set<string> Symbol::om_developer_functions =
     "PreSimulation",
     "UserTables",
     "ProcessDevelopmentOptions",
+    "TransformScreened1",
 };
 
 unordered_set<string> Symbol::om_rng_functions =
@@ -1336,9 +1337,23 @@ void Symbol::create_missing_global_funcs(void)
         string arg_list_decl = "const IRunOptions * const i_options";
         if (!exists(name)) {
             auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
-            s->suppress_decl = true;  // already declared elsewhere
+            s->suppress_decl = true;  // already declared elsewhere (in globals1.h)
             s->suppress_defn = false; // have omc emit the (empty) definition
             pp_missing_global_funcs.insert(s);
+        }
+    }
+    {
+        // create a definition of TransformScreened1 if not supplied in model code.
+        string name = "TransformScreened1";
+        string return_decl = "double";
+        string arg_list_decl = "double in_value";
+        if (!exists(name)) {
+            auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
+            s->suppress_decl = true;  // already declared elsewhere (in globals1.h)
+            s->suppress_defn = false; // have omc emit the pass-through definition
+            pp_missing_global_funcs.insert(s);
+            CodeBlock& cxx = s->func_body;
+            cxx += "return in_value;";
         }
     }
 }

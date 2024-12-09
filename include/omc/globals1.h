@@ -42,6 +42,9 @@ void process_trace_options(openm::IRunBase* const i_runBase);
 // if defined by model developer then it is called before each model run started
 void ProcessDevelopmentOptions(const openm::IRunOptions * const i_options);
 
+// Table screening transformation function (method #1)
+double TransformScreened1(double in_value); // if not supplied by developer, omc will generate a pass-through definition
+
 // defined in use/random/random_*.ompp
 typedef std::vector<std::string> random_state; // type used to store state of all streams
 extern void new_streams();
