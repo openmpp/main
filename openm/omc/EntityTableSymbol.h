@@ -64,6 +64,9 @@ public:
         , default_tabop(token::TK_interval)
         , is_untransformed(false)
         , is_screened1(false)
+        , is_screened2(false)
+        , is_screened3(false)
+        , is_screened4(false)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -276,6 +279,21 @@ public:
      * True if the table is confidentiality screened, using method 1
      */
     bool is_screened1;
+
+    /**
+     * True if the table is confidentiality screened, using method 2
+     */
+    bool is_screened2;
+
+    /**
+     * True if the table is confidentiality screened, using method 3
+     */
+    bool is_screened3;
+
+    /**
+     * True if the table is confidentiality screened, using method 4
+     */
+    bool is_screened4;
 
     /**
      * Class name used to declare the entity table.

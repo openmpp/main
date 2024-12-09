@@ -250,6 +250,9 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_real                      "real"
 %token <val_token>    TK_schar                     "schar"
 %token <val_token>    TK_screened1                 "screened1"
+%token <val_token>    TK_screened2                 "screened2"
+%token <val_token>    TK_screened3                 "screened3"
+%token <val_token>    TK_screened4                 "screened4"
 %token <val_token>    TK_self_scheduling_int       "self_scheduling_int"
 %token <val_token>    TK_self_scheduling_split     "self_scheduling_split"
 %token <val_token>    TK_snapshot                  "snapshot"
@@ -2501,6 +2504,21 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                     if (screened1) {
                                         table->is_screened1 = true;
                                     }
+                                    // handle screened (method 2)
+                                    bool screened2 = $properties->count(token::TK_screened2) > 0;
+                                    if (screened2) {
+                                        table->is_screened2 = true;
+                                    }
+                                    // handle screened (method 3)
+                                    bool screened3 = $properties->count(token::TK_screened3) > 0;
+                                    if (screened3) {
+                                        table->is_screened3 = true;
+                                    }
+                                    // handle screened (method 4)
+                                    bool screened4 = $properties->count(token::TK_screened4) > 0;
+                                    if (screened4) {
+                                        table->is_screened4 = true;
+                                    }
                                 }
                                 $properties->clear();
                                 delete $properties;
@@ -2553,6 +2571,9 @@ table_property:
       "snapshot"
     | "untransformed"
     | "screened1"
+    | "screened2"
+    | "screened3"
+    | "screened4"
 	;
 
 

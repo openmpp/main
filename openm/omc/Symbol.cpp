@@ -294,6 +294,9 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_real, "real" },
     { token::TK_schar, "schar" },
     { token::TK_screened1, "screened1" },
+    { token::TK_screened2, "screened2" },
+    { token::TK_screened3, "screened3" },
+    { token::TK_screened4, "screened4" },
     { token::TK_self_scheduling_int, "self_scheduling_int" },
     { token::TK_self_scheduling_split, "self_scheduling_split" },
     { token::TK_snapshot, "snapshot" },
@@ -1342,9 +1345,9 @@ void Symbol::create_missing_global_funcs(void)
             pp_missing_global_funcs.insert(s);
         }
     }
-    {
-        // create a definition of TransformScreened1 if not supplied in model code.
-        string name = "TransformScreened1";
+    for (int j=1; j<=4; ++j) { // hard-coded to 4 versions
+        // create a definition of TransformScreened[1-4] if not supplied in model code.
+        string name = "TransformScreened" + to_string(j);
         string return_decl = "double";
         string arg_list_decl = "double in_value";
         if (!exists(name)) {
