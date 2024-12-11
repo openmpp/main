@@ -1,0 +1,73 @@
+//LABEL(Mortality.mpp, EN) Mortality
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+parameters
+{
+    //EN Annual hazard of death
+    double MortalityHazard;
+    /* NOTE(MortalityHazard, EN)
+        A constant hazard of death results in an exponential
+        survival function.
+    */
+};
+
+entity Person            //EN Individual
+{
+    //EN Alive
+    logical alive = { true };
+    /*NOTE(Person.alive, EN)
+        Set to true when the actor starts, and to false just before the actor finishes.
+        Since the numeric value of true is 1 and false is 0, this variable
+        can also be used to count entities in tables.
+    */
+
+    event timeMortalityEvent, MortalityEvent;    //EN Mortality event
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+/*NOTE(Person.MortalityEvent, EN)
+    This event implements a constant hazard of death.
+*/
+
+// The time function of MortalityEvent
+TIME Person::timeMortalityEvent()
+{
+    TIME tEventTime = TIME_INFINITE;
+
+    // Draw a random waiting time to death from an exponential distribution
+    // based on the constant hazard MortalityHazard.
+    tEventTime = WAIT( - TIME( log( RandUniform(1) ) / MortalityHazard ) );
+
+    return tEventTime;
+}
+
+// The implement function of MortalityEvent
+void Person::MortalityEvent()
+{
+    alive = false;
+
+    // Remove the actor from the simulation.
+    Finish();
+}
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+/*NOTE(DurationOfLife, EN)
+    This table contains statistics related to the duration of life.
+*/
+table Person DurationOfLife //EN Duration of Life
+{
+    {
+        value_in(alive),                //EN Population size
+        min_value_out(duration()),      //EN Minimum duration of life decimals=4
+        max_value_out(duration()),      //EN Maximum duration of life decimals=4
+        duration() / value_in(alive)    //EN Life expectancy decimals=4
+
+    }    //EN Demographic characteristics
+};
+
+#endif // Hide non-C++ syntactic island from IDE
