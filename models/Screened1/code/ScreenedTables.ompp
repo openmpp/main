@@ -1,0 +1,29 @@
+/* NOTE(ScreenedTables.ompp, EN)
+    This module contains functionality for testing screened tables.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+
+table snapshot Person EarningsAt50
+[trigger_entrances(integer_age, 50)]
+{
+    {
+        earnings / unit,   //EN Average earnings
+        se_earnings / unit //EN Average self-employed earnings
+    }
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+double TransformScreened1(double in_value)
+{
+    // notional example (round to 00's)
+    double value = in_value / 100.0;
+    value = std::trunc(value + 0.5);
+    value *= 100.0;
+
+    return value;
+}

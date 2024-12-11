@@ -8,8 +8,17 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
+range LIFE //EN Simulated age range
+{
+    0,
+    100
+};
+
 entity Person            //EN Individual
 {
+    //EN Integer age
+    LIFE integer_age = COERCE(LIFE, self_scheduling_int(age));
+
     //LABEL(Person.Start, EN) Starts the entity
     void Start();
 

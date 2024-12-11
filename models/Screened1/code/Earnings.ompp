@@ -1,0 +1,68 @@
+/* NOTE(Earnings.mpp, EN)
+    This module contains hard-coded earnings dynamics for testing screened tables.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+entity Person
+{
+    //EN Earnings
+    double earnings = { 0.0 };
+
+    //EN Self-employed sarnings
+    double se_earnings = { 0.0 };
+
+    //EN Notional model of earnings
+    void AssignEarnings(void);
+
+    // call EarningsGrowth at each change in integer_age
+    hook AssignEarnings, trigger_changes(integer_age);
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+
+void Person::AssignEarnings(void)
+{
+    if (integer_age == 20) {
+        // Assign starting earnings at age 20
+        if (RandUniform(10) < 0.80) {
+            // 80% have earnings
+            double z = RandNormal(11);
+            double x = 50000.0 * std::exp(0.25 * z);
+            earnings = std::trunc(x);
+        }
+        // Assign starting earnings at age 20
+        if (RandUniform(12) < 0.25) {
+            // 25% have self-employed earnings
+            double z = RandNormal(13);
+            double x = 40000.0 * std::exp(0.25 * z);
+            se_earnings = std::trunc(x);
+        }
+    }
+    else if (integer_age > 20) {
+        // Annual change to earnings
+        {
+            double u = RandUniform(14);
+            // rescale uniform to to [0.9, 1.1]
+            u = 0.9 + 0.2 * u;
+            double x = earnings * u;
+            x *= 1.03; // career growth with increasing age
+            earnings = std::trunc(x);
+        }
+        // Annual change to se_earnings
+        {
+            double u = RandUniform(15);
+            // rescale uniform to [0.9, 1.1]
+            u = 0.9 + 0.2 * u;
+            double x = se_earnings * u;
+            x *= 1.03; // career growth with increasing age
+            se_earnings = std::trunc(x);
+        }
+    }
+    else {
+        // No earnings before age 20
+    }
+}
