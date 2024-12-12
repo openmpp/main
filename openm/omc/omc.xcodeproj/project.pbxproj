@@ -12,6 +12,7 @@
 		D81B6808262DF61400E5CD68 /* AnonGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */; };
 		D83D70132C5AAD2300182DF2 /* omc_markup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83D70112C5AAD2300182DF2 /* omc_markup.cpp */; };
 		D83D70142C5AAD2300182DF2 /* omc_model_doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D83D70122C5AAD2300182DF2 /* omc_model_doc.cpp */; };
+		D89183922D0A64AF00C36256 /* AttributeGroupSymbol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D89183912D0A64AF00C36256 /* AttributeGroupSymbol.cpp */; };
 		D893973E247EB25300D61DAA /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973D247EB20600D61DAA /* libiconv.tbd */; };
 		D8939740247EB25E00D61DAA /* liblibsqlite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D893973F247EB25E00D61DAA /* liblibsqlite.a */; };
 		D8939742247EB26400D61DAA /* liblibopenm_omc_db.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */; };
@@ -115,6 +116,8 @@
 		D83D70102C5AAD2300182DF2 /* omc_model_doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = omc_model_doc.h; sourceTree = "<group>"; };
 		D83D70112C5AAD2300182DF2 /* omc_markup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_markup.cpp; sourceTree = "<group>"; };
 		D83D70122C5AAD2300182DF2 /* omc_model_doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = omc_model_doc.cpp; sourceTree = "<group>"; };
+		D89183902D0A64AF00C36256 /* AttributeGroupSymbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AttributeGroupSymbol.h; sourceTree = "<group>"; };
+		D89183912D0A64AF00C36256 /* AttributeGroupSymbol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AttributeGroupSymbol.cpp; sourceTree = "<group>"; };
 		D893973D247EB20600D61DAA /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		D893973F247EB25E00D61DAA /* liblibsqlite.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibsqlite.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8939741247EB26400D61DAA /* liblibopenm_omc_db.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = liblibopenm_omc_db.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -380,6 +383,8 @@
 				D8FD88EA247D84B20006D608 /* ParameterSymbol.cpp */,
 				D81B6806262DF61400E5CD68 /* AnonGroupSymbol.cpp */,
 				D81B6807262DF61400E5CD68 /* AnonGroupSymbol.h */,
+				D89183902D0A64AF00C36256 /* AttributeGroupSymbol.h */,
+				D89183912D0A64AF00C36256 /* AttributeGroupSymbol.cpp */,
 				D8FD88F3247D84B30006D608 /* ParameterSymbol.h */,
 				D8FD88E8247D84B20006D608 /* ParseContext.cpp */,
 				D8FD88D6247D84B10006D608 /* ParseContext.h */,
@@ -708,6 +713,7 @@
 				D8FD8914247DA43B0006D608 /* parser.cpp in Sources */,
 				D8FD8883247D84330006D608 /* EntityHookSymbol.cpp in Sources */,
 				D8FD88F9247D84B30006D608 /* RangeSymbol.cpp in Sources */,
+				D89183922D0A64AF00C36256 /* AttributeGroupSymbol.cpp in Sources */,
 				D8FD8907247D84B30006D608 /* SimpleAttributeEnumSymbol.cpp in Sources */,
 				D807DC6424CBC765002E55F6 /* Literal.cpp in Sources */,
 				D8FD8885247D84330006D608 /* EntityTableSymbol.cpp in Sources */,
