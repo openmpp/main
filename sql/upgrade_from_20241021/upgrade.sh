@@ -28,7 +28,7 @@
 #
 # option 2.
 #  cd ~/openmpp_debian_next/sql/upgrade_from_20241021/
-#  ./upgrade_from_20241021/upgrade_linux.sh ~/openmpp_debian_20241021
+#  ./upgrade_linux.sh ~/openmpp_debian_20241021
 #
 
 set -e
