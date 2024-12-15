@@ -1002,6 +1002,7 @@ void CodeGen::do_ModelStartup()
         //        thePopulationByCity = new PopulationByCity("PopulationByCity", { 101, 5 });
         //    }
 
+        c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + et->name + "'\");";
         c += "assert(!" + et->cxx_instance + "); ";
         if (!et->is_internal) {
             c += "if (!is_suppressed_compute(\"" + et->name + "\", i_model)) {";
@@ -1011,6 +1012,7 @@ void CodeGen::do_ModelStartup()
             c += "}";
         }
     }
+    c += "CHECKPOINT(\"checkpoint: Finished allocating memory for entity tables\");";
     c += "";
 
     c += "// Derived table instantiation";
