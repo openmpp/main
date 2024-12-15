@@ -244,10 +244,12 @@ int main(int argc, char ** argv)
     }
     catch (exception & ex) {
         theLog->logErr(ex);
+        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         return (int)ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
         theLog->logMsg("FAILED", OM_FILE_LINE);
+        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         return (int)ExitStatus::FAIL;
     }
 
@@ -303,9 +305,11 @@ ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControll
     }
     catch (exception & ex) {
         theLog->logErr(ex);
+        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         e = ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
+        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         theLog->logMsg("FAILED", OM_FILE_LINE);
         e = ExitStatus::FAIL;
     }
