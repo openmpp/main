@@ -22,6 +22,7 @@ using namespace std;
 #define OM_WAIT_SLEEP_TIME 971L         /* msec, sleep interval if no progress in modeling threads */
 #define OM_LOG_PROGRESS_TIME 5003L      /* msec, interval to log progress messages */
 #define OM_MICRODATA_SAVE_TIME 8123L    /* msec, interval between microdata save in database */
+#define OM_LAUNCH_STAGGER_START_TIME 250L /* msec, interval between launching concurrent modeling threads */
 
 // add file and line number to debug log
 //
