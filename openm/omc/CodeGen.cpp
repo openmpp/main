@@ -710,7 +710,7 @@ void CodeGen::do_RunOnce()
         // Process only fixed and missing parameters in this for loop
         // These parameters are shared by all simulation threads.
         if (parameter->source != ParameterSymbol::fixed_parameter && parameter->source != ParameterSymbol::missing_parameter) continue;
-        c += "CHECKPOINT(\"checkpoint: Handle missing parameter '" + parameter->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Handle missing parameter '" + parameter->name + "'\");";
 
         // Create contents of helpful .dat format file specifying missing parameters.
         if (parameter->source == ParameterSymbol::missing_parameter) {
@@ -735,9 +735,9 @@ void CodeGen::do_RunOnce()
     if (any_missing_parameters) {
         m += "};";
     }
-    c += "CHECKPOINT(\"checkpoint: Finished handling missing parameters\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished handling missing parameters\");";
     c += "";
-    c += "CHECKPOINT(\"checkpoint: Finished RunOnce\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished RunOnce\");";
 
     c += "}";
     c += "";
@@ -749,7 +749,7 @@ void CodeGen::do_RunInit()
 	c += "void RunInit(IRunBase * const i_runBase)";
 	c += "{";
     {
-        c += "CHECKPOINT(\"checkpoint: Starting RunInit\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Starting RunInit\");";
         c += "#if defined(_MSC_VER) && defined(_DEBUG) && defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL < 2";
         c += "    theLog->logFormatted(\"Note : this Debug model was built with Microsoft iterator debug disabled\");";
         c += "#endif";
@@ -787,7 +787,7 @@ void CodeGen::do_RunInit()
     c += "extern int64_t report_parameter_read_progress(int paramNumber, int paramCount, const char * name, int64_t lastTime);";
     c += "";
     c += "// Process model dev options for EventTrace";
-    c += "CHECKPOINT(\"checkpoint: Call process_trace_options\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Call process_trace_options\");";
     c += "process_trace_options(i_runBase);";
     c += "";
     c += "theLog->logMsg(\"Get scenario parameters for process\");";
@@ -801,17 +801,17 @@ void CodeGen::do_RunInit()
     int n = 0;
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter) {
-            c += "CHECKPOINT(\"checkpoint: Read parameter '" + parameter->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Read parameter '" + parameter->name + "'\");";
             c += parameter->cxx_read_parameter(++n, nCount);
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished reading parameters\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished reading parameters\");";
     c += "";
     c += "// Process development model run options";
-    c += "CHECKPOINT(\"checkpoint: Call ProcessDevelopmentOptions\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Call ProcessDevelopmentOptions\");";
     c += "ProcessDevelopmentOptions(i_runBase);";
-    c += "CHECKPOINT(\"checkpoint: Finished ProcessDevelopmentOptions\");";
-    c += "CHECKPOINT(\"checkpoint: Finished RunInit\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished ProcessDevelopmentOptions\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished RunInit\");";
     c += "}";
     c += "";
 }
@@ -821,7 +821,7 @@ void CodeGen::do_ModelStartup()
     c += "// Model startup method: Initialization for a simulation member";
     c += "void ModelStartup(IModel * const i_model)";
     c += "{";
-    c += "CHECKPOINT(\"checkpoint: Starting ModelStartup\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Starting ModelStartup\");";
     c += "// obtain simulation member to use for log messages";
     c += "int simulation_member = i_model->subValueId();";
     c += "";
@@ -840,7 +840,7 @@ void CodeGen::do_ModelStartup()
         // Process only scenario parameters in this for loop
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
-        c += "CHECKPOINT(\"checkpoint: Bind debug version of parameter '" + parameter->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Bind debug version of parameter '" + parameter->name + "'\");";
 
         if (parameter->size() > 1 || parameter->cumrate) {
             // memcpy(om_value_UnionDurationBaseline, om_param_UnionDurationBaseline[i_model->parameterSubValueIndex("UnionDurationBaseline")].get(), 12 * sizeof(double));
@@ -861,7 +861,7 @@ void CodeGen::do_ModelStartup()
             c += parameter->cxx_initialize_cumrate();
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished binding debug version of parameters\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished binding debug version of parameters\");";
     c += "";
     c += "#else // OM_DEBUG_PARAMETERS";
     c += "";
@@ -869,7 +869,7 @@ void CodeGen::do_ModelStartup()
         // Process only scenario parameters in this for loop
         if (parameter->source != ParameterSymbol::scenario_parameter) continue;
 
-        c += "CHECKPOINT(\"checkpoint: Bind release version of parameter '" + parameter->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Bind release version of parameter '" + parameter->name + "'\");";
 
         if (parameter->size() > 1 || parameter->cumrate) {
             // om_value_ageSex = om_param_ageSex[i_model->parameterSubValueIndex("ageSex")].get();
@@ -888,7 +888,7 @@ void CodeGen::do_ModelStartup()
             c += parameter->cxx_initialize_cumrate();
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished binding release version of parameters\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished binding release version of parameters\");";
     c += "";
     c += "#endif // OM_DEBUG_PARAMETERS";
     c += "";
@@ -914,11 +914,11 @@ void CodeGen::do_ModelStartup()
     // because index series parameter(s) must first be bound in first pass above.
     for (auto parameter : Symbol::pp_all_parameters) {
         if (parameter->source == ParameterSymbol::scenario_parameter && parameter->is_extendable) {
-            c += "CHECKPOINT(\"checkpoint: Extend parameter '" + parameter->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Extend parameter '" + parameter->name + "'\");";
             c += parameter->cxx_extend();
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished extend parameters\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished extend parameters\");";
 
     c += "";
     c += "// Zero-initialize derived parameters.";
@@ -928,7 +928,7 @@ void CodeGen::do_ModelStartup()
         // Process only derived parameters in this for loop
         if (!parameter->is_derived()) continue;
 
-        c += "CHECKPOINT(\"checkpoint: Zero-initialize '" + parameter->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Zero-initialize '" + parameter->name + "'\");";
         if (parameter->size() > 1) {
             // array
             // std::memset(BreastScreeningProtocol, 0, 5200 * sizeof(double));
@@ -941,7 +941,7 @@ void CodeGen::do_ModelStartup()
             c += parameter->name + " = (" + parameter->pp_datatype->name + ") 0;";
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished zero-initialize derived parameters\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished zero-initialize derived parameters\");";
 
     c += "";
     c += "// Parameters are now ready and can be used by the model.";
@@ -951,7 +951,7 @@ void CodeGen::do_ModelStartup()
     auto & sg = Symbol::pre_simulation;
     c += "int mem_id = i_model->subValueId();";
     c += "int mem_count = i_model->subValueCount();";
-    c += "CHECKPOINT(\"checkpoint: Calling before_presimulation\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling before_presimulation\");";
     c += "before_presimulation(mem_id, mem_count); // defined in model framework module";
     c += "// Call " + to_string(sg.ambiguous_count) + " PreSimulation functions without suffix";
     for (size_t id = 0; id < sg.ambiguous_count; ++id) {
@@ -959,7 +959,7 @@ void CodeGen::do_ModelStartup()
         c += "#ifdef _DEBUG";
         c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
         c += "#endif";
-        c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
         c += sg.disambiguated_name(id) + "();";
     }
     c += "// Call " + to_string(sg.suffixes.size()) + " PreSimulation functions with suffix";
@@ -968,11 +968,11 @@ void CodeGen::do_ModelStartup()
         c += "#ifdef _DEBUG";
         c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
         c += "#endif";
-        c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
         c += sg.prefix + suffix + "();";
     }
-    c += "CHECKPOINT(\"checkpoint: Finished calls to PreSimulation functions\");";
-    c += "CHECKPOINT(\"checkpoint: Calling after_presimulation\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished calls to PreSimulation functions\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling after_presimulation\");";
     c += "after_presimulation(); // defined in model framework module";
     c += "";
 
@@ -980,19 +980,19 @@ void CodeGen::do_ModelStartup()
         // Process only derived parameters in this for loop
         if (!parameter->is_derived()) continue;
         if (parameter->cumrate) {
-            c += "CHECKPOINT(\"checkpoint: Prepare cumrate for '" + parameter->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Prepare cumrate for '" + parameter->name + "'\");";
             // prepare cumrate for derived parameter
             c += parameter->cxx_initialize_cumrate();
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished cumrate parameter preparation\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished cumrate parameter preparation\");";
 
     c += "theLog->logFormatted(\"member=%d Prepare for simulation\", simulation_member);";
 
     c += "// Entity static initialization part 1: Initialize entity attribute offsets & null entity data members";
     for (auto entity : Symbol::pp_all_entities) {
         c += "// Entity - " + entity->name;
-        c += "CHECKPOINT(\"checkpoint: Initialize nullptr version of '" + entity->name + "' (part 1)\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Initialize nullptr version of '" + entity->name + "' (part 1)\");";
         c += entity->name + "::om_null_entity.om_assign_member_offsets();";
         c += entity->name + "::om_null_entity.om_initialize_data_members0();";
         c += "";
@@ -1001,17 +1001,17 @@ void CodeGen::do_ModelStartup()
     c += "// Entity static initialization part 2: Initialize null entity dependent attributes";
     for (auto entity : Symbol::pp_all_entities) {
         c += "// Entity - " + entity->name;
-        c += "CHECKPOINT(\"checkpoint: Initialize nullptr version of '" + entity->name + "' (part 2)\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Initialize nullptr version of '" + entity->name + "' (part 2)\");";
         c += entity->name + "::om_null_entity.om_initialize_identity_attributes();";
         c += entity->name + "::om_null_entity.om_initialize_derived_attributes();";
         c += entity->name + "::om_null_entity.om_reset_derived_attributes();";
     }
-    c += "CHECKPOINT(\"checkpoint: Finished nullptr version of entities\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished nullptr version of entities\");";
     c += "";
 
     c += "{";
     c +=     "// Remove run-time suppressed tables from om_table_names";
-    c +=     "CHECKPOINT(\"checkpoint: Handle run-time suppressed tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Handle run-time suppressed tables\");";
     c +=     "std::list<std::string> suppressed;";
     c +=     "for (auto nm : om_table_names) {";
     c +=         "if (om_internal_table_names.count(nm)) continue; // skip internal tables";
@@ -1022,7 +1022,7 @@ void CodeGen::do_ModelStartup()
     c +=     "for (auto nm : suppressed) {";
     c +=         "om_table_names.erase(nm);";
     c +=     "}";
-    c +=     "CHECKPOINT(\"checkpoint: Finished run-time suppressed tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished run-time suppressed tables\");";
     c += "}";
     c += "";
 
@@ -1035,7 +1035,7 @@ void CodeGen::do_ModelStartup()
         //        thePopulationByCity = new PopulationByCity("PopulationByCity", { 101, 5 });
         //    }
 
-        c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + et->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + et->name + "'\");";
         c += "assert(!" + et->cxx_instance + "); ";
         if (!et->is_internal) {
             c += "if (!is_suppressed_compute(\"" + et->name + "\", i_model)) {";
@@ -1045,7 +1045,7 @@ void CodeGen::do_ModelStartup()
             c += "}";
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished allocating memory for entity tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished allocating memory for entity tables\");";
     c += "";
 
     c += "// Derived table instantiation";
@@ -1057,7 +1057,7 @@ void CodeGen::do_ModelStartup()
         //        theut1_feeder_with_names = new ut1_feeder_with_names("ut1_feeder_with_names", { 5, 2 });
         //    }
 
-        c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + dt->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + dt->name + "'\");";
         c += "assert(!" + dt->cxx_instance + "); ";
         if (!dt->is_internal) {
             c += "if (!is_suppressed_compute(\"" + dt->name + "\", i_model)) {";
@@ -1067,13 +1067,13 @@ void CodeGen::do_ModelStartup()
             c += "}";
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished allocating memory for derived tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished allocating memory for derived tables\");";
     c += "";
 
     c += "// Entity set instantiation";
     for (auto es : Symbol::pp_all_entity_sets) {
         c += "{";
-        c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + es->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + es->name + "'\");";
         if (es->dimension_count() == 0) {
             c += "assert(!" + es->name + ");";
             c += es->name + " = new EntitySet<" + es->pp_entity->name + ">;";
@@ -1088,10 +1088,10 @@ void CodeGen::do_ModelStartup()
         }
         c += "}";
     }
-    c += "CHECKPOINT(\"checkpoint: Finished allocating memory for entity sets\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished allocating memory for entity sets\");";
     c += "";
 
-    c += "CHECKPOINT(\"checkpoint: Finished ModelStartup\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished ModelStartup\");";
 
     c += "}";
     c += "";
@@ -1109,21 +1109,21 @@ void CodeGen::do_ModelShutdown()
     c += "theLog->logFormatted(\"member=%d Compute entity tables\", simulation_member);";
 
     for ( auto table : Symbol::pp_all_entity_tables ) {
-        c += "CHECKPOINT(\"checkpoint: Processing accumulators for '" + table->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Processing accumulators for '" + table->name + "'\");";
 	    c += "if (" + table->cxx_instance +") " + table->cxx_instance + "->extract_accumulators();";
         if (!table->is_untransformed) {
             c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->scale_accumulators();";
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished processing accumulators for entity tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished processing accumulators for entity tables\");";
     c += "";
 
     c += "// compute table expressions using accumulators";
     for ( auto table : Symbol::pp_all_entity_tables ) {
-        c += "CHECKPOINT(\"checkpoint: Computing expressions for '" + table->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Computing expressions for '" + table->name + "'\");";
         c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->compute_expressions();";
     }
-    c += "CHECKPOINT(\"checkpoint: Finished computing expressions for entity tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished computing expressions for entity tables\");";
     c += "";
 
     {
@@ -1131,14 +1131,14 @@ void CodeGen::do_ModelShutdown()
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
             c += "theLog->logFormatted(\"member=%d Compute post-simulation\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-                c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
                 c += sg.disambiguated_name(id) + "();";
             }
             for (auto suffix : sg.suffixes) {
-                c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
                 c += sg.prefix + suffix + "();";
             }
-            c += "CHECKPOINT(\"checkpoint: Finished calls to PostSimulation functions\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished calls to PostSimulation functions\");";
             c += "";
         }
     }
@@ -1148,14 +1148,14 @@ void CodeGen::do_ModelShutdown()
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
             c += "theLog->logFormatted(\"member=%d Compute derived tables\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-                c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
                 c += sg.disambiguated_name(id) + "();";
             }
             for (auto suffix : sg.suffixes) {
-                c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
                 c += sg.prefix + suffix + "();";
             }
-            c += "CHECKPOINT(\"checkpoint: Finished calls to UserTables functions\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished calls to UserTables functions\");";
             c += "";
         }
     }
@@ -1172,13 +1172,13 @@ void CodeGen::do_ModelShutdown()
         if (!table->is_internal) {
             c += "if (!is_suppressed_write(\"" + table->name + "\", i_model)) {";
             c += "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + table->name + "\", last_progress_ms);";
-            c += "CHECKPOINT(\"checkpoint: Write '" + table->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Write '" + table->name + "'\");";
             c += "i_model->writeOutputTable(\"" +
                 table->name + "\", " + table->cxx_instance + "->n_cells, " + table->cxx_instance + "->acc_storage);";
             c += "}";
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished writing entity tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished writing entity tables\");";
     c += "// at this point table->acc[k][j] will cause memory access violation";
     c += "";
 
@@ -1187,7 +1187,7 @@ void CodeGen::do_ModelShutdown()
         if (!derived_table->is_internal) {
             c += "if (" + derived_table->cxx_instance + ") {";
             c += "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + derived_table->name + "\", last_progress_ms);";
-            c += "CHECKPOINT(\"checkpoint: Write '" + derived_table->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Write '" + derived_table->name + "'\");";
             c += " i_model->writeOutputTable(\"" +
                 derived_table->name + "\", " + 
                 derived_table->cxx_instance + "->n_cells, " + 
@@ -1195,7 +1195,7 @@ void CodeGen::do_ModelShutdown()
             c += "}";
         }
     }
-    c += "CHECKPOINT(\"checkpoint: Finished writing derived tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished writing derived tables\");";
     c += "// at this point table->measure[k][j] will cause memory access violation";
     c += "";
     c += "theLog->logFormatted(\"member=%d Write output tables - finish\", simulation_member);";
@@ -1206,7 +1206,7 @@ void CodeGen::do_ModelShutdown()
         c += "theLog->logFormatted(\"member=%d Write derived parameters - start\", simulation_member);";
         for (auto param : Symbol::pp_all_parameters) {
             if (param->metadata_as_table && !param->is_suppressed_table) {
-                c += "CHECKPOINT(\"checkpoint: Write derived parameter '" + param->name + "' as table\");";
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Write derived parameter '" + param->name + "' as table\");";
                 // Write this derived parameter as a table
                 c += "{ // " + param->name;
                 c +=     "last_progress_ms = report_table_write_progress(simulation_member, ++n_table, \"" + param->name + "\", last_progress_ms);";
@@ -1230,7 +1230,7 @@ void CodeGen::do_ModelShutdown()
                 c += "}";
             }
         }
-        c += "CHECKPOINT(\"checkpoint: Finished writing derived parameters as tables\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished writing derived parameters as tables\");";
         c += "theLog->logFormatted(\"member=%d Write derived parameters - finish\", simulation_member);";
     }
 
@@ -1239,12 +1239,12 @@ void CodeGen::do_ModelShutdown()
         c += "theLog->logFormatted(\"member=%d Cleanup entity tables - start\", simulation_member);";
         for (auto table : Symbol::pp_all_entity_tables) {
             c += "if (" + table->cxx_instance + ") {";
-            c += "CHECKPOINT(\"checkpoint: Free memory for '" + table->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Free memory for '" + table->name + "'\");";
             c += "delete " + table->cxx_instance + ";";
             c += table->cxx_instance + " = nullptr;";
             c += "}";
         }
-        c += "CHECKPOINT(\"checkpoint: Finished freeing memory for entity tables\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished freeing memory for entity tables\");";
         c += "theLog->logFormatted(\"member=%d Cleanup entity tables - finish\", simulation_member);";
         c += "";
     }
@@ -1254,12 +1254,12 @@ void CodeGen::do_ModelShutdown()
         c += "theLog->logFormatted(\"member=%d Cleanup derived tables - start\", simulation_member);";
         for (auto derived_table : Symbol::pp_all_derived_tables) {
             c += "if (" + derived_table->cxx_instance + ") {";
-            c += "CHECKPOINT(\"checkpoint: Free memory for '" + derived_table->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Free memory for '" + derived_table->name + "'\");";
             c += "delete " + derived_table->cxx_instance + ";";
             c += derived_table->cxx_instance + " = nullptr;";
             c += "}";
         }
-        c += "CHECKPOINT(\"checkpoint: Finished freeing memory for derived tables\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished freeing memory for derived tables\");";
         c += "theLog->logFormatted(\"member=%d Cleanup derived tables - finish\", simulation_member);";
         c += "";
     }
@@ -1269,7 +1269,7 @@ void CodeGen::do_ModelShutdown()
         c += "theLog->logFormatted(\"member=%d Cleanup entity sets - start\", simulation_member);";
         for (auto es : Symbol::pp_all_entity_sets) {
             c += "{";
-            c += "CHECKPOINT(\"checkpoint: Free memory for '" + es->name + "'\");";
+            if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Free memory for '" + es->name + "'\");";
             if (es->dimension_count() == 0) {
                 c += "assert(" + es->name + ");";
                 c += "delete(" + es->name + ");";
@@ -1286,12 +1286,12 @@ void CodeGen::do_ModelShutdown()
             }
             c += "}";
         }
-        c += "CHECKPOINT(\"checkpoint: Finished freeing memory for entity sets\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished freeing memory for entity sets\");";
         c += "theLog->logFormatted(\"member=%d Cleanup entity sets - finish\", simulation_member);";
         c += "";
     }
 
-    c += "CHECKPOINT(\"checkpoint: Finished ModelShutdown\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished ModelShutdown\");";
     c += "theLog->logFormatted(\"member=%d Completed.\", simulation_member);";
     c += "}";
 	c += "";
@@ -1308,7 +1308,7 @@ void CodeGen::do_RunShutdown()
     c += "auto [nMem, nMax] = getProcessMemorySize();";
     c += "";
     c += "if (nMax > 0) theLog->logFormatted(\"Process peak memory usage: %.2f MB\", ((double)nMax / (1024.0 * 1024.0)));";
-    c += "CHECKPOINT(\"checkpoint: Finished RunShutdown\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished RunShutdown\");";
     c += "}";
     c += "";
 }
@@ -2060,7 +2060,7 @@ void CodeGen::do_RunModel()
 	c += "// Model simulation";
 	c += "void RunModel(openm::IModel * const i_model)";
     c += "{";
-    c += "CHECKPOINT(\"checkpoint: Starting RunModel\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Starting RunModel\");";
 
     c += "// provide access to run-time interface for entities";
     c += "BaseEntity::i_model = i_model;";
@@ -2068,20 +2068,20 @@ void CodeGen::do_RunModel()
 
     c += "// initialize entity tables";
 	for ( auto table : Symbol::pp_all_entity_tables ) {
-        c += "CHECKPOINT(\"checkpoint: Initialize '" + table->name + "'\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Initialize '" + table->name + "'\");";
         c += "if (" + table->cxx_instance + ") " + table->cxx_instance + "->initialize_accumulators();";
     }
-    c += "CHECKPOINT(\"checkpoint: Finished initializing entity tables\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished initializing entity tables\");";
     c += "";
-    c += "CHECKPOINT(\"checkpoint: Initialize simulation runtime (Event)\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Initialize simulation runtime (Event)\");";
     c += "BaseEvent::initialize_simulation_runtime();";
-    c += "CHECKPOINT(\"checkpoint: Initialize simulation runtime (Entity)\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Initialize simulation runtime (Entity)\");";
     c += "BaseEntity::initialize_simulation_runtime();";
     c += "";
     c += "int sub_id = i_model->subValueId();";
     c += "int sub_count = i_model->subValueCount();";
     c += "if (om_resource_use_on) {";
-    c += "CHECKPOINT(\"checkpoint: Initialize resource use measurement\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Initialize resource use measurement\");";
     if (Symbol::pp_all_entity_sets.size()) {
         c += "// reset resource use for entity sets";
         for (auto es : Symbol::pp_all_entity_sets) {
@@ -2098,16 +2098,16 @@ void CodeGen::do_RunModel()
     c += "} // om_resource_use_on";
     c += "";
     c += "";
-    c += "CHECKPOINT(\"checkpoint: Call RunSimulation\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Call RunSimulation\");";
     c += "RunSimulation(sub_id, sub_count, i_model); // Defined by the model framework, generally in a 'use' module";
-    c += "CHECKPOINT(\"checkpoint: Returned from RunSimulation\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Returned from RunSimulation\");";
     c += "";
     c += "";
     if (Symbol::option_resource_use) {
         // do not generate code for resource report unless requested
         c += "int resource_use_sub = 0; // hard-coded sub 0 for resource report";
         c += "if (om_resource_use_on && (resource_use_sub == sub_id)) {";
-        c += "CHECKPOINT(\"checkpoint: Start resource use report\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Start resource use report\");";
         c += "// Resource use report";
         //c +=     "std::string prefix0s = \"member=\" + std::to_string(sub_id) + \" \";";
         c += "std::string prefix0s = \" \";";
@@ -2809,16 +2809,16 @@ void CodeGen::do_RunModel()
 
         c += "theLog->logFormatted(\"%sResource Use Report - End\", prefix0);";
 
-        c += "CHECKPOINT(\"checkpoint: Finished resource use report\");";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished resource use report\");";
         c += "} // om_resource_use_on";
     }
 
     c += "";
-    c += "CHECKPOINT(\"checkpoint: Finalize simulation runtime (Event)\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finalize simulation runtime (Event)\");";
     c += "BaseEvent::finalize_simulation_runtime();";
-    c += "CHECKPOINT(\"checkpoint: Finalize simulation runtime (Entity)\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finalize simulation runtime (Entity)\");";
     c += "BaseEntity::finalize_simulation_runtime();";
-    c += "CHECKPOINT(\"checkpoint: Finished RunModel\");";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished RunModel\");";
     c += "}"; // RunModel
     c += "";
 }

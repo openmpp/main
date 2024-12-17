@@ -1729,6 +1729,11 @@ public:
     static bool option_case_checksum;
 
     /**
+     * true if checkpoints option is on.
+     */
+    static bool option_checkpoints;
+
+    /**
      * true if allow_time_travel activated in options statement.
      */
     static bool option_allow_time_travel;

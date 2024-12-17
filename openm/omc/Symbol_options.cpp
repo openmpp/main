@@ -27,6 +27,7 @@ bool Symbol::option_event_trace_warning = true;
 bool Symbol::option_bounds_errors = true;
 bool Symbol::option_index_errors = false;
 bool Symbol::option_case_checksum = false;
+bool Symbol::option_checkpoints = true;
 bool Symbol::option_allow_time_travel = false;
 bool Symbol::option_allow_clairvoyance = false;
 bool Symbol::option_time_infinite_is_32767 = false;
@@ -165,6 +166,23 @@ void Symbol::do_options()
             }
             else if (value == "off") {
                 option_case_checksum = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "checkpoints";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_checkpoints = true;
+            }
+            else if (value == "off") {
+                option_checkpoints = false;
             }
             // remove processed option
             options.erase(iter);
