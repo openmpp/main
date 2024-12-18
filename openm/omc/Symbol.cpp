@@ -1286,6 +1286,26 @@ Symbol *Symbol::pp_symbol(Symbol ** pp_sym)
     return sym;
 }
 
+string Symbol::symbol_decl_pretty(const string& unm)
+{
+    string result;
+    auto sym = get_symbol(unm);
+    if (sym) {
+        string filename = *sym->decl_loc.begin.filename;
+        if (filename.length() > 0) {
+            auto p = filename.find_last_of("/\\");
+            if (p < filename.length()) { // also false if p is npos
+                // skip past path portion of filename
+                filename = filename.substr(p + 1);
+            }
+            auto line = sym->decl_loc.begin.line;
+            result = filename + "[" + to_string(line) + "]";
+        }
+    }
+    return result;
+}
+
+
 void Symbol::populate_pp_symbols()
 {
     pp_symbols.clear();

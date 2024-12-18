@@ -890,6 +890,17 @@ public:
     static Symbol *pp_symbol(Symbol ** rp_symbol);
 
     /**
+     * Formatted declaration location of a Symbol (given as name)
+     *
+     * @param unm    The symbol name.
+     *
+     * Example result: Mortality.mpp[42]
+     * 
+     * @return The declaration location as a string, possibly empty.
+     */
+    static string symbol_decl_pretty(const string& unm);
+
+    /**
      * Get the string corresponding to a token.
      *
      * @param e The token value, e.g. TK_entity.

@@ -955,21 +955,23 @@ void CodeGen::do_ModelStartup()
     c += "before_presimulation(mem_id, mem_count); // defined in model framework module";
     c += "// Call " + to_string(sg.ambiguous_count) + " PreSimulation functions without suffix";
     for (size_t id = 0; id < sg.ambiguous_count; ++id) {
+        string func_name = sg.disambiguated_name(id);
         // The following can be useful to track down run-time errors occurring in a PreSimulation function
         c += "#ifdef _DEBUG";
-        c += "theLog->logMsg(\"  call " + sg.disambiguated_name(id) + "\");";
+        c += "theLog->logMsg(\"  call " + func_name + "\");";
         c += "#endif";
-        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
-        c += sg.disambiguated_name(id) + "();";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + func_name + "' declared at " + Symbol::symbol_decl_pretty(func_name) +"\");";
+        c += func_name + "();";
     }
     c += "// Call " + to_string(sg.suffixes.size()) + " PreSimulation functions with suffix";
     for (auto suffix : sg.suffixes) {
+        string func_name = sg.prefix + suffix;
         // The following can be useful to track down run-time errors occurring in a PreSimulation function
         c += "#ifdef _DEBUG";
-        c += "theLog->logMsg(\"  call " + sg.prefix + suffix + "\");";
+        c += "theLog->logMsg(\"  call " + func_name + "\");";
         c += "#endif";
-        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
-        c += sg.prefix + suffix + "();";
+        if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + func_name + "' declared at " + Symbol::symbol_decl_pretty(func_name) + "\");";
+        c += func_name + "();";
     }
     if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished calls to PreSimulation functions\");";
     if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling after_presimulation\");";
@@ -1131,12 +1133,14 @@ void CodeGen::do_ModelShutdown()
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
             c += "theLog->logFormatted(\"member=%d Compute post-simulation\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
-                c += sg.disambiguated_name(id) + "();";
+                string func_name = sg.disambiguated_name(id);
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + func_name + "' declared at " + Symbol::symbol_decl_pretty(func_name) + "\");";
+                c += func_name + "();";
             }
             for (auto suffix : sg.suffixes) {
-                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
-                c += sg.prefix + suffix + "();";
+                string func_name = sg.prefix + suffix;
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + func_name + "' declared at " + Symbol::symbol_decl_pretty(func_name) + "\");";
+                c += func_name + "();";
             }
             if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished calls to PostSimulation functions\");";
             c += "";
@@ -1148,12 +1152,14 @@ void CodeGen::do_ModelShutdown()
         if (sg.suffixes.size() > 0 || sg.ambiguous_count > 0) {
             c += "theLog->logFormatted(\"member=%d Compute derived tables\", simulation_member);";
             for (size_t id = 0; id < sg.ambiguous_count; ++id) {
-                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.disambiguated_name(id) + "'\");";
-                c += sg.disambiguated_name(id) + "();";
+                string func_name = sg.disambiguated_name(id);
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + func_name + "' declared at " + Symbol::symbol_decl_pretty(func_name) + "\");";
+                c += func_name + "();";
             }
             for (auto suffix : sg.suffixes) {
-                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + sg.prefix + suffix + "'\");";
-                c += sg.prefix + suffix + "();";
+                string func_name = sg.prefix + suffix;
+                if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Calling '" + func_name + "' declared at " + Symbol::symbol_decl_pretty(func_name) + "\");";
+                c += func_name + "();";
             }
             if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished calls to UserTables functions\");";
             c += "";
