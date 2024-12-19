@@ -140,10 +140,13 @@ void EntityTableSymbol::post_parse(int pass)
                 // Search for an accumulator which is already marked to update the same collection.
                 EntityTableAccumulatorSymbol *acc_found = nullptr;
                 for (auto acc2 : pp_accumulators) {
-                    if (acc2->increment == acc->increment
-                     && acc2->tabop == acc->tabop
+                    if (
+                        acc2->pp_attribute == acc->pp_attribute  // same attribute,   e.g. Person::earnings
+                     && acc2->increment == acc->increment        // same 'increment', e.g. TK_value_out
+                     && acc2->tabop == acc->tabop                // same table operator, e.g. TK_interval
                      && acc2->updates_obs_collection) {
-                        // Accumulator found with the same increment, and handling the collection.
+                        // Another accumulator was found with the same properties (except statistic),
+                        // which is already handling the same required observation collection.
                         acc_found = acc2;
                         break;
                     }
