@@ -63,10 +63,7 @@ public:
         , default_increment(token::TK_delta)
         , default_tabop(token::TK_interval)
         , is_untransformed(false)
-        , is_screened1(false)
-        , is_screened2(false)
-        , is_screened3(false)
-        , is_screened4(false)
+        , screened_method(0)
         , resource_use_gfn(nullptr)
         , resource_use_reset_gfn(nullptr)
     {
@@ -271,29 +268,24 @@ public:
     }
 
     /**
+     * Query if this EntityTableSymbol is screened
+     *
+     * @returns True if screened, false if not.
+     */
+    bool is_screened(void) const
+    {
+        return (screened_method != 0);
+    }
+
+    /**
      * True if the table is unweighted, unscaled, and aggregated across subs.
      */
     bool is_untransformed;
 
     /**
-     * True if the table is confidentiality screened, using method 1
+     * The screening method, 0 if not screened
      */
-    bool is_screened1;
-
-    /**
-     * True if the table is confidentiality screened, using method 2
-     */
-    bool is_screened2;
-
-    /**
-     * True if the table is confidentiality screened, using method 3
-     */
-    bool is_screened3;
-
-    /**
-     * True if the table is confidentiality screened, using method 4
-     */
-    bool is_screened4;
+    int screened_method;
 
     /**
      * Class name used to declare the entity table.

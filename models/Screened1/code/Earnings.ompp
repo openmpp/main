@@ -6,6 +6,16 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
+parameters
+{
+    double EarningsNonZeroProportion;
+    double EarningsScaleFactor;
+    double EarningsSigma;
+    double SE_EarningsNonZeroProportion;
+    double SE_EarningsScaleFactor;
+    double SE_EarningsSigma;
+};
+
 entity Person
 {
     //EN Earnings
@@ -28,17 +38,18 @@ void Person::AssignEarnings(void)
 {
     if (integer_age == 20) {
         // Assign starting earnings at age 20
-        if (RandUniform(10) < 0.80) {
-            // 80% have earnings
+        if (RandUniform(10) < EarningsNonZeroProportion) {
             double z = RandNormal(11);
-            double x = 50000.0 * std::exp(0.25 * z);
+            double x = EarningsScaleFactor * std::exp(EarningsSigma * z);
             earnings = std::trunc(x);
         }
-        // Assign starting earnings at age 20
-        if (RandUniform(12) < 0.25) {
-            // 25% have self-employed earnings
+        // else earnings have default value of 0
+
+        // Assign starting se_earnings at age 20
+        if (RandUniform(12) < SE_EarningsNonZeroProportion) {
+            // 80% have self-employed earnings
             double z = RandNormal(13);
-            double x = 40000.0 * std::exp(0.25 * z);
+            double x = SE_EarningsScaleFactor * std::exp(SE_EarningsSigma * z);
             se_earnings = std::trunc(x);
         }
     }

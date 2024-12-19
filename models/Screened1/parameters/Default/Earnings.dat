@@ -1,0 +1,9 @@
+parameters
+{
+    double EarningsNonZeroProportion     = 0.80;
+    double EarningsScaleFactor           = 50000.0;
+    double EarningsSigma                 = 0.25;
+    double SE_EarningsNonZeroProportion  = 0.80;
+    double SE_EarningsScaleFactor        = 40000.0;
+    double SE_EarningsSigma              = 0.25;
+};

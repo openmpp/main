@@ -2499,25 +2499,30 @@ decl_table: // Some code for decl_entity_set and decl_table is nearly identical
                                     }
                                 }
                                 {
-                                    // handle screened (method 1)
+                                    // handle screened method, if specified
                                     bool screened1 = $properties->count(token::TK_screened1) > 0;
-                                    if (screened1) {
-                                        table->is_screened1 = true;
-                                    }
-                                    // handle screened (method 2)
                                     bool screened2 = $properties->count(token::TK_screened2) > 0;
-                                    if (screened2) {
-                                        table->is_screened2 = true;
-                                    }
-                                    // handle screened (method 3)
                                     bool screened3 = $properties->count(token::TK_screened3) > 0;
-                                    if (screened3) {
-                                        table->is_screened3 = true;
-                                    }
-                                    // handle screened (method 4)
                                     bool screened4 = $properties->count(token::TK_screened4) > 0;
-                                    if (screened4) {
-                                        table->is_screened4 = true;
+                                    int screened_count = screened1 + screened2 + screened3 + screened4;
+                                    if (screened_count > 1) {
+                                        error(@table, LT("error: multiple screened methods in table '") + $table->name + LT("'"));
+                                    }
+                                    // assign screened method
+                                    if (screened1) {
+                                        table->screened_method = 1;
+                                    }
+                                    else if (screened2) {
+                                        table->screened_method = 2;
+                                    }
+                                    else if (screened3) {
+                                        table->screened_method = 3;
+                                    }
+                                    else if (screened4) {
+                                        table->screened_method = 4;
+                                    }
+                                    else {
+                                        table->screened_method = 0; // means table is not screened
                                     }
                                 }
                                 $properties->clear();

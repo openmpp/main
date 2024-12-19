@@ -521,14 +521,23 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         c += "";
 
         for (auto acc : pp_accumulators) {
+            c += "// Assign " + acc->pretty_name();
+            string acc_index = to_string(acc->index);
+            string stat_name = token_to_string(acc->statistic);
             if (acc->has_obs_collection) {
-                c += "// Assign " + acc->pretty_name();
-                string acc_index = to_string(acc->index);
                 string obs_index = to_string(acc->obs_collection_index);
-                string stat_name = token_to_string(acc->statistic);
                 c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
-                c += "";
             }
+            else {
+                c += "// value of statistic " + stat_name + " is already in accumulator";
+                c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
+            }
+            if (is_screened()) {
+                c += "// apply screening method " + to_string(screened_method);
+                c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(acc[" + acc_index + "][cell]);";
+            }
+
+            c += "";
         }
 
         c += "}";

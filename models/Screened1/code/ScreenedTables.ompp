@@ -7,12 +7,36 @@
 #if 0 // Hide non-C++ syntactic island from IDE
 
 
+//table snapshot Person EarningsAt50
+//[trigger_entrances(integer_age, 50)]
+//{
+//    {
+//        earnings / unit,   //EN Average earnings
+//        se_earnings / unit //EN Average self-employed earnings
+//    }
+//};
+
 table snapshot Person EarningsAt50
 [trigger_entrances(integer_age, 50)]
 {
     {
-        earnings / unit,   //EN Average earnings
-        se_earnings / unit //EN Average self-employed earnings
+        earnings,        //EN Total earnings
+        unit,            //EN Persons
+        maximum(earnings), //EN Maximum earnings
+        P50(earnings),   //EN Median earnings
+        P50(se_earnings) //EN Median self-employed earnings
+    }
+};
+
+table snapshot screened1 Person EarningsAt50_screened
+[trigger_entrances(integer_age, 50)]
+{
+    {
+        earnings,        //EN Total earnings
+        unit,            //EN Persons
+        maximum(earnings), //EN Maximum earnings
+        P50(earnings),   //EN Median earnings
+        P50(se_earnings) //EN Median self-employed earnings
     }
 };
 
@@ -20,10 +44,12 @@ table snapshot Person EarningsAt50
 
 double TransformScreened1(double in_value)
 {
+    double out_value = UNDEF_VALUE; // quiet NaN, use to suppress
     // notional example (round to 00's)
-    double value = in_value / 100.0;
-    value = std::trunc(value + 0.5);
-    value *= 100.0;
+    out_value = in_value / 100.0;
+    out_value = std::trunc(out_value + 0.5);
+    out_value *= 100.0;
 
-    return value;
+    return out_value;
 }
+
