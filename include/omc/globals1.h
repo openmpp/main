@@ -45,17 +45,18 @@ void ProcessDevelopmentOptions(const openm::IRunOptions * const i_options);
 /**
  * Table screening transformation function #1
  *
- * @param   in_value The table value subject to transformation
- * @param   acc      A formatted string containing information about the table and accumulator
- * @param   st       The statistic of the accumulator, e.g. sum
- * @param   inc      The increment of the accumulator, e.g. delta
+ * @param   in_value The table value subject to transformation.
+ * @param   desc     A formatted string containing information about the table and accumulator.
+ * @param   st       The statistic of the accumulator, e.g. sum.
+ * @param   inc      The increment of the accumulator, e.g. delta.
+ * @param   n        The count of observations, i.e. number of increments pushed to accumulator.
  *
- * @returns The transformed value
+ * @returns The transformed value.
  */
-double TransformScreened1(double in_value, const char* acc, omr::stat st, omr::incr inc);
-double TransformScreened2(double in_value, const char* acc, omr::stat st, omr::incr inc);
-double TransformScreened3(double in_value, const char* acc, omr::stat st, omr::incr inc);
-double TransformScreened4(double in_value, const char* acc, omr::stat st, omr::incr inc);
+double TransformScreened1(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
+double TransformScreened2(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
+double TransformScreened3(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
+double TransformScreened4(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
 
 // defined in use/random/random_*.ompp
 typedef std::vector<std::string> random_state; // type used to store state of all streams

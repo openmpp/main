@@ -8,7 +8,7 @@
 
 #endif // Hide non-C++ syntactic island from IDE
 
-double TransformScreened1(double in_value, const char* acc, omr::stat st, omr::incr inc)
+double TransformScreened1(double in_value, const char* acc, omr::stat st, omr::incr inc, double n)
 {
     /// transformed value, initialized to quiet NaN (indicates suppressed)
     double out_value = UNDEF_VALUE;

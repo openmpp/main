@@ -372,6 +372,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "";
 
     if (n_collections > 0) {
+        c += "/// number of observations in each collection";
+        c += "std::vector<double> nobs;";
         c += "// process each cell";
         c += "for (int cell = 0; cell < n_cells; ++cell) {";
 
@@ -517,10 +519,12 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         c += "}";
         c += "gini[j] = (2.0 * cum_value_i ) / (total_count * cum_value) - (total_count + 1.0) / total_count;";
         c += "}";
+        c += "nobs.push_back(total_count); // for possible subsequent use in TransformedScreen functions below.";
         c += "}";
         c += "";
 
         for (auto acc : pp_accumulators) {
+            c += "{";
             c += "// Assign " + acc->pretty_name();
             string acc_index = to_string(acc->index);
             string stat_name = token_to_string(acc->statistic);
@@ -534,14 +538,22 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             }
             if (is_screened()) {
                 c += "// apply screening method " + to_string(screened_method);
-                // The following statement of generated code is split into multiple lines for readability
-                c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(";
-                c += "    acc[" + acc_index + "][cell],  // arg #1: double in_value";
-                c += "    \"" + name + ":" + acc->pretty_name() + "\",   // arg #2: const char *acc";
-                c += "    omr::stat::" + Symbol::token_to_string(acc->statistic) + ", // arg #3: omr::stat st";
-                c += "    omr::incr::" + Symbol::token_to_string(acc->increment) + "); // arg #4: omr::incr inc";
+                c += "double in_value = acc[" + acc_index + "][cell];";
+                c += "const char *desc = \"" + name + ":" + acc->pretty_name() + "\";";
+                c += "auto st = omr::stat::" + Symbol::token_to_string(acc->statistic) + ";";
+                c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
+                if (acc->has_obs_collection) {
+                    c += "/// collection used by this accumulator";
+                    c += "int coll_j = " + to_string(acc->obs_collection_index) + ";";
+                    c += "double n = nobs[coll_j];";
+                }
+                else {
+                    c += "// get observation count from other source";
+                    c += "double n = -1; // to do";
+                }
+                c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n); ";
             }
-
+            c += "}";
             c += "";
         }
 
