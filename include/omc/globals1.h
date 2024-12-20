@@ -42,11 +42,20 @@ void process_trace_options(openm::IRunBase* const i_runBase);
 // if defined by model developer then it is called before each model run started
 void ProcessDevelopmentOptions(const openm::IRunOptions * const i_options);
 
-// Table screening transformation functions - if definition is not supplied by developer, omc will generate a pass-through version
-double TransformScreened1(double in_value);
-double TransformScreened2(double in_value);
-double TransformScreened3(double in_value);
-double TransformScreened4(double in_value);
+/**
+ * Table screening transformation function #1
+ *
+ * @param   in_value The table value subject to transformation
+ * @param   acc      A formatted string containing information about the table and accumulator
+ * @param   st       The statistic of the accumulator, e.g. sum
+ * @param   inc      The increment of the accumulator, e.g. delta
+ *
+ * @returns The transformed value
+ */
+double TransformScreened1(double in_value, const char* acc, omr::stat st, omr::incr inc);
+double TransformScreened2(double in_value, const char* acc, omr::stat st, omr::incr inc);
+double TransformScreened3(double in_value, const char* acc, omr::stat st, omr::incr inc);
+double TransformScreened4(double in_value, const char* acc, omr::stat st, omr::incr inc);
 
 // defined in use/random/random_*.ompp
 typedef std::vector<std::string> random_state; // type used to store state of all streams

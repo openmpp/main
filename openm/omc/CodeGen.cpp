@@ -505,6 +505,73 @@ void CodeGen::do_types()
     }
     t0 += "";
 
+    // om_types0.h - declaration of scoped enum for statistic in an entity table
+    {
+        // The vector keywords below aligns with table_statistic in parser.y[2839] (with the addition of TK_unit).
+        // It corresponds to possible values of the class member EntityTableAccumulatorSymbol::statistic
+        vector keywords = {
+            token::TK_unit,
+            token::TK_sum,
+            token::TK_minimum,
+            token::TK_maximum,
+            token::TK_P1,
+            token::TK_P2,
+            token::TK_P5,
+            token::TK_P10,
+            token::TK_P20,
+            token::TK_P25,
+            token::TK_P30,
+            token::TK_P40,
+            token::TK_P50,
+            token::TK_P60,
+            token::TK_P70,
+            token::TK_P75,
+            token::TK_P80,
+            token::TK_P90,
+            token::TK_P95,
+            token::TK_P98,
+            token::TK_P99,
+            token::TK_gini,
+        };
+        t0 += "namespace omr {";
+        t0 += "/// statistic in an entity table";
+        t0 += "enum class stat {";
+        for (auto& kw : keywords) {
+            t0 += Symbol::token_to_string(kw) + ",";
+        }
+        t0 += "};";
+        t0 += "} // namespace omr";
+        t0 += "";
+    }
+
+    // om_types0.h - declaration of scoped enum for increment in an entity table
+    {
+        // The vector keywords below aligns with table_increment in parser.y[2863] (with the addition of TK_unused).
+        // It corresponds to possible values of the class member EntityTableAccumulatorSymbol::statistic
+        vector keywords = {
+            token::TK_unused,
+            token::TK_delta,
+            token::TK_delta2,
+            token::TK_nz_delta,
+            token::TK_value_in,
+            token::TK_value_in2,
+            token::TK_nz_value_in,
+            token::TK_value_out,
+            token::TK_value_out2,
+            token::TK_nz_value_out,
+        };
+        t0 += "namespace omr {";
+        t0 += "/// increment in an entity table";
+        t0 += "enum class incr {";
+        for (auto& kw : keywords) {
+            t0 += Symbol::token_to_string(kw) + ",";
+        }
+        t0 += "};";
+        t0 += "} // namespace omr";
+        t0 += "";
+    }
+
+
     // om_types1.h - templated types declaration
     t1 += "// templated types";
     for (auto type : Symbol::pp_all_types1) {

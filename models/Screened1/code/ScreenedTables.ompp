@@ -41,15 +41,3 @@ table snapshot screened1 Person EarningsAt50_screened
 };
 
 #endif // Hide non-C++ syntactic island from IDE
-
-double TransformScreened1(double in_value)
-{
-    double out_value = UNDEF_VALUE; // quiet NaN, use to suppress
-    // notional example (round to 00's)
-    out_value = in_value / 100.0;
-    out_value = std::trunc(out_value + 0.5);
-    out_value *= 100.0;
-
-    return out_value;
-}
-

@@ -534,7 +534,12 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             }
             if (is_screened()) {
                 c += "// apply screening method " + to_string(screened_method);
-                c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(acc[" + acc_index + "][cell]);";
+                // The following statement of generated code is split into multiple lines for readability
+                c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(";
+                c += "    acc[" + acc_index + "][cell],  // arg #1: double in_value";
+                c += "    \"" + name + ":" + acc->pretty_name() + "\",   // arg #2: const char *acc";
+                c += "    omr::stat::" + Symbol::token_to_string(acc->statistic) + ", // arg #3: omr::stat st";
+                c += "    omr::incr::" + Symbol::token_to_string(acc->increment) + "); // arg #4: omr::incr inc";
             }
 
             c += "";

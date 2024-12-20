@@ -1,0 +1,22 @@
+/* NOTE(ScreeningCode.ompp, EN)
+    This module contains the functions which implement screening for screened tables.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+#endif // Hide non-C++ syntactic island from IDE
+
+double TransformScreened1(double in_value, const char* acc, omr::stat st, omr::incr inc)
+{
+    /// transformed value, initialized to quiet NaN (indicates suppressed)
+    double out_value = UNDEF_VALUE;
+
+    // notional example of transformation (round to 00's)
+    out_value = in_value / 100.0;
+    out_value = std::trunc(out_value + 0.5);
+    out_value *= 100.0;
+
+    return out_value;
+}
