@@ -95,6 +95,20 @@ void EntityTableSymbol::post_parse(int pass)
         pp_entity = dynamic_cast<EntitySymbol *> (pp_symbol(entity));
         assert(pp_entity); // parser guarantee
 
+        // determine if entity table supports count
+        has_count = false;
+        if (is_screened()) {
+            has_count = true;
+        }
+
+        // determine if entity table supports sum of weights
+        has_sumweight = false;
+        if (Symbol::option_weighted_tabulation && !is_untransformed) {
+            // use of sum of weights is not yet implemented
+            // TODO: if table has an accumulator with statistic "average", and model has weights, compute sum of weights for each table cell
+            has_sumweight = true;
+        }
+
         break;
     }
     case ePopulateCollections:
@@ -256,7 +270,9 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
             + to_string(n_dimensions) + ", "
             + to_string(n_cells) + ", "
             + to_string(n_measures) + ", "
-            + to_string(n_accumulators)
+            + to_string(n_accumulators) + ", "
+            + (has_count ? "true" : "false") + ", "
+            + (has_sumweight ? "true" : "false")
             + ">";
     }
     else {
@@ -266,6 +282,8 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
             + to_string(n_cells) + ", "
             + to_string(n_measures) + ", "
             + to_string(n_accumulators) + ", "
+            + (has_count ? "true" : "false") + ", "
+            + (has_sumweight ? "true" : "false") + ", "
             + to_string(n_collections)
             + ">";
     }
@@ -372,8 +390,6 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "";
 
     if (n_collections > 0) {
-        c += "/// number of observations in each collection";
-        c += "std::vector<double> nobs;";
         c += "// process each cell";
         c += "for (int cell = 0; cell < n_cells; ++cell) {";
 
@@ -519,7 +535,6 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         c += "}";
         c += "gini[j] = (2.0 * cum_value_i ) / (total_count * cum_value) - (total_count + 1.0) / total_count;";
         c += "}";
-        c += "nobs.push_back(total_count); // for possible subsequent use in TransformedScreen functions below.";
         c += "}";
         c += "";
 
@@ -542,15 +557,9 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 c += "const char *desc = \"" + name + ":" + acc->pretty_name() + "\";";
                 c += "auto st = omr::stat::" + Symbol::token_to_string(acc->statistic) + ";";
                 c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
-                if (acc->has_obs_collection) {
-                    c += "/// collection used by this accumulator";
-                    c += "int coll_j = " + to_string(acc->obs_collection_index) + ";";
-                    c += "double n = nobs[coll_j];";
-                }
-                else {
-                    c += "// get observation count from other source";
-                    c += "double n = -1; // to do";
-                }
+                assert(has_count); // logic guarantee - screened table has count
+                c += "double n = count[cell];";
+
                 c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n); ";
             }
             c += "}";
@@ -809,7 +818,40 @@ void EntityTableSymbol::build_body_push_increment()
         c +=     "}";
         c += "}";
     }
+    if (has_count) {
+        c += "";
+        if (!has_margins) {
+            c += "// Maintain count for body cell";
+            c += "{";
+            c += "size_t cell = cell_in;";
+        }
+        else {
+            c += "// Maintain count for body cell and margin cells";
+            c += "for (size_t cell : cells_to_increment) {";
+        }
+        c += "table->count[cell] += 1.0;";
+        c += "}";
+    }
+    if (has_sumweight) {
+        c += "";
+        if (!has_margins) {
+            c += "// Maintain sum of weights for body cell";
+            c += "{";
+            c += "size_t cell = cell_in;";
+        }
+        else {
+            c += "// Maintain sum of weights for body cell and margin cells";
+            c += "for (size_t cell : cells_to_increment) {";
+        }
+        if (Symbol::option_weighted_tabulation && !is_untransformed) {
+            c += "table->sumweight[cell] += entity_weight;";
+        }
+        else {
+            c += "table->sumweight[cell] += 1.0;";
+        }
 
+        c += "}";
+    }
     c += "";
     c += "// Increments and Accumulators:";
     for (auto acc : pp_accumulators) {

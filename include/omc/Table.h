@@ -169,17 +169,34 @@ public:
  * @tparam Tcells      Number of cells.
  * @tparam Tmeasures   Number of measures.
  * @tparam Taccumulators Number of accumulators.
+ * @tparam Thas_count Has count for each cell.
+ * @tparam Thas_sumweight Has sum of weights for each cell.
  */
-template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
     EntityTable(const char* name, std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(name, shape)
     {
+        // accumulator storage is allocated here, but initialized by member function initialize_accumulators().
         auto it = acc_storage.before_begin();
         for (int k = 0; k < Taccumulators; k++) {
             it = acc_storage.insert_after(it, std::unique_ptr<double[]>(new double[Tcells]));
             acc[k] = it->get();
+        }
+        if (has_count) {
+            // count storage is allocated here, and initialized to 0.0 for all cells.
+            count = std::unique_ptr<double[]>(new double[Tcells]);
+            for (int j = 0; j < Tcells; ++j) {
+                count[j] = 0.0;
+            }
+        }
+        if (has_sumweight) {
+            // sumweight storage is allocated here, and initialized to 0.0 for all cells.
+            sumweight = std::unique_ptr<double[]>(new double[Tcells]);
+            for (int j = 0; j < Tcells; ++j) {
+                sumweight[j] = 0.0;
+            }
         }
     };
 
@@ -188,13 +205,36 @@ public:
     virtual void scale_accumulators() = 0;
     virtual void compute_expressions() = 0;
 
+    /**
+     * The number of accumulators in the entity table.
+     */
     static const int n_accumulators = Taccumulators;
+
+    /**
+     * Indicates if the entity table supports count for each cell.
+     */
+    static const bool has_count = Thas_count;
+
+    /**
+     * Indicates if the entity table supports sumweight for each cell.
+     */
+    static const bool has_sumweight = Thas_sumweight;
 
     /**
      * Accumulator storage.
      */
     double * acc[Taccumulators];            // acc[Taccumulators][Tcells];
     std::forward_list<std::unique_ptr<double[]> > acc_storage;
+
+    /**
+     * Count storage.
+     */
+    std::unique_ptr<double[]> count; // count[Tcells], provided Thas_count is true
+
+    /**
+     * Sum of weights storage.
+     */
+    std::unique_ptr<double[]> sumweight; // sumwegiht[Tcells], provided Thas_sumweight is true
 };
 
 /**
@@ -206,12 +246,12 @@ public:
  * @tparam Taccumulators Number of accumulators.
  * @tparam Tcollections  Number of observation collections.
  */
-template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, int Tcollections>
-class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections>
+class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators, Thas_count, Thas_sumweight>
 {
 public:
 
-    EntityTableWithObs(const char* name, std::initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators>(name, shape)
+    EntityTableWithObs(const char* name, std::initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators, Thas_count, Thas_sumweight>(name, shape)
     {
     };
 
@@ -227,7 +267,9 @@ public:
         }
     }
 
-    // constants
+    /**
+     * The number of observation collections in the entity table.
+     */
     static const int n_collections = Tcollections;
 
     // observation collection storage
