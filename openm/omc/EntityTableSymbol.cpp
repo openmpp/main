@@ -34,6 +34,19 @@ using namespace std;
 using namespace openm;
 using namespace omc; // for LTA support
 
+bool EntityTableSymbol::uses_mean(void) const
+{
+    assert(pp_pass > ePopulateCollections); // uses pp_accumulators
+    bool result = false;
+    for (auto acc : pp_accumulators) {
+        if (acc->statistic == token::TK_mean) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
 void EntityTableSymbol::create_auxiliary_symbols()
 {
     {
@@ -134,15 +147,7 @@ void EntityTableSymbol::post_parse(int pass)
             pp_has_count = true;
         }
 
-        /// true if table contains a "mean" accumulator (and so needs a denominator)
-        bool uses_mean = false;
-        for (auto acc : pp_accumulators) {
-            if (acc->statistic == token::TK_mean) {
-                uses_mean = true;
-                break;
-            }
-        }
-        if (uses_mean) {
+        if (uses_mean()) {
             if (is_untransformed || !Symbol::option_weighted_tabulation) {
                 // denominator is count
                 pp_has_count = true;

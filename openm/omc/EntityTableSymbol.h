@@ -217,6 +217,13 @@ public:
     }
 
     /**
+     * Query if this EntityTableSymbol uses mean
+     *
+     * @returns True if uses mean, false if not.
+     */
+    bool uses_mean(void) const;
+
+    /**
      * The default statistic for this table
      *
      * @returns A token_type.

@@ -676,6 +676,10 @@ void Symbol::post_parse(int pass)
     //super::post_parse(pass);
 
     // Perform post-parse operations specific to this level in the Symbol hierarchy.
+    
+    // Record most recent pass, for validity checks
+    pp_pass = (post_parse_pass)pass;
+
     switch (pass) {
     case eAssignLabel:
     {

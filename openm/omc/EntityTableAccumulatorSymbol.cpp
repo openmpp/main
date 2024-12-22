@@ -91,10 +91,11 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
             pp_analysis_attribute = nullptr;
         }
 
-        // emit warning if weighting enabled and ordinal statistic used (unless table is untransformed)
-        if (option_weighted_tabulation && has_obs_collection && !pp_table->is_untransformed) {
-            auto ordinal_name = token_to_string(statistic);
-            pp_warning(LT("warning : weighting is not supported for ordinal statistic '") + ordinal_name + LT("' in table '") + pp_table->name + "'");
+        // emit warning if weighting enabled for table and statistic without weight support is used (unless table is untransformed)
+        if ((option_weighted_tabulation && !pp_table->is_untransformed) &&
+            (has_obs_collection || (statistic == token::TK_mean))) {
+            auto stat_name = token_to_string(statistic);
+            pp_warning(LT("warning : weighting is not supported for statistic '") + stat_name + LT("' in table '") + pp_table->name + "'");
         }
 
         break;

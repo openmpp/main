@@ -180,6 +180,8 @@ public:
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
+        , pp_pass(eBeforeFirst)
+        , pp_symbol_id(0)
         , code_label_allowed(true)
         , pp_module(nullptr)
     {
@@ -225,6 +227,8 @@ public:
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
+        , pp_pass(eBeforeFirst)
+        , pp_symbol_id(0)
         , code_label_allowed(true)
         , pp_module(nullptr)
     {
@@ -264,6 +268,8 @@ public:
         , reference_count(0)
         , sorting_group(10)
         , code_order(0)
+        , pp_pass(eBeforeFirst)
+        , pp_symbol_id(0)
         , code_label_allowed(true)
         , pp_module(nullptr)
     {
@@ -335,6 +341,9 @@ public:
      */
 
     enum post_parse_pass {
+
+        ///< post-parse pass before first pass
+        eBeforeFirst,
 
 		///< post-parse pass to identify foreign types and process languages
 		eCreateForeignTypes,
@@ -741,6 +750,11 @@ public:
      * The order for code insertion (higher values insert first).
      */
     int code_order;
+
+    /**
+     * Most recent post-parse pass
+     */
+    post_parse_pass pp_pass;
 
     /**
      * Unique arbitary identifier
