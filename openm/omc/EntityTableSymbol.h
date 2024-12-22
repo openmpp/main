@@ -58,8 +58,8 @@ public:
         , push_increment_fn(nullptr)
         , filter(nullptr)
         , n_collections(0)
-        , has_count(false)
-        , has_sumweight(false)
+        , pp_has_count(false)
+        , pp_has_sumweight(false)
         , kind(table_kind::general)
         , default_statistic(token::TK_sum)
         , default_increment(token::TK_delta)
@@ -177,12 +177,12 @@ public:
     /**
      * Indicates if the table maintains count for each cell.
      */
-    bool has_count;
+    bool pp_has_count;
 
     /**
      * Indicates if the table maintains sum of weights for each cell.
      */
-    bool has_sumweight;
+    bool pp_has_sumweight;
 
     /** The kind of table */
     table_kind kind;

@@ -218,6 +218,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_max_value_in              "max_value_in"
 %token <val_token>    TK_max_value_out             "max_value_out"
 %token <val_token>    TK_minimum                   "minimum"
+%token <val_token>    TK_mean                      "mean"
 %token <val_token>    TK_min_delta                 "min_delta"
 %token <val_token>    TK_min_over                  "min_over"
 %token <val_token>    TK_min_value_in              "min_value_in"
@@ -2838,6 +2839,7 @@ modgen_cumulation_operator:
 
 table_statistic:
       TK_sum
+    | TK_mean
     | TK_minimum
     | TK_maximum
     | TK_P1

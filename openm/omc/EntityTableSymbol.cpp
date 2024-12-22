@@ -95,20 +95,6 @@ void EntityTableSymbol::post_parse(int pass)
         pp_entity = dynamic_cast<EntitySymbol *> (pp_symbol(entity));
         assert(pp_entity); // parser guarantee
 
-        // determine if entity table supports count
-        has_count = false;
-        if (is_screened()) {
-            has_count = true;
-        }
-
-        // determine if entity table supports sum of weights
-        has_sumweight = false;
-        if (Symbol::option_weighted_tabulation && !is_untransformed) {
-            // use of sum of weights is not yet implemented
-            // TODO: if table has an accumulator with statistic "average", and model has weights, compute sum of weights for each table cell
-            has_sumweight = true;
-        }
-
         break;
     }
     case ePopulateCollections:
@@ -142,6 +128,31 @@ void EntityTableSymbol::post_parse(int pass)
         if (is_suppressed_table) {
             break;
         }
+
+        if (is_screened()) {
+            // screened tables always require count
+            pp_has_count = true;
+        }
+
+        /// true if table contains a "mean" accumulator (and so needs a denominator)
+        bool uses_mean = false;
+        for (auto acc : pp_accumulators) {
+            if (acc->statistic == token::TK_mean) {
+                uses_mean = true;
+                break;
+            }
+        }
+        if (uses_mean) {
+            if (is_untransformed || !Symbol::option_weighted_tabulation) {
+                // denominator is count
+                pp_has_count = true;
+            }
+            else {
+                // denominator is sum of weights
+                pp_has_sumweight = true;
+            }
+        }
+
         // Add this entity table to xref of each attribute used in expressions
         for (auto ma : pp_measure_attributes) {
             auto a = ma->pp_attribute;
@@ -271,8 +282,8 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
             + to_string(n_cells) + ", "
             + to_string(n_measures) + ", "
             + to_string(n_accumulators) + ", "
-            + (has_count ? "true" : "false") + ", "
-            + (has_sumweight ? "true" : "false")
+            + (pp_has_count ? "true" : "false") + ", "
+            + (pp_has_sumweight ? "true" : "false")
             + ">";
     }
     else {
@@ -282,8 +293,8 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
             + to_string(n_cells) + ", "
             + to_string(n_measures) + ", "
             + to_string(n_accumulators) + ", "
-            + (has_count ? "true" : "false") + ", "
-            + (has_sumweight ? "true" : "false") + ", "
+            + (pp_has_count ? "true" : "false") + ", "
+            + (pp_has_sumweight ? "true" : "false") + ", "
             + to_string(n_collections)
             + ">";
     }
@@ -335,6 +346,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         switch (acc->statistic) {
         case token::TK_unit:
         case token::TK_sum:
+        case token::TK_mean: // the accumulator for 'mean' is used to hold the numerator
             initial_value = "  0.0";
             break;
         case token::TK_minimum:
@@ -389,11 +401,10 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
     c += "assert(" + cxx_instance + "); // unitary table must be instantiated";
     c += "";
 
+    c += "// process each cell";
+    c += "for (int cell = 0; cell < n_cells; ++cell) {";
+    c += "";
     if (n_collections > 0) {
-        c += "// process each cell";
-        c += "for (int cell = 0; cell < n_cells; ++cell) {";
-
-        c += "";
         c += "// Compute statistics for each observation collection in the cell.";
         c += "double P1[n_collections];";
         c += "double P2[n_collections];";
@@ -537,40 +548,57 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         c += "}";
         c += "}";
         c += "";
+    } // if (n_collections > 0)
 
-        for (auto acc : pp_accumulators) {
-            c += "{";
-            c += "// Assign " + acc->pretty_name();
-            string acc_index = to_string(acc->index);
-            string stat_name = token_to_string(acc->statistic);
-            if (acc->has_obs_collection) {
-                string obs_index = to_string(acc->obs_collection_index);
-                c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
+    for (auto acc : pp_accumulators) {
+        c += "{";
+        c += "// Assign " + acc->pretty_name();
+        string acc_index = to_string(acc->index);
+        string stat_name = token_to_string(acc->statistic);
+        if (acc->has_obs_collection) {
+            string obs_index = to_string(acc->obs_collection_index);
+            c += "// get the ordinal statistic computed from the collection";
+            c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
+        }
+        else if (acc->statistic == token::TK_mean) {
+            c += "double numerator = acc[" + acc_index + "][cell];";
+            if (is_untransformed || !Symbol::option_weighted_tabulation) {
+                // denominator is count
+                assert(pp_has_count);
+                c += "double denominator = count[cell];";
             }
             else {
-                c += "// value of statistic " + stat_name + " is already in accumulator";
-                c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
+                // denominator is sum of weights
+                assert(pp_has_sumweight);
+                c += "double denominator = sumweight[cell];";
             }
-            if (is_screened()) {
-                c += "// apply screening method " + to_string(screened_method);
-                c += "double in_value = acc[" + acc_index + "][cell];";
-                c += "const char *desc = \"" + name + ":" + acc->pretty_name() + "\";";
-                c += "auto st = omr::stat::" + Symbol::token_to_string(acc->statistic) + ";";
-                c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
-                assert(has_count); // logic guarantee - screened table has count
-                c += "double n = count[cell];";
-
-                c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n); ";
-            }
+            c += "double quotient = std::numeric_limits<double>::quiet_NaN();";
+            c += "if (denominator != 0.0) {";
+            c += "quotient = numerator / denominator;";
             c += "}";
-            c += "";
+            c += "acc[" + acc_index + "][cell] = quotient;";
         }
+        else {
+            c += "// value of statistic " + stat_name + " is already in accumulator";
+            c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
+        }
+        if (is_screened()) {
+            c += "// apply screening method " + to_string(screened_method);
+            c += "double in_value = acc[" + acc_index + "][cell];";
+            c += "const char *desc = \"" + name + ":" + acc->pretty_name() + "\";";
+            c += "auto st = omr::stat::" + Symbol::token_to_string(acc->statistic) + ";";
+            c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
+            assert(pp_has_count);
+            c += "double n = count[cell];";
 
+            c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n); ";
+        }
         c += "}";
         c += "";
     }
 
-    c += "}";
+    c += "} // cell";
+    c += "}"; // extract_accumulators
     c += "";
 
     // definition of scale_accumulators()
@@ -818,7 +846,7 @@ void EntityTableSymbol::build_body_push_increment()
         c +=     "}";
         c += "}";
     }
-    if (has_count) {
+    if (pp_has_count) {
         c += "";
         if (!has_margins) {
             c += "// Maintain count for body cell";
@@ -832,7 +860,7 @@ void EntityTableSymbol::build_body_push_increment()
         c += "table->count[cell] += 1.0;";
         c += "}";
     }
-    if (has_sumweight) {
+    if (pp_has_sumweight) {
         c += "";
         if (!has_margins) {
             c += "// Maintain sum of weights for body cell";
@@ -942,7 +970,7 @@ void EntityTableSymbol::build_body_push_increment()
             auto attr = acc->pp_attribute;
             assert(attr);
             c += "";
-            if (acc->statistic == token::TK_sum || acc->statistic == token::TK_gini) {
+            if (acc->statistic == token::TK_sum || acc->statistic == token::TK_mean || acc->statistic == token::TK_gini) {
                 // runtime error if increment is Nan or inf
                 c += "// Check increment validity when accumulator is sum or gini";
                 c += "if (!std::isfinite(dIncrement)) {";
@@ -978,6 +1006,7 @@ void EntityTableSymbol::build_body_push_increment()
             }
             break;
         case token::TK_sum:
+        case token::TK_mean: // dAccumulator is used to store the numerator of the mean
             if (Symbol::option_weighted_tabulation && !is_untransformed) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }

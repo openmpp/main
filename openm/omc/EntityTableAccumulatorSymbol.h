@@ -45,6 +45,7 @@ public:
         // grammar guarantee
         assert(statistic == token::TK_unit
             || statistic == token::TK_sum
+            || statistic == token::TK_mean
             || statistic == token::TK_minimum
             || statistic == token::TK_maximum
             || statistic == token::TK_gini

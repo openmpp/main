@@ -1,0 +1,31 @@
+//LABEL(MeanTest, EN) Test of mean statistic
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+table snapshot Person MeanDurationOfLife //EN Duration of Life
+[!alive]
+{
+    {
+        unit,                //EN Persons
+        duration(),          //EN PY
+        duration() / unit,   //EN PY / Persons
+        mean(duration())     //EN mean(PY)
+    }
+};
+
+table snapshot untransformed Person MeanDurationOfLife_unweighted //EN Duration of Life (unweighted)
+[!alive]
+{
+    {
+        unit,                //EN Persons
+        duration(),          //EN PY
+        duration() / unit,   //EN PY / Persons
+        mean(duration())     //EN mean(PY)
+    }
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+
