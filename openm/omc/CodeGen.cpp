@@ -507,14 +507,17 @@ void CodeGen::do_types()
 
     // om_types0.h - declaration of scoped enum for statistic in an entity table
     {
-        // The vector keywords below aligns with table_statistic in parser.y[2840] (with the addition of TK_unit).
+        // The vector keywords below aligns with table_statistic in parser.y[~2843] (with the addition of TK_unit).
         // It corresponds to possible values of the class member EntityTableAccumulatorSymbol::statistic
         vector keywords = {
             token::TK_unit,
             token::TK_sum,
-            token::TK_mean,
             token::TK_minimum,
             token::TK_maximum,
+            token::TK_mean,
+            token::TK_variance,
+            token::TK_stdev,
+            token::TK_median,
             token::TK_P1,
             token::TK_P2,
             token::TK_P5,

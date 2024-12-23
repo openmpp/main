@@ -45,10 +45,12 @@ public:
         // grammar guarantee
         assert(statistic == token::TK_unit
             || statistic == token::TK_sum
-            || statistic == token::TK_mean
             || statistic == token::TK_minimum
             || statistic == token::TK_maximum
-            || statistic == token::TK_gini
+            || statistic == token::TK_mean
+            || statistic == token::TK_variance
+            || statistic == token::TK_stdev
+            || statistic == token::TK_median
             || statistic == token::TK_P1
             || statistic == token::TK_P2
             || statistic == token::TK_P5
@@ -66,7 +68,8 @@ public:
             || statistic == token::TK_P95
             || statistic == token::TK_P98
             || statistic == token::TK_P99
-            );
+            || statistic == token::TK_gini
+        );
 
         // grammar guarantee
         assert((increment == token::TK_unused && (statistic == token::TK_unit))

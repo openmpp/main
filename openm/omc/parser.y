@@ -219,6 +219,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_max_value_out             "max_value_out"
 %token <val_token>    TK_minimum                   "minimum"
 %token <val_token>    TK_mean                      "mean"
+%token <val_token>    TK_median                    "median"
 %token <val_token>    TK_min_delta                 "min_delta"
 %token <val_token>    TK_min_over                  "min_over"
 %token <val_token>    TK_min_value_in              "min_value_in"
@@ -260,6 +261,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_sparse                    "sparse"
 %token <val_token>    TK_split                     "split"
 %token <val_token>    TK_sqrt                      "sqrt"
+%token <val_token>    TK_stdev                     "stdev"
 %token <val_token>    TK_sum                       "sum"
 %token <val_token>    TK_sum_over                  "sum_over"
 %token <val_token>    TK_Time                      "Time"
@@ -299,6 +301,7 @@ static bool check_undeclared(Symbol* sym, const yy::parser::location_type& loc, 
 %token <val_token>    TK_value_in2                  "value_in2"
 %token <val_token>    TK_value_out                  "value_out"
 %token <val_token>    TK_value_out2                 "value_out2"
+%token <val_token>    TK_variance                   "variance"
 %token <val_token>    TK_weighted_cumulation        "weighted_cumulation"
 %token <val_token>    TK_weighted_duration          "weighted_duration"
 %token <val_token>    TK_double_arrow               "=>"
@@ -2839,9 +2842,12 @@ modgen_cumulation_operator:
 
 table_statistic:
       TK_sum
-    | TK_mean
     | TK_minimum
     | TK_maximum
+    | TK_mean
+    | TK_variance
+    | TK_stdev
+    | TK_median
     | TK_P1
     | TK_P2
     | TK_P5

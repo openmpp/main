@@ -93,9 +93,20 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
 
         // emit warning if weighting enabled for table and statistic without weight support is used (unless table is untransformed)
         if ((option_weighted_tabulation && !pp_table->is_untransformed) &&
-            (has_obs_collection || (statistic == token::TK_mean))) {
+            (has_obs_collection || (statistic == token::TK_mean) || (statistic == token::TK_variance) || (statistic == token::TK_stdev))) {
             auto stat_name = token_to_string(statistic);
-            pp_warning(LT("warning : weighting is not supported for statistic '") + stat_name + LT("' in table '") + pp_table->name + "'");
+            pp_warning(LT("warning : weighting is not supported for statistic '") + stat_name + LT("', in table '") + pp_table->name + "'");
+        }
+
+        // emit error for running median (not yet implemented)
+        if (statistic == token::TK_median) {
+            pp_error(LT("error : running median is not yet implemented, consider using collection-based P50 instead, in table '") + pp_table->name + "'");
+        }
+
+        // emit error for running variance and stdev (not yet implemented)
+        if ((statistic == token::TK_variance) || (statistic == token::TK_stdev)) {
+            auto stat_name = token_to_string(statistic);
+            pp_error(LT("error : '") + stat_name + LT("' is not yet implemented, in table '") + pp_table->name + "'");
         }
 
         break;
