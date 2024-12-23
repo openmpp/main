@@ -354,8 +354,11 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             initial_value = "  0.0";
             break;
         case token::TK_mean:
-			// The accumulator for 'mean' holds the Welford algorithm running estimate,
-			// and there is no valid initial value before the first observation.
+        case token::TK_variance:
+        case token::TK_stdev:
+        case token::TK_median:
+            // Statistics/accumulators for numerically stable running estimates, e.g. 'mean' uses the Welford algorithm,
+			// have no valid initial value before the first observation.
             initial_value = "  std::numeric_limits<double>::quiet_NaN()";
             break;
         case token::TK_minimum:
@@ -966,14 +969,19 @@ void EntityTableSymbol::build_body_push_increment()
             auto attr = acc->pp_attribute;
             assert(attr);
             c += "";
-            if (acc->statistic == token::TK_sum || acc->statistic == token::TK_mean || acc->statistic == token::TK_gini) {
+            if (acc->statistic == token::TK_sum
+                || acc->statistic == token::TK_mean
+                || acc->statistic == token::TK_variance
+                || acc->statistic == token::TK_stdev
+                || acc->statistic == token::TK_gini
+                ) {
                 // runtime error if increment is Nan or inf
-                c += "// Check increment validity when accumulator is sum, mean, or gini";
+                c += "// Check increment validity when accumulator is sum, mean, variance, stdev, or gini";
                 c += "if (!std::isfinite(dIncrement)) {";
             }
             else {
                 // runtime error if increment is Nan
-                c += "// Check increment validity when accumulator is not sum or gini";
+                c += "// Check increment validity when accumulator is median or collection-based";
                 c += "if (std::isnan(dIncrement)) {";
             }
             // arg 1 is table name, arg 2 is name of underlying attribute
@@ -1014,6 +1022,15 @@ void EntityTableSymbol::build_body_push_increment()
             c += "else {";
             c +=     "dAccumulator += (dIncrement - dAccumulator) / dCount;";
             c += "}";
+            break;
+        case token::TK_variance:
+            c += "// not implemented";
+            break;
+        case token::TK_stdev:
+            c += "// not implemented";
+            break;
+        case token::TK_median:
+            c += "// not implemented";
             break;
         case token::TK_minimum:
             c += "if ( dIncrement < dAccumulator ) dAccumulator = dIncrement;";
