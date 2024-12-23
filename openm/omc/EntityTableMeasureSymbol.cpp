@@ -87,6 +87,8 @@ string EntityTableMeasureSymbol::get_expression(const ExprForTable *node, expres
                 agg_func = (style == sql_aggregated_accumulators) ? "OM_AVG" : "OM_SUM";
                 break;
             case token::TK_mean:
+                // Aggregate value of mean over subs is average of averages.
+                // So the meaning is unambiguous provided subs are a neutral sample.
                 agg_func = "OM_AVG";
                 break;
             case token::TK_minimum:

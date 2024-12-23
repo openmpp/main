@@ -351,8 +351,12 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         switch (acc->statistic) {
         case token::TK_unit:
         case token::TK_sum:
-        case token::TK_mean: // the accumulator for 'mean' is used to hold the numerator
             initial_value = "  0.0";
+            break;
+        case token::TK_mean:
+			// The accumulator for 'mean' holds the Welford algorithm running estimate,
+			// and there is no valid initial value before the first observation.
+            initial_value = "  std::numeric_limits<double>::quiet_NaN()";
             break;
         case token::TK_minimum:
             initial_value = " std::numeric_limits<double>::infinity()";
@@ -563,25 +567,12 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         if (acc->has_obs_collection) {
             string obs_index = to_string(acc->obs_collection_index);
             c += "// get the ordinal statistic computed from the collection";
+            // stat_name is the same as the name of the local array variables created above.
             c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
         }
         else if (acc->statistic == token::TK_mean) {
-            c += "double numerator = acc[" + acc_index + "][cell];";
-            if (is_untransformed || !Symbol::option_weighted_tabulation) {
-                // denominator is count
-                assert(pp_has_count);
-                c += "double denominator = count[cell];";
-            }
-            else {
-                // denominator is sum of weights
-                assert(pp_has_sumweight);
-                c += "double denominator = sumweight[cell];";
-            }
-            c += "double quotient = std::numeric_limits<double>::quiet_NaN();";
-            c += "if (denominator != 0.0) {";
-            c += "quotient = numerator / denominator;";
-            c += "}";
-            c += "acc[" + acc_index + "][cell] = quotient;";
+            c += "// The Welford algorithm running estimate of the mean is already in accumulator";
+            c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
         }
         else {
             c += "// value of statistic " + stat_name + " is already in accumulator";
@@ -977,7 +968,7 @@ void EntityTableSymbol::build_body_push_increment()
             c += "";
             if (acc->statistic == token::TK_sum || acc->statistic == token::TK_mean || acc->statistic == token::TK_gini) {
                 // runtime error if increment is Nan or inf
-                c += "// Check increment validity when accumulator is sum or gini";
+                c += "// Check increment validity when accumulator is sum, mean, or gini";
                 c += "if (!std::isfinite(dIncrement)) {";
             }
             else {
@@ -1011,13 +1002,18 @@ void EntityTableSymbol::build_body_push_increment()
             }
             break;
         case token::TK_sum:
-        case token::TK_mean: // dAccumulator is used to store the numerator of the mean
-            if (Symbol::option_weighted_tabulation && !is_untransformed) {
-                c += "dAccumulator += entity_weight * dIncrement;";
-            }
-            else {
-                c += "dAccumulator += dIncrement;";
-            }
+            c += "dAccumulator += dIncrement;";
+            break;
+        case token::TK_mean: // dAccumulator is used to store the Welford running estimate
+            // update Welford running mean estiamate
+            c += "auto& dCount = table->count[cell];";
+            c += "// Welford running mean";
+            c += "if (dCount == 1.0) {";
+            c +=     "dAccumulator = dIncrement;";
+            c += "}";
+            c += "else {";
+            c +=     "dAccumulator += (dIncrement - dAccumulator) / dCount;";
+            c += "}";
             break;
         case token::TK_minimum:
             c += "if ( dIncrement < dAccumulator ) dAccumulator = dIncrement;";
