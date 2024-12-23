@@ -50,7 +50,6 @@ public:
             || statistic == token::TK_mean
             || statistic == token::TK_variance
             || statistic == token::TK_stdev
-            || statistic == token::TK_median
             || statistic == token::TK_P1
             || statistic == token::TK_P2
             || statistic == token::TK_P5

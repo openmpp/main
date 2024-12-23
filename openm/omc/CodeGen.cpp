@@ -517,7 +517,6 @@ void CodeGen::do_types()
             token::TK_mean,
             token::TK_variance,
             token::TK_stdev,
-            token::TK_median,
             token::TK_P1,
             token::TK_P2,
             token::TK_P5,

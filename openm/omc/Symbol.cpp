@@ -262,7 +262,6 @@ unordered_map<token_type, string, std::hash<int> > Symbol::token_string =
     { token::TK_max_value_in, "max_value_in" },
     { token::TK_max_value_out, "max_value_out" },
     { token::TK_mean, "mean" },
-    { token::TK_median, "median" },
     { token::TK_minimum, "minimum" },
     { token::TK_min_delta, "min_delta" },
     { token::TK_min_over, "min_over" },

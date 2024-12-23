@@ -356,7 +356,6 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
         case token::TK_mean:
         case token::TK_variance:
         case token::TK_stdev:
-        case token::TK_median:
             // Statistics/accumulators for numerically stable running estimates, e.g. 'mean' uses the Welford algorithm,
 			// have no valid initial value before the first observation.
             initial_value = "  std::numeric_limits<double>::quiet_NaN()";
@@ -981,7 +980,7 @@ void EntityTableSymbol::build_body_push_increment()
             }
             else {
                 // runtime error if increment is Nan
-                c += "// Check increment validity when accumulator is median or collection-based";
+                c += "// Check increment validity when accumulator is quantile";
                 c += "if (std::isnan(dIncrement)) {";
             }
             // arg 1 is table name, arg 2 is name of underlying attribute
@@ -1027,9 +1026,6 @@ void EntityTableSymbol::build_body_push_increment()
             c += "// not implemented";
             break;
         case token::TK_stdev:
-            c += "// not implemented";
-            break;
-        case token::TK_median:
             c += "// not implemented";
             break;
         case token::TK_minimum:

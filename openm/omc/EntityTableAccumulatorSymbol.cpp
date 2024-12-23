@@ -98,11 +98,6 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
             pp_warning(LT("warning : weighting is not supported for statistic '") + stat_name + LT("', in table '") + pp_table->name + "'");
         }
 
-        // emit error for running median (not yet implemented)
-        if (statistic == token::TK_median) {
-            pp_error(LT("error : running median is not yet implemented, consider using collection-based P50 instead, in table '") + pp_table->name + "'");
-        }
-
         // emit error for running variance and stdev (not yet implemented)
         if ((statistic == token::TK_variance) || (statistic == token::TK_stdev)) {
             auto stat_name = token_to_string(statistic);
