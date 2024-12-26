@@ -1,6 +1,18 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2024-10-26: v1.17.6
+  c++ core, go and UI: microdata attribute groups
+  go: dget first release version
+  c++ core: Parameter, table, and attribute groups can be populated by module declarations
+  c++ core: Additional lines in run log output
+  c++ core: Additional lines in run log output
+  c++ core: Bug fixe for spurious build warnings  for lifecycle_attributes classification
+  c++ core: Bug fix - Entity table with ordinal statistics of multiple attributes
+  UI: allow user to delete models from cloud workspace
+  dbget and UI: allow to export parameter, output table or microdata with enum ID instead of code
+  UI: allow user to pause model run queue
+
 2024-10-21: v1.17.5
   c++ core: fix incorrect select of parameters by base run id
   go oms: enable storage control without job control
