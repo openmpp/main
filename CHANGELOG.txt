@@ -4,11 +4,11 @@ Please note:
 2024-10-26: v1.17.6
   c++ core, go and UI: microdata attribute groups
   go: dget first release version
-  c++ core: Parameter, table, and attribute groups can be populated by module declarations
-  c++ core: Additional lines in run log output
-  c++ core: Additional lines in run log output
-  c++ core: Bug fixe for spurious build warnings  for lifecycle_attributes classification
-  c++ core: Bug fix - Entity table with ordinal statistics of multiple attributes
+  c++ core: parameter, table, and attribute groups can be populated by module declarations
+  c++ core: additional lines in run log output
+  checkpoint messages on unexpected run failure
+  c++ core: bug fix for spurious build warnings  for lifecycle_attributes classification
+  c++ core: bug fix - Entity table with ordinal statistics of multiple attributes
   UI: allow user to delete models from cloud workspace
   dbget and UI: allow to export parameter, output table or microdata with enum ID instead of code
   UI: allow user to pause model run queue
