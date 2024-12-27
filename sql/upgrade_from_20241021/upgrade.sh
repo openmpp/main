@@ -12,7 +12,7 @@
 # ~/openmpp_debian_next/
 #                      bin/
 #                      sql/upgrade_from_20241021/
-#                                               upgrade_linux.sh
+#                                               upgrade.sh
 #
 #   and previous version of openM++ is in:
 # ~/openmpp_debian_20241021/
@@ -24,11 +24,11 @@
 # option 1.
 #  cp -r ~/openmpp_debian_next/sql/upgrade_from_20241021/ ~/openmpp_debian_20241021/
 #  cd ~/openmpp_debian_20241021
-#  ./upgrade_from_20241021/upgrade_linux.sh
+#  ./upgrade_from_20241021/upgrade.sh
 #
 # option 2.
 #  cd ~/openmpp_debian_next/sql/upgrade_from_20241021/
-#  ./upgrade_linux.sh ~/openmpp_debian_20241021
+#  ./upgrade.sh ~/openmpp_debian_20241021
 #
 
 set -e

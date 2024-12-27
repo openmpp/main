@@ -45,7 +45,7 @@ For example,
 ~/openmpp_debian_20230201/
                        bin/
                        sql/upgrade_to_20230201/
-                                              upgrade_linux.sh
+                                              upgrade.sh
 
   and previous version of openM++ is in:
 
@@ -58,9 +58,9 @@ then:
 option 1.
  cp -r ~/openmpp_debian_20230201/sql/upgrade_to_20230201/ ~/openmpp_debian_20220923/
  cd ~/openmpp_debian_20220923
- ./upgrade_to_20230201/upgrade_linux.sh
+ ./upgrade_to_20230201/upgrade.sh
 
 option 2.
  cd ~/openmpp_debian_20230201/sql/upgrade_to_20230201/
- ./upgrade_to_20230201/upgrade_linux.sh ~/openmpp_debian_20220923
+ ./upgrade_to_20230201/upgrade.sh ~/openmpp_debian_20220923
 
