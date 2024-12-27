@@ -279,30 +279,16 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
     size_t n_measures = measure_count();
     size_t n_accumulators = accumulator_count();
 
-    string cxx_template;
-    if (n_collections == 0) {
-        cxx_template = 
-            "EntityTable<"
-            + to_string(n_dimensions) + ", "
-            + to_string(n_cells) + ", "
-            + to_string(n_measures) + ", "
-            + to_string(n_accumulators) + ", "
-            + (pp_has_count ? "true" : "false") + ", "
-            + (pp_has_sumweight ? "true" : "false")
-            + ">";
-    }
-    else {
-        cxx_template = 
-            "EntityTableWithObs<"
-            + to_string(n_dimensions) + ", "
-            + to_string(n_cells) + ", "
-            + to_string(n_measures) + ", "
-            + to_string(n_accumulators) + ", "
-            + (pp_has_count ? "true" : "false") + ", "
-            + (pp_has_sumweight ? "true" : "false") + ", "
-            + to_string(n_collections)
-            + ">";
-    }
+    string cxx_template = 
+        "EntityTable<"
+        + to_string(n_dimensions) + ", "
+        + to_string(n_cells) + ", "
+        + to_string(n_measures) + ", "
+        + to_string(n_accumulators) + ", "
+        + (pp_has_count ? "true" : "false") + ", "
+        + (pp_has_sumweight ? "true" : "false") + ", "
+        + to_string(n_collections)
+        + ">";
     h += "class " + cxx_class + " final : public " + cxx_template;
     h += "{";
     h += "public:";

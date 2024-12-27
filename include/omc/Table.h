@@ -171,18 +171,21 @@ public:
  * @tparam Taccumulators Number of accumulators.
  * @tparam Thas_count Has count for each cell.
  * @tparam Thas_sumweight Has sum of weights for each cell.
+ * @tparam Tcollections  Number of observation collections (possibly 0)
  */
-template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
     EntityTable(const char* name, std::initializer_list<int> shape) : Table<Tdimensions, Tcells, Tmeasures>(name, shape)
     {
-        // accumulator storage is allocated here, but initialized by member function initialize_accumulators().
-        auto it = acc_storage.before_begin();
-        for (int k = 0; k < Taccumulators; k++) {
-            it = acc_storage.insert_after(it, std::unique_ptr<double[]>(new double[Tcells]));
-            acc[k] = it->get();
+        {
+            // accumulator storage is allocated here, but initialized by member function initialize_accumulators().
+            auto it = acc_storage.before_begin();
+            for (int k = 0; k < Taccumulators; k++) {
+                it = acc_storage.insert_after(it, std::unique_ptr<double[]>(new double[Tcells]));
+                acc[k] = it->get();
+            }
         }
         if (has_count) {
             // count storage is allocated here, and initialized to 0.0 for all cells.
@@ -221,9 +224,14 @@ public:
     static const bool has_sumweight = Thas_sumweight;
 
     /**
+     * The number of observation collections in the entity table.
+     */
+    static const int n_collections = Tcollections;
+
+    /**
      * Accumulator storage.
      */
-    double * acc[Taccumulators];            // acc[Taccumulators][Tcells];
+    double * acc[Taccumulators];            // acc[Taccumulators][Tcells]
     std::forward_list<std::unique_ptr<double[]> > acc_storage;
 
     /**
@@ -234,47 +242,17 @@ public:
     /**
      * Sum of weights storage.
      */
-    std::unique_ptr<double[]> sumweight; // sumwegiht[Tcells], provided Thas_sumweight is true
-};
-
-/**
- * Template for tables with observation collections.
- *
- * @tparam Tdimensions Number of dimensions.
- * @tparam Tcells      Number of cells.
- * @tparam Tmeasures   Number of measures.
- * @tparam Taccumulators Number of accumulators.
- * @tparam Tcollections  Number of observation collections.
- */
-template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections>
-class EntityTableWithObs : public EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators, Thas_count, Thas_sumweight>
-{
-public:
-
-    EntityTableWithObs(const char* name, std::initializer_list<int> shape) : EntityTable<Tdimensions, Tcells, Tmeasures, Taccumulators, Thas_count, Thas_sumweight>(name, shape)
-    {
-    };
-
-    ~EntityTableWithObs()
-    {
-        // Empty observation collections in all cells
-        // Note: This is not strictly necessary, since if not done here, 
-        // C++ will call the forward_list destructor
-        // for each element of coll when the EntityTableWithObs is destroyed.
-        for (int cell = 0; cell < Tcells; ++cell) {
-            for (int j = 0; j < n_collections; ++j) {
-                coll[cell][j].clear();
-            }
-        }
-    }
+    std::unique_ptr<double[]> sumweight; // sumweight[Tcells], provided Thas_sumweight is true
 
     /**
-     * The number of observation collections in the entity table.
+     * observation collections storage
      */
-    static const int n_collections = Tcollections;
+    std::array<std::array<std::forward_list<double>, Tcells>, Tcollections> coll; // coll[Tcells][Tcollections]
 
-    // observation collection storage
-    std::forward_list<double> coll[Tcells][Tcollections];
+    /**
+     * Extra storage.
+     */
+    //std::array<std::array<double, Tcells>, Textras> extra; // extra[Textras][Tcells]
 };
 
 /**
