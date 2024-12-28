@@ -583,6 +583,9 @@ unordered_set<string> Symbol::om_developer_functions =
     "UserTables",
     "ProcessDevelopmentOptions",
     "TransformScreened1",
+    "TransformScreened2",
+    "TransformScreened3",
+    "TransformScreened4",
 };
 
 unordered_set<string> Symbol::om_rng_functions =
@@ -1376,7 +1379,7 @@ void Symbol::create_missing_global_funcs(void)
         // create a definition of TransformScreened[1-4] if not supplied in model code.
         string name = "TransformScreened" + to_string(j);
         string return_decl = "double";
-        string arg_list_decl = "const char *desc, double in_value, omr::stat st, omr::incr inc, double n";
+        string arg_list_decl = "const double in_value, const char *desc, const omr::stat st, const omr::incr inc, const double n, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest";
         if (!exists(name)) {
             auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
             s->suppress_decl = true;  // already declared elsewhere (in globals1.h)

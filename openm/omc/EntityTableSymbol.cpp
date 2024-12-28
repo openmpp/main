@@ -603,6 +603,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
         }
         if (is_screened()) {
+            c += "{";
             c += "// apply screening method " + to_string(screened_method);
             c += "double in_value = acc[" + acc_index + "][cell];";
             c += "const char *desc = \"" + name + ":" + acc->pretty_name() + "\";";
@@ -610,8 +611,22 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
             assert(pp_has_count);
             c += "double n = count[cell];";
-
-            c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n); ";
+            if (acc->needs_extrema_collections) {
+                assert(acc->extrema_collections_index >= 0);
+                c += "size_t es = " + to_string(Symbol::option_screened_extremas_size) + ";";
+                c += "const size_t extrema_index = " + to_string(acc->extrema_collections_index) + ";";
+                c += "const auto& smallest = extrema[extrema_index][cell].first;";
+                c += "const auto& largest = extrema[extrema_index][cell].second;";
+            }
+            else {
+                // no extremas collections associated with this statistic
+                c += "size_t es = 0;";
+                c += "const std::multiset<double> empty;";
+                c += "const auto& smallest = empty;";
+                c += "const auto& largest = empty;";
+            }
+            c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n, es, smallest, largest); ";
+            c += "}";
         }
         c += "}";
         c += "";
@@ -1104,7 +1119,9 @@ void EntityTableSymbol::build_body_push_increment()
                     c +=     "smallest.insert(dIncrement);";
                     c +=     "if (smallest.size() > extremas_max_size) {";
                     c +=         "// remove largest (last) element";
-                    c +=         "smallest.erase(*smallest.rbegin());";
+                    c +=         "auto it = smallest.cend();";
+                    c +=         "--it;";
+                    c +=         "smallest.erase(it);";
                     c +=     "}";
                     c += "}";
                     c += "{";
@@ -1113,7 +1130,8 @@ void EntityTableSymbol::build_body_push_increment()
                     c +=     "largest.insert(dIncrement);";
                     c +=     "if (largest.size() > extremas_max_size) {";
                     c +=         "// remove smallest (first) element";
-                    c +=         "largest.erase(*largest.begin());";
+                    c +=         "auto it = largest.cbegin();";
+                    c +=         "largest.erase(it);";
                     c +=     "}";
                     c += "} // largest";
                 }

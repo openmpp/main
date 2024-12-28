@@ -7,37 +7,42 @@
 #if 0 // Hide non-C++ syntactic island from IDE
 
 
+table snapshot screened1 Person EarningsAt50_mean
+[trigger_entrances(integer_age, 50)]
+{
+    {
+        //earnings,          //EN earnings
+        //unit,              //EN unit
+        //earnings / unit,   //EN Average earnings (naive)
+        mean(earnings),    //EN Average earnings (Welford)
+        P50(earnings)    //EN Median earnings
+        //variance(earnings), //EN Variance of earnings (variance)
+        //stdev(earnings)   //EN Standard deviation of earnings (stdev)
+    }
+};
+
 //table snapshot Person EarningsAt50
 //[trigger_entrances(integer_age, 50)]
 //{
 //    {
-//        earnings / unit,   //EN Average earnings
-//        se_earnings / unit //EN Average self-employed earnings
+//        earnings,        //EN Total earnings
+//        unit,            //EN Persons
+//        maximum(earnings), //EN Maximum earnings
+//        P50(earnings),   //EN Median earnings
+//        P50(se_earnings) //EN Median self-employed earnings
 //    }
 //};
-
-table snapshot Person EarningsAt50
-[trigger_entrances(integer_age, 50)]
-{
-    {
-        earnings,        //EN Total earnings
-        unit,            //EN Persons
-        maximum(earnings), //EN Maximum earnings
-        P50(earnings),   //EN Median earnings
-        P50(se_earnings) //EN Median self-employed earnings
-    }
-};
-
-table snapshot screened1 Person EarningsAt50_screened
-[trigger_entrances(integer_age, 50)]
-{
-    {
-        earnings,        //EN Total earnings
-        unit,            //EN Persons
-        maximum(earnings), //EN Maximum earnings
-        P50(earnings),   //EN Median earnings
-        P50(se_earnings) //EN Median self-employed earnings
-    }
-};
+//
+//table snapshot screened1 Person EarningsAt50_screened
+//[trigger_entrances(integer_age, 50)]
+//{
+//    {
+//        earnings,        //EN Total earnings
+//        unit,            //EN Persons
+//        maximum(earnings), //EN Maximum earnings
+//        P50(earnings),   //EN Median earnings
+//        P50(se_earnings) //EN Median self-employed earnings
+//    }
+//};
 
 #endif // Hide non-C++ syntactic island from IDE

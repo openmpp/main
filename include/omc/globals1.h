@@ -7,6 +7,7 @@
 
 #pragma once
 #include <limits>
+#include <set>
 #include "libopenm/omModel.h" // for openm::IRunBase
 
 // Undefined value for a table cell
@@ -50,13 +51,61 @@ void ProcessDevelopmentOptions(const openm::IRunOptions * const i_options);
  * @param   st       The statistic of the accumulator, e.g. sum.
  * @param   inc      The increment of the accumulator, e.g. delta.
  * @param   n        The count of observations, i.e. number of increments pushed to accumulator.
+ * @param   extrema_size The maximum size of an extrema collection.
+ * @param   smallest The extrema collextion containing the smallest observations (pointer).
+ * @param   largest The extrema collextion containing the largest observations (pointer).
  *
  * @returns The transformed value.
  */
-double TransformScreened1(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
-double TransformScreened2(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
-double TransformScreened3(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
-double TransformScreened4(double in_value, const char* desc, omr::stat st, omr::incr inc, double n);
+double TransformScreened1(const double in_value, const char* desc, const omr::stat st, const omr::incr inc, const double n, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest);
+
+/**
+ * Table screening transformation function #2
+ *
+ * @param   in_value The table value subject to transformation.
+ * @param   desc     A formatted string containing information about the table and accumulator.
+ * @param   st       The statistic of the accumulator, e.g. sum.
+ * @param   inc      The increment of the accumulator, e.g. delta.
+ * @param   n        The count of observations, i.e. number of increments pushed to accumulator.
+ * @param   extrema_size The maximum size of an extrema collection.
+ * @param   smallest The extrema collextion containing the smallest observations (pointer).
+ * @param   largest The extrema collextion containing the largest observations (pointer).
+ *
+ * @returns The transformed value.
+ */
+double TransformScreened2(const double in_value, const char* desc, const omr::stat st, const omr::incr inc, const double n, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest);
+
+/**
+ * Table screening transformation function #3
+ *
+ * @param   in_value The table value subject to transformation.
+ * @param   desc     A formatted string containing information about the table and accumulator.
+ * @param   st       The statistic of the accumulator, e.g. sum.
+ * @param   inc      The increment of the accumulator, e.g. delta.
+ * @param   n        The count of observations, i.e. number of increments pushed to accumulator.
+ * @param   extrema_size The maximum size of an extrema collection.
+ * @param   smallest The extrema collextion containing the smallest observations (pointer).
+ * @param   largest The extrema collextion containing the largest observations (pointer).
+ *
+ * @returns The transformed value.
+ */
+double TransformScreened3(const double in_value, const char* desc, const omr::stat st, const omr::incr inc, const double n, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest);
+
+/**
+ * Table screening transformation function #4
+ *
+ * @param   in_value The table value subject to transformation.
+ * @param   desc     A formatted string containing information about the table and accumulator.
+ * @param   st       The statistic of the accumulator, e.g. sum.
+ * @param   inc      The increment of the accumulator, e.g. delta.
+ * @param   n        The count of observations, i.e. number of increments pushed to accumulator.
+ * @param   extrema_size The maximum size of an extrema collection.
+ * @param   smallest The extrema collextion containing the smallest observations (pointer).
+ * @param   largest The extrema collextion containing the largest observations (pointer).
+ *
+ * @returns The transformed value.
+ */
+double TransformScreened4(const double in_value, const char* desc, const omr::stat st, const omr::incr inc, const double n, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest);
 
 // defined in use/random/random_*.ompp
 typedef std::vector<std::string> random_state; // type used to store state of all streams

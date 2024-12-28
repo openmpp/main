@@ -6,9 +6,33 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
+options screened_extremas_size = 3;
+
 #endif // Hide non-C++ syntactic island from IDE
 
-double TransformScreened1(double in_value, const char* acc, omr::stat st, omr::incr inc, double n)
+/**
+ * Table screening transformation function #1
+ *
+ * @param   in_value The table value subject to transformation.
+ * @param   desc     A formatted string containing information about the table and accumulator.
+ * @param   st       The statistic of the accumulator, e.g. sum.
+ * @param   inc      The increment of the accumulator, e.g. delta.
+ * @param   n        The count of observations, i.e. number of increments pushed to accumulator.
+ * @param   extrema_size The maximum size of an extrema collection.
+ * @param   smallest The extrema collextion containing the smallest observations (pointer).
+ * @param   largest The extrema collextion containing the largest observations (pointer).
+ *
+ * @returns The transformed value.
+ */
+double TransformScreened1(
+    const double in_value,
+    const char* desc,
+    const omr::stat st,
+    const omr::incr inc,
+    const double n,
+    const size_t extremas_size,
+    const std::multiset<double>& smallest,
+    const std::multiset<double>& largest)
 {
     /// transformed value, initialized to quiet NaN (indicates suppressed)
     double out_value = UNDEF_VALUE;
