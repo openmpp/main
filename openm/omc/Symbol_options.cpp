@@ -49,6 +49,7 @@ bool Symbol::option_all_attributes_visible = false;
 bool Symbol::option_use_heuristic_short_names = false;
 bool Symbol::option_enable_heuristic_names_for_enumerators = true;
 bool Symbol::option_convert_modgen_note_syntax = true;
+size_t Symbol::option_screened_extremas_size = 5;
 size_t Symbol::short_name_max_length = 32;
 bool Symbol::option_censor_event_time = false;
 bool Symbol::option_ascii_infinity = false;
@@ -553,6 +554,24 @@ void Symbol::do_options()
             }
             else if (value == "off") {
                 option_convert_modgen_note_syntax = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "screened_extremas_size";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            int i_value = std::stoi(value);
+            if (i_value < 1) {
+                pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be 1 or more"));
+            }
+            else {
+                option_screened_extremas_size = (size_t) i_value;
             }
             // remove processed option
             options.erase(iter);
