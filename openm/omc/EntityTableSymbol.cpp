@@ -186,7 +186,8 @@ void EntityTableSymbol::post_parse(int pass)
                 pp_has_count = true;
             }
             else {
-                // not yet implemented
+                // not yet implemented, handle as unweighted
+                pp_has_count = true;
                 //pp_has_sumweight = true;
             }
         }
@@ -1038,15 +1039,13 @@ void EntityTableSymbol::build_body_push_increment()
         c += "auto& dAccumulator = table->acc[acc_index][cell];";
         switch (acc->statistic) {
         case token::TK_unit:
+        case token::TK_sum:
             if (Symbol::option_weighted_tabulation && !is_untransformed) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }
             else {
                 c += "dAccumulator += dIncrement;";
             }
-            break;
-        case token::TK_sum:
-            c += "dAccumulator += dIncrement;";
             break;
         case token::TK_mean: // dAccumulator is used to store the Welford running estimate
             // update Welford running mean
