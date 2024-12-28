@@ -167,14 +167,15 @@ public:
  *
  * @tparam Tdimensions Number of dimensions.
  * @tparam Tcells      Number of cells.
- * @tparam Tmeasures   Number of measures.
- * @tparam Taccumulators Number of accumulators.
+ * @tparam Tmeasures   Number of measures in each cell.
+ * @tparam Taccumulators Number of accumulators in each cell.
  * @tparam Thas_count Has count for each cell.
  * @tparam Thas_sumweight Has sum of weights for each cell.
- * @tparam Tcollections  Number of observation collections (possibly 0)
- * @tparam Textras  Number of extra doubles per cell (possibly 0)
+ * @tparam Tcollections  Number of observation collections in each cell (possibly 0).
+ * @tparam Textras  Number of extra doubles in each cell (possibly 0).
+ * @tparam Textremas  Number of extrema pairs of collections in each cell (possibly 0).
  */
-template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections, int Textras>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections, int Textras, int Textremas>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
@@ -225,7 +226,7 @@ public:
     static const bool has_sumweight = Thas_sumweight;
 
     /**
-     * The number of observation collections in the entity table.
+     * The number of observation collections in each cell of the entity table.
      */
     static const int n_collections = Tcollections;
 
@@ -233,6 +234,11 @@ public:
      * The number of extra doubles in each cell of the entity table.
      */
     static const int n_extras = Textras;
+
+    /**
+     * The number of extrema collections in each cell of the entity table.
+     */
+    static const int n_extremas = Textremas;
 
     /**
      * Accumulator storage.
@@ -259,6 +265,13 @@ public:
      * Extras storage.
      */
     std::array<std::array<double, Tcells>, Textras> extra; // extra[Textras][Tcells]
+
+    /**
+     * Extremas storage.
+     * 
+     * Each extrema is a pair of multisets, first holds lowest values, second holds highest values.
+     */
+    std::array<std::array<std::pair<std::multiset<double>, std::multiset<double>>, Tcells>, Textremas> extrema; // extrema[Textremas][Tcells]
 };
 
 /**

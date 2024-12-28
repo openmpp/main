@@ -288,7 +288,8 @@ CodeBlock EntityTableSymbol::cxx_declaration_global()
         + (pp_has_count ? "true" : "false") + ", "
         + (pp_has_sumweight ? "true" : "false") + ", "
         + to_string(n_collections) + ", "
-        + to_string(n_extras)
+        + to_string(n_extras) + ", "
+        + to_string(n_extremas)
         + ">";
     h += "class " + cxx_class + " final : public " + cxx_template;
     h += "{";

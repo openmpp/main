@@ -59,6 +59,7 @@ public:
         , filter(nullptr)
         , n_collections(0)
         , n_extras(0)
+        , n_extremas(0)
         , pp_has_count(false)
         , pp_has_sumweight(false)
         , kind(table_kind::general)
@@ -179,6 +180,11 @@ public:
      * The number of extra working doubles for each table cell.
      */
     int n_extras;
+
+    /**
+     * The number of extrama pairs of collections in each table cell.
+     */
+    int n_extremas;
 
     /**
      * Indicates if the table maintains count for each cell.
