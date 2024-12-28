@@ -172,8 +172,9 @@ public:
  * @tparam Thas_count Has count for each cell.
  * @tparam Thas_sumweight Has sum of weights for each cell.
  * @tparam Tcollections  Number of observation collections (possibly 0)
+ * @tparam Textras  Number of extra doubles per cell (possibly 0)
  */
-template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections>
+template<int Tdimensions, int Tcells, int Tmeasures, int Taccumulators, bool Thas_count, bool Thas_sumweight, int Tcollections, int Textras>
 class EntityTable : public Table<Tdimensions, Tcells, Tmeasures>
 {
 public:
@@ -229,6 +230,11 @@ public:
     static const int n_collections = Tcollections;
 
     /**
+     * The number of extra doubles in each cell of the entity table.
+     */
+    static const int n_extras = Textras;
+
+    /**
      * Accumulator storage.
      */
     double * acc[Taccumulators];            // acc[Taccumulators][Tcells]
@@ -247,12 +253,12 @@ public:
     /**
      * observation collections storage
      */
-    std::array<std::array<std::forward_list<double>, Tcells>, Tcollections> coll; // coll[Tcells][Tcollections]
+    std::array<std::array<std::forward_list<double>, Tcells>, Tcollections> coll; // coll[Tcollections][Tcells]
 
     /**
-     * Extra storage.
+     * Extras storage.
      */
-    //std::array<std::array<double, Tcells>, Textras> extra; // extra[Textras][Tcells]
+    std::array<std::array<double, Tcells>, Textras> extra; // extra[Textras][Tcells]
 };
 
 /**

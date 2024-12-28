@@ -58,6 +58,7 @@ public:
         , push_increment_fn(nullptr)
         , filter(nullptr)
         , n_collections(0)
+        , n_extras(0)
         , pp_has_count(false)
         , pp_has_sumweight(false)
         , kind(table_kind::general)
@@ -173,6 +174,11 @@ public:
      * for each cell of the table.  This is the count of the number of such collections in each table cell.
      */
     int n_collections;
+
+    /**
+     * The number of extra working doubles for each table cell.
+     */
+    int n_extras;
 
     /**
      * Indicates if the table maintains count for each cell.
