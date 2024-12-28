@@ -40,6 +40,8 @@ public:
         , pp_analysis_attribute(nullptr)
         , updates_obs_collection(false)
         , obs_collection_index(-1)
+        , updates_extrema_collections(false)
+        , extrema_collections_index(-1)
         , index(index)
     {
         // grammar guarantee
@@ -92,26 +94,34 @@ public:
         );
 
         // determine if there is an associated collection of observations
-        has_obs_collection = statistic == token::TK_gini
-                          || statistic == token::TK_P1
-                          || statistic == token::TK_P2
-                          || statistic == token::TK_P5
-                          || statistic == token::TK_P10
-                          || statistic == token::TK_P20
-                          || statistic == token::TK_P25
-                          || statistic == token::TK_P30
-                          || statistic == token::TK_P40
-                          || statistic == token::TK_P50
-                          || statistic == token::TK_P60
-                          || statistic == token::TK_P70
-                          || statistic == token::TK_P75
-                          || statistic == token::TK_P80
-                          || statistic == token::TK_P90
-                          || statistic == token::TK_P95
-                          || statistic == token::TK_P98
-                          || statistic == token::TK_P99
-                          ;
-         
+        has_obs_collection = 
+               statistic == token::TK_gini
+            || statistic == token::TK_P1
+            || statistic == token::TK_P2
+            || statistic == token::TK_P5
+            || statistic == token::TK_P10
+            || statistic == token::TK_P20
+            || statistic == token::TK_P25
+            || statistic == token::TK_P30
+            || statistic == token::TK_P40
+            || statistic == token::TK_P50
+            || statistic == token::TK_P60
+            || statistic == token::TK_P70
+            || statistic == token::TK_P75
+            || statistic == token::TK_P80
+            || statistic == token::TK_P90
+            || statistic == token::TK_P95
+            || statistic == token::TK_P98
+            || statistic == token::TK_P99
+            ;
+        // determine if this accumulator needs a pair of extrema collections (if table is screened)
+        needs_extrema_collections =
+               statistic == token::TK_sum
+            || statistic == token::TK_minimum
+            || statistic == token::TK_maximum
+            || statistic == token::TK_mean
+            ;
+        
     }
 
     /**
@@ -282,9 +292,28 @@ public:
     /**
      * The zero-based index of the associated collection of observations (if any)
      * 
-     * Set to -1 if there is no associated collection.
+     * Is -1 if there is no associated observation collection.
      */
     int obs_collection_index;
+
+    /**
+     * Indicates if the accumulator has an associated pair of extrema collections of observations (if table is screened).
+     */
+    bool needs_extrema_collections;
+
+    /**
+     * Indicates if this accumulator updates its associated pair of extrema collections of observations.
+     * 
+     * Multiple accumulators can share a single pair of extrema collections.
+     */
+    bool updates_extrema_collections;
+
+    /**
+     * The zero-based index of the associated pair of extrema collections of observations (if any)
+     *
+     * Is -1 if there is no associated pair of extrema collections.
+     */
+    int extrema_collections_index;
 
     /**
      * Zero-based index of the accumulator within this table.

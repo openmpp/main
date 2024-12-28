@@ -145,16 +145,49 @@ void EntityTableSymbol::post_parse(int pass)
         if (is_screened()) {
             // screened tables always require count
             pp_has_count = true;
+            // Process extrema collections of observations required by accumulators
+            for (auto acc : pp_accumulators) {
+                if (acc->needs_extrema_collections) {
+                    // Search for an accumulator which is already marked to update the same pair of extrema collections.
+                    EntityTableAccumulatorSymbol* acc_found = nullptr;
+                    for (auto acc2 : pp_accumulators) {
+                        if (
+                            acc2->pp_attribute == acc->pp_attribute  // same attribute,   e.g. Person::earnings
+                            && acc2->increment == acc->increment        // same 'increment', e.g. TK_value_out
+                            && acc2->tabop == acc->tabop                // same table operator, e.g. TK_interval
+                            && acc2->updates_extrema_collections) {
+                            // Another accumulator was found with the same properties (except statistic),
+                            // which is already handling the same required pair of extrema collections.
+                            acc_found = acc2;
+                            break;
+                        }
+                    }
+                    if (acc_found) {
+                        // Another accumulator is already updating the same pair of extrema collections.
+                        assert(acc_found->updates_extrema_collections);
+                        // Share the same pair of extrema collections.
+                        acc->updates_extrema_collections = false;
+                        acc->extrema_collections_index = acc_found->extrema_collections_index;
+                    }
+                    else {
+                        // This pair of extrema ollections is not handled by another accumulator.
+                        // This accumulator will update the pair of extrema collections.
+                        acc->updates_extrema_collections = true;
+                        acc->extrema_collections_index = n_extremas;
+                        ++n_extremas;
+                    }
+                }
+            }
         }
 
         if (uses_mean()) {
             if (is_untransformed || !Symbol::option_weighted_tabulation) {
-                // denominator is count
+                // count is required by Welford algorithm
                 pp_has_count = true;
             }
             else {
-                // denominator is sum of weights
-                pp_has_sumweight = true;
+                // not yet implemented
+                //pp_has_sumweight = true;
             }
         }
 
@@ -183,6 +216,7 @@ void EntityTableSymbol::post_parse(int pass)
                 }
                 if (acc_found) {
                     // Another accumulator is already updating the collection of observations.
+                    assert(acc_found->updates_obs_collection);
                     // Share the same collection.
                     acc->updates_obs_collection = false;
                     acc->obs_collection_index = acc_found->obs_collection_index;
@@ -1000,14 +1034,16 @@ void EntityTableSymbol::build_body_push_increment()
             c += "dAccumulator += dIncrement;";
             break;
         case token::TK_mean: // dAccumulator is used to store the Welford running estimate
-            // update Welford running mean estiamate
+            // update Welford running mean
+            c += "{";
+            c += "// Update Welford running mean";
             c += "auto& dCount = table->count[cell];";
-            c += "// Welford running mean";
             c += "if (dCount == 1.0) {";
             c +=     "dAccumulator = dIncrement;";
             c += "}";
             c += "else {";
             c +=     "dAccumulator += (dIncrement - dAccumulator) / dCount;";
+            c += "}";
             c += "}";
             break;
         case token::TK_variance:
@@ -1053,6 +1089,39 @@ void EntityTableSymbol::build_body_push_increment()
         break;
         default:
             assert(0); // parser guarantee
+        }
+        if (is_screened()) {
+            if (acc->needs_extrema_collections) {
+                c += "{";
+                if (acc->updates_extrema_collections) {
+                    c += "// Update pair of extrema collections with this increment";
+                    c += "const size_t extremas_max_size = " + to_string(Symbol::option_screened_extremas_size) + ";";
+                    c += "const size_t extremas_index = " + to_string(acc->extrema_collections_index) + "; // pair of extrema collections index";
+                    c += "auto& pr = table->extrema[cell][extremas_index];";
+                    c += "{";
+                    c +=     "// smallest";
+                    c +=     "auto& smallest = pr.first;";
+                    c +=     "smallest.insert(dIncrement);";
+                    c +=     "if (smallest.size() > extremas_max_size) {";
+                    c +=         "// remove largest (last) element";
+                    c +=         "smallest.erase(*smallest.rbegin());";
+                    c +=     "}";
+                    c += "}";
+                    c += "{";
+                    c +=     "// largest";
+                    c +=     "auto& largest = pr.second;";
+                    c +=     "largest.insert(dIncrement);";
+                    c +=     "if (largest.size() > extremas_max_size) {";
+                    c +=         "// remove smallest (first) element";
+                    c +=         "largest.erase(*largest.begin());";
+                    c +=     "}";
+                    c += "} // largest";
+                }
+                else {
+                    c += "// Same increment already being pushed to same pair of extrema collections by another accumulator";
+                }
+                c += "} // update pair of extrema collections";
+            }
         }
         if (Symbol::option_event_trace) {
             // inject event trace code into push increment function
