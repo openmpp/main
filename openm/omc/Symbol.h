@@ -1864,9 +1864,24 @@ public:
     static bool option_convert_modgen_note_syntax;
 
     /**
-     * size of the screened extremas collections
+     * size of the screened1 extremas collections
      */
-    static size_t option_screened_extremas_size;
+    static size_t option_screened1_extremas_size;
+
+    /**
+     * size of the screened2 extremas collections
+     */
+    static size_t option_screened2_extremas_size;
+
+    /**
+     * size of the screened3 extremas collections
+     */
+    static size_t option_screened3_extremas_size;
+
+    /**
+     * size of the screened4 extremas collections
+     */
+    static size_t option_screened4_extremas_size;
 
     /**
      * maximum length of a short name

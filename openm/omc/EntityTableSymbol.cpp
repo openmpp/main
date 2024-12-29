@@ -614,7 +614,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "double n = count[cell];";
             if (acc->needs_extrema_collections) {
                 assert(acc->extrema_collections_index >= 0);
-                c += "size_t es = " + to_string(Symbol::option_screened_extremas_size) + ";";
+                c += "size_t es = " + to_string(screened_extremas_size()) + ";";
                 c += "const size_t extrema_index = " + to_string(acc->extrema_collections_index) + ";";
                 c += "const auto& smallest = extrema[extrema_index][cell].first;";
                 c += "const auto& largest = extrema[extrema_index][cell].second;";
@@ -1109,7 +1109,7 @@ void EntityTableSymbol::build_body_push_increment()
                 c += "{";
                 if (acc->updates_extrema_collections) {
                     c += "// Update pair of extrema collections with this increment";
-                    c += "const size_t extremas_max_size = " + to_string(Symbol::option_screened_extremas_size) + ";";
+                    c += "const size_t extremas_max_size = " + to_string(screened_extremas_size()) + ";";
                     c += "const size_t extremas_index = " + to_string(acc->extrema_collections_index) + "; // pair of extrema collections index";
                     c += "auto& pr = table->extrema[cell][extremas_index];";
                     c += "{";

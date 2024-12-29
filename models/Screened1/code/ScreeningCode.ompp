@@ -6,7 +6,7 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-options screened_extremas_size = 3;
+options screened1_extremas_size = 3;
 
 #endif // Hide non-C++ syntactic island from IDE
 

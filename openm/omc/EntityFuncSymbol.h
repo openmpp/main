@@ -41,6 +41,7 @@ public:
         : EntityMemberSymbol(sym, ent, decl_loc)
         , arg_list_decl(arg_list_decl)
         , return_decl(return_decl)
+        , is_developer_supplied(false)
         , suppress_defn(suppress_defn)
         , suppress_decl(false)
         , suppress_code_if_empty(false)

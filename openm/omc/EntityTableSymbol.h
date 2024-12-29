@@ -319,6 +319,20 @@ public:
     int screened_method;
 
     /**
+     * The screened extremas size for this table
+     */
+    size_t screened_extremas_size(void) const
+    {
+        switch (screened_method) {
+        case 1: return option_screened1_extremas_size;
+        case 2: return option_screened2_extremas_size;
+        case 3: return option_screened3_extremas_size;
+        case 4: return option_screened4_extremas_size;
+        default: return 0;
+        }
+    }
+
+    /**
      * Class name used to declare the entity table.
      */
     string cxx_class;
