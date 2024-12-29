@@ -9,6 +9,7 @@
 #include <cassert>
 #include "Symbol.h"
 #include "AttributeSymbol.h"
+#include "EntityTableSymbol.h"
 
 class AttributeSymbol;
 class EntityTableMeasureAttributeSymbol;
@@ -115,7 +116,7 @@ public:
             || statistic == token::TK_P99
             ;
         // determine if this accumulator needs a pair of extrema collections (if table is screened)
-        needs_extrema_collections =
+        eligible_for_extrema_collections =
                statistic == token::TK_sum
             || statistic == token::TK_minimum
             || statistic == token::TK_maximum
@@ -297,9 +298,19 @@ public:
     int obs_collection_index;
 
     /**
+     * Indicates if the accumulator is eligible to have an associated pair of extrema collections of observations (if table is screened).
+     */
+    bool eligible_for_extrema_collections;
+
+    /**
      * Indicates if the accumulator has an associated pair of extrema collections of observations (if table is screened).
      */
-    bool needs_extrema_collections;
+    bool has_extrema_collections() const
+    {
+        assert(pp_pass > eAssignMembers);
+        return eligible_for_extrema_collections
+            && (pp_table && pp_table->screened_extremas_size() > 0);
+    }
 
     /**
      * Indicates if this accumulator updates its associated pair of extrema collections of observations.

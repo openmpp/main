@@ -147,7 +147,7 @@ void EntityTableSymbol::post_parse(int pass)
             pp_has_count = true;
             // Process extrema collections of observations required by accumulators
             for (auto acc : pp_accumulators) {
-                if (acc->needs_extrema_collections) {
+                if (acc->has_extrema_collections()) {
                     // Search for an accumulator which is already marked to update the same pair of extrema collections.
                     EntityTableAccumulatorSymbol* acc_found = nullptr;
                     for (auto acc2 : pp_accumulators) {
@@ -612,7 +612,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
             assert(pp_has_count);
             c += "double n = count[cell];";
-            if (acc->needs_extrema_collections) {
+            if (acc->has_extrema_collections()) {
                 assert(acc->extrema_collections_index >= 0);
                 c += "size_t es = " + to_string(screened_extremas_size()) + ";";
                 c += "const size_t extrema_index = " + to_string(acc->extrema_collections_index) + ";";
@@ -1105,7 +1105,7 @@ void EntityTableSymbol::build_body_push_increment()
             assert(0); // parser guarantee
         }
         if (is_screened()) {
-            if (acc->needs_extrema_collections) {
+            if (acc->has_extrema_collections()) {
                 c += "{";
                 if (acc->updates_extrema_collections) {
                     c += "// Update pair of extrema collections with this increment";

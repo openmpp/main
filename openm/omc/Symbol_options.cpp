@@ -570,7 +570,7 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             int i_value = std::stoi(value);
-            if (i_value < 1) {
+            if (i_value < 0) {
                 pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be 1 or more"));
             }
             else {
@@ -588,7 +588,7 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             int i_value = std::stoi(value);
-            if (i_value < 1) {
+            if (i_value < 0) {
                 pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be 1 or more"));
             }
             else {
@@ -606,7 +606,7 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             int i_value = std::stoi(value);
-            if (i_value < 1) {
+            if (i_value < 0) {
                 pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be 1 or more"));
             }
             else {
@@ -624,7 +624,7 @@ void Symbol::do_options()
             auto& opt_pair = iter->second; // opt_pair is option value, option location
             string& value = opt_pair.first;
             int i_value = std::stoi(value);
-            if (i_value < 1) {
+            if (i_value < 0) {
                 pp_error(omc::location(), LT("error : '") + value + LT("' is invalid - must be 1 or more"));
             }
             else {
