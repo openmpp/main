@@ -92,8 +92,8 @@ void EntityTableAccumulatorSymbol::post_parse(int pass)
         }
 
         // emit warning if weighting enabled for table and statistic without weight support is used (unless table is untransformed)
-        if ((option_weighted_tabulation && !pp_table->is_untransformed) &&
-            (has_obs_collection || (statistic == token::TK_mean) || (statistic == token::TK_variance) || (statistic == token::TK_stdev))) {
+        if (pp_table->is_weighted() &&
+            (has_obs_collection || (statistic == token::TK_variance) || (statistic == token::TK_stdev))) {
             auto stat_name = token_to_string(statistic);
             pp_warning(LT("warning : weighting is not supported for statistic '") + stat_name + LT("', in table '") + pp_table->name + "'");
         }

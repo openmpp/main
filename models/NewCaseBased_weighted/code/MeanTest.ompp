@@ -11,8 +11,7 @@ table snapshot Person MeanDurationOfLife //EN Duration of Life
         unit,                //EN Persons
         duration(),          //EN PY
         duration() / unit,   //EN PY / Persons
-        mean(duration()),    //EN mean(PY)
-        P50(duration())      //EN P50(PY)
+        mean(duration())     //EN mean(PY)
     }
 };
 
@@ -23,8 +22,7 @@ table snapshot untransformed Person MeanDurationOfLife_unweighted //EN Duration 
         unit,                //EN Persons
         duration(),          //EN PY
         duration() / unit,   //EN PY / Persons
-        mean(duration()),    //EN mean(PY)
-        P50(duration())      //EN P50(PY)
+        mean(duration())     //EN mean(PY)
     }
 };
 

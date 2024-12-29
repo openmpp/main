@@ -319,6 +319,14 @@ public:
     int screened_method;
 
     /**
+     * true if the table is weighted
+     */
+    bool is_weighted(void) const
+    {
+        return option_weighted_tabulation && !is_untransformed;
+    }
+
+    /**
      * The screened extremas size for this table
      */
     size_t screened_extremas_size(void) const

@@ -181,14 +181,13 @@ void EntityTableSymbol::post_parse(int pass)
         }
 
         if (uses_mean()) {
-            if (is_untransformed || !Symbol::option_weighted_tabulation) {
-                // count is required by Welford algorithm
-                pp_has_count = true;
+            if (is_weighted()) {
+                // weighted mean uses naive algorithm, sumweight is required for denominator
+                pp_has_sumweight = true;
             }
             else {
-                // not yet implemented, handle as unweighted
+                // count is required by Welford algorithm
                 pp_has_count = true;
-                //pp_has_sumweight = true;
             }
         }
 
@@ -377,6 +376,15 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             initial_value = "  0.0";
             break;
         case token::TK_mean:
+            if (is_weighted()) {
+                // Weighted tables use naive method - accmulator holds weighted numerator.
+                initial_value = "  0.0";
+            }
+            else {
+                // Welford method has no valid initial value before the first observation.
+                initial_value = "  std::numeric_limits<double>::quiet_NaN()";
+            }
+            break;
         case token::TK_variance:
         case token::TK_stdev:
             // Statistics/accumulators for numerically stable running estimates, e.g. 'mean' uses the Welford algorithm,
@@ -596,8 +604,22 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "acc[" + acc_index + "][cell] = " + stat_name + "[" + obs_index + "];";
         }
         else if (acc->statistic == token::TK_mean) {
-            c += "// The Welford algorithm running estimate of the mean is already in accumulator";
-            c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
+            if (is_weighted()) {
+                c += "{";
+                c += "// For the naive estimate, the accumulator contains the weighted numerator";
+                c += "double numerator = acc[" + acc_index + "][cell];";
+                c += "double denominator = sumweight[cell];";
+                c += "double quotient = std::numeric_limits<double>::quiet_NaN();";
+                c += "if (denominator != 0.0) {";
+                c += "quotient = numerator / denominator;";
+                c += "}";
+                c += "acc[" + acc_index + "][cell] = quotient;";
+                c += "}";
+            }
+            else {
+                c += "// The Welford algorithm running estimate of the mean is already in the accumulator";
+                c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
+            }
         }
         else {
             c += "// value of statistic " + stat_name + " is already in accumulator";
@@ -907,10 +929,13 @@ void EntityTableSymbol::build_body_push_increment()
             c += "// Maintain sum of weights for body cell and margin cells";
             c += "for (size_t cell : cells_to_increment) {";
         }
-        if (Symbol::option_weighted_tabulation && !is_untransformed) {
+        if (is_weighted()) {
             c += "table->sumweight[cell] += entity_weight;";
         }
         else {
+            // This is not reached, because only weighted tables should have sumweight.
+            // but is included for completeness
+            assert(false);
             c += "table->sumweight[cell] += 1.0;";
         }
 
@@ -1040,7 +1065,7 @@ void EntityTableSymbol::build_body_push_increment()
         switch (acc->statistic) {
         case token::TK_unit:
         case token::TK_sum:
-            if (Symbol::option_weighted_tabulation && !is_untransformed) {
+            if (is_weighted()) {
                 c += "dAccumulator += entity_weight * dIncrement;";
             }
             else {
@@ -1048,17 +1073,25 @@ void EntityTableSymbol::build_body_push_increment()
             }
             break;
         case token::TK_mean: // dAccumulator is used to store the Welford running estimate
-            // update Welford running mean
-            c += "{";
-            c += "// Update Welford running mean";
-            c += "auto& dCount = table->count[cell];";
-            c += "if (dCount == 1.0) {";
-            c +=     "dAccumulator = dIncrement;";
-            c += "}";
-            c += "else {";
-            c +=     "dAccumulator += (dIncrement - dAccumulator) / dCount;";
-            c += "}";
-            c += "}";
+            if (is_weighted()) {
+                c += "{";
+                c += "// Update weighted numerator (naive method)";
+                c += "dAccumulator += entity_weight * dIncrement;";
+                c += "}";
+            }
+            else {
+                c += "{";
+                c += "// Update running mean (Welford method)";
+                c += "auto& dCount = table->count[cell];";
+                c += "if (dCount == 1.0) {";
+                c += "dAccumulator = dIncrement;";
+                c += "}";
+                c += "else {";
+                c += "dAccumulator += (dIncrement - dAccumulator) / dCount;";
+                c += "}";
+                c += "}";
+
+            }
             break;
         case token::TK_variance:
             c += "// not implemented";
