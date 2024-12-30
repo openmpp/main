@@ -236,6 +236,13 @@ public:
     bool uses_mean(void) const;
 
     /**
+     * Query if this EntityTableSymbol uses variance or stdev
+     *
+     * @returns True if uses variance ot stdev, false if not.
+     */
+    bool uses_variance_or_stdev(void) const;
+
+    /**
      * The default statistic for this table
      *
      * @returns A token_type.

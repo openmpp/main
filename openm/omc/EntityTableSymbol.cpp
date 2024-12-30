@@ -47,6 +47,19 @@ bool EntityTableSymbol::uses_mean(void) const
     return result;
 }
 
+bool EntityTableSymbol::uses_variance_or_stdev(void) const
+{
+    assert(pp_pass > ePopulateCollections); // uses pp_accumulators
+    bool result = false;
+    for (auto acc : pp_accumulators) {
+        if ((acc->statistic == token::TK_variance) || (acc->statistic == token::TK_stdev)) {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
 void EntityTableSymbol::create_auxiliary_symbols()
 {
     {
@@ -190,6 +203,10 @@ void EntityTableSymbol::post_parse(int pass)
                 pp_has_count = true;
             }
         }
+        if (uses_variance_or_stdev()) {
+            // count is required by Welford algorithm
+            pp_has_count = true;
+        }
 
         // Add this entity table to xref of each attribute used in expressions
         for (auto ma : pp_measure_attributes) {
@@ -228,6 +245,14 @@ void EntityTableSymbol::post_parse(int pass)
                     acc->obs_collection_index = n_collections;
                     ++n_collections;
                 }
+            }
+        }
+
+        // Process extra values required by accumulators
+        for (auto acc : pp_accumulators) {
+            if (acc->has_extra) {
+                acc->extra_index = n_extras;
+                ++n_extras;
             }
         }
 
@@ -387,9 +412,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             break;
         case token::TK_variance:
         case token::TK_stdev:
-            // Statistics/accumulators for numerically stable running estimates, e.g. 'mean' uses the Welford algorithm,
-			// have no valid initial value before the first observation.
-            initial_value = "  std::numeric_limits<double>::quiet_NaN()";
+            // Welford method S1 value is 0 (is assigned explicitily at runtime for observation 1)
+            initial_value = "  0.0";
             break;
         case token::TK_minimum:
             initial_value = " std::numeric_limits<double>::infinity()";
@@ -620,6 +644,26 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 c += "// The Welford algorithm running estimate of the mean is already in the accumulator";
                 c += "//acc[" + acc_index + "][cell] = acc[" + acc_index + "][cell];";
             }
+        }
+        else if ((acc->statistic == token::TK_variance)) {
+            assert(!is_weighted()); // variance not implemented for weighted tables
+            c += "{";
+            c += "// The Welford algorithm implementation stores Sn in the accumulator";
+            c += "double Sn = acc[" + acc_index + "][cell];";
+            c += "double n = count[cell];";
+            c += "double s2 = Sn / (n - 1.0);";
+            c += "acc[" + acc_index + "][cell] = s2;";
+            c += "}";
+        }
+        else if ((acc->statistic == token::TK_stdev)) {
+            assert(!is_weighted()); // stdev not implemented for weighted tables
+            c += "{";
+            c += "// The Welford algorithm implementation stores Sn in the accumulator";
+            c += "double Sn = acc[" + acc_index + "][cell];";
+            c += "double n = count[cell];";
+            c += "double s2 = Sn / (n - 1.0);";
+            c += "acc[" + acc_index + "][cell] = std::sqrt(s2);";
+            c += "}";
         }
         else {
             c += "// value of statistic " + stat_name + " is already in accumulator";
@@ -1082,22 +1126,39 @@ void EntityTableSymbol::build_body_push_increment()
             else {
                 c += "{";
                 c += "// Update running mean (Welford method)";
-                c += "auto& dCount = table->count[cell];";
-                c += "if (dCount == 1.0) {";
+                c += "auto& k = table->count[cell];";
+                c += "if (k == 1.0) {";
                 c += "dAccumulator = dIncrement;";
                 c += "}";
                 c += "else {";
-                c += "dAccumulator += (dIncrement - dAccumulator) / dCount;";
+                c += "dAccumulator += (dIncrement - dAccumulator) / k;";
                 c += "}";
                 c += "}";
 
             }
             break;
         case token::TK_variance:
-            c += "// not implemented";
-            break;
         case token::TK_stdev:
-            c += "// not implemented";
+            assert(!is_weighted()); // variance and stdev not implemented for weighted tables
+            c += "{";
+            c += "// Welford algorithm:";
+            c +=     "//  running mean Mk is stored in extras";
+            c +=     "//  running Sk is stored in accumulator";
+            c +=     "auto& k = table->count[cell];";
+            c +=     "const int extra_index = " + to_string(acc->extra_index) + ";";
+            c +=     "double &xk = dIncrement;";
+            c +=     "if (k == 1.0) {";
+            c +=         "table->extra[extra_index][cell] = dIncrement; // M1";
+            c +=         "dAccumulator = 0.0; // S1";
+            c +=     "}";
+            c +=     "else {";
+            c +=         "double Mk_1 = table->extra[extra_index][cell]; // required for Sk below";
+            c +=         "// update running mean Mk";
+            c +=         "double& Mk = table->extra[extra_index][cell] += (dIncrement - Mk_1) / k;";
+            c +=         "// update running Sk";
+            c +=         "dAccumulator += (xk - Mk_1) * (xk - Mk);";
+            c +=     "}";
+            c += "}";
             break;
         case token::TK_minimum:
             c += "if ( dIncrement < dAccumulator ) dAccumulator = dIncrement;";

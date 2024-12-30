@@ -41,6 +41,7 @@ public:
         , pp_analysis_attribute(nullptr)
         , updates_obs_collection(false)
         , obs_collection_index(-1)
+        , extra_index(-1)
         , updates_extrema_collections(false)
         , extrema_collections_index(-1)
         , index(index)
@@ -114,6 +115,11 @@ public:
             || statistic == token::TK_P95
             || statistic == token::TK_P98
             || statistic == token::TK_P99
+            ;
+        // determine if there is an associated extra value
+        has_extra =
+               statistic == token::TK_variance
+            || statistic == token::TK_stdev
             ;
         // determine if this accumulator needs a pair of extrema collections (if table is screened)
         eligible_for_extrema_collections =
@@ -296,6 +302,18 @@ public:
      * Is -1 if there is no associated observation collection.
      */
     int obs_collection_index;
+
+    /**
+     * Indicates if the accumulator has an associated extra working value.
+     */
+    bool has_extra;
+
+    /**
+     * The zero-based index of the extra value (if any)
+     *
+     * Is -1 if there is no associated extra value.
+     */
+    int extra_index;
 
     /**
      * Indicates if the accumulator is eligible to have an associated pair of extrema collections of observations (if table is screened).
