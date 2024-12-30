@@ -26,20 +26,25 @@ options screened1_extremas_size = 3;
  */
 double TransformScreened1(
     const double in_value,
-    const char* desc,
-    const omr::stat st,
-    const omr::incr inc,
-    const double n,
-    const size_t extremas_size,
+    const char* description,
+    const omr::stat statistic,
+    const omr::incr increment,
+    const double observations,
+    const size_t extrema_size,
     const std::multiset<double>& smallest,
-    const std::multiset<double>& largest)
+    const std::multiset<double>& largest
+)
 {
-    /// transformed value, initialized to quiet NaN (indicates suppressed)
+    /// transformed value, initialized to quiet NaN (shows as empty)
     double out_value = UNDEF_VALUE;
 
     // notional example of transformation (round to 00's)
+    
+    // scale to 100's
     out_value = in_value / 100.0;
+    // round to nearest integer
     out_value = std::trunc(out_value + 0.5);
+    // scale back to original units
     out_value *= 100.0;
 
     return out_value;
