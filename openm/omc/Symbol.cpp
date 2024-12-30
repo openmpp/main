@@ -1379,7 +1379,7 @@ void Symbol::create_missing_global_funcs(void)
         // create a definition of TransformScreened[1-4] if not supplied in model code.
         string name = "TransformScreened" + to_string(j);
         string return_decl = "double";
-        string arg_list_decl = "const double in_value, const char *desc, const omr::stat st, const omr::incr inc, const double n, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest";
+        string arg_list_decl = "const double in_value, const char *description, const omr::stat statistic, const omr::incr increment, const double observations, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest";
         if (!exists(name)) {
             auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
             s->suppress_decl = true;  // already declared elsewhere (in globals1.h)
