@@ -6,7 +6,6 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-
 table snapshot  Person EarningsAt50
 [trigger_entrances(integer_age, 50)]
 {
@@ -16,29 +15,5 @@ table snapshot  Person EarningsAt50
         P50(earnings)   //EN Median earnings
     }
 };
-
-//table snapshot Person EarningsAt50
-//[trigger_entrances(integer_age, 50)]
-//{
-//    {
-//        earnings,        //EN Total earnings
-//        unit,            //EN Persons
-//        maximum(earnings), //EN Maximum earnings
-//        P50(earnings),   //EN Median earnings
-//        P50(se_earnings) //EN Median self-employed earnings
-//    }
-//};
-//
-//table snapshot screened1 Person EarningsAt50_screened
-//[trigger_entrances(integer_age, 50)]
-//{
-//    {
-//        earnings,        //EN Total earnings
-//        unit,            //EN Persons
-//        maximum(earnings), //EN Maximum earnings
-//        P50(earnings),   //EN Median earnings
-//        P50(se_earnings) //EN Median self-employed earnings
-//    }
-//};
 
 #endif // Hide non-C++ syntactic island from IDE

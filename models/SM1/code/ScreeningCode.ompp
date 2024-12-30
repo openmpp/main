@@ -40,11 +40,11 @@ double TransformScreened1(
 
     // notional example of transformation (round to 00's)
     
-    // scale to 100's
+    // scale value down by 100x
     out_value = in_value / 100.0;
     // round to nearest integer
     out_value = std::trunc(out_value + 0.5);
-    // scale back to original units
+    // scale value up by 100x
     out_value *= 100.0;
 
     return out_value;
