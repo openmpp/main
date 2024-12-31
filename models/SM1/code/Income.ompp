@@ -20,6 +20,7 @@ parameters
     double SE_EarningsNonZeroProportion;
     double SE_EarningsScaleFactor;
     double SE_EarningsSigma;
+    double HighIncomeThreshold;
     double GuaranteedAnnualIncome;
     double AuditThreshold;
     cumrate RegionDistribution[REGION];
@@ -41,6 +42,9 @@ entity Person
 
     //EN Benefit
     double benefit = max(GuaranteedAnnualIncome, GuaranteedAnnualIncome - positive_earnings);
+
+    //EN High earner
+    bool high_earner = (all_earnings >= HighIncomeThreshold);
 
     //EN Under audit
     bool under_audit = (all_earnings >= AuditThreshold) || (positive_earnings != all_earnings);
