@@ -1377,20 +1377,22 @@ void Symbol::create_missing_global_funcs(void)
             pp_missing_global_funcs.insert(s);
         }
     }
-    for (int j=1; j<=4; ++j) { // hard-coded to 4 versions
-        // create a definition of TransformScreened[1-4] if not supplied in model code.
-        string name = "TransformScreened" + to_string(j);
-        string return_decl = "double";
-        string arg_list_decl = "const double in_value, const char *description, const omr::stat statistic, const omr::incr increment, const double observations, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest";
-        if (!exists(name)) {
-            auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
-            s->suppress_decl = true;  // already declared elsewhere (in globals1.h)
-            s->suppress_defn = false; // have omc emit the pass-through definition
-            pp_missing_global_funcs.insert(s);
-            CodeBlock& cxx = s->func_body;
-            cxx += "return in_value;";
-        }
-    }
+    // Do not supply a default version of a required screened table transformation function
+    // Instead, cause an (expected) build failure at the C++ link stage.
+    //for (int j=1; j<=4; ++j) { // hard-coded to 4 versions
+    //    // create a definition of TransformScreened[1-4] if not supplied in model code.
+    //    string name = "TransformScreened" + to_string(j);
+    //    string return_decl = "double";
+    //    string arg_list_decl = "const double in_value, const char *description, const omr::stat statistic, const omr::incr increment, const double observations, const size_t extrema_size, const std::multiset<double>& smallest, const std::multiset<double>& largest";
+    //    if (!exists(name)) {
+    //        auto s = new GlobalFuncSymbol(name, return_decl, arg_list_decl);
+    //        s->suppress_decl = true;  // already declared elsewhere (in globals1.h)
+    //        s->suppress_defn = false; // have omc emit the pass-through definition
+    //        pp_missing_global_funcs.insert(s);
+    //        CodeBlock& cxx = s->func_body;
+    //        cxx += "return in_value;";
+    //    }
+    //}
 }
 
 void Symbol::default_sort_pp_symbols()
