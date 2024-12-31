@@ -1332,6 +1332,13 @@ public:
     static list<EntityTableSymbol *> pp_all_entity_tables;
 
     /**
+     * True if model contains any screened entity tables
+     *
+     * Assigned after parsing is complete.
+     */
+    static bool pp_any_screened_entity_tables;
+
+    /**
      * The derived tables in the model
      * 
      * Populated after parsing is complete.

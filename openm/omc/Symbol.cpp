@@ -116,6 +116,8 @@ list<TableSymbol *> Symbol::pp_all_tables;
 
 list<EntityTableSymbol *> Symbol::pp_all_entity_tables;
 
+bool Symbol::pp_any_screened_entity_tables = false;
+
 list<DerivedTableSymbol *> Symbol::pp_all_derived_tables;
 
 list<ParameterSymbol *> Symbol::pp_all_parameters;

@@ -574,6 +574,33 @@ void CodeGen::do_types()
         t0 += "";
     }
 
+    // om_types0.h - declaration of scoped enum for table name of entity table
+    {
+        t0 += "namespace omr {";
+        t0 += "/// entity table in model";
+        t0 += "enum class etbl {";
+        for (auto& tbl : Symbol::pp_all_entity_tables) {
+            t0 += tbl->name + ",";
+        }
+        t0 += "om_none";
+        t0 += "};";
+        t0 += "} // namespace omr";
+        t0 += "";
+    }
+
+    // om_types0.h - declaration of scoped enum for attribute in an entity table
+    {
+        t0 += "namespace omr {";
+        t0 += "/// entity attribute in model";
+        t0 += "enum class attr {";
+        for (auto& name : Symbol::pp_visible_member_names) {
+            t0 += name + ",";
+        }
+        t0 += "om_none";
+        t0 += "};";
+        t0 += "} // namespace omr";
+        t0 += "";
+    }
 
     // om_types1.h - templated types declaration
     t1 += "// templated types";

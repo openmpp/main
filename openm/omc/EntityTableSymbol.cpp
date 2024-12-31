@@ -128,6 +128,11 @@ void EntityTableSymbol::post_parse(int pass)
         // add this table to the complete list of entity tables
         pp_all_entity_tables.push_back(this);
 
+        // update global indicator of use of screened entity tables
+        if (is_screened()) {
+            pp_any_screened_entity_tables = true;
+        }
+
         // Add this table to the entity's list of entity tables
         pp_entity->pp_tables.push_back(this);
 
@@ -676,6 +681,13 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
             c += "const char *desc = \"" + name + ":" + acc->pretty_name() + "\";";
             c += "auto st = omr::stat::" + Symbol::token_to_string(acc->statistic) + ";";
             c += "auto inc = omr::incr::" + Symbol::token_to_string(acc->increment) + ";";
+            c += "auto tbl = omr::etbl::" + name + ";";
+            if (acc->pp_attribute && Symbol::pp_visible_member_names.count(acc->pp_attribute->name)) {
+                c += "auto at = omr::attr::" + acc->pp_attribute->name + ";";
+            }
+            else {
+                c += "auto at = omr::attr::om_none; // not a visible attribute";
+            }
             assert(pp_has_count);
             c += "double n = count[cell];";
             if (acc->has_extrema_collections()) {
@@ -692,7 +704,7 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 c += "const auto& smallest = empty;";
                 c += "const auto& largest = empty;";
             }
-            c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, n, es, smallest, largest); ";
+            c += "acc[" + acc_index + "][cell] = TransformScreened" + to_string(screened_method) + "(in_value, desc, st, inc, tbl, at, n, es, smallest, largest); ";
             c += "}";
         }
         c += "}";

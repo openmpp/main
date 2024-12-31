@@ -50,6 +50,8 @@ void ProcessDevelopmentOptions(const openm::IRunOptions * const i_options);
  * @param   description  A formatted string describing the table and statistic.
  * @param   statistic    The statistic of the accumulator, e.g. sum, mean.
  * @param   increment    The increment of the accumulator, e.g. delta, value_out.
+ * @param   table        The table of the accumulator (model-specific).
+ * @param   attribute    The attribute of the accumulator (model-specific).
  * @param   observations The count of observations in the cell (# of increments).
  * @param   extrema_size The maximum size M of the two extrema collections (configurable)
  * @param   smallest     The extrema collection containing the smallest M observations.
@@ -62,6 +64,8 @@ double TransformScreened1(
     const char* description,
     const omr::stat statistic,
     const omr::incr increment,
+    const omr::etbl table,
+    const omr::attr attribute,
     const double observations,
     const size_t extrema_size,
     const std::multiset<double>& smallest,
@@ -75,6 +79,8 @@ double TransformScreened1(
  * @param   description  A formatted string describing the table and statistic.
  * @param   statistic    The statistic of the accumulator, e.g. sum, mean.
  * @param   increment    The increment of the accumulator, e.g. delta, value_out.
+ * @param   table        The table of the accumulator (model-specific).
+ * @param   attribute    The attribute of the accumulator (model-specific).
  * @param   observations The count of observations in the cell (# of increments).
  * @param   extrema_size The maximum size M of the two extrema collections (configurable)
  * @param   smallest     The extrema collection containing the smallest M observations.
@@ -87,6 +93,8 @@ double TransformScreened2(
     const char* description,
     const omr::stat statistic,
     const omr::incr increment,
+    const omr::etbl table,
+    const omr::attr attribute,
     const double observations,
     const size_t extrema_size,
     const std::multiset<double>& smallest,
@@ -100,6 +108,8 @@ double TransformScreened2(
  * @param   description  A formatted string describing the table and statistic.
  * @param   statistic    The statistic of the accumulator, e.g. sum, mean.
  * @param   increment    The increment of the accumulator, e.g. delta, value_out.
+ * @param   table        The table of the accumulator (model-specific).
+ * @param   attribute    The attribute of the accumulator (model-specific).
  * @param   observations The count of observations in the cell (# of increments).
  * @param   extrema_size The maximum size M of the two extrema collections (configurable)
  * @param   smallest     The extrema collection containing the smallest M observations.
@@ -112,6 +122,8 @@ double TransformScreened3(
     const char* description,
     const omr::stat statistic,
     const omr::incr increment,
+    const omr::etbl table,
+    const omr::attr attribute,
     const double observations,
     const size_t extrema_size,
     const std::multiset<double>& smallest,
@@ -125,6 +137,8 @@ double TransformScreened3(
  * @param   description  A formatted string describing the table and statistic.
  * @param   statistic    The statistic of the accumulator, e.g. sum, mean.
  * @param   increment    The increment of the accumulator, e.g. delta, value_out.
+ * @param   table        The table of the accumulator (model-specific).
+ * @param   attribute    The attribute of the accumulator (model-specific).
  * @param   observations The count of observations in the cell (# of increments).
  * @param   extrema_size The maximum size M of the two extrema collections (configurable)
  * @param   smallest     The extrema collection containing the smallest M observations.
@@ -137,6 +151,8 @@ double TransformScreened4(
     const char* description,
     const omr::stat statistic,
     const omr::incr increment,
+    const omr::etbl table,
+    const omr::attr attribute,
     const double observations,
     const size_t extrema_size,
     const std::multiset<double>& smallest,
