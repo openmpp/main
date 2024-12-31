@@ -1217,7 +1217,7 @@ void EntityTableSymbol::build_body_push_increment()
                     c += "// Update pair of extrema collections with this increment";
                     c += "const size_t extremas_max_size = " + to_string(screened_extremas_size()) + ";";
                     c += "const size_t extremas_index = " + to_string(acc->extrema_collections_index) + "; // pair of extrema collections index";
-                    c += "auto& pr = table->extrema[cell][extremas_index];";
+                    c += "auto& pr = table->extrema[extremas_index][cell];";
                     c += "{";
                     c +=     "// smallest";
                     c +=     "auto& smallest = pr.first;";
