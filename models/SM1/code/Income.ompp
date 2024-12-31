@@ -1,5 +1,5 @@
-/* NOTE(Earnings.mpp, EN)
-    This module contains hard-coded earnings dynamics for testing screened tables.
+/* NOTE(Income.mpp, EN)
+    This module contains hard-coded notional income dynamics for testing screened tables.
 */
 
 #include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
@@ -14,6 +14,8 @@ parameters
     double SE_EarningsNonZeroProportion;
     double SE_EarningsScaleFactor;
     double SE_EarningsSigma;
+    double GuaranteedAnnualIncome;
+    double AuditThreshold;
 };
 
 entity Person
@@ -21,8 +23,20 @@ entity Person
     //EN Earnings
     double earnings = { 0.0 };
 
-    //EN Self-employed sarnings
+    //EN Self-employed earnings
     double se_earnings = { 0.0 };
+
+    //EN All earnings
+    double all_earnings = earnings + se_earnings;
+
+    //EN Positive earnings
+    double positive_earnings = max(0.0, all_earnings);
+
+    //EN Benefit
+    double benefit = max(GuaranteedAnnualIncome, GuaranteedAnnualIncome - positive_earnings);
+
+    //EN Under audit
+    bool under_audit = (all_earnings >= AuditThreshold) || (positive_earnings != all_earnings);
 
     //EN Notional model of earnings
     void AssignEarnings(void);

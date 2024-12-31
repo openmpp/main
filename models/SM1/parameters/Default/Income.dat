@@ -6,4 +6,6 @@ parameters
     double SE_EarningsNonZeroProportion  = 0.80;
     double SE_EarningsScaleFactor        = 40000.0;
     double SE_EarningsSigma              = 0.25;
+    double GuaranteedAnnualIncome        = 20000.00;
+    double AuditThreshold                = 250000.00;
 };
