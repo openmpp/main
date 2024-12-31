@@ -6,7 +6,7 @@
 
 #if 0 // Hide non-C++ syntactic island from IDE
 
-table snapshot screened1 Person EarningsAt50
+table snapshot screened1 Person ExampleTable
 [trigger_entrances(integer_age, 50)]
 {
     {
