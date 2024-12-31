@@ -40,6 +40,8 @@ void Person::Start()
     age = 0;
     time = 0;
 
+    hook_Start();
+
     // Have the entity enter the simulation (OpenM++).
     enter_simulation();
 }

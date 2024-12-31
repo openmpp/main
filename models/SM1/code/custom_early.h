@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <cmath> // for std::trunc
+#include <cmath> // for std::round
 
 #include <string>
 

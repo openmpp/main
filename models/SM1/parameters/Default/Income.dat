@@ -8,4 +8,8 @@ parameters
     double SE_EarningsSigma              = 0.25;
     double GuaranteedAnnualIncome        = 20000.00;
     double AuditThreshold                = 250000.00;
+    cumrate RegionDistribution[REGION] =
+    {
+        200, 100, 50, 10, 10
+    };
 };
