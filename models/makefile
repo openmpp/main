@@ -28,7 +28,7 @@ model_DOC_DIR = $(model_OUT_PREFIX)/bin/doc
 # models to build
 #
 ifndef MODEL_DIRS
-  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths OzProjGenX OzProjX Alpha2
+  MODEL_DIRS = modelOne IDMM NewCaseBased NewTimeBased NewCaseBased_bilingual RiskPaths OzProjGenX OzProjX SM1
 endif
 
 #

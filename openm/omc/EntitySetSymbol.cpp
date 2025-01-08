@@ -245,7 +245,7 @@ CodeBlock EntitySetSymbol::cxx_declaration_global()
     for (auto dim : dimension_list) {
         auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
-        dims += string("[") + to_string(es->pp_size()) + "]";
+        dims += "[" + to_string(es->pp_size()) + "]";
     }
     h += "";
     h += doxygen_short("entity_set: " + label());
@@ -275,7 +275,7 @@ CodeBlock EntitySetSymbol::cxx_definition_global()
     for (auto dim : dimension_list) {
         auto es = dim->pp_enumeration;
         assert(es); // integrity check guarantee
-        dims += string("[") + to_string(es->pp_size()) + "]";
+        dims += "[" + to_string(es->pp_size()) + "]";
     }
     c += "thread_local EntitySet<" + pp_entity->name + "> * "+ name + dims + ";";
 

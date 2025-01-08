@@ -295,7 +295,7 @@ void MetaLoader::mergeOptions(IDbExec * i_dbExec)
 
     defaultOpt[RunOptionsKey::useSparse] = baseRunOpts.useSparse ? "true" : "false";
     defaultOpt[RunOptionsKey::sparseNull] = toString(baseRunOpts.nullValue);
-    defaultOpt[RunOptionsKey::threadCount] = string("1");
+    defaultOpt[RunOptionsKey::threadCount] = "1";
 
     // load default run options from profile options, default profile name = model name
     string profileName = argStore.strOption(RunOptionsKey::profile);

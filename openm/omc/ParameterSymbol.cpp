@@ -911,7 +911,7 @@ string ParameterSymbol::cxx_dimensions(bool use_zero) const
 {
     string result;
     for (auto es : pp_enumeration_list) {
-        result += string("[") + (use_zero ? "0" : to_string(es->pp_size())) + "]";
+        result += "[" + (use_zero ? "0" : to_string(es->pp_size())) + "]";
     }
     return result;
 }

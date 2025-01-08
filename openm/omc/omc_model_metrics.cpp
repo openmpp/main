@@ -655,7 +655,7 @@ void do_model_metrics_report(string& outDir, string& model_name, CodeGen& cg)
 
         string entity_kinds_string; // for row title
         if (entity_kind_count > 1) {
-            entity_kinds_string = string("(") + to_string(entity_kind_count) + LT(" kinds") + ")";
+            entity_kinds_string = "(" + to_string(entity_kind_count) + LT(" kinds") + ")";
         }
 
         rpt << "\n";

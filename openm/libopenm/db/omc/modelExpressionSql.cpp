@@ -119,9 +119,9 @@ struct LevelDef
 
     LevelDef(int i_level) : level(i_level)
     {
-        fromAlias = string("M") + to_string(level);
-        innerAlias = string("T") + to_string(level);
-        nextInnerAlias = string("T") + to_string(level + 1);
+        fromAlias = "M" + to_string(level);
+        innerAlias = "T" + to_string(level);
+        nextInnerAlias = "T" + to_string(level + 1);
     }
 };
 
@@ -780,7 +780,7 @@ const string ModelAggregationSql::makeAccTableAlias(
     int i_accPos, const vector<bool> & i_accUsage, int i_level, const string i_firstAlias
 ) const
 {
-    return isFirstUsedAcc(i_accPos, i_accUsage) ? i_firstAlias : string("L") + to_string(i_level) + "A" + to_string(i_accPos);
+    return isFirstUsedAcc(i_accPos, i_accUsage) ? i_firstAlias : "L" + to_string(i_level) + "A" + to_string(i_accPos);
 }
 
 // if quote opens at current position then skip until the end of "quotes" or 'apostrophes'

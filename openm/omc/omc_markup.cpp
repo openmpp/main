@@ -75,7 +75,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
                     ;
 
                 repl += 
-                    string("$") + to_string(grp_white) +
+                    "$" + to_string(grp_white) +
                     // ex. $2
                     "[om_check_index($" + to_string(grp_index) + "," +
                     // ex. [om_check_index($3,
@@ -144,7 +144,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
                             ;
 
                         repl +=
-                            string("$") + to_string(grp_white) +
+                            "$" + to_string(grp_white) +
                             // ex. $2
                             "[om_check_index($" + to_string(grp_index) + "," +
                             // ex. [om_check_index($3,
