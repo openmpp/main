@@ -3414,7 +3414,7 @@ signed_integer_literal:
                         }
     | "-" INTEGER_LITERAL
                         {
-                            $signed_integer_literal = new IntegerLiteral( "-" + $INTEGER_LITERAL->value() );
+                            $signed_integer_literal = new IntegerLiteral( string("-") + $INTEGER_LITERAL->value() );
                             delete $INTEGER_LITERAL;
                             $INTEGER_LITERAL = nullptr;
                         }
@@ -3427,7 +3427,7 @@ signed_floating_point_literal:
                         }
     | "-" FLOATING_POINT_LITERAL
                         {
-                            $signed_floating_point_literal = new FloatingPointLiteral( "-" + $FLOATING_POINT_LITERAL->value() );
+                            $signed_floating_point_literal = new FloatingPointLiteral( string("-") + $FLOATING_POINT_LITERAL->value() );
                             delete $FLOATING_POINT_LITERAL;
                             $FLOATING_POINT_LITERAL = nullptr;
                         }

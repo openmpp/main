@@ -323,7 +323,7 @@ Person::Person(int i_subId, int i_personNumber)
         if (EntityNameSizeArr[k].entityId == entityKind) nSize += EntityNameSizeArr[k].size;
     }
 
-    unique_ptr<uint8_t> btArr(new uint8_t[nSize]);
+    unique_ptr<uint8_t> btArr(new uint8_t[nSize]);  // warning expected: mismatched-new-delete
     uint8_t * pVal = btArr.get();
 
     size_t nOff = 0;
@@ -398,7 +398,7 @@ Other::Other(int i_subId, int i_otherNumber)
         if (EntityNameSizeArr[k].entityId == entityKind) nSize += EntityNameSizeArr[k].size;
     }
 
-    unique_ptr<uint8_t> btArr(new uint8_t[nSize]);
+    unique_ptr<uint8_t> btArr(new uint8_t[nSize]);  // warning expected: mismatched-new-delete
     uint8_t * pVal = btArr.get();
 
     size_t nOff = 0;

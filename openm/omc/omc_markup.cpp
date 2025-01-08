@@ -75,7 +75,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
                     ;
 
                 repl += 
-                    "$" + to_string(grp_white) +
+                    string("$") + to_string(grp_white) +
                     // ex. $2
                     "[om_check_index($" + to_string(grp_index) + "," +
                     // ex. [om_check_index($3,
@@ -144,7 +144,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
                             ;
 
                         repl +=
-                            "$" + to_string(grp_white) +
+                            string("$") + to_string(grp_white) +
                             // ex. $2
                             "[om_check_index($" + to_string(grp_index) + "," +
                             // ex. [om_check_index($3,
@@ -222,7 +222,7 @@ void do_markup(const string& om_developer_cpp_path, const string& om_definitions
             auto repl = it.second;
             code_out = std::regex_replace(code_out, std::regex(srch), repl);
             ++counter;
-            if (0 == counter % 100 || counter == 1 || counter == patterns.size()) {
+            if (0 == counter % 100 || counter == 1 || counter == (int)patterns.size()) {
                 // progress indicator if 100 or more patterns
                 theLog->logFormatted("   Pattern %d of %d", counter, patterns.size());
             }

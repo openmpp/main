@@ -22,7 +22,7 @@ namespace openm
     template<class TRow> struct IMetaTable
     {
     public:
-        virtual ~IMetaTable<TRow>(void) noexcept { }
+        virtual ~IMetaTable(void) noexcept { }
 
     protected:
         /** get list of table rows. */
@@ -42,7 +42,7 @@ namespace openm
         /** db table row comparator. */
         typedef function<bool(const TRow & i_dbRow)> RowEqual;
 
-        virtual ~IMetaLoadedTable<TRow>(void) noexcept { }
+        virtual ~IMetaLoadedTable(void) noexcept { }
 
         /** get const reference to list of all table rows. */
         virtual const IRowBaseVec & rowsCRef(void) const = 0;

@@ -3039,7 +3039,7 @@ void CodeGen::do_EntityNameSize(void)
                 // { 0, "Person", 7, "age", typeid(int), sizeof(int), reinterpret_cast<const uint8_t *>(&(om_PersonEntityNull.age)) - om_PersonEntityNullThis }
                 //
                 string tn = dm->cxx_type_of();
-                c += "{" +
+                c += string("{") +
                     to_string(entity->pp_entity_id) + ", " +
                     "\"" + entity->name + "\", " +
                     to_string(dm->pp_member_id) + ", " +
@@ -3078,7 +3078,7 @@ void CodeGen::do_EventIdName(void)
     if (Symbol::option_microdata_write_on_event) {
         int id = 0;
         for (const string & nm : Symbol::pp_all_event_names) {
-            c += "{" + std::to_string(id) + ", \"" + nm + "\"},";
+            c += string("{") + std::to_string(id) + ", \"" + nm + "\"},";
             ++id;
         }
     }

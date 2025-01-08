@@ -355,7 +355,7 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node, boo
         }
         else {
             // infix binary operator
-            result = "("
+            result = string("(")
                 + cxx_expression(binary_op->left, use_pretty_name)
                 + " " + token_to_string(binary_op->op) + " "
                 + cxx_expression(binary_op->right, use_pretty_name)
@@ -366,7 +366,7 @@ string IdentityAttributeSymbol::cxx_expression(const ExprForAttribute *node, boo
         assert(ternary_op->cond); // grammar guarantee
         assert(ternary_op->first); // grammar guarantee
         assert(ternary_op->second); // grammar guarantee
-        result = "("
+        result = string("(")
             + cxx_expression(ternary_op->cond, use_pretty_name) + " ? "
             + cxx_expression(ternary_op->first, use_pretty_name) + " : "
             + cxx_expression(ternary_op->second, use_pretty_name)

@@ -117,7 +117,7 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -I$(OM_INC_DIR) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++20 -pthread -fPIE -I$(OM_INC_DIR) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 MODEL_EXE = $(MODEL_NAME)$(BIN_POSTFIX)$(MSG_POSTFIX)

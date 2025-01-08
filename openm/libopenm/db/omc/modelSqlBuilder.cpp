@@ -1103,7 +1103,7 @@ const void ModelSqlBuilder::accAllCreateView(
     for (size_t nAcc = 1; nAcc < accVec.size(); nAcc++) {
         if (accVec[nAcc]->isDerived) continue;
 
-        string aliasDot = "A" + to_string(nAcc) + ".";
+        string aliasDot = string("A") + to_string(nAcc) + ".";
         sqlBody += 
             " INNER JOIN va" + to_string(nAcc) + " A" + to_string(nAcc) + " ON (" + aliasDot + "run_id = A.run_id AND " + aliasDot + "sub_id = A.sub_id";
         

@@ -86,7 +86,7 @@ IMsgRecvPacked * IMsgRecvPacked::create(
 const string MpiException::makeErrorMsg(int i_mpiReturn, int i_rank) 
 {
     try {
-        return "[" + to_string(i_rank) + "] " + makeErrorMsg(i_mpiReturn);
+        return string("[") + to_string(i_rank) + string("] ") + makeErrorMsg(i_mpiReturn);
     }
     catch (...) {
         return "MPI call failed";
