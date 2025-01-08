@@ -290,11 +290,6 @@ namespace openm
         exit_guard(const exit_guard & i_guard) = delete;
         exit_guard & operator=(const exit_guard & i_guard) = delete;
     };
-
-    inline thread_local const char* checkpoint_message = "";
 }
-
-#define CHECKPOINT(x) openm::checkpoint_message = x;
-#define GET_CHECKPOINT_MESSAGE (openm::checkpoint_message)
 
 #endif  // OM_H_HELPER_H

@@ -226,7 +226,7 @@ endif
 #
 # cpp flags and special flags for omc-generated sources
 #
-CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -fdiagnostics-color=auto -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
+CXXFLAGS = -Wall -std=c++20 -pthread -fPIE -fdiagnostics-color=auto -I$(OM_INC_DIR) -I$(OMC_OUT_DIR) -I./$(MODEL_CODE_DIR) $(CC_ASAN_FLAGS) $(BD_CFLAGS)
 CPPFLAGS = $(CXXFLAGS)
 
 CXXFLAGS_OMC =

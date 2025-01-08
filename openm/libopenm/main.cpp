@@ -243,13 +243,13 @@ int main(int argc, char ** argv)
         return (int)ExitStatus::HELPER_ERROR;
     }
     catch (exception & ex) {
+        LOG_CHECKPOINT;
         theLog->logErr(ex);
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         return (int)ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
+        LOG_CHECKPOINT;
         theLog->logMsg("FAILED", OM_FILE_LINE);
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         return (int)ExitStatus::FAIL;
     }
 
@@ -304,12 +304,12 @@ ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControll
         e = ExitStatus::HELPER_ERROR;
     }
     catch (exception & ex) {
+        LOG_CHECKPOINT;
         theLog->logErr(ex);
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         e = ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
+        LOG_CHECKPOINT;
         theLog->logMsg("FAILED", OM_FILE_LINE);
         e = ExitStatus::FAIL;
     }

@@ -377,7 +377,7 @@ int main(int argc, char * argv[])
                         Symbol::in_doc_active = true;
                         for (auto s : in_doc_paths) {
                             fs::path p(s);
-                            string stem = p.stem().u8string();
+                            string stem = p.stem().string();
                             Symbol::in_doc_stems_md.insert(stem);
                         }
                     }
@@ -390,7 +390,7 @@ int main(int argc, char * argv[])
                         Symbol::in_doc_active = true;
                         for (auto s : in_doc_paths) {
                             fs::path p(s);
-                            string stem = p.stem().u8string();
+                            string stem = p.stem().string();
                             Symbol::in_doc_stems_txt.insert(stem);
                         }
                     }
