@@ -26,6 +26,18 @@ table snapshot untransformed Person MeanDurationOfLife_unweighted //EN Duration 
     }
 };
 
+table snapshot untransformed Person MeanDurationOfLife_more //EN Duration of Life (unweighted)
+[!alive]
+{
+    {
+        duration() / unit,     //EN mean(PY) - quotient
+        mean(duration()),      //EN mean(PY)
+        P50(duration()),       //EN median(PY)
+        variance(duration()),  //EN variance(PY)
+        stdev(duration())     //EN stdev(PY)
+    }
+};
+
 #endif // Hide non-C++ syntactic island from IDE
 
 
