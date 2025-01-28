@@ -38,7 +38,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>$(OM_DB_DEF);$(OM_MSG_DEF);$(OM_UCVT_DEF);$(OM_DB_CPP_DEF);OM_DEBUG_PARAMETERS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
@@ -62,7 +62,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>$(OM_DB_DEF);$(OM_MSG_DEF);$(OM_UCVT_DEF);$(OM_DB_CPP_DEF);OM_DEBUG_PARAMETERS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
@@ -87,7 +87,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>$(OM_DB_DEF);$(OM_MSG_DEF);$(OM_UCVT_DEF);$(OM_DB_CPP_DEF);_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>
@@ -115,7 +115,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>$(OM_DB_DEF);$(OM_MSG_DEF);$(OM_UCVT_DEF);$(OM_DB_CPP_DEF);_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OM_LIB_INC_DIR);$(OM_LIB_DB_INC);$(OM_MSG_INC);$(OM_INC_DIR);$(OMC_IN_DIR);$(OMC_OUT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>$(MULTIPROCESSOR_COMPILE)</MultiProcessorCompilation>

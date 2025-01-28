@@ -127,6 +127,12 @@ namespace openm
         /** return true if sub-value used by current process */
         virtual bool isUseSubValue(int i_subId) const = 0;
 
+        /** check by name if output table suppressed. */
+        virtual bool isTableSuppressed(const char * i_name) const = 0;
+
+        /** check by id if output table suppressed. */
+        virtual bool isTableSuppressed(int i_tableId) const = 0;
+
         /** read model parameter */
         virtual void readParameter(const char * i_name, int i_subId, const std::type_info & i_type, size_t i_size, void * io_valueArr) = 0;
     };

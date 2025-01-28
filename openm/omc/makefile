@@ -78,7 +78,7 @@ endif
 # recognize dependency files
 SUFFIXES += .d
 
-CXXFLAGS = -Wall -std=c++17 -pthread -fPIE -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(CC_ASAN_FLAGS) $(BD_CFLAGS) -Wno-register
+CXXFLAGS = -Wall -std=c++20 -pthread -fPIE -fdiagnostics-color=auto -I$(INCLUDE_DIR) -I$(BUILD_SRC_DIR) -I. $(CC_ASAN_FLAGS) $(BD_CFLAGS) -Wno-register
 CPPFLAGS = $(CXXFLAGS)
 
 OMC_EXE = omc$(BIN_POSTFIX)

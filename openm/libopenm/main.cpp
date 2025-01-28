@@ -243,13 +243,13 @@ int main(int argc, char ** argv)
         return (int)ExitStatus::HELPER_ERROR;
     }
     catch (exception & ex) {
+        LOG_CHECKPOINT;
         theLog->logErr(ex);
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         return (int)ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
+        LOG_CHECKPOINT;
         theLog->logMsg("FAILED", OM_FILE_LINE);
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         return (int)ExitStatus::FAIL;
     }
 
@@ -304,12 +304,12 @@ ExitStatus modelThreadLoop(int i_runId, int i_subCount, int i_subId, RunControll
         e = ExitStatus::HELPER_ERROR;
     }
     catch (exception & ex) {
+        LOG_CHECKPOINT;
         theLog->logErr(ex);
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
         e = ExitStatus::FAIL;
     }
     catch (...) {    // exit with failure on unhandled exception
-        theLog->logMsg(GET_CHECKPOINT_MESSAGE);
+        LOG_CHECKPOINT;
         theLog->logMsg("FAILED", OM_FILE_LINE);
         e = ExitStatus::FAIL;
     }
@@ -336,7 +336,7 @@ ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl)
             // e.g. std collection just-in-time instantiation of thread_local 'globals' in autonomous threads in C++ runtime,
             // MPI autonomous threads in MPI-enabled executable or indirectly through mpiexec,
             // foreign executable launchers, or in other foreign code outside of our control.
-            this_thread::sleep_for(chrono::milliseconds(OM_LAUNCH_STAGGER_START_TIME));
+            // this_thread::sleep_for(chrono::milliseconds(OM_LAUNCH_STAGGER_START_TIME));
 
             modelFutureLst.push_back(
                 std::move(std::async(

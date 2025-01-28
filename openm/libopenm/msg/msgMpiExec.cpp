@@ -362,7 +362,7 @@ void MpiExec::bcastReceive(int i_groupOne, const type_info & i_type, size_t i_si
             if (recvSize <= 0 || recvSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", recvSize);
 
             // receive packed data
-            unique_ptr<char> recvPack(new char[recvSize]);
+            unique_ptr<char> recvPack(new char[recvSize]);  // warning expected: mismatched-new-delete
 
             mpiRet = MPI_Ibcast(recvPack.get(), recvSize, MPI_PACKED, rootRank, mComm, &mpiRq);
             if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);
@@ -454,7 +454,7 @@ void MpiExec::bcastReceivePacked(int i_groupOne, IRowBaseVec & io_rowVec, const 
         if (packedSize <= 0 || packedSize >= INT_MAX) throw MsgException("Invalid size of data broadcasted: %d, ", packedSize);
 
         // receive packed db rows
-        unique_ptr<char> recvPack(new char[packedSize]);
+        unique_ptr<char> recvPack(new char[packedSize]);    // warning expected: mismatched-new-delete
 
         mpiRet = MPI_Ibcast(recvPack.get(), packedSize, MPI_PACKED, rootRank, mComm, &mpiRq);
         if (mpiRet != MPI_SUCCESS) throw MpiException(mpiRet, worldRank);

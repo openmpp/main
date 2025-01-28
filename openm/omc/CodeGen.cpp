@@ -834,6 +834,33 @@ void CodeGen::do_RunOnce()
     }
     if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished handling missing parameters\");";
     c += "";
+
+    c += "// make a list of compute suppressed tables: tables which are not computed by the model due to supporession";
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Handle run-time suppressed tables\");";
+
+    c += "for (const auto & ti : om_table_name_id) {";
+    c +=    "if (!i_runBase->isTableSuppressed(ti.second)) continue;";
+    c +=    "";
+    c +=    "// suppress this table if there are no other tables depends on it";
+    c +=    "auto search = om_tables_required.find(ti.first);";
+    c +=    "if (search == om_tables_required.end()) {";
+    c +=        "om_compute_suppressed.insert(ti.first); // no other tables require this table";
+    c +=        "continue;";
+    c +=    "}";
+    c +=    "";
+    c +=    "// suppress this table if all dependant tables are suppressed";
+    c +=    "bool isAny = false;";
+    c +=    "for (auto tbl_requiring : search->second) {";
+    c +=        "isAny = !i_runBase->isTableSuppressed(tbl_requiring.c_str());";
+    c +=        "if (isAny) break;  // dependant table not suppressed";
+    c +=    "}";
+    c +=    "if (!isAny) om_compute_suppressed.insert(ti.first); // no non-suppressed table requires this table";
+    c += "}";
+    c += "";
+
+    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished run-time suppressed tables\");";
+    c += "";
+
     if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished RunOnce\");";
 
     c += "}";
@@ -1108,36 +1135,19 @@ void CodeGen::do_ModelStartup()
     if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished nullptr version of entities\");";
     c += "";
 
-    c += "{";
-    c +=     "// Remove run-time suppressed tables from om_table_names";
-    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Handle run-time suppressed tables\");";
-    c +=     "std::list<std::string> suppressed;";
-    c +=     "for (auto nm : om_table_names) {";
-    c +=         "if (om_internal_table_names.count(nm)) continue; // skip internal tables";
-    c +=         "if (is_suppressed_compute(nm, i_model)) {";
-    c +=             "suppressed.push_back(nm);";
-    c +=         "}";
-    c +=     "}";
-    c +=     "for (auto nm : suppressed) {";
-    c +=         "om_table_names.erase(nm);";
-    c +=     "}";
-    if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Finished run-time suppressed tables\");";
-    c += "}";
-    c += "";
-
     c += "// Entity table instantiation";
     for (auto et : Symbol::pp_all_entity_tables) {
 
         // example of generated code block:
         //    assert(!thePopulationByCity);
-        //    if (!is_suppressed_compute("PopulationByCity", i_model)) {
+        //    if (!is_suppressed_compute("PopulationByCity")) {
         //        thePopulationByCity = new PopulationByCity("PopulationByCity", { 101, 5 });
         //    }
 
         if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + et->name + "'\");";
         c += "assert(!" + et->cxx_instance + "); ";
         if (!et->is_internal) {
-            c += "if (!is_suppressed_compute(\"" + et->name + "\", i_model)) {";
+            c += "if (!is_suppressed_compute(\"" + et->name + "\")) {";
         }
         c += et->cxx_instance + " = new " + et->cxx_type + "(\"" + et->name + "\", " + et->cxx_initializer() + ");";
         if (!et->is_internal) {
@@ -1152,14 +1162,14 @@ void CodeGen::do_ModelStartup()
 
         // example of generated code block:
         //    assert(!theut1_feeder_with_names);
-        //    if (!is_suppressed_compute("ut1_feeder_with_names", i_model)) {
+        //    if (!is_suppressed_compute("ut1_feeder_with_names")) {
         //        theut1_feeder_with_names = new ut1_feeder_with_names("ut1_feeder_with_names", { 5, 2 });
         //    }
 
         if (Symbol::option_checkpoints) c += "CHECKPOINT(\"checkpoint: Allocate memory for '" + dt->name + "'\");";
         c += "assert(!" + dt->cxx_instance + "); ";
         if (!dt->is_internal) {
-            c += "if (!is_suppressed_compute(\"" + dt->name + "\", i_model)) {";
+            c += "if (!is_suppressed_compute(\"" + dt->name + "\")) {";
         }
         c += dt->cxx_instance + " = new " + dt->cxx_type + "(\"" + dt->name + "\", " + dt->cxx_initializer() + ");";
         if (!dt->is_internal) {
@@ -1935,25 +1945,46 @@ void CodeGen::do_groups()
 
 void CodeGen::do_table_interface()
 {
-    h += doxygen_short("Table names in the model");
-    h += "extern std::unordered_set<std::string> om_table_names;";
-    h += "extern std::unordered_set<std::string> om_internal_table_names;";
+    h += doxygen_short("Internal tables of the model");
+    h += "extern const std::unordered_set<std::string> om_internal_table_names;";
+    h += "";
+    h += doxygen_short("Compute suppressed tables: not computed due to table suppression");
+    h += "extern std::unordered_set<std::string> om_compute_suppressed;";
     h += "";
 
-    c += "std::unordered_set<std::string> om_table_names = {";
+    c += "// Map table name to table id";
+    c += "static const std::unordered_map<std::string, int> om_table_name_id = {";
     for (auto tbl : Symbol::pp_all_tables) {
-        c += "\"" + tbl->name + "\",";
+        c += "{ \"" + tbl->name + "\", " + to_string(tbl->pp_table_id) + " },";
     }
     c += "};";
     c += "";
 
-    c += "std::unordered_set<std::string> om_internal_table_names = {";
+    c += "const std::unordered_set<std::string> om_internal_table_names = {";
     for (auto tbl : Symbol::pp_all_tables) {
         if (tbl->is_internal) {
             c += "\"" + tbl->name + "\",";
         }
     }
     c += "};";
+    c += "";
+
+    c += doxygen_short("Compute suppressed table names: not computed due to table suppression");
+    c += "std::unordered_set<std::string> om_compute_suppressed;";
+    c += "";
+
+    c += doxygen_short("if true then do not compute table, it is suppressed");
+    c += "static bool is_suppressed_compute(const std::string table_name)";
+    c += "{";
+    c +=    "return 0 != om_compute_suppressed.count(table_name);";
+    c += "}";
+    c += "";
+
+    c += doxygen_short("if true then do not write table into database, table suppressed");
+    c += "static bool is_suppressed_write(std::string table_name, IModel * const i_model)";
+    c += "{";
+    c +=    "return i_model->isSuppressed(table_name.c_str());";
+    c += "}";
     c += "";
 
     c += "const std::map<std::string, std::pair<int, int>> om_table_measure = {";
@@ -2091,7 +2122,7 @@ void CodeGen::do_attribute_names()
 void CodeGen::do_table_names()
 {
     {
-        c += "/// get table id given table name";
+        c += "/// get entity table id given table name (not a model table id)";
         c += "const int omr::table_name_to_id(const std::string name) {";
         c += "static const std::unordered_map<std::string, int> name_to_id = {";
         for (auto& t : Symbol::pp_all_entity_tables) {
@@ -2126,36 +2157,6 @@ void CodeGen::do_table_dependencies()
     }
     c += "};";
     c += "";
-
-    c += "bool is_suppressed_compute(std::string table_name, IModel* const i_model)";
-    c += "{";
-    c +=     "bool is_suppressed = i_model->isSuppressed(table_name.c_str()); ";
-    c +=     "if (is_suppressed) {";
-    c +=         "auto search = om_tables_required.find(table_name);";
-    c +=         "if (search == om_tables_required.end()) {";
-    c +=             "return true;  // no other tables require this table";
-    c +=         "}";
-    c +=         "else {";
-    c +=             "for (auto tbl_requiring : search->second) {";
-    c +=                 "if (!i_model->isSuppressed(tbl_requiring.c_str())) { ";
-    c +=                     "return false; // a non-suppressed table requires this table";
-    c +=                 "}";
-    c +=             "}";
-    c +=             "return true; // no non-suppressed table requires this table";
-    c +=         "}";
-    c +=     "}";
-    c +=     "else {";
-    c +=         "return false; // this table is not suppressed";
-    c +=     "}";
-    c += "}";
-    c += "";
-
-    c += "bool is_suppressed_write(std::string table_name, IModel* const i_model)";
-    c += "{";
-    c +=     "return i_model->isSuppressed(table_name.c_str()); ";
-    c += "}";
-    c += "";
-
 }
 
 void CodeGen::do_RunModel()

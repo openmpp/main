@@ -700,7 +700,7 @@ bool RootController::receiveSubValues(void)
         if (accRecv.isReceived) continue;   // accumulator already received
 
         // allocate buffer to receive the data
-        unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);
+        unique_ptr<double> valueUptr(new double[(int)accRecv.valueSize]);   // warning expected: mismatched-new-delete
         double * valueArr = valueUptr.get();
 
         // try to receive accumulator values

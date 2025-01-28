@@ -11,6 +11,7 @@
 #include <string>
 #include <list>
 #include <unordered_map>
+#include <source_location>
 
 namespace openm
 {
@@ -110,7 +111,22 @@ namespace openm
             bool i_noMsgTime = false
             ) noexcept = 0;
     };
+
+    /** checkpoint log message */
+    inline thread_local const char * the_checkpoint_message = "";
+
+    /** checkpoint source code location: file name, line and column */
+    inline thread_local std::source_location the_checkpoint_location;
 }
+
+/** save checkpoint message and source code location */
+#define CHECKPOINT(x) { openm::the_checkpoint_location = std::source_location::current(); openm::the_checkpoint_message = x; }
+
+/** output to the log latest checkpoint message and source code location */
+#define LOG_CHECKPOINT \
+    theLog->logFormatted("%s: [%d,%d] %s", \
+        the_checkpoint_message, \
+        the_checkpoint_location.line(), the_checkpoint_location.column(), the_checkpoint_location.file_name());
 
 //
 // OpenM++ common library export
