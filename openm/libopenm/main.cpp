@@ -336,7 +336,7 @@ ExitStatus runModelThreads(int i_runId, RunController * i_runCtrl)
             // e.g. std collection just-in-time instantiation of thread_local 'globals' in autonomous threads in C++ runtime,
             // MPI autonomous threads in MPI-enabled executable or indirectly through mpiexec,
             // foreign executable launchers, or in other foreign code outside of our control.
-            this_thread::sleep_for(chrono::milliseconds(OM_LAUNCH_STAGGER_START_TIME));
+            // this_thread::sleep_for(chrono::milliseconds(OM_LAUNCH_STAGGER_START_TIME));
 
             modelFutureLst.push_back(
                 std::move(std::async(

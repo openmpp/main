@@ -53,10 +53,10 @@ inline bool TablePresent(const char* table_name)
 #define FixedSetTableValue(table_measure, value, ...) \
     SetTableValue(table_measure, value, ##__VA_ARGS__)
 
-/** Is table present in the model (not suppressed) */
+/** Is table computed by the model (not suppressed) */
 inline bool TablePresent(const char* table_name)
 {
-    return 0 != om_table_names.count(table_name);
+    return 0 == om_compute_suppressed.count(table_name);
 }
 
 #endif

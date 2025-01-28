@@ -67,6 +67,16 @@ namespace openm
             return subFirstId <= i_subId && i_subId < subFirstId + selfSubCount;
         }
 
+        /** check by name if output table suppressed. */
+        bool isTableSuppressed(const char * i_name) const override {
+            return isSuppressed(i_name);
+        }
+
+        /** check by id if output table suppressed. */
+        bool isTableSuppressed(int i_tableId) const override {
+            return isSuppressed(i_tableId);
+        }
+
         /** return holder of all sub-values modeling run states */
         RunStateHolder & runStateStore(void) { return runStateHolder; }
 
