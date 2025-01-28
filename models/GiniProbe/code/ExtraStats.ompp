@@ -1,0 +1,40 @@
+//LABEL(ExtraStats, EN) Tests of variance and stdev
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+table snapshot Person MoreResults_lognormal
+{
+    {
+        sum(x) / unit, //EN mean (naive)
+        mean(x),      //EN mean (Welford)
+        variance(x), //EN variance
+        stdev(x)      //EN stdev
+    }
+};
+
+table snapshot Person MoreResults_normal
+{
+    {
+        sum(z) / unit, //EN mean (naive)
+        mean(z),      //EN mean (Welford)
+        variance(z), //EN variance
+        stdev(z)      //EN stdev
+    }
+};
+
+table snapshot Person MoreResults_combined
+{
+    {
+        mean(z),      //EN Z mean (Welford)
+        variance(z),  //EN Z variance
+        stdev(z),     //EN Z stdev
+        P50(z),       //EN Z median
+        mean(x),      //EN X mean (Welford)
+        variance(x),  //EN X variance
+        stdev(x),     //EN X stdev
+        P50(x)        //EN X median
+    }
+};
+
+
+#endif // Hide non-C++ syntactic island from IDE

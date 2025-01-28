@@ -18,6 +18,9 @@ actor Person            //EN Individual
     //EN x
     double x;
 
+    //EN z
+    double z;
+
 	void Start();
 	void Finish();
 };
@@ -31,6 +34,9 @@ void Person::Start()
 
     // Draw from a log-normal distribution 
     x = exp(mu + sigma * RandNormal(1));
+
+    // Draw from a normal distribution 
+    z = mu + sigma * RandNormal(2);
 
     // Have the entity enter the simulation.
     enter_simulation();
