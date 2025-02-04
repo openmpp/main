@@ -470,7 +470,7 @@ void logVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl)
         }
     }
 
-    // report model environment roots, if such envrinment variables defined, example:
+    // report model environment roots, if such environment variables defined, example:
     //  OM_ROOT=../../../ 
     //  OM_MyModel=../../
     {

@@ -38,4 +38,13 @@ options symref_developer_edition = on;       // Uncomment to produce the Develop
 options symref_parameter_major_groups = off; // Uncomment for models with small parameter hierarchies.
 options symref_table_major_groups = off;     // Uncomment for models with small table hierarchies.
 
+//
+// microdata output options
+//
+//options microdata_output = on;          // microdata output is enabled
+//options microdata_output_warning = off;
+//options microdata_write_on_enter = on;  // microdata is written when entity enters the simulation
+//options microdata_write_on_exit  = on;  // microdata is written when entity exits the simulation
+//options microdata_write_on_event = on;  // microdata is written after any event
+
 #endif // Hide non-C++ syntactic island from IDE
