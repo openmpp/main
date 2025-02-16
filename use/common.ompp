@@ -507,6 +507,35 @@ int get_next_entity_id()
     return fmk::member_entity_counter * fmk::simulation_members + fmk::simulation_member;
 }
 
+/**
+ * Gets the model name
+ *
+ * @return The model name
+ */
+extern const char* GetModelName(void)
+{
+    return omr::model_name;
+}
+
+/**
+ * Gets the model version
+ *
+ * @return The model version
+ */
+extern const char* GetModelVersion(void)
+{
+    return omr::model_version;
+}
+
+/**
+ * Gets the model version as a 4-digit integer
+ *
+ * @return The model version as a 4-digit integer
+ */
+extern const int GetModelVersionInt(void)
+{
+    return omr::model_version_int;
+}
 
 /**
  * Fatal exit from the model, with a message.

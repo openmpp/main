@@ -168,6 +168,10 @@ void CodeGen::do_preamble()
     c += model_symbol->cxx_definition_global();
     c += "";
 
+    // Get definition code associated with the model version
+    c += version_symbol->cxx_definition_global();
+    c += "";
+
     // Get definition code associated with the model_type symbol
     c += model_type_symbol->cxx_definition_global();
     c += "";

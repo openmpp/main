@@ -17,6 +17,9 @@ const double UNDEF_VALUE = std::numeric_limits<double>::quiet_NaN();
 // as indicated. They are mostly documented in the Modgen Developer's Guide.
 
 // defined in use/common.ompp
+extern const char* GetModelName(void);
+extern const char* GetModelVersion(void);
+extern const int GetModelVersionInt(void);
 extern void ModelExit(const char * msg);
 extern int get_simulation_members();
 extern int get_simulation_member();
@@ -226,6 +229,9 @@ extern double population_scaling_factor();
 // defined in generated code om_definitions.cpp
 extern const char * ModelString(const char * string_name);
 namespace omr {
+    extern const char* model_name;
+    extern const char* model_version;
+    extern const int model_version_int;
     extern const int event_name_to_id(const std::string event_name);
     extern const char* event_id_to_name(int event_id);
     extern const int member_name_to_id(const std::string member_name);

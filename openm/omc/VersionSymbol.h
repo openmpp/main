@@ -54,6 +54,8 @@ public:
         return to_string(major) + "." + to_string(minor) + "." + to_string(sub_minor) + "." + to_string(sub_sub_minor);
     }
 
+    CodeBlock cxx_definition_global() override;
+
     void populate_metadata(openm::MetaModelHolder & metaRows);
 
     /** major model version (position 1) */
