@@ -1,6 +1,12 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2025-02-17: v1.17.7
+- c++ core: screened tables for statistical disclosure control
+- c++ core: new statistics in entity tables: mean, variance, stdev
+- c++ core: new API functions for model name and version
+- go: dget get list of model runs and worksets
+
 2024-10-26: v1.17.6
   c++ core, go and UI: microdata attribute groups
   go: dget first release version
