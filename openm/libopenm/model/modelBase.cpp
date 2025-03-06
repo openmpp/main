@@ -142,10 +142,15 @@ void ModelBase::writeOutputTable(const char * i_name, size_t i_size, forward_lis
 
         // update table write status and check if all tables completed
         bool isLastTable = true;
+        bool isFound = false;
         for (auto & td : tableDoneVec) {
-            if (td.tableId == tblId) td.isDone = true;
+            if (td.tableId == tblId) {
+                td.isDone = true;
+                isFound = true;
+            }
             if (!td.isDone) isLastTable = false;
         }
+        if (!isFound) throw DbException("Failed attempt to write suppressed output table: %d %s", tblId, i_name);
 
         // write sub-value into database or start sending data to root process
         runCtrl->writeAccumulators(runOpts, isLastTable, i_name, i_size, accValLst);
