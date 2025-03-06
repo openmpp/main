@@ -216,7 +216,7 @@ void RunController::doShutdownRun(int i_runId, int i_taskRunId, IDbExec * i_dbEx
 
     if (isRunError) return;     // run completed with errors, exit without expressions calculation
 
-    // calculate output tables aggregated values and run value digest fro all output tables
+    // calculate output tables aggregated values and run value digest for all output tables
     writeOutputValues(i_runId, i_dbExec);
 
     // calculate run value digest for all microdata entities
