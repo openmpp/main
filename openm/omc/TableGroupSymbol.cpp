@@ -38,6 +38,34 @@ void TableGroupSymbol::post_parse(int pass)
         }
         break;
     }
+    case eResolveDataTypes:
+    {
+        // Expand module symbols in group
+        // This is done in this pass, so that module symbols are expanded
+        // before group is used by AnonGroupSymbol in pass ePopulateCollections,
+        // e.g. to implement build-time retain, suppress, or hide.
+
+        // copy of original list
+        auto original = pp_symbol_list;
+        pp_symbol_list.clear();
+        for (auto sym : original) {
+            auto mod = dynamic_cast<ModuleSymbol*>(sym);
+            if (mod) {
+                // push all tables in the module
+                for (auto mod_sym : mod->pp_symbols_declared) {
+                    bool is_table = dynamic_cast<TableSymbol*>(mod_sym);
+                    if (is_table) {
+                        pp_symbol_list.push_back(mod_sym);
+                    }
+                }
+            }
+            else {
+                pp_symbol_list.push_back(sym);
+            }
+        }
+        original.clear();
+        break;
+    }
     case ePopulateCollections:
     {
         // add this to the complete list of table groups
@@ -87,28 +115,10 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         metaRows.groupTxt.push_back(groupTxt);
     }
 
-    // expanded list of group elements
-    std::list<Symbol *> elements;
-    for (auto sym : pp_symbol_list) {
-        auto mod = dynamic_cast<ModuleSymbol*>(sym);
-        if (mod) {
-            // push all tables in the module
-            for (auto mod_sym : mod->pp_symbols_declared) {
-                bool is_table = dynamic_cast<TableSymbol*>(mod_sym);
-                if (is_table) {
-                    elements.push_back(mod_sym);
-                }
-            }
-        }
-        else {
-            elements.push_back(sym);
-        }
-    }
-
     // group children
     int childPos = 1;   // child position in the group, must be unique
 
-    for (auto sym : elements) {
+    for (auto sym : pp_symbol_list) {
         auto tgs = dynamic_cast<TableGroupSymbol *>(sym);
         if (tgs) {
             // element is a table group
@@ -153,7 +163,6 @@ void TableGroupSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
             // (previously detected error condition)
         }
     }
-    elements.clear();
 }
 
 bool TableGroupSymbol::contains_published_table() const

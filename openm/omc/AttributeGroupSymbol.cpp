@@ -30,6 +30,34 @@ void AttributeGroupSymbol::post_parse(int pass)
         }
         break;
     }
+    case eResolveDataTypes:
+    {
+        // Expand module symbols in group
+        // This is done in this pass, so that module symbols are expanded
+        // before group is used in subsequent pass ePopulateCollections,
+        // e.g. to implement build-time retain, suppress, or hide.
+
+        // copy of original list
+        auto original = pp_symbol_list;
+        pp_symbol_list.clear();
+        for (auto sym : original) {
+            auto mod = dynamic_cast<ModuleSymbol*>(sym);
+            if (mod) {
+                // push all attributes (with correct entity) in module
+                for (auto mod_sym : mod->pp_symbols_declared) {
+                    auto attr_sym = dynamic_cast<AttributeSymbol*>(mod_sym);
+                    if (attr_sym && (attr_sym->pp_entity == pp_entity)) {
+                        pp_symbol_list.push_back(mod_sym);
+                    }
+                }
+            }
+            else {
+                pp_symbol_list.push_back(sym);
+            }
+        }
+        original.clear();
+        break;
+    }
     case ePopulateCollections:
     {
         // Verify validity of attribute group members.
@@ -99,28 +127,10 @@ void AttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
         metaRows.entityGroupTxt.push_back(groupTxt);
     }
 
-    // expanded list of group elements
-    std::list<Symbol*> elements;
-    for (auto sym : pp_symbol_list) {
-        auto mod = dynamic_cast<ModuleSymbol*>(sym);
-        if (mod) {
-            // push all attributes (with correct entity) in module
-            for (auto mod_sym : mod->pp_symbols_declared) {
-                auto attr_sym = dynamic_cast<AttributeSymbol*>(mod_sym);
-                if (attr_sym && (attr_sym->pp_entity == pp_entity)) {
-                    elements.push_back(mod_sym);
-                }
-            }
-        }
-        else {
-            elements.push_back(sym);
-        }
-    }
-
     // group children
     int childPos = 1;   // child position in the group, must be unique
 
-    for (auto sym : elements) {
+    for (auto sym : pp_symbol_list) {
         auto ags = dynamic_cast<AttributeGroupSymbol*>(sym);
         if (ags) {
             EntityGroupPcRow groupPc;
@@ -152,5 +162,4 @@ void AttributeGroupSymbol::populate_metadata(openm::MetaModelHolder& metaRows)
             // (previously detected error condition)
         }
     }
-    elements.clear();
 }
