@@ -124,7 +124,11 @@ ifndef RELEASE
   OBJ_DIR = $(MODEL_BUILD_DIR)/debug/obj
   BIN_POSTFIX = D
 else
-  BD_CFLAGS = -DNDEBUG -O3 $(OM_DEBUG_PARAM_OPT)
+  OPT_FLAG = -O3
+  ifdef OM_OPT_LEVEL
+    OPT_FLAG = -O$(OM_OPT_LEVEL)
+  endif
+  BD_CFLAGS = -DNDEBUG $(OPT_FLAG) $(OM_DEBUG_PARAM_OPT)
   DEPS_DIR = $(MODEL_BUILD_DIR)/release/deps
   OMC_OUT_DIR = $(MODEL_BUILD_DIR)/release/src
   OBJ_DIR = $(MODEL_BUILD_DIR)/release/obj
