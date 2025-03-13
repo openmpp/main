@@ -784,6 +784,9 @@ void Symbol::post_parse(int pass)
             auto ms = dynamic_cast<ModuleSymbol*>(s);
             assert(ms); // a ModuleSymbol exists for each parsed input file
             pp_module = ms;
+
+            // Populate ModuleSymbol's collection of declarations
+            pp_module->pp_symbols_declared.push_back(this);
         }
         break;
     }
@@ -823,11 +826,6 @@ void Symbol::post_parse(int pass)
                 // That occurs in previous post-parse passes.
                 note = Symbol::note_expand_embeds(lang_index, note);
             }
-        }
-
-        // Populate ModuleSymbol's collection of declarations
-        if (decl_loc.begin.filename != nullptr) {
-            pp_module->pp_symbols_declared.push_back(this);
         }
         break;
     }
@@ -1582,6 +1580,16 @@ void Symbol::post_parse_all()
     // Symbols will be processed in lexicographical order within sorting group.
     for (auto pr : pp_symbols) {
         pr.second->post_parse( eAssignMembers );
+    }
+
+    // sort each module's collection of declared symbols in lexicographic order
+    for (auto pr : pp_symbols) {
+        auto s = pr.second;
+        auto ms = dynamic_cast<ModuleSymbol*>(s);
+        if (ms) {
+            auto& lst = ms->pp_symbols_declared;
+            lst.sort([](Symbol* a, Symbol* b) { return a->name < b->name; });
+        }
     }
 
     //
