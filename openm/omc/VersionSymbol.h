@@ -30,7 +30,7 @@ private:
     typedef Symbol super;
 
 public:
-    bool is_base_symbol() const { return false; }
+    bool is_base_symbol() const override { return false; }
 
     /**
     * Constructor.
@@ -56,7 +56,7 @@ public:
 
     CodeBlock cxx_definition_global() override;
 
-    void populate_metadata(openm::MetaModelHolder & metaRows);
+    void populate_metadata(openm::MetaModelHolder & metaRows) override;
 
     /** major model version (position 1) */
     int major;
