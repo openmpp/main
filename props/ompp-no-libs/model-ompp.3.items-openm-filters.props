@@ -222,6 +222,12 @@
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityDicTxtTable.cpp">
       <Filter>libopenm\db</Filter>
     </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityGroupLstTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityGroupPcTable.cpp">
+      <Filter>libopenm\db</Filter>
+    </ClCompile>
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupLstTable.cpp">
       <Filter>libopenm\db</Filter>
     </ClCompile>

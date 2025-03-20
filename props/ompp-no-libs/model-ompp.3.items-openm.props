@@ -72,6 +72,8 @@
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityAttrTxtTable.cpp" />
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityDicTable.cpp" />
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityDicTxtTable.cpp" />
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityGroupLstTable.cpp" />
+    <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/entityGroupPcTable.cpp" />
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupLstTable.cpp" />
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupPcTable.cpp" />
     <ClCompile Include="$(OM_ROOT)/openm/libopenm/db/groupTxtTable.cpp" />
