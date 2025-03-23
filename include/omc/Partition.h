@@ -211,7 +211,7 @@ public:
 #endif //!defined(_MSC_VER)
 
     /**
-     * Gets the name of the range
+     * Gets the name of the partition
      *
      * @return The name.
      */

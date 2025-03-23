@@ -121,7 +121,7 @@ public:
 #endif //!defined(_MSC_VER)
 
     /**
-     * Gets the name of the range
+     * Gets the name of the classification
      *
      * @return The name.
      */
