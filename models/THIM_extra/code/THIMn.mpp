@@ -42,9 +42,6 @@ languages
 	FR  // Francais
 };
 
-// allow silent type coercion of ranges and classifications
-options bounds_errors=off;
-
 
 // external declaration
 void CreateNeighborhoods(void);

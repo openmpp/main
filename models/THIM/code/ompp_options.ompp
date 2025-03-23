@@ -19,6 +19,11 @@
 // General options
 //
 
+//options bounds_errors = on; // out-of-bounds assignment to an enumeration is an error
+options bounds_errors = off; // assignment to an enumeration is clamped to allowed values
+
+//options index_errors = on; // mark-up model code to detect out-of-bounds enumeration indices at runtime
+
 options lifecycle_attributes = Ticker; // Create lifecycle_event and lifecycle_counter for Ticker entity
 options lifecycle_attributes = Person; // Create lifecycle_event and lifecycle_counter for Person entities
 options lifecycle_attributes = Neighborhood; // Create lifecycle_event and lifecycle_counter for Neighborhood entities

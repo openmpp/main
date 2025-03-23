@@ -149,9 +149,6 @@ void UserTables(void)
 // BEGIN Out of bounds assignment to range/classification/partition
 //
 
-// Uncomment the following line to test disabling runtime bounds checking
-//options bounds_errors = off;
-
 actor Person
 {
     RNG_0_19 my_bad1;

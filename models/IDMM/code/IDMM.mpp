@@ -27,11 +27,6 @@ counter_type	ushort;
 integer_type	short;
 index_type		ushort;
 
-// options
-options bounds_errors=off;
-options packing_level=2;
-
-
 
 actor_set Host asAllHosts; //EN All Hosts
 

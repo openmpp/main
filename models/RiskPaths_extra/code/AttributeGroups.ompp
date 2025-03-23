@@ -1,10 +1,16 @@
 /* NOTE(AttributeGroups, EN)
 	This module contains declarations of attribute groups for testing.
+    And some other stuff, too.
 */
 
 #include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
 
 #if 0 // Hide non-C++ syntactic island from IDE
+
+parameters {
+    int SillyParameter;
+    derived int DerivedSillyParameter;
+};
 
 table_group TG0_AllTables //EN All tables in Tables.mpp
 {
@@ -51,5 +57,6 @@ attribute_group Person CommonAttributes  //EN Commonly-used attributes
     age
 };
 
+tables_retain TG0_AllTables;
 
 #endif // Hide non-C++ syntactic island from IDE
