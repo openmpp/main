@@ -1365,7 +1365,7 @@ void Symbol::do_options()
     }
 
     {
-        string key = "memory_safety_factor";
+        string key = "memory_adjustment_factor";
         auto iter = options.find(key);
         if (iter != options.end()) {
             auto& opt_pair = iter->second; // opt_pair is option value, option location
@@ -1373,7 +1373,7 @@ void Symbol::do_options()
             // store in the unique ModelSymbol object
             ModelSymbol* model_symbol = dynamic_cast<ModelSymbol*>(Symbol::find_a_symbol(typeid(ModelSymbol)));
             assert(model_symbol);
-            model_symbol->memory_safety_factor = std::stod(value);
+            model_symbol->memory_adjustment_factor = std::stod(value);
             // remove processed option
             options.erase(iter);
         }

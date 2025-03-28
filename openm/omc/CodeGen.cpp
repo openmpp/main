@@ -1027,13 +1027,13 @@ void CodeGen::do_ModelStartup()
         assert(theModelSymbol);
         c += "{ // predict memory requirements";
         c += "double memory_shared = omr::memory_MB_constant_per_instance;";
-        c += "memory_shared *= omr::memory_safety_factor;";
+        c += "memory_shared *= omr::memory_adjustment_factor;";
         c += "double memory_sub = omr::memory_MB_constant_per_sub;";
         auto popsize_param = theModelSymbol->pp_memory_popsize_parameter;
         if (popsize_param) {
             c += "memory_sub += omr::memory_MB_popsize_coefficient * " + popsize_param->name + ";";
         }
-        c += "memory_sub *= omr::memory_safety_factor;";
+        c += "memory_sub *= omr::memory_adjustment_factor;";
         c += "theLog->logFormatted(\"member=%d Predicted memory required = %d MB per parallel sub and %d MB per instance\", simulation_member, (int)memory_sub, (int)memory_shared);";
         c += "}";
     }
@@ -2452,7 +2452,7 @@ void CodeGen::do_RunModel()
                     c += "double popsize_param_coefficient = (double)MB_Variable / popsize_param_value;";
                     c += "theLog->logFormatted(\"%s options memory_MB_popsize_coefficient   = %.6f; // was %.6f\", prefix2, popsize_param_coefficient, omr::memory_MB_popsize_coefficient);";
                 }
-                c += "theLog->logFormatted(\"%s options memory_safety_factor            = %.2f;\", prefix2, omr::memory_safety_factor);";
+                c += "theLog->logFormatted(\"%s options memory_adjustment_factor        = %.2f;\", prefix2, omr::memory_adjustment_factor);";
                 c += "theLog->logFormatted(\"%s\", prefix0);";
                 c += "}";
             }

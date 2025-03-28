@@ -126,7 +126,7 @@ namespace openm
         /** memory prediction model profile option: value of the option memory_MB_popsize_coefficient */
         static constexpr const char * popCoeffMemoryOption = "Memory.ScaleMultiplier";
 
-        /** memory prediction model profile option: value of the option memory_safety_factor */
+        /** memory prediction model profile option: value of the option memory_adjustment_factor */
         static constexpr const char * safetyFactorMemoryOption = "Memory.SafetyMultiplier";
     };
 }

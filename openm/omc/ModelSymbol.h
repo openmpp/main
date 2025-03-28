@@ -30,7 +30,7 @@ public:
         , memory_MB_constant_per_instance(0)
         , memory_MB_constant_per_sub(0)
         , memory_MB_popsize_coefficient(0.0)
-        , memory_safety_factor(1.10)
+        , memory_adjustment_factor(1.10)
     {
     }
 
@@ -74,9 +74,9 @@ public:
     double memory_MB_popsize_coefficient;
 
     /**
-     * Memory prediction - The value of the option memory_safety_factor.
+     * Memory prediction - The value of the option memory_adjustment_factor.
      */
-    double memory_safety_factor;
+    double memory_adjustment_factor;
 
 };
 

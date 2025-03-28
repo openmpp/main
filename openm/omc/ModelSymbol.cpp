@@ -67,7 +67,7 @@ CodeBlock ModelSymbol::cxx_definition_global()
     c +=     "const int memory_MB_constant_per_instance = " + std::to_string(memory_MB_constant_per_instance) + ";";
     c +=     "const int memory_MB_constant_per_sub = " + std::to_string(memory_MB_constant_per_sub) + ";";
     c +=     "const double memory_MB_popsize_coefficient = " + std::to_string(memory_MB_popsize_coefficient) + ";";
-    c +=     "const double memory_safety_factor = " + std::to_string(memory_safety_factor) + ";";
+    c +=     "const double memory_adjustment_factor = " + std::to_string(memory_adjustment_factor) + ";";
     c += "} // namespace omr";
     c += "";
 
@@ -93,12 +93,12 @@ void ModelSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
     if (memory_MB_constant_per_sub > 0) {
         metaRows.profileRows[MetaModelHolder::constSubMemoryOption] = to_string(memory_MB_constant_per_sub);
     }
-    if (memory_safety_factor > 1.0 &&
+    if (memory_adjustment_factor > 1.0 &&
         ((pp_memory_popsize_parameter && memory_MB_popsize_coefficient > 0) ||
             memory_MB_constant_per_instance > 0 ||
             memory_MB_constant_per_sub > 0))
         {
-            metaRows.profileRows[MetaModelHolder::safetyFactorMemoryOption] = to_string(memory_safety_factor);
+            metaRows.profileRows[MetaModelHolder::safetyFactorMemoryOption] = to_string(memory_adjustment_factor);
         }
 
     // set language specific model description and notes
