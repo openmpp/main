@@ -1,6 +1,10 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2025-03-29: v1.17.8
+- c++ core: Build-time retain and suppress not working for groups which use module declarations
+- UI: UI: output tables heatmap
+
 2025-02-17: v1.17.7
 - c++ core: screened tables for statistical disclosure control
 - c++ core: new statistics in entity tables: mean, variance, stdev
