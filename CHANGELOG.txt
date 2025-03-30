@@ -1,7 +1,7 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
-2025-03-29: v1.17.8
+2025-03-30: v1.17.8
 - c++ core: Build-time retain and suppress not working for groups which use module declarations
 - UI: UI: output tables heatmap
 
