@@ -694,8 +694,8 @@ CodeBlock EntityTableSymbol::cxx_definition_global()
                 assert(acc->extrema_collections_index >= 0);
                 c += "size_t es = " + to_string(screened_extremas_size()) + ";";
                 c += "const size_t extrema_index = " + to_string(acc->extrema_collections_index) + ";";
-                c += "const auto& smallest = extrema[extrema_index][cell].first;";
-                c += "const auto& largest = extrema[extrema_index][cell].second;";
+                c += "const auto& smallest = extrema[cell][extrema_index].first;";
+                c += "const auto& largest = extrema[cell][extrema_index].second;";
             }
             else {
                 // no extremas collections associated with this statistic
@@ -1160,13 +1160,13 @@ void EntityTableSymbol::build_body_push_increment()
             c +=     "const int extra_index = " + to_string(acc->extra_index) + ";";
             c +=     "double &xk = dIncrement;";
             c +=     "if (k == 1.0) {";
-            c +=         "table->extra[extra_index][cell] = dIncrement; // M1";
+            c +=         "table->extra[cell][extra_index] = dIncrement; // M1";
             c +=         "dAccumulator = 0.0; // S1";
             c +=     "}";
             c +=     "else {";
-            c +=         "double Mk_1 = table->extra[extra_index][cell]; // required for Sk below";
+            c +=         "double Mk_1 = table->extra[cell][extra_index]; // required for Sk below";
             c +=         "// update running mean Mk";
-            c +=         "double& Mk = table->extra[extra_index][cell] += (dIncrement - Mk_1) / k;";
+            c +=         "double& Mk = table->extra[cell][extra_index] += (dIncrement - Mk_1) / k;";
             c +=         "// update running Sk";
             c +=         "dAccumulator += (xk - Mk_1) * (xk - Mk);";
             c +=     "}";
@@ -1217,7 +1217,7 @@ void EntityTableSymbol::build_body_push_increment()
                     c += "// Update pair of extrema collections with this increment";
                     c += "const size_t extremas_max_size = " + to_string(screened_extremas_size()) + ";";
                     c += "const size_t extremas_index = " + to_string(acc->extrema_collections_index) + "; // pair of extrema collections index";
-                    c += "auto& pr = table->extrema[extremas_index][cell];";
+                    c += "auto& pr = table->extrema[cell][extremas_index];";
                     c += "{";
                     c +=     "// smallest";
                     c +=     "auto& smallest = pr.first;";

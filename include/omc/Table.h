@@ -259,19 +259,19 @@ public:
     /**
      * observation collections storage
      */
-    std::array<std::array<std::forward_list<double>, Tcells>, Tcollections> coll; // coll[Tcollections][Tcells]
+    std::array<std::array<std::forward_list<double>, Tcollections>, Tcells> coll; // coll[Tcells][Tcollections]
 
     /**
      * Extras storage.
      */
-    std::array<std::array<double, Tcells>, Textras> extra; // extra[Textras][Tcells]
+    std::array<std::array<double, Textras>, Tcells> extra; // extra[Tcells][Textras]
 
     /**
      * Extremas storage.
      * 
      * Each extrema is a pair of multisets, first holds lowest values, second holds highest values.
      */
-    std::array<std::array<std::pair<std::multiset<double>, std::multiset<double>>, Tcells>, Textremas> extrema; // extrema[Textremas][Tcells]
+    std::array<std::array<std::pair<std::multiset<double>, std::multiset<double>>, Textremas>, Tcells> extrema; // extrema[Tcells][Textremas]
 };
 
 /**
