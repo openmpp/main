@@ -474,28 +474,28 @@ void IniFileReader::loadMessages(const char * i_iniMsgPath, const string & i_lan
         list<string> langLst = splitLanguageName(!i_language.empty() ? i_language : getDefaultLocaleName());
 
         // set user prefered language(s)
-        unordered_map<string, string> msgMap;
-        theLog->swapLanguageMessages(langLst, msgMap);
+        unordered_map<string, string> msgMap = theLog->getLanguageMessages();
 
-        // read modelName.message.ini
-        if (!isFileExists(i_iniMsgPath)) return;     // exit: message.ini does not exists
+        // if file exist message.ini then read it and append new entries to translated messages map
+        if (isFileExists(i_iniMsgPath)) {
 
-        // load ini-file using case sensitive key comparison
-        IniEntryVec eIniVec = load(i_iniMsgPath, false, i_codePageName);
+            // load ini-file using case sensitive key comparison
+            IniEntryVec eIniVec = load(i_iniMsgPath, false, i_codePageName);
 
-        // find user language(s) as section of message.ini and copy messages into message map
-        // translated message is searched in language prefered order: (en-ca, en)
+            // find user language(s) as section of message.ini and copy messages into message map
+            // translated message is searched in language prefered order: (en-ca, en)
 
-        for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
+            for (const string & lang : langLst) {   // search in order of user prefered languages: (en-ca, en)
 
-            for (const auto & e : eIniVec) {
+                for (const auto & e : eIniVec) {
 
-                // if section is not a current language then skip message.ini entry
-                if (!equalNoCase(lang.c_str(), normalizeLanguageName(e.section).c_str())) continue;
+                    // if section is not a current language then skip message.ini entry
+                    if (!equalNoCase(lang.c_str(), normalizeLanguageName(e.section).c_str())) continue;
 
-                // add translated messages, if not already in message map
-                // use only translated messages (where translated value is not empty)
-                if (!e.key.empty() && !e.val.empty() && msgMap.find(e.key) == msgMap.end()) msgMap[e.key] = e.val;
+                    // add translated messages, if not already in message map
+                    // use only translated messages (where translated value is not empty)
+                    if (!e.key.empty() && !e.val.empty() && msgMap.find(e.key) == msgMap.end()) msgMap[e.key] = e.val;
+                }
             }
         }
 
