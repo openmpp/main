@@ -2864,8 +2864,10 @@ std::string Symbol::note_modgen_to_markdown(const std::string& txt)
             if (line.length() >= 2 && line.substr(0, 2) == "- ") {
                 // Modgen list entry
                 // non-empty line with leading "- "
-                // echo, but change "- " to markdown notation "* " for a list item
-                result += "* " + line.substr(2);
+                // Insert an empty line to separate the list entry from the previous line
+                result += "\n";
+                // Change "- " to markdown notation "* " for a list item
+                line = "* " + line.substr(2);
             }
         }
 
