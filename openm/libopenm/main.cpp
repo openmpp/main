@@ -106,6 +106,30 @@ int main(int argc, char ** argv)
             makeFilePath(exeDir.c_str(), OM_MODEL_NAME, ".message.ini").c_str(),
             argOpts.strOption(RunOptionsKey::messageLang)
         );
+        // read common.message.ini file if exists in one of:
+        //   path/to/exe/common.message.ini
+        //   $OM_ROOT/common.message.ini
+        //   $OM_ROOT/etc/common.message.ini
+        {
+            string cmPath = makeFilePath(exeDir.c_str(), "common", ".message.ini");
+            if (isFileExists(cmPath.c_str())) {
+                IniFileReader::loadMessages(cmPath.c_str(), argOpts.strOption(RunOptionsKey::messageLang));
+            }
+            else {  // try to read: $OM_ROOT/common.message.ini
+                if (const char * omroot = getenv("OM_ROOT")) {
+                    cmPath = makeFilePath(omroot, "common", ".message.ini");
+                    if (isFileExists(cmPath.c_str())) {
+                        IniFileReader::loadMessages(cmPath.c_str(), argOpts.strOption(RunOptionsKey::messageLang));
+                    }
+                    else {  // try to read: $OM_ROOT/etc/common.message.ini
+                        cmPath = makeFilePath(omroot, "etc");
+                        cmPath = makeFilePath(cmPath.c_str(), "common", ".message.ini");
+                        if (isFileExists(cmPath.c_str())) IniFileReader::loadMessages(cmPath.c_str(), argOpts.strOption(RunOptionsKey::messageLang));
+                    }
+                }
+            }
+        }
+
         theLog->logMsg(OM_MODEL_NAME);  // startup message: model name
 
         // if trace log file enabled setup trace file name
