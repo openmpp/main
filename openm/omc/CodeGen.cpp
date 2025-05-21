@@ -161,6 +161,8 @@ void CodeGen::do_preamble()
     c += "    // compiler-specific pragmas for clang";
     c += "    #pragma clang diagnostic ignored \"-Wunused-variable\"";
     c += "    #pragma clang diagnostic ignored \"-Wunused-but-set-variable\"";
+    c += "    #pragma clang diagnostic ignored \"-Wmissing-braces\"";
+    c += "    #pragma clang diagnostic ignored \"-Wpessimizing-move\"";
     c += "#endif";
     c += "";
 
@@ -386,6 +388,7 @@ void CodeGen::do_preamble()
     z += "#if defined(__clang__)";
     z += "    // compiler-specific pragmas for clang";
     z += "    #pragma clang diagnostic ignored \"-Wunused-const-variable\"";
+    z += "    #pragma clang diagnostic ignored \"-Wmissing-braces\"";
     z += "#endif";
     z += "";
     // declare/define constants possibleused in initializers for undefined values in fixed parameters
