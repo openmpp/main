@@ -1816,6 +1816,11 @@ public:
     static bool option_resource_use;
 
     /**
+     * true or false depending on fp_exceptions value in options statement.
+     */
+    static bool option_fp_exceptions;
+
+    /**
      * true or false depending on entity_member_packing value in options statement.
      */
     static bool option_entity_member_packing;

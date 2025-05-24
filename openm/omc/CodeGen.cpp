@@ -143,6 +143,16 @@ void CodeGen::do_preamble()
     c += "#include \"omc/omPch.h\"";
     c += "#include \"omc/omSimulation.h\"";
     c += "#include <typeinfo>";
+    if (Symbol::option_fp_exceptions) {
+        c += "// For fp exceptions";
+        c += "#if defined(_MSC_VER)";
+        c += "#include <cfloat>";
+        c += "#endif";
+        c += "#if defined(__GNUC__)";
+        c += "#include <cfenv>";
+        c += "#include <csignal>";
+        c += "#endif";
+    }
     c += "";
 
     // control warnings produced in generated code
@@ -222,6 +232,17 @@ void CodeGen::do_preamble()
     else {
         t0 += doxygen_short("Model was built with resource_use = off.");
         t0 += "constexpr bool om_resource_use_on = false;";
+        t0 += "";
+    }
+
+    if (Symbol::option_fp_exceptions) {
+        t0 += doxygen_short("Model was built with fp_exceptions = on.");
+        t0 += "constexpr bool om_fp_exceptions = true;";
+        t0 += "";
+    }
+    else {
+        t0 += doxygen_short("Model was built with fp_exceptions = off.");
+        t0 += "constexpr bool om_fp_exceptions = false;";
         t0 += "";
     }
 
@@ -1077,6 +1098,19 @@ void CodeGen::do_ModelStartup()
     c += "";
     c += "// Parameters are now ready and can be used by the model.";
     c += "";
+
+    if (Symbol::option_fp_exceptions) {
+        c += "// Activate fp exceptions";
+        c += "";
+        c += "#if defined(_MSC_VER)";
+        c += "_clearfp();";
+        c += "_controlfp_s(nullptr, static_cast<unsigned>(~(_EM_ZERODIVIDE | _EM_OVERFLOW)), _MCW_EM);";
+        c += "#endif";
+        c += "#if defined(__GNUC__)";
+        c += "feenableexcept(FE_DIVBYZERO | FE_OVERFLOW);";
+        c += "#endif";
+        c += "";
+    }
 
     c += "theLog->logFormatted(\"member=%d Compute derived parameters\", simulation_member);";
     auto & sg = Symbol::pre_simulation;

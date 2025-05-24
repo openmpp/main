@@ -38,6 +38,7 @@ bool Symbol::option_verify_valid_table_increment = true;
 bool Symbol::option_weighted_tabulation_allow_time_based = false;
 bool Symbol::option_weighted_tabulation = false;
 bool Symbol::option_resource_use = false;
+bool Symbol::option_fp_exceptions = false;
 bool Symbol::option_entity_member_packing = false;
 bool Symbol::option_microdata_output = false;
 bool Symbol::option_microdata_output_warning = true;
@@ -506,6 +507,23 @@ void Symbol::do_options()
             }
             else if (value == "off") {
                 option_resource_use = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "fp_exceptions";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_fp_exceptions = true;
+            }
+            else if (value == "off") {
+                option_fp_exceptions = false;
             }
             // remove processed option
             options.erase(iter);

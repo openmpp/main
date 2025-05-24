@@ -1,0 +1,95 @@
+/* NOTE(ScreenedTables.ompp, EN)
+    This module contains functionality for testing screened tables.
+*/
+
+#include "omc/optional_IDE_helper.h" // help an IDE editor recognize model symbols
+
+#if 0 // Hide non-C++ syntactic island from IDE
+
+entity Person
+{
+    //EN Earnings
+    double earnings = { 0.0 };
+
+    //EN Self-employed sarnings
+    double se_earnings = { 0.0 };
+
+    //EN attribute for fp_exceptions test
+    double bad_value = { 0.0 };
+
+    //EN Notional model of earnings
+    void AssignEarnings(void);
+
+    // call EarningsGrowth at each change in integer_age
+    hook AssignEarnings, trigger_changes(integer_age);
+};
+
+
+table snapshot Person EarningsAt50
+[trigger_entrances(integer_age, 50)]
+{
+    {
+        earnings / unit,   //EN Average earnings
+        se_earnings / unit //EN Average self-employed earnings
+    }
+};
+
+#endif // Hide non-C++ syntactic island from IDE
+
+
+void Person::AssignEarnings(void)
+{
+    if (integer_age == 20) {
+        // Assign starting earnings at age 20
+        if (RandUniform(10) < 0.80) {
+            double z = RandNormal(11);
+            earnings = 50000.0 * std::exp(0.25 * z);
+        }
+        // Assign starting earnings at age 20
+        if (RandUniform(12) < 0.80) {
+            double z = RandNormal(13);
+            se_earnings = 40000.0 * std::exp(0.25 * z);
+        }
+    }
+    else if (integer_age > 20) {
+        // Annual change to earnings
+        {
+            double u = RandUniform(14);
+            // rescale to [0.9, 1.1]
+            u = 0.9 + 0.2 * u;
+            earnings *= u;
+            earnings *= 1.03; // career growth with increasing age
+        }
+        // Annual change to se_earnings
+        {
+            double u = RandUniform(15);
+            // rescale to [0.9, 1.1]
+            u = 0.9 + 0.2 * u;
+            se_earnings *= u;
+            se_earnings *= 1.03; // career growth with increasing age
+        }
+    }
+    else {
+        // No earnings before age 20
+    }
+
+    // Test of option fp_exceptions
+    {
+        if (integer_age == 40) {
+            double a = 1.0;
+            double b = 0.0;
+            bad_value = a / b;
+        }
+    }
+}
+
+#include <cmath> // for std::trunc
+double TransformScreened1(double in_value)
+{
+    // notional example (round to 00's)
+    double value = in_value / 100.0;
+    value = std::trunc(value + 0.5);
+    value *= 100.0;
+
+    return value;
+}
