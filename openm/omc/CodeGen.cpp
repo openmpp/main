@@ -235,17 +235,6 @@ void CodeGen::do_preamble()
         t0 += "";
     }
 
-    if (Symbol::option_fp_exceptions) {
-        t0 += doxygen_short("Model was built with fp_exceptions = on.");
-        t0 += "constexpr bool om_fp_exceptions = true;";
-        t0 += "";
-    }
-    else {
-        t0 += doxygen_short("Model was built with fp_exceptions = off.");
-        t0 += "constexpr bool om_fp_exceptions = false;";
-        t0 += "";
-    }
-
     if (Symbol::option_event_trace) {
         t0 += doxygen_short("Model was built with event trace capability.");
         t0 += "constexpr bool om_event_trace_capable = true;";
@@ -921,6 +910,10 @@ void CodeGen::do_RunInit()
     }
     if (Symbol::option_microdata_output && Symbol::option_microdata_output_warning) {
         c += "theLog->logFormatted(\"Warning : model can expose microdata at run-time with output_microdata = on\");";
+        c += "";
+    }
+    if (Symbol::option_fp_exceptions && Symbol::option_fp_exceptions_warning) {
+        c += "theLog->logFormatted(\"Warning : model will fault on division by zero with fp_exceptions = on\");";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_weighted_tabulation) {

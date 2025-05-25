@@ -1821,6 +1821,11 @@ public:
     static bool option_fp_exceptions;
 
     /**
+     * true or false depending on whether fp_exceptions runtime warning is emitted.
+     */
+    static bool option_fp_exceptions_warning;
+
+    /**
      * true or false depending on entity_member_packing value in options statement.
      */
     static bool option_entity_member_packing;
