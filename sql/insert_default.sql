@@ -148,6 +148,8 @@ INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : mod
                                                                   'Attention : le modèle peut exposer des microdonnées au moment de l''exécution quand output_microdata = on');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : model will fault on division by zero with fp_exceptions = on',
                                                                   'Attention : le modèle plantera en cas de division par zéro quand fp_exceptions = on');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : option fp_exceptions not supported for clang (MacOS)',
+                                                                  'Attention : l''option fp_exceptions n''est pas supportée pour clang (MacOS)');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Note : model is weight-enabled and microdata-enabled, include entity_weight in Microdata for downstream weighted operations',
                                                                   'Note : le modèle est construit avec le poids et les microdonnées, incluez entity_weight dans Microdonnées pour les opérations pondérées en aval');
 INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'Warning : model can expose microdata at run-time with event_trace = on',

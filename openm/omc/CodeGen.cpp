@@ -913,7 +913,11 @@ void CodeGen::do_RunInit()
         c += "";
     }
     if (Symbol::option_fp_exceptions && Symbol::option_fp_exceptions_warning) {
+        c += "#if defined(__clang__)";
+        c += "theLog->logFormatted(\"Warning : option fp_exceptions not supported for clang (MacOS)\");";
+        c += "#else";
         c += "theLog->logFormatted(\"Warning : model will fault on division by zero with fp_exceptions = on\");";
+        c += "#endif";
         c += "";
     }
     if (Symbol::option_microdata_output && Symbol::option_weighted_tabulation) {
