@@ -24,7 +24,11 @@ INSERT INTO id_lst (id_key, id_value) VALUES ('entity_hid',    100);
 --
 INSERT INTO lang_lst (lang_id, lang_code, lang_name) VALUES (0, 'EN', 'English');
 INSERT INTO lang_lst (lang_id, lang_code, lang_name) VALUES (1, 'FR', 'Français');
-																  
+
+-- built-in words
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (0, 'all', 'All');
+INSERT INTO lang_word (lang_id, word_code, word_value) VALUES (1, 'all', 'Tous');
+
 --
 -- built-in types: type name used as unique type digest
 --
