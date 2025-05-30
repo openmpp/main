@@ -36,5 +36,14 @@ table snapshot Person MoreResults_combined
     }
 };
 
+table snapshot Person MoreResults_2d
+{
+    z_positive+ //EN Z is positive
+    * {
+        P50(z),       //EN Z median
+        P50(x)        //EN X median
+    }
+};
+
 
 #endif // Hide non-C++ syntactic island from IDE

@@ -21,7 +21,10 @@ actor Person            //EN Individual
     //EN z
     double z;
 
-	void Start();
+    //EN z is positive
+    bool z_positive = (z > 0.0);
+
+    void Start();
 	void Finish();
 };
 
@@ -37,6 +40,8 @@ void Person::Start()
 
     // Draw from a normal distribution 
     z = mu + sigma * RandNormal(2);
+
+    bool z_negative = (z < 0.0);
 
     // Have the entity enter the simulation.
     enter_simulation();
