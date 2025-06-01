@@ -1,6 +1,18 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2025-06-01: v1.17.9
+- c++ core: fix issue: build-time retain and suppress not working for groups which use module declarations
+- c++ core: new feature: New option fp_exceptions activates floating point exceptions to uncover model bugs
+- c++ core: fix issue: Model build on Windows can fail with "out of memory" from Microsoft C++ compiler (msvc)
+- c++ core: fix issue: Anomalies with weighted tables
+- c++ core: fix issue: Bulleted lists in Modgen-style /*NOTE render incorrectly in Generated Model Documentation
+- c++ core: fix issue: Use of (*lnk).attr in event time function can cause spurious runtime error
+- c++ core: fix issue: Anomalies in entity tables with ordinal statistics on multiple attributes and classification dimensions
+- c++ core: use common.message.ini for model translations
+- UI: output tables charts
+- wiki: highlight topics in model development section
+
 2025-03-30: v1.17.8
 - c++ core: Build-time retain and suppress not working for groups which use module declarations
 - UI: UI: output tables heatmap
