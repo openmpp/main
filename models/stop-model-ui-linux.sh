@@ -2,18 +2,15 @@
 #
 # Linux: stop openM++ UI before model build
 #   cd models/ModelDir
-#   ../stop_ompp_ui_linux.sh
+#   ../stop-ompp-ui-linux.sh
 #   make
 #
 # It does:
-#   check if oms URL file exist
-#   read oms URL from file
-#   shutdown oms:
 #
 #   cd $OM_ROOT
-#   if [ ! f ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle ] ; then exit 0
-#   oms_url=`cat ${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle`
-#   curl $oms_url/api/admin/shutdown
+#   if [ ! f ${PUBLISH_DIR}/oms.pid.txt ] ; then exit 0
+#   oms_pid=`cat ${PUBLISH_DIR}/oms.pid.txt`
+#   kill $oms_pid
 #
 # Environment:
 # MODEL_NAME  - model name, default: current directory name
@@ -46,78 +43,63 @@ then
   exit 0
 fi
 
-# oms url file and oms stop log file
+# oms pid file and oms stop log file
 #
-OMS_URL_TICKLE="${PUBLISH_DIR}/${MODEL_NAME}.oms_url.tickle"
+OMS_PID_TXT="${PUBLISH_DIR}/oms.pid.txt"
 STOP_OMPP_UI_LOG="${PUBLISH_DIR}/${MODEL_NAME}.stop_ompp_ui.log"
 
-echo "OMS_URL_TICKLE = $OMS_URL_TICKLE"
+echo "OMS_PID_TXT = $OMS_PID_TXT"
 
 # log configuration
 #
-echo "MODEL_NAME     = $MODEL_NAME"     >"$STOP_OMPP_UI_LOG"
-echo "OM_ROOT        = $OM_ROOT"        >>"$STOP_OMPP_UI_LOG"
-echo "PUBLISH_DIR    = $PUBLISH_DIR"    >>"$STOP_OMPP_UI_LOG"
-echo "OMS_URL_TICKLE = $OMS_URL_TICKLE" >>"$STOP_OMPP_UI_LOG"
+echo "MODEL_NAME     = $MODEL_NAME"  >"$STOP_OMPP_UI_LOG"
+echo "OM_ROOT        = $OM_ROOT"     >>"$STOP_OMPP_UI_LOG"
+echo "PUBLISH_DIR    = $PUBLISH_DIR" >>"$STOP_OMPP_UI_LOG"
+echo "OMS_PID_TXT    = $OMS_PID_TXT" >>"$STOP_OMPP_UI_LOG"
 
 # Exit and return success 
-# if oms url file not exist in "publish" directory
+# if oms pid file not exist in "publish" directory
 #
-if [ ! -f "${OMS_URL_TICKLE}" ] ;
+if [ ! -f "${OMS_PID_TXT}" ] ;
 then
-  echo "WARNING: oms URL file not found: ${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
+  echo "WARNING: oms PID file not found: ${OMS_PID_TXT}" | tee -a "$STOP_OMPP_UI_LOG"
   echo "Done." | tee -a "$STOP_OMPP_UI_LOG"
   exit 0
 fi
 
-# read oms url from file
+# read oms pid from file
 #
-echo cat "${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
+echo cat "${OMS_PID_TXT}" | tee -a "$STOP_OMPP_UI_LOG"
 
-oms_url=`cat "${OMS_URL_TICKLE}" 2>/dev/null`
+oms_pid=`cat "${OMS_PID_TXT}" 2>/dev/null`
 if [ $? -ne 0 ] ;
 then
-  echo "FAILED to read oms url from file: ${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
+  echo "FAILED to read oms pid from file: ${oms_pid}" | tee -a "$STOP_OMPP_UI_LOG"
   exit 1
 fi
 
-echo "oms URL        = $oms_url" >>"$STOP_OMPP_UI_LOG"
+echo "oms PID        = $oms_pid" >>"$STOP_OMPP_UI_LOG"
 
-# check if curl installed
-# Ubuntu: apt-get install curl
+# kill oms web-service
 #
-if ! type curl >> "$STOP_OMPP_UI_LOG" 2>&1;
-then
-  echo "ERROR: curl not found. Please install curl, for example: sudo apt-get install curl" | tee -a "$STOP_OMPP_UI_LOG"
-  exit 2
-fi
+echo "Kill $oms_pid"    | tee -a "$STOP_OMPP_UI_LOG"
 
-# shutdown oms web-service
-# expected retrun from curl: 52 = normal oms shutdown
-# if any other non-zero exit code, for exmaple: 7 = Connection refused
-# then assume web-service already inactive (eg: system restart)
-#
-oms_shutdown_url="${oms_url}/shutdown"
+status=$(kill "${oms_pid}" >> "$STOP_OMPP_UI_LOG" 2>&1; echo $?)
 
-echo "Stop oms web-service:"    | tee -a "$STOP_OMPP_UI_LOG"
-echo "curl -X PUT ${oms_shutdown_url}" | tee -a "$STOP_OMPP_UI_LOG"
-
-status=$(curl -X PUT "${oms_shutdown_url}" >> "$STOP_OMPP_UI_LOG" 2>&1; echo $?)
-
-if [ $status -ne 52 ] && [ $status -ne 0 ] ;
+if [ $status -ne 0 ] ;
 then
   echo "WARNING: unable to stop oms web-service, status=${status}" | tee -a "$STOP_OMPP_UI_LOG"
 fi
 
-# remove oms url file
+# remove oms pid file
 #
-echo "unlink ${OMS_URL_TICKLE}" | tee -a "$STOP_OMPP_UI_LOG"
+echo "unlink ${OMS_PID_TXT}" | tee -a "$STOP_OMPP_UI_LOG"
 
-status=$(unlink "${OMS_URL_TICKLE}" >> "$STOP_OMPP_UI_LOG" 2>&1; echo $?)
+status=$(unlink "${OMS_PID_TXT}" >> "$STOP_OMPP_UI_LOG" 2>&1; echo $?)
 
 if [ $status -ne 0 ] ;
 then
-  echo "WARNING: unable to delete oms url file: ${OMS_URL_TICKLE}, status=${status}" | tee -a "$STOP_OMPP_UI_LOG"
+  echo "WARNING: unable to delete oms PID file: ${OMS_PID_TXT}, status=${status}" | tee -a "$STOP_OMPP_UI_LOG"
 fi
 
 echo "Done." | tee -a "$STOP_OMPP_UI_LOG"

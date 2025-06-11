@@ -165,7 +165,7 @@ IF "%OM_CFG_TYPE_MAX_LEN%" == "" (
   set OM_CFG_TYPE_MAX_LEN=366
 )
 
-START "oms" "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HomeDir "%PUBLISH_DIR%" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
+START "oms" "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HomeDir "%PUBLISH_DIR%" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.PidSaveTo "%PUBLISH_DIR%"\oms.pid.txt -oms.LogRequest -OpenM.LogFilePath "%PUBLISH_DIR%"\oms.log
 if ERRORLEVEL 1 (
   @echo FAILED to start %OM_ROOT%\bin\oms.exe
   EXIT 1

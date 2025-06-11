@@ -136,9 +136,9 @@ set "%model_root_name%=%PUBLISH_DIR%"
 
 @echo %model_root_name% = %PUBLISH_DIR%
 
-@echo "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest -OpenM.LogToFile
+@echo "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.PidSaveTo "%PUBLISH_DIR%"\oms.pid.txt -oms.LogRequest -OpenM.LogFilePath "%PUBLISH_DIR%"\oms.log
 
-START "oms" "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest -OpenM.LogToFile
+START "oms" "%OM_ROOT%\bin\oms.exe" -l localhost:0 -oms.RootDir "%OM_ROOT%" -oms.ModelDir "%PUBLISH_DIR%" -oms.ModelLogDir "%PUBLISH_DIR%" -oms.UrlSaveTo "%OMS_URL_TICKLE%" -oms.HtmlDir "%OM_ROOT%\html" -oms.EtcDir "%OM_ROOT%\etc" -oms.HomeDir "%PUBLISH_DIR%" -oms.ModelDocDir "%PUBLISH_DIR%\doc" -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.PidSaveTo "%PUBLISH_DIR%"\oms.pid.txt -oms.LogRequest -OpenM.LogFilePath "%PUBLISH_DIR%"\oms.log
 if ERRORLEVEL 1 (
   @echo FAILED to start %OM_ROOT%\bin\oms.exe
   EXIT 1

@@ -24,6 +24,6 @@ IF "%OM_CFG_TYPE_MAX_LEN%" == "" (
   set OM_CFG_TYPE_MAX_LEN=366
 )
 
-START "oms" "%OM_ROOT%\bin\oms" -oms.RootDir "%OM_ROOT%" -oms.HomeDir models\home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.LogRequest
+START "oms" "%OM_ROOT%\bin\oms" -oms.RootDir "%OM_ROOT%" -oms.HomeDir models\home -oms.AllowDownload -oms.AllowUpload -oms.AllowMicrodata -oms.PidSaveTo "%OM_ROOT%"\log\oms.pid.txt -oms.LogRequest -OpenM.LogFilePath "%OM_ROOT%"\log\oms.log
 
 START http://localhost:4040
