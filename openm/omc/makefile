@@ -181,9 +181,9 @@ all: omc
 .PHONY : omc
 omc: prepare $(OUT_BIN_DIR)/$(OMC_EXE) copy_ini
 
-$(OBJS): | prepare
-$(DEPS): | prepare
 $(BUILD_SRC_DIR)/parser.cpp: | prepare
+$(DEPS): $(BUILD_SRC_DIR)/parser.cpp | prepare
+$(OBJS): | prepare
 
 $(BUILD_SRC_DIR)/parser.cpp : parser.y
 	$(BISON) -b parser -o $@ $<
