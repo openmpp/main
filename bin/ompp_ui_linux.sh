@@ -11,6 +11,7 @@
 #   OM_ROOT       - openM++ root folder, default is a parent dir: ..
 #   OMS_PORT      - oms web-service port to listen, default: 4040
 #   OM_X_TERMINAL - which x-terminal to use, default: x-terminal-emulator or gnome-terminal
+#   OM_X_OPEN_URL - command to open URL, usually xdg-open or firefox
 
 # set -e
 set -m
@@ -90,9 +91,33 @@ if [ -z "${OM_X_TERMINAL}" ] && command -v qterminal >/dev/null 2>&1 ;
 then
   OM_X_TERMINAL="qterminal"
 fi
+if [ -z "${OM_X_TERMINAL}" ] && command -v ptyxis >/dev/null 2>&1 ;
+then
+  OM_X_TERMINAL="ptyxis"
+fi
 if [ -z "${OM_X_TERMINAL}" ] ;
 then
   echo "ERROR not found any of: x-terminal-emulator, gnome-terminal, konsole and OM_X_TERMINAL not set" | tee -a "$OMPP_UI_SH_LOG"
+  echo -n "Press Enter to exit..."
+  read any
+  exit 1
+fi
+
+# how to open URL:
+#   xdg-open http://localhost:4040
+#   firefox  http://localhost:4040
+#
+if [ -z "${OM_X_OPEN_URL}" ] && command -v xdg-open >/dev/null 2>&1 ;
+then
+  OM_X_OPEN_URL="xdg-open"
+fi
+if [ -z "${OM_X_OPEN_URL}" ] && command -v firefox >/dev/null 2>&1 ;
+then
+  OM_X_OPEN_URL="firefox"
+fi
+if [ -z "${OM_X_OPEN_URL}" ] ;
+then
+  echo "ERROR not found any of: xdg-open, firefox and OM_X_OPEN_URL not set" | tee -a "$OMPP_UI_SH_LOG"
   echo -n "Press Enter to exit..."
   read any
   exit 1
@@ -146,9 +171,20 @@ fi
 OMS_URL="http://localhost:${OMS_PORT}" 
 
 echo "Open openM++ UI in browser:" | tee -a "$OMPP_UI_SH_LOG"
-echo "xdg-open ${OMS_URL}" | tee -a "$OMPP_UI_SH_LOG"
 
-if ! xdg-open "${OMS_URL}" >> "$OMPP_UI_SH_LOG" 2>&1;
+status=0
+if [ "${OM_X_OPEN_URL}" != "firefox" ] ;
+then
+  echo "${OM_X_OPEN_URL} ${OMS_URL}" | tee -a "$OMPP_UI_SH_LOG"
+  ${OM_X_OPEN_URL} "${OMS_URL}" >> "$OMPP_UI_SH_LOG" 2>&1;
+  status=$?
+else
+  echo "${OM_X_OPEN_URL} ${OMS_URL} &" | tee -a "$OMPP_UI_SH_LOG"
+  ${OM_X_OPEN_URL} "${OMS_URL}" & >> "$OMPP_UI_SH_LOG" 2>&1;
+  status=$?
+fi
+
+if [ $status -ne 0 ] ;
 then
   echo "FAILED to open browser at ${OMS_URL}" | tee -a "$OMPP_UI_SH_LOG"
   echo -n "Press Enter to exit..."
