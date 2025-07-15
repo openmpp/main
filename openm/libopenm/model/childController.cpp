@@ -62,10 +62,10 @@ void ChildController::init(void)
     msgExec->createGroups(groupDef.groupSize, groupDef.groupCount);
 
     // first sub-value index and number of sub-values
-    subFirstId = groupDef.activeRank * groupDef.subPerProcess;
+    subFirstId = groupDef.firstSubId;
     selfSubCount = groupDef.selfSubCount;
 
-    if (subFirstId < 0 || selfSubCount <= 0 || subFirstId + selfSubCount > subValueCount)
+    if (selfSubCount < 0 || subFirstId < 0 || subFirstId >= subValueCount)
         throw ModelException(
             "Invalid first sub-value index: %d or number of sub-values: %d", subFirstId, selfSubCount
             );
@@ -79,7 +79,7 @@ void ChildController::init(void)
     broadcastLanguageMessages();
 
     // adjust number of active processes: exit from unused child processes
-    if (msgExec->rank() > groupDef.groupSize * groupDef.groupCount) {
+    if (selfSubCount <= 0 || msgExec->rank() > groupDef.groupSize * groupDef.groupCount) {
         theModelRunState->updateStatus(ModelStatus::exit);
     }
 }

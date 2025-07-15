@@ -137,7 +137,7 @@ void RootController::init(void)
     subFirstId = 0;
     selfSubCount = rootGroupDef.selfSubCount;
 
-    if (subFirstId < 0 || selfSubCount <= 0 || subFirstId + selfSubCount > subValueCount)
+    if (selfSubCount < 0 || subFirstId < 0 || subFirstId >= subValueCount)
         throw ModelException(
             "Invalid first sub-value index: %d or number of sub-values: %d", subFirstId, selfSubCount
             );

@@ -50,13 +50,15 @@ namespace openm
         int activeRank;         // active rank in group: process index among other modeling processes in the group
         int groupOne;           // current process modeling group number, one based, not a zero based
         bool isRootActive;      // if true then root process used for modeling else dedicated for data exchange
-        int subPerProcess;      // number of sub-values per modeling process, except of last process where rest is calculated
+        int subPerProcess;      // number of sub-values per modeling process, except of root process and last process
         int selfSubCount;       // number of sub-values for current process
+        int rootSubCount;       // number of sub-values for root process
+        int firstSubId;         // sub-value staring index for current modeling process
 
         static const int all = 0;   // worldwide group, all processes
 
         ProcessGroupDef(void) :
-            groupSize(1), groupCount(0), activeRank(0), groupOne(0), isRootActive(true), subPerProcess(1), selfSubCount(1)
+            groupSize(1), groupCount(0), activeRank(0), groupOne(0), isRootActive(true), subPerProcess(1), selfSubCount(1), rootSubCount(0), firstSubId(0)
         { }
 
         ProcessGroupDef(int i_subValueCount, int i_threadCount, bool i_isRootIdle, int i_worldSize, int i_worldRank);
@@ -72,7 +74,8 @@ namespace openm
         int childCount;         // number of child processes in group
         bool isUseRoot;         // if true then root process used for modeling else dedicated for data exchange
         int groupSize;          // size of modeling group
-        int subPerProcess;      // number of sub-values per modeling process, except of last process where rest is calculated
+        int subPerProcess;      // number of sub-values per modeling process, except of root process and last process
+        int rootSubCount;       // number of sub-values for root process
         ModelRunState state;                // group status and modeling progress
         DoneVector isSubDone;               // size of [subValue count], if true then all sub-value accumulators saved in database
         vector<ModelRunState> childState;   // size of [childCount] run state for all group child processes

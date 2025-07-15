@@ -121,9 +121,28 @@ ProcessGroupDef::ProcessGroupDef(int i_subValueCount, int i_threadCount, bool i_
         ((i_worldRank - 1) % groupSize) : 
         i_worldRank % groupSize;
 
-    // number of sub-values for modeling process, last process calculate the rest of sub-values
-    subPerProcess = i_subValueCount / groupSize;   // sub-values per modeling process
-    selfSubCount = (activeRank < groupSize - 1) ? subPerProcess : i_subValueCount - ((groupSize - 1) * subPerProcess);
+    // number of sub-values for modeling process
+    subPerProcess = i_subValueCount / groupSize;
+    if (i_subValueCount % groupSize) subPerProcess++;
+    if (subPerProcess < i_threadCount) subPerProcess = i_threadCount;
+    if (subPerProcess > i_subValueCount) subPerProcess = i_subValueCount;
+
+    rootSubCount = 0;
+    if (!i_isRootIdle) {
+        rootSubCount = i_subValueCount - subPerProcess * (i_worldSize - 1);
+        if (rootSubCount < 0) rootSubCount = 0;
+    }
+    firstSubId = 0;
+    selfSubCount = rootSubCount;
+
+    if (i_worldRank > 0) {
+        firstSubId = rootSubCount + subPerProcess * (i_worldRank - 1);
+
+        selfSubCount = i_subValueCount - firstSubId;
+        if (selfSubCount <= 0) firstSubId = 0;      // not active process
+    }
+    if (selfSubCount < 0) selfSubCount = 0;         // not active process
+    if (selfSubCount > subPerProcess) selfSubCount = subPerProcess;
 
     // is current process active: 
     // "active" process means it is used for modeling 
@@ -139,6 +158,7 @@ RunGroup::RunGroup(int i_groupOne, int i_subValueCount, const ProcessGroupDef & 
     setId(0),
     groupSize(i_rootGroupDef.groupSize),
     subPerProcess(i_rootGroupDef.subPerProcess),
+    rootSubCount(i_rootGroupDef.rootSubCount),
     isSubDone(i_subValueCount)
 { 
     firstChildRank = 1 + (i_groupOne - 1) * groupSize;
@@ -159,14 +179,13 @@ void RunGroup::nextRun(int i_runId, int i_setId, ModelStatus i_status)
 // return child world rank where sub-value is calculated
 int RunGroup::rankBySubValueId(int i_subId) const
 {
-    int nProc = i_subId / subPerProcess;            // process index in group
+    // if root process is "active" (is used for modeling) then first sub-values calculated at root
+    if (isUseRoot && i_subId < rootSubCount) return 0;
+
+    int nSub = !isUseRoot ? i_subId : i_subId - rootSubCount;
+
+    int nProc = nSub / subPerProcess;               // process index in group
     if (nProc >= groupSize) nProc = groupSize - 1;  // last process also calculate the rest
 
-    int nRank = firstChildRank + nProc;             // world rank to calculate sub-value
-
-    // if root process is "active" (is used for modeling) then first sub-values calculated at root 
-    if (isUseRoot) {
-        nRank = i_subId < subPerProcess ? 0 : firstChildRank + nProc - 1;
-    }
-    return nRank;
+    return firstChildRank + nProc;                  // world rank to calculate sub-value
 }
