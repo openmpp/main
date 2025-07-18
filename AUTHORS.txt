@@ -20,6 +20,7 @@ Williamson, Kristian  KrisWilliamson   kristian.williamson@statcan.gc.ca StatCan
 Dudek, Jacek          jacek-dudek / jacekzbigniewdudek  jacek.dudek@statcan.gc.ca  StatCan
 Scott Yun Ho          @scottyunho      scott.ho@statcan.gc.ca            StatCan
 Abadi, Parsa          parsaabadi       abadi.parsa@statcan.gc.ca         StatCan
+Barnes, Joel          barnzilla        joel.barnes@statcan.gc.ca         StatCan
 
 -----------------------------
 Intellectual property holders
