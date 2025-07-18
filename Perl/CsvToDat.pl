@@ -120,6 +120,7 @@ my %param_name_TO_param_id;
 my %param_id_TO_param_name;
 my %param_id_TO_rank;
 my %param_id_TO_type_id;
+my %param_id_TO_num_cumulated;
 {
     my $in_file = "${temp_dir}/${model}/parameter_dic.csv";
     open IN_FILE, '<'.$in_file || die "failed to open ${in_file}";
@@ -132,10 +133,12 @@ my %param_id_TO_type_id;
         my $param_name = $fields[3];
         my $param_rank = $fields[7];
         my $type_id = $fields[8];
+		my $num_cumulated = ($fields[10]);
         $param_name_TO_param_id{$param_name} = $param_id;
         $param_id_TO_param_name{$param_id} = $param_name;
         $param_id_TO_rank{$param_id} = $param_rank;
         $param_id_TO_type_id{$param_id} = $type_id;
+		$param_id_TO_num_cumulated{$param_id} = $num_cumulated;
     }
     close IN_FILE;
 }
@@ -199,6 +202,8 @@ for my $param_name (@parameters) {
     #print "param_id=${param_id}\n";
     my $param_type_id = $param_id_TO_type_id{$param_id};
     my $param_type_name = $type_id_TO_type_name{$param_type_id};
+	# map num_cumulated == 1 to cumrate or else modgen croaks
+	$param_type_name = "cumrate" if $param_id_TO_num_cumulated{$param_id};
     my $param_type_logical = $param_type_name eq 'logical';
     my $param_rank = $param_id_TO_rank{$param_id};
     my $dim_part = '';
@@ -233,6 +238,7 @@ for my $param_name (@parameters) {
             chomp $record;
             $record =~ /([^,]+)$/;
             $value = $1;
+			$value = uc($value) if $param_type_logical; # for Modgen TRUE and FALSE
             print OUT_FILE "        ${value},\n";
         }
         close IN_FILE;
