@@ -722,7 +722,7 @@ void ParameterSymbol::populate_metadata(openm::MetaModelHolder & metaRows)
         paramDic.typeId = pp_datatype->type_id;
         paramDic.isExtendable = is_extendable;
         paramDic.isHidden = is_hidden;
-        paramDic.numCumulated = 0; //TODO: not implemented
+        paramDic.numCumulated = (int)cumrate_dims;
         metaRows.paramDic.push_back(paramDic);
 
         // label and note for the parameter
