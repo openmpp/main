@@ -651,6 +651,24 @@ void StopEventTrace()
 }
 
 /**
+* Variadic function, same as WriteDebugLogEntry but throw an exception on trace file IO error
+*/
+void WriteDebugTraceOrFail(const char * i_format, ...)
+{
+    if (i_format == nullptr) return;            // nothing to log
+
+    if (theTrace->isCreateError()) throw HelperException(LT("Failed to write debug trace"));
+
+    // format message for the log
+    va_list args;
+    va_start(args, i_format);
+    bool isOk = theTrace->logFormatted(i_format, args);
+    va_end(args);
+
+    if (!isOk) throw HelperException(LT("Failed to write debug trace"));
+}
+
+/**
  * Total number of threads used in simulation.
  * 
  * See Modgen Developer's Guide for more information.

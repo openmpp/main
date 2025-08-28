@@ -113,9 +113,6 @@ namespace openm
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
             ) noexcept = 0;
-
-        /** log message formatted with vsnprintf(), throw exception on error */
-        virtual void logFormattedOrFail(const char * i_format, ...) = 0;
     };
 
     /** checkpoint log message */

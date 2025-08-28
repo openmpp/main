@@ -600,32 +600,6 @@ bool TraceLog::logFormatted(const char * i_format, ...) noexcept
     }
 }
 
-
-/** log message formatted with vsnprintf(), throw exception on error */
-void TraceLog::logFormattedOrFail(const char * i_format, ...)
-{
-    try {
-        if (i_format == nullptr) return;            // nothing to log
-
-        lock_guard<recursive_mutex> lck(theMutex);  // lock the log
-
-        if (isErrorLastCreate || isErrorStampedCreate) throw HelperException(LT("Error at debug trace write"));
-
-        // format message for the log
-        va_list args;
-        va_start(args, i_format);
-        formatTo(msgBufferSize, msgBuffer, i_format, args);
-        va_end(args);
-
-        // log formatted message
-        if (!doLogMsg(msgBuffer, nullptr)) throw HelperException(LT("Error at debug trace write"));
-    }
-    catch (...) {
-        return throw HelperException(LT("Error at debug trace write")); // log failed
-    }
-}
-
-
 // log to console, return false on error
 bool TraceLog::logToConsole(
     const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra

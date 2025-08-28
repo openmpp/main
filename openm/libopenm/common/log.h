@@ -314,9 +314,6 @@ namespace openm
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             ) noexcept override;
 
-        /** log message formatted with vsnprintf(), throw exception on error */
-        virtual void logFormattedOrFail(const char * i_format, ...) override;
-
     private:
         TraceLog(const TraceLog & i_log) = delete;
         TraceLog & operator=(const TraceLog & i_log) = delete;

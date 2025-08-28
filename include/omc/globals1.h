@@ -28,6 +28,7 @@ extern int get_next_entity_id();
 extern void SetMaxTime(double max_value);
 extern void StartEventTrace();
 extern void StopEventTrace();
+extern void WriteDebugTraceOrFail(const char * i_format, ...);
 extern int GetThreadNumber();
 extern int GetThreads();
 extern void SetPopulation(long lPopulation);
