@@ -61,7 +61,10 @@ namespace openm
         const string timeStamp(void) noexcept override;
 
         /** return true if log to console or to file enabled. */
-        const bool isEnabled(void) noexcept override { return isConsoleEnabled || isLastEnabled || isStampedEnabled; }
+        const bool isEnabled(void) noexcept override;
+
+        /** error at file create of last log or stamped log file */
+        const bool isCreateError(void) noexcept override;
 
         /** re-initialize log file name(s) and other log settings.
         *
@@ -89,8 +92,10 @@ namespace openm
         bool isConsoleEnabled;      // if true then log to console
         bool isLastEnabled;         // if true then last log enabled
         bool isLastCreated;         // if true then last log file created
-        bool isStampedEnabled;      // if true then last log enabled
-        bool isStampedCreated;      // if true then last log file created
+        bool isErrorLastCreate;     // if true then last log file create failed
+        bool isStampedEnabled;      // if true then stamped log enabled
+        bool isStampedCreated;      // if true then stamped log file created
+        bool isErrorStampedCreate;  // if true then stamped log file create failed
         string tsPart;              // log file name timestamp part: 2012_08_17_16_04_59_148
         string pidPart;             // log file name pid part: 1234
         string lastPath;            // last log file path: /var/log/openm.log
@@ -105,7 +110,7 @@ namespace openm
     protected:
 
         /** implement log message: log to console and log files */
-        void doLogMsg(const char * i_msg, const char * i_extra) noexcept;
+        bool doLogMsg(const char * i_msg, const char * i_extra) noexcept;
 
         // create log file or truncate existing, return false on error
         bool logFileCreate(const string & i_path) noexcept;
@@ -121,7 +126,7 @@ namespace openm
             ) noexcept = 0;
 
         // write date-time and message to output stream, return false on error
-        void writeToLog(
+        bool writeToLog(
             ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             );
 
@@ -204,8 +209,8 @@ namespace openm
         /** log message */
         void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept override;
 
-        /** log message formatted with vsnprintf() */
-        void logFormatted(const char * i_format, ...) noexcept override;
+        /** log message formatted with vsnprintf(), return false on error */
+        bool logFormatted(const char * i_format, ...) noexcept override;
 
         /** log exception */
         void logErr(const exception & i_ex, const char * i_msg = nullptr) noexcept override;
@@ -292,8 +297,8 @@ namespace openm
         /** log message */
         void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept override;
 
-        /** log message formatted with vsnprintf() */
-        void logFormatted(const char * i_format, ...) noexcept override;
+        /** log message formatted with vsnprintf(), return false on error */
+        bool logFormatted(const char * i_format, ...) noexcept override;
 
     private:
         ofstream lastSt;        // last log output stream
@@ -308,6 +313,9 @@ namespace openm
         bool logToFile(
             bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra = nullptr
             ) noexcept override;
+
+        /** log message formatted with vsnprintf(), throw exception on error */
+        virtual void logFormattedOrFail(const char * i_format, ...) override;
 
     private:
         TraceLog(const TraceLog & i_log) = delete;
