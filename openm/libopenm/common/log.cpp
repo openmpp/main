@@ -54,8 +54,10 @@ LogBase::LogBase(
     isConsoleEnabled(i_logToConsole),
     isLastEnabled(false),
     isLastCreated(false),
+    isErrorLastCreate(false),
     isStampedEnabled(false),
     isStampedCreated(false),
+    isErrorStampedCreate(false),
     lastPath((i_basePath != nullptr) ? i_basePath : ""),
     stampedPath(""),
     isNoMsgTime(false),
@@ -99,7 +101,9 @@ void LogBase::init(
 
         isConsoleEnabled = i_logToConsole;
         isNoMsgTime = i_noMsgTime;
-        isLastEnabled = isLastCreated = isStampedEnabled = isStampedCreated = false;
+
+        isLastEnabled = isLastCreated = isErrorLastCreate = false;
+        isStampedEnabled = isStampedCreated = isErrorStampedCreate = false;
 
         // if no base log file name specified then log to file(s) disabled
         size_t len = (i_basePath != nullptr) ? strnlen(i_basePath, OM_PATH_MAX) : 0;
@@ -166,26 +170,61 @@ const string LogBase::timeStamp(void) noexcept
     return "";  // return on exception
 }
 
-/** implement log message: log to console and log files */
-void LogBase::doLogMsg(const char * i_msg, const char * i_extra) noexcept
+/** return true if log to console or to file enabled. */
+const bool LogBase::isEnabled(void) noexcept
 {
-    if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        return isConsoleEnabled || isLastEnabled || isStampedEnabled;
+    }
+    catch (...) {
+    }
+    return false;  // return on exception
+}
+
+/** error at file create of last log or stamped log file */
+const bool LogBase::isCreateError(void) noexcept
+{
+    try {
+        lock_guard<recursive_mutex> lck(theMutex);
+        return isErrorLastCreate || isErrorStampedCreate;
+    }
+    catch (...) {
+    }
+    return false;  // return on exception
+}
+
+/** implement log message: log to console and log files */
+bool LogBase::doLogMsg(const char * i_msg, const char * i_extra) noexcept
+{
+    if (i_msg == nullptr && i_extra == nullptr) return true;    // nothing to log
 
     chrono::system_clock::time_point now = chrono::system_clock::now();
 
     lock_guard<recursive_mutex> lck(theMutex);     // lock the log 
 
+    bool isOk = true;
     if (isConsoleEnabled) {
         isConsoleEnabled = logToConsole(now, i_msg, i_extra);
+        isOk = isOk && isConsoleEnabled;
     }
     if (isLastEnabled) {
-        if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath);
+        if (!isLastCreated) {
+            isLastEnabled = isLastCreated = logFileCreate(lastPath);
+            isErrorLastCreate = !isLastCreated;
+        }
         if (isLastEnabled) isLastEnabled = logToFile(false, now, i_msg, i_extra);
+        isOk = isOk && isLastEnabled;
     }
     if (isStampedEnabled) {
-        if (!isStampedCreated) isStampedEnabled = isStampedCreated = logFileCreate(stampedPath);
+        if (!isStampedCreated) {
+            isStampedEnabled = isStampedCreated = logFileCreate(stampedPath);
+            isErrorStampedCreate = !isStampedCreated;
+        }
         if (isStampedEnabled) isStampedEnabled = logToFile(true, now, i_msg, i_extra);
+        isOk = isOk && isStampedEnabled;
     }
+    return isOk;
 }
 
 // create log file or truncate existing, return false on error
@@ -196,20 +235,19 @@ bool LogBase::logFileCreate(const string & i_path) noexcept
         exit_guard<ofstream> onExit(&logSt, &ofstream::close);  // close on exit
 
         logSt.open(i_path, ios::out | ios::trunc);
-        bool isCreated = !logSt.fail();
-        return isCreated;
+        return !logSt.fail();
     }
     catch (...) {
         return false;   // log failed
     }
 }
 
-// write date-time and message to output stream
-void LogBase::writeToLog(
+// write date-time and message to output stream, return false on error
+bool LogBase::writeToLog(
     ostream & i_ost, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
     )
 {
-    if (i_msg == nullptr && i_extra == nullptr) return;   // nothing to log
+    if (i_msg == nullptr && i_extra == nullptr) return true;    // nothing to log
 
     // check is date-time prefix required
     if (!isNoMsgTime) {
@@ -224,18 +262,21 @@ void LogBase::writeToLog(
             '.' <<
             setw(3) << chrono::duration_cast<chrono::milliseconds>(i_msgTime.time_since_epoch()).count() % 1000LL <<
             ' ';
+        if (i_ost.fail()) return false;
     }
 
     // check is process rank prefix required
     if (isMsgRank) {
         i_ost << rankPrefix;
+        if (i_ost.fail()) return false;
     }
 
     // write message and extra info
-    if (i_msg != nullptr && i_extra == nullptr) i_ost << i_msg;
-    if (i_msg != nullptr && i_extra != nullptr) i_ost << i_msg << ": " << i_extra;
-    if (i_msg == nullptr && i_extra != nullptr) i_ost << i_extra;
-    i_ost << "\n";
+    if (i_msg != nullptr && i_extra == nullptr) i_ost << i_msg << "\n";
+    if (i_msg != nullptr && i_extra != nullptr) i_ost << i_msg << ": " << i_extra << "\n";
+    if (i_msg == nullptr && i_extra != nullptr) i_ost << i_extra << "\n";
+
+    return !i_ost.fail();
 }
 
 /**
@@ -397,11 +438,11 @@ void Log::logMsg(const char * i_msg, const char * i_extra) noexcept
     catch (...) { }
 }
 
-/** log message formatted with vsnprintf() */
-void Log::logFormatted(const char * i_format, ...) noexcept
+/** log message formatted with vsnprintf(), return false on error */
+bool Log::logFormatted(const char * i_format, ...) noexcept
 {
     try {
-        if (i_format == nullptr) return;       // nothing to log
+        if (i_format == nullptr) return true;       // nothing to log
 
         lock_guard<recursive_mutex> lck(theMutex); // lock the log 
 
@@ -417,10 +458,11 @@ void Log::logFormatted(const char * i_format, ...) noexcept
         formatTo(msgBufferSize, msgBuffer, fmt, args);
         va_end(args);
 
-        // log formatted message
-        doLogMsg(msgBuffer, nullptr);
+        return doLogMsg(msgBuffer, nullptr);    // log formatted message, return false on error
     }
-    catch (...) { }
+    catch (...) {
+        return false;   // log failed
+    }
 }
 
 /** log exception */
@@ -443,7 +485,10 @@ void Log::logSql(const char * i_sql) noexcept
         lock_guard<recursive_mutex> lck(theMutex);     // lock the log 
 
         if (isSqlLog && isLastEnabled) {
-            if (!isLastCreated) isLastEnabled = isLastCreated = logFileCreate(lastPath);
+            if (!isLastCreated) {
+                isLastEnabled = isLastCreated = logFileCreate(lastPath);
+                isErrorLastCreate = !isLastCreated;
+            }
             if (isLastEnabled) isLastEnabled = logToFile(false, now, i_sql);
         }
     }
@@ -520,6 +565,8 @@ void TraceLog::init(
     // create or truncate trace file
     if (isLastEnabled && !isLastCreated) {
         isLastEnabled = isLastCreated = logFileCreate(lastPath);
+        isErrorLastCreate = !isLastCreated;
+
     }
 }
 
@@ -532,13 +579,37 @@ void TraceLog::logMsg(const char * i_msg, const char * i_extra) noexcept
     catch (...) { }
 }
 
-/** log message formatted with vsnprintf() */
-void TraceLog::logFormatted(const char * i_format, ...) noexcept
+/** log message formatted with vsnprintf(), return false on error */
+bool TraceLog::logFormatted(const char * i_format, ...) noexcept
 {
     try {
-        if (i_format == nullptr) return;       // nothing to log
+        if (i_format == nullptr) return true;       // nothing to log
 
-        lock_guard<recursive_mutex> lck(theMutex); // lock the log 
+        lock_guard<recursive_mutex> lck(theMutex);  // lock the log
+
+        // format message for the log
+        va_list args;
+        va_start(args, i_format);
+        formatTo(msgBufferSize, msgBuffer, i_format, args);
+        va_end(args);
+
+        return doLogMsg(msgBuffer, nullptr);    // log formatted message, return false on error
+    }
+    catch (...) {
+        return false;   // log failed
+    }
+}
+
+
+/** log message formatted with vsnprintf(), throw exception on error */
+void TraceLog::logFormattedOrFail(const char * i_format, ...)
+{
+    try {
+        if (i_format == nullptr) return;            // nothing to log
+
+        lock_guard<recursive_mutex> lck(theMutex);  // lock the log 
+
+        if (isErrorLastCreate || isErrorStampedCreate) throw HelperException(LT("Error at debug trace write"));
 
         // format message for the log
         va_list args;
@@ -547,15 +618,18 @@ void TraceLog::logFormatted(const char * i_format, ...) noexcept
         va_end(args);
 
         // log formatted message
-        doLogMsg(msgBuffer, nullptr);
+        if (!doLogMsg(msgBuffer, nullptr)) throw HelperException(LT("Error at debug trace write"));
     }
-    catch (...) { }
+    catch (...) {
+        return throw HelperException(LT("Error at debug trace write")); // log failed
+    }
 }
+
 
 // log to console, return false on error
 bool TraceLog::logToConsole(
     const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
-    ) noexcept
+) noexcept
 {
     try {
         writeToLog(cout, i_msgTime, i_msg, i_extra);
@@ -569,7 +643,7 @@ bool TraceLog::logToConsole(
 // log to file, return false on error
 bool TraceLog::logToFile(
     bool i_isToStamped, const chrono::system_clock::time_point & i_msgTime, const char * i_msg, const char * i_extra
-    ) noexcept
+) noexcept
 {
     try {
         ofstream & logSt = i_isToStamped ? stampedSt : lastSt;

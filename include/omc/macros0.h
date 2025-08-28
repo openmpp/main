@@ -27,6 +27,9 @@
 // A (very) direct implementation of the variadic WriteDebugLogEntry() Modgen function
 #define WriteDebugLogEntry theTrace->logFormatted
 
+// Variadic function, same as WriteDebugLogEntry but throw an exception on write error
+#define WriteDebugTraceOrFail theTrace->logFormattedOrFail
+
 // A (very) direct implementation of the variadic WriteLogEntry() Modgen function
 #define WriteLogEntry theLog->logFormatted
 

@@ -27,7 +27,7 @@ namespace openm
         virtual void logMsg(const char * i_msg, const char * i_extra = NULL) noexcept = 0;
 
         /** log message formatted with vsnprintf() */
-        virtual void logFormatted(const char * i_format, ...) noexcept = 0;
+        virtual bool logFormatted(const char * i_format, ...) noexcept = 0;
 
         /** return timestamp part of log file name: 2012_08_17_16_04_59_148.
         *
@@ -37,6 +37,9 @@ namespace openm
 
         /** use process rank as log message prefix */
         virtual void setRank(int i_rank, int i_worldSize) noexcept = 0;
+
+        /** error at file create of last log or stamped log file */
+        virtual const bool isCreateError(void) noexcept = 0;
     };
 
     /** log public interface: log to console and into log files */
@@ -110,6 +113,9 @@ namespace openm
             bool i_usePidStamp = false,
             bool i_noMsgTime = false
             ) noexcept = 0;
+
+        /** log message formatted with vsnprintf(), throw exception on error */
+        virtual void logFormattedOrFail(const char * i_format, ...) = 0;
     };
 
     /** checkpoint log message */
