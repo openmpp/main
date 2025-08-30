@@ -1771,6 +1771,11 @@ public:
     static bool option_allow_time_travel;
 
     /**
+     * true if allow_unlimited_subs activated in options statement.
+     */
+    static bool option_allow_unlimited_subs;
+
+    /**
      * true if allow_clairvoyance activated in options statement.
      */
     static bool option_allow_clairvoyance;

@@ -29,6 +29,7 @@ bool Symbol::option_index_errors = false;
 bool Symbol::option_case_checksum = false;
 bool Symbol::option_checkpoints = true;
 bool Symbol::option_allow_time_travel = false;
+bool Symbol::option_allow_unlimited_subs = false;
 bool Symbol::option_allow_clairvoyance = false;
 bool Symbol::option_time_infinite_is_32767 = false;
 bool Symbol::option_time_undef_is_minus_one = false;
@@ -210,6 +211,27 @@ void Symbol::do_options()
             }
             else if (value == "off") {
                 option_allow_time_travel = false;
+            }
+            // remove processed option
+            options.erase(iter);
+        }
+    }
+
+    {
+        string key = "allow_unlimited_subs";
+        auto iter = options.find(key);
+        if (iter != options.end()) {
+            auto& opt_pair = iter->second; // opt_pair is option value, option location
+            string& value = opt_pair.first;
+            if (value == "on") {
+                option_allow_unlimited_subs = true;
+                // This option should be off to avoid case seed generator anomalies
+                // so always emit a warning if it is on.
+                theLog->logMsg(LT("warning : option allow_unlimited_subs is on."));
+                Symbol::post_parse_warnings++;
+            }
+            else if (value == "off") {
+                option_allow_unlimited_subs = false;
             }
             // remove processed option
             options.erase(iter);

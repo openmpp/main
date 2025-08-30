@@ -63,3 +63,7 @@ namespace fmk {
 
 } // fmk
 
+int GetMaxCaseSeedGenerators(void)
+{
+    return fmk::max_case_seed_generators;
+}

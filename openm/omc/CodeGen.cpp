@@ -974,6 +974,22 @@ void CodeGen::do_ModelStartup()
     c += "// obtain simulation member to use for log messages";
     c += "int simulation_member = i_model->subValueId();";
     c += "";
+    // Find the one and only ModelTypeSymbol
+    auto mts = ModelTypeSymbol::find();
+    assert(mts);
+    bool is_case_based = mts->is_case_based();
+    if (is_case_based && !Symbol::option_allow_unlimited_subs) {
+        c += "{";
+        c +=   "// runtime check for max allowed subs for case-based models";
+        c +=   "int subs_in_run = i_model->subValueCount();";
+        // GetMaxCaseSeedGenerators is defined in use modules case_based_lcg41.ompp, case_based_lcg200.ompp
+        c +=   "extern int GetMaxCaseSeedGenerators(void);";
+        c +=   "int max_subs = GetMaxCaseSeedGenerators();";
+        c +=   "if ((subs_in_run > max_subs) && (simulation_member == 0)) {";
+        c +=     "ModelExit(\"error : number of subs in run exceeds maximum supported by model framework.\");";
+        c +=   "}";
+        c += "}";
+    }
     c += "// reset the weight support API";
     c += "reset_weight_api();";
     c += "";
