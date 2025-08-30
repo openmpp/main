@@ -25,7 +25,7 @@ options bounds_errors = on; // out-of-bounds assignment to an enumeration is an 
 //options index_errors = on; // mark-up model code to detect out-of-bounds enumeration indices at runtime
 
 //options fp_exceptions = on; // If on, raise runtime floating point exception on division by zero
-//options fp_exceptions_warning = off; // If on, raise runtime floating point exception on division by zero
+//options fp_exceptions_warning = off; // If off, disable runtime floating point exception warning
 
 options lifecycle_attributes = Person; // Create lifecycle_event and lifecycle_counter for Person entities
 
