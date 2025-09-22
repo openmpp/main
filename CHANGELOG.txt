@@ -1,6 +1,19 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2025-09-21: v1.17.10
+- c++ core: issue runtime error for case-based model if number of subs exceeds number of case seed generators
+- c++ core: create special WriteDebugTraceOrFail() to handle the situation when model developer forget to close Excel before running the model
+- c++ core: fix MPI process sub-values allocation: even up sub-values assignment to MPI processes
+- c++ core: use message.ini files for models translations
+- go and UI: use message.ini files for go utilities translations
+- go: fix bug in run comparison of scalar output tables
+- UI: allow to change models sort order on main landing UI page
+- Docker: add make-model scripts to build model with different versions of openM++ using Docker or just c++ native tools
+- Docker: use Windows 2025 LTSC, RedHat 10, Debian 13
+- perl CsvToDat: correct parameter handling for logical and cumrate parameters
+- other: create make-OncoSim variants build script for Windows and Linux
+
 2025-06-01: v1.17.9
 - c++ core: fix issue: build-time retain and suppress not working for groups which use module declarations
 - c++ core: new feature: New option fp_exceptions activates floating point exceptions to uncover model bugs
