@@ -1,7 +1,7 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
-2026-02-01: v1.17.11
+2026-01-31: v1.17.11
 - go and UI: cloud admin UI to view users, servers, model runs and resources
 - UI: on model run page verify user's choice of CPU cores and recommend better options
 
