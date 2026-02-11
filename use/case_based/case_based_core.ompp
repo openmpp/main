@@ -94,6 +94,12 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
     auto clock_time_start = std::chrono::system_clock::now();
 
+    /// maximum events in a case in this member
+    long long case_event_count_max = -1;
+
+    /// combined case seed of the case with maximum events
+    long long case_event_count_max_seed = -1;
+
     // note API object for subsequent use in modeling thread
     fmk::i_model = i_model;
 
@@ -160,6 +166,9 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
     for (long long thisCase = 0; thisCase < fmk::member_cases; thisCase++) {
 
+        /// Global event count at beginning of case
+        long long global_event_counter_before_case = BaseEvent::global_event_counter;
+
         initialize_model_streams(); //defined in common.ompp
 
         // Initial global time for the case
@@ -180,6 +189,13 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
 
         // Simulate the case
         CaseSimulation(ci);
+
+        /// Events in this case
+        long long case_event_count = BaseEvent::global_event_counter - global_event_counter_before_case;
+        if (case_event_count > case_event_count_max) {
+            case_event_count_max = case_event_count;
+            case_event_count_max_seed = fmk::combined_seed;
+        }
 
         // Log the case checksum if activated
         if (BaseEvent::event_checksum_enabled) fmk::case_checksum_msg(fmk::master_seed, fmk::simulation_member);
@@ -271,7 +287,13 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
             events_per_case,
             entities_per_case,
             clock_time_delta
-        );
+            );
+        theLog->logFormatted(
+            "member=%d Simulation extreme: case with maximum events=%lld had combined seed=%lld",
+            fmk::simulation_member,
+            case_event_count_max,
+            case_event_count_max_seed
+            );
     }
 }
 
