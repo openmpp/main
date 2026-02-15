@@ -100,6 +100,12 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
     /// combined case seed of the case with maximum events
     long long case_event_count_max_seed = -1;
 
+    /// number of entities in the case with maximum events
+    long long case_event_count_max_entities = -1;
+
+    /// number of ties for the case with maximum events
+    long long case_event_count_max_ties = 0;
+
     // note API object for subsequent use in modeling thread
     fmk::i_model = i_model;
 
@@ -169,6 +175,9 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         /// Global event count at beginning of case
         long long global_event_counter_before_case = BaseEvent::global_event_counter;
 
+        /// Global entity if at beginning of case
+        long long global_entity_counter_before_case = fmk::member_entity_counter;
+
         initialize_model_streams(); //defined in common.ompp
 
         // Initial global time for the case
@@ -190,11 +199,20 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
         // Simulate the case
         CaseSimulation(ci);
 
+        /// Entities in this case
+        long long case_entity_count = fmk::member_entity_counter - global_entity_counter_before_case;
+
         /// Events in this case
         long long case_event_count = BaseEvent::global_event_counter - global_event_counter_before_case;
         if (case_event_count > case_event_count_max) {
             case_event_count_max = case_event_count;
             case_event_count_max_seed = fmk::combined_seed;
+            case_event_count_max_entities = case_entity_count;
+            // new maximum so reset number of ties
+            case_event_count_max_ties = 0;
+        }
+        else if (case_event_count == case_event_count_max) {
+            ++case_event_count_max_ties;
         }
 
         // Log the case checksum if activated
@@ -289,10 +307,12 @@ void RunSimulation(int mem_id, int mem_count, IModel * const i_model)
             clock_time_delta
             );
         theLog->logFormatted(
-            "member=%d Simulation extreme: case with maximum events=%lld had combined seed=%lld",
+            "member=%d Simulation extreme: case with maximum events had combined seed=%lld, events=%lld, entities=%lld, ties=%lld",
             fmk::simulation_member,
+            case_event_count_max_seed,
             case_event_count_max,
-            case_event_count_max_seed
+            case_event_count_max_entities,
+            case_event_count_max_ties
             );
     }
 }
