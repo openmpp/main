@@ -43,9 +43,9 @@ using namespace openm;
 
 // if message library is MPI based then use database only at the root model process
 #ifdef OM_MSG_MPI
-    static const bool isMpiUsed = true;
+    #define IS_MPI_USED true
 #else
-    static const bool isMpiUsed = false;
+    #define IS_MPI_USED false
 #endif
 
 /** model one-time initialization */
@@ -167,11 +167,11 @@ int main(int argc, char ** argv)
 
             // open db-connection
             unique_ptr<IDbExec> dbExec(
-                (!isMpiUsed || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
+                (!IS_MPI_USED || msgExec->isRoot()) ? IDbExec::create(SQLITE_DB_PROVIDER, connectionStr) : nullptr
             );
 
             // load metadata tables and broadcast it to all modeling processes
-            unique_ptr<RunController> runCtrl(RunController::create(argOpts, isMpiUsed, dbExec.get(), msgExec.get()));
+            unique_ptr<RunController> runCtrl(RunController::create(argOpts, IS_MPI_USED, dbExec.get(), msgExec.get()));
 
             // log model version, runtime version and modeling environment
             logVersion(msgExec.get(), runCtrl.get());
@@ -482,10 +482,10 @@ void logVersion(const IMsgExec * i_msgExec, const RunController * i_runCtrl)
 #endif
     theLog->logFormatted("OpenM++ build  : %s %s %s", libTargetOsName, libTargetConfigName, libTargetMpiUseName);
 
-    if (!isMpiUsed && i_runCtrl->threadCount > 1) {
+    if (!IS_MPI_USED && i_runCtrl->threadCount > 1) {
         theLog->logFormatted("Run model with %d modeling thread(s)", i_runCtrl->threadCount);
     }
-    if (isMpiUsed && i_msgExec->isRoot()) {
+    if (IS_MPI_USED && i_msgExec->isRoot()) {
         if (i_msgExec->worldSize() > 1) {
             theLog->logFormatted("Parallel run of %d modeling processes, %d thread(s) each", i_msgExec->worldSize(), i_runCtrl->threadCount);
         }
