@@ -179,9 +179,12 @@ int main(int argc, char ** argv)
             // model one-time initialization
             if (RunOnceHandler != NULL) RunOnceHandler(runCtrl.get());
 
-            if (string rs = runCtrl->argOpts().strOption(ArgKey::runStamp); !rs.empty()) {
-                theLog->logFormatted("Run: %s", rs.c_str());
+            if (const string rs = runCtrl->argOpts().strOption(ArgKey::runStamp); !rs.empty()) {
+                theLog->logFormatted("Run:      %s", rs.c_str());
             }
+            const string wsName = runCtrl->argOpts().strOption(RunOptionsKey::setName);
+            const string brName = runCtrl->argOpts().strOption(RunOptionsKey::baseRunName);
+            const string brDgst = runCtrl->argOpts().strOption(RunOptionsKey::baseRunDigest);
 
             // run the model until modeling task completed
             ExitStatus e = ExitStatus::OK;
@@ -194,7 +197,11 @@ int main(int argc, char ** argv)
                     childExchangeOrSleep(OM_WAIT_SLEEP_TIME, runCtrl.get());    // exchange between root and child processes or between main thread and modeling threads
                     continue;                                                   // no input: completed or waiting for additional input
                 }
-                theLog->logFormatted("Run: %d %s", runId, runCtrl->strOption(RunOptionsKey::runName).c_str());
+                theLog->logFormatted("Run:      %d %s", runId, runCtrl->strOption(RunOptionsKey::runName).c_str());
+
+                if (!wsName.empty()) theLog->logFormatted("Scenario: %s", wsName.c_str());
+                if (!brName.empty()) theLog->logFormatted("Base Run: %s", brName.c_str());
+                if (!brDgst.empty()) theLog->logFormatted("Base Run: %s", brDgst.c_str());
 
                 // initialize model run: read input parameters
                 RunInitHandler(runCtrl.get());
