@@ -1,6 +1,17 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2026-03-25: v1.17.12
+- c++ core: identify computationally extreme cases in case-based models in run log
+- c++ core: log scenario name and base run, if specified by user
+- c++ core: add VS2026 support to VS projects
+- go: fix column mis-alignment in CSV output
+- Docker: add VS2026 into Windows build image
+- UI: switch to Vite instead of webpack
+- UI: improve Admin page performance
+- UI: show scenrio name and base run in run info dialog (only for currently selected run)
+- UI: open parameter, output table, entity microdata in separate window
+
 2026-01-31: v1.17.11
 - go and UI: cloud admin UI to view users, servers, model runs and resources
 - UI: on model run page verify user's choice of CPU cores and recommend better options
