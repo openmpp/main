@@ -16,13 +16,14 @@ using namespace openm;
 * @param[in]   i_connectionStr database connection string.
 *                          
 * connection string example: \n
-*   Database=fileName.sqlite; Timeout=86400; OpenMode=ReadWrite; DeleteExisting=true; \n
+*   Database=fileName.sqlite; Timeout=86400; OpenMode=ReadWrite; ForeignKeys=true; DeleteExisting=true; \n
 *   
 * connection string options: \n
 *  Database        (required) database file name or URI, it can be empty \n
 *  Timeout         (optional) timeout in seconds for table lock, default=0 \n
 *  OpenMode        (optional) open mode: ReadOnly, ReadWrite, Create, default=ReadOnly \n
 *  DeleteExisting  (optional) if true the delete existing database file, default=false \n
+*  ForeignKeys     (optional) if not true then do not check foreign keys, default=true \n
 */
 DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
     DbExecBase(i_connectionStr),
@@ -60,6 +61,15 @@ DbExecSqlite::DbExecSqlite(const string & i_connectionStr) :
 
         // set table lock timeout, if specified
         if (sqlite3_busy_timeout(theDb, (int)(1000L * longConnProperty("Timeout", 0L)) ) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));
+
+        // set foreign key on/off check, by default it is on
+        bool isFk = true;
+        if (strConnProperty("ForeignKeys") != "" && !boolConnProperty("ForeignKeys")) isFk = false;
+
+        const char* sql = isFk ? "PRAGMA foreign_keys = on" : "PRAGMA foreign_keys = off";
+        theLog->logSql(sql);
+
+        if (sqlite3_exec(theDb, sql, NULL, NULL, NULL) != SQLITE_OK) throw DbException(sqlite3_errmsg(theDb));  // execute sql and ignore any results
     }
     catch (DbException & ex) {
         theLog->logErr(ex, OM_FILE_LINE);
@@ -126,7 +136,7 @@ void DbExecSqlite::releaseStatement(void) noexcept
 
 // list of valid connection string keys
 static const char * connPropKeyArr[] = { 
-    "Database", "Timeout", "OpenMode", "DeleteExisting" 
+    "Database", "Timeout", "OpenMode", "ForeignKeys", "DeleteExisting"
 };
 static const size_t connPropKeySize = sizeof(connPropKeyArr) / sizeof(const char *);
 
@@ -141,13 +151,14 @@ static const size_t openModePropSize = sizeof(openModePropArr) / sizeof(const ch
 * validate connection properties.
 *                          
 * example: \n
-*   Database=fileName.sqlite; Timeout=86400; OpenMode=ReadWrite; DeleteExisting=true; \n
+*   Database=fileName.sqlite; Timeout=86400; OpenMode=ReadWrite; ForeignKeys=true; DeleteExisting=true; \n
 *   
 * syntax: \n
 *  Database        (required) database file name or URI, it can be empty \n
 *  Timeout         (optional) timeout in seconds for table lock, default=0 \n
 *  OpenMode        (optional) open mode: ReadOnly, ReadWrite, Create, default=ReadOnly \n
 *  DeleteExisting  (optional) if true the delete existing database file, default=false \n
+*  ForeignKeys     (optional) if not true then do not check foreign keys, default=true \n
 *
 */
 void DbExecSqlite::validateConnectionProps(void)
