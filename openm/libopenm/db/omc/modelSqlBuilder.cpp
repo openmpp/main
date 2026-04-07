@@ -63,6 +63,7 @@ void ModelSqlBuilder::build(MetaModelHolder & io_metaRows)
                 "Database=" + makeFilePath(sqliteDir.c_str(), io_metaRows.modelDic.name.c_str(), ".sqlite") + ";" +
                 " Timeout=86400;" +
                 " OpenMode=Create;" +
+                " ForeignKeys=true;" +
                 " DeleteExisting=true;"
             ));
 

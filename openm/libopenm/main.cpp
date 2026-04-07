@@ -162,7 +162,7 @@ int main(int argc, char ** argv)
 
             string connectionStr = argOpts.strOption(
                 RunOptionsKey::dbConnStr,
-                string("Database=") + dbSqlite + "; Timeout=86400; OpenMode=ReadWrite;"
+                string("Database=") + dbSqlite + "; Timeout=86400; ForeignKeys=true; OpenMode=ReadWrite;"
             );
 
             // open db-connection
