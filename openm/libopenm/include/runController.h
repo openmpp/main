@@ -41,6 +41,9 @@ namespace openm
         /** last cleanup */
         virtual ~RunController(void) noexcept = 0;
 
+        /** total number of sub-values */
+        virtual int totalSubCount(void) const noexcept override { return subValueCount; }
+
         /** return index of parameter by name */
         int parameterIdByName(const char * i_name) const override { return MetaLoader::parameterIdByName(i_name); };
 

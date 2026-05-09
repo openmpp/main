@@ -112,6 +112,9 @@ namespace openm
     {
         virtual ~IRunBase(void) noexcept = 0;
 
+        /** total number of sub-values */
+        virtual int totalSubCount(void) const noexcept = 0;
+
         /** return id of parameter by name */
         virtual int parameterIdByName(const char * i_name) const = 0;
 
