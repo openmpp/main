@@ -116,7 +116,7 @@ void MpiExec::createGroups(int i_groupSize, int i_groupCount)
 {
     try {
         // if all processes in one group the exit
-        if (i_groupCount <= 1 || i_groupSize <= 0 || i_groupSize >= worldCommSize) return;
+        if (i_groupCount <= 0 || i_groupSize <= 0 || i_groupSize >= worldCommSize) return;
 
         lock_guard<recursive_mutex> lck(msgMutex);
 
