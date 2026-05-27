@@ -422,17 +422,17 @@ static bool do_xref(string lang, int lang_index, Symbol* s, string name, std::st
 /**
  * create model user documentation and model developer documentation.
  *
- * @param   model_name Name of the model.
- * @param   docOutDir  The document out dir.
- * @param   mdOutDir   The md out dir.
- * @param   omrootDir  The omroot dir.
- * @param   cg         The cg.
+ * @param[in] model_name  model name
+ * @param[in] docOutDir   output documentation directory, e.g.: ompp/bin/doc
+ * @param[in] mdOutDir    intermediate directory to write .md files: ompp/src
+ * @param[in] omrootDir   openM++ "root" deirectory to find HTML styles
+ * @param[in] cg          code generator to get model metadata
  */
 void do_model_doc(
     const string& model_name, const string& docOutDir, const string& mdOutDir, const string& omrootDir, const CodeGen& cg
 ) {
 
-    // create json file for ompp UI:
+    // create json file for ompp UI: model_name.extra.json
     /*
     {
     "ModelDoc": [{
