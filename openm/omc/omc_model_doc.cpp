@@ -2697,10 +2697,7 @@ void do_model_doc(
             // experimental: include LaTeX(MathJax) support 
             htmlStream << "<meta charset=\"utf-8\">\n";
             htmlStream << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-            htmlStream << "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n";
-            htmlStream << "<script id=\"MathJax-script\" async \n"
-                            "src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\">";
-            htmlStream << "</script>\n";
+            htmlStream << "<script id='MathJax-script' defer src='https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js'></script>\n";
 
             htmlStream << htmlStyles;
 
