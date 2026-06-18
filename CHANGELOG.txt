@@ -1,6 +1,16 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2026-06-18: v1.17.13
+- c++ core: security fix to remove polyfill.io from model documentation
+- c++ core: improve error handling if number of sub-values exceeding number of random streams
+- c++ core: fix the problem when MPI model may hang if number of CPU cores exceeds number of sub-values
+- c++ and Go: enforce SQLite database referential integrity
+- Go: fix sql error if microdata entities group deleted from database
+- Go: support native Go database drivers for MySQL, PostgreSQL, MS SQL
+- Go and UI: read-only model publishing, users can view models but cannot run or update
+- UI: in table info dialog show expression dimension label only if notes are not empty
+
 2026-03-25: v1.17.12
 - c++ core: identify computationally extreme cases in case-based models in run log
 - c++ core: log scenario name and base run, if specified by user
