@@ -730,9 +730,9 @@ CREATE TABLE run_parameter_import
   from_model_digest  VARCHAR(32)  NOT NULL, -- source model digest
   from_run_id        INT          NOT NULL, -- source run id
   from_run_digest    VARCHAR(32)  NOT NULL, -- source run digest
-  PRIMARY KEY (run_id, parameter_hid),
-  CONSTRAINT run_parameter_import_mk
-             FOREIGN KEY (run_id, parameter_hid) REFERENCES run_parameter (run_id, parameter_hid)
+  PRIMARY KEY (run_id, parameter_hid)
+  -- CONSTRAINT run_parameter_import_mk
+  --           FOREIGN KEY (from_run_id, parameter_hid) REFERENCES run_parameter (run_id, parameter_hid)
 );
 
 --
