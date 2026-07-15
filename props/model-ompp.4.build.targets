@@ -226,6 +226,59 @@
   </Target>
 
   <!--
+  PublishList
+  -->
+
+  <!--
+    Create ModelName.publish.lst
+    It can be used for deployment and contains list of model files: model.exe, model.sqlite, model.ini, etc.
+    Model developer can include extra lines into output ModelName.publish.lst by providing input ModelName.publish.lst file.
+  -->
+  <PropertyGroup>
+    <MODEL_PUBLISH_LST>$(PUBLISH_DIR)/$(MODEL_NAME).publish.lst</MODEL_PUBLISH_LST>
+  </PropertyGroup>
+
+  <Target Name="PublishList"
+          Outputs="$(MODEL_PUBLISH_LST)"
+          AfterTargets="ModelPublish"
+          >
+    <Message Text="Create $(MODEL_PUBLISH_LST)" />
+
+    <!-- if input ModelName.publish.lst exist then include it into the output -->
+    <ReadLinesFromFile
+      File="$(ProjectDir)../$(MODEL_NAME).publish.lst"
+      Condition="Exists('$(ProjectDir)../$(MODEL_NAME).publish.lst')">
+        <Output TaskParameter="Lines" ItemName="InputPublishList" />
+    </ReadLinesFromFile>
+
+    <!-- include names of ModelName*.ini files and all documentation files -->
+    <ItemGroup>
+      <BIN_PUBLISH_LIST Include="$(PUBLISH_DIR)\$(MODEL_NAME).*.ini"/>
+    </ItemGroup>
+    <ItemGroup>
+      <DOC_PUBLISH_LIST Include="$(PUBLISH_DIR)\doc\*.*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PUBLISH_LIST Include="$BIN_DIR/$(TargetFileName)"/>
+      <PUBLISH_LIST Condition="$(TargetName) == $(MODEL_NAME) And Exists('$(PUBLISH_DIR)\$(MODEL_NAME)_mpi$(TargetExt)')" Include="$BIN_DIR/$(MODEL_NAME)_mpi$(TargetExt)"/>
+      <PUBLISH_LIST Condition="$(TargetName) != $(MODEL_NAME) And Exists('$(PUBLISH_DIR)\$(MODEL_NAME)$(TargetExt)')"     Include="$BIN_DIR/$(MODEL_NAME)$(TargetExt)"/>
+      <PUBLISH_LIST Condition="Exists('$(PUBLISH_DIR)\$(MODEL_NAME).sqlite')"     Include="$BIN_DIR/$(MODEL_NAME).sqlite"/>
+      <PUBLISH_LIST Condition="Exists('$(PUBLISH_DIR)\$(MODEL_NAME).ini')"        Include="$BIN_DIR/$(MODEL_NAME).ini"/>
+      <PUBLISH_LIST Condition="Exists('$(PUBLISH_DIR)\$(MODEL_NAME).extra.json')" Include="$BIN_DIR/$(MODEL_NAME).extra.json"/>
+      <PUBLISH_LIST Include="@(BIN_PUBLISH_LIST->'BIN_DIR/%(FileName)%(Extension)')"/>
+      <PUBLISH_LIST Include="@(DOC_PUBLISH_LIST->'$DOC_DIR/%(FileName)%(Extension)')"/>
+      <PUBLISH_LIST Include="@(InputPublishList)"/>
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(MODEL_PUBLISH_LST)"
+      Overwrite="true"
+      Lines="@(PUBLISH_LIST)"
+    />
+  </Target>
+
+  <!--
   RunModel
   -->
 

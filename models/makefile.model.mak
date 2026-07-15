@@ -190,6 +190,12 @@ ifndef MODEL_DOC_DISABLE
   OMC_MODEL_DOC_OPTS = -Omc.ModelDoc true -d $(MODEL_INDOC_DIR) -omc.OutDocDir $(MODEL_OUTDOC_DIR)
 endif
 
+# list of model files for deployment
+#
+MODEL_PUBLISH_LST = $(MODEL_NAME).publish.lst
+SRC_PUBLISH_LST   = $(MODEL_PUBLISH_LST)
+OUT_PUBLISH_LST   = $(PUBLISH_DIR)/$(MODEL_PUBLISH_LST)
+
 #
 # libraries and omc: openM++ compiler
 #
@@ -316,7 +322,7 @@ $(OUT_BIN_DIR)/$(MODEL_EXE) : $(OBJS) $(OM_LIB_DIR)/$(LIBOPENM_A) $(OM_LIB_DIR)/
 # copy model.ini and model.message.ini files into output folder
 #
 .PHONY : publish
-publish : $(MODEL_SQLITE) publish-views copy_ini copy_extra_doc
+publish : $(MODEL_SQLITE) publish-views copy_ini copy_extra_doc publish_list
 
 $(MODEL_SQLITE) : $(OMC_OUT_DIR)/$(MODEL_NAME)_create_sqlite.sql
 	mv -f $(OMC_OUT_DIR)/$(MODEL_NAME).sqlite $(MODEL_SQLITE)
@@ -339,6 +345,18 @@ publish-views : \
   $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
+
+.PHONY : publish_list
+publish_list:
+	$(file > $(OUT_PUBLISH_LST),$$BIN_DIR/$(MODEL_NAME).sqlite)
+	$(file >> $(OUT_PUBLISH_LST),$$BIN_DIR/$(MODEL_EXE))
+	@if [ "$(MSG_POSTFIX)" = "_mpi" ]  && [ -x $(PUBLISH_DIR)/$(MODEL_NAME) ]     ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME)" >> $(OUT_PUBLISH_LST) ; fi
+	@if [ "$(MSG_POSTFIX)" != "_mpi" ] && [ -x $(PUBLISH_DIR)/$(MODEL_NAME)_mpi ] ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME)_mpi" >> $(OUT_PUBLISH_LST) ; fi
+	@if [ -e $(PUBLISH_DIR)/$(MODEL_NAME).ini ]         ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME).ini" >> $(OUT_PUBLISH_LST) ; fi
+	@if [ -e $(PUBLISH_DIR)/$(MODEL_NAME).message.ini ] ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME).message.ini" >> $(OUT_PUBLISH_LST) ; fi
+	@if [ -e $(PUBLISH_DIR)/$(MODEL_NAME).extra.json ]  ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME).extra.json" >> $(OUT_PUBLISH_LST) ; fi
+	@if [ -d $(MODEL_OUTDOC_DIR) ] ; then find $(MODEL_OUTDOC_DIR) -type f -printf "\$$DOC_DIR/%f\n"  >> $(OUT_PUBLISH_LST) ; fi
+	@if [ -e $(SRC_PUBLISH_LST) ]  ; then cat $(SRC_PUBLISH_LST)  >> $(OUT_PUBLISH_LST) ; fi
 
 #
 # run the model
