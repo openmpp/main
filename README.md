@@ -2,7 +2,6 @@
 
 This repository is a part of [OpenM++](http://www.openmpp.org/) open source microsimulation platform.
 It conatins openM++ compiler (omc) and run-time, model examples and utilities source code.
-Please download and unpack release archive to start using openM++.
 
 ## Active Forks and Distributions
 
@@ -11,6 +10,7 @@ The core models code is shared and fully compatible across both repositories —
 The choice depends on your needs: openM++ is the reference implementation; stcopenmpp includes additional tooling and more frequent releases.
 See [stcopenmpp](https://github.com/StatCan/stcopenmpp) for details.
 
+Please download and unpack release archive to start using openM++.
 Release directory structure would allow you to build and run models, start UI and openM++ web-service (oms):
 
 ```
