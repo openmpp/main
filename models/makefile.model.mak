@@ -346,6 +346,8 @@ publish-views : \
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OM_SQLITE_DIR)/optional_meta_views_sqlite.sql
 	$(SQLITE_EXE) $(MODEL_SQLITE) < $(OMC_OUT_DIR)/$(MODEL_NAME)_optional_views_sqlite.sql
 
+# SHELLFLAGS pipefail not supported by make on MacOS, pipe below may fail silently
+#
 .PHONY : publish_list
 publish_list:
 	$(file > $(OUT_PUBLISH_LST),$$BIN_DIR/$(MODEL_NAME).sqlite)
@@ -355,7 +357,7 @@ publish_list:
 	@if [ -e $(PUBLISH_DIR)/$(MODEL_NAME).ini ]         ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME).ini" >> $(OUT_PUBLISH_LST) ; fi
 	@if [ -e $(PUBLISH_DIR)/$(MODEL_NAME).message.ini ] ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME).message.ini" >> $(OUT_PUBLISH_LST) ; fi
 	@if [ -e $(PUBLISH_DIR)/$(MODEL_NAME).extra.json ]  ; then printf "%s\n" "\$$BIN_DIR/$(MODEL_NAME).extra.json" >> $(OUT_PUBLISH_LST) ; fi
-	@if [ -d $(MODEL_OUTDOC_DIR) ] ; then find $(MODEL_OUTDOC_DIR) -type f -printf "\$$DOC_DIR/%f\n"  >> $(OUT_PUBLISH_LST) ; fi
+	@if [ -d $(MODEL_OUTDOC_DIR) ] ; then ls -1 $(MODEL_OUTDOC_DIR) | xargs printf "\$$DOC_DIR/%s\n"  >> $(OUT_PUBLISH_LST) ; fi
 	@if [ -e $(SRC_PUBLISH_LST) ]  ; then cat $(SRC_PUBLISH_LST)  >> $(OUT_PUBLISH_LST) ; fi
 
 #
