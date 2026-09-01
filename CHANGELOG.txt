@@ -1,7 +1,7 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
-2026-08-31: v1.17.14
+2026-09-01: v1.17.14
 - c++ core: create publish list of model files during the build
 - Go: add models library API
 - Go and UI: ability to copy model from the library
