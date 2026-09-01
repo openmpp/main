@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2026-08-31: v1.17.14
+- c++ core: create publish list of model files during the build
+- Go: add models library API
+- Go and UI: ability to copy model from the library
+- UI: move run name and workset name from page header to side menu
+- Docker: on Windows use tar instead of 7-zip
+
 2026-06-18: v1.17.13
 - c++ core: security fix to remove polyfill.io from model documentation
 - c++ core: improve error handling if number of sub-values exceeding number of random streams
