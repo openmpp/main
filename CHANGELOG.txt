@@ -1,6 +1,13 @@
 Please note:
   not all changes commented here, please use GitHub release notes and commits history for more details.
 
+2026-10-01: v1.17.15
+- Go: change output table value filters to make measures independent
+- UI: update run status even if run tab not active
+- UI: add clear button to value filter dialog and entity calculation dialog
+- UI: adjust page start and page size to show cells count instead of db row count
+- UI: show visible values count and filtered count
+
 2026-09-01: v1.17.14
 - c++ core: create publish list of model files during the build
 - Go: add models library API
